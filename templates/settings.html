@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Paramètres – AutoTrading Pro{% endblock %}
+{% block page_title %}Paramètres{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+
+  <!-- ===== GMAIL OAUTH CARD ===== -->
+  <div class="settings-card">
+    <div class="settings-card-header">
+      <i class="fa-brands fa-google me-2 text-accent"></i>Connexion Gmail OAuth
+    </div>
+    <div class="settings-card-body">
+
+      {% if oauth_status.connected %}
+        <div class="oauth-connected-block">
+          <div class="oauth-status-icon connected">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="oauth-status-info">
+            <div class="oauth-status-title text-success">Compte Gmail connecté</div>
+            <div class="oauth-email">{{ oauth_status.email }}</div>
+            {% if oauth_status.last_updated %}
+              <div class="oauth-last-update text-muted small">
+                Dernière mise à jour : {{ oauth_status.last_updated[:19] | replace('T', ' ') }}
+              </div>
+            {% endif %}
+            {% if oauth_status.expired %}
+              <div class="alert alert-warning mt-2 py-2">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i>
+                Token expiré. La prochaine synchronisation le renouvellera automatiquement.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <form action="{{ url_for('auth_disconnect') }}" method="POST"
+                onsubmit="return confirm('Déconnecter ce compte Gmail ?')">
+            <button type="submit" class="btn btn-outline-danger">
+              <i class="fa-solid fa-link-slash me-2"></i>Déconnecter Gmail
+            </button>
+            <a href="{{ url_for('auth_gmail') }}" class="btn btn-outline-secondary ms-2">
+              <i class="fa-solid fa-rotate me-2"></i>Reconnecter (forcer)
+            </a>
+          </form>
+        </div>
+
+      {% else %}
+        <div class="oauth-disconnected-block">
+          <div class="oauth-status-icon disconnected">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+          <div class="oauth-status-info">
+            <div class="oauth-status-title text-danger">Aucun compte Gmail connecté</div>
+            <p class="text-muted mt-1 mb-0">
+              Connectez votre compte Gmail pour synchroniser automatiquement vos annonces automobiles.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <a href="{{ url_for('auth_gmail') }}" class="btn btn-accent btn-lg">
+            <i class="fa-brands fa-google me-2"></i>Connecter avec Google
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ===== SETUP INSTRUCTIONS CARD ===== -->
+  <div class="settings-card">
+    <div class="settings-card-header">
+      <i class="fa-solid fa-circle-info me-2 text-accent"></i>Configuration Google Cloud
+    </div>
+    <div class="settings-card-body">
+      <p class="text-muted mb-3">
+        Pour utiliser l'intégration Gmail, vous devez créer un projet Google Cloud et configurer OAuth 2.0.
+      </p>
+
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Créer un projet Google Cloud</div>
+            <div class="step-desc">
+              Rendez-vous sur <a href="https://console.cloud.google.com" target="_blank" class="link-accent">console.cloud.google.com</a>
+              et créez un nouveau projet ou sélectionnez-en un existant.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Activer l'API Gmail</div>
+            <div class="step-desc">
+              Dans APIs &amp; Services → Bibliothèque, recherchez <strong>Gmail API</strong> et activez-la.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Créer des identifiants OAuth 2.0</div>
+            <div class="step-desc">
+              APIs &amp; Services → Identifiants → Créer des identifiants → ID client OAuth 2.0.
+              Type : <strong>Application Web</strong>.
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Ajouter l'URI de redirection</div>
+            <div class="step-desc">
+              Dans les URIs de redirection autorisées, ajoutez :
+              <code class="code-snippet">http://localhost:5000/auth/gmail/callback</code>
+              (et votre domaine de production si applicable).
+            </div>
+          </div>
+        </div>
+
+        <div class="setup-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Configurer le fichier .env</div>
+            <div class="step-desc">
+              Copiez le Client ID et le Client Secret dans votre <code>.env</code> :
+              <pre class="code-block mt-2">GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== API CONFIG CARD ===== -->
+  <div class="settings-card">
+    <div class="settings-card-header">
+      <i class="fa-solid fa-robot me-2 text-accent"></i>Configuration IA (Anthropic)
+    </div>
+    <div class="settings-card-body">
+      <div class="env-check-row">
+        <div class="env-check-item">
+          <span class="env-key">ANTHROPIC_API_KEY</span>
+          {% if anthropic_key_set %}
+            <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Configurée</span>
+          {% else %}
+            <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i>Non configurée</span>
+          {% endif %}
+        </div>
+        <div class="env-check-item">
+          <span class="env-key">GOOGLE_CLIENT_ID</span>
+          {% if google_id_set %}
+            <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Configuré</span>
+          {% else %}
+            <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i>Non configuré</span>
+          {% endif %}
+        </div>
+        <div class="env-check-item">
+          <span class="env-key">GOOGLE_CLIENT_SECRET</span>
+          {% if google_secret_set %}
+            <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Configuré</span>
+          {% else %}
+            <span class="badge bg-danger"><i class="fa-solid fa-xmark me-1"></i>Non configuré</span>
+          {% endif %}
+        </div>
+      </div>
+      <p class="text-muted small mt-3 mb-0">
+        Sans la clé Anthropic, l'application utilise une analyse heuristique de secours.
+        Obtenez votre clé sur <a href="https://console.anthropic.com" target="_blank" class="link-accent">console.anthropic.com</a>.
+      </p>
+    </div>
+  </div>
+
+</div><!-- /settings-container -->
+{% endblock %}

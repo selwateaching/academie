@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}{{ vehicle.brand or 'Véhicule' }} {{ vehicle.model or '' }} – AutoTrading Pro{% endblock %}
+{% block page_title %}Détail du véhicule{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+  <!-- ===== BACK + ACTIONS ===== -->
+  <div class="detail-actions mb-4">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+      <i class="fa-solid fa-arrow-left me-2"></i>Retour
+    </a>
+    <button class="btn btn-outline-danger ms-2"
+            onclick="deleteVehicle({{ vehicle.id }})"
+            title="Supprimer ce véhicule">
+      <i class="fa-solid fa-trash me-2"></i>Supprimer
+    </button>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <div class="detail-header">
+    <div class="detail-header-left">
+      <div class="detail-badges mb-2">
+        <span class="source-badge source-{{ vehicle.source | lower | replace(' ', '') }}">
+          {% if vehicle.source == 'BCA' %}<i class="fa-solid fa-gavel me-1"></i>
+          {% elif vehicle.source == 'AUTO1' %}<i class="fa-solid fa-globe me-1"></i>
+          {% elif vehicle.source == 'LeBonCoin' %}<i class="fa-solid fa-tag me-1"></i>
+          {% else %}<i class="fa-solid fa-user me-1"></i>{% endif %}
+          {{ vehicle.source }}
+        </span>
+        {% if vehicle.received_at %}
+          <span class="text-muted small ms-2">
+            <i class="fa-solid fa-calendar me-1"></i>{{ vehicle.received_at.strftime('%d %B %Y à %H:%M') }}
+          </span>
+        {% endif %}
+      </div>
+
+      <h2 class="detail-title">
+        {{ vehicle.brand or 'Marque inconnue' }}
+        {% if vehicle.model %} {{ vehicle.model }}{% endif %}
+      </h2>
+
+      <div class="vehicle-specs-row">
+        {% if vehicle.year %}
+          <span class="spec-chip"><i class="fa-solid fa-calendar me-1"></i>{{ vehicle.year }}</span>
+        {% endif %}
+        {% if vehicle.km %}
+          <span class="spec-chip"><i class="fa-solid fa-road me-1"></i>{{ '{:,}'.format(vehicle.km).replace(',', ' ') }} km</span>
+        {% endif %}
+        {% if vehicle.motorization %}
+          <span class="spec-chip">
+            {% if vehicle.motorization == 'Électrique' %}<i class="fa-solid fa-bolt me-1"></i>
+            {% elif vehicle.motorization == 'Hybride' %}<i class="fa-solid fa-leaf me-1"></i>
+            {% else %}<i class="fa-solid fa-gas-pump me-1"></i>{% endif %}
+            {{ vehicle.motorization }}
+          </span>
+        {% endif %}
+        {% if vehicle.location %}
+          <span class="spec-chip"><i class="fa-solid fa-location-dot me-1"></i>{{ vehicle.location }}</span>
+        {% endif %}
+      </div>
+
+      {% if vehicle.subject %}
+        <p class="detail-subject text-muted small mt-2">
+          <i class="fa-solid fa-envelope me-1"></i>{{ vehicle.subject }}
+        </p>
+      {% endif %}
+    </div>
+
+    {% if analysis %}
+    <div class="detail-header-right">
+      <!-- Large decision badge -->
+      <div class="decision-large decision-{{ analysis.decision | lower | replace(' ', '') | replace('é', 'e') | replace('è', 'e') }}">
+        {% if analysis.decision == 'ACHETER' %}
+          <i class="fa-solid fa-circle-check decision-icon"></i>
+        {% elif analysis.decision == 'À ÉTUDIER' %}
+          <i class="fa-solid fa-circle-question decision-icon"></i>
+        {% else %}
+          <i class="fa-solid fa-circle-xmark decision-icon"></i>
+        {% endif %}
+        <span>{{ analysis.decision }}</span>
+      </div>
+
+      <!-- Score gauge -->
+      <div class="score-circle-lg score-{{ 'high' if analysis.score >= 70 else ('mid' if analysis.score >= 45 else 'low') }}">
+        <svg viewBox="0 0 120 120" class="score-svg-lg">
+          <circle cx="60" cy="60" r="50" fill="none" class="score-bg-track-lg" stroke-width="8"/>
+          <circle cx="60" cy="60" r="50" fill="none" class="score-fill-track-lg" stroke-width="8"
+                  stroke-dasharray="{{ (analysis.score * 314.16 / 100) | round(1) }} 314.16"
+                  stroke-dashoffset="78.54"
+                  stroke-linecap="round"/>
+        </svg>
+        <div class="score-inner">
+          <span class="score-num-lg">{{ analysis.score }}</span>
+          <span class="score-label-lg">/ 100</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if analysis %}
+  <div class="detail-grid">
+
+    <!-- ===== FINANCIAL TABLE ===== -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i class="fa-solid fa-euro-sign me-2 text-accent"></i>Analyse financière
+      </div>
+      <div class="detail-card-body">
+        <table class="fin-table">
+          <tbody>
+            {% if vehicle.price_asked %}
+            <tr>
+              <td class="fin-table-label"><i class="fa-solid fa-tag me-2 text-muted"></i>Prix demandé</td>
+              <td class="fin-table-val">{{ '{:,.0f}'.format(vehicle.price_asked).replace(',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            {% if analysis.buy_price %}
+            <tr class="highlight-row">
+              <td class="fin-table-label"><i class="fa-solid fa-hand-holding-dollar me-2 text-info"></i>Notre prix d'achat</td>
+              <td class="fin-table-val text-info fw-bold">{{ '{:,.0f}'.format(analysis.buy_price).replace(',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            {% if analysis.estimated_fees %}
+            <tr>
+              <td class="fin-table-label"><i class="fa-solid fa-wrench me-2 text-warning"></i>Frais estimés</td>
+              <td class="fin-table-val text-warning">{{ '{:,.0f}'.format(analysis.estimated_fees).replace(',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            {% if analysis.resell_price %}
+            <tr>
+              <td class="fin-table-label"><i class="fa-solid fa-arrow-up-right-dots me-2 text-success"></i>Prix de revente estimé</td>
+              <td class="fin-table-val text-success">{{ '{:,.0f}'.format(analysis.resell_price).replace(',', ' ') }} €</td>
+            </tr>
+            {% endif %}
+            {% if analysis.net_margin is not none %}
+            <tr class="margin-final-row">
+              <td class="fin-table-label"><i class="fa-solid fa-chart-line me-2"></i><strong>Marge nette estimée</strong></td>
+              <td class="fin-table-val fw-bold {{ 'text-success' if analysis.net_margin > 0 else 'text-danger' }} fs-5">
+                {{ '+' if analysis.net_margin > 0 else '' }}{{ '{:,.0f}'.format(analysis.net_margin).replace(',', ' ') }} €
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+
+        <!-- Margin bar -->
+        {% if analysis.buy_price and analysis.resell_price and analysis.net_margin is not none %}
+        {% set margin_pct = ((analysis.net_margin / analysis.resell_price) * 100) | round(1) %}
+        <div class="margin-bar-container mt-3">
+          <div class="d-flex justify-content-between small text-muted mb-1">
+            <span>Marge / Revente</span>
+            <span class="{{ 'text-success' if margin_pct >= 15 else ('text-warning' if margin_pct >= 8 else 'text-danger') }}">
+              {{ margin_pct }}%
+            </span>
+          </div>
+          <div class="progress" style="height: 8px;">
+            <div class="progress-bar {{ 'bg-success' if margin_pct >= 15 else ('bg-warning' if margin_pct >= 8 else 'bg-danger') }}"
+                 style="width: {{ [margin_pct, 100] | min }}%"></div>
+          </div>
+          <div class="small text-muted mt-1">Objectif : 15-25%</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ===== RISK + SUMMARY ===== -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i class="fa-solid fa-shield-halved me-2 text-accent"></i>Niveau de risque
+      </div>
+      <div class="detail-card-body">
+        <div class="risk-large risk-{{ analysis.risk_level | lower | replace('é', 'e') }}">
+          {% if analysis.risk_level == 'Faible' %}
+            <i class="fa-solid fa-shield-check risk-icon-lg"></i>
+          {% elif analysis.risk_level == 'Moyen' %}
+            <i class="fa-solid fa-shield-halved risk-icon-lg"></i>
+          {% else %}
+            <i class="fa-solid fa-shield-exclamation risk-icon-lg"></i>
+          {% endif %}
+          <div>
+            <div class="risk-label-lg">Risque {{ analysis.risk_level }}</div>
+            <div class="risk-sublabel">
+              {% if analysis.risk_level == 'Faible' %}Investissement sûr avec peu d'incertitudes
+              {% elif analysis.risk_level == 'Moyen' %}Quelques points à vérifier avant achat
+              {% else %}Risques importants – analyse approfondie requise{% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if analysis.summary %}
+        <div class="summary-box mt-3">
+          <div class="summary-label"><i class="fa-solid fa-robot me-1"></i>Analyse IA</div>
+          <p class="summary-text">{{ analysis.summary }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ===== STRENGTHS ===== -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i class="fa-solid fa-thumbs-up me-2 text-success"></i>Points forts
+      </div>
+      <div class="detail-card-body">
+        {% if analysis.strengths %}
+          <ul class="points-list">
+            {% for point in analysis.strengths %}
+              <li class="point-item point-strength">
+                <i class="fa-solid fa-circle-check me-2 text-success"></i>{{ point }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted small">Aucun point fort identifié.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ===== WEAKNESSES ===== -->
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i class="fa-solid fa-thumbs-down me-2 text-danger"></i>Points faibles / Risques
+      </div>
+      <div class="detail-card-body">
+        {% if analysis.weaknesses %}
+          <ul class="points-list">
+            {% for point in analysis.weaknesses %}
+              <li class="point-item point-weakness">
+                <i class="fa-solid fa-circle-xmark me-2 text-danger"></i>{{ point }}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted small">Aucun risque majeur identifié.</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div><!-- /detail-grid -->
+
+  {% if vehicle.raw_text and vehicle.raw_text != '[Données de démonstration]' %}
+  <div class="detail-card mt-3">
+    <div class="detail-card-header">
+      <i class="fa-solid fa-file-lines me-2 text-accent"></i>Texte original de l'annonce
+      <button class="btn btn-sm btn-outline-secondary ms-auto" type="button"
+              data-bs-toggle="collapse" data-bs-target="#raw-text-collapse">
+        <i class="fa-solid fa-eye me-1"></i>Afficher/masquer
+      </button>
+    </div>
+    <div class="collapse" id="raw-text-collapse">
+      <div class="detail-card-body">
+        <pre class="raw-text-pre">{{ vehicle.raw_text }}</pre>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty-state mt-4">
+    <div class="empty-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+    <h3>Analyse en attente</h3>
+    <p class="text-muted">Ce véhicule n'a pas encore été analysé par l'IA.</p>
+  </div>
+  {% endif %}
+
+</div><!-- /detail-container -->
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function deleteVehicle(vehicleId) {
+  if (!confirm('Supprimer ce véhicule et son analyse ? Cette action est irréversible.')) return;
+  fetch('/vehicle/' + vehicleId, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        window.location = '/dashboard';
+      } else {
+        alert('Erreur lors de la suppression.');
+      }
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+</script>
+{% endblock %}
