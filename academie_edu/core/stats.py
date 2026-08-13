@@ -33,8 +33,7 @@ def stats_professeur(user):
     classement = []
     repartition = {"moins_10": 0, "entre_10_12": 0, "entre_12_16": 0, "plus_16": 0}
     for eleve, valeurs in moyennes_par_eleve.items():
-        moyenne_pct = sum(valeurs) / len(valeurs)
-        moyenne_20 = round(moyenne_pct * 0.2, 1)
+        moyenne_20 = round(sum(valeurs) / len(valeurs), 1)
         classement.append({"eleve": eleve, "moyenne": moyenne_20})
         if moyenne_20 < 10:
             repartition["moins_10"] += 1
@@ -70,7 +69,7 @@ def roster_professeur(user):
     for classe in user.classes_enseignees.all():
         for eleve in classe.eleves.all().order_by("last_name", "first_name"):
             donnees = calculer_bulletin(classe, eleve)
-            moyenne = round(donnees["moyenne_generale"] * 0.2, 1) if donnees["moyenne_generale"] is not None else None
+            moyenne = donnees["moyenne_generale"]
             absences = Presence.objects.filter(seance__classe=classe, eleve=eleve, statut=Presence.Statut.ABSENT).count()
             retards = Presence.objects.filter(seance__classe=classe, eleve=eleve, statut=Presence.Statut.RETARD).count()
             lignes.append({"eleve": eleve, "classe": classe, "moyenne": moyenne, "absences": absences, "retards": retards})

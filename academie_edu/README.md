@@ -22,6 +22,8 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - **Génération de contrôles/QCM par l'IA** : nombre de questions et difficulté paramétrables, adaptés au niveau exact de la classe, correction automatique, explications pédagogiques par question
 - **Correction automatique des copies** : l'IA note et commente chaque copie selon les attendus du programme algérien du niveau concerné (points forts, points à améliorer, correction détaillée) ; le professeur relit et valide toujours la note avant qu'elle soit transmise à l'élève
 - Création manuelle de cours, contrôles et devoirs (l'IA est une assistance, pas une obligation)
+- **Carnet de notes** : évaluations (DS, devoir maison, interrogation, projet) avec coefficient, saisie des notes /20 élève par élève, moyennes de classe calculées automatiquement
+- **Calendrier / agenda** : vue mensuelle des évaluations, réunions et échéances de devoirs, navigation mois par mois
 
 ### Espace Élève
 - Rejoindre une classe avec un code d'accès
@@ -29,6 +31,7 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - Passer les contrôles en ligne, avec correction et score immédiats
 - Rendre les devoirs (texte ou fichier)
 - Consulter ses notes, son bulletin et le feedback détaillé une fois validés par le professeur
+- Consulter son agenda (échéances de devoirs, contrôles) en lecture seule
 - Échanger par messagerie avec ses professeurs et envoyer des pièces jointes
 - Stocker ses propres documents dans des dossiers personnalisés
 
@@ -48,8 +51,8 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - Organisation libre en dossiers personnalisés, dépôt/suppression de fichiers
 
 ### Bulletins
-- Génération automatique à partir des notes de devoirs (validées par le professeur) et des scores de contrôles d'une classe
-- Moyenne générale calculée, page imprimable / exportable en PDF depuis le navigateur (bouton Imprimer)
+- Génération automatique à partir des évaluations du carnet de notes (pondérées par coefficient), des notes de devoirs (validées par le professeur) et des scores de contrôles d'une classe
+- Moyenne générale sur 20, calculée au prorata des coefficients, page imprimable / exportable en PDF depuis le navigateur (bouton Imprimer)
 - Accessible au professeur (génération, depuis la liste des élèves d'une classe), à l'élève et à son parent (consultation)
 
 ### Contact avec le lycée
@@ -163,6 +166,9 @@ academie_edu/
 ├── messagerie/          # Conversations et pièces jointes entre utilisateurs
 ├── documents_perso/     # Espace de stockage personnel (dossiers + fichiers)
 ├── bulletins/            # Génération des bulletins scolaires
+├── presence/             # Appel, absences et retards
+├── evaluations/          # Carnet de notes (évaluations pondérées par coefficient)
+├── calendrier/           # Agenda mensuel professeur / élève
 ├── core/                # Landing page, tableaux de bord par rôle, contact lycée
 ├── templates/            # Gabarits HTML (Bootstrap 5)
 └── static/               # CSS

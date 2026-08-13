@@ -48,16 +48,20 @@
     {% endif %}
 
     {% if user.is_professeur %}
+      <div class="sidebar-section-label">Pédagogie</div>
+      <a href="{% url 'evaluations:choisir_classe' %}" class="sidebar-nav-link {% if 'evaluations' in vue %}active{% endif %}"><i class="bi bi-journal-text"></i> Notes</a>
+      <a href="{% url 'presence:choisir_classe' %}" class="sidebar-nav-link {% if 'presence' in vue %}active{% endif %}"><i class="bi bi-check2-square"></i> Faire l'appel</a>
+      <a href="{% url 'calendrier:agenda_professeur' %}" class="sidebar-nav-link {% if vue == 'calendrier:agenda_professeur' or vue == 'calendrier:creer_evenement' %}active{% endif %}"><i class="bi bi-calendar3"></i> Calendrier</a>
       <div class="sidebar-section-label">IA &amp; pédagogie</div>
       <a href="{% url 'courses:choisir_classe_ia' %}" class="sidebar-nav-link {% if vue == 'courses:choisir_classe_ia' or vue == 'courses:generer_cours_ia' %}active{% endif %}"><i class="bi bi-stars"></i> Cours IA</a>
       <a href="{% url 'quizzes:choisir_classe_ia' %}" class="sidebar-nav-link {% if vue == 'quizzes:choisir_classe_ia' or vue == 'quizzes:generer_quiz_ia' %}active{% endif %}"><i class="bi bi-patch-question-fill"></i> Quiz &amp; contrôles IA</a>
-      <a href="{% url 'presence:choisir_classe' %}" class="sidebar-nav-link {% if 'presence' in vue %}active{% endif %}"><i class="bi bi-check2-square"></i> Faire l'appel</a>
     {% endif %}
 
     {% if user.is_eleve or user.is_parent %}
       <div class="sidebar-section-label">Ma scolarité</div>
       {% if user.is_eleve %}
         <a href="{% url 'presence:mes_absences' %}" class="sidebar-nav-link {% if vue == 'presence:mes_absences' %}active{% endif %}"><i class="bi bi-calendar-x"></i> Mes absences</a>
+        <a href="{% url 'calendrier:agenda_eleve' %}" class="sidebar-nav-link {% if vue == 'calendrier:agenda_eleve' %}active{% endif %}"><i class="bi bi-calendar3"></i> Mon agenda</a>
       {% endif %}
     {% endif %}
 

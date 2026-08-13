@@ -27,6 +27,18 @@
     </div>
   </div>
 
+  <h5 class="fw-bold mb-2">Évaluations (carnet de notes)</h5>
+  <table class="table mb-4">
+    <thead><tr><th>Évaluation</th><th>Type</th><th>Coef.</th><th>Note /20</th></tr></thead>
+    <tbody>
+      {% for ligne in donnees.evaluations %}
+        <tr><td>{{ ligne.titre }}</td><td>{{ ligne.type }}</td><td>×{{ ligne.coefficient }}</td><td>{{ ligne.note }}</td></tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-muted">Aucune évaluation saisie.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
   <h5 class="fw-bold mb-2">Devoirs</h5>
   <table class="table mb-4">
     <thead><tr><th>Devoir</th><th>Note</th><th>%</th></tr></thead>
@@ -53,7 +65,7 @@
 
   <div class="stat-tile d-inline-block">
     <div class="text-muted small mb-1">Moyenne générale</div>
-    <div class="stat-value">{% if donnees.moyenne_generale is not None %}{{ donnees.moyenne_generale }}%{% else %}—{% endif %}</div>
+    <div class="stat-value">{% if donnees.moyenne_generale is not None %}{{ donnees.moyenne_generale }} / 20{% else %}—{% endif %}</div>
   </div>
 </div>
 

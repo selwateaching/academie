@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Nouvel événement{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'calendrier:agenda_professeur' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Calendrier</a></p>
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-4">Nouvel événement</h3>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary fw-semibold">Créer</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

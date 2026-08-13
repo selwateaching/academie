@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     "documents_perso",
     "bulletins",
     "presence",
+    "evaluations",
+    "calendrier",
     "core",
 ]
 

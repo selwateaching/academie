@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% load textutils %}
+{% block titre %}{% if modification %}Modifier l'évaluation{% else %}Nouvelle évaluation{% endif %}{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'evaluations:carnet_notes' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Carnet de notes</a></p>
+
+<div class="card-academie p-4 p-md-5">
+  <h3 class="fw-bold mb-4">{% if modification %}Modifier « {{ evaluation.titre }} »{% else %}Nouvelle évaluation — {{ classe.nom }}{% endif %}</h3>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label fw-semibold">{{ form.titre.label }}</label>
+        {{ form.titre|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ form.date.label }}</label>
+        {{ form.date|add_class:"form-control" }}
+      </div>
+      <div class="col-md-3">
+        <label class="form-label fw-semibold">{{ form.coefficient.label }}</label>
+        {{ form.coefficient|add_class:"form-control" }}
+      </div>
+      <div class="col-md-4">
+        <label class="form-label fw-semibold">{{ form.type.label }}</label>
+        {{ form.type|add_class:"form-control" }}
+      </div>
+    </div>
+
+    <h5 class="fw-bold mb-3">Notes des élèves (sur 20)</h5>
+    <div class="card-academie p-0 mb-4">
+      <table class="table mb-0 align-middle">
+        <tbody>
+          {% for eleve in eleves %}
+          <tr>
+            <td class="ps-4">{{ eleve.get_full_name|default:eleve.username }}</td>
+            <td class="pe-4" style="width:120px;">
+              <input type="number" step="0.5" min="0" max="20" class="form-control" name="note_{{ eleve.pk }}" value="{% if notes_existantes %}{{ notes_existantes|get_item:eleve.pk|default_if_none:'' }}{% endif %}" placeholder="--">
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td class="text-center text-muted py-3">Aucun élève inscrit.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <button type="submit" class="btn btn-primary fw-semibold">Enregistrer</button>
+    {% if modification %}<a href="{% url 'evaluations:supprimer_evaluation' evaluation.pk %}" class="btn btn-outline-danger" onclick="return confirm('Supprimer cette évaluation ?');">Supprimer</a>{% endif %}
+  </form>
+</div>
+{% endblock %}

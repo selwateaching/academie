@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block titre %}Carnet de notes — {{ classe.nom }}{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> {{ classe.nom }}</a></p>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Carnet de notes — {{ classe.nom }}</h2>
+    <p class="text-muted mb-0">{{ classe.matiere }} · {{ classe.niveau_complet }}</p>
+  </div>
+  <a href="{% url 'evaluations:creer_evaluation' classe.pk %}" class="btn btn-primary fw-semibold"><i class="bi bi-plus-circle me-1"></i>Nouvelle évaluation</a>
+</div>
+
+<div class="row row-cols-2 row-cols-lg-4 g-3 mb-4">
+  <div class="col"><div class="stat-card"><div class="stat-icon tone-violet"><i class="bi bi-graph-up"></i></div><div class="stat-number">{% if stats.moyenne %}{{ stats.moyenne }}{% else %}—{% endif %}</div><div class="stat-label">Moyenne classe /20</div></div></div>
+  <div class="col"><div class="stat-card"><div class="stat-icon tone-green"><i class="bi bi-arrow-up-circle"></i></div><div class="stat-number">{% if stats.meilleure %}{{ stats.meilleure }}{% else %}—{% endif %}</div><div class="stat-label">Meilleure moyenne</div></div></div>
+  <div class="col"><div class="stat-card"><div class="stat-icon tone-amber"><i class="bi bi-arrow-down-circle"></i></div><div class="stat-number">{% if stats.plus_basse %}{{ stats.plus_basse }}{% else %}—{% endif %}</div><div class="stat-label">Moyenne la plus basse</div></div></div>
+  <div class="col"><div class="stat-card"><div class="stat-icon tone-blue"><i class="bi bi-check2-circle"></i></div><div class="stat-number">{{ stats.nb_validees }}</div><div class="stat-label">Élèves ≥ 10/20</div></div></div>
+</div>
+
+<div class="card-academie p-0">
+  <div style="overflow-x:auto;">
+  <table class="table mb-0 align-middle">
+    <thead>
+      <tr>
+        <th class="ps-4" style="min-width:160px;">Élève</th>
+        {% for ev in evaluations %}
+          <th class="text-center">
+            <a href="{% url 'evaluations:modifier_evaluation' ev.pk %}" class="text-decoration-none">{{ ev.titre }}</a>
+            <div class="text-muted small fw-normal">×{{ ev.coefficient }}</div>
+          </th>
+        {% endfor %}
+        <th class="text-center pe-4">Moyenne</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ligne in grille %}
+      <tr>
+        <td class="ps-4">{{ ligne.eleve.get_full_name|default:ligne.eleve.username }}</td>
+        {% for note in ligne.notes %}
+          <td class="text-center">{% if note is not None %}{{ note }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        {% endfor %}
+        <td class="text-center pe-4">
+          {% if ligne.moyenne is not None %}
+            <span class="note-pill {% if ligne.moyenne >= 12 %}bonne{% elif ligne.moyenne >= 10 %}moyenne{% else %}faible{% endif %}">{{ ligne.moyenne }}</span>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10" class="text-center text-muted py-4">Aucun élève inscrit dans cette classe.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+{% if not evaluations %}
+<p class="text-muted mt-3">Aucune évaluation créée pour le moment. Cliquez sur « Nouvelle évaluation » pour saisir vos premières notes.</p>
+{% endif %}
+{% endblock %}

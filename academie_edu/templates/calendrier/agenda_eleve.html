@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titre %}Mon agenda{% endblock %}
+{% block contenu %}
+<h2 class="fw-bold mb-4">Mon agenda</h2>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card-academie p-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="?annee={{ annee }}&mois={{ mois|add:"-1" }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left"></i></a>
+        <h5 class="fw-bold mb-0">{{ mois_label }}</h5>
+        <a href="?annee={{ annee }}&mois={{ mois|add:"1" }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-right"></i></a>
+      </div>
+      <table class="table table-bordered mb-0" style="table-layout:fixed;">
+        <thead>
+          <tr class="text-center small text-muted">
+            <th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for semaine in semaines %}
+          <tr>
+            {% for jour in semaine %}
+            <td style="height:90px; vertical-align:top; {% if not jour.dans_mois %}background:#fafbfc;{% endif %} {% if jour.aujourdhui %}background:var(--primary-light);{% endif %}">
+              <div class="small {% if not jour.dans_mois %}text-muted{% else %}fw-semibold{% endif %}">{{ jour.date.day }}</div>
+              {% for ev in jour.evenements %}
+                <div class="small mt-1 px-1 rounded" style="background:#eef2ff; color:#4338ca; font-size:.68rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ ev.titre }}</div>
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-academie p-4">
+      <h5 class="fw-bold mb-3">Prochains événements</h5>
+      {% for ev in prochains %}
+        <div class="list-row">
+          <div>
+            <div class="fw-semibold small">{{ ev.titre }}</div>
+            <div class="text-muted small">{{ ev.date|date:"d/m/Y" }} · {{ ev.get_type_display }}{% if ev.classe %} · {{ ev.classe.nom }}{% endif %}</div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Aucun événement à venir.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

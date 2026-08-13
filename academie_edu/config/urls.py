@@ -15,6 +15,8 @@ urlpatterns = [
     path("documents/", include("documents_perso.urls")),
     path("bulletins/", include("bulletins.urls")),
     path("presence/", include("presence.urls")),
+    path("notes/", include("evaluations.urls")),
+    path("calendrier/", include("calendrier.urls")),
     path("", include("core.urls")),
 ]
 
