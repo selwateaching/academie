@@ -30,6 +30,15 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - Rendre les devoirs (texte ou fichier)
 - Consulter ses notes et le feedback détaillé une fois validés par le professeur
 
+### SaaS : offres, quotas et gestion des clients
+- Trois offres d'abonnement (`accounts/plans.py`) : **Découverte** (gratuite, 1 classe, 5 générations IA/mois), **Standard** (2 500 DA/mois, 5 classes, 50 générations IA/mois), **Premium** (5 000 DA/mois, illimité) — prix et quotas modifiables dans ce seul fichier
+- Les quotas sont appliqués automatiquement : création de classe et génération IA sont bloquées avec un message explicite dès qu'une limite est atteinte ou que l'abonnement est expiré/désactivé
+- **Page d'administration des clients** (`/gestion/clients/`, réservée au rôle Administrateur) : ajouter un nouveau client (compte professeur + mot de passe + offre), rechercher/filtrer par offre ou statut, changer l'offre d'un client, activer/désactiver son abonnement, définir une date d'expiration, suivre son usage (classes créées, générations IA du mois)
+- Chaque professeur voit son offre et sa consommation directement sur son tableau de bord
+- La page d'accueil affiche les trois offres publiquement
+
+> La gestion des abonnements est actuellement **manuelle** (l'administrateur active/désactive depuis sa page de gestion). Aucun paiement en ligne n'est intégré : brancher une passerelle de paiement (CIB/EDAHABIA, Stripe...) est une évolution possible qui nécessite un compte marchand propre à l'établissement.
+
 ### Administration
 - Interface d'administration Django complète (`/admin/`) : gestion des comptes, rôles, abonnements et classes
 

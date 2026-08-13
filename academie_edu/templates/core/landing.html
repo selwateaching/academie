@@ -55,4 +55,23 @@
     </div>
   </div>
 </div>
+
+<h3 class="fw-bold text-center mb-2">Nos offres</h3>
+<p class="text-muted text-center mb-4">Choisissez l'offre adaptée à votre usage. Passage à une offre supérieure sur simple demande à l'administrateur.</p>
+<div class="row g-4 mb-5">
+  {% for code, plan in plans.items %}
+  <div class="col-md-4">
+    <div class="card-academie hoverable p-4 h-100 d-flex flex-column">
+      <h5 class="fw-bold">{{ plan.label }}</h5>
+      <div class="mb-3"><span class="display-6 fw-bold">{{ plan.prix_mensuel_da }}</span> <span class="text-muted">DA/mois</span></div>
+      <p class="text-muted mb-3">{{ plan.description }}</p>
+      <ul class="list-unstyled mb-4 flex-grow-1">
+        <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>{% if plan.max_classes %}{{ plan.max_classes }} classe(s){% else %}Classes illimitées{% endif %}</li>
+        <li><i class="bi bi-check2-circle text-success me-2"></i>{% if plan.max_generations_ia_mois %}{{ plan.max_generations_ia_mois }} générations IA / mois{% else %}Générations IA illimitées{% endif %}</li>
+      </ul>
+      <a href="{% url 'accounts:inscription' %}" class="btn btn-outline-primary fw-semibold mt-auto">Commencer</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
 {% endblock %}

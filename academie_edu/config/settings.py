@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "quizzes",
     "homework",
     "ai_agent",
+    "gestion",
     "core",
 ]
 

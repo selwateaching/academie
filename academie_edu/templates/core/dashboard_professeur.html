@@ -9,6 +9,19 @@
   <a href="{% url 'academics:creer_classe' %}" class="btn btn-primary fw-semibold"><i class="bi bi-plus-circle me-1"></i>Créer une classe</a>
 </div>
 
+<div class="card-academie p-3 mb-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
+  <div>
+    <span class="badge-ia me-2">{{ user.plan_info.label }}</span>
+    <span class="text-muted small">
+      {{ classes|length }}{% if user.plan_info.max_classes %} / {{ user.plan_info.max_classes }}{% endif %} classe(s) ·
+      {{ user.generations_ia_mois_courant }}{% if user.plan_info.max_generations_ia_mois %} / {{ user.plan_info.max_generations_ia_mois }}{% endif %} générations IA ce mois
+    </span>
+  </div>
+  {% if user.abonnement_statut_libelle != "Actif" %}
+    <span class="badge bg-warning text-dark">Abonnement {{ user.abonnement_statut_libelle|lower }} — contactez l'administrateur</span>
+  {% endif %}
+</div>
+
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="stat-tile">

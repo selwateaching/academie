@@ -24,6 +24,9 @@
         {% if user.is_authenticated %}
           <ul class="navbar-nav me-auto ms-3">
             <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard' %}">Tableau de bord</a></li>
+            {% if user.role == "admin" %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'gestion:liste_clients' %}">Clients</a></li>
+            {% endif %}
           </ul>
           <div class="d-flex align-items-center gap-3">
             <span class="badge-role">{{ user.get_role_display }}</span>

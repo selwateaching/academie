@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from academics.models import Classe
-from accounts.decorators import role_required
+from accounts.decorators import acces_ia_autorise, role_required
 from accounts.models import Utilisateur
 from ai_agent.services import AgentIAError, generer_quiz
 
@@ -18,6 +18,9 @@ def _classe_du_professeur(request, classe_id):
 @role_required(Utilisateur.Role.PROFESSEUR)
 def generer_quiz_ia(request, classe_id):
     classe = _classe_du_professeur(request, classe_id)
+    if not acces_ia_autorise(request):
+        return redirect("academics:detail_classe", pk=classe.pk)
+
     if request.method == "POST":
         form = GenerationQuizForm(request.POST)
         if form.is_valid():
@@ -34,6 +37,7 @@ def generer_quiz_ia(request, classe_id):
             except AgentIAError as exc:
                 messages.error(request, str(exc))
                 return render(request, "quizzes/generer_quiz.html", {"form": form, "classe": classe})
+            request.user.enregistrer_utilisation_ia()
 
             quiz = Quiz.objects.create(
                 classe=classe,

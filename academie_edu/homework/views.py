@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from academics.models import Classe
-from accounts.decorators import role_required
+from accounts.decorators import acces_ia_autorise, role_required
 from accounts.models import Utilisateur
 from ai_agent.services import AgentIAError, corriger_copie
 
@@ -83,6 +83,9 @@ def soumettre_copie(request, pk):
 @role_required(Utilisateur.Role.PROFESSEUR)
 def corriger_copie_ia_vue(request, pk):
     copie = get_object_or_404(Copie, pk=pk, devoir__professeur=request.user)
+    if not acces_ia_autorise(request):
+        return redirect("homework:detail_devoir", pk=copie.devoir.pk)
+
     reponse = copie.reponse_texte
     if not reponse and copie.fichier and copie.fichier.name.lower().endswith((".txt", ".md")):
         reponse = copie.fichier.read().decode("utf-8", errors="ignore")
@@ -109,6 +112,7 @@ def corriger_copie_ia_vue(request, pk):
         messages.error(request, str(exc))
         return redirect("homework:detail_devoir", pk=copie.devoir.pk)
 
+    request.user.enregistrer_utilisation_ia()
     copie.note = resultat.get("note")
     copie.appreciation_generale = resultat.get("appreciation_generale", "")
     copie.points_forts = resultat.get("points_forts", [])

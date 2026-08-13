@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from academics.models import Classe
+from accounts import plans as plans_module
 from accounts.models import Utilisateur
 from homework.models import Copie
 
@@ -9,7 +10,7 @@ from homework.models import Copie
 def landing(request):
     if request.user.is_authenticated:
         return redirect("core:dashboard")
-    return render(request, "core/landing.html")
+    return render(request, "core/landing.html", {"plans": plans_module.PLANS})
 
 
 @login_required

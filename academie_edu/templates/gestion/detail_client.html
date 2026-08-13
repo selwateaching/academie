@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}{{ client.get_full_name }} — Client{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'gestion:liste_clients' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Clients</a></p>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-1">{{ client.get_full_name }}</h3>
+      <p class="text-muted mb-4">{{ client.email }} · @{{ client.username }}{% if client.telephone %} · {{ client.telephone }}{% endif %}</p>
+
+      <h5 class="fw-bold mb-3">Abonnement</h5>
+      <form method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.plan.label }}</label>
+            {{ form.plan|add_class:"form-control" }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.abonnement_expire_le.label }}</label>
+            {{ form.abonnement_expire_le|add_class:"form-control" }}
+          </div>
+        </div>
+        <div class="form-check mb-4">
+          {{ form.abonnement_actif }}
+          <label class="form-check-label fw-semibold">Abonnement actif</label>
+        </div>
+        <button type="submit" class="btn btn-primary fw-semibold">Enregistrer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="stat-tile mb-3">
+      <div class="text-muted small mb-1">Statut actuel</div>
+      <div class="stat-value" style="font-size:1.5rem;">{{ client.plan_info.label }} — {{ client.abonnement_statut_libelle }}</div>
+      <div class="text-muted small mt-1">Client depuis le {{ client.client_depuis_le|date:"d/m/Y"|default:"—" }}</div>
+    </div>
+    <div class="stat-tile mb-3">
+      <div class="text-muted small mb-1">Classes</div>
+      <div class="stat-value" style="font-size:1.5rem;">{{ classes.count }}{% if client.plan_info.max_classes %} / {{ client.plan_info.max_classes }}{% endif %}</div>
+    </div>
+    <div class="stat-tile mb-4">
+      <div class="text-muted small mb-1">Générations IA ce mois</div>
+      <div class="stat-value" style="font-size:1.5rem;">{{ client.generations_ia_mois_courant }}{% if client.plan_info.max_generations_ia_mois %} / {{ client.plan_info.max_generations_ia_mois }}{% endif %}</div>
+    </div>
+
+    <h6 class="fw-bold mb-2">Classes de ce client</h6>
+    <div class="card-academie p-3">
+      {% for classe in classes %}
+        <div class="py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          {{ classe.nom }} <span class="text-muted small">({{ classe.matiere }} · {{ classe.niveau_complet }})</span>
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Aucune classe créée.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

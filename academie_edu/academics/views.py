@@ -12,6 +12,17 @@ from .models import Classe
 
 @role_required(Utilisateur.Role.PROFESSEUR)
 def creer_classe(request):
+    if not request.user.abonnement_est_valide:
+        messages.error(request, "Votre abonnement n'est pas actif. Contactez l'administrateur pour le réactiver.")
+        return redirect("core:dashboard")
+    if not request.user.peut_creer_classe():
+        messages.error(
+            request,
+            f"Votre offre « {request.user.plan_info['label']} » est limitée à "
+            f"{request.user.plan_info['max_classes']} classe(s). Contactez l'administrateur pour passer à une offre supérieure.",
+        )
+        return redirect("core:dashboard")
+
     if request.method == "POST":
         form = ClasseForm(request.POST)
         if form.is_valid():

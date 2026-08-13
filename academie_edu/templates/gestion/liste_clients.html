@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load gestion_extras %}
+{% block titre %}Clients — Gestion{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h2 class="fw-bold mb-1">Clients &amp; abonnements</h2>
+    <p class="text-muted mb-0">Gérez les comptes professeurs et leur offre d'abonnement.</p>
+  </div>
+  <a href="{% url 'gestion:creer_client' %}" class="btn btn-primary fw-semibold"><i class="bi bi-person-plus me-1"></i>Ajouter un client</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-tile"><div class="stat-value">{{ stats.total }}</div><div class="text-muted">Clients au total</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-tile"><div class="stat-value">{{ stats.actifs }}</div><div class="text-muted">Abonnements actifs</div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-tile"><div class="stat-value">{{ stats.revenu_mensuel_estime }} DA</div><div class="text-muted">Revenu mensuel estimé</div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  {% for code, plan in plans.items %}
+  <div class="col-md-4">
+    <div class="stat-tile d-flex justify-content-between align-items-center">
+      <div>
+        <div class="fw-bold">{{ plan.label }}</div>
+        <div class="text-muted small">{{ plan.prix_mensuel_da }} DA/mois</div>
+      </div>
+      <div class="stat-value" style="font-size:1.5rem;">{{ stats.par_plan|get_item:code }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<form method="get" class="card-academie p-3 mb-4 d-flex flex-row flex-wrap gap-2 align-items-end">
+  <div>
+    <label class="form-label small fw-semibold mb-1">Recherche</label>
+    <input type="text" name="q" value="{{ recherche }}" class="form-control" placeholder="Nom, email, identifiant...">
+  </div>
+  <div>
+    <label class="form-label small fw-semibold mb-1">Offre</label>
+    <select name="plan" class="form-control">
+      <option value="">Toutes</option>
+      {% for code, plan in plans.items %}
+        <option value="{{ code }}" {% if plan_filtre == code %}selected{% endif %}>{{ plan.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="form-label small fw-semibold mb-1">Statut</label>
+    <select name="statut" class="form-control">
+      <option value="">Tous</option>
+      <option value="actif" {% if statut_filtre == "actif" %}selected{% endif %}>Actif</option>
+      <option value="expire" {% if statut_filtre == "expire" %}selected{% endif %}>Expiré</option>
+      <option value="desactive" {% if statut_filtre == "desactive" %}selected{% endif %}>Désactivé</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+</form>
+
+<div class="card-academie p-0">
+  <table class="table mb-0 align-middle">
+    <thead>
+      <tr>
+        <th class="ps-4">Client</th>
+        <th>Offre</th>
+        <th>Statut</th>
+        <th>Classes</th>
+        <th>IA ce mois</th>
+        <th>Client depuis</th>
+        <th class="pe-4"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for client in clients %}
+      <tr>
+        <td class="ps-4">
+          <a href="{% url 'gestion:detail_client' client.pk %}" class="fw-semibold text-decoration-none">{{ client.get_full_name|default:client.username }}</a>
+          <div class="text-muted small">{{ client.email }}</div>
+        </td>
+        <td>{{ client.plan_info.label }}</td>
+        <td>
+          {% if client.abonnement_statut_libelle == "Actif" %}<span class="badge bg-success">Actif</span>
+          {% elif client.abonnement_statut_libelle == "Expiré" %}<span class="badge bg-warning text-dark">Expiré</span>
+          {% else %}<span class="badge bg-secondary">Désactivé</span>{% endif %}
+        </td>
+        <td>{{ client.classes_enseignees.count }}{% if client.plan_info.max_classes %} / {{ client.plan_info.max_classes }}{% endif %}</td>
+        <td>{{ client.generations_ia_mois_courant }}{% if client.plan_info.max_generations_ia_mois %} / {{ client.plan_info.max_generations_ia_mois }}{% endif %}</td>
+        <td>{{ client.client_depuis_le|date:"d/m/Y"|default:"—" }}</td>
+        <td class="pe-4 text-end">
+          <a href="{% url 'gestion:detail_client' client.pk %}" class="btn btn-sm btn-outline-primary">Gérer</a>
+          <form method="post" action="{% url 'gestion:basculer_statut' client.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary" onclick="return confirm('Confirmer ?');">
+              {% if client.abonnement_actif %}Désactiver{% else %}Activer{% endif %}
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted py-4">Aucun client pour le moment.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
