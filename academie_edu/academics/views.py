@@ -1,13 +1,29 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.utils.text import slugify
 
 from accounts.decorators import role_required
 from accounts.models import Utilisateur
 
 from . import programme_national as pn
-from .forms import ClasseForm, RejoindreClasseForm
+from .forms import AjouterEleveManuelForm, ClasseForm, RejoindreClasseForm
 from .models import Classe
+
+CARACTERES_MOT_DE_PASSE = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789"
+
+
+def _generer_identifiants(prenom, nom):
+    base = slugify(f"{prenom}.{nom}") or "eleve"
+    username = base
+    suffixe = 1
+    while Utilisateur.objects.filter(username=username).exists():
+        suffixe += 1
+        username = f"{base}{suffixe}"
+    mot_de_passe = get_random_string(8, allowed_chars=CARACTERES_MOT_DE_PASSE)
+    return username, mot_de_passe
 
 
 @role_required(Utilisateur.Role.PROFESSEUR)
@@ -48,6 +64,37 @@ def rejoindre_classe(request):
     else:
         form = RejoindreClasseForm()
     return render(request, "academics/rejoindre_classe.html", {"form": form})
+
+
+@role_required(Utilisateur.Role.PROFESSEUR)
+def ajouter_eleve_manuel(request, pk):
+    classe = get_object_or_404(Classe, pk=pk, professeur=request.user)
+
+    if request.method == "POST":
+        form = AjouterEleveManuelForm(request.POST)
+        if form.is_valid():
+            prenom = form.cleaned_data["prenom"]
+            nom = form.cleaned_data["nom"]
+            username, mot_de_passe = _generer_identifiants(prenom, nom)
+            eleve = Utilisateur(
+                username=username,
+                first_name=prenom,
+                last_name=nom,
+                email=form.cleaned_data["email"],
+                role=Utilisateur.Role.ELEVE,
+                client_depuis_le=timezone.localdate(),
+            )
+            eleve.set_password(mot_de_passe)
+            eleve.save()
+            classe.eleves.add(eleve)
+            return render(
+                request,
+                "academics/eleve_ajoute.html",
+                {"classe": classe, "eleve": eleve, "username": username, "mot_de_passe": mot_de_passe},
+            )
+    else:
+        form = AjouterEleveManuelForm()
+    return render(request, "academics/ajouter_eleve_manuel.html", {"form": form, "classe": classe})
 
 
 @login_required

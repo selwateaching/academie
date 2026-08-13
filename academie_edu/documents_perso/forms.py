@@ -6,7 +6,10 @@ from .models import Dossier, FichierPersonnel
 class DossierForm(forms.ModelForm):
     class Meta:
         model = Dossier
-        fields = ["nom"]
+        fields = ["nom", "couleur"]
+        widgets = {
+            "couleur": forms.RadioSelect(attrs={"class": "couleur-picker"}),
+        }
 
 
 class FichierPersonnelForm(forms.ModelForm):

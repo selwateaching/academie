@@ -416,6 +416,29 @@ body.has-sidebar {
 .avatar-bg-4 { background: #dc2626; }
 .avatar-bg-5 { background: #7c3aed; }
 
+/* Sélecteur de couleur de dossier */
+.couleur-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.couleur-picker input[type="radio"] {
+  display: none;
+}
+.couleur-picker label {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: inline-block;
+}
+.couleur-picker input[type="radio"]:checked + label,
+.couleur-picker label.selected {
+  border-color: #12141c;
+  transform: scale(1.15);
+}
+
 /* Répartition des notes */
 .repartition-row {
   display: flex;

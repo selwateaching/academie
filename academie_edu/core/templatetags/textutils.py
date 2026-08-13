@@ -32,3 +32,26 @@ def avatar_bg(pk):
     except (TypeError, ValueError):
         indice = 0
     return f"avatar-bg-{indice}"
+
+
+ICONES_EXTENSIONS = {
+    "pdf": "bi-file-earmark-pdf",
+    "doc": "bi-file-earmark-word", "docx": "bi-file-earmark-word",
+    "xls": "bi-file-earmark-excel", "xlsx": "bi-file-earmark-excel",
+    "ppt": "bi-file-earmark-ppt", "pptx": "bi-file-earmark-ppt",
+    "png": "bi-file-earmark-image", "jpg": "bi-file-earmark-image",
+    "jpeg": "bi-file-earmark-image", "gif": "bi-file-earmark-image",
+    "zip": "bi-file-earmark-zip", "rar": "bi-file-earmark-zip",
+    "mp3": "bi-file-earmark-music", "wav": "bi-file-earmark-music",
+    "mp4": "bi-file-earmark-play", "mov": "bi-file-earmark-play",
+    "txt": "bi-file-earmark-text",
+}
+
+
+@register.filter(name="file_icon")
+def file_icon(nom_fichier):
+    """Retourne une classe d'icône Bootstrap Icons adaptée à l'extension du fichier."""
+    if not nom_fichier or "." not in nom_fichier:
+        return "bi-file-earmark"
+    extension = nom_fichier.rsplit(".", 1)[-1].lower()
+    return ICONES_EXTENSIONS.get(extension, "bi-file-earmark")

@@ -24,6 +24,7 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - Création manuelle de cours, contrôles et devoirs (l'IA est une assistance, pas une obligation)
 - **Carnet de notes** : évaluations (DS, devoir maison, interrogation, projet) avec coefficient, saisie des notes /20 élève par élève, moyennes de classe calculées automatiquement
 - **Calendrier / agenda** : vue mensuelle des évaluations, réunions et échéances de devoirs, navigation mois par mois
+- **Ajout d'élève manuel** : en plus du code d'accès self-service, le professeur peut créer directement un compte élève (prénom/nom) depuis la page de la classe — identifiant et mot de passe générés automatiquement, utile si l'élève n'a pas d'email
 
 ### Espace Élève
 - Rejoindre une classe avec un code d'accès
@@ -48,7 +49,8 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 
 ### Documents personnels
 - Chaque professeur et chaque élève dispose de son propre espace de stockage (« Mes documents »)
-- Organisation libre en dossiers personnalisés, dépôt/suppression de fichiers
+- Organisation libre en dossiers personnalisés et colorés (8 couleurs au choix), dépôt/suppression de fichiers de tout type (PDF, Word, Excel, images, vidéos, archives...), icône adaptée à chaque type de fichier
+- **Cartable numérique auto-organisé** : côté élève, un dossier est automatiquement créé pour chaque matière suivie, quel que soit le nombre de professeurs différents — l'espace reste organisé même en changeant de classe ou de prof en cours d'année
 
 ### Bulletins
 - Génération automatique à partir des évaluations du carnet de notes (pondérées par coefficient), des notes de devoirs (validées par le professeur) et des scores de contrôles d'une classe

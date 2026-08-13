@@ -5,13 +5,26 @@ from accounts.decorators import role_required
 from accounts.models import Utilisateur
 
 from .forms import DossierForm, FichierPersonnelForm
-from .models import Dossier, FichierPersonnel
+from .models import COULEURS, Dossier, FichierPersonnel
 
 ROLES_AUTORISES = (Utilisateur.Role.PROFESSEUR, Utilisateur.Role.ELEVE)
 
 
+def _provisionner_dossiers_matieres(eleve):
+    """Crée automatiquement un dossier par matière suivie (toutes classes/profs confondus),
+    pour que le cartable numérique de l'élève reste organisé quel que soit le nombre de professeurs."""
+    matieres = (
+        eleve.classes_suivies.order_by("matiere").values_list("matiere", flat=True).distinct()
+    )
+    for indice, matiere in enumerate(matieres):
+        couleur = COULEURS[indice % len(COULEURS)][0]
+        Dossier.objects.get_or_create(proprietaire=eleve, nom=matiere, defaults={"couleur": couleur})
+
+
 @role_required(*ROLES_AUTORISES)
 def liste(request):
+    if request.user.is_eleve:
+        _provisionner_dossiers_matieres(request.user)
     dossiers = Dossier.objects.filter(proprietaire=request.user)
     fichiers_non_classes = FichierPersonnel.objects.filter(proprietaire=request.user, dossier__isnull=True)
     return render(request, "documents_perso/liste.html", {"dossiers": dossiers, "fichiers_non_classes": fichiers_non_classes})

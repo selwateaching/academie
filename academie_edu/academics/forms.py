@@ -1,5 +1,7 @@
 from django import forms
 
+from accounts.models import Utilisateur
+
 from . import programme_national as pn
 from .models import Classe
 
@@ -43,6 +45,12 @@ class ClasseForm(forms.ModelForm):
             raise forms.ValidationError("Merci de sélectionner une matière du programme national.")
 
         return cleaned
+
+
+class AjouterEleveManuelForm(forms.Form):
+    prenom = forms.CharField(label="Prénom", max_length=150)
+    nom = forms.CharField(label="Nom", max_length=150)
+    email = forms.EmailField(label="Adresse email (optionnel)", required=False)
 
 
 class RejoindreClasseForm(forms.Form):

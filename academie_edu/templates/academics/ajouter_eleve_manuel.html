@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Ajouter un élève{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> {{ classe.nom }}</a></p>
+
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-2">Ajouter un élève à « {{ classe.nom }} »</h3>
+      <p class="text-muted small mb-4">
+        Utile si l'élève n'a pas d'adresse email ou ne peut pas s'inscrire lui-même :
+        un identifiant et un mot de passe seront générés automatiquement, à communiquer à l'élève.
+        Sinon, partagez simplement le code d'accès <strong>{{ classe.code_acces }}</strong> pour qu'il rejoigne la classe lui-même.
+      </p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+            {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary fw-semibold">Créer le compte élève</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

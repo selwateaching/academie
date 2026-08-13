@@ -11,7 +11,16 @@
         {% for field in form %}
           <div class="mb-3">
             <label class="form-label fw-semibold">{{ field.label }}</label>
-            {{ field|add_class:"form-control" }}
+            {% if field.name == "couleur" %}
+              <div class="couleur-picker">
+                {% for radio in field %}
+                  {{ radio.tag }}
+                  <label for="{{ radio.id_for_label }}" style="background: {{ radio.data.value }};" title="{{ radio.choice_label }}"></label>
+                {% endfor %}
+              </div>
+            {% else %}
+              {{ field|add_class:"form-control" }}
+            {% endif %}
             {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
           </div>
         {% endfor %}

@@ -10,6 +10,7 @@
     <div class="text-end">
       <div class="text-muted small mb-1">Code d'accès à partager</div>
       <span class="code-acces fs-5 d-block mb-2">{{ classe.code_acces }}</span>
+      <a href="{% url 'academics:ajouter_eleve_manuel' classe.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-person-plus me-1"></i>Ajouter un élève</a>
       <a href="{% url 'presence:faire_appel' classe.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-check2-square me-1"></i>Faire l'appel</a>
       <a href="{% url 'evaluations:carnet_notes' classe.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-journal-text me-1"></i>Notes</a>
     </div>

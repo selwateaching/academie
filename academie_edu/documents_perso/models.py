@@ -1,10 +1,22 @@
 from django.conf import settings
 from django.db import models
 
+COULEURS = [
+    ("#2563eb", "Bleu"),
+    ("#16a34a", "Vert"),
+    ("#d97706", "Orange"),
+    ("#dc2626", "Rouge"),
+    ("#7c3aed", "Violet"),
+    ("#0891b2", "Cyan"),
+    ("#be185d", "Rose"),
+    ("#4b5563", "Gris"),
+]
+
 
 class Dossier(models.Model):
     proprietaire = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="dossiers")
     nom = models.CharField(max_length=100)
+    couleur = models.CharField(max_length=7, choices=COULEURS, default=COULEURS[0][0])
     date_creation = models.DateTimeField(auto_now_add=True)
 
     class Meta:

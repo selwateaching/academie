@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load textutils %}
 {% block titre %}Mes documents{% endblock %}
 {% block contenu %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -14,8 +15,8 @@
   {% for dossier in dossiers %}
   <div class="col-md-3">
     <a href="{% url 'documents_perso:dossier_detail' dossier.pk %}" class="text-decoration-none text-dark">
-      <div class="card-academie hoverable p-3 text-center">
-        <i class="bi bi-folder-fill fs-1 text-primary-academie mb-2"></i>
+      <div class="card-academie hoverable p-3 text-center" style="border-top: 4px solid {{ dossier.couleur }};">
+        <i class="bi bi-folder-fill fs-1 mb-2" style="color: {{ dossier.couleur }};"></i>
         <div class="fw-semibold">{{ dossier.nom }}</div>
         <div class="text-muted small">{{ dossier.fichiers.count }} fichier(s)</div>
       </div>
@@ -30,7 +31,7 @@
 <div class="card-academie p-0">
   {% for fichier in fichiers_non_classes %}
     <div class="d-flex justify-content-between align-items-center p-3 {% if not forloop.last %}border-bottom{% endif %}">
-      <a href="{{ fichier.fichier.url }}" target="_blank"><i class="bi bi-file-earmark-arrow-down me-2"></i>{{ fichier.titre }} <span class="text-muted small">({{ fichier.extension }})</span></a>
+      <a href="{{ fichier.fichier.url }}" target="_blank"><i class="bi {{ fichier.fichier.name|file_icon }} me-2"></i>{{ fichier.titre }} <span class="text-muted small">({{ fichier.extension }})</span></a>
       <a href="{% url 'documents_perso:supprimer_fichier' fichier.pk %}" class="text-danger small" onclick="return confirm('Supprimer ce fichier ?');"><i class="bi bi-trash"></i></a>
     </div>
   {% empty %}

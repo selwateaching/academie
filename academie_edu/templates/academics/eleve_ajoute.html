@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titre %}Élève ajouté{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card-academie p-4 p-md-5">
+      <i class="bi bi-check-circle-fill fs-1 text-success mb-3 d-block"></i>
+      <h3 class="fw-bold mb-2">{{ eleve.get_full_name }} a été ajouté(e) à « {{ classe.nom }} »</h3>
+      <div class="alert alert-warning mt-3">
+        <strong>Notez ces identifiants maintenant</strong> — le mot de passe ne sera plus jamais affiché.
+        Communiquez-les à l'élève pour qu'il puisse se connecter.
+      </div>
+      <div class="card-academie p-3 mb-4" style="background: #f8f9fb;">
+        <div class="mb-2"><span class="text-muted small d-block">Identifiant</span><span class="fs-5 fw-bold">{{ username }}</span></div>
+        <div><span class="text-muted small d-block">Mot de passe</span><span class="fs-5 fw-bold">{{ mot_de_passe }}</span></div>
+      </div>
+      <div class="d-flex gap-2">
+        <a href="{% url 'academics:ajouter_eleve_manuel' classe.pk %}" class="btn btn-outline-primary fw-semibold">Ajouter un autre élève</a>
+        <a href="{% url 'academics:detail_classe' classe.pk %}" class="btn btn-primary fw-semibold">Retour à la classe</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
