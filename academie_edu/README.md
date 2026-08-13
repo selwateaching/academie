@@ -122,6 +122,22 @@ Accessible sur [http://localhost:8000](http://localhost:8000).
 
 ---
 
+## Déploiement en ligne (Render, gratuit)
+
+Un fichier `render.yaml` à la racine du dépôt permet un déploiement en un clic sur [Render](https://render.com) (offre gratuite, sans carte bancaire) :
+
+1. Créez un compte sur [render.com](https://render.com) (connexion possible directement avec GitHub)
+2. Cliquez sur **New +** → **Blueprint**
+3. Connectez le dépôt GitHub du projet et sélectionnez la branche à déployer
+4. Render détecte automatiquement `render.yaml` et propose de créer le service web **academie-ia** ainsi qu'une base de données PostgreSQL gratuite associée
+5. Avant de valider, renseignez la variable **ANTHROPIC_API_KEY** (obtenue sur [console.anthropic.com](https://console.anthropic.com)) — c'est la seule information à saisir manuellement
+6. Cliquez sur **Apply** / **Create** : le premier déploiement prend quelques minutes
+7. Une fois terminé, Render fournit une adresse du type `https://academie-ia-xxxx.onrender.com` — c'est le lien à utiliser pour accéder à l'application
+
+> Sur l'offre gratuite, le service se met en veille après une période d'inactivité : la première requête après une pause peut prendre 30 à 60 secondes. Le stockage des fichiers déposés (documents, pièces jointes, avatars) est local au service et non garanti à long terme sur l'offre gratuite ; pour un usage réel en production, prévoir un stockage externe (ex. S3).
+
+---
+
 ## Parcours de démonstration
 
 1. Créer un compte **Professeur**, créer une classe → un code d'accès à 6 caractères est généré
