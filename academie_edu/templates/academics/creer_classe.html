@@ -3,20 +3,135 @@
 {% block titre %}Créer une classe{% endblock %}
 {% block contenu %}
 <div class="row justify-content-center">
-  <div class="col-md-6">
+  <div class="col-md-7">
     <div class="card-academie p-4 p-md-5">
-      <h3 class="fw-bold mb-4">Créer une nouvelle classe</h3>
+      <h3 class="fw-bold mb-1">Créer une nouvelle classe</h3>
+      <p class="text-muted mb-4">Basé sur le programme national algérien (Ministère de l'Éducation Nationale).</p>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+
       <form method="post">
         {% csrf_token %}
-        {% for field in form %}
-          <div class="mb-3">
-            <label class="form-label fw-semibold">{{ field.label }}</label>
-            {{ field|add_class:"form-control" }}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.nom.label }}</label>
+          {{ form.nom|add_class:"form-control" }}
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Cycle</label>
+            <select name="cycle" id="id_cycle" class="form-control" required>
+              <option value="">Choisir un cycle...</option>
+            </select>
           </div>
-        {% endfor %}
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">Année</label>
+            <select name="annee" id="id_annee" class="form-control" required>
+              <option value="">Choisir un cycle d'abord</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3" id="groupe_filiere" style="display:none;">
+          <label class="form-label fw-semibold">Filière</label>
+          <select name="filiere" id="id_filiere" class="form-control">
+            <option value="">Choisir une filière...</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Matière</label>
+          <select name="matiere" id="id_matiere" class="form-control" required>
+            <option value="">Choisir une année d'abord</option>
+          </select>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">{{ form.description.label }} (optionnel)</label>
+          {{ form.description|add_class:"form-control" }}
+        </div>
+
         <button type="submit" class="btn btn-primary fw-semibold">Créer la classe</button>
       </form>
     </div>
   </div>
 </div>
+
+{{ catalogue|json_script:"catalogue-data" }}
+<script>
+(function () {
+  const catalogue = JSON.parse(document.getElementById('catalogue-data').textContent);
+  const cycleSel = document.getElementById('id_cycle');
+  const anneeSel = document.getElementById('id_annee');
+  const filiereSel = document.getElementById('id_filiere');
+  const filiereGroup = document.getElementById('groupe_filiere');
+  const matiereSel = document.getElementById('id_matiere');
+
+  function remplir(select, options, placeholder) {
+    select.innerHTML = '';
+    const opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.textContent = placeholder;
+    select.appendChild(opt0);
+    options.forEach(function ([value, label]) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = label;
+      select.appendChild(opt);
+    });
+  }
+
+  function onCycleChange() {
+    const cycle = cycleSel.value;
+    filiereGroup.style.display = 'none';
+    filiereSel.value = '';
+    if (!cycle) {
+      remplir(anneeSel, [], "Choisir un cycle d'abord");
+      remplir(matiereSel, [], "Choisir une année d'abord");
+      return;
+    }
+    const annees = Object.entries(catalogue[cycle].annees).map(([code, data]) => [code, data.label]);
+    remplir(anneeSel, annees, 'Choisir une année...');
+    remplir(matiereSel, [], 'Choisir une année...');
+  }
+
+  function onAnneeChange() {
+    const cycle = cycleSel.value;
+    const annee = anneeSel.value;
+    if (!cycle || !annee) return;
+    const anneeData = catalogue[cycle].annees[annee];
+    const filiereEntries = Object.entries(anneeData.filieres);
+    if (filiereEntries.length > 0) {
+      filiereGroup.style.display = '';
+      const options = filiereEntries.map(([code, data]) => [code, data.label]);
+      remplir(filiereSel, options, 'Choisir une filière...');
+      remplir(matiereSel, [], 'Choisir une filière...');
+    } else {
+      filiereGroup.style.display = 'none';
+      filiereSel.value = '';
+      const options = anneeData.matieres.map((m) => [m, m]);
+      remplir(matiereSel, options, 'Choisir une matière...');
+    }
+  }
+
+  function onFiliereChange() {
+    const cycle = cycleSel.value;
+    const annee = anneeSel.value;
+    const filiere = filiereSel.value;
+    if (!cycle || !annee || !filiere) {
+      remplir(matiereSel, [], 'Choisir une filière...');
+      return;
+    }
+    const matieres = catalogue[cycle].annees[annee].filieres[filiere].matieres;
+    remplir(matiereSel, matieres.map((m) => [m, m]), 'Choisir une matière...');
+  }
+
+  remplir(cycleSel, Object.entries(catalogue).map(([code, data]) => [code, data.label]), 'Choisir un cycle...');
+  cycleSel.addEventListener('change', onCycleChange);
+  anneeSel.addEventListener('change', onAnneeChange);
+  filiereSel.addEventListener('change', onFiliereChange);
+})();
+</script>
 {% endblock %}

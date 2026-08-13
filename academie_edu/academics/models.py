@@ -4,15 +4,19 @@ import string
 from django.conf import settings
 from django.db import models
 
+from . import programme_national as pn
+
 
 def generer_code_acces():
     return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
 
 
 class Classe(models.Model):
-    nom = models.CharField(max_length=100, help_text="Ex : Terminale S1, CM2 B...")
-    matiere = models.CharField(max_length=100, help_text="Ex : Mathématiques, Histoire-Géographie...")
-    niveau = models.CharField(max_length=50, blank=True)
+    nom = models.CharField(max_length=100, help_text="Ex : 3AM 2, Terminale Sciences B...")
+    cycle = models.CharField(max_length=20, choices=pn.CYCLES)
+    annee = models.CharField(max_length=10, choices=pn.annees_choices())
+    filiere = models.CharField(max_length=30, choices=pn.filieres_choices(), blank=True)
+    matiere = models.CharField(max_length=150, help_text="Matière du programme national algérien")
     description = models.TextField(blank=True)
     professeur = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -46,3 +50,10 @@ class Classe(models.Model):
     @property
     def nb_eleves(self):
         return self.eleves.count()
+
+    @property
+    def niveau_complet(self):
+        label = self.get_annee_display()
+        if self.filiere:
+            label += f" — {self.get_filiere_display()}"
+        return label

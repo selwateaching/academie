@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
   <div>
     <h2 class="fw-bold mb-1">{{ classe.nom }}</h2>
-    <p class="text-muted mb-0">{{ classe.matiere }}{% if classe.niveau %} · {{ classe.niveau }}{% endif %} — Professeur : {{ classe.professeur.get_full_name|default:classe.professeur.username }}</p>
+    <p class="text-muted mb-0">{{ classe.matiere }} · {{ classe.get_cycle_display }} — {{ classe.niveau_complet }} — Professeur : {{ classe.professeur.get_full_name|default:classe.professeur.username }}</p>
   </div>
   {% if est_prof %}
     <div class="text-end">

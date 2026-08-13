@@ -25,7 +25,9 @@ def generer_quiz_ia(request, classe_id):
                 donnees = generer_quiz(
                     sujet=form.cleaned_data["sujet"],
                     matiere=classe.matiere,
-                    niveau=classe.niveau or classe.nom,
+                    cycle=classe.get_cycle_display(),
+                    annee=classe.get_annee_display(),
+                    filiere=classe.get_filiere_display() if classe.filiere else "",
                     nb_questions=form.cleaned_data["nb_questions"],
                     difficulte=form.cleaned_data["difficulte"],
                 )

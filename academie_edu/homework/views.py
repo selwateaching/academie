@@ -94,11 +94,16 @@ def corriger_copie_ia_vue(request, pk):
         )
         return redirect("homework:detail_devoir", pk=copie.devoir.pk)
 
+    classe = copie.devoir.classe
     try:
         resultat = corriger_copie(
             enonce=copie.devoir.enonce,
             bareme_points=copie.devoir.bareme_points,
             reponse_eleve=reponse,
+            matiere=classe.matiere,
+            cycle=classe.get_cycle_display(),
+            annee=classe.get_annee_display(),
+            filiere=classe.get_filiere_display() if classe.filiere else "",
         )
     except AgentIAError as exc:
         messages.error(request, str(exc))

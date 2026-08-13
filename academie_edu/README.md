@@ -4,16 +4,23 @@ Plateforme pédagogique web (Django) pour établissements scolaires, avec un **a
 
 Trois espaces : **Administrateur**, **Professeur** et **Élève**. Les professeurs créent des classes, y déposent des documents, génèrent des cours et des contrôles avec l'IA, et corrigent automatiquement les copies de leurs élèves — avec validation humaine systématique avant toute note définitive.
 
+L'application est calée sur le **programme scolaire national algérien** (Ministère de l'Éducation Nationale) : primaire, moyen (CEM) et secondaire (lycée, toutes filières). Chaque classe est rattachée à un cycle, une année et — au secondaire — une filière officiels, avec la liste réelle des matières correspondantes, et l'agent IA génère et corrige en respectant ce niveau précis.
+
 ---
 
 ## Fonctionnalités
 
+### Programme national algérien
+- Catalogue structuré (`academics/programme_national.py`) : 3 cycles, 12 années (1AP à 3AS), 8 filières du secondaire (tronc commun 1AS, puis Sciences expérimentales, Mathématiques, Techniques mathématiques, Gestion et économie, Lettres et philosophie, Lettres et langues étrangères) et leurs matières officielles respectives
+- À la création d'une classe, le professeur choisit son cycle puis son année puis, si besoin, sa filière — la liste des matières proposées correspond exactement à ce niveau (sélecteurs en cascade)
+- Ce catalogue est indicatif et peut être ajusté (`programme_national.py`) si un établissement suit une organisation différente
+
 ### Espace Professeur
-- Création de classes avec code d'accès unique à partager aux élèves
+- Création de classes (cycle/année/filière/matière du programme algérien) avec code d'accès unique à partager aux élèves
 - Dépôt de documents / ressources pédagogiques
-- **Génération de cours par l'IA** : un sujet suffit, l'agent rédige un cours structuré (introduction, sections, points clés, conclusion), modifiable avant publication
-- **Génération de contrôles/QCM par l'IA** : nombre de questions et difficulté paramétrables, correction automatique, explications pédagogiques par question
-- **Correction automatique des copies** : l'IA note et commente chaque copie (points forts, points à améliorer, correction détaillée) ; le professeur relit et valide toujours la note avant qu'elle soit transmise à l'élève
+- **Génération de cours par l'IA** : un sujet suffit, l'agent rédige un cours structuré (introduction, sections, points clés, conclusion) conforme au programme algérien du niveau de la classe, modifiable avant publication
+- **Génération de contrôles/QCM par l'IA** : nombre de questions et difficulté paramétrables, adaptés au niveau exact de la classe, correction automatique, explications pédagogiques par question
+- **Correction automatique des copies** : l'IA note et commente chaque copie selon les attendus du programme algérien du niveau concerné (points forts, points à améliorer, correction détaillée) ; le professeur relit et valide toujours la note avant qu'elle soit transmise à l'élève
 - Création manuelle de cours, contrôles et devoirs (l'IA est une assistance, pas une obligation)
 
 ### Espace Élève

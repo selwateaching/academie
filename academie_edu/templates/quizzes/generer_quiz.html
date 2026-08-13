@@ -7,7 +7,7 @@
     <div class="card-academie p-4 p-md-5">
       <span class="badge-ia mb-3 d-inline-block">Agent IA</span>
       <h3 class="fw-bold mb-2">Générer un contrôle pour « {{ classe.nom }} »</h3>
-      <p class="text-muted mb-4">L'agent IA génère un QCM noté automatiquement, avec explications pour chaque question.</p>
+      <p class="text-muted mb-4">L'agent IA génère un QCM adapté au niveau {{ classe.niveau_complet }} ({{ classe.get_cycle_display }}), conforme au programme national algérien, noté automatiquement avec explications pour chaque question.</p>
       <form method="post">
         {% csrf_token %}
         {% for field in form %}

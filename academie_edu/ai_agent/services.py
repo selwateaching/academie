@@ -51,22 +51,36 @@ def _extraire_json(texte):
 
 
 SYSTEME_PEDAGOGIE = (
-    "Tu es un expert en pédagogie et en ingénierie de formation, avec une solide "
-    "expérience dans la conception de cours, d'évaluations et de correction de copies "
-    "pour le système éducatif francophone. Tes réponses sont toujours rigoureuses, "
-    "structurées, adaptées au niveau demandé, et strictement au format JSON demandé "
-    "sans aucun texte avant ou après le JSON."
+    "Tu es un expert en pédagogie et en ingénierie de formation, spécialisé dans le "
+    "système éducatif algérien. Tu connais précisément le programme scolaire officiel "
+    "du Ministère de l'Éducation Nationale (MEN) algérien pour le primaire, le moyen "
+    "(CEM) et le secondaire (lycée, toutes filières confondues). Pour chaque cours, "
+    "contrôle ou correction, tu t'appuies strictement sur les notions, compétences et "
+    "exigences du programme officiel algérien correspondant au cycle, à l'année et, le "
+    "cas échéant, à la filière qui te sont indiqués — vocabulaire, exemples et niveau "
+    "d'exigence inclus. Tes réponses sont toujours rigoureuses, structurées, et "
+    "strictement au format JSON demandé sans aucun texte avant ou après le JSON."
 )
 
 
-def generer_cours(sujet, matiere, niveau, objectifs=""):
-    """Génère un cours structuré (titre, introduction, sections, conclusion)."""
-    prompt = f"""Rédige un cours complet et structuré sur le sujet suivant.
+def _contexte_niveau(cycle, annee, filiere=""):
+    parts = [f"Cycle : {cycle}", f"Année : {annee}"]
+    if filiere:
+        parts.append(f"Filière : {filiere}")
+    parts.append("Système éducatif : Algérie (programme national du Ministère de l'Éducation Nationale)")
+    return "\n".join(parts)
 
+
+def generer_cours(sujet, matiere, cycle, annee, filiere="", objectifs=""):
+    """Génère un cours structuré (titre, introduction, sections, conclusion),
+    conforme au programme national algérien du cycle/année/filière indiqués."""
+    prompt = f"""Rédige un cours complet et structuré sur le sujet suivant, conforme au
+programme national algérien.
+
+{_contexte_niveau(cycle, annee, filiere)}
 Matière : {matiere}
-Niveau : {niveau}
 Sujet : {sujet}
-Objectifs pédagogiques : {objectifs or "à déduire du sujet et du niveau"}
+Objectifs pédagogiques : {objectifs or "à déduire du sujet, de la matière et du niveau, selon le programme officiel algérien"}
 
 Réponds UNIQUEMENT avec un objet JSON de cette forme exacte :
 {{
@@ -80,18 +94,22 @@ Réponds UNIQUEMENT avec un objet JSON de cette forme exacte :
   "duree_estimee_minutes": 45
 }}
 
-Le cours doit contenir entre 3 et 6 sections, avec des exemples concrets adaptés au niveau {niveau}.
+Le cours doit contenir entre 3 et 6 sections, avec des exemples concrets adaptés au niveau
+et respecter le vocabulaire et la progression du programme officiel algérien pour cette
+matière et cette année.
 """
     reponse = _appeler_claude(SYSTEME_PEDAGOGIE, prompt, max_tokens=8000)
     return _extraire_json(reponse)
 
 
-def generer_quiz(sujet, matiere, niveau, nb_questions=5, difficulte="moyen"):
-    """Génère un contrôle / quiz à choix multiples avec réponses et explications."""
-    prompt = f"""Crée un contrôle de type QCM sur le sujet suivant.
+def generer_quiz(sujet, matiere, cycle, annee, filiere="", nb_questions=5, difficulte="moyen"):
+    """Génère un contrôle / quiz à choix multiples avec réponses et explications,
+    conforme au programme national algérien du cycle/année/filière indiqués."""
+    prompt = f"""Crée un contrôle de type QCM sur le sujet suivant, conforme au programme
+national algérien.
 
+{_contexte_niveau(cycle, annee, filiere)}
 Matière : {matiere}
-Niveau : {niveau}
 Sujet : {sujet}
 Nombre de questions : {nb_questions}
 Difficulté : {difficulte}
@@ -111,17 +129,21 @@ Réponds UNIQUEMENT avec un objet JSON de cette forme exacte :
   ]
 }}
 
-Chaque question doit avoir exactement 4 choix, un seul correct (index_bonne_reponse entre 0 et 3).
+Chaque question doit avoir exactement 4 choix, un seul correct (index_bonne_reponse entre
+0 et 3), et respecter le niveau d'exigence du programme officiel algérien pour cette
+matière et cette année.
 """
     reponse = _appeler_claude(SYSTEME_PEDAGOGIE, prompt, max_tokens=8000)
     return _extraire_json(reponse)
 
 
-def corriger_copie(enonce, bareme_points, reponse_eleve):
-    """Corrige la copie d'un élève : note chiffrée + feedback détaillé et constructif."""
+def corriger_copie(enonce, bareme_points, reponse_eleve, matiere="", cycle="", annee="", filiere=""):
+    """Corrige la copie d'un élève : note chiffrée + feedback détaillé et constructif,
+    évalué selon les exigences du programme national algérien du niveau concerné."""
+    contexte = f"\n{_contexte_niveau(cycle, annee, filiere)}\nMatière : {matiere}\n" if cycle else ""
     prompt = f"""Corrige la copie d'un élève comme le ferait un professeur expérimenté,
-bienveillant mais exigeant.
-
+bienveillant mais exigeant, selon les attendus du programme national algérien.
+{contexte}
 Énoncé du devoir : {enonce}
 Barème total : {bareme_points} points
 Réponse rendue par l'élève :

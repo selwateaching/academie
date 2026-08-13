@@ -42,7 +42,9 @@ def generer_cours_ia(request, classe_id):
                 donnees = generer_cours(
                     sujet=form.cleaned_data["sujet"],
                     matiere=classe.matiere,
-                    niveau=classe.niveau or classe.nom,
+                    cycle=classe.get_cycle_display(),
+                    annee=classe.get_annee_display(),
+                    filiere=classe.get_filiere_display() if classe.filiere else "",
                     objectifs=form.cleaned_data["objectifs"],
                 )
             except AgentIAError as exc:

@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from accounts.decorators import role_required
 from accounts.models import Utilisateur
 
+from . import programme_national as pn
 from .forms import ClasseForm, RejoindreClasseForm
 from .models import Classe
 
@@ -21,7 +22,7 @@ def creer_classe(request):
             return redirect("academics:detail_classe", pk=classe.pk)
     else:
         form = ClasseForm()
-    return render(request, "academics/creer_classe.html", {"form": form})
+    return render(request, "academics/creer_classe.html", {"form": form, "catalogue": pn.catalogue_json()})
 
 
 @role_required(Utilisateur.Role.ELEVE)
