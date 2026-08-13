@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block titre %}Mes absences{% endblock %}
+{% block contenu %}
+<h2 class="fw-bold mb-1">{% if eleve == request.user %}Mes absences{% else %}Absences de {{ eleve.get_full_name }}{% endif %}</h2>
+<p class="text-muted mb-4">Absences et retards enregistrés lors des appels des professeurs.</p>
+
+<div class="card-academie p-0">
+  <table class="table mb-0 align-middle">
+    <thead><tr><th class="ps-4">Date</th><th>Classe</th><th class="pe-4">Statut</th></tr></thead>
+    <tbody>
+      {% for presence in presences %}
+      <tr>
+        <td class="ps-4">{{ presence.seance.date|date:"d/m/Y" }}</td>
+        <td>{{ presence.seance.classe.nom }}</td>
+        <td class="pe-4">
+          {% if presence.statut == "absent" %}<span class="note-pill faible">Absent</span>
+          {% else %}<span class="note-pill moyenne">Retard</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center text-muted py-4">Aucune absence enregistrée.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

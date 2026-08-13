@@ -11,7 +11,7 @@ from accounts.models import Utilisateur
 from homework.models import Copie
 
 from .forms import ContactLyceeForm
-from .stats import stats_professeur
+from .stats import roster_professeur, stats_professeur
 
 
 def landing(request):
@@ -52,6 +52,11 @@ def dashboard(request):
             "nb_classes": Classe.objects.count(),
         },
     )
+
+
+@role_required(Utilisateur.Role.PROFESSEUR)
+def mes_eleves(request):
+    return render(request, "core/mes_eleves.html", {"roster": roster_professeur(request.user)})
 
 
 @role_required(Utilisateur.Role.PROFESSEUR)

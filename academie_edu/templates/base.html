@@ -37,11 +37,28 @@
 
     <div class="sidebar-section-label">Principal</div>
     <a href="{% url 'core:dashboard' %}" class="sidebar-nav-link {% if vue == 'core:dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+    {% if user.is_professeur %}
+      <a href="{% url 'core:mes_eleves' %}" class="sidebar-nav-link {% if vue == 'core:mes_eleves' %}active{% endif %}"><i class="bi bi-people"></i> Mes élèves</a>
+    {% endif %}
 
     {% if user.is_admin_ecole %}
       <div class="sidebar-section-label">Gestion</div>
       <a href="{% url 'gestion:liste_clients' %}" class="sidebar-nav-link {% if vue == 'gestion:liste_clients' or vue == 'gestion:detail_client' or vue == 'gestion:creer_client' %}active{% endif %}"><i class="bi bi-people-fill"></i> Clients &amp; abonnements</a>
       <a href="/admin/" class="sidebar-nav-link"><i class="bi bi-gear-fill"></i> Administration Django</a>
+    {% endif %}
+
+    {% if user.is_professeur %}
+      <div class="sidebar-section-label">IA &amp; pédagogie</div>
+      <a href="{% url 'courses:choisir_classe_ia' %}" class="sidebar-nav-link {% if vue == 'courses:choisir_classe_ia' or vue == 'courses:generer_cours_ia' %}active{% endif %}"><i class="bi bi-stars"></i> Cours IA</a>
+      <a href="{% url 'quizzes:choisir_classe_ia' %}" class="sidebar-nav-link {% if vue == 'quizzes:choisir_classe_ia' or vue == 'quizzes:generer_quiz_ia' %}active{% endif %}"><i class="bi bi-patch-question-fill"></i> Quiz &amp; contrôles IA</a>
+      <a href="{% url 'presence:choisir_classe' %}" class="sidebar-nav-link {% if 'presence' in vue %}active{% endif %}"><i class="bi bi-check2-square"></i> Faire l'appel</a>
+    {% endif %}
+
+    {% if user.is_eleve or user.is_parent %}
+      <div class="sidebar-section-label">Ma scolarité</div>
+      {% if user.is_eleve %}
+        <a href="{% url 'presence:mes_absences' %}" class="sidebar-nav-link {% if vue == 'presence:mes_absences' %}active{% endif %}"><i class="bi bi-calendar-x"></i> Mes absences</a>
+      {% endif %}
     {% endif %}
 
     {% if user.is_professeur or user.is_eleve %}

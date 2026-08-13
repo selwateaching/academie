@@ -5,6 +5,7 @@ from . import views
 app_name = "courses"
 
 urlpatterns = [
+    path("generer-ia/", views.choisir_classe_ia, name="choisir_classe_ia"),
     path("classe/<int:classe_id>/nouveau/", views.creer_cours, name="creer_cours"),
     path("classe/<int:classe_id>/generer-ia/", views.generer_cours_ia, name="generer_cours_ia"),
     path("classe/<int:classe_id>/document/ajouter/", views.ajouter_document, name="ajouter_document"),

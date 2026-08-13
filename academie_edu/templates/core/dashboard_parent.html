@@ -12,7 +12,10 @@
 {% if enfants %}
   {% for enfant in enfants %}
   <div class="card-academie p-4 mb-4">
-    <h5 class="fw-bold mb-3">{{ enfant.get_full_name }}</h5>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0">{{ enfant.get_full_name }}</h5>
+      <a href="{% url 'presence:absences_eleve' enfant.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-calendar-x me-1"></i>Absences</a>
+    </div>
     <div class="row g-3">
       {% for classe in enfant.classes_suivies.all %}
       <div class="col-md-4">

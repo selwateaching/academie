@@ -16,6 +16,12 @@ def _classe_du_professeur(request, classe_id):
 
 
 @role_required(Utilisateur.Role.PROFESSEUR)
+def choisir_classe_ia(request):
+    classes = Classe.objects.filter(professeur=request.user)
+    return render(request, "quizzes/choisir_classe_ia.html", {"classes": classes})
+
+
+@role_required(Utilisateur.Role.PROFESSEUR)
 def generer_quiz_ia(request, classe_id):
     classe = _classe_du_professeur(request, classe_id)
     if not acces_ia_autorise(request):

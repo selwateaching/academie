@@ -7,35 +7,44 @@
     <h2 class="fw-bold mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h2>
     <p class="text-muted mb-0">Voici un aperçu de votre espace pédagogique.</p>
   </div>
-  <div class="d-flex gap-2">
-    <a href="{% url 'core:contacter_lycee' %}" class="btn btn-outline-primary fw-semibold"><i class="bi bi-envelope me-1"></i>Contacter le lycée</a>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'presence:choisir_classe' %}" class="btn btn-outline-primary fw-semibold"><i class="bi bi-check2-square me-1"></i>Faire l'appel</a>
+    <a href="{% url 'courses:choisir_classe_ia' %}" class="btn btn-outline-primary fw-semibold"><i class="bi bi-stars me-1"></i>Cours IA</a>
+    <a href="{% url 'quizzes:choisir_classe_ia' %}" class="btn btn-outline-primary fw-semibold"><i class="bi bi-patch-question me-1"></i>Quiz IA</a>
     <a href="{% url 'academics:creer_classe' %}" class="btn btn-primary fw-semibold"><i class="bi bi-plus-circle me-1"></i>Créer une classe</a>
   </div>
 </div>
 
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
+<div class="row row-cols-2 row-cols-lg-5 g-3 mb-4">
+  <div class="col">
     <div class="stat-card">
       <div class="stat-icon tone-gray"><i class="bi bi-people-fill"></i></div>
       <div class="stat-number">{{ stats.nb_eleves }}</div>
       <div class="stat-label">Élèves</div>
     </div>
   </div>
-  <div class="col-6 col-lg-3">
+  <div class="col">
+    <div class="stat-card">
+      <div class="stat-icon tone-amber"><i class="bi bi-calendar-x"></i></div>
+      <div class="stat-number">{{ stats.absences_semaine }}</div>
+      <div class="stat-label">Absences (7 j)</div>
+    </div>
+  </div>
+  <div class="col">
     <div class="stat-card">
       <div class="stat-icon tone-amber"><i class="bi bi-hourglass-split"></i></div>
       <div class="stat-number">{{ stats.copies_a_corriger }}</div>
       <div class="stat-label">Copies à corriger</div>
     </div>
   </div>
-  <div class="col-6 col-lg-3">
+  <div class="col">
     <div class="stat-card">
       <div class="stat-icon tone-blue"><i class="bi bi-check2-square"></i></div>
       <div class="stat-number">{{ stats.copies_a_valider }}</div>
       <div class="stat-label">Corrections IA à valider</div>
     </div>
   </div>
-  <div class="col-6 col-lg-3">
+  <div class="col">
     <div class="stat-card">
       <div class="stat-icon tone-violet"><i class="bi bi-graph-up"></i></div>
       <div class="stat-number">{% if stats.moyenne_generale %}{{ stats.moyenne_generale }}{% else %}—{% endif %}</div>

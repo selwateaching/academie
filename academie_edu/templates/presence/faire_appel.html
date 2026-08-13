@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load textutils %}
+{% block titre %}Appel — {{ classe.nom }}{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'presence:choisir_classe' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Faire l'appel</a></p>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h2 class="fw-bold mb-1">Appel — {{ classe.nom }}</h2>
+    <p class="text-muted mb-0">{{ classe.matiere }} · {{ classe.niveau_complet }}</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <form method="get" class="d-flex gap-2">
+      <input type="date" name="date" value="{{ jour|date:'Y-m-d' }}" class="form-control" onchange="this.form.submit()">
+    </form>
+    <a href="{% url 'presence:historique' classe.pk %}" class="btn btn-outline-primary">Historique</a>
+  </div>
+</div>
+
+{% if eleves %}
+<div class="mb-3">
+  <button type="button" class="btn btn-sm btn-outline-success" onclick="document.querySelectorAll('input[value=present]').forEach(r => r.checked = true);">
+    <i class="bi bi-check2-all me-1"></i>Tous présents
+  </button>
+</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  <input type="hidden" name="date" value="{{ jour|date:'Y-m-d' }}">
+  <div class="card-academie p-0 mb-4">
+    <table class="table mb-0 align-middle">
+      <thead>
+        <tr>
+          <th class="ps-4">Élève</th>
+          <th>Présent</th>
+          <th>Absent</th>
+          <th>Retard</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eleve in eleves %}
+        {% with statut_actuel=presences|get_item:eleve.pk|default:"present" %}
+        <tr>
+          <td class="ps-4">{{ eleve.get_full_name|default:eleve.username }}</td>
+          <td><input type="radio" name="statut_{{ eleve.pk }}" value="present" {% if statut_actuel == "present" %}checked{% endif %}></td>
+          <td><input type="radio" name="statut_{{ eleve.pk }}" value="absent" {% if statut_actuel == "absent" %}checked{% endif %}></td>
+          <td><input type="radio" name="statut_{{ eleve.pk }}" value="retard" {% if statut_actuel == "retard" %}checked{% endif %}></td>
+        </tr>
+        {% endwith %}
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-muted py-4">Aucun élève inscrit dans cette classe.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if eleves %}<button type="submit" class="btn btn-primary fw-semibold">Enregistrer l'appel</button>{% endif %}
+</form>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titre %}Faire l'appel{% endblock %}
+{% block contenu %}
+<h2 class="fw-bold mb-1">Faire l'appel</h2>
+<p class="text-muted mb-4">Choisissez la classe pour laquelle vous voulez faire l'appel aujourd'hui.</p>
+
+{% if classes %}
+<div class="row g-3">
+  {% for classe in classes %}
+  <div class="col-md-4">
+    <a href="{% url 'presence:faire_appel' classe.pk %}" class="text-decoration-none text-dark">
+      <div class="card-academie hoverable p-4 h-100">
+        <i class="bi bi-check2-square fs-3 text-primary-academie mb-2 d-block"></i>
+        <h5 class="fw-bold">{{ classe.nom }}</h5>
+        <p class="text-muted mb-0">{{ classe.matiere }} · {{ classe.nb_eleves }} élève(s)</p>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-academie p-5 text-center text-muted">
+  <i class="bi bi-inboxes fs-1 mb-3 d-block"></i>
+  Vous n'avez pas encore de classe.
+</div>
+{% endif %}
+{% endblock %}

@@ -17,6 +17,13 @@ def markdown_filter(text):
     return mark_safe(html)
 
 
+@register.filter(name="get_item")
+def get_item(dictionnaire, cle):
+    if not dictionnaire:
+        return None
+    return dictionnaire.get(cle)
+
+
 @register.filter(name="avatar_bg")
 def avatar_bg(pk):
     """Retourne une classe CSS de couleur d'avatar déterministe à partir d'un identifiant."""

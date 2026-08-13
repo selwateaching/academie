@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "messagerie",
     "documents_perso",
     "bulletins",
+    "presence",
     "core",
 ]
 
