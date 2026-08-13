@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Créer un compte — Académie IA{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-4 text-center">Créer votre espace</h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.role.label }}</label>
+          <div class="d-flex gap-3">
+            {% for choice in form.role %}
+              <label class="quiz-choice flex-fill text-center">{{ choice.tag }} {{ choice.choice_label }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.first_name.label }}</label>
+            {{ form.first_name|add_class:"form-control" }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.last_name.label }}</label>
+            {{ form.last_name|add_class:"form-control" }}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.email.label }}</label>
+          {{ form.email|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-semibold">{{ form.username.label }}</label>
+          {{ form.username|add_class:"form-control" }}
+          {% for error in form.username.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.password1.label }}</label>
+            {{ form.password1|add_class:"form-control" }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-semibold">{{ form.password2.label }}</label>
+            {{ form.password2|add_class:"form-control" }}
+          </div>
+        </div>
+        {% for error in form.password2.errors %}<div class="text-danger small mt-1 mb-3">{{ error }}</div>{% endfor %}
+        <button type="submit" class="btn btn-primary w-100 fw-semibold">Créer mon compte</button>
+      </form>
+      <p class="text-center mt-4 mb-0 text-muted">Déjà inscrit ? <a href="{% url 'accounts:login' %}">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

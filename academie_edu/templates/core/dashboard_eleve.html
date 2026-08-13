@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — Élève{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h2 class="fw-bold mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h2>
+    <p class="text-muted mb-0">Retrouvez ici vos classes, cours et résultats.</p>
+  </div>
+  <a href="{% url 'academics:rejoindre_classe' %}" class="btn btn-primary fw-semibold"><i class="bi bi-box-arrow-in-right me-1"></i>Rejoindre une classe</a>
+</div>
+
+<h4 class="fw-bold mb-3">Mes classes</h4>
+{% if classes %}
+<div class="row g-3 mb-5">
+  {% for classe in classes %}
+  <div class="col-md-4">
+    <a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none text-dark">
+      <div class="card-academie hoverable p-4 h-100">
+        <h5 class="fw-bold">{{ classe.nom }}</h5>
+        <p class="text-muted mb-2">{{ classe.matiere }}{% if classe.niveau %} · {{ classe.niveau }}{% endif %}</p>
+        <span class="text-muted small"><i class="bi bi-person-badge"></i> {{ classe.professeur.get_full_name|default:classe.professeur.username }}</span>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-academie p-5 text-center text-muted mb-5">
+  <i class="bi bi-inboxes fs-1 mb-3 d-block"></i>
+  Vous n'avez rejoint aucune classe. Demandez le code d'accès à votre professeur.
+</div>
+{% endif %}
+
+<h4 class="fw-bold mb-3">Mes devoirs rendus</h4>
+{% if mes_copies %}
+<div class="card-academie p-0">
+  <table class="table mb-0 align-middle">
+    <thead><tr><th class="ps-4">Devoir</th><th>Statut</th><th class="pe-4">Note</th></tr></thead>
+    <tbody>
+      {% for copie in mes_copies %}
+      <tr>
+        <td class="ps-4"><a href="{% url 'homework:resultat_copie' copie.pk %}">{{ copie.devoir.titre }}</a></td>
+        <td>
+          {% if copie.validee_par_professeur %}<span class="badge bg-success">Corrigé</span>
+          {% elif copie.corrigee_par_ia %}<span class="badge bg-warning text-dark">Correction IA en attente de validation</span>
+          {% else %}<span class="badge bg-secondary">En attente de correction</span>{% endif %}
+        </td>
+        <td class="pe-4">{% if copie.note is not None and copie.validee_par_professeur %}{{ copie.note }}/{{ copie.devoir.bareme_points }}{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-muted">Aucun devoir rendu pour le moment.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load textutils %}
+{% block titre %}Ma correction — {{ copie.devoir.titre }}{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-1">{{ copie.devoir.titre }}</h3>
+      {% if copie.validee_par_professeur %}
+        <div class="stat-tile d-inline-block mb-4">
+          <div class="stat-value">{{ copie.note }}/{{ copie.devoir.bareme_points }}</div>
+        </div>
+        {% if copie.appreciation_generale %}<p class="fs-5">{{ copie.appreciation_generale }}</p>{% endif %}
+
+        <div class="row mb-4">
+          {% if copie.points_forts %}
+          <div class="col-md-6">
+            <strong class="text-success">Points forts</strong>
+            <ul>{% for p in copie.points_forts %}<li>{{ p }}</li>{% endfor %}</ul>
+          </div>
+          {% endif %}
+          {% if copie.points_a_ameliorer %}
+          <div class="col-md-6">
+            <strong class="text-warning">À améliorer</strong>
+            <ul>{% for p in copie.points_a_ameliorer %}<li>{{ p }}</li>{% endfor %}</ul>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if copie.correction_detaillee %}
+          <h5 class="fw-bold">Correction détaillée</h5>
+          <div class="markdown-content">{{ copie.correction_detaillee|markdown }}</div>
+        {% endif %}
+      {% else %}
+        <div class="alert alert-info">Votre copie est en attente de correction par votre professeur.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

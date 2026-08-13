@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block titre %}{{ quiz.titre }}{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <p class="mb-2"><a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> {{ classe.nom }}</a></p>
+    <div class="card-academie p-4 p-md-5">
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <h2 class="fw-bold mb-0">{{ quiz.titre }}</h2>
+        {% if quiz.genere_par_ia %}<span class="badge-ia">Généré par l'IA</span>{% endif %}
+      </div>
+      {% if quiz.consigne %}<p class="text-muted">{{ quiz.consigne }}</p>{% endif %}
+      <p class="text-muted"><i class="bi bi-list-check"></i> {{ quiz.questions.count }} question(s) · {{ quiz.note_max }} points</p>
+
+      {% if est_prof %}
+        <div class="d-flex gap-2 mb-4">
+          <a href="{% url 'quizzes:ajouter_question' quiz.pk %}" class="btn btn-sm btn-outline-primary">Ajouter une question</a>
+          <a href="{% url 'quizzes:supprimer_quiz' quiz.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce contrôle ?');">Supprimer</a>
+        </div>
+        <table class="table">
+          <thead><tr><th>#</th><th>Question</th><th>Points</th></tr></thead>
+          <tbody>
+            {% for q in quiz.questions.all %}
+              <tr><td>{{ forloop.counter }}</td><td>{{ q.enonce }}</td><td>{{ q.points }}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <h5 class="fw-bold mt-4">Résultats des élèves</h5>
+        <table class="table">
+          <thead><tr><th>Élève</th><th>Score</th></tr></thead>
+          <tbody>
+            {% for t in quiz.tentatives.all %}
+              <tr><td>{{ t.eleve.get_full_name|default:t.eleve.username }}</td><td>{{ t.score }}/{{ t.score_max }} ({{ t.pourcentage }}%)</td></tr>
+            {% empty %}
+              <tr><td colspan="2" class="text-muted">Aucune tentative pour le moment.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        {% if tentative %}
+          <a href="{% url 'quizzes:resultat_quiz' quiz.pk %}" class="btn btn-primary fw-semibold">Voir mon résultat ({{ tentative.score }}/{{ tentative.score_max }})</a>
+        {% else %}
+          <a href="{% url 'quizzes:passer_quiz' quiz.pk %}" class="btn btn-primary fw-semibold">Passer le contrôle</a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

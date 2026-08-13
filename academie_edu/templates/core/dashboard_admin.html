@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — Administration{% endblock %}
+{% block contenu %}
+<h2 class="fw-bold mb-4">Administration de la plateforme</h2>
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="stat-tile"><div class="stat-value">{{ nb_utilisateurs }}</div><div class="text-muted">Utilisateurs</div></div></div>
+  <div class="col-md-3"><div class="stat-tile"><div class="stat-value">{{ nb_professeurs }}</div><div class="text-muted">Professeurs</div></div></div>
+  <div class="col-md-3"><div class="stat-tile"><div class="stat-value">{{ nb_eleves }}</div><div class="text-muted">Élèves</div></div></div>
+  <div class="col-md-3"><div class="stat-tile"><div class="stat-value">{{ nb_classes }}</div><div class="text-muted">Classes</div></div></div>
+</div>
+<div class="card-academie p-4">
+  <p class="mb-2">Gérez les comptes, abonnements et classes depuis l'interface d'administration complète :</p>
+  <a href="/admin/" class="btn btn-primary fw-semibold">Ouvrir l'administration Django</a>
+</div>
+{% endblock %}

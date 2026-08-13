@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block titre %}{{ devoir.titre }}{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <p class="mb-2"><a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> {{ classe.nom }}</a></p>
+    <div class="card-academie p-4 p-md-5">
+      <h2 class="fw-bold mb-2">{{ devoir.titre }}</h2>
+      <p class="text-muted">Barème : {{ devoir.bareme_points }} points {% if devoir.date_limite %}· à rendre avant le {{ devoir.date_limite|date:"d/m/Y H:i" }}{% endif %}</p>
+      <p class="mb-4">{{ devoir.enonce|linebreaks }}</p>
+
+      {% if est_prof %}
+        <h5 class="fw-bold mb-3">Copies rendues ({{ copies|length }})</h5>
+        {% if copies %}
+        <table class="table">
+          <thead><tr><th>Élève</th><th>Statut</th><th>Note</th><th></th></tr></thead>
+          <tbody>
+            {% for copie in copies %}
+              <tr>
+                <td>{{ copie.eleve.get_full_name|default:copie.eleve.username }}</td>
+                <td>
+                  {% if copie.validee_par_professeur %}<span class="badge bg-success">Validée</span>
+                  {% elif copie.corrigee_par_ia %}<span class="badge bg-warning text-dark">IA — à valider</span>
+                  {% else %}<span class="badge bg-secondary">À corriger</span>{% endif %}
+                </td>
+                <td>{% if copie.note is not None %}{{ copie.note }}/{{ devoir.bareme_points }}{% else %}—{% endif %}</td>
+                <td>
+                  {% if not copie.corrigee_par_ia %}
+                    <a href="{% url 'homework:corriger_copie_ia' copie.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-stars"></i> Corriger avec l'IA</a>
+                  {% else %}
+                    <a href="{% url 'homework:valider_correction' copie.pk %}" class="btn btn-sm btn-outline-primary">Voir / valider</a>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+          <p class="text-muted">Aucune copie rendue pour le moment.</p>
+        {% endif %}
+      {% else %}
+        {% if ma_copie %}
+          <div class="alert alert-info">
+            Vous avez rendu ce devoir le {{ ma_copie.date_rendu|date:"d/m/Y H:i" }}.
+            {% if ma_copie.validee_par_professeur %}
+              <a href="{% url 'homework:resultat_copie' ma_copie.pk %}" class="fw-semibold">Voir ma correction ({{ ma_copie.note }}/{{ devoir.bareme_points }})</a>
+            {% else %}
+              La correction n'est pas encore disponible.
+            {% endif %}
+          </div>
+        {% else %}
+          <a href="{% url 'homework:soumettre_copie' devoir.pk %}" class="btn btn-primary fw-semibold">Rendre le devoir</a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

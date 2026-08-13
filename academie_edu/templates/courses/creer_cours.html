@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}{% if modification %}Modifier le cours{% else %}Nouveau cours{% endif %}{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-4">{% if modification %}Modifier le cours{% else %}Rédiger un cours pour « {{ classe.nom }} »{% endif %}</h3>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {% if field.name == "publie" %}
+              <div class="form-check">{{ field }} <label class="form-check-label">Publier immédiatement aux élèves</label></div>
+            {% else %}
+              {{ field|add_class:"form-control" }}
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary fw-semibold">Enregistrer</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

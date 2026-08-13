@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block titre %}Académie IA — Votre agent IA pédagogique{% endblock %}
+{% block contenu %}
+<div class="hero-gradient p-5 p-md-5 mb-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <span class="badge-ia mb-3 d-inline-block">Nouveau — Agent IA pédagogique</span>
+      <h1 class="display-5 fw-bold mb-3">L'espace numérique des professeurs et des élèves, propulsé par l'IA</h1>
+      <p class="fs-5 mb-4" style="opacity:.9">
+        Créez vos classes, déposez vos documents, générez des cours et des contrôles en quelques secondes,
+        et laissez l'agent IA corriger les copies de vos élèves — avec un contrôle humain à chaque étape.
+      </p>
+      <div class="d-flex gap-3">
+        <a href="{% url 'accounts:inscription' %}" class="btn btn-light btn-lg fw-semibold">Créer mon espace gratuitement</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">J'ai déjà un compte</a>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card-academie p-4 bg-white text-dark">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="bi bi-stars text-primary-academie fs-4"></i>
+          <strong>Ce que fait l'agent IA pour vous</strong>
+        </div>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Génère un cours structuré à partir d'un simple sujet</li>
+          <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Crée des contrôles / QCM notés automatiquement</li>
+          <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Corrige les copies avec note et feedback détaillé</li>
+          <li><i class="bi bi-check2-circle text-success me-2"></i>Le professeur valide toujours la note finale</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="card-academie hoverable p-4 h-100">
+      <i class="bi bi-people-fill fs-2 text-primary-academie mb-3"></i>
+      <h5 class="fw-bold">Espace Professeur</h5>
+      <p class="text-muted mb-0">Créez vos classes, partagez des ressources et pilotez toute votre pédagogie depuis un seul endroit.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-academie hoverable p-4 h-100">
+      <i class="bi bi-mortarboard fs-2 text-primary-academie mb-3"></i>
+      <h5 class="fw-bold">Espace Élève</h5>
+      <p class="text-muted mb-0">Rejoignez une classe avec un code, suivez les cours, passez les contrôles et consultez vos résultats.</p>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card-academie hoverable p-4 h-100">
+      <i class="bi bi-robot fs-2 text-primary-academie mb-3"></i>
+      <h5 class="fw-bold">Agent IA intégré</h5>
+      <p class="text-muted mb-0">Basé sur Claude d'Anthropic, il génère et corrige, mais laisse toujours le dernier mot au professeur.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

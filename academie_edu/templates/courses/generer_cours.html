@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Générer un cours avec l'IA{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card-academie p-4 p-md-5">
+      <span class="badge-ia mb-3 d-inline-block">Agent IA</span>
+      <h3 class="fw-bold mb-2">Générer un cours pour « {{ classe.nom }} »</h3>
+      <p class="text-muted mb-4">Décrivez le sujet, l'agent IA rédige un cours structuré et adapté au niveau {{ classe.niveau|default:classe.nom }} en {{ classe.matiere }}.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-stars me-1"></i>Générer le cours</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

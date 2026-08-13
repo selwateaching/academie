@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — Professeur{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h2 class="fw-bold mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h2>
+    <p class="text-muted mb-0">Voici un aperçu de votre espace pédagogique.</p>
+  </div>
+  <a href="{% url 'academics:creer_classe' %}" class="btn btn-primary fw-semibold"><i class="bi bi-plus-circle me-1"></i>Créer une classe</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-tile">
+      <div class="stat-value">{{ classes|length }}</div>
+      <div class="text-muted">Classe(s)</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-tile">
+      <div class="stat-value">{{ copies_a_corriger }}</div>
+      <div class="text-muted">Copie(s) en attente de correction</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-tile">
+      <div class="stat-value">{{ copies_a_valider }}</div>
+      <div class="text-muted">Correction(s) IA à valider</div>
+    </div>
+  </div>
+</div>
+
+<h4 class="fw-bold mb-3">Mes classes</h4>
+{% if classes %}
+<div class="row g-3">
+  {% for classe in classes %}
+  <div class="col-md-4">
+    <a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none text-dark">
+      <div class="card-academie hoverable p-4 h-100">
+        <h5 class="fw-bold">{{ classe.nom }}</h5>
+        <p class="text-muted mb-2">{{ classe.matiere }}{% if classe.niveau %} · {{ classe.niveau }}{% endif %}</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-people"></i> {{ classe.nb_eleves }} élève(s)</span>
+          <span class="code-acces small">{{ classe.code_acces }}</span>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-academie p-5 text-center text-muted">
+  <i class="bi bi-inboxes fs-1 mb-3 d-block"></i>
+  Vous n'avez pas encore de classe. Créez-en une pour commencer à déposer des cours et des contrôles.
+</div>
+{% endif %}
+{% endblock %}

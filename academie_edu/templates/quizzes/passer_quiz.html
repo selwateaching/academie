@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block titre %}{{ quiz.titre }}{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-academie p-4 p-md-5">
+      <h2 class="fw-bold mb-2">{{ quiz.titre }}</h2>
+      {% if quiz.consigne %}<p class="text-muted mb-4">{{ quiz.consigne }}</p>{% endif %}
+      <form method="post">
+        {% csrf_token %}
+        {% for question in questions %}
+          <div class="mb-4 pb-4 {% if not forloop.last %}border-bottom{% endif %}">
+            <p class="fw-semibold">{{ forloop.counter }}. {{ question.enonce }} <span class="text-muted small">({{ question.points }} pt{{ question.points|pluralize }})</span></p>
+            {% for choix in question.choix %}
+              <label class="quiz-choice d-block mb-2">
+                <input type="radio" name="question_{{ question.id }}" value="{{ forloop.counter0 }}" required class="form-check-input me-2">
+                {{ choix }}
+              </label>
+            {% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-lg fw-semibold">Valider mes réponses</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block titre %}{{ classe.nom }}{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">{{ classe.nom }}</h2>
+    <p class="text-muted mb-0">{{ classe.matiere }}{% if classe.niveau %} · {{ classe.niveau }}{% endif %} — Professeur : {{ classe.professeur.get_full_name|default:classe.professeur.username }}</p>
+  </div>
+  {% if est_prof %}
+    <div class="text-end">
+      <div class="text-muted small">Code d'accès à partager</div>
+      <span class="code-acces fs-5">{{ classe.code_acces }}</span>
+    </div>
+  {% endif %}
+</div>
+
+{% if classe.description %}<p class="mb-4">{{ classe.description }}</p>{% endif %}
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-journal-richtext me-2"></i>Cours</h5>
+      {% if est_prof %}
+      <div class="dropdown">
+        <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">Ajouter un cours</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{% url 'courses:generer_cours_ia' classe.pk %}"><i class="bi bi-stars me-2"></i>Générer avec l'IA</a></li>
+          <li><a class="dropdown-item" href="{% url 'courses:creer_cours' classe.pk %}"><i class="bi bi-pencil me-2"></i>Rédiger moi-même</a></li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    {% for c in cours %}
+      <a href="{% url 'courses:detail_cours' c.pk %}" class="text-decoration-none text-dark">
+        <div class="card-academie hoverable p-3 mb-2 d-flex flex-row justify-content-between align-items-center">
+          <div>
+            <strong>{{ c.titre }}</strong>
+            {% if c.genere_par_ia %}<span class="badge-ia ms-2">IA</span>{% endif %}
+            {% if not c.publie %}<span class="badge bg-secondary ms-2">Brouillon</span>{% endif %}
+          </div>
+          <span class="text-muted small">{{ c.duree_estimee_minutes }} min</span>
+        </div>
+      </a>
+    {% empty %}
+      <p class="text-muted">Aucun cours pour le moment.</p>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+      <h5 class="fw-bold mb-0"><i class="bi bi-patch-question me-2"></i>Contrôles / Quiz</h5>
+      {% if est_prof %}
+      <div class="dropdown">
+        <button class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">Ajouter un contrôle</button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{% url 'quizzes:generer_quiz_ia' classe.pk %}"><i class="bi bi-stars me-2"></i>Générer avec l'IA</a></li>
+          <li><a class="dropdown-item" href="{% url 'quizzes:creer_quiz_manuel' classe.pk %}"><i class="bi bi-pencil me-2"></i>Créer moi-même</a></li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+    {% for q in quizzes %}
+      <a href="{% url 'quizzes:detail_quiz' q.pk %}" class="text-decoration-none text-dark">
+        <div class="card-academie hoverable p-3 mb-2 d-flex flex-row justify-content-between align-items-center">
+          <div>
+            <strong>{{ q.titre }}</strong>
+            {% if q.genere_par_ia %}<span class="badge-ia ms-2">IA</span>{% endif %}
+          </div>
+          <span class="text-muted small">{{ q.questions.count }} question(s)</span>
+        </div>
+      </a>
+    {% empty %}
+      <p class="text-muted">Aucun contrôle pour le moment.</p>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
+      <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-check me-2"></i>Devoirs</h5>
+      {% if est_prof %}
+        <a href="{% url 'homework:creer_devoir' classe.pk %}" class="btn btn-sm btn-primary">Créer un devoir</a>
+      {% endif %}
+    </div>
+    {% for d in devoirs %}
+      <a href="{% url 'homework:detail_devoir' d.pk %}" class="text-decoration-none text-dark">
+        <div class="card-academie hoverable p-3 mb-2">
+          <strong>{{ d.titre }}</strong>
+          <span class="text-muted small d-block">Barème : {{ d.bareme_points }} points{% if d.date_limite %} · à rendre avant le {{ d.date_limite|date:"d/m/Y H:i" }}{% endif %}</span>
+        </div>
+      </a>
+    {% empty %}
+      <p class="text-muted">Aucun devoir pour le moment.</p>
+    {% endfor %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-folder2-open me-2"></i>Documents</h5>
+      {% if est_prof %}<a href="{% url 'courses:ajouter_document' classe.pk %}" class="btn btn-sm btn-outline-primary">Déposer</a>{% endif %}
+    </div>
+    <div class="card-academie p-3 mb-4">
+      {% for doc in classe.documents.all %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <a href="{{ doc.fichier.url }}" target="_blank"><i class="bi bi-file-earmark-arrow-down me-2"></i>{{ doc.titre }}</a>
+          <span class="text-muted small">{{ doc.extension }}</span>
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Aucun document déposé.</p>
+      {% endfor %}
+    </div>
+
+    <h5 class="fw-bold mb-3"><i class="bi bi-people me-2"></i>Élèves ({{ classe.nb_eleves }})</h5>
+    <div class="card-academie p-3">
+      {% for eleve in classe.eleves.all %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
+          <span>{{ eleve.get_full_name|default:eleve.username }}</span>
+          {% if est_prof %}
+            <a href="{% url 'academics:retirer_eleve' classe.pk eleve.pk %}" class="text-danger small" onclick="return confirm('Retirer cet élève de la classe ?');"><i class="bi bi-x-circle"></i></a>
+          {% endif %}
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Aucun élève inscrit.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
