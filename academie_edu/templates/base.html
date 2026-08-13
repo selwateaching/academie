@@ -27,6 +27,13 @@
             {% if user.role == "admin" %}
               <li class="nav-item"><a class="nav-link" href="{% url 'gestion:liste_clients' %}">Clients</a></li>
             {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'messagerie:boite_reception' %}">
+                Messagerie
+                {% if messages_non_lus %}<span class="badge bg-danger rounded-pill">{{ messages_non_lus }}</span>{% endif %}
+              </a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="{% url 'documents_perso:liste' %}">Mes documents</a></li>
           </ul>
           <div class="d-flex align-items-center gap-3">
             <span class="badge-role">{{ user.get_role_display }}</span>

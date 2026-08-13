@@ -111,7 +111,10 @@
         <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom{% endif %}">
           <span>{{ eleve.get_full_name|default:eleve.username }}</span>
           {% if est_prof %}
-            <a href="{% url 'academics:retirer_eleve' classe.pk eleve.pk %}" class="text-danger small" onclick="return confirm('Retirer cet élève de la classe ?');"><i class="bi bi-x-circle"></i></a>
+            <span>
+              <a href="{% url 'bulletins:bulletin_eleve' classe.pk eleve.pk %}" class="text-primary-academie small me-2" title="Voir le bulletin"><i class="bi bi-file-earmark-text"></i></a>
+              <a href="{% url 'academics:retirer_eleve' classe.pk eleve.pk %}" class="text-danger small" onclick="return confirm('Retirer cet élève de la classe ?');"><i class="bi bi-x-circle"></i></a>
+            </span>
           {% endif %}
         </div>
       {% empty %}

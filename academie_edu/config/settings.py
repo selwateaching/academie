@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     "homework",
     "ai_agent",
     "gestion",
+    "messagerie",
+    "documents_perso",
+    "bulletins",
     "core",
 ]
 
@@ -67,6 +70,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "messagerie.context_processors.messages_non_lus",
             ],
         },
     },
@@ -98,6 +102,9 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -119,3 +126,16 @@ CLAUDE_MODEL = env("CLAUDE_MODEL", default="claude-sonnet-4-5")
 # Fichiers max 20 Mo pour les dépôts de documents / copies
 FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+# ── Email (contact administration du lycée) ─────────────────
+# Par défaut : backend "console" (les emails s'affichent dans les logs du serveur,
+# aucune configuration requise). Pour un envoi réel, définissez EMAIL_HOST etc.
+# dans .env (ex. SMTP Gmail) et EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = env("EMAIL_HOST", default="")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="academie-ia@localhost")
+EMAIL_LYCEE = env("EMAIL_LYCEE", default="administration@lycee.dz")

@@ -11,6 +11,9 @@ urlpatterns = [
     path("controles/", include("quizzes.urls")),
     path("devoirs/", include("homework.urls")),
     path("gestion/", include("gestion.urls")),
+    path("messagerie/", include("messagerie.urls")),
+    path("documents/", include("documents_perso.urls")),
+    path("bulletins/", include("bulletins.urls")),
     path("", include("core.urls")),
 ]
 

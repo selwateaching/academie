@@ -10,4 +10,5 @@ urlpatterns = [
     path("deconnexion/", LogoutView.as_view(), name="logout"),
     path("inscription/", views.inscription, name="inscription"),
     path("profil/", views.profil, name="profil"),
+    path("lier-enfant/", views.lier_enfant, name="lier_enfant"),
 ]

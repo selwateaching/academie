@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -5,16 +8,24 @@ from django.utils import timezone
 from . import plans
 
 
+def generer_code_famille():
+    return "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+
 class Utilisateur(AbstractUser):
     class Role(models.TextChoices):
         ADMIN = "admin", "Administrateur"
         PROFESSEUR = "professeur", "Professeur"
         ELEVE = "eleve", "Élève"
+        PARENT = "parent", "Parent"
 
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.ELEVE)
     telephone = models.CharField(max_length=30, blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     date_creation = models.DateTimeField(auto_now_add=True)
+
+    # Code permettant à un parent de se lier à ce compte élève (généré à la création)
+    code_famille = models.CharField(max_length=8, unique=True, blank=True, null=True)
 
     # Abonnement de l'utilisateur (offre gratuite par défaut, activable par l'admin)
     class Plan(models.TextChoices):
@@ -42,6 +53,22 @@ class Utilisateur(AbstractUser):
     @property
     def is_eleve(self):
         return self.role == self.Role.ELEVE
+
+    @property
+    def is_parent(self):
+        return self.role == self.Role.PARENT
+
+    def save(self, *args, **kwargs):
+        if self.role == self.Role.ELEVE and not self.code_famille:
+            code = generer_code_famille()
+            while Utilisateur.objects.filter(code_famille=code).exists():
+                code = generer_code_famille()
+            self.code_famille = code
+        super().save(*args, **kwargs)
+
+    @property
+    def enfants(self):
+        return Utilisateur.objects.filter(liens_parents__parent=self)
 
     @property
     def plan_info(self):
@@ -89,3 +116,21 @@ class Utilisateur(AbstractUser):
 
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
+
+
+class LienParentEleve(models.Model):
+    parent = models.ForeignKey(
+        Utilisateur, on_delete=models.CASCADE, related_name="liens_enfants",
+        limit_choices_to={"role": Utilisateur.Role.PARENT},
+    )
+    eleve = models.ForeignKey(
+        Utilisateur, on_delete=models.CASCADE, related_name="liens_parents",
+        limit_choices_to={"role": Utilisateur.Role.ELEVE},
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("parent", "eleve")
+
+    def __str__(self):
+        return f"{self.parent} ↔ {self.eleve}"

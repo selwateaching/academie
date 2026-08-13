@@ -4,7 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 
-from .forms import InscriptionForm, ProfilForm
+from .decorators import role_required
+from .forms import InscriptionForm, LierEnfantForm, ProfilForm
+from .models import LienParentEleve, Utilisateur
 
 
 class ConnexionView(LoginView):
@@ -38,3 +40,17 @@ def profil(request):
     else:
         form = ProfilForm(instance=request.user)
     return render(request, "accounts/profil.html", {"form": form})
+
+
+@role_required(Utilisateur.Role.PARENT)
+def lier_enfant(request):
+    if request.method == "POST":
+        form = LierEnfantForm(request.POST)
+        if form.is_valid():
+            eleve = Utilisateur.objects.get(code_famille=form.cleaned_data["code_famille"], role=Utilisateur.Role.ELEVE)
+            LienParentEleve.objects.get_or_create(parent=request.user, eleve=eleve)
+            messages.success(request, f"Vous êtes maintenant lié à {eleve.get_full_name()}.")
+            return redirect("core:dashboard")
+    else:
+        form = LierEnfantForm()
+    return render(request, "accounts/lier_enfant.html", {"form": form})

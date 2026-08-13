@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block titre %}Bulletin — {{ eleve.get_full_name }}{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+  <a href="{% url 'academics:detail_classe' classe.pk %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> {{ classe.nom }}</a>
+  <button onclick="window.print()" class="btn btn-primary fw-semibold"><i class="bi bi-printer me-1"></i>Imprimer / Enregistrer en PDF</button>
+</div>
+
+<div class="card-academie p-5">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold mb-1">Bulletin scolaire</h2>
+    <p class="text-muted mb-0">Académie IA — Programme national algérien</p>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <strong>Élève :</strong> {{ eleve.get_full_name }}
+    </div>
+    <div class="col-md-6">
+      <strong>Classe :</strong> {{ classe.nom }} — {{ classe.matiere }}
+    </div>
+    <div class="col-md-6">
+      <strong>Cycle :</strong> {{ classe.get_cycle_display }}
+    </div>
+    <div class="col-md-6">
+      <strong>Niveau :</strong> {{ classe.niveau_complet }}
+    </div>
+  </div>
+
+  <h5 class="fw-bold mb-2">Devoirs</h5>
+  <table class="table mb-4">
+    <thead><tr><th>Devoir</th><th>Note</th><th>%</th></tr></thead>
+    <tbody>
+      {% for ligne in donnees.devoirs %}
+        <tr><td>{{ ligne.titre }}</td><td>{{ ligne.note }} / {{ ligne.bareme }}</td><td>{{ ligne.pourcentage }}%</td></tr>
+      {% empty %}
+        <tr><td colspan="3" class="text-muted">Aucun devoir corrigé.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h5 class="fw-bold mb-2">Contrôles</h5>
+  <table class="table mb-4">
+    <thead><tr><th>Contrôle</th><th>Note</th><th>%</th></tr></thead>
+    <tbody>
+      {% for ligne in donnees.quiz %}
+        <tr><td>{{ ligne.titre }}</td><td>{{ ligne.note }} / {{ ligne.bareme }}</td><td>{{ ligne.pourcentage }}%</td></tr>
+      {% empty %}
+        <tr><td colspan="3" class="text-muted">Aucun contrôle passé.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="stat-tile d-inline-block">
+    <div class="text-muted small mb-1">Moyenne générale</div>
+    <div class="stat-value">{% if donnees.moyenne_generale is not None %}{{ donnees.moyenne_generale }}%{% else %}—{% endif %}</div>
+  </div>
+</div>
+
+<style>
+  @media print {
+    .navbar-academie, .footer-academie, .no-print { display: none !important; }
+    body { background: #fff; }
+  }
+</style>
+{% endblock %}

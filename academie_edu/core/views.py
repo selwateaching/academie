@@ -1,10 +1,16 @@
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.shortcuts import redirect, render
 
 from academics.models import Classe
 from accounts import plans as plans_module
+from accounts.decorators import role_required
 from accounts.models import Utilisateur
 from homework.models import Copie
+
+from .forms import ContactLyceeForm
 
 
 def landing(request):
@@ -36,6 +42,10 @@ def dashboard(request):
         mes_copies = Copie.objects.filter(eleve=user).select_related("devoir")
         return render(request, "core/dashboard_eleve.html", {"classes": classes, "mes_copies": mes_copies})
 
+    if user.role == Utilisateur.Role.PARENT:
+        enfants = user.enfants.all()
+        return render(request, "core/dashboard_parent.html", {"enfants": enfants})
+
     # Administrateur
     return render(
         request,
@@ -47,3 +57,26 @@ def dashboard(request):
             "nb_classes": Classe.objects.count(),
         },
     )
+
+
+@role_required(Utilisateur.Role.PROFESSEUR)
+def contacter_lycee(request):
+    if request.method == "POST":
+        form = ContactLyceeForm(request.POST)
+        if form.is_valid():
+            corps = (
+                f"Message envoyé par {request.user.get_full_name()} ({request.user.email})\n\n"
+                f"{form.cleaned_data['message']}"
+            )
+            send_mail(
+                subject=f"[Académie IA] {form.cleaned_data['sujet']}",
+                message=corps,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.EMAIL_LYCEE],
+                fail_silently=False,
+            )
+            messages.success(request, "Votre message a été envoyé à l'administration du lycée.")
+            return redirect("core:dashboard")
+    else:
+        form = ContactLyceeForm()
+    return render(request, "core/contacter_lycee.html", {"form": form})

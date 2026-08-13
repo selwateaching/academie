@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Lier un enfant{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-5">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-1">Lier un enfant</h3>
+      <p class="text-muted mb-4">Demandez le code famille à votre enfant : il le trouve sur sa page de profil.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field|add_class:"form-control form-control-lg text-uppercase" }}
+            {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary w-100 fw-semibold">Lier cet enfant</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

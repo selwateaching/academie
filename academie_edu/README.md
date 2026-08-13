@@ -2,7 +2,7 @@
 
 Plateforme pédagogique web (Django) pour établissements scolaires, avec un **agent IA pédagogique** (Claude d'Anthropic) intégré nativement.
 
-Trois espaces : **Administrateur**, **Professeur** et **Élève**. Les professeurs créent des classes, y déposent des documents, génèrent des cours et des contrôles avec l'IA, et corrigent automatiquement les copies de leurs élèves — avec validation humaine systématique avant toute note définitive.
+Quatre espaces : **Administrateur**, **Professeur**, **Élève** et **Parent**. Les professeurs créent des classes, y déposent des documents, génèrent des cours et des contrôles avec l'IA, et corrigent automatiquement les copies de leurs élèves — avec validation humaine systématique avant toute note définitive.
 
 L'application est calée sur le **programme scolaire national algérien** (Ministère de l'Éducation Nationale) : primaire, moyen (CEM) et secondaire (lycée, toutes filières). Chaque classe est rattachée à un cycle, une année et — au secondaire — une filière officiels, avec la liste réelle des matières correspondantes, et l'agent IA génère et corrige en respectant ce niveau précis.
 
@@ -28,7 +28,33 @@ L'application est calée sur le **programme scolaire national algérien** (Minis
 - Consulter les cours et documents publiés
 - Passer les contrôles en ligne, avec correction et score immédiats
 - Rendre les devoirs (texte ou fichier)
-- Consulter ses notes et le feedback détaillé une fois validés par le professeur
+- Consulter ses notes, son bulletin et le feedback détaillé une fois validés par le professeur
+- Échanger par messagerie avec ses professeurs et envoyer des pièces jointes
+- Stocker ses propres documents dans des dossiers personnalisés
+
+### Espace Parent
+- Se lier à un ou plusieurs enfants via leur **code famille** (visible sur la page de profil de l'élève)
+- Consulter le bulletin de chaque enfant, par classe
+- Échanger par messagerie avec les professeurs de ses enfants
+
+### Messagerie
+- Conversations directes avec pièce jointe (PDF, Word, image — 20 Mo max)
+- Professeur ↔ collègues professeurs, professeur ↔ élèves de ses classes, professeur ↔ parents de ses élèves
+- Élève ↔ professeurs de ses classes ; Parent ↔ professeurs de ses enfants
+- Boîte de réception avec compteur de messages non lus (visible dans la barre de navigation)
+
+### Documents personnels
+- Chaque professeur et chaque élève dispose de son propre espace de stockage (« Mes documents »)
+- Organisation libre en dossiers personnalisés, dépôt/suppression de fichiers
+
+### Bulletins
+- Génération automatique à partir des notes de devoirs (validées par le professeur) et des scores de contrôles d'une classe
+- Moyenne générale calculée, page imprimable / exportable en PDF depuis le navigateur (bouton Imprimer)
+- Accessible au professeur (génération, depuis la liste des élèves d'une classe), à l'élève et à son parent (consultation)
+
+### Contact avec le lycée
+- Le professeur peut envoyer un email à l'administration du lycée directement depuis son tableau de bord
+- Par défaut les emails s'affichent dans les logs (aucune configuration requise) ; une vraie boîte SMTP (Gmail, etc.) peut être branchée via `.env`
 
 ### SaaS : offres, quotas et gestion des clients
 - Trois offres d'abonnement (`accounts/plans.py`) : **Découverte** (gratuite, 1 classe, 5 générations IA/mois), **Standard** (2 500 DA/mois, 5 classes, 50 générations IA/mois), **Premium** (5 000 DA/mois, illimité) — prix et quotas modifiables dans ce seul fichier
@@ -110,16 +136,20 @@ Accessible sur [http://localhost:8000](http://localhost:8000).
 
 ```
 academie_edu/
-├── config/          # Réglages Django, URLs racine
-├── accounts/        # Utilisateur personnalisé (rôles admin/professeur/élève), auth
-├── academics/        # Classes, inscription par code d'accès
-├── courses/          # Cours (manuels ou générés par IA), documents
-├── quizzes/           # Contrôles / QCM, passage et correction automatique
-├── homework/          # Devoirs, copies, correction IA + validation professeur
-├── ai_agent/          # Service d'appel à Claude (génération + correction)
-├── core/              # Landing page, tableaux de bord par rôle
-├── templates/         # Gabarits HTML (Bootstrap 5)
-└── static/            # CSS
+├── config/            # Réglages Django, URLs racine
+├── accounts/          # Utilisateur personnalisé (rôles admin/professeur/élève/parent), auth, offres
+├── academics/         # Classes, inscription par code d'accès
+├── courses/           # Cours (manuels ou générés par IA), documents de classe
+├── quizzes/            # Contrôles / QCM, passage et correction automatique
+├── homework/           # Devoirs, copies, correction IA + validation professeur
+├── ai_agent/           # Service d'appel à Claude (génération + correction)
+├── gestion/             # Page d'administration des clients et abonnements
+├── messagerie/          # Conversations et pièces jointes entre utilisateurs
+├── documents_perso/     # Espace de stockage personnel (dossiers + fichiers)
+├── bulletins/            # Génération des bulletins scolaires
+├── core/                # Landing page, tableaux de bord par rôle, contact lycée
+├── templates/            # Gabarits HTML (Bootstrap 5)
+└── static/               # CSS
 ```
 
 ### Rôle de l'agent IA (`ai_agent/services.py`)

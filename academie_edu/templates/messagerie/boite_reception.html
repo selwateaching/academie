@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titre %}Messagerie{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold mb-0">Messagerie</h2>
+  <a href="{% url 'messagerie:nouvelle_conversation' %}" class="btn btn-primary fw-semibold"><i class="bi bi-pencil-square me-1"></i>Nouveau message</a>
+</div>
+
+<div class="card-academie p-0">
+  {% for ligne in lignes %}
+    <a href="{% url 'messagerie:conversation_detail' ligne.conversation.pk %}" class="text-decoration-none text-dark">
+      <div class="d-flex justify-content-between align-items-center p-3 {% if not forloop.last %}border-bottom{% endif %}">
+        <div>
+          <div class="fw-semibold">
+            {{ ligne.autre.get_full_name|default:ligne.autre.username }}
+            <span class="badge-role" style="background:#eef2ff;color:#4338ca;">{{ ligne.autre.get_role_display }}</span>
+          </div>
+          <div class="text-muted small">
+            {% if ligne.dernier %}
+              {% if ligne.dernier.contenu %}{{ ligne.dernier.contenu|truncatechars:80 }}{% else %}📎 Pièce jointe{% endif %}
+            {% else %}Aucun message{% endif %}
+          </div>
+        </div>
+        {% if ligne.non_lus %}<span class="badge bg-primary rounded-pill">{{ ligne.non_lus }}</span>{% endif %}
+      </div>
+    </a>
+  {% empty %}
+    <div class="text-center text-muted py-5">
+      <i class="bi bi-chat-dots fs-1 mb-3 d-block"></i>
+      Aucune conversation pour le moment.
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

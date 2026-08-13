@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Conversation avec {{ autre.get_full_name }}{% endblock %}
+{% block contenu %}
+<p class="mb-2"><a href="{% url 'messagerie:boite_reception' %}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Messagerie</a></p>
+
+<div class="card-academie p-4 mb-3">
+  <h4 class="fw-bold mb-0">{{ autre.get_full_name|default:autre.username }}</h4>
+  <span class="text-muted small">{{ autre.get_role_display }}</span>
+</div>
+
+<div class="card-academie p-4 mb-3" style="max-height:480px; overflow-y:auto;">
+  {% for message in fil_messages %}
+    <div class="mb-3 d-flex {% if message.expediteur == request.user %}justify-content-end{% endif %}">
+      <div class="p-3 rounded-3" style="max-width:70%; background:{% if message.expediteur == request.user %}var(--primary-light){% else %}#f1f5f9{% endif %};">
+        {% if message.contenu %}<div>{{ message.contenu|linebreaks }}</div>{% endif %}
+        {% if message.fichier %}
+          <a href="{{ message.fichier.url }}" target="_blank" class="d-inline-flex align-items-center gap-1 mt-1">
+            <i class="bi bi-paperclip"></i> Pièce jointe ({{ message.extension_fichier }})
+          </a>
+        {% endif %}
+        <div class="text-muted small mt-1">{{ message.date_envoi|date:"d/m/Y H:i" }}</div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="text-muted text-center mb-0">Aucun message. Lancez la conversation !</p>
+  {% endfor %}
+</div>
+
+<div class="card-academie p-4">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.contenu|add_class:"form-control" }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label small fw-semibold">{{ form.fichier.label }}</label>
+      {{ form.fichier|add_class:"form-control" }}
+      {% for error in form.fichier.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+    </div>
+    {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+    <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-send me-1"></i>Envoyer</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord — Parent{% endblock %}
+{% block contenu %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  <div>
+    <h2 class="fw-bold mb-1">Bonjour {{ user.first_name|default:user.username }} 👋</h2>
+    <p class="text-muted mb-0">Suivez la scolarité de vos enfants et échangez avec leurs professeurs.</p>
+  </div>
+  <a href="{% url 'accounts:lier_enfant' %}" class="btn btn-primary fw-semibold"><i class="bi bi-person-plus me-1"></i>Lier un enfant</a>
+</div>
+
+{% if enfants %}
+  {% for enfant in enfants %}
+  <div class="card-academie p-4 mb-4">
+    <h5 class="fw-bold mb-3">{{ enfant.get_full_name }}</h5>
+    <div class="row g-3">
+      {% for classe in enfant.classes_suivies.all %}
+      <div class="col-md-4">
+        <div class="card-academie p-3 h-100">
+          <div class="fw-semibold">{{ classe.nom }}</div>
+          <div class="text-muted small mb-2">{{ classe.matiere }} · {{ classe.niveau_complet }}</div>
+          <a href="{% url 'bulletins:bulletin_eleve' classe.pk enfant.pk %}" class="btn btn-sm btn-outline-primary">Voir le bulletin</a>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-muted">Aucune classe pour le moment.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="card-academie p-5 text-center text-muted">
+    <i class="bi bi-people fs-1 mb-3 d-block"></i>
+    Vous n'êtes lié à aucun enfant. Demandez son code famille (disponible sur sa page de profil) puis cliquez sur « Lier un enfant ».
+  </div>
+{% endif %}
+{% endblock %}

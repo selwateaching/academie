@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+{% block titre %}Contacter le lycée{% endblock %}
+{% block contenu %}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="card-academie p-4 p-md-5">
+      <h3 class="fw-bold mb-1">Contacter l'administration du lycée</h3>
+      <p class="text-muted mb-4">Votre message sera envoyé par email à l'administration.</p>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold">{{ field.label }}</label>
+            {{ field|add_class:"form-control" }}
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary fw-semibold"><i class="bi bi-envelope me-1"></i>Envoyer</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
