@@ -1,4 +1,5 @@
 {% load static %}
+{% load textutils %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,64 +12,109 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-academie sticky-top">
-    <div class="container">
-      <a class="navbar-brand" href="{% url 'core:landing' %}">
-        <i class="bi bi-mortarboard-fill me-1"></i> Académie IA
-      </a>
-      <button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navMenu">
-        {% if user.is_authenticated %}
-          <ul class="navbar-nav me-auto ms-3">
-            <li class="nav-item"><a class="nav-link" href="{% url 'core:dashboard' %}">Tableau de bord</a></li>
-            {% if user.role == "admin" %}
-              <li class="nav-item"><a class="nav-link" href="{% url 'gestion:liste_clients' %}">Clients</a></li>
-            {% endif %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'messagerie:boite_reception' %}">
-                Messagerie
-                {% if messages_non_lus %}<span class="badge bg-danger rounded-pill">{{ messages_non_lus }}</span>{% endif %}
-              </a>
-            </li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'documents_perso:liste' %}">Mes documents</a></li>
-          </ul>
-          <div class="d-flex align-items-center gap-3">
-            <span class="badge-role">{{ user.get_role_display }}</span>
-            <a class="nav-link" href="{% url 'accounts:profil' %}"><i class="bi bi-person-circle"></i> {{ user.first_name|default:user.username }}</a>
-            <form method="post" action="{% url 'accounts:logout' %}" class="mb-0">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-light">Déconnexion</button>
-            </form>
-          </div>
-        {% else %}
-          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}">Connexion</a></li>
-            <li class="nav-item"><a class="btn btn-light btn-sm fw-semibold" href="{% url 'accounts:inscription' %}">Créer un compte</a></li>
-          </ul>
-        {% endif %}
+<body class="{% if user.is_authenticated %}has-sidebar{% endif %}">
+{% if user.is_authenticated %}
+  {% with vue=request.resolver_match.view_name %}
+  <aside class="sidebar-academie" id="sidebarAcademie">
+    <div class="sidebar-brand">
+      <span class="brand-icon"><i class="bi bi-mortarboard-fill"></i></span>
+      <span class="brand-title">Académie IA</span>
+    </div>
+
+    <div class="sidebar-user">
+      <span class="avatar-initial {{ user.pk|avatar_bg }}">{{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}</span>
+      <div>
+        <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+        <div class="user-role">{{ user.get_role_display }}{% if user.is_professeur %} · {{ user.plan_info.label }}{% endif %}</div>
       </div>
     </div>
-  </nav>
 
-  <main class="container py-4">
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
+    {% if user.is_professeur %}
+      <div class="sidebar-status {% if user.abonnement_statut_libelle != 'Actif' %}inactive{% endif %}">
+        <span class="dot"></span> Abonnement {{ user.abonnement_statut_libelle|lower }}
+      </div>
     {% endif %}
 
-    {% block contenu %}{% endblock %}
-  </main>
+    <div class="sidebar-section-label">Principal</div>
+    <a href="{% url 'core:dashboard' %}" class="sidebar-nav-link {% if vue == 'core:dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
 
-  <footer class="text-center py-4 footer-academie">
-    Académie IA — plateforme pédagogique assistée par intelligence artificielle
-  </footer>
+    {% if user.is_admin_ecole %}
+      <div class="sidebar-section-label">Gestion</div>
+      <a href="{% url 'gestion:liste_clients' %}" class="sidebar-nav-link {% if vue == 'gestion:liste_clients' or vue == 'gestion:detail_client' or vue == 'gestion:creer_client' %}active{% endif %}"><i class="bi bi-people-fill"></i> Clients &amp; abonnements</a>
+      <a href="/admin/" class="sidebar-nav-link"><i class="bi bi-gear-fill"></i> Administration Django</a>
+    {% endif %}
+
+    {% if user.is_professeur or user.is_eleve %}
+      <div class="sidebar-section-label">Organisation</div>
+      <a href="{% url 'documents_perso:liste' %}" class="sidebar-nav-link {% if 'documents_perso' in vue %}active{% endif %}"><i class="bi bi-folder-fill"></i> Mes documents</a>
+      <a href="{% url 'academics:programme_national' %}" class="sidebar-nav-link {% if vue == 'academics:programme_national' %}active{% endif %}"><i class="bi bi-journal-bookmark-fill"></i> Programme national</a>
+    {% endif %}
+
+    <div class="sidebar-section-label">Communication</div>
+    <a href="{% url 'messagerie:boite_reception' %}" class="sidebar-nav-link {% if 'messagerie' in vue %}active{% endif %}">
+      <i class="bi bi-chat-dots-fill"></i> Messagerie
+      {% if messages_non_lus %}<span class="badge bg-danger rounded-pill ms-auto">{{ messages_non_lus }}</span>{% endif %}
+    </a>
+    {% if user.is_professeur %}
+      <a href="{% url 'core:contacter_lycee' %}" class="sidebar-nav-link {% if vue == 'core:contacter_lycee' %}active{% endif %}"><i class="bi bi-envelope-fill"></i> Contacter le lycée</a>
+    {% endif %}
+    {% if user.is_parent %}
+      <a href="{% url 'accounts:lier_enfant' %}" class="sidebar-nav-link {% if vue == 'accounts:lier_enfant' %}active{% endif %}"><i class="bi bi-person-plus-fill"></i> Lier un enfant</a>
+    {% endif %}
+
+    <div class="sidebar-section-label">Compte</div>
+    <a href="{% url 'accounts:profil' %}" class="sidebar-nav-link {% if vue == 'accounts:profil' %}active{% endif %}"><i class="bi bi-person-circle"></i> Mon profil</a>
+
+    <div class="sidebar-footer">
+      <form method="post" action="{% url 'accounts:logout' %}" class="mb-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Déconnexion</button>
+      </form>
+    </div>
+  </aside>
+  {% endwith %}
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="document.getElementById('sidebarAcademie').classList.remove('show'); this.style.display='none';"></div>
+{% endif %}
+
+  <div class="app-shell {% if not user.is_authenticated %}app-shell-public{% endif %}">
+    <div class="app-topbar">
+      {% if user.is_authenticated %}
+        <div class="d-flex align-items-center gap-2">
+          <button class="sidebar-toggle-btn" onclick="document.getElementById('sidebarAcademie').classList.toggle('show'); document.getElementById('sidebarBackdrop').style.display = document.getElementById('sidebarAcademie').classList.contains('show') ? 'block' : 'none';">
+            <i class="bi bi-list fs-5"></i>
+          </button>
+          <span class="fw-bold d-lg-none">Académie IA</span>
+        </div>
+        <span class="badge-role" style="background:var(--primary-light); color:var(--primary-dark);">{{ user.get_role_display }}</span>
+      {% else %}
+        <a href="{% url 'core:landing' %}" class="fw-bold text-decoration-none text-dark">
+          <i class="bi bi-mortarboard-fill text-primary-academie me-1"></i> Académie IA
+        </a>
+        <div class="d-flex align-items-center gap-2">
+          <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-primary">Connexion</a>
+          <a href="{% url 'accounts:inscription' %}" class="btn btn-sm btn-primary fw-semibold">Créer un compte</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <main class="app-content">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block contenu %}{% endblock %}
+    </main>
+
+    <footer class="text-center py-4 footer-academie">
+      Académie IA — plateforme pédagogique assistée par intelligence artificielle
+    </footer>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

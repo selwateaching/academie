@@ -11,6 +11,7 @@ from accounts.models import Utilisateur
 from homework.models import Copie
 
 from .forms import ContactLyceeForm
+from .stats import stats_professeur
 
 
 def landing(request):
@@ -25,16 +26,10 @@ def dashboard(request):
 
     if user.role == Utilisateur.Role.PROFESSEUR:
         classes = Classe.objects.filter(professeur=user)
-        copies_a_corriger = Copie.objects.filter(devoir__professeur=user, corrigee_par_ia=False).count()
-        copies_a_valider = Copie.objects.filter(devoir__professeur=user, corrigee_par_ia=True, validee_par_professeur=False).count()
         return render(
             request,
             "core/dashboard_professeur.html",
-            {
-                "classes": classes,
-                "copies_a_corriger": copies_a_corriger,
-                "copies_a_valider": copies_a_valider,
-            },
+            {"classes": classes, "stats": stats_professeur(user)},
         )
 
     if user.role == Utilisateur.Role.ELEVE:

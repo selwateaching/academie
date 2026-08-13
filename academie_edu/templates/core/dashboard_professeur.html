@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load textutils %}
 {% block titre %}Tableau de bord — Professeur{% endblock %}
 {% block contenu %}
 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
@@ -12,39 +13,106 @@
   </div>
 </div>
 
-<div class="card-academie p-3 mb-4 d-flex flex-row justify-content-between align-items-center flex-wrap gap-2">
-  <div>
-    <span class="badge-ia me-2">{{ user.plan_info.label }}</span>
-    <span class="text-muted small">
-      {{ classes|length }}{% if user.plan_info.max_classes %} / {{ user.plan_info.max_classes }}{% endif %} classe(s) ·
-      {{ user.generations_ia_mois_courant }}{% if user.plan_info.max_generations_ia_mois %} / {{ user.plan_info.max_generations_ia_mois }}{% endif %} générations IA ce mois
-    </span>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon tone-gray"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-number">{{ stats.nb_eleves }}</div>
+      <div class="stat-label">Élèves</div>
+    </div>
   </div>
-  {% if user.abonnement_statut_libelle != "Actif" %}
-    <span class="badge bg-warning text-dark">Abonnement {{ user.abonnement_statut_libelle|lower }} — contactez l'administrateur</span>
-  {% endif %}
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon tone-amber"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-number">{{ stats.copies_a_corriger }}</div>
+      <div class="stat-label">Copies à corriger</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon tone-blue"><i class="bi bi-check2-square"></i></div>
+      <div class="stat-number">{{ stats.copies_a_valider }}</div>
+      <div class="stat-label">Corrections IA à valider</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-icon tone-violet"><i class="bi bi-graph-up"></i></div>
+      <div class="stat-number">{% if stats.moyenne_generale %}{{ stats.moyenne_generale }}{% else %}—{% endif %}</div>
+      <div class="stat-label">Moyenne générale /20</div>
+    </div>
+  </div>
 </div>
 
+{% if user.abonnement_statut_libelle != "Actif" %}
+  <div class="alert alert-warning">Abonnement {{ user.abonnement_statut_libelle|lower }} — contactez l'administrateur pour le réactiver.</div>
+{% endif %}
+
 <div class="row g-3 mb-4">
-  <div class="col-md-4">
-    <div class="stat-tile">
-      <div class="stat-value">{{ classes|length }}</div>
-      <div class="text-muted">Classe(s)</div>
+  <div class="col-lg-6">
+    <div class="card-academie p-4 h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Top élèves</h5>
+        <span class="text-muted small">Moyenne sur 20</span>
+      </div>
+      {% for ligne in stats.top_eleves %}
+        <div class="list-row">
+          <div class="d-flex align-items-center gap-2">
+            <span class="avatar-initial {{ ligne.eleve.pk|avatar_bg }}">{{ ligne.eleve.first_name|slice:":1"|upper }}</span>
+            <span>{{ ligne.eleve.get_full_name|default:ligne.eleve.username }}</span>
+          </div>
+          <span class="note-pill {% if ligne.moyenne >= 12 %}bonne{% elif ligne.moyenne >= 10 %}moyenne{% else %}faible{% endif %}">{{ ligne.moyenne }}</span>
+        </div>
+      {% empty %}
+        <p class="text-muted mb-0">Aucune note enregistrée pour le moment.</p>
+      {% endfor %}
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="stat-tile">
-      <div class="stat-value">{{ copies_a_corriger }}</div>
-      <div class="text-muted">Copie(s) en attente de correction</div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="stat-tile">
-      <div class="stat-value">{{ copies_a_valider }}</div>
-      <div class="text-muted">Correction(s) IA à valider</div>
+
+  <div class="col-lg-6">
+    <div class="card-academie p-4 h-100">
+      <h5 class="fw-bold mb-3">Répartition des notes</h5>
+      {% with total=stats.total_notes %}
+      <div class="repartition-row">
+        <span class="repartition-label">&lt; 10</span>
+        <div class="repartition-track"><div class="repartition-fill rouge" style="width:{% widthratio stats.repartition.moins_10 total|default:1 100 %}%"></div></div>
+        <span class="repartition-count">{{ stats.repartition.moins_10 }} {% if total %}({% widthratio stats.repartition.moins_10 total 100 %}%){% endif %}</span>
+      </div>
+      <div class="repartition-row">
+        <span class="repartition-label">10 - 12</span>
+        <div class="repartition-track"><div class="repartition-fill orange" style="width:{% widthratio stats.repartition.entre_10_12 total|default:1 100 %}%"></div></div>
+        <span class="repartition-count">{{ stats.repartition.entre_10_12 }} {% if total %}({% widthratio stats.repartition.entre_10_12 total 100 %}%){% endif %}</span>
+      </div>
+      <div class="repartition-row">
+        <span class="repartition-label">12 - 16</span>
+        <div class="repartition-track"><div class="repartition-fill bleu" style="width:{% widthratio stats.repartition.entre_12_16 total|default:1 100 %}%"></div></div>
+        <span class="repartition-count">{{ stats.repartition.entre_12_16 }} {% if total %}({% widthratio stats.repartition.entre_12_16 total 100 %}%){% endif %}</span>
+      </div>
+      <div class="repartition-row">
+        <span class="repartition-label">≥ 16</span>
+        <div class="repartition-track"><div class="repartition-fill vert" style="width:{% widthratio stats.repartition.plus_16 total|default:1 100 %}%"></div></div>
+        <span class="repartition-count">{{ stats.repartition.plus_16 }} {% if total %}({% widthratio stats.repartition.plus_16 total 100 %}%){% endif %}</span>
+      </div>
+      {% if not total %}<p class="text-muted small mb-0 mt-2">Aucune note validée pour le moment.</p>{% endif %}
+      {% endwith %}
     </div>
   </div>
 </div>
+
+{% if stats.eleves_en_difficulte %}
+<div class="card-academie p-4 mb-4">
+  <h5 class="fw-bold mb-3"><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Alertes pédagogiques</h5>
+  {% for ligne in stats.eleves_en_difficulte %}
+    <div class="list-row">
+      <div class="d-flex align-items-center gap-2">
+        <span class="avatar-initial {{ ligne.eleve.pk|avatar_bg }}">{{ ligne.eleve.first_name|slice:":1"|upper }}</span>
+        <span>{{ ligne.eleve.get_full_name|default:ligne.eleve.username }} <span class="text-muted small">— moyenne insuffisante</span></span>
+      </div>
+      <span class="note-pill faible">{{ ligne.moyenne }}</span>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
 
 <h4 class="fw-bold mb-3">Mes classes</h4>
 {% if classes %}

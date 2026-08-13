@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block titre %}Programme national algérien{% endblock %}
+{% block contenu %}
+<h2 class="fw-bold mb-1">Programme national algérien</h2>
+<p class="text-muted mb-4">Cycles, années, filières et matières officielles utilisés par la plateforme pour la création des classes et la génération par l'IA.</p>
+
+{% for cycle_code, cycle in catalogue.items %}
+<div class="card-academie p-4 mb-4">
+  <h4 class="fw-bold mb-3"><i class="bi bi-bookmark-fill text-primary-academie me-2"></i>{{ cycle.label }}</h4>
+  <div class="row g-3">
+    {% for annee_code, annee in cycle.annees.items %}
+    <div class="col-md-6">
+      <div class="card-academie p-3 h-100" style="background:#fafbff;">
+        <div class="fw-semibold mb-2">{{ annee.label }}</div>
+        {% if annee.filieres %}
+          {% for filiere_code, filiere in annee.filieres.items %}
+            <div class="mb-2">
+              <span class="badge-ia mb-1 d-inline-block">{{ filiere.label }}</span>
+              <div class="text-muted small">{{ filiere.matieres|join:", " }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-muted small">{{ annee.matieres|join:", " }}</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

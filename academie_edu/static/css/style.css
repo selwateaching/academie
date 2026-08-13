@@ -143,3 +143,313 @@ body {
 .markdown-content h3 { font-size: 1.15rem; margin-top: 1.2rem; }
 .markdown-content p { line-height: 1.7; }
 .markdown-content ul, .markdown-content ol { line-height: 1.7; }
+
+/* ============================================================
+   Sidebar shell
+   ============================================================ */
+:root {
+  --sidebar-width: 268px;
+  --sidebar-bg: #12141c;
+  --sidebar-bg-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-text: #aab0c0;
+  --sidebar-text-muted: #5b6478;
+  --sidebar-text-active: #ffffff;
+}
+
+body.has-sidebar {
+  background: var(--bg);
+}
+
+.sidebar-academie {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 1040;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-brand {
+  padding: 1.5rem 1.35rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sidebar-brand .brand-title {
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.sidebar-brand .brand-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.sidebar-user {
+  margin: 0 1.1rem 1rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.sidebar-user .user-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.sidebar-user .user-role {
+  color: var(--sidebar-text-muted);
+  font-size: 0.72rem;
+}
+
+.sidebar-status {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 1.35rem 0.5rem;
+  font-size: 0.72rem;
+  color: var(--sidebar-text-muted);
+}
+
+.sidebar-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  flex-shrink: 0;
+}
+
+.sidebar-status.inactive .dot { background: var(--danger); }
+
+.sidebar-section-label {
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--sidebar-text-muted);
+  padding: 1.1rem 1.35rem 0.4rem;
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 1.35rem;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 0.88rem;
+  border-left: 3px solid transparent;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-nav-link i { width: 1.1rem; text-align: center; opacity: 0.85; }
+
+.sidebar-nav-link:hover {
+  background: var(--sidebar-bg-hover);
+  color: #fff;
+}
+
+.sidebar-nav-link.active {
+  background: rgba(99, 102, 241, 0.16);
+  color: var(--sidebar-text-active);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.35rem 1.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-footer form button {
+  width: 100%;
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 1035;
+}
+
+.app-shell {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+}
+
+.app-shell-public {
+  margin-left: 0;
+}
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #eef0f4;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+.sidebar-toggle-btn {
+  display: none;
+  border: none;
+  background: #f1f5f9;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.app-content {
+  padding: 1.75rem 2rem 3rem;
+}
+
+@media (max-width: 991.98px) {
+  .sidebar-academie { transform: translateX(-100%); }
+  .sidebar-academie.show { transform: translateX(0); }
+  .sidebar-academie.show ~ .sidebar-backdrop { display: block; }
+  .app-shell { margin-left: 0; }
+  .sidebar-toggle-btn { display: inline-flex; }
+}
+
+/* ============================================================
+   Stat cards (tableau de bord)
+   ============================================================ */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  height: 100%;
+}
+
+.stat-card::after {
+  content: "";
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08), transparent 70%);
+}
+
+.stat-card .stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat-icon.tone-gray { background: #f1f5f9; color: #475569; }
+.stat-icon.tone-amber { background: #fef3c7; color: #b45309; }
+.stat-icon.tone-blue { background: #dbeafe; color: #1d4ed8; }
+.stat-icon.tone-violet { background: #ede9fe; color: #6d28d9; }
+.stat-icon.tone-green { background: #dcfce7; color: #15803d; }
+
+.stat-card .stat-number {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+}
+
+.stat-card .stat-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+}
+
+/* Avatars */
+.avatar-initial {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.avatar-bg-0 { background: #6366f1; }
+.avatar-bg-1 { background: #06b6d4; }
+.avatar-bg-2 { background: #16a34a; }
+.avatar-bg-3 { background: #d97706; }
+.avatar-bg-4 { background: #dc2626; }
+.avatar-bg-5 { background: #7c3aed; }
+
+/* Répartition des notes */
+.repartition-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.7rem;
+}
+
+.repartition-label { width: 60px; font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+.repartition-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 999px; overflow: hidden; }
+.repartition-fill { height: 100%; border-radius: 999px; }
+.repartition-fill.rouge { background: var(--danger); }
+.repartition-fill.orange { background: var(--warning); }
+.repartition-fill.bleu { background: #3b82f6; }
+.repartition-fill.vert { background: var(--success); }
+.repartition-count { width: 70px; text-align: right; font-size: 0.8rem; font-weight: 600; color: #0f172a; flex-shrink: 0; }
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.list-row:last-child { border-bottom: none; }
+
+.note-pill {
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.15em 0.6em;
+  border-radius: 999px;
+}
+
+.note-pill.bonne { color: #15803d; background: #dcfce7; }
+.note-pill.moyenne { color: #b45309; background: #fef3c7; }
+.note-pill.faible { color: #b91c1c; background: #fee2e2; }

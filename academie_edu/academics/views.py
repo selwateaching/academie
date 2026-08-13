@@ -78,3 +78,8 @@ def retirer_eleve(request, pk, eleve_id):
     classe.eleves.remove(eleve_id)
     messages.success(request, "Élève retiré de la classe.")
     return redirect("academics:detail_classe", pk=classe.pk)
+
+
+@login_required
+def programme_national(request):
+    return render(request, "academics/programme_national.html", {"catalogue": pn.PROGRAMME})

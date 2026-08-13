@@ -15,3 +15,13 @@ def markdown_filter(text):
         return ""
     html = md.markdown(escape(text), extensions=["extra", "nl2br"])
     return mark_safe(html)
+
+
+@register.filter(name="avatar_bg")
+def avatar_bg(pk):
+    """Retourne une classe CSS de couleur d'avatar déterministe à partir d'un identifiant."""
+    try:
+        indice = int(pk) % 6
+    except (TypeError, ValueError):
+        indice = 0
+    return f"avatar-bg-{indice}"
