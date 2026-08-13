@@ -5,6 +5,24 @@
 <h2 class="fw-bold mb-1">Mes élèves</h2>
 <p class="text-muted mb-4">Tous les élèves de vos classes, avec leur moyenne et leur assiduité.</p>
 
+{% if not roster %}
+  {% if not classes %}
+    <div class="card-academie p-4 mb-4">
+      <p class="mb-3">Vous n'avez pas encore de classe. Créez-en une pour pouvoir y ajouter des élèves.</p>
+      <a href="{% url 'academics:creer_classe' %}" class="btn btn-primary fw-semibold"><i class="bi bi-plus-circle me-1"></i>Créer une classe</a>
+    </div>
+  {% else %}
+    <div class="card-academie p-4 mb-4">
+      <p class="mb-3">Vous n'avez pas encore d'élève dans vos classes. Pour en ajouter, ouvrez une classe puis cliquez sur « Ajouter un élève » (ou partagez son code d'accès) :</p>
+      <div class="d-flex flex-wrap gap-2">
+        {% for classe in classes %}
+          <a href="{% url 'academics:detail_classe' classe.pk %}" class="btn btn-outline-primary btn-sm">{{ classe.nom }} <span class="text-muted">({{ classe.matiere }})</span></a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
 <div class="card-academie p-0">
   <table class="table mb-0 align-middle">
     <thead>

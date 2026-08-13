@@ -56,7 +56,14 @@ def dashboard(request):
 
 @role_required(Utilisateur.Role.PROFESSEUR)
 def mes_eleves(request):
-    return render(request, "core/mes_eleves.html", {"roster": roster_professeur(request.user)})
+    return render(
+        request,
+        "core/mes_eleves.html",
+        {
+            "roster": roster_professeur(request.user),
+            "classes": Classe.objects.filter(professeur=request.user),
+        },
+    )
 
 
 @role_required(Utilisateur.Role.PROFESSEUR)
