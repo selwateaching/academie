@@ -1,0 +1,574 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Entreprise & utilisateurs ─────────────────────────────────────────────
+
+model Company {
+  id                String   @id @default(cuid())
+  name              String   @default("Mon Entreprise BTP")
+  logo              String?
+  address           String?
+  zip               String?
+  city              String?
+  phone             String?
+  email             String?
+  siret             String?
+  vatNumber         String?
+  iban              String?
+  bic               String?
+  defaultVatRate    Float    @default(20)
+  paymentTerms      String?  @default("Paiement à 30 jours")
+  quoteValidityDays Int      @default(30)
+  legalMentions     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  users         User[]
+  clients       Client[]
+  prospects     Prospect[]
+  chantiers     Chantier[]
+  devis         Devis[]
+  factures      Facture[]
+  materials     Material[]
+  suppliers     Supplier[]
+  documents     Document[]
+  tasks         Task[]
+  events        CalendarEvent[]
+  conversations Conversation[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model User {
+  id               String   @id @default(cuid())
+  companyId        String
+  company          Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name             String
+  email            String   @unique
+  passwordHash     String
+  role             String   @default("SALARIE")
+  phone            String?
+  position         String?
+  skills           String?
+  team             String?
+  avatarColor      String?  @default("#2563eb")
+  active           Boolean  @default(true)
+  twoFactorEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  chantiersManaged    Chantier[]                @relation("ChantierManager")
+  chantierMemberships ChantierMember[]
+  timeEntries         TimeEntry[]
+  tasksAssigned       Task[]                    @relation("TaskAssignee")
+  tasksCreated        Task[]                    @relation("TaskCreator")
+  documentsUploaded   Document[]
+  employeeDocuments   Document[]                @relation("EmployeeDocuments")
+  photosUploaded      Photo[]
+  notifications       Notification[]
+  messages            Message[]
+  conversationMembers ConversationParticipant[]
+  eventAttendances    CalendarEventAttendee[]
+  auditLogs           AuditLog[]
+  devisCreated        Devis[]
+  facturesCreated     Facture[]
+  absences            Absence[]
+}
+
+// ─── Clients & prospects ────────────────────────────────────────────────────
+
+model Client {
+  id            String   @id @default(cuid())
+  companyId     String
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type          String   @default("PARTICULIER")
+  firstName     String
+  lastName      String
+  companyName   String?
+  email         String?
+  phone         String?
+  address       String?
+  siteAddress   String?
+  notes         String?
+  passwordHash  String?
+  portalEnabled Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  chantiers      Chantier[]
+  devis          Devis[]
+  factures       Facture[]
+  documents      Document[]
+  tasks          Task[]
+  events         CalendarEvent[]
+  conversations  Conversation[]
+  messages       Message[]
+  prospectOrigin Prospect?
+}
+
+model Prospect {
+  id                String            @id @default(cuid())
+  companyId         String
+  company           Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  firstName         String
+  lastName          String
+  companyName       String?
+  email             String?
+  phone             String?
+  origin            String?
+  request           String?
+  estimatedAmount   Float?
+  status            String            @default("NOUVEAU")
+  nextAction        String?
+  nextActionDate    DateTime?
+  notes             String?
+  convertedClientId String?           @unique
+  convertedClient   Client?           @relation(fields: [convertedClientId], references: [id])
+  createdAt         DateTime          @default(now())
+  contacts          ProspectContact[]
+}
+
+model ProspectContact {
+  id         String   @id @default(cuid())
+  prospectId String
+  prospect   Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  date       DateTime @default(now())
+  note       String
+}
+
+// ─── Chantiers ───────────────────────────────────────────────────────────
+
+model Chantier {
+  id             String    @id @default(cuid())
+  companyId      String
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name           String
+  clientId       String
+  client         Client    @relation(fields: [clientId], references: [id])
+  address        String?
+  lat            Float?
+  lng            Float?
+  startDate      DateTime?
+  endDatePlanned DateTime?
+  endDateActual  DateTime?
+  managerId      String?
+  manager        User?     @relation("ChantierManager", fields: [managerId], references: [id])
+  budgetPlanned  Float     @default(0)
+  costActual     Float     @default(0)
+  revenuePlanned Float     @default(0)
+  status         String    @default("A_PREPARER")
+  progress       Int       @default(0)
+  description    String?
+  createdAt      DateTime  @default(now())
+
+  members        ChantierMember[]
+  devis          Devis[]
+  factures       Facture[]
+  documents      Document[]
+  photos         Photo[]
+  tasks          Task[]
+  timeEntries    TimeEntry[]
+  stockMoves     StockMovement[]
+  events         CalendarEvent[]
+  conversations  Conversation[]
+  expenses       Expense[]
+  supplierOrders SupplierOrder[]
+}
+
+model ChantierMember {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleOnSite String?
+
+  @@unique([chantierId, userId])
+}
+
+model Expense {
+  id         String   @id @default(cuid())
+  chantierId String
+  chantier   Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  category   String
+  label      String
+  amount     Float
+  date       DateTime @default(now())
+  note       String?
+}
+
+// ─── Devis ───────────────────────────────────────────────────────────────
+
+model Devis {
+  id           String    @id @default(cuid())
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  number       String    @unique
+  clientId     String
+  client       Client    @relation(fields: [clientId], references: [id])
+  chantierId   String?
+  chantier     Chantier? @relation(fields: [chantierId], references: [id])
+  status       String    @default("BROUILLON")
+  date         DateTime  @default(now())
+  validUntil   DateTime?
+  discountPct  Float     @default(0)
+  totalHT      Float     @default(0)
+  totalTTC     Float     @default(0)
+  depositPct   Float     @default(0)
+  paymentTerms String?
+  notes        String?
+  createdById  String?
+  createdBy    User?     @relation(fields: [createdById], references: [id])
+  sentAt       DateTime?
+  viewedAt     DateTime?
+  respondedAt  DateTime?
+  createdAt    DateTime  @default(now())
+
+  lines      DevisLine[]
+  factures   Facture[]
+  signatures Signature[]
+}
+
+model DevisLine {
+  id          String @id @default(cuid())
+  devisId     String
+  devis       Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  type        String @default("PRESTATION")
+  description String
+  quantity    Float  @default(1)
+  unit        String @default("u")
+  unitPrice   Float  @default(0)
+  vatRate     Float  @default(20)
+  order       Int    @default(0)
+}
+
+// ─── Factures ────────────────────────────────────────────────────────────
+
+model Facture {
+  id             String    @id @default(cuid())
+  companyId      String
+  company        Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  number         String    @unique
+  clientId       String
+  client         Client    @relation(fields: [clientId], references: [id])
+  chantierId     String?
+  chantier       Chantier? @relation(fields: [chantierId], references: [id])
+  devisId        String?
+  devis          Devis?    @relation(fields: [devisId], references: [id])
+  type           String    @default("STANDARD")
+  status         String    @default("BROUILLON")
+  date           DateTime  @default(now())
+  dueDate        DateTime?
+  discountPct    Float     @default(0)
+  totalHT        Float     @default(0)
+  totalTTC       Float     @default(0)
+  paidAmount     Float     @default(0)
+  paymentTerms   String?
+  notes          String?
+  createdById    String?
+  createdBy      User?     @relation(fields: [createdById], references: [id])
+  sentAt         DateTime?
+  lastReminderAt DateTime?
+  createdAt      DateTime  @default(now())
+
+  lines      FactureLine[]
+  payments   Paiement[]
+  signatures Signature[]
+}
+
+model FactureLine {
+  id          String  @id @default(cuid())
+  factureId   String
+  facture     Facture @relation(fields: [factureId], references: [id], onDelete: Cascade)
+  type        String  @default("PRESTATION")
+  description String
+  quantity    Float   @default(1)
+  unit        String  @default("u")
+  unitPrice   Float   @default(0)
+  vatRate     Float   @default(20)
+  order       Int     @default(0)
+}
+
+model Paiement {
+  id        String   @id @default(cuid())
+  factureId String
+  facture   Facture  @relation(fields: [factureId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    String   @default("VIREMENT")
+  date      DateTime @default(now())
+  note      String?
+}
+
+// ─── Salariés / heures / absences ──────────────────────────────────────────
+
+model TimeEntry {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id])
+  date       DateTime  @default(now())
+  startTime  DateTime?
+  endTime    DateTime?
+  hours      Float     @default(0)
+  note       String?
+  createdAt  DateTime  @default(now())
+}
+
+model Absence {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   @default("CONGE")
+  startDate DateTime
+  endDate   DateTime
+  note      String?
+}
+
+// ─── Matériaux / fournisseurs ──────────────────────────────────────────────
+
+model Supplier {
+  id          String   @id @default(cuid())
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  materials Material[]
+  orders    SupplierOrder[]
+  documents Document[]
+}
+
+model Material {
+  id                String    @id @default(cuid())
+  companyId         String
+  company           Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  reference         String?
+  name              String
+  supplierId        String?
+  supplier          Supplier? @relation(fields: [supplierId], references: [id])
+  purchasePrice     Float     @default(0)
+  unit              String    @default("u")
+  quantityAvailable Float     @default(0)
+  stockMin          Float     @default(0)
+  location          String?
+  createdAt         DateTime  @default(now())
+
+  movements StockMovement[]
+}
+
+model StockMovement {
+  id         String    @id @default(cuid())
+  materialId String
+  material   Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id])
+  quantity   Float
+  type       String
+  date       DateTime  @default(now())
+  note       String?
+}
+
+model SupplierOrder {
+  id         String    @id @default(cuid())
+  supplierId String
+  supplier   Supplier  @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id])
+  date       DateTime  @default(now())
+  status     String    @default("En cours")
+  total      Float     @default(0)
+  notes      String?
+}
+
+// ─── Documents & photos ─────────────────────────────────────────────────
+
+model Document {
+  id           String    @id @default(cuid())
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  folder       String    @default("ADMINISTRATIF")
+  name         String
+  filePath     String
+  mimeType     String?
+  size         Int?
+  clientId     String?
+  client       Client?   @relation(fields: [clientId], references: [id])
+  chantierId   String?
+  chantier     Chantier? @relation(fields: [chantierId], references: [id])
+  supplierId   String?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id])
+  employeeId   String?
+  employee     User?     @relation("EmployeeDocuments", fields: [employeeId], references: [id])
+  uploadedById String?
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime  @default(now())
+
+  signatures Signature[]
+}
+
+model Photo {
+  id           String   @id @default(cuid())
+  chantierId   String
+  chantier     Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  filePath     String
+  caption      String?
+  category     String   @default("EN_COURS")
+  takenAt      DateTime @default(now())
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+}
+
+// ─── Messagerie ─────────────────────────────────────────────────────────
+
+model Conversation {
+  id         String    @id @default(cuid())
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type       String    @default("INTERNAL")
+  name       String?
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id])
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id])
+  createdAt  DateTime  @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUserId   String?
+  senderUser     User?        @relation(fields: [senderUserId], references: [id])
+  senderClientId String?
+  senderClient   Client?      @relation(fields: [senderClientId], references: [id])
+  body           String
+  attachmentPath String?
+  attachmentName String?
+  createdAt      DateTime     @default(now())
+}
+
+// ─── Notifications ───────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ─── Tâches ──────────────────────────────────────────────────────────────
+
+model Task {
+  id           String    @id @default(cuid())
+  companyId    String
+  company      Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  status       String    @default("A_FAIRE")
+  priority     String    @default("NORMALE")
+  dueDate      DateTime?
+  clientId     String?
+  client       Client?   @relation(fields: [clientId], references: [id])
+  chantierId   String?
+  chantier     Chantier? @relation(fields: [chantierId], references: [id])
+  assignedToId String?
+  assignedTo   User?     @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdById  String?
+  createdBy    User?     @relation("TaskCreator", fields: [createdById], references: [id])
+  createdAt    DateTime  @default(now())
+}
+
+// ─── Calendrier ──────────────────────────────────────────────────────────
+
+model CalendarEvent {
+  id         String    @id @default(cuid())
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title      String
+  type       String    @default("RDV")
+  start      DateTime
+  end        DateTime
+  allDay     Boolean   @default(false)
+  chantierId String?
+  chantier   Chantier? @relation(fields: [chantierId], references: [id])
+  clientId   String?
+  client     Client?   @relation(fields: [clientId], references: [id])
+  location   String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+
+  attendees CalendarEventAttendee[]
+}
+
+model CalendarEventAttendee {
+  id      String        @id @default(cuid())
+  eventId String
+  event   CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+// ─── Signature électronique ────────────────────────────────────────────────
+
+model Signature {
+  id             String    @id @default(cuid())
+  docType        String
+  devisId        String?
+  devis          Devis?    @relation(fields: [devisId], references: [id])
+  factureId      String?
+  facture        Facture?  @relation(fields: [factureId], references: [id])
+  documentId     String?
+  document       Document? @relation(fields: [documentId], references: [id])
+  signerName     String
+  signerEmail    String?
+  signatureImage String
+  signedAt       DateTime  @default(now())
+  ipAddress      String?
+}
+
+// ─── Journal d'audit ────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+}

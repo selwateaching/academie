@@ -1,0 +1,13 @@
+{
+  "name": "BTP Manager",
+  "short_name": "BTP Manager",
+  "description": "Gestion complète d'entreprise BTP : devis, factures, chantiers, planning, équipes.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

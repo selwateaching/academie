@@ -1,11 +1,37 @@
+# Node
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# Env
+.env
+.env*.local
+
+# Prisma / DB
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+
+# Uploads / storage
+storage/uploads/
+
+# Misc
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel
+tsconfig.tsbuildinfo
+
+# Python legacy
 __pycache__/
 *.pyc
 instance/
-*.db
-.env
 venv/
 .venv/
 *.egg-info/
-dist/
-build/
-.DS_Store
