@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
-const STORAGE_ROOT = path.join(process.cwd(), 'storage', 'uploads');
+const STORAGE_ROOT = process.env.STORAGE_DIR || path.join(process.cwd(), 'storage', 'uploads');
 
 export async function saveUploadedFile(file: File, subdir: string): Promise<{ filePath: string; name: string; size: number; mimeType: string }> {
   const dir = path.join(STORAGE_ROOT, subdir);
