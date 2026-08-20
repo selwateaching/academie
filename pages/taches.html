@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tâches – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Tâches</h1>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher une tâche…" />
+            <select id="filter-statut">
+              <option value="">Tous les statuts</option>
+              <option value="a_faire">À faire</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+              <option value="bloque">Bloqué</option>
+            </select>
+            <select id="filter-priorite">
+              <option value="">Toutes priorités</option>
+              <option value="basse">Basse</option>
+              <option value="normale">Normale</option>
+              <option value="haute">Haute</option>
+              <option value="urgente">Urgente</option>
+            </select>
+            <label style="display:flex; align-items:center; gap:6px; font-size:0.88rem;">
+              <input type="checkbox" id="filter-mine" style="width:auto;" /> Mes tâches uniquement
+            </label>
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouvelle tâche</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Lié à</th>
+                <th>Assigné à</th>
+                <th>Échéance</th>
+                <th>Priorité</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tasks-tbody"><tr><td colspan="7">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucune tâche pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouvelle tâche</h2>
+      <form id="task-form">
+        <input type="hidden" id="task-id" />
+        <div class="form-group"><label for="titre">Titre *</label><input id="titre" required /></div>
+        <div class="form-group"><label for="description">Description</label><textarea id="description" rows="3"></textarea></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="statut">Statut</label>
+            <select id="statut">
+              <option value="a_faire">À faire</option>
+              <option value="en_cours">En cours</option>
+              <option value="termine">Terminé</option>
+              <option value="bloque">Bloqué</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="priorite">Priorité</label>
+            <select id="priorite">
+              <option value="basse">Basse</option>
+              <option value="normale" selected>Normale</option>
+              <option value="haute">Haute</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label for="echeance">Échéance</label><input type="date" id="echeance" /></div>
+          <div class="form-group">
+            <label for="assigned_to">Assigné à</label>
+            <select id="assigned_to"><option value="">— Non assigné —</option></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="client_id">Client (optionnel)</label>
+            <select id="client_id"><option value="">— Aucun —</option></select>
+          </div>
+          <div class="form-group">
+            <label for="project_id">Chantier (optionnel)</label>
+            <select id="project_id"><option value="">— Aucun —</option></select>
+          </div>
+        </div>
+
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/taches.js"></script>
+</body>
+</html>

@@ -45,6 +45,8 @@ Dans Supabase, ouvre **SQL Editor → New query**, puis copie-colle et exécute
    et les devis (avec leurs lignes et leur numérotation automatique).
 5. `sql/005_invoices.sql` — ajoute les factures (tous types), leurs
    lignes et le suivi des paiements.
+6. `sql/006_tasks_appointments.sql` — ajoute les tâches et l'agenda
+   (rendez-vous).
 
 Chaque script n'affecte que ses propres tables : les données déjà
 créées (clients, devis, utilisateurs...) ne sont jamais modifiées ni
