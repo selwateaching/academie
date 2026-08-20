@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Documents – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Documents</h1>
+
+        <div class="card" style="margin-bottom:18px;">
+          <h3 style="margin-top:0;">Ajouter un document</h3>
+          <form id="upload-form">
+            <div class="form-row">
+              <div class="form-group" style="flex:2;"><label for="file-input">Fichier</label><input type="file" id="file-input" required /></div>
+              <div class="form-group">
+                <label for="categorie">Catégorie</label>
+                <select id="categorie">
+                  <option value="contrat">Contrat</option>
+                  <option value="devis">Devis</option>
+                  <option value="facture">Facture</option>
+                  <option value="assurance">Assurance</option>
+                  <option value="attestation">Attestation</option>
+                  <option value="plan">Plan</option>
+                  <option value="photo">Photo</option>
+                  <option value="bon_commande">Bon de commande</option>
+                  <option value="bon_livraison">Bon de livraison</option>
+                  <option value="document_salarie">Document salarié</option>
+                  <option value="document_chantier">Document chantier</option>
+                  <option value="document_fournisseur">Document fournisseur</option>
+                  <option value="autre" selected>Autre</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="project_id">Chantier (optionnel)</label>
+                <select id="project_id"><option value="">— Aucun —</option></select>
+              </div>
+              <div class="form-group">
+                <label for="client_id">Client (optionnel)</label>
+                <select id="client_id"><option value="">— Aucun —</option></select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="upload-btn">Téléverser</button>
+            <p class="form-msg" id="upload-msg"></p>
+          </form>
+        </div>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher un document…" />
+            <select id="filter-categorie">
+              <option value="">Toutes catégories</option>
+              <option value="contrat">Contrat</option>
+              <option value="devis">Devis</option>
+              <option value="facture">Facture</option>
+              <option value="assurance">Assurance</option>
+              <option value="attestation">Attestation</option>
+              <option value="plan">Plan</option>
+              <option value="photo">Photo</option>
+              <option value="bon_commande">Bon de commande</option>
+              <option value="bon_livraison">Bon de livraison</option>
+              <option value="document_salarie">Document salarié</option>
+              <option value="document_chantier">Document chantier</option>
+              <option value="document_fournisseur">Document fournisseur</option>
+              <option value="autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nom</th><th>Catégorie</th><th>Chantier</th><th>Client</th><th>Ajouté le</th><th></th></tr></thead>
+            <tbody id="docs-tbody"><tr><td colspan="6">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun document pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="../js/documents.js"></script>
+</body>
+</html>

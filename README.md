@@ -47,10 +47,20 @@ Dans Supabase, ouvre **SQL Editor → New query**, puis copie-colle et exécute
    lignes et le suivi des paiements.
 6. `sql/006_tasks_appointments.sql` — ajoute les tâches et l'agenda
    (rendez-vous).
+7. `sql/007_employees_suppliers.sql` — ajoute les infos salariés (poste,
+   taux horaire...), les heures travaillées, les sous-traitants et les
+   fournisseurs.
+8. `sql/008_stock_achats.sql` — ajoute le stock de matériaux, les
+   mouvements de stock et les commandes fournisseurs (achats).
+9. `sql/009_documents.sql` — ajoute la gestion documentaire (GED) et crée
+   le bucket de stockage sécurisé "documents" dans Supabase Storage.
+10. `sql/010_mails.sql` — ajoute le suivi du courrier entrant/sortant.
+11. `sql/011_expenses.sql` — ajoute les dépenses (pour la trésorerie).
 
 Chaque script n'affecte que ses propres tables : les données déjà
 créées (clients, devis, utilisateurs...) ne sont jamais modifiées ni
-supprimées par les scripts suivants.
+supprimées par les scripts suivants. **Exécute-les dans l'ordre, un par
+un, en vérifiant "Success" à chaque fois.**
 
 Si tu dois relancer ces scripts plus tard (par exemple après une mise à
 jour), c'est normal et sans danger : ils sont écrits pour ne pas dupliquer
@@ -200,12 +210,28 @@ sql/005_invoices.sql                          factures + paiements
   dans les fichiers `js/` — ce sera toujours géré via une Edge Function
   Supabase le moment venu.
 
-## Suite du développement
+## État des modules
 
-Prochaines étapes prévues (voir l'échange initial pour le détail) :
-Prospects (pipeline), Devis + PDF, Factures + paiements, Chantiers,
-Planning + tâches, Fournisseurs/Achats/Stock, Documents + Courrier,
-Dashboard complet + Rapports, IA (optionnelle).
+Fonctionnels : Tableau de bord, Clients, Prospects (pipeline), Devis (+PDF),
+Factures + paiements (+PDF), Chantiers (version de base), Planning
+(vue semaine), Équipes (salariés/heures/sous-traitants), Fournisseurs,
+Achats, Stock, Documents (upload/téléchargement sécurisé), Courrier,
+Tâches, Agenda, Trésorerie, Rapports (rentabilité par chantier + export
+CSV), recherche globale, centre de notifications, Paramètres.
+
+**Volontairement pas encore fait**, pour rester prudent :
+- **Chantier détaillé** : la fiche chantier actuelle est une liste avec les
+  infos de base. Le journal de chantier (photos avant/pendant/après,
+  observations quotidiennes) n'est pas encore construit — c'est un module
+  à part entière à ajouter dans une prochaine étape.
+- **IA** : non branchée. Comme convenu au départ pour la sécurité (clé API
+  jamais exposée côté navigateur), ça nécessite une Edge Function
+  Supabase — dis-moi quand tu veux qu'on s'y attelle, avec ta clé API.
+- **Vraie synchronisation Gmail** (lecture automatique des emails) : le
+  bouton "Répondre avec Gmail" actuel ouvre juste une fenêtre de
+  rédaction pré-remplie, sans accéder à ta boîte — une vraie synchro
+  demanderait OAuth Gmail, à valider explicitement avec toi avant de
+  l'implémenter.
 
 Chaque étape ajoute des tables et des colonnes ; **aucune donnée existante
 n'est jamais supprimée** lors de ces évolutions.

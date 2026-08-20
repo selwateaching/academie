@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Courrier – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Courrier</h1>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <select id="filter-direction">
+              <option value="">Entrant + Sortant</option>
+              <option value="entrant">Entrant</option>
+              <option value="sortant">Sortant</option>
+            </select>
+            <select id="filter-statut">
+              <option value="">Tous les statuts</option>
+              <option value="a_traiter">À traiter</option>
+              <option value="en_cours">En cours</option>
+              <option value="traite">Traité</option>
+              <option value="archive">Archivé</option>
+            </select>
+            <input type="search" id="search" placeholder="Rechercher (objet, contact)…" />
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau courrier</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Sens</th><th>Objet</th><th>Contact</th><th>Priorité</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="mails-tbody"><tr><td colspan="7">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun courrier pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouveau courrier</h2>
+      <form id="mail-form">
+        <input type="hidden" id="mail-id" />
+        <div class="form-group">
+          <label>Sens</label>
+          <div class="form-row">
+            <label style="font-weight:400;"><input type="radio" name="direction" value="entrant" checked style="width:auto;" /> Entrant (reçu)</label>
+            <label style="font-weight:400;"><input type="radio" name="direction" value="sortant" style="width:auto;" /> Sortant (envoyé)</label>
+          </div>
+        </div>
+        <div class="form-group"><label for="objet">Objet *</label><input id="objet" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label for="contact">Contact (expéditeur / destinataire)</label><input id="contact" /></div>
+          <div class="form-group"><label for="email_contact">Email du contact</label><input type="email" id="email_contact" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="date">Date</label><input type="date" id="date" /></div>
+          <div class="form-group">
+            <label for="priorite">Priorité</label>
+            <select id="priorite">
+              <option value="basse">Basse</option>
+              <option value="normale" selected>Normale</option>
+              <option value="haute">Haute</option>
+              <option value="urgente">Urgente</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="client_id">Client</label><select id="client_id"><option value="">— Aucun —</option></select></div>
+          <div class="form-group"><label for="project_id">Chantier</label><select id="project_id"><option value="">— Aucun —</option></select></div>
+        </div>
+        <div class="form-group">
+          <label for="statut">Statut</label>
+          <select id="statut">
+            <option value="a_traiter">À traiter</option>
+            <option value="en_cours">En cours</option>
+            <option value="traite">Traité</option>
+            <option value="archive">Archivé</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="notes">Notes</label><textarea id="notes" rows="2"></textarea></div>
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="mailto-btn" style="margin-right:auto;">Répondre avec Gmail</button>
+          <button type="button" class="btn btn-danger" id="delete-btn" style="display:none;">Supprimer</button>
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/courrier.js"></script>
+</body>
+</html>

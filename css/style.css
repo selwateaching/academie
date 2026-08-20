@@ -94,6 +94,21 @@ a:hover { text-decoration: underline; }
   z-index: 30;
 }
 
+.topbar-search { position: relative; flex: 1; max-width: 420px; margin: 0 16px; }
+.topbar-search input { font-size: 0.85rem; }
+.search-results {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+  background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12); max-height: 360px; overflow-y: auto; z-index: 50;
+}
+.search-results.hidden { display: none; }
+.search-group { padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+.search-group:last-child { border-bottom: none; }
+.search-group-label { font-size: 0.7rem; text-transform: uppercase; color: var(--color-text-muted); padding: 4px 12px; font-weight: 700; }
+.search-item { display: block; padding: 7px 12px; font-size: 0.85rem; color: var(--color-text); }
+.search-item:hover { background: #f1f5f9; text-decoration: none; }
+.search-empty { padding: 12px; font-size: 0.85rem; color: var(--color-text-muted); }
+
 .topbar-user { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
 .topbar-user .role-badge {
   background: #e0e7ff; color: var(--color-primary-dark);
@@ -233,4 +248,5 @@ tr:last-child td { border-bottom: none; }
   #sidebar.open { transform: translateX(0); }
   .main-area { margin-left: 0; }
   #menu-toggle { display: block; }
+  .topbar-search { display: none; }
 }

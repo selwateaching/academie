@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fournisseurs – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Fournisseurs</h1>
+        <div class="toolbar">
+          <div class="toolbar-filters"><input type="search" id="search" placeholder="Rechercher un fournisseur…" /></div>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau fournisseur</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Entreprise</th><th>Contact</th><th>Téléphone</th><th>Email</th><th>Conditions de paiement</th><th></th></tr></thead>
+            <tbody id="suppliers-tbody"><tr><td colspan="6">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun fournisseur pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouveau fournisseur</h2>
+      <form id="supplier-form">
+        <input type="hidden" id="supplier-id" />
+        <div class="form-group"><label for="entreprise">Entreprise *</label><input id="entreprise" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label for="contact_nom">Contact</label><input id="contact_nom" /></div>
+          <div class="form-group"><label for="telephone">Téléphone</label><input id="telephone" /></div>
+        </div>
+        <div class="form-group"><label for="email">Email</label><input type="email" id="email" /></div>
+        <div class="form-group"><label for="adresse">Adresse</label><input id="adresse" /></div>
+        <div class="form-group"><label for="conditions_paiement">Conditions de paiement</label><input id="conditions_paiement" placeholder="Ex : 30 jours fin de mois" /></div>
+        <div class="form-group"><label for="notes">Notes</label><textarea id="notes" rows="2"></textarea></div>
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="delete-btn" style="margin-right:auto; display:none;">Supprimer</button>
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/fournisseurs.js"></script>
+</body>
+</html>

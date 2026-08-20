@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Achats – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .items-table input, .items-table select { padding: 6px 7px; font-size: 0.85rem; }
+  .items-table th, .items-table td { padding: 6px 6px; }
+  .modal.modal-lg { max-width: 760px; }
+  .totals-box { margin-top: 14px; text-align: right; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Achats et commandes</h1>
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher (numéro, fournisseur)…" />
+            <select id="filter-statut">
+              <option value="">Tous les statuts</option>
+              <option value="demande">Demande</option>
+              <option value="commandee">Commandée</option>
+              <option value="livree">Livrée</option>
+              <option value="receptionnee">Réceptionnée</option>
+              <option value="annulee">Annulée</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouvelle commande</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Numéro</th><th>Fournisseur</th><th>Chantier</th><th>Livraison prévue</th><th>Total HT</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="po-tbody"><tr><td colspan="7">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucune commande pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal modal-lg">
+      <h2 id="modal-title">Nouvelle commande</h2>
+      <form id="po-form">
+        <input type="hidden" id="po-id" />
+        <div class="form-row">
+          <div class="form-group"><label for="supplier_id">Fournisseur *</label><select id="supplier_id" required><option value="">— Choisir —</option></select></div>
+          <div class="form-group"><label for="project_id">Chantier</label><select id="project_id"><option value="">— Aucun —</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="date_commande">Date de commande</label><input type="date" id="date_commande" /></div>
+          <div class="form-group"><label for="date_livraison_prevue">Livraison prévue</label><input type="date" id="date_livraison_prevue" /></div>
+        </div>
+
+        <h3 style="margin-bottom:6px;">Lignes</h3>
+        <div class="table-wrap items-table">
+          <table>
+            <thead><tr><th class="desc">Désignation</th><th>Qté</th><th>Prix unitaire (€)</th><th></th></tr></thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-sm" id="add-item-btn" style="margin-top:8px;">+ Ajouter une ligne</button>
+        <div class="totals-box">Total HT : <span id="total-ht">0,00 €</span></div>
+
+        <div class="form-group" style="margin-top:14px;"><label for="notes">Notes</label><textarea id="notes" rows="2"></textarea></div>
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/achats.js"></script>
+</body>
+</html>

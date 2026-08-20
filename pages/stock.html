@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stock – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Stock de matériaux</h1>
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher un matériau…" />
+            <label style="display:flex; align-items:center; gap:6px; font-size:0.88rem;">
+              <input type="checkbox" id="filter-low" style="width:auto;" /> Stock faible uniquement
+            </label>
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau matériau</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Référence</th><th>Désignation</th><th>Catégorie</th><th>Stock</th><th>Stock min.</th><th>Emplacement</th><th></th></tr></thead>
+            <tbody id="materials-tbody"><tr><td colspan="7">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun matériau pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modale matériau -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouveau matériau</h2>
+      <form id="material-form">
+        <input type="hidden" id="material-id" />
+        <div class="form-row">
+          <div class="form-group"><label for="reference">Référence</label><input id="reference" /></div>
+          <div class="form-group"><label for="designation">Désignation *</label><input id="designation" required /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="categorie">Catégorie</label><input id="categorie" /></div>
+          <div class="form-group"><label for="unite">Unité</label><input id="unite" value="u" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="supplier_id">Fournisseur</label><select id="supplier_id"><option value="">— Aucun —</option></select></div>
+          <div class="form-group"><label for="prix_achat">Prix d'achat (€)</label><input type="number" step="0.01" id="prix_achat" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="quantite_stock">Quantité en stock</label><input type="number" step="0.01" id="quantite_stock" value="0" /></div>
+          <div class="form-group"><label for="stock_min">Stock minimum (alerte)</label><input type="number" step="0.01" id="stock_min" value="0" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="emplacement">Emplacement</label><input id="emplacement" /></div>
+          <div class="form-group"><label for="project_id">Chantier associé</label><select id="project_id"><option value="">— Aucun —</option></select></div>
+        </div>
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modale mouvement -->
+  <div class="modal-overlay hidden" id="modal-overlay-mvt">
+    <div class="modal">
+      <h2 id="mvt-title">Mouvement de stock</h2>
+      <form id="mvt-form">
+        <input type="hidden" id="mvt-material-id" />
+        <div class="form-group">
+          <label for="mvt-type">Type de mouvement</label>
+          <select id="mvt-type">
+            <option value="entree">Entrée</option>
+            <option value="sortie">Sortie</option>
+            <option value="correction">Correction (inventaire)</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="mvt-quantite">Quantité</label><input type="number" step="0.01" id="mvt-quantite" required /></div>
+        <div class="form-group"><label for="mvt-project">Chantier concerné (optionnel)</label><select id="mvt-project"><option value="">— Aucun —</option></select></div>
+        <div class="form-group"><label for="mvt-notes">Notes</label><input id="mvt-notes" /></div>
+        <p class="form-msg" id="mvt-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="mvt-cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Valider le mouvement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/stock.js"></script>
+</body>
+</html>

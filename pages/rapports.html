@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rapports – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .marge-positive { color: var(--color-success); font-weight: 700; }
+  .marge-negative { color: var(--color-danger); font-weight: 700; }
+  .marge-alerte { background: #fee2e2 !important; }
+</style>
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Rapports</h1>
+
+        <div class="card" style="margin-bottom:22px;">
+          <div class="toolbar" style="margin-bottom:0;">
+            <h2 style="margin:0;">Rentabilité par chantier</h2>
+            <button class="btn" id="export-csv-btn">Exporter en CSV</button>
+          </div>
+          <p style="color:var(--color-text-muted);">
+            Marge = CA facturé (HT) − matériaux sortis − main d'œuvre (heures × taux horaire) − achats/sous-traitance − autres dépenses.
+            Une estimation basée sur les données saisies dans les autres modules, pas un calcul comptable certifié.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Chantier</th><th>CA facturé</th><th>Matériaux</th><th>Main d'œuvre</th>
+                  <th>Achats</th><th>Autres dép.</th><th>Marge</th><th>% marge</th>
+                </tr>
+              </thead>
+              <tbody id="rentabilite-tbody"><tr><td colspan="8">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Chiffre d'affaires facturé par mois</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Mois</th><th>CA (HT)</th></tr></thead>
+              <tbody id="ca-tbody"><tr><td colspan="2">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="../js/rapports.js"></script>
+</body>
+</html>
