@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prospects – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .kanban { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+  .kanban-col { min-width: 220px; flex: 1; background: #f1f5f9; border-radius: var(--radius); padding: 10px; }
+  .kanban-col h3 { font-size: 0.82rem; text-transform: uppercase; color: var(--color-text-muted); margin: 2px 6px 10px; }
+  .kanban-col.drag-over { outline: 2px dashed var(--color-primary); }
+  .prospect-card {
+    background: #fff; border: 1px solid var(--color-border); border-radius: var(--radius);
+    padding: 10px; margin-bottom: 8px; cursor: grab; font-size: 0.85rem;
+  }
+  .prospect-card:active { cursor: grabbing; }
+  .prospect-card .p-name { font-weight: 600; margin-bottom: 3px; }
+  .prospect-card .p-meta { color: var(--color-text-muted); font-size: 0.78rem; }
+</style>
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Prospects</h1>
+        <div class="toolbar">
+          <p style="color:var(--color-text-muted); margin:0;">Glisse une carte vers une autre colonne pour changer son statut, ou clique dessus pour la modifier.</p>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau prospect</button>
+        </div>
+
+        <div class="kanban" id="kanban"></div>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouveau prospect</h2>
+      <form id="prospect-form">
+        <input type="hidden" id="prospect-id" />
+        <div class="form-row">
+          <div class="form-group"><label for="prenom">Prénom</label><input id="prenom" /></div>
+          <div class="form-group"><label for="nom">Nom</label><input id="nom" /></div>
+        </div>
+        <div class="form-group"><label for="entreprise">Entreprise (optionnel)</label><input id="entreprise" /></div>
+        <div class="form-row">
+          <div class="form-group"><label for="telephone">Téléphone</label><input id="telephone" /></div>
+          <div class="form-group"><label for="email">Email</label><input type="email" id="email" /></div>
+        </div>
+        <div class="form-group">
+          <label for="statut">Statut</label>
+          <select id="statut">
+            <option value="nouveau">Nouveau</option>
+            <option value="contact_pris">Contact pris</option>
+            <option value="rendez_vous">Rendez-vous</option>
+            <option value="devis_envoye">Devis envoyé</option>
+            <option value="relance">Relance</option>
+            <option value="gagne">Gagné</option>
+            <option value="perdu">Perdu</option>
+          </select>
+        </div>
+        <div class="form-group"><label for="notes">Notes</label><textarea id="notes" rows="3"></textarea></div>
+
+        <p class="form-msg" id="form-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="delete-btn" style="margin-right:auto;">Supprimer</button>
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/prospects.js"></script>
+</body>
+</html>

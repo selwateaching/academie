@@ -3,7 +3,7 @@ import { getProfile, signOut, ROLE_LABELS } from "./auth.js";
 const MENU = [
   { key: "dashboard", label: "Tableau de bord", href: "dashboard.html" },
   { key: "clients", label: "Clients", href: "pages/clients.html" },
-  { key: "prospects", label: "Prospects", href: "pages/a-venir.html?m=Prospects" },
+  { key: "prospects", label: "Prospects", href: "pages/prospects.html" },
   { key: "devis", label: "Devis", href: "pages/devis.html" },
   { key: "factures", label: "Factures", href: "pages/factures.html" },
   { key: "chantiers", label: "Chantiers", href: "pages/chantiers.html" },
