@@ -58,6 +58,8 @@ async function main(profile) {
   const addItemBtn = document.getElementById("add-item-btn");
   const paymentsBox = document.getElementById("payments-box");
   const paymentsTbody = document.getElementById("payments-tbody");
+  const acompteSelect = document.getElementById("acompte-select");
+  const deductBtn = document.getElementById("deduct-btn");
 
   if (!canW) newBtn.style.display = "none";
 
@@ -224,6 +226,53 @@ async function main(profile) {
 
   addItemBtn.addEventListener("click", () => addItemRow(null));
 
+  // ---------------- Déduction d'acompte ----------------
+  let acomptesDisponibles = [];
+
+  async function loadAcomptesOptions() {
+    const clientId = clientSelect.value;
+    const currentId = document.getElementById("invoice-id").value;
+    if (!clientId) {
+      acompteSelect.innerHTML = `<option value="">— Choisis un client d'abord —</option>`;
+      acomptesDisponibles = [];
+      return;
+    }
+    const { data } = await supabase
+      .from("invoices")
+      .select("id, numero, total_ht, total_tva, total_ttc")
+      .eq("client_id", clientId)
+      .eq("type", "acompte")
+      .neq("id", currentId || "00000000-0000-0000-0000-000000000000");
+
+    acomptesDisponibles = data || [];
+    acompteSelect.innerHTML =
+      acomptesDisponibles.length === 0
+        ? `<option value="">— Aucun acompte trouvé pour ce client —</option>`
+        : `<option value="">— Choisir —</option>` +
+          acomptesDisponibles.map((a) => `<option value="${a.id}">${a.numero} — ${fmtMoney(a.total_ttc)} TTC</option>`).join("");
+  }
+  clientSelect.addEventListener("change", loadAcomptesOptions);
+
+  deductBtn.addEventListener("click", () => {
+    const acompte = acomptesDisponibles.find((a) => a.id === acompteSelect.value);
+    if (!acompte) {
+      showToast("Choisis d'abord un acompte dans la liste.", "error");
+      return;
+    }
+    const tauxMoyen = acompte.total_ht > 0 ? (acompte.total_tva / acompte.total_ht) * 100 : 0;
+    addItemRow({
+      type: "prestation",
+      description: `Déduction acompte déjà payé (facture ${acompte.numero})`,
+      quantite: 1,
+      unite: "u",
+      prix_unitaire: -acompte.total_ht,
+      remise_pct: 0,
+      taux_tva: Math.round(tauxMoyen * 10) / 10,
+    });
+    recalcTotals();
+    showToast("Ligne de déduction ajoutée.", "success");
+  });
+
   // ---------------- Paiements ----------------
   function updateResteAPayer(ttc) {
     const paye = currentPayments.reduce((s, p) => s + Number(p.montant), 0);
@@ -311,6 +360,7 @@ async function main(profile) {
     document.getElementById("conditions_paiement").value =
       invoice?.conditions_paiement ?? draft?.conditions_paiement ?? "Paiement à réception de facture.";
     document.getElementById("notes").value = invoice?.notes || draft?.notes || "";
+    await loadAcomptesOptions();
 
     if (invoice) {
       const [{ data: items }, { data: payments }] = await Promise.all([
