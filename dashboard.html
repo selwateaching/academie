@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tableau de bord – BTP Manager</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Tableau de bord</h1>
+        <p style="color:var(--color-text-muted); margin-top:-8px;">
+          Vue d'ensemble de votre activité.
+        </p>
+
+        <div class="kpi-grid" id="kpi-grid">
+          <div class="card kpi-card">
+            <div class="kpi-label">Clients</div>
+            <div class="kpi-value" id="kpi-clients">…</div>
+          </div>
+          <div class="card kpi-card">
+            <div class="kpi-label">Prospects en cours</div>
+            <div class="kpi-value" id="kpi-prospects">…</div>
+          </div>
+          <div class="card kpi-card disabled">
+            <div class="kpi-label">Chiffre d'affaires du mois</div>
+            <div class="kpi-value">—</div>
+          </div>
+          <div class="card kpi-card disabled">
+            <div class="kpi-label">Devis en attente</div>
+            <div class="kpi-value">—</div>
+          </div>
+          <div class="card kpi-card disabled">
+            <div class="kpi-label">Factures en retard</div>
+            <div class="kpi-value">—</div>
+          </div>
+          <div class="card kpi-card disabled">
+            <div class="kpi-label">Chantiers en cours</div>
+            <div class="kpi-value">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Prochainement</h2>
+          <p style="color:var(--color-text-muted);">
+            Les indicateurs grisés ci-dessus s'activeront au fur et à mesure de la mise en place
+            des modules Devis, Factures, Chantiers et Trésorerie (voir le plan de développement).
+          </p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth } from "./js/auth.js";
+    import { renderShell } from "./js/ui.js";
+    import { supabase } from "./js/supabaseClient.js";
+
+    const profile = await requireAuth();
+    if (profile) {
+      renderShell(profile, "dashboard");
+
+      const { count: clientsCount } = await supabase
+        .from("clients")
+        .select("*", { count: "exact", head: true });
+      document.getElementById("kpi-clients").textContent = clientsCount ?? 0;
+
+      const { count: prospectsCount } = await supabase
+        .from("prospects")
+        .select("*", { count: "exact", head: true })
+        .not("statut", "in", "(gagne,perdu)");
+      document.getElementById("kpi-prospects").textContent = prospectsCount ?? 0;
+    }
+  </script>
+</body>
+</html>

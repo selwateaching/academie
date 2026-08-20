@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Module à venir – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1 id="title">Module</h1>
+        <div class="card empty-state">
+          <p>Ce module arrive dans une prochaine étape du développement.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth } from "../js/auth.js";
+    import { renderShell } from "../js/ui.js";
+
+    const profile = await requireAuth();
+    if (profile) {
+      renderShell(profile, "");
+      const params = new URLSearchParams(location.search);
+      document.getElementById("title").textContent = params.get("m") || "Module";
+    }
+  </script>
+</body>
+</html>

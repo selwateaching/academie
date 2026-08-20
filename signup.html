@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Créer un compte – BTP Manager</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <h1>Créer un compte</h1>
+
+    <div class="mode-toggle">
+      <button type="button" id="mode-create" class="active">Je crée mon entreprise</button>
+      <button type="button" id="mode-invited">J'ai été invité(e)</button>
+    </div>
+
+    <form id="signup-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="prenom">Prénom</label>
+          <input type="text" id="prenom" required autocomplete="given-name" />
+        </div>
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" required autocomplete="family-name" />
+        </div>
+      </div>
+      <div class="form-group" id="raison-sociale-group">
+        <label for="raison_sociale">Raison sociale de l'entreprise</label>
+        <input type="text" id="raison_sociale" autocomplete="organization" />
+      </div>
+      <div class="form-group">
+        <label for="email">Adresse email</label>
+        <input type="email" id="email" required autocomplete="username" />
+        <small id="invited-hint" style="display:none; color:var(--color-text-muted);">
+          Utilise l'adresse email exacte sur laquelle tu as reçu l'invitation.
+        </small>
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" required minlength="6" autocomplete="new-password" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Créer mon compte</button>
+      <p class="form-msg" id="msg"></p>
+    </form>
+    <p class="auth-switch">Déjà un compte ? <a href="login.html">Se connecter</a></p>
+  </div>
+
+  <script type="module">
+    import { signUp, getSession, createCompanyAndOwner } from "./js/auth.js";
+
+    let mode = "create";
+    const raisonGroup = document.getElementById("raison-sociale-group");
+    const raisonInput = document.getElementById("raison_sociale");
+    const invitedHint = document.getElementById("invited-hint");
+    const btnCreate = document.getElementById("mode-create");
+    const btnInvited = document.getElementById("mode-invited");
+
+    function setMode(newMode) {
+      mode = newMode;
+      const isCreate = mode === "create";
+      btnCreate.classList.toggle("active", isCreate);
+      btnInvited.classList.toggle("active", !isCreate);
+      raisonGroup.style.display = isCreate ? "block" : "none";
+      raisonInput.required = isCreate;
+      invitedHint.style.display = isCreate ? "none" : "block";
+    }
+    btnCreate.addEventListener("click", () => setMode("create"));
+    btnInvited.addEventListener("click", () => setMode("invited"));
+
+    const msg = document.getElementById("msg");
+
+    document.getElementById("signup-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+
+      const prenom = document.getElementById("prenom").value.trim();
+      const nom = document.getElementById("nom").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const raisonSociale = raisonInput.value.trim();
+
+      const { error } = await signUp(email, password);
+      if (error) {
+        msg.textContent = "Impossible de créer le compte : " + error.message;
+        msg.className = "form-msg error";
+        return;
+      }
+
+      // Si l'inscription requiert une confirmation par email, on n'a pas
+      // encore de session active : on garde les infos pour les utiliser
+      // après la première connexion, sur la page onboarding.html.
+      localStorage.setItem(
+        "pendingSignup",
+        JSON.stringify({ mode, raisonSociale, nom, prenom })
+      );
+
+      const session = await getSession();
+      if (!session) {
+        msg.textContent = "Compte créé. Vérifie ta boîte email pour confirmer ton adresse, puis connecte-toi.";
+        msg.className = "form-msg success";
+        return;
+      }
+
+      if (mode === "create") {
+        const { error: rpcError } = await createCompanyAndOwner(raisonSociale, nom, prenom);
+        if (rpcError) {
+          msg.textContent = "Compte créé mais erreur lors de la création de l'entreprise : " + rpcError.message;
+          msg.className = "form-msg error";
+          return;
+        }
+        localStorage.removeItem("pendingSignup");
+        window.location.href = "dashboard.html";
+      } else {
+        window.location.href = "onboarding.html";
+      }
+    });
+  </script>
+</body>
+</html>

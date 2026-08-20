@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Paramètres – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Paramètres</h1>
+
+        <div class="card" style="margin-bottom:24px;">
+          <h2 style="margin-top:0;">Mon entreprise</h2>
+          <form id="company-form">
+            <div class="form-row">
+              <div class="form-group"><label for="raison_sociale">Raison sociale</label><input id="raison_sociale" required /></div>
+              <div class="form-group"><label for="nom_commercial">Nom commercial</label><input id="nom_commercial" /></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="siret">SIRET</label><input id="siret" /></div>
+              <div class="form-group"><label for="numero_tva">N° TVA intracommunautaire</label><input id="numero_tva" /></div>
+            </div>
+            <div class="form-group"><label for="adresse">Adresse</label><input id="adresse" /></div>
+            <div class="form-row">
+              <div class="form-group"><label for="code_postal">Code postal</label><input id="code_postal" /></div>
+              <div class="form-group"><label for="ville">Ville</label><input id="ville" /></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="telephone">Téléphone</label><input id="telephone" /></div>
+              <div class="form-group"><label for="email">Email</label><input type="email" id="email" /></div>
+            </div>
+            <div class="form-group"><label for="site_web">Site internet</label><input id="site_web" /></div>
+            <div class="form-row">
+              <div class="form-group"><label for="iban">IBAN</label><input id="iban" /></div>
+              <div class="form-group"><label for="bic">BIC</label><input id="bic" /></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label for="taux_tva_defaut">Taux de TVA par défaut (%)</label><input type="number" step="0.1" id="taux_tva_defaut" /></div>
+              <div class="form-group"><label for="assurance_decennale">Assurance décennale</label><input id="assurance_decennale" /></div>
+            </div>
+            <div class="form-group"><label for="rc_professionnelle">RC professionnelle</label><input id="rc_professionnelle" /></div>
+            <div class="form-group"><label for="mentions_legales">Mentions légales</label><textarea id="mentions_legales" rows="3"></textarea></div>
+            <div class="form-group"><label for="conditions_generales">Conditions générales</label><textarea id="conditions_generales" rows="3"></textarea></div>
+            <p class="form-msg" id="company-msg"></p>
+            <button type="submit" class="btn btn-primary" id="company-save-btn">Enregistrer</button>
+          </form>
+        </div>
+
+        <div class="card" style="margin-bottom:24px;">
+          <h2 style="margin-top:0;">Utilisateurs</h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nom</th><th>Rôle</th><th>Statut</th><th></th></tr></thead>
+              <tbody id="users-tbody"><tr><td colspan="4">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0;">Inviter un utilisateur</h2>
+          <p style="color:var(--color-text-muted);">
+            La personne invitée doit créer son compte (page "Créer un compte" → "J'ai été invité(e)")
+            avec exactement l'adresse email indiquée ci-dessous.
+          </p>
+          <form id="invite-form" class="form-row" style="align-items:flex-end;">
+            <div class="form-group"><label for="invite-email">Email</label><input type="email" id="invite-email" required /></div>
+            <div class="form-group">
+              <label for="invite-role">Rôle</label>
+              <select id="invite-role">
+                <option value="conducteur">Conducteur de travaux</option>
+                <option value="chef_chantier">Chef de chantier</option>
+                <option value="administratif">Administratif</option>
+                <option value="comptable">Comptable</option>
+                <option value="salarie">Salarié</option>
+                <option value="sous_traitant">Sous-traitant</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:0;"><button type="submit" class="btn btn-primary">Envoyer l'invitation</button></div>
+          </form>
+          <p class="form-msg" id="invite-msg"></p>
+          <div class="table-wrap" style="margin-top:14px;">
+            <table>
+              <thead><tr><th>Email invité</th><th>Rôle</th><th>Statut</th></tr></thead>
+              <tbody id="invitations-tbody"><tr><td colspan="3">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="../js/parametres.js"></script>
+</body>
+</html>

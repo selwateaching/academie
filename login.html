@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connexion – BTP Manager</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <h1>Connexion</h1>
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Adresse email</label>
+        <input type="email" id="email" required autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+      <p class="form-msg" id="msg"></p>
+    </form>
+    <p class="auth-switch">Pas encore de compte ? <a href="signup.html">Créer un compte</a></p>
+  </div>
+
+  <script type="module">
+    import { signIn, getProfile } from "./js/auth.js";
+
+    const params = new URLSearchParams(location.search);
+    const msg = document.getElementById("msg");
+    if (params.get("desactive") === "1") {
+      msg.textContent = "Votre compte a été désactivé. Contactez votre administrateur.";
+      msg.className = "form-msg error";
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.textContent = "";
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      const { error } = await signIn(email, password);
+      if (error) {
+        msg.textContent = "Email ou mot de passe incorrect.";
+        msg.className = "form-msg error";
+        return;
+      }
+
+      const profile = await getProfile();
+      window.location.href = profile ? "dashboard.html" : "onboarding.html";
+    });
+  </script>
+</body>
+</html>
