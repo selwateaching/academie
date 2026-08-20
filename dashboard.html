@@ -26,17 +26,17 @@
             <div class="kpi-label">Prospects en cours</div>
             <div class="kpi-value" id="kpi-prospects">…</div>
           </div>
-          <div class="card kpi-card disabled">
-            <div class="kpi-label">Chiffre d'affaires du mois</div>
-            <div class="kpi-value">—</div>
+          <div class="card kpi-card">
+            <div class="kpi-label">Chiffre d'affaires du mois (HT)</div>
+            <div class="kpi-value" id="kpi-ca-mois">…</div>
           </div>
           <div class="card kpi-card">
             <div class="kpi-label">Devis en attente</div>
             <div class="kpi-value" id="kpi-devis">…</div>
           </div>
-          <div class="card kpi-card disabled">
+          <div class="card kpi-card">
             <div class="kpi-label">Factures en retard</div>
-            <div class="kpi-value">—</div>
+            <div class="kpi-value" id="kpi-factures-retard">…</div>
           </div>
           <div class="card kpi-card">
             <div class="kpi-label">Chantiers en cours</div>
@@ -86,6 +86,26 @@
         .select("*", { count: "exact", head: true })
         .in("statut", ["demarrage", "en_cours", "en_retard"]);
       document.getElementById("kpi-chantiers").textContent = chantiersCount ?? 0;
+
+      const { count: facturesRetardCount } = await supabase
+        .from("invoices")
+        .select("*", { count: "exact", head: true })
+        .in("statut", ["envoyee", "partiellement_payee"])
+        .lt("date_echeance", new Date().toISOString().slice(0, 10));
+      document.getElementById("kpi-factures-retard").textContent = facturesRetardCount ?? 0;
+
+      const debutMois = new Date();
+      debutMois.setDate(1);
+      const { data: facturesMois } = await supabase
+        .from("invoices")
+        .select("type, total_ht")
+        .gte("date_emission", debutMois.toISOString().slice(0, 10));
+      const caMois = (facturesMois || []).reduce(
+        (sum, f) => sum + (f.type === "avoir" ? -f.total_ht : f.total_ht),
+        0
+      );
+      document.getElementById("kpi-ca-mois").textContent =
+        caMois.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " €";
     }
   </script>
 </body>

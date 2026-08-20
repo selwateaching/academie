@@ -43,8 +43,12 @@ Dans Supabase, ouvre **SQL Editor → New query**, puis copie-colle et exécute
    entreprise, selon son rôle.
 4. `sql/004_projects_quotes.sql` — ajoute les chantiers (version de base)
    et les devis (avec leurs lignes et leur numérotation automatique).
-   Ce script n'affecte aucune des données créées précédemment (clients,
-   prospects, utilisateurs...).
+5. `sql/005_invoices.sql` — ajoute les factures (tous types), leurs
+   lignes et le suivi des paiements.
+
+Chaque script n'affecte que ses propres tables : les données déjà
+créées (clients, devis, utilisateurs...) ne sont jamais modifiées ni
+supprimées par les scripts suivants.
 
 Si tu dois relancer ces scripts plus tard (par exemple après une mise à
 jour), c'est normal et sans danger : ils sont écrits pour ne pas dupliquer
@@ -111,7 +115,17 @@ puis ouvre `http://localhost:8000` dans ton navigateur.
    Clique sur le bouton **PDF** de la liste pour télécharger le devis en PDF.
    Le menu déroulant "Statut" de chaque ligne permet de faire évoluer le
    devis (brouillon → envoyé → accepté...).
-8. Pour tester les rôles : dans **Paramètres → Inviter un utilisateur**,
+8. Va dans **Factures**, crée une facture "Classique" pour ton client
+   (mêmes principes que le devis : lignes, calcul automatique). Une fois
+   enregistrée, rouvre-la avec **"Modifier"** : une section **"Paiements
+   enregistrés"** apparaît en bas, permettant d'ajouter un règlement
+   (montant, date, moyen de paiement). Le statut passe automatiquement à
+   "Partiellement payée" ou "Payée" selon le montant réglé.
+9. Astuce : dans **Devis**, passe le statut d'un devis à **"Accepté"** —
+   un bouton **"Facturer"** apparaît alors sur sa ligne. Il crée une
+   facture pré-remplie avec les mêmes lignes que le devis, prête à être
+   ajustée puis enregistrée.
+10. Pour tester les rôles : dans **Paramètres → Inviter un utilisateur**,
    invite une deuxième adresse email avec le rôle "Salarié", puis crée un
    compte avec cette adresse via `signup.html` en choisissant "J'ai été
    invité(e)". Connecte-toi avec ce second compte : tu verras que les
@@ -146,6 +160,7 @@ dashboard.html            tableau de bord
 pages/clients.html          module Clients
 pages/chantiers.html          module Chantiers
 pages/devis.html                 module Devis (+ PDF)
+pages/factures.html                module Factures + paiements (+ PDF)
 pages/parametres.html      entreprise + utilisateurs + invitations
 pages/a-venir.html            modules pas encore développés
 css/style.css                 styles partagés (responsive)
@@ -156,12 +171,14 @@ js/ui.js                        menu latéral, notifications, confirmations
 js/clients.js                     logique du module Clients
 js/chantiers.js                     logique du module Chantiers
 js/devis.js                           logique du module Devis
+js/factures.js                          logique du module Factures
 js/pdf.js                               génération des PDF (devis, factures)
 js/parametres.js                    logique du module Paramètres
 sql/001_schema.sql                    tables
 sql/002_functions.sql                   fonctions et déclencheurs
 sql/003_rls.sql                           sécurité (Row Level Security)
 sql/004_projects_quotes.sql                 chantiers + devis
+sql/005_invoices.sql                          factures + paiements
 ```
 
 ## Sécurité — ce qu'il faut savoir

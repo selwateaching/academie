@@ -99,3 +99,12 @@ export function canDelete(role) {
 
 export const canWriteClients = canWrite;
 export const canDeleteClients = canDelete;
+
+// Le rôle "comptable" a accès en écriture aux factures/paiements
+// (voir sql/005_invoices.sql), contrairement aux autres modules commerciaux.
+export function canWriteInvoices(role) {
+  return ["admin", "conducteur", "administratif", "comptable"].includes(role);
+}
+export function canDeleteInvoices(role) {
+  return ["admin", "comptable"].includes(role);
+}

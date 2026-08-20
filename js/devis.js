@@ -120,6 +120,7 @@ async function main(profile) {
         </td>
         <td class="row-actions">
           <button class="btn btn-sm pdf-btn">PDF</button>
+          ${canW && d.statut === "accepte" ? `<button class="btn btn-sm invoice-btn">Facturer</button>` : ""}
           ${canW ? `<button class="btn btn-sm edit-btn">Modifier</button>` : ""}
           ${canD ? `<button class="btn btn-sm btn-danger delete-btn">Supprimer</button>` : ""}
         </td>
@@ -149,6 +150,33 @@ async function main(profile) {
     tbody.querySelectorAll(".pdf-btn").forEach((btn) =>
       btn.addEventListener("click", (e) => exportPDF(rows.find((r) => r.id === e.target.closest("tr").dataset.id)))
     );
+    tbody.querySelectorAll(".invoice-btn").forEach((btn) =>
+      btn.addEventListener("click", (e) => createInvoiceDraft(rows.find((r) => r.id === e.target.closest("tr").dataset.id)))
+    );
+  }
+
+  async function createInvoiceDraft(quote) {
+    const { data: items } = await supabase.from("quote_items").select("*").eq("quote_id", quote.id).order("ordre");
+    sessionStorage.setItem(
+      "draftInvoiceFromQuote",
+      JSON.stringify({
+        client_id: quote.client_id,
+        project_id: quote.project_id,
+        quote_id: quote.id,
+        conditions_paiement: quote.conditions_paiement,
+        notes: `Facture établie à partir du devis ${quote.numero}.`,
+        items: (items || []).map((it) => ({
+          type: it.type,
+          description: it.description,
+          quantite: it.quantite,
+          unite: it.unite,
+          prix_unitaire: it.prix_unitaire,
+          remise_pct: it.remise_pct,
+          taux_tva: it.taux_tva,
+        })),
+      })
+    );
+    window.location.href = "factures.html";
   }
 
   searchInput.addEventListener("input", render);

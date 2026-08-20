@@ -5,7 +5,7 @@ const MENU = [
   { key: "clients", label: "Clients", href: "pages/clients.html" },
   { key: "prospects", label: "Prospects", href: "pages/a-venir.html?m=Prospects" },
   { key: "devis", label: "Devis", href: "pages/devis.html" },
-  { key: "factures", label: "Factures", href: "pages/a-venir.html?m=Factures" },
+  { key: "factures", label: "Factures", href: "pages/factures.html" },
   { key: "chantiers", label: "Chantiers", href: "pages/chantiers.html" },
   { key: "planning", label: "Planning", href: "pages/a-venir.html?m=Planning" },
   { key: "equipes", label: "Équipes", href: "pages/a-venir.html?m=Équipes" },
