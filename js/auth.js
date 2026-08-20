@@ -86,10 +86,16 @@ export const ROLE_LABELS = {
   sous_traitant: "Sous-traitant",
 };
 
-export function canWriteClients(role) {
+// Ces règles doivent rester cohérentes avec les policies RLS
+// (sql/003_rls.sql, sql/004_projects_quotes.sql) : elles pilotent
+// uniquement l'affichage des boutons, la vraie sécurité vient de RLS.
+export function canWrite(role) {
   return ["admin", "conducteur", "administratif"].includes(role);
 }
 
-export function canDeleteClients(role) {
+export function canDelete(role) {
   return ["admin", "conducteur"].includes(role);
 }
+
+export const canWriteClients = canWrite;
+export const canDeleteClients = canDelete;

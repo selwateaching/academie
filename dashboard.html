@@ -30,17 +30,17 @@
             <div class="kpi-label">Chiffre d'affaires du mois</div>
             <div class="kpi-value">—</div>
           </div>
-          <div class="card kpi-card disabled">
+          <div class="card kpi-card">
             <div class="kpi-label">Devis en attente</div>
-            <div class="kpi-value">—</div>
+            <div class="kpi-value" id="kpi-devis">…</div>
           </div>
           <div class="card kpi-card disabled">
             <div class="kpi-label">Factures en retard</div>
             <div class="kpi-value">—</div>
           </div>
-          <div class="card kpi-card disabled">
+          <div class="card kpi-card">
             <div class="kpi-label">Chantiers en cours</div>
-            <div class="kpi-value">—</div>
+            <div class="kpi-value" id="kpi-chantiers">…</div>
           </div>
         </div>
 
@@ -74,6 +74,18 @@
         .select("*", { count: "exact", head: true })
         .not("statut", "in", "(gagne,perdu)");
       document.getElementById("kpi-prospects").textContent = prospectsCount ?? 0;
+
+      const { count: devisCount } = await supabase
+        .from("quotes")
+        .select("*", { count: "exact", head: true })
+        .in("statut", ["envoye", "consulte"]);
+      document.getElementById("kpi-devis").textContent = devisCount ?? 0;
+
+      const { count: chantiersCount } = await supabase
+        .from("projects")
+        .select("*", { count: "exact", head: true })
+        .in("statut", ["demarrage", "en_cours", "en_retard"]);
+      document.getElementById("kpi-chantiers").textContent = chantiersCount ?? 0;
     }
   </script>
 </body>

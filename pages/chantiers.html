@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chantiers – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Chantiers</h1>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher un chantier (nom, client, ville)…" />
+            <select id="filter-statut">
+              <option value="">Tous les statuts</option>
+              <option value="preparation">Préparation</option>
+              <option value="demarrage">Démarrage</option>
+              <option value="en_cours">En cours</option>
+              <option value="en_retard">En retard</option>
+              <option value="suspendu">Suspendu</option>
+              <option value="termine">Terminé</option>
+              <option value="reception">Réception</option>
+              <option value="cloture">Clôturé</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau chantier</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Chantier</th>
+                <th>Client</th>
+                <th>Statut</th>
+                <th>Début</th>
+                <th>Fin prévue</th>
+                <th>Budget</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="projects-tbody">
+              <tr><td colspan="7">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun chantier pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal">
+      <h2 id="modal-title">Nouveau chantier</h2>
+      <form id="project-form">
+        <input type="hidden" id="project-id" />
+
+        <div class="form-group">
+          <label for="nom">Nom du chantier</label>
+          <input id="nom" required />
+        </div>
+
+        <div class="form-group">
+          <label for="client_id">Client</label>
+          <select id="client_id"><option value="">— Aucun —</option></select>
+        </div>
+
+        <div class="form-group"><label for="adresse">Adresse du chantier</label><input id="adresse" /></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="statut">Statut</label>
+            <select id="statut">
+              <option value="preparation">Préparation</option>
+              <option value="demarrage">Démarrage</option>
+              <option value="en_cours">En cours</option>
+              <option value="en_retard">En retard</option>
+              <option value="suspendu">Suspendu</option>
+              <option value="termine">Terminé</option>
+              <option value="reception">Réception</option>
+              <option value="cloture">Clôturé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="responsable_id">Responsable</label>
+            <select id="responsable_id"><option value="">— Aucun —</option></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label for="date_debut">Date de début</label><input type="date" id="date_debut" /></div>
+          <div class="form-group"><label for="date_fin_prevue">Fin prévue</label><input type="date" id="date_fin_prevue" /></div>
+        </div>
+
+        <div class="form-group"><label for="budget">Budget prévisionnel (€)</label><input type="number" step="0.01" id="budget" /></div>
+
+        <p class="form-msg" id="form-msg"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/chantiers.js"></script>
+</body>
+</html>

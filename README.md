@@ -41,6 +41,10 @@ Dans Supabase, ouvre **SQL Editor → New query**, puis copie-colle et exécute
 3. `sql/003_rls.sql` — active la sécurité "Row Level Security" : chaque
    utilisateur ne peut voir/modifier que les données de sa propre
    entreprise, selon son rôle.
+4. `sql/004_projects_quotes.sql` — ajoute les chantiers (version de base)
+   et les devis (avec leurs lignes et leur numérotation automatique).
+   Ce script n'affecte aucune des données créées précédemment (clients,
+   prospects, utilisateurs...).
 
 Si tu dois relancer ces scripts plus tard (par exemple après une mise à
 jour), c'est normal et sans danger : ils sont écrits pour ne pas dupliquer
@@ -99,7 +103,15 @@ puis ouvre `http://localhost:8000` dans ton navigateur.
 5. Va dans **Clients**, clique sur **"+ Nouveau client"**, remplis la fiche
    et clique sur **Enregistrer**. Le client apparaît dans la liste avec des
    boutons **Modifier** et **Supprimer**.
-6. Pour tester les rôles : dans **Paramètres → Inviter un utilisateur**,
+6. Va dans **Chantiers**, crée-en un (associe-le éventuellement à ton
+   client), avec ses boutons Modifier/Supprimer.
+7. Va dans **Devis**, clique sur **"+ Nouveau devis"**, choisis un client,
+   ajoute une ou plusieurs lignes (désignation, quantité, prix, TVA), puis
+   **Enregistrer**. Le devis reçoit un numéro automatique (ex. `DEV-2026-0001`).
+   Clique sur le bouton **PDF** de la liste pour télécharger le devis en PDF.
+   Le menu déroulant "Statut" de chaque ligne permet de faire évoluer le
+   devis (brouillon → envoyé → accepté...).
+8. Pour tester les rôles : dans **Paramètres → Inviter un utilisateur**,
    invite une deuxième adresse email avec le rôle "Salarié", puis crée un
    compte avec cette adresse via `signup.html` en choisissant "J'ai été
    invité(e)". Connecte-toi avec ce second compte : tu verras que les
@@ -132,6 +144,8 @@ signup.html             création de compte (entreprise ou invitation)
 onboarding.html          finalisation après confirmation email
 dashboard.html            tableau de bord
 pages/clients.html          module Clients
+pages/chantiers.html          module Chantiers
+pages/devis.html                 module Devis (+ PDF)
 pages/parametres.html      entreprise + utilisateurs + invitations
 pages/a-venir.html            modules pas encore développés
 css/style.css                 styles partagés (responsive)
@@ -140,10 +154,14 @@ js/config.js (à créer)             tes clés Supabase (non versionné)
 js/auth.js                    authentification, profil, permissions
 js/ui.js                        menu latéral, notifications, confirmations
 js/clients.js                     logique du module Clients
+js/chantiers.js                     logique du module Chantiers
+js/devis.js                           logique du module Devis
+js/pdf.js                               génération des PDF (devis, factures)
 js/parametres.js                    logique du module Paramètres
 sql/001_schema.sql                    tables
 sql/002_functions.sql                   fonctions et déclencheurs
 sql/003_rls.sql                           sécurité (Row Level Security)
+sql/004_projects_quotes.sql                 chantiers + devis
 ```
 
 ## Sécurité — ce qu'il faut savoir

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Devis – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .items-table input, .items-table select { padding: 6px 7px; font-size: 0.85rem; }
+  .items-table th, .items-table td { padding: 6px 6px; }
+  .items-table td.num { width: 90px; }
+  .items-table td.desc { min-width: 200px; }
+  .totals-box { margin-top: 14px; margin-left: auto; max-width: 280px; }
+  .totals-box div { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.9rem; }
+  .totals-box .ttc { font-weight: 700; font-size: 1.05rem; border-top: 1px solid var(--color-border); margin-top: 4px; padding-top: 8px; }
+  .modal.modal-lg { max-width: 900px; }
+  .status-select { width: auto; }
+</style>
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Devis</h1>
+
+        <div class="toolbar">
+          <div class="toolbar-filters">
+            <input type="search" id="search" placeholder="Rechercher (numéro, client)…" />
+            <select id="filter-statut">
+              <option value="">Tous les statuts</option>
+              <option value="brouillon">Brouillon</option>
+              <option value="envoye">Envoyé</option>
+              <option value="consulte">Consulté</option>
+              <option value="accepte">Accepté</option>
+              <option value="refuse">Refusé</option>
+              <option value="expire">Expiré</option>
+              <option value="annule">Annulé</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="new-btn">+ Nouveau devis</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Numéro</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Total TTC</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="quotes-tbody">
+              <tr><td colspan="6">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p id="empty-msg" class="empty-state" style="display:none;">Aucun devis pour le moment.</p>
+      </main>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal modal-lg">
+      <h2 id="modal-title">Nouveau devis</h2>
+      <form id="quote-form">
+        <input type="hidden" id="quote-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="client_id">Client *</label>
+            <select id="client_id" required><option value="">— Choisir —</option></select>
+          </div>
+          <div class="form-group">
+            <label for="project_id">Chantier (optionnel)</label>
+            <select id="project_id"><option value="">— Aucun —</option></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label for="date_emission">Date d'émission</label><input type="date" id="date_emission" /></div>
+          <div class="form-group"><label for="validite_jours">Validité (jours)</label><input type="number" id="validite_jours" value="30" /></div>
+          <div class="form-group"><label for="acompte_pct">Acompte demandé (%)</label><input type="number" id="acompte_pct" value="0" /></div>
+        </div>
+
+        <h3 style="margin-bottom:6px;">Lignes du devis</h3>
+        <div class="table-wrap items-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th class="desc">Désignation</th>
+                <th class="num">Qté</th>
+                <th class="num">Unité</th>
+                <th class="num">PU HT (€)</th>
+                <th class="num">Remise %</th>
+                <th class="num">TVA %</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="items-tbody"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-sm" id="add-item-btn" style="margin-top:8px;">+ Ajouter une ligne</button>
+
+        <div class="totals-box">
+          <div><span>Total HT</span><span id="total-ht">0,00 €</span></div>
+          <div><span>Total TVA</span><span id="total-tva">0,00 €</span></div>
+          <div class="ttc"><span>Total TTC</span><span id="total-ttc">0,00 €</span></div>
+        </div>
+
+        <div class="form-group" style="margin-top:14px;">
+          <label for="conditions_paiement">Conditions de paiement</label>
+          <textarea id="conditions_paiement" rows="2">Acompte à la commande, solde à la livraison.</textarea>
+        </div>
+        <div class="form-group"><label for="notes">Notes internes</label><textarea id="notes" rows="2"></textarea></div>
+
+        <p class="form-msg" id="form-msg"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="save-btn">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script type="module" src="../js/devis.js"></script>
+</body>
+</html>
