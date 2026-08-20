@@ -8,7 +8,7 @@ const MENU = [
   { key: "factures", label: "Factures", href: "pages/factures.html" },
   { key: "chantiers", label: "Chantiers", href: "pages/chantiers.html" },
   { key: "planning", label: "Planning", href: "pages/a-venir.html?m=Planning" },
-  { key: "equipes", label: "Équipes", href: "pages/a-venir.html?m=Équipes" },
+  { key: "equipes", label: "Équipes", href: "pages/equipes.html" },
   { key: "fournisseurs", label: "Fournisseurs", href: "pages/a-venir.html?m=Fournisseurs" },
   { key: "achats", label: "Achats", href: "pages/a-venir.html?m=Achats" },
   { key: "stock", label: "Stock", href: "pages/a-venir.html?m=Stock" },

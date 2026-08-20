@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Équipes – BTP Manager</title>
+<link rel="stylesheet" href="../css/style.css" />
+<style>
+  .tabs { display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 1px solid var(--color-border); }
+  .tab-btn { background: none; border: none; padding: 10px 14px; font-weight: 600; cursor: pointer; color: var(--color-text-muted); border-bottom: 2px solid transparent; }
+  .tab-btn.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+</style>
+</head>
+<body>
+  <div class="app-layout">
+    <nav id="sidebar"></nav>
+    <div class="main-area">
+      <header id="topbar"></header>
+      <main class="content">
+        <h1>Équipes</h1>
+
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="salaries">Salariés</button>
+          <button class="tab-btn" data-tab="heures">Heures</button>
+          <button class="tab-btn" data-tab="soustraitants">Sous-traitants</button>
+        </div>
+
+        <!-- ---------- Salariés ---------- -->
+        <div class="tab-panel active" id="panel-salaries">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Nom</th><th>Rôle</th><th>Poste</th><th>Taux horaire</th><th>Embauche</th><th></th></tr></thead>
+              <tbody id="salaries-tbody"><tr><td colspan="6">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- Heures ---------- -->
+        <div class="tab-panel" id="panel-heures">
+          <div class="card" style="margin-bottom:16px;">
+            <h3 style="margin-top:0;">Saisir des heures</h3>
+            <form id="hours-form">
+              <div class="form-row">
+                <div class="form-group"><label for="h-profile">Salarié *</label><select id="h-profile" required></select></div>
+                <div class="form-group"><label for="h-project">Chantier</label><select id="h-project"><option value="">— Aucun —</option></select></div>
+                <div class="form-group"><label for="h-date">Date</label><input type="date" id="h-date" /></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label for="h-normales">Heures normales</label><input type="number" step="0.5" id="h-normales" value="0" /></div>
+                <div class="form-group"><label for="h-sup">Heures sup.</label><input type="number" step="0.5" id="h-sup" value="0" /></div>
+                <div class="form-group"><label for="h-deplacement">Heures déplacement</label><input type="number" step="0.5" id="h-deplacement" value="0" /></div>
+              </div>
+              <div class="form-group"><label for="h-notes">Notes</label><input id="h-notes" /></div>
+              <button type="submit" class="btn btn-primary">Enregistrer les heures</button>
+            </form>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Salarié</th><th>Chantier</th><th>Normales</th><th>Sup.</th><th>Déplacement</th><th></th></tr></thead>
+              <tbody id="hours-tbody"><tr><td colspan="7">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- Sous-traitants ---------- -->
+        <div class="tab-panel" id="panel-soustraitants">
+          <div class="toolbar">
+            <div></div>
+            <button class="btn btn-primary" id="new-sub-btn">+ Nouveau sous-traitant</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Entreprise</th><th>Contact</th><th>Téléphone</th><th>Décennale (expire le)</th><th></th></tr></thead>
+              <tbody id="subs-tbody"><tr><td colspan="5">Chargement…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Modale salarié -->
+  <div class="modal-overlay hidden" id="modal-overlay-salarie">
+    <div class="modal">
+      <h2>Fiche salarié</h2>
+      <form id="salarie-form">
+        <input type="hidden" id="s-id" />
+        <div class="form-group"><label id="s-name-label"></label></div>
+        <div class="form-row">
+          <div class="form-group"><label for="s-poste">Poste</label><input id="s-poste" /></div>
+          <div class="form-group"><label for="s-qualification">Qualification</label><input id="s-qualification" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label for="s-taux">Taux horaire (€)</label><input type="number" step="0.01" id="s-taux" /></div>
+          <div class="form-group"><label for="s-embauche">Date d'embauche</label><input type="date" id="s-embauche" /></div>
+        </div>
+        <div class="form-group"><label for="s-habilitations">Habilitations / formations</label><textarea id="s-habilitations" rows="2"></textarea></div>
+        <div class="form-group"><label for="s-visite">Prochaine visite médicale</label><input type="date" id="s-visite" /></div>
+        <p class="form-msg" id="s-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="s-cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modale sous-traitant -->
+  <div class="modal-overlay hidden" id="modal-overlay-sub">
+    <div class="modal">
+      <h2 id="sub-modal-title">Nouveau sous-traitant</h2>
+      <form id="sub-form">
+        <input type="hidden" id="sub-id" />
+        <div class="form-group"><label for="sub-entreprise">Entreprise *</label><input id="sub-entreprise" required /></div>
+        <div class="form-row">
+          <div class="form-group"><label for="sub-contact">Contact</label><input id="sub-contact" /></div>
+          <div class="form-group"><label for="sub-telephone">Téléphone</label><input id="sub-telephone" /></div>
+        </div>
+        <div class="form-group"><label for="sub-email">Email</label><input type="email" id="sub-email" /></div>
+        <div class="form-group"><label for="sub-siret">SIRET</label><input id="sub-siret" /></div>
+        <div class="form-row">
+          <div class="form-group"><label for="sub-decennale">Assurance décennale (n°)</label><input id="sub-decennale" /></div>
+          <div class="form-group"><label for="sub-decennale-exp">Expire le</label><input type="date" id="sub-decennale-exp" /></div>
+        </div>
+        <div class="form-group"><label for="sub-rc">RC professionnelle</label><input id="sub-rc" /></div>
+        <div class="form-group"><label for="sub-notes">Notes</label><textarea id="sub-notes" rows="2"></textarea></div>
+        <p class="form-msg" id="sub-msg"></p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="sub-delete-btn" style="margin-right:auto; display:none;">Supprimer</button>
+          <button type="button" class="btn" id="sub-cancel-btn">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../js/equipes.js"></script>
+</body>
+</html>
