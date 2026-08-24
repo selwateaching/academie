@@ -31,12 +31,13 @@ TYPE_LABELS = {
 LANG_INSTRUCTIONS = {
     "ar": "Rédige entièrement en arabe standard moderne. Le champ \"rtl\" doit être true.",
     "fr": "Rédige entièrement en français. Le champ \"rtl\" doit être false.",
+    "en": "Rédige entièrement en anglais (English), avec un niveau adapté à des élèves algériens apprenant l'anglais comme langue étrangère. Le champ \"rtl\" doit être false.",
     "bi": "Rédige en français avec les termes clés traduits en arabe entre parenthèses. Le champ \"rtl\" doit être false.",
 }
 DEFAULT_LANG_INSTRUCTION = (
-    "Choisis automatiquement le français ou l'arabe standard moderne selon la "
-    "matière (les matières scientifiques/littéraires arabophones du programme "
-    "algérien en arabe). Mets \"rtl\" à true si tu écris en arabe."
+    "Choisis automatiquement la langue selon la matière : anglais si la matière est "
+    "l'anglais, arabe standard moderne pour les matières arabophones du programme "
+    "algérien, français sinon. Mets \"rtl\" à true uniquement si tu écris en arabe."
 )
 
 SYSTEM_PROMPT = (
