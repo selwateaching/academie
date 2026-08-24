@@ -21,6 +21,21 @@ async function ensureClasses(){
   if((!currentClasseId||!classesCache.some(c=>c.id===currentClasseId))&&classesCache.length) currentClasseId=classesCache[0].id;
 }
 function switchClasse(id){currentClasseId=parseInt(id,10);setPage(state.page)}
+async function apiFetch(url,options){
+  let r;
+  try{
+    r=await fetch(url,options);
+  }catch(e){
+    throw new Error('Connexion au serveur impossible. Vérifiez votre connexion et réessayez.');
+  }
+  if(!r.ok){
+    let msg=`Erreur serveur (${r.status})`;
+    try{const d=await r.json();if(d&&d.error)msg=d.error;}catch(e){}
+    throw new Error(msg);
+  }
+  if(r.status===204)return null;
+  try{return await r.json();}catch(e){return null;}
+}
 
 const MATIERES=['Mathématiques','Français','Arabe','Anglais','Tamazight','Histoire-Géographie','Sciences physiques','Sciences naturelles (SVT)','Éducation islamique','Éducation civique','Informatique','Éducation artistique','Éducation physique et sportive','Philosophie'];
 function matiereDatalist(){return `<datalist id="matieresList">${MATIERES.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>`}
@@ -156,11 +171,10 @@ async function submitClasseForm(){
   if(!nom){toast('Le nom de la classe est obligatoire.');return}
   const matiere=document.getElementById('clMatiere').value.trim();
   try{
-    const r=await fetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere})});
-    const d=await r.json();
+    const d=await apiFetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere})});
     classesCache=[];currentClasseId=d.id;
     closeModal();toast('Classe créée');setPage(state.page);
-  }catch(e){toast('Impossible de créer la classe.');}
+  }catch(e){toast(e.message||'Impossible de créer la classe.');}
 }
 function openEleveForm(id){
   const isEdit=id>0;
@@ -183,13 +197,13 @@ async function submitEleveForm(id){
   try{
     const url=id>0?`/api/eleves/${id}`:`/api/classes/${currentClasseId}/eleves`;
     const method=id>0?'PUT':'POST';
-    await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     closeModal();toast(id>0?'Élève modifié':'Élève ajouté');setPage(state.page);
-  }catch(e){toast('Erreur lors de l\'enregistrement.');}
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement.');}
 }
 async function deleteEleve(id){
   if(!confirm('Supprimer cet élève ? Ses notes et absences seront aussi supprimées.'))return;
-  try{await fetch(`/api/eleves/${id}`,{method:'DELETE'});toast('Élève supprimé');setPage(state.page);}catch(e){toast('Erreur lors de la suppression.');}
+  try{await apiFetch(`/api/eleves/${id}`,{method:'DELETE'});toast('Élève supprimé');setPage(state.page);}catch(e){toast(e.message||'Erreur lors de la suppression.');}
 }
 async function openEleveFiche(id){
   const e=elevesCache.find(x=>x.id===id);
@@ -215,7 +229,7 @@ function copyEleveLink(code){
 }
 async function regenerateCode(id){
   if(!confirm('Régénérer le code ? L\'ancien code ne fonctionnera plus.'))return;
-  try{const r=await fetch(`/api/eleves/${id}/regenerate_code`,{method:'POST'});const d=await r.json();toast('Nouveau code généré');openEleveFiche(id);}catch(e){toast('Erreur.');}
+  try{await apiFetch(`/api/eleves/${id}/regenerate_code`,{method:'POST'});toast('Nouveau code généré');openEleveFiche(id);}catch(e){toast(e.message||'Erreur.');}
 }
 function printBulletin(id){
   fetch(`/api/eleves/${id}/bulletin`).then(r=>r.json()).then(b=>{
@@ -260,9 +274,9 @@ function changeAppelDate(v){appelDate=v;setPage('appel')}
 function setPresence(eleveId,statut){presenceCache.presences[eleveId]=statut;document.getElementById('content').innerHTML=appelPageHtml();}
 async function saveAppel(){
   try{
-    await fetch(`/api/classes/${currentClasseId}/presence`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:appelDate,presences:presenceCache.presences})});
+    await apiFetch(`/api/classes/${currentClasseId}/presence`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:appelDate,presences:presenceCache.presences})});
     toast('Appel enregistré');
-  }catch(e){toast('Erreur lors de l\'enregistrement de l\'appel.');}
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement de l\'appel.');}
 }
 function printAppel(){
   const classe=classesCache.find(c=>c.id===currentClasseId);
@@ -323,13 +337,13 @@ async function submitEvaluationForm(id){
   try{
     const url=id>0?`/api/evaluations/${id}`:`/api/classes/${currentClasseId}/evaluations`;
     const method=id>0?'PUT':'POST';
-    await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     closeModal();toast(id>0?'Évaluation modifiée':'Évaluation créée');setPage('notes');
-  }catch(e){toast('Erreur lors de l\'enregistrement.');}
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement.');}
 }
 async function deleteEvaluation(id){
   if(!confirm('Supprimer cette évaluation et toutes ses notes ?'))return;
-  try{await fetch(`/api/evaluations/${id}`,{method:'DELETE'});toast('Évaluation supprimée');setPage('notes');}catch(e){toast('Erreur.');}
+  try{await apiFetch(`/api/evaluations/${id}`,{method:'DELETE'});toast('Évaluation supprimée');setPage('notes');}catch(e){toast(e.message||'Erreur.');}
 }
 function openNotesEntry(evaluationId){
   const ev=evaluationsCache.find(x=>x.id===evaluationId);
@@ -343,9 +357,9 @@ async function submitNotesEntry(evaluationId){
   const notes={};
   inputs.forEach(inp=>{notes[inp.dataset.eleve]=inp.value===''?null:inp.value;});
   try{
-    await fetch(`/api/evaluations/${evaluationId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});
+    await apiFetch(`/api/evaluations/${evaluationId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});
     closeModal();toast('Notes enregistrées');setPage('notes');
-  }catch(e){toast('Erreur lors de l\'enregistrement des notes.');}
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement des notes.');}
 }
 function renderDocuments(){return `<div class="page-head"><div><div class="eyebrow">Bibliothèque</div><h1>Documents</h1><p>Vos documents générés et importés restent liés à votre compte.</p></div><div class="actions"><button class="btn" onclick="importFile()">↑ Importer</button><button class="btn primary" onclick="openGenerator('course')">✦ Créer avec IA</button></div></div>${card('Types pris en charge',`<div class="feature-grid"><div class="feature"><span>📄</span><b>PDF</b><small>Lecture et préparation pour analyse.</small></div><div class="feature"><span>📝</span><b>Word</b><small>Documents pédagogiques exportables.</small></div><div class="feature"><span>📊</span><b>Excel</b><small>Listes, notes et classes.</small></div><div class="feature"><span>📽</span><b>PowerPoint</b><small>Ressources de cours.</small></div></div>`)}<div style="height:16px"></div>${card('Mes documents générés',state.docs.length?`<div class="list">${state.docs.map((d,i)=>`<div class="list-item"><span class="doc-icon" style="margin:0">${esc(d.ext)}</span><div class="grow"><b>${esc(d.title)}</b><small>${esc(d.date)}</small></div><button class="btn" onclick="downloadSaved(${i})">Télécharger</button><button class="link danger" onclick="deleteDocument(${i})">Supprimer</button></div>`).join('')}</div>`:`<div class="empty"><strong>Aucun document généré</strong><span>Créez une fiche, un cours ou un contrôle avec l'IA.</span></div>`)}`}
 function deleteDocument(i){if(!confirm('Supprimer ce document ?'))return;state.docs.splice(i,1);save();toast('Document supprimé');setPage('documents')}
@@ -358,11 +372,11 @@ async function saveProfile(){
   const name=document.getElementById('profName').value.trim();
   const phone=document.getElementById('profPhone').value.trim();
   try{
-    await fetch('/api/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
+    await apiFetch('/api/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
     window.TADRISS_USER=window.TADRISS_USER||{};
     window.TADRISS_USER.name=name;window.TADRISS_USER.phone=phone;
     toast('Profil enregistré');
-  }catch(e){toast('Erreur lors de l\'enregistrement du profil.');}
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement du profil.');}
 }
 function openGenerator(type){const labels={sheet:'Créer une fiche pédagogique',course:'Générer un cours',assessment:'Créer un contrôle',quiz:'Créer un quiz',progress:'Créer une progression',schedule:'Ajouter une séance',student:'Ajouter un élève',remediation:'Préparer une remédiation',week:'Préparer ma semaine',analysis:'Analyser ma classe',journal:'Générer le cahier journal'};document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>✦ ${labels[type]||'Assistant TADRISS'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Cycle</label><select id="gCycle"><option>${esc(state.cycle)}</option><option>Primaire</option><option>Moyen</option><option>Secondaire</option></select></div><div class="field"><label>Niveau</label><input id="gLevel" value="${esc(state.level)}"></div><div class="field"><label>Matière</label><input id="gSubject" list="matieresList" value="${esc(state.subject)}"></div><div class="field"><label>Langue</label><select id="gLang"><option value="auto">Automatique</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option><option value="bi">Bilingue</option></select></div></div>${matiereDatalist()}<div class="field" style="margin-top:12px"><label>Consigne</label><textarea id="genPrompt">${esc(type==='sheet'?'Prépare une séance de 1 heure sur les fractions avec situation-problème, objectifs, activités, évaluation et remédiation.':type==='assessment'?'Crée un contrôle de 45 minutes sur les fractions, noté sur 20, avec barème et corrigé.':type==='course'?'Crée un cours complet sur les fractions avec exemples et exercices corrigés.':type==='week'?'Prépare ma semaine à partir de mon emploi du temps et de ma progression.':'Décris précisément le document à produire.')}</textarea></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="generateResult('${type}')">✦ Générer le document</button></div>`;document.getElementById('modalBackdrop').classList.add('open')}
 function language(){const v=document.getElementById('gLang')?.value||state.lang;if(v==='ar')return 'ar';if(v==='en')return 'en';if(v==='bi')return 'bi';if(v==='auto')return state.lang==='ar'?'ar':state.lang==='en'?'en':'fr';return 'fr'}
