@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — TADRISS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+<div class="admin-wrap">
+  <div class="top-strip">
+    <h1>Abonnés TADRISS</h1>
+    <a class="btn" href="{{ url_for('logout') }}">Se déconnecter</a>
+  </div>
+  <table class="admin">
+    <thead>
+      <tr><th>Email</th><th>Nom</th><th>Inscrit le</th><th>Statut</th><th>Fin d'accès</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.email }}</td>
+        <td>{{ u.name or '—' }}</td>
+        <td>{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+        <td>
+          {% if u.is_admin %}<span class="pill admin">Admin</span>
+          {% elif u.is_paid_active %}<span class="pill paid">Payé</span>
+          {% elif u.is_trial_active %}<span class="pill trial">Essai ({{ u.days_left_trial }}j)</span>
+          {% else %}<span class="pill expired">Expiré</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u.is_paid_active %}{{ u.paid_until.strftime('%d/%m/%Y') }}
+          {% elif u.is_trial_active %}{{ u.trial_end.strftime('%d/%m/%Y') }}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          <form method="post" action="{{ url_for('admin_mark_paid', user_id=u.id) }}" style="display:flex;gap:6px">
+            <input type="hidden" name="days" value="30">
+            <button type="submit" class="btn primary" style="padding:8px 10px;font-size:10px">Virement reçu (+30j)</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
