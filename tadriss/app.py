@@ -15,12 +15,28 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from ai import generate_document
-from models import DEFAULT_STATE, SUBSCRIPTION_DAYS, TRIAL_DAYS, User, UserState, db
+from models import (
+    DEFAULT_STATE,
+    SUBSCRIPTION_DAYS,
+    TRIAL_DAYS,
+    Classe,
+    Eleve,
+    Evaluation,
+    Note,
+    Presence,
+    User,
+    UserState,
+    db,
+    generate_access_code,
+    mention_for,
+    moyenne_eleve,
+)
 
 load_dotenv()
 
@@ -102,10 +118,26 @@ def signup():
         db.session.add(
             UserState(user_id=user.id, data=json.dumps(DEFAULT_STATE, ensure_ascii=False))
         )
+        seed_demo_classe(user)
         db.session.commit()
         login_user(user)
         return redirect(url_for("index"))
     return render_template("signup.html")
+
+
+def seed_demo_classe(user):
+    """Crée une classe et quelques élèves de démonstration pour découvrir l'appli."""
+    classe = Classe(user_id=user.id, nom="4AM B", matiere="Mathématiques")
+    db.session.add(classe)
+    db.session.flush()
+    demo_eleves = [
+        ("Amine", "Belaïd"),
+        ("Lina", "Kaci"),
+        ("Yanis", "Meziane"),
+        ("Sara", "Amrani"),
+    ]
+    for prenom, nom in demo_eleves:
+        db.session.add(Eleve(classe_id=classe.id, prenom=prenom, nom=nom))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -201,6 +233,416 @@ def api_ai_generate():
         payload.get("prompt", ""),
     )
     return jsonify({"ok": True, "document": document})
+
+
+# ---------------------------------------------------------------------------
+# API : classes, élèves, notes et présences (appel)
+# ---------------------------------------------------------------------------
+
+
+def owned_classe_or_404(classe_id):
+    classe = Classe.query.get_or_404(classe_id)
+    if classe.user_id != current_user.id:
+        abort(404)
+    return classe
+
+
+def owned_eleve_or_404(eleve_id):
+    eleve = Eleve.query.get_or_404(eleve_id)
+    if eleve.classe.user_id != current_user.id:
+        abort(404)
+    return eleve
+
+
+def owned_evaluation_or_404(evaluation_id):
+    evaluation = Evaluation.query.get_or_404(evaluation_id)
+    if evaluation.classe.user_id != current_user.id:
+        abort(404)
+    return evaluation
+
+
+def serialize_eleve(eleve):
+    moyenne = moyenne_eleve(eleve)
+    return {
+        "id": eleve.id,
+        "classe_id": eleve.classe_id,
+        "prenom": eleve.prenom,
+        "nom": eleve.nom,
+        "date_naissance": eleve.date_naissance,
+        "responsable_nom": eleve.responsable_nom,
+        "responsable_lien": eleve.responsable_lien,
+        "responsable_tel": eleve.responsable_tel,
+        "responsable_email": eleve.responsable_email,
+        "observations": eleve.observations,
+        "access_code": eleve.access_code,
+        "moyenne": moyenne,
+        "mention": mention_for(moyenne),
+    }
+
+
+def save_notes_bulk(evaluation, notes_dict):
+    valid_ids = {e.id for e in evaluation.classe.eleves}
+    for eleve_id_str, valeur in (notes_dict or {}).items():
+        try:
+            eleve_id = int(eleve_id_str)
+        except (TypeError, ValueError):
+            continue
+        if eleve_id not in valid_ids:
+            continue
+        note = Note.query.filter_by(evaluation_id=evaluation.id, eleve_id=eleve_id).first()
+        if valeur in (None, ""):
+            if note:
+                db.session.delete(note)
+            continue
+        try:
+            v = float(valeur)
+        except (TypeError, ValueError):
+            continue
+        if note:
+            note.valeur = v
+        else:
+            db.session.add(Note(evaluation_id=evaluation.id, eleve_id=eleve_id, valeur=v))
+    db.session.commit()
+
+
+@app.route("/api/classes", methods=["GET"])
+@login_required
+def api_classes_list():
+    classes = Classe.query.filter_by(user_id=current_user.id).order_by(Classe.nom).all()
+    return jsonify(
+        [
+            {"id": c.id, "nom": c.nom, "matiere": c.matiere, "nb_eleves": len(c.eleves)}
+            for c in classes
+        ]
+    )
+
+
+@app.route("/api/classes", methods=["POST"])
+@login_required
+@subscriber_required
+def api_classes_create():
+    data = request.get_json(force=True, silent=True) or {}
+    nom = (data.get("nom") or "").strip()
+    if not nom:
+        abort(400)
+    classe = Classe(user_id=current_user.id, nom=nom, matiere=(data.get("matiere") or "").strip())
+    db.session.add(classe)
+    db.session.commit()
+    return jsonify({"id": classe.id, "nom": classe.nom, "matiere": classe.matiere})
+
+
+@app.route("/api/classes/<int:classe_id>", methods=["PUT"])
+@login_required
+@subscriber_required
+def api_classes_update(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    data = request.get_json(force=True, silent=True) or {}
+    nom = (data.get("nom") or "").strip()
+    if nom:
+        classe.nom = nom
+    classe.matiere = (data.get("matiere") or "").strip()
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/classes/<int:classe_id>", methods=["DELETE"])
+@login_required
+@subscriber_required
+def api_classes_delete(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    db.session.delete(classe)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/classes/<int:classe_id>/eleves", methods=["GET"])
+@login_required
+def api_eleves_list(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    return jsonify([serialize_eleve(e) for e in classe.eleves])
+
+
+@app.route("/api/classes/<int:classe_id>/eleves", methods=["POST"])
+@login_required
+@subscriber_required
+def api_eleves_create(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    data = request.get_json(force=True, silent=True) or {}
+    prenom = (data.get("prenom") or "").strip()
+    nom = (data.get("nom") or "").strip()
+    if not prenom or not nom:
+        abort(400)
+    eleve = Eleve(
+        classe_id=classe.id,
+        prenom=prenom,
+        nom=nom,
+        date_naissance=(data.get("date_naissance") or "").strip(),
+        responsable_nom=(data.get("responsable_nom") or "").strip(),
+        responsable_lien=(data.get("responsable_lien") or "").strip(),
+        responsable_tel=(data.get("responsable_tel") or "").strip(),
+        responsable_email=(data.get("responsable_email") or "").strip(),
+        observations=(data.get("observations") or "").strip(),
+    )
+    db.session.add(eleve)
+    db.session.commit()
+    return jsonify(serialize_eleve(eleve))
+
+
+@app.route("/api/eleves/<int:eleve_id>", methods=["PUT"])
+@login_required
+@subscriber_required
+def api_eleve_update(eleve_id):
+    eleve = owned_eleve_or_404(eleve_id)
+    data = request.get_json(force=True, silent=True) or {}
+    for field in (
+        "prenom",
+        "nom",
+        "date_naissance",
+        "responsable_nom",
+        "responsable_lien",
+        "responsable_tel",
+        "responsable_email",
+        "observations",
+    ):
+        if field in data:
+            setattr(eleve, field, (data[field] or "").strip())
+    db.session.commit()
+    return jsonify(serialize_eleve(eleve))
+
+
+@app.route("/api/eleves/<int:eleve_id>", methods=["DELETE"])
+@login_required
+@subscriber_required
+def api_eleve_delete(eleve_id):
+    eleve = owned_eleve_or_404(eleve_id)
+    db.session.delete(eleve)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/eleves/<int:eleve_id>/regenerate_code", methods=["POST"])
+@login_required
+@subscriber_required
+def api_eleve_regenerate_code(eleve_id):
+    eleve = owned_eleve_or_404(eleve_id)
+    eleve.access_code = generate_access_code()
+    db.session.commit()
+    return jsonify({"access_code": eleve.access_code})
+
+
+@app.route("/api/eleves/<int:eleve_id>/bulletin", methods=["GET"])
+@login_required
+def api_eleve_bulletin(eleve_id):
+    eleve = owned_eleve_or_404(eleve_id)
+    evaluations = Evaluation.query.filter_by(classe_id=eleve.classe_id).order_by(Evaluation.date).all()
+    rows = []
+    for ev in evaluations:
+        note = Note.query.filter_by(evaluation_id=ev.id, eleve_id=eleve.id).first()
+        rows.append(
+            {
+                "intitule": ev.intitule,
+                "type": ev.type,
+                "date": ev.date,
+                "coefficient": ev.coefficient,
+                "valeur": note.valeur if note else None,
+            }
+        )
+    moyenne = moyenne_eleve(eleve)
+    return jsonify(
+        {
+            "eleve": serialize_eleve(eleve),
+            "classe": eleve.classe.nom,
+            "evaluations": rows,
+            "moyenne": moyenne,
+            "mention": mention_for(moyenne),
+        }
+    )
+
+
+@app.route("/api/eleves/<int:eleve_id>/absences", methods=["GET"])
+@login_required
+def api_eleve_absences(eleve_id):
+    eleve = owned_eleve_or_404(eleve_id)
+    records = (
+        Presence.query.filter(Presence.eleve_id == eleve.id, Presence.statut.in_(["A", "R"]))
+        .order_by(Presence.date.desc())
+        .all()
+    )
+    return jsonify([{"date": r.date, "statut": r.statut} for r in records])
+
+
+@app.route("/api/classes/<int:classe_id>/evaluations", methods=["GET"])
+@login_required
+def api_evaluations_list(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    evaluations = Evaluation.query.filter_by(classe_id=classe.id).order_by(Evaluation.date.desc()).all()
+    out = []
+    for ev in evaluations:
+        notes = {n.eleve_id: n.valeur for n in ev.notes}
+        out.append(
+            {
+                "id": ev.id,
+                "intitule": ev.intitule,
+                "type": ev.type,
+                "date": ev.date,
+                "coefficient": ev.coefficient,
+                "notes": notes,
+            }
+        )
+    return jsonify(out)
+
+
+@app.route("/api/classes/<int:classe_id>/evaluations", methods=["POST"])
+@login_required
+@subscriber_required
+def api_evaluations_create(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    data = request.get_json(force=True, silent=True) or {}
+    intitule = (data.get("intitule") or "").strip()
+    if not intitule:
+        abort(400)
+    evaluation = Evaluation(
+        classe_id=classe.id,
+        intitule=intitule,
+        type=(data.get("type") or "Contrôle").strip(),
+        date=(data.get("date") or "").strip(),
+        coefficient=int(data.get("coefficient") or 1),
+    )
+    db.session.add(evaluation)
+    db.session.commit()
+    save_notes_bulk(evaluation, data.get("notes") or {})
+    return jsonify({"id": evaluation.id})
+
+
+@app.route("/api/evaluations/<int:evaluation_id>", methods=["PUT"])
+@login_required
+@subscriber_required
+def api_evaluation_update(evaluation_id):
+    evaluation = owned_evaluation_or_404(evaluation_id)
+    data = request.get_json(force=True, silent=True) or {}
+    if data.get("intitule"):
+        evaluation.intitule = data["intitule"].strip()
+    if "type" in data:
+        evaluation.type = (data["type"] or "").strip()
+    if "date" in data:
+        evaluation.date = (data["date"] or "").strip()
+    if "coefficient" in data:
+        evaluation.coefficient = int(data["coefficient"] or 1)
+    db.session.commit()
+    save_notes_bulk(evaluation, data.get("notes") or {})
+    return jsonify({"ok": True})
+
+
+@app.route("/api/evaluations/<int:evaluation_id>", methods=["DELETE"])
+@login_required
+@subscriber_required
+def api_evaluation_delete(evaluation_id):
+    evaluation = owned_evaluation_or_404(evaluation_id)
+    db.session.delete(evaluation)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/classes/<int:classe_id>/presence", methods=["GET"])
+@login_required
+def api_presence_get(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    date = request.args.get("date") or datetime.utcnow().strftime("%Y-%m-%d")
+    records = {p.eleve_id: p.statut for p in Presence.query.filter_by(classe_id=classe.id, date=date).all()}
+    return jsonify({"date": date, "presences": records})
+
+
+@app.route("/api/classes/<int:classe_id>/presence", methods=["POST"])
+@login_required
+@subscriber_required
+def api_presence_save(classe_id):
+    classe = owned_classe_or_404(classe_id)
+    data = request.get_json(force=True, silent=True) or {}
+    date = (data.get("date") or "").strip()
+    if not date:
+        abort(400)
+    valid_ids = {e.id for e in classe.eleves}
+    for eleve_id_str, statut in (data.get("presences") or {}).items():
+        try:
+            eleve_id = int(eleve_id_str)
+        except (TypeError, ValueError):
+            continue
+        if eleve_id not in valid_ids or statut not in ("P", "A", "R"):
+            continue
+        record = Presence.query.filter_by(eleve_id=eleve_id, date=date).first()
+        if record:
+            record.statut = statut
+        else:
+            db.session.add(Presence(classe_id=classe.id, eleve_id=eleve_id, date=date, statut=statut))
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# ---------------------------------------------------------------------------
+# Espace élève (public, accès par code — lecture seule)
+# ---------------------------------------------------------------------------
+
+
+def current_eleve():
+    eleve_id = session.get("eleve_id")
+    return Eleve.query.get(eleve_id) if eleve_id else None
+
+
+@app.route("/eleve", methods=["GET"])
+def eleve_login_page():
+    if current_eleve():
+        return redirect(url_for("eleve_espace"))
+    return render_template("eleve_login.html", prefill=request.args.get("code", ""))
+
+
+@app.route("/eleve/login", methods=["POST"])
+def eleve_login():
+    code = (request.form.get("code") or "").strip().replace(" ", "").lower()
+    eleve = Eleve.query.filter_by(access_code=code).first() if code else None
+    if not eleve:
+        return render_template("eleve_login.html", error="Code invalide.", prefill="")
+    session["eleve_id"] = eleve.id
+    return redirect(url_for("eleve_espace"))
+
+
+@app.route("/eleve/logout")
+def eleve_logout():
+    session.pop("eleve_id", None)
+    return redirect(url_for("eleve_login_page"))
+
+
+@app.route("/eleve/espace")
+def eleve_espace():
+    eleve = current_eleve()
+    if not eleve:
+        return redirect(url_for("eleve_login_page"))
+    evaluations = Evaluation.query.filter_by(classe_id=eleve.classe_id).order_by(Evaluation.date).all()
+    rows = []
+    for ev in evaluations:
+        note = Note.query.filter_by(evaluation_id=ev.id, eleve_id=eleve.id).first()
+        rows.append(
+            {
+                "intitule": ev.intitule,
+                "type": ev.type,
+                "date": ev.date,
+                "coefficient": ev.coefficient,
+                "valeur": note.valeur if note else None,
+            }
+        )
+    moyenne = moyenne_eleve(eleve)
+    absences = (
+        Presence.query.filter(Presence.eleve_id == eleve.id, Presence.statut.in_(["A", "R"]))
+        .order_by(Presence.date.desc())
+        .all()
+    )
+    return render_template(
+        "eleve_espace.html",
+        eleve=eleve,
+        evaluations=rows,
+        moyenne=moyenne,
+        mention=mention_for(moyenne),
+        absences=absences,
+    )
 
 
 # ---------------------------------------------------------------------------

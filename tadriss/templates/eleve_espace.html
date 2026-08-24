@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ eleve.prenom }} {{ eleve.nom }} — Espace élève TADRISS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+<style>
+  body{padding:24px}
+  .sp-wrap{max-width:820px;margin:0 auto}
+  .sp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+  .sp-moy{display:flex;align-items:center;gap:18px}
+  .sp-moy .val{font:900 40px Nunito;color:var(--navy)}
+  @media print{.no-print{display:none!important}body{padding:0}}
+</style>
+</head>
+<body>
+<div class="sp-wrap">
+  <div class="sp-top">
+    <div class="auth-brand" style="margin:0">
+      <div class="mark">T</div>
+      <div><strong>{{ eleve.prenom }} {{ eleve.nom }}</strong><small>Espace élève TADRISS</small></div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px">
+      <button class="btn" onclick="window.print()">🖨 Imprimer le bulletin</button>
+      <a class="btn" href="{{ url_for('eleve_logout') }}">Se déconnecter</a>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><h3>Moyenne générale</h3></div>
+    <div class="sp-moy">
+      <div class="val">{{ '%.2f'|format(moyenne) if moyenne is not none else '—' }}{% if moyenne is not none %}<span style="font-size:16px;color:var(--muted)"> /20</span>{% endif %}</div>
+      {% if mention %}<span class="pill paid">{{ mention }}</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><h3>Mes notes</h3></div>
+    {% if evaluations %}
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Note</th></tr></thead>
+      <tbody>
+        {% for ev in evaluations %}
+        <tr><td><b>{{ ev.intitule }}</b></td><td>{{ ev.type }}</td><td>{{ ev.date or '—' }}</td><td>{{ ev.coefficient }}</td>
+        <td><span class="score">{{ '%.2f'|format(ev.valeur) if ev.valeur is not none else '—' }}</span></td></tr>
+        {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}
+    <div class="empty"><strong>Aucune note pour l'instant</strong><span>Reviens plus tard.</span></div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h3>Mes absences</h3></div>
+    {% if absences %}
+    <div class="list">
+      {% for a in absences %}
+      <div class="list-item"><span class="tag{{ ' orange' if a.statut=='R' else '' }}">{{ 'Retard' if a.statut=='R' else 'Absent' }}</span><div class="grow"><b>{{ a.date }}</b></div></div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><strong>Aucune absence enregistrée</strong><span>👍</span></div>
+    {% endif %}
+  </div>
+</div>
+</body>
+</html>

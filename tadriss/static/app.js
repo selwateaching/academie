@@ -1,13 +1,26 @@
 /* TADRISS v2 - backend-connected (comptes, essai, IA réelle) */
 const defaultState={
  page:'dashboard', lang:'auto', year:'2026 / 2027', wilaya:'Alger', cycle:'Moyen', level:'4AM', subject:'الرياضيات — Mathématiques',
- students:[['Amine B.','13.5','Présent','green'],['Lina K.','15.2','Très bien','green'],['Yanis M.','9.4','À accompagner','orange'],['Sara A.','14.1','Bien','green'],['Adam R.','8.8','Remédiation','orange']],
  docs:[], progress:[['Nombres et calculs',72],['Géométrie',54],['Fonctions',41],['Statistiques',63]],
  schedule:[['08:00','Mathématiques','Fractions','4AM','blue','Dim','Nombres et calculs'],['09:00','Mathématiques','Géométrie','4AM','green','Lun','Géométrie'],['10:30','Mathématiques','Aire et périmètre','4AM','green','Mar','Géométrie'],['11:30','Mathématiques','Proportionnalité','4AM','orange','Mer','Fonctions']],
  saved:null
 };
 let state={...defaultState};
-const pages={dashboard:'Tableau de bord',schedule:'Emploi du temps',progress:'Progression annuelle',journal:'Cahier journal',lessons:'Mes cours',sheets:'Fiches pédagogiques',assessments:'Contrôles & quiz',students:'Mes élèves',documents:'Documents',ai:'Assistant IA',settings:'Paramètres'};
+const pages={dashboard:'Tableau de bord',schedule:'Emploi du temps',progress:'Progression annuelle',journal:'Cahier journal',lessons:'Mes cours',sheets:'Fiches pédagogiques',assessments:'Contrôles & quiz',students:'Mes élèves',appel:'Appel',notes:'Carnet de notes',documents:'Documents',ai:'Assistant IA',settings:'Paramètres'};
+
+let classesCache=[];
+let currentClasseId=null;
+let elevesCache=[];
+let evaluationsCache=[];
+let appelDate=new Date().toISOString().slice(0,10);
+let presenceCache={date:appelDate,presences:{}};
+async function ensureClasses(){
+  if(!classesCache.length){
+    try{const r=await fetch('/api/classes');classesCache=await r.json();}catch(e){classesCache=[];}
+  }
+  if((!currentClasseId||!classesCache.some(c=>c.id===currentClasseId))&&classesCache.length) currentClasseId=classesCache[0].id;
+}
+function switchClasse(id){currentClasseId=parseInt(id,10);setPage(state.page)}
 
 async function loadFromServer(){
   try{
@@ -107,29 +120,222 @@ function renderSheets(){return pageList('Fiches pédagogiques','Préparation','C
 function renderLessons(){return pageList('Mes cours','Ressources pédagogiques','Cours, résumés, activités et exercices.','course',['Cours — Fractions','Cours — Géométrie'])}
 function pageList(title,ey,p,typ,items){return `<div class="page-head"><div><div class="eyebrow">${ey}</div><h1>${title}</h1><p>${p}</p></div><button class="btn primary" onclick="openGenerator('${typ}')">✦ Générer avec IA</button></div><div class="doc-grid">${items.map((x,i)=>`<article class="doc"><div class="doc-icon">${typ==='sheet'?'✎':'📚'}</div><h4>${x}</h4><p>${state.level} · ${state.subject} · ${state.lang==='fr'?'Français':'Automatique'}</p><div class="actions" style="margin-top:12px"><button class="btn" onclick="openGenerator('${typ}')">Modifier</button><button class="btn" onclick="exportDocument('${typ}')">PDF</button></div></article>`).join('')}</div>`}
 function renderAssessments(){return `<div class="page-head"><div><div class="eyebrow">Évaluation</div><h1>Contrôles & quiz</h1><p>Sujets, barèmes, corrigés et variantes.</p></div><button class="btn primary" onclick="openGenerator('assessment')">✦ Créer un contrôle</button></div>${card('Bibliothèque',`<div class="doc-grid"><article class="doc"><div class="doc-icon">📝</div><h4>Contrôle 1 — Fractions</h4><p>45 min · /20 · Corrigé disponible</p><button class="btn" onclick="exportDocument('assessment')">Exporter</button></article><article class="doc"><div class="doc-icon">🎯</div><h4>Quiz — Proportionnalité</h4><p>15 questions · correction automatique</p><button class="btn" onclick="openGenerator('quiz')">Ouvrir</button></article></div>`)}`}
-function renderStudents(){
-  const rows=state.students.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Élève</th><th>Moyenne</th><th>Statut</th><th>Action</th></tr></thead><tbody>${state.students.map((s,i)=>`<tr><td><b>${esc(s[0])}</b></td><td><span class="score">${esc(s[1])}</span></td><td><span class="tag ${s[3]}">${esc(s[2])}</span></td><td><button class="link" onclick="openGenerator('analysis')">Analyser →</button> <button class="link" onclick="openStudentForm(${i})">Modifier</button> <button class="link danger" onclick="deleteStudent(${i})">Supprimer</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucun élève</strong><span>Ajoutez votre premier élève avec le bouton "+ Ajouter".</span></div>`;
-  return `<div class="page-head"><div><div class="eyebrow">Classe ${state.level}</div><h1>Mes élèves</h1><p>Notes, observations, accompagnement et statistiques.</p></div><div class="actions"><button class="btn" onclick="openStudentForm(-1)">+ Ajouter</button><button class="btn primary" onclick="openGenerator('analysis')">✦ Analyser la classe</button></div></div>${card('Liste des élèves',rows)}`;
+function renderEleves(){
+  loadElevesPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Mes élèves</h1><p>Un instant…</p></div></div>`;
 }
-function openStudentForm(index){
-  index=typeof index==='number'?index:-1;
-  const isEdit=index>=0;
-  const s=isEdit?state.students[index]:['','10,0','Bien','green'];
-  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier l’élève':'+ Ajouter un élève'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Nom</label><input id="stName" value="${esc(s[0])}" placeholder="Nom de l'élève"></div><div class="field"><label>Moyenne</label><input id="stAvg" value="${esc(s[1])}" placeholder="Ex. 13,5"></div><div class="field"><label>Statut</label><input id="stStatus" value="${esc(s[2])}" placeholder="Ex. Bien, À accompagner..."></div><div class="field"><label>Couleur du statut</label><select id="stColor"><option value="green"${s[3]==='green'?' selected':''}>Vert (bien)</option><option value="orange"${s[3]==='orange'?' selected':''}>Orange (à accompagner)</option></select></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitStudentForm(${index})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+async function loadElevesPage(){
+  await ensureClasses();
+  if(state.page!=='students')return;
+  if(!classesCache.length){
+    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Classes</div><h1>Mes élèves</h1><p>Créez votre première classe pour commencer.</p></div><div class="actions"><button class="btn primary" onclick="openClasseForm()">+ Nouvelle classe</button></div></div>`;
+    return;
+  }
+  try{
+    const r=await fetch(`/api/classes/${currentClasseId}/eleves`);
+    elevesCache=await r.json();
+  }catch(e){elevesCache=[];}
+  if(state.page!=='students')return;
+  document.getElementById('content').innerHTML=elevesPageHtml();
+}
+function classeSelectHtml(id,list){return `<select id="${id}" onchange="switchClasse(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${list.map(c=>`<option value="${c.id}"${c.id===currentClasseId?' selected':''}>${esc(c.nom)}${c.matiere?' · '+esc(c.matiere):''}</option>`).join('')}</select>`}
+function elevesPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=elevesCache.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Élève</th><th>Moyenne</th><th>Responsable</th><th>Action</th></tr></thead><tbody>${elevesCache.map(e=>`<tr><td><b>${esc(e.prenom+' '+e.nom)}</b></td><td>${e.moyenne!==null&&e.moyenne!==undefined?`<span class="score">${Number(e.moyenne).toFixed(2)}</span> <span class="tag ${e.moyenne>=10?'green':'orange'}">${esc(e.mention||'')}</span>`:'<span class="kpi">—</span>'}</td><td>${e.responsable_nom?esc(e.responsable_nom)+(e.responsable_tel?' · '+esc(e.responsable_tel):''):'<span class="kpi">—</span>'}</td><td><button class="link" onclick="openEleveFiche(${e.id})">Voir la fiche</button> <button class="link danger" onclick="deleteEleve(${e.id})">Supprimer</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucun élève dans cette classe</strong><span>Ajoutez votre premier élève.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">${classesCache.length} classe(s)</div><h1>Mes élèves</h1><p>Notes, présences, contacts et bulletins par classe.</p></div><div class="actions">${classeSelectHtml('eleveClasseSelect',classesCache)}<button class="btn" onclick="openClasseForm()">+ Nouvelle classe</button><button class="btn primary" onclick="openEleveForm(-1)">+ Ajouter un élève</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
+}
+function openClasseForm(){
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>+ Nouvelle classe</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Nom de la classe</label><input id="clNom" placeholder="Ex. 4AM B"></div><div class="field"><label>Matière</label><input id="clMatiere" placeholder="Ex. Mathématiques"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitClasseForm()">Créer</button></div>`;
   document.getElementById('modalBackdrop').classList.add('open');
 }
-function submitStudentForm(index){
-  index=typeof index==='number'?index:-1;
-  const name=document.getElementById('stName').value.trim();
-  if(!name){toast('Le nom est obligatoire.');return}
-  const avg=document.getElementById('stAvg').value.trim()||'—';
-  const status=document.getElementById('stStatus').value.trim()||'—';
-  const color=document.getElementById('stColor').value;
-  const row=[name,avg,status,color];
-  if(index>=0) state.students[index]=row; else state.students.push(row);
-  save();closeModal();toast(index>=0?'Élève modifié':'Élève ajouté');setPage('students');
+async function submitClasseForm(){
+  const nom=document.getElementById('clNom').value.trim();
+  if(!nom){toast('Le nom de la classe est obligatoire.');return}
+  const matiere=document.getElementById('clMatiere').value.trim();
+  try{
+    const r=await fetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere})});
+    const d=await r.json();
+    classesCache=[];currentClasseId=d.id;
+    closeModal();toast('Classe créée');setPage(state.page);
+  }catch(e){toast('Impossible de créer la classe.');}
 }
-function deleteStudent(i){if(!confirm('Supprimer cet élève ?'))return;state.students.splice(i,1);save();toast('Élève supprimé');setPage('students')}
+function openEleveForm(id){
+  const isEdit=id>0;
+  const e=isEdit?elevesCache.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier l’élève':'+ Ajouter un élève'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Prénom</label><input id="elPrenom" value="${esc(e?e.prenom:'')}"></div><div class="field"><label>Nom</label><input id="elNom" value="${esc(e?e.nom:'')}"></div><div class="field"><label>Date de naissance</label><input id="elNaissance" type="date" value="${esc(e?e.date_naissance:'')}"></div><div class="field"><label>Observations</label><input id="elObs" value="${esc(e?e.observations:'')}"></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Responsable (nom)</label><input id="elRespNom" value="${esc(e?e.responsable_nom:'')}"></div><div class="field"><label>Lien</label><input id="elRespLien" value="${esc(e?e.responsable_lien:'')}" placeholder="Père, Mère, Tuteur..."></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Téléphone</label><input id="elRespTel" value="${esc(e?e.responsable_tel:'')}"></div><div class="field"><label>Email</label><input id="elRespEmail" value="${esc(e?e.responsable_email:'')}"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitEleveForm(${isEdit?id:-1})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitEleveForm(id){
+  const payload={
+    prenom:document.getElementById('elPrenom').value.trim(),
+    nom:document.getElementById('elNom').value.trim(),
+    date_naissance:document.getElementById('elNaissance').value,
+    observations:document.getElementById('elObs').value.trim(),
+    responsable_nom:document.getElementById('elRespNom').value.trim(),
+    responsable_lien:document.getElementById('elRespLien').value.trim(),
+    responsable_tel:document.getElementById('elRespTel').value.trim(),
+    responsable_email:document.getElementById('elRespEmail').value.trim()
+  };
+  if(!payload.prenom||!payload.nom){toast('Prénom et nom sont obligatoires.');return}
+  try{
+    const url=id>0?`/api/eleves/${id}`:`/api/classes/${currentClasseId}/eleves`;
+    const method=id>0?'PUT':'POST';
+    await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    closeModal();toast(id>0?'Élève modifié':'Élève ajouté');setPage(state.page);
+  }catch(e){toast('Erreur lors de l\'enregistrement.');}
+}
+async function deleteEleve(id){
+  if(!confirm('Supprimer cet élève ? Ses notes et absences seront aussi supprimées.'))return;
+  try{await fetch(`/api/eleves/${id}`,{method:'DELETE'});toast('Élève supprimé');setPage(state.page);}catch(e){toast('Erreur lors de la suppression.');}
+}
+async function openEleveFiche(id){
+  const e=elevesCache.find(x=>x.id===id);
+  if(!e)return;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${esc(e.prenom+' '+e.nom)}</h2><button class="close" onclick="closeModal()">×</button></div><div id="ficheBody">Chargement…</div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+  try{
+    const [bul,abs]=await Promise.all([
+      fetch(`/api/eleves/${id}/bulletin`).then(r=>r.json()),
+      fetch(`/api/eleves/${id}/absences`).then(r=>r.json())
+    ]);
+    const notesRows=bul.evaluations.length?bul.evaluations.map(ev=>`<tr><td>${esc(ev.intitule)}</td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${ev.valeur!==null?Number(ev.valeur).toFixed(2):'—'}</td></tr>`).join(''):'<tr><td colspan="5" class="kpi">Aucune évaluation</td></tr>';
+    const absRows=abs.length?abs.map(a=>`<div class="list-item"><span class="tag${a.statut==='R'?' orange':''}">${a.statut==='R'?'Retard':'Absent'}</span><div class="grow">${esc(a.date)}</div></div>`).join(''):'<div class="empty"><strong>Aucune absence</strong></div>';
+    document.getElementById('ficheBody').innerHTML=`<div class="grid grid-2"><div><p class="kpi"><b>Responsable :</b> ${esc(e.responsable_nom||'—')} ${e.responsable_lien?'('+esc(e.responsable_lien)+')':''}</p><p class="kpi"><b>Téléphone :</b> ${esc(e.responsable_tel||'—')} · <b>Email :</b> ${esc(e.responsable_email||'—')}</p><p class="kpi"><b>Observations :</b> ${esc(e.observations||'—')}</p></div><div><div style="display:flex;align-items:center;gap:14px"><div style="font:900 32px Nunito;color:var(--navy)">${bul.moyenne!==null?Number(bul.moyenne).toFixed(2):'—'}</div>${bul.mention?`<span class="pill paid">${esc(bul.mention)}</span>`:''}</div><p class="kpi" style="margin-top:8px"><b>Code espace élève :</b> ${esc(e.access_code)}<br><a href="#" onclick="copyEleveLink('${esc(e.access_code)}');return false">copier le lien</a> · <button class="link" onclick="regenerateCode(${e.id})">régénérer</button></p></div></div><div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Note</th></tr></thead><tbody>${notesRows}</tbody></table></div><div style="margin-top:14px"><b style="font-size:11px">Absences</b><div class="list" style="margin-top:8px">${absRows}</div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="openEleveForm(${e.id})">Modifier</button><button class="btn primary" onclick="printBulletin(${e.id})">🖨 Imprimer le bulletin</button></div>`;
+  }catch(err){
+    document.getElementById('ficheBody').innerHTML='<div class="empty"><strong>Erreur de chargement</strong></div>';
+  }
+}
+function copyEleveLink(code){
+  const link=`${location.origin}/eleve?code=${code}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(link).then(()=>toast('Lien copié !')).catch(()=>toast(link));
+  else toast(link);
+}
+async function regenerateCode(id){
+  if(!confirm('Régénérer le code ? L\'ancien code ne fonctionnera plus.'))return;
+  try{const r=await fetch(`/api/eleves/${id}/regenerate_code`,{method:'POST'});const d=await r.json();toast('Nouveau code généré');openEleveFiche(id);}catch(e){toast('Erreur.');}
+}
+function printBulletin(id){
+  fetch(`/api/eleves/${id}/bulletin`).then(r=>r.json()).then(b=>{
+    const rows=b.evaluations.map(ev=>`<tr><td>${esc(ev.intitule)}</td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${ev.valeur!==null?Number(ev.valeur).toFixed(2):'—'}</td></tr>`).join('');
+    const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bulletin — ${esc(b.eleve.prenom)} ${esc(b.eleve.nom)}</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}h1{color:#101b4d}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px}th{background:#f3f3f3}</style></head><body><h1>Bulletin — ${esc(b.eleve.prenom)} ${esc(b.eleve.nom)}</h1><p>Classe : ${esc(b.classe)}</p><p><b>Moyenne : ${b.moyenne!==null?Number(b.moyenne).toFixed(2):'—'}/20</b> ${b.mention?'— '+esc(b.mention):''}</p><table><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+    const w=window.open('','_blank');
+    if(!w){toast('Autorisez les fenêtres contextuelles pour imprimer.');return}
+    w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+  });
+}
+function renderAppel(){
+  loadAppelPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Appel</h1><p>Un instant…</p></div></div>`;
+}
+async function loadAppelPage(){
+  await ensureClasses();
+  if(state.page!=='appel')return;
+  if(!classesCache.length){
+    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Appel</div><h1>Appel</h1><p>Créez d'abord une classe dans "Mes élèves".</p></div></div>`;
+    return;
+  }
+  try{
+    const [elRes,prRes]=await Promise.all([
+      fetch(`/api/classes/${currentClasseId}/eleves`).then(r=>r.json()),
+      fetch(`/api/classes/${currentClasseId}/presence?date=${appelDate}`).then(r=>r.json())
+    ]);
+    elevesCache=elRes;presenceCache=prRes;
+  }catch(e){elevesCache=[];presenceCache={date:appelDate,presences:{}};}
+  if(state.page!=='appel')return;
+  document.getElementById('content').innerHTML=appelPageHtml();
+}
+function appelPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=elevesCache.length?elevesCache.map(e=>{
+    const statut=presenceCache.presences[e.id]||'P';
+    const btn=(v,label)=>`<button class="btn${statut===v?' primary':''}" style="padding:6px 10px;font-size:10px" onclick="setPresence(${e.id},'${v}')">${label}</button>`;
+    return `<div class="list-item"><div class="grow"><b>${esc(e.prenom+' '+e.nom)}</b></div><div class="actions" style="gap:6px">${btn('P','Présent')}${btn('R','Retard')}${btn('A','Absent')}</div></div>`;
+  }).join(''):`<div class="empty"><strong>Aucun élève dans cette classe</strong></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Présences</div><h1>Appel</h1><p>Marquez chaque élève, puis enregistrez.</p></div><div class="actions">${classeSelectHtml('appelClasseSelect',classesCache)}<input type="date" id="appelDateInput" value="${appelDate}" onchange="changeAppelDate(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px"><button class="btn" onclick="printAppel()">🖨 Imprimer</button><button class="btn primary" onclick="saveAppel()">Enregistrer l'appel</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+' — '+appelDate,rows)}`;
+}
+function changeAppelDate(v){appelDate=v;setPage('appel')}
+function setPresence(eleveId,statut){presenceCache.presences[eleveId]=statut;document.getElementById('content').innerHTML=appelPageHtml();}
+async function saveAppel(){
+  try{
+    await fetch(`/api/classes/${currentClasseId}/presence`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:appelDate,presences:presenceCache.presences})});
+    toast('Appel enregistré');
+  }catch(e){toast('Erreur lors de l\'enregistrement de l\'appel.');}
+}
+function printAppel(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=elevesCache.map(e=>`<tr><td>${esc(e.prenom+' '+e.nom)}</td><td></td></tr>`).join('');
+  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Feuille d'appel</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:10px;text-align:left}</style></head><body><h1>Feuille d'appel — ${esc(classe?classe.nom:'')}</h1><p>${appelDate}</p><table><thead><tr><th>Élève</th><th>Présence / Signature</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){toast('Autorisez les fenêtres contextuelles pour imprimer.');return}
+  w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+}
+function renderNotes(){
+  loadNotesPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Carnet de notes</h1><p>Un instant…</p></div></div>`;
+}
+async function loadNotesPage(){
+  await ensureClasses();
+  if(state.page!=='notes')return;
+  if(!classesCache.length){
+    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Notes</div><h1>Carnet de notes</h1><p>Créez d'abord une classe dans "Mes élèves".</p></div></div>`;
+    return;
+  }
+  try{
+    const [elRes,evRes]=await Promise.all([
+      fetch(`/api/classes/${currentClasseId}/eleves`).then(r=>r.json()),
+      fetch(`/api/classes/${currentClasseId}/evaluations`).then(r=>r.json())
+    ]);
+    elevesCache=elRes;evaluationsCache=evRes;
+  }catch(e){elevesCache=[];evaluationsCache=[];}
+  if(state.page!=='notes')return;
+  document.getElementById('content').innerHTML=notesPageHtml();
+}
+function notesPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=evaluationsCache.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Moyenne classe</th><th>Action</th></tr></thead><tbody>${evaluationsCache.map(ev=>{
+    const valeurs=Object.values(ev.notes||{}).filter(v=>v!==null&&v!==undefined);
+    const moyClasse=valeurs.length?(valeurs.reduce((a,b)=>a+b,0)/valeurs.length).toFixed(2):'—';
+    return `<tr><td><b>${esc(ev.intitule)}</b></td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${moyClasse}</td><td><button class="link" onclick="openNotesEntry(${ev.id})">Saisir les notes</button> <button class="link" onclick="openEvaluationForm(${ev.id})">Modifier</button> <button class="link danger" onclick="deleteEvaluation(${ev.id})">Supprimer</button></td></tr>`;
+  }).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucune évaluation</strong><span>Créez votre première évaluation.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Évaluations</div><h1>Carnet de notes</h1><p>Coefficients, notes et moyennes automatiques.</p></div><div class="actions">${classeSelectHtml('notesClasseSelect',classesCache)}<button class="btn primary" onclick="openEvaluationForm(-1)">+ Nouvelle évaluation</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
+}
+function openEvaluationForm(id){
+  const isEdit=id>0;
+  const ev=isEdit?evaluationsCache.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier l’évaluation':'+ Nouvelle évaluation'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Intitulé</label><input id="evIntitule" value="${esc(ev?ev.intitule:'')}" placeholder="Ex. Contrôle n°1"></div><div class="field"><label>Type</label><input id="evType" value="${esc(ev?ev.type:'Contrôle')}"></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Date</label><input id="evDate" type="date" value="${esc(ev?ev.date:'')}"></div><div class="field"><label>Coefficient</label><input id="evCoef" type="number" min="1" value="${ev?ev.coefficient:1}"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitEvaluationForm(${isEdit?id:-1})">${isEdit?'Enregistrer':'Créer'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitEvaluationForm(id){
+  const intitule=document.getElementById('evIntitule').value.trim();
+  if(!intitule){toast('L\'intitulé est obligatoire.');return}
+  const payload={intitule,type:document.getElementById('evType').value.trim()||'Contrôle',date:document.getElementById('evDate').value,coefficient:parseInt(document.getElementById('evCoef').value,10)||1};
+  try{
+    const url=id>0?`/api/evaluations/${id}`:`/api/classes/${currentClasseId}/evaluations`;
+    const method=id>0?'PUT':'POST';
+    await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    closeModal();toast(id>0?'Évaluation modifiée':'Évaluation créée');setPage('notes');
+  }catch(e){toast('Erreur lors de l\'enregistrement.');}
+}
+async function deleteEvaluation(id){
+  if(!confirm('Supprimer cette évaluation et toutes ses notes ?'))return;
+  try{await fetch(`/api/evaluations/${id}`,{method:'DELETE'});toast('Évaluation supprimée');setPage('notes');}catch(e){toast('Erreur.');}
+}
+function openNotesEntry(evaluationId){
+  const ev=evaluationsCache.find(x=>x.id===evaluationId);
+  if(!ev)return;
+  const rows=elevesCache.map(e=>`<div class="field" style="margin-bottom:8px"><label>${esc(e.prenom+' '+e.nom)}</label><input class="noteInput" data-eleve="${e.id}" type="number" min="0" max="20" step="0.25" value="${ev.notes&&ev.notes[e.id]!==undefined&&ev.notes[e.id]!==null?ev.notes[e.id]:''}" placeholder="/20"></div>`).join('');
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>Notes — ${esc(ev.intitule)}</h2><button class="close" onclick="closeModal()">×</button></div><div>${rows}</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitNotesEntry(${evaluationId})">Enregistrer les notes</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitNotesEntry(evaluationId){
+  const inputs=document.querySelectorAll('.noteInput');
+  const notes={};
+  inputs.forEach(inp=>{notes[inp.dataset.eleve]=inp.value===''?null:inp.value;});
+  try{
+    await fetch(`/api/evaluations/${evaluationId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});
+    closeModal();toast('Notes enregistrées');setPage('notes');
+  }catch(e){toast('Erreur lors de l\'enregistrement des notes.');}
+}
 function renderDocuments(){return `<div class="page-head"><div><div class="eyebrow">Bibliothèque</div><h1>Documents</h1><p>Vos documents générés et importés restent liés à votre compte.</p></div><div class="actions"><button class="btn" onclick="importFile()">↑ Importer</button><button class="btn primary" onclick="openGenerator('course')">✦ Créer avec IA</button></div></div>${card('Types pris en charge',`<div class="feature-grid"><div class="feature"><span>📄</span><b>PDF</b><small>Lecture et préparation pour analyse.</small></div><div class="feature"><span>📝</span><b>Word</b><small>Documents pédagogiques exportables.</small></div><div class="feature"><span>📊</span><b>Excel</b><small>Listes, notes et classes.</small></div><div class="feature"><span>📽</span><b>PowerPoint</b><small>Ressources de cours.</small></div></div>`)}<div style="height:16px"></div>${card('Mes documents générés',state.docs.length?`<div class="list">${state.docs.map((d,i)=>`<div class="list-item"><span class="doc-icon" style="margin:0">${esc(d.ext)}</span><div class="grow"><b>${esc(d.title)}</b><small>${esc(d.date)}</small></div><button class="btn" onclick="downloadSaved(${i})">Télécharger</button><button class="link danger" onclick="deleteDocument(${i})">Supprimer</button></div>`).join('')}</div>`:`<div class="empty"><strong>Aucun document généré</strong><span>Créez une fiche, un cours ou un contrôle avec l'IA.</span></div>`)}`}
 function deleteDocument(i){if(!confirm('Supprimer ce document ?'))return;state.docs.splice(i,1);save();toast('Document supprimé');setPage('documents')}
 function renderAI(){return `<div class="page-head"><div><div class="eyebrow">Intelligence pédagogique</div><h1>Assistant IA TADRISS</h1><p>Génération guidée par votre contexte, propulsée par Claude.</p></div></div><div class="ai-grid">${card('Conversation',`<div class="chat"><div class="messages" id="messages"><div class="msg bot"><b>Bonjour 👋</b><br>Je peux préparer une séance, un cours, un contrôle, une remédiation ou votre semaine.</div></div><div class="chat-input"><textarea id="chatText" placeholder="Ex. Prépare une remédiation sur les fractions..."></textarea><button class="btn ai" onclick="sendAI()">Envoyer ✦</button></div></div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Préparer une séance','Fiche complète','sheet')}${quick('📝','Créer un contrôle','Sujet + corrigé','assessment')}${quick('🎯','Remédiation','Activités ciblées','remediation')}${quick('📅','Préparer ma semaine','Planification','week')}${quick('📚','Créer un cours','Cours + exercices','course')}${quick('📊','Analyser ma classe','Résultats','analysis')}</div>`)}</div></div>`}
@@ -177,7 +383,7 @@ function closeModal(){document.getElementById('modalBackdrop').classList.remove(
 function saveSettings(){state.wilaya=document.getElementById('setWilaya').value;state.cycle=document.getElementById('setCycle').value;state.level=document.getElementById('setLevel').value;state.subject=document.getElementById('setSubject').value;state.lang=document.getElementById('setLang').value;save();toast('Paramètres enregistrés');setPage('dashboard')}
 function importFile(){document.getElementById('fileInput').click()}
 function handleFile(e){const f=e.target.files[0];if(!f)return;state.docs.unshift({title:f.name,ext:f.name.split('.').pop().toUpperCase(),date:new Date().toLocaleString('fr-FR'),content:{title:f.name,meta:'Importé',prompt:'Fichier importé dans TADRISS',sections:[['Fichier',`${f.name} · ${Math.round(f.size/1024)} Ko`]],rtl:false}});save();toast(`${f.name} ajouté à Documents`);if(state.page==='documents')setPage('documents');e.target.value=''}
-const render={dashboard:renderDashboard,schedule:renderSchedule,progress:renderProgress,journal:renderJournal,sheets:renderSheets,lessons:renderLessons,assessments:renderAssessments,students:renderStudents,documents:renderDocuments,ai:renderAI,settings:renderSettings};
+const render={dashboard:renderDashboard,schedule:renderSchedule,progress:renderProgress,journal:renderJournal,sheets:renderSheets,lessons:renderLessons,assessments:renderAssessments,students:renderEleves,appel:renderAppel,notes:renderNotes,documents:renderDocuments,ai:renderAI,settings:renderSettings};
 document.addEventListener('click',e=>{const n=e.target.closest('.nav-item');if(n&&n.dataset.page){e.preventDefault();setPage(n.dataset.page)}if(e.target.id==='mobileMenu')document.querySelector('.sidebar').classList.toggle('open');if(e.target.id==='modalBackdrop')closeModal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
 document.addEventListener('DOMContentLoaded',async()=>{
