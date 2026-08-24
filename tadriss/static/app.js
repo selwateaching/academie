@@ -10,6 +10,7 @@ const pages={dashboard:'Tableau de bord',schedule:'Emploi du temps',progress:'Pr
 
 let classesCache=[];
 let currentClasseId=null;
+let currentAnnee=null;
 let elevesCache=[];
 let evaluationsCache=[];
 let appelDate=new Date().toISOString().slice(0,10);
@@ -18,9 +19,13 @@ async function ensureClasses(){
   if(!classesCache.length){
     try{const r=await fetch('/api/classes');classesCache=await r.json();}catch(e){classesCache=[];}
   }
-  if((!currentClasseId||!classesCache.some(c=>c.id===currentClasseId))&&classesCache.length) currentClasseId=classesCache[0].id;
+  if(!currentAnnee) currentAnnee=state.year;
+  const inYear=classesCache.filter(c=>(c.annee_scolaire||'—')===currentAnnee);
+  if((!currentClasseId||!inYear.some(c=>c.id===currentClasseId))) currentClasseId=inYear.length?inYear[0].id:null;
 }
 function switchClasse(id){currentClasseId=parseInt(id,10);setPage(state.page)}
+function switchAnnee(v){currentAnnee=v;currentClasseId=null;setPage(state.page)}
+function anneeSelectHtml(id){const annees=[...new Set([...classesCache.map(c=>c.annee_scolaire||'—'),currentAnnee])].sort().reverse();if(annees.length<=1)return '';return `<select id="${id}" onchange="switchAnnee(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${annees.map(a=>`<option value="${esc(a)}"${a===currentAnnee?' selected':''}>${esc(a)}</option>`).join('')}</select>`}
 async function apiFetch(url,options){
   let r;
   try{
@@ -145,8 +150,9 @@ function renderEleves(){
 async function loadElevesPage(){
   await ensureClasses();
   if(state.page!=='students')return;
-  if(!classesCache.length){
-    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Classes</div><h1>Mes élèves</h1><p>Créez votre première classe pour commencer.</p></div><div class="actions"><button class="btn primary" onclick="openClasseForm()">+ Nouvelle classe</button></div></div>`;
+  if(!currentClasseId){
+    elevesCache=[];
+    document.getElementById('content').innerHTML=elevesPageHtml();
     return;
   }
   try{
@@ -156,23 +162,24 @@ async function loadElevesPage(){
   if(state.page!=='students')return;
   document.getElementById('content').innerHTML=elevesPageHtml();
 }
-function classeSelectHtml(id,list){return `<select id="${id}" onchange="switchClasse(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${list.map(c=>`<option value="${c.id}"${c.id===currentClasseId?' selected':''}>${esc(c.nom)}${c.matiere?' · '+esc(c.matiere):''}</option>`).join('')}</select>`}
+function classeSelectHtml(id,list){const filtered=list.filter(c=>(c.annee_scolaire||'—')===currentAnnee);return `<select id="${id}" onchange="switchClasse(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${filtered.map(c=>`<option value="${c.id}"${c.id===currentClasseId?' selected':''}>${esc(c.nom)}${c.matiere?' · '+esc(c.matiere):''}</option>`).join('')}</select>`}
 function elevesPageHtml(){
   const classe=classesCache.find(c=>c.id===currentClasseId);
   const rows=elevesCache.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Élève</th><th>Moyenne</th><th>Responsable</th><th>Action</th></tr></thead><tbody>${elevesCache.map(e=>`<tr><td><b>${esc(e.prenom+' '+e.nom)}</b></td><td>${e.moyenne!==null&&e.moyenne!==undefined?`<span class="score">${Number(e.moyenne).toFixed(2)}</span> <span class="tag ${e.moyenne>=10?'green':'orange'}">${esc(e.mention||'')}</span>`:'<span class="kpi">—</span>'}</td><td>${e.responsable_nom?esc(e.responsable_nom)+(e.responsable_tel?' · '+esc(e.responsable_tel):''):'<span class="kpi">—</span>'}</td><td><button class="link" onclick="openEleveFiche(${e.id})">Voir la fiche</button> <button class="link danger" onclick="deleteEleve(${e.id})">Supprimer</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucun élève dans cette classe</strong><span>Ajoutez votre premier élève.</span></div>`;
-  return `<div class="page-head"><div><div class="eyebrow">${classesCache.length} classe(s)</div><h1>Mes élèves</h1><p>Notes, présences, contacts et bulletins par classe.</p></div><div class="actions">${classeSelectHtml('eleveClasseSelect',classesCache)}<button class="btn" onclick="openClasseForm()">+ Nouvelle classe</button><button class="btn primary" onclick="openEleveForm(-1)">+ Ajouter un élève</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
+  return `<div class="page-head"><div><div class="eyebrow">${classesCache.length} classe(s)</div><h1>Mes élèves</h1><p>Notes, présences, contacts et bulletins par classe.</p></div><div class="actions">${anneeSelectHtml('eleveAnneeSelect')}${classeSelectHtml('eleveClasseSelect',classesCache)}<button class="btn" onclick="openClasseForm()">+ Nouvelle classe</button><button class="btn primary" onclick="openEleveForm(-1)">+ Ajouter un élève</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+(classe&&classe.annee_scolaire?' · '+esc(classe.annee_scolaire):''),rows)}`;
 }
 function openClasseForm(){
-  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>+ Nouvelle classe</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Nom de la classe</label><input id="clNom" placeholder="Ex. 4AM B"></div><div class="field"><label>Matière</label><input id="clMatiere" list="matieresList" placeholder="Ex. Mathématiques"></div></div>${matiereDatalist()}<div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitClasseForm()">Créer</button></div>`;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>+ Nouvelle classe</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Nom de la classe</label><input id="clNom" placeholder="Ex. 4AM B"></div><div class="field"><label>Matière</label><input id="clMatiere" list="matieresList" placeholder="Ex. Mathématiques"></div></div><div class="field" style="margin-top:12px"><label>Année scolaire</label><input id="clAnnee" value="${esc(currentAnnee||state.year)}" placeholder="Ex. 2026 / 2027"></div>${matiereDatalist()}<div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitClasseForm()">Créer</button></div>`;
   document.getElementById('modalBackdrop').classList.add('open');
 }
 async function submitClasseForm(){
   const nom=document.getElementById('clNom').value.trim();
   if(!nom){toast('Le nom de la classe est obligatoire.');return}
   const matiere=document.getElementById('clMatiere').value.trim();
+  const annee=document.getElementById('clAnnee').value.trim()||state.year;
   try{
-    const d=await apiFetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere})});
-    classesCache=[];currentClasseId=d.id;
+    const d=await apiFetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere,annee_scolaire:annee})});
+    classesCache=[];currentAnnee=annee;currentClasseId=d.id;
     closeModal();toast('Classe créée');setPage(state.page);
   }catch(e){toast(e.message||'Impossible de créer la classe.');}
 }
@@ -247,8 +254,9 @@ function renderAppel(){
 async function loadAppelPage(){
   await ensureClasses();
   if(state.page!=='appel')return;
-  if(!classesCache.length){
-    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Appel</div><h1>Appel</h1><p>Créez d'abord une classe dans "Mes élèves".</p></div></div>`;
+  if(!currentClasseId){
+    elevesCache=[];presenceCache={date:appelDate,presences:{}};
+    document.getElementById('content').innerHTML=appelPageHtml();
     return;
   }
   try{
@@ -268,7 +276,7 @@ function appelPageHtml(){
     const btn=(v,label)=>`<button class="btn${statut===v?' primary':''}" style="padding:6px 10px;font-size:10px" onclick="setPresence(${e.id},'${v}')">${label}</button>`;
     return `<div class="list-item"><div class="grow"><b>${esc(e.prenom+' '+e.nom)}</b></div><div class="actions" style="gap:6px">${btn('P','Présent')}${btn('R','Retard')}${btn('A','Absent')}</div></div>`;
   }).join(''):`<div class="empty"><strong>Aucun élève dans cette classe</strong></div>`;
-  return `<div class="page-head"><div><div class="eyebrow">Présences</div><h1>Appel</h1><p>Marquez chaque élève, puis enregistrez.</p></div><div class="actions">${classeSelectHtml('appelClasseSelect',classesCache)}<input type="date" id="appelDateInput" value="${appelDate}" onchange="changeAppelDate(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px"><button class="btn" onclick="printAppel()">🖨 Imprimer</button><button class="btn primary" onclick="saveAppel()">Enregistrer l'appel</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+' — '+appelDate,rows)}`;
+  return `<div class="page-head"><div><div class="eyebrow">Présences</div><h1>Appel</h1><p>Marquez chaque élève, puis enregistrez.</p></div><div class="actions">${anneeSelectHtml('appelAnneeSelect')}${classeSelectHtml('appelClasseSelect',classesCache)}<input type="date" id="appelDateInput" value="${appelDate}" onchange="changeAppelDate(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px"><button class="btn" onclick="printAppel()">🖨 Imprimer</button><button class="btn primary" onclick="saveAppel()">Enregistrer l'appel</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+' — '+appelDate,rows)}`;
 }
 function changeAppelDate(v){appelDate=v;setPage('appel')}
 function setPresence(eleveId,statut){presenceCache.presences[eleveId]=statut;document.getElementById('content').innerHTML=appelPageHtml();}
@@ -301,8 +309,9 @@ function renderNotes(){
 async function loadNotesPage(){
   await ensureClasses();
   if(state.page!=='notes')return;
-  if(!classesCache.length){
-    document.getElementById('content').innerHTML=`<div class="page-head"><div><div class="eyebrow">Notes</div><h1>Carnet de notes</h1><p>Créez d'abord une classe dans "Mes élèves".</p></div></div>`;
+  if(!currentClasseId){
+    elevesCache=[];evaluationsCache=[];
+    document.getElementById('content').innerHTML=notesPageHtml();
     return;
   }
   try{
@@ -322,7 +331,7 @@ function notesPageHtml(){
     const moyClasse=valeurs.length?(valeurs.reduce((a,b)=>a+b,0)/valeurs.length).toFixed(2):'—';
     return `<tr><td><b>${esc(ev.intitule)}</b></td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${moyClasse}</td><td><button class="link" onclick="openNotesEntry(${ev.id})">Saisir les notes</button> <button class="link" onclick="openEvaluationForm(${ev.id})">Modifier</button> <button class="link danger" onclick="deleteEvaluation(${ev.id})">Supprimer</button></td></tr>`;
   }).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucune évaluation</strong><span>Créez votre première évaluation.</span></div>`;
-  return `<div class="page-head"><div><div class="eyebrow">Évaluations</div><h1>Carnet de notes</h1><p>Coefficients, notes et moyennes automatiques.</p></div><div class="actions">${classeSelectHtml('notesClasseSelect',classesCache)}<button class="btn primary" onclick="openEvaluationForm(-1)">+ Nouvelle évaluation</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
+  return `<div class="page-head"><div><div class="eyebrow">Évaluations</div><h1>Carnet de notes</h1><p>Coefficients, notes et moyennes automatiques.</p></div><div class="actions">${anneeSelectHtml('notesAnneeSelect')}${classeSelectHtml('notesClasseSelect',classesCache)}<button class="btn primary" onclick="openEvaluationForm(-1)">+ Nouvelle évaluation</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
 }
 function openEvaluationForm(id){
   const isEdit=id>0;
@@ -366,7 +375,7 @@ function deleteDocument(i){if(!confirm('Supprimer ce document ?'))return;state.d
 function renderAI(){return `<div class="page-head"><div><div class="eyebrow">Intelligence pédagogique</div><h1>Assistant IA TADRISS</h1><p>Génération guidée par votre contexte, propulsée par Claude.</p></div></div><div class="ai-grid">${card('Conversation',`<div class="chat"><div class="messages" id="messages"><div class="msg bot"><b>Bonjour 👋</b><br>Je peux préparer une séance, un cours, un contrôle, une remédiation ou votre semaine.</div></div><div class="chat-input"><textarea id="chatText" placeholder="Ex. Prépare une remédiation sur les fractions..."></textarea><button class="btn ai" onclick="sendAI()">Envoyer ✦</button></div></div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Préparer une séance','Fiche complète','sheet')}${quick('📝','Créer un contrôle','Sujet + corrigé','assessment')}${quick('🎯','Remédiation','Activités ciblées','remediation')}${quick('📅','Préparer ma semaine','Planification','week')}${quick('📚','Créer un cours','Cours + exercices','course')}${quick('📊','Analyser ma classe','Résultats','analysis')}</div>`)}</div></div>`}
 function renderSettings(){
   const u=window.TADRISS_USER||{name:'',email:'',phone:''};
-  return `<div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><p>Personnalisez votre profil et le contexte pédagogique.</p></div></div><div class="grid grid-2">${card('Profil enseignant',`<div class="form-grid"><div class="field"><label>Nom complet</label><input id="profName" value="${esc(u.name)}"></div><div class="field"><label>Téléphone</label><input id="profPhone" value="${esc(u.phone)}" placeholder="Ex. 0555 12 34 56"></div></div><div class="field" style="margin-top:12px"><label>Email (identifiant, non modifiable)</label><input value="${esc(u.email)}" disabled></div><p class="kpi" style="margin-top:10px">Ce nom et ce téléphone apparaissent sur les documents imprimés (feuille d'appel, bulletins).</p><button class="btn primary" style="margin-top:10px" onclick="saveProfile()">Enregistrer le profil</button>`)}${card('Contexte pédagogique',`<div class="form-grid"><div class="field"><label>Wilaya</label><select id="setWilaya"><option>Alger</option><option>Oran</option><option>Constantine</option><option>Blida</option></select></div><div class="field"><label>Cycle</label><select id="setCycle"><option>Primaire</option><option>Moyen</option><option>Secondaire</option></select></div><div class="field"><label>Niveau</label><input id="setLevel" value="${esc(state.level)}"></div><div class="field"><label>Matière</label><input id="setSubject" value="${esc(state.subject)}"></div></div><button class="btn primary" style="margin-top:12px" onclick="saveSettings()">Enregistrer</button>`)}${card('Langue de production',`<div class="field"><label>Mode</label><select id="setLang"><option value="auto">Automatique</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option><option value="bi">Bilingue</option></select></div><p class="kpi" style="margin-top:12px;line-height:1.7">En mode automatique, TADRISS suit la langue configurée pour le programme et la matière. Les documents arabes sont générés en RTL.</p>`)}</div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><p>Personnalisez votre profil et le contexte pédagogique.</p></div></div><div class="grid grid-2">${card('Profil enseignant',`<div class="form-grid"><div class="field"><label>Nom complet</label><input id="profName" value="${esc(u.name)}"></div><div class="field"><label>Téléphone</label><input id="profPhone" value="${esc(u.phone)}" placeholder="Ex. 0555 12 34 56"></div></div><div class="field" style="margin-top:12px"><label>Email (identifiant, non modifiable)</label><input value="${esc(u.email)}" disabled></div><p class="kpi" style="margin-top:10px">Ce nom et ce téléphone apparaissent sur les documents imprimés (feuille d'appel, bulletins).</p><button class="btn primary" style="margin-top:10px" onclick="saveProfile()">Enregistrer le profil</button>`)}${card('Année scolaire',`<div class="field"><label>Année scolaire active</label><input id="setYear" value="${esc(state.year)}" placeholder="Ex. 2026 / 2027"></div><p class="kpi" style="margin-top:10px;line-height:1.6">Sert de valeur par défaut pour les nouvelles classes. Passer à l'année suivante ne supprime ni ne modifie rien : les anciennes classes, notes et présences restent consultables via le sélecteur d'année dans "Mes élèves", "Appel" et "Notes".</p><button class="btn primary" style="margin-top:10px" onclick="saveSettings()">Enregistrer</button>`)}${card('Contexte pédagogique',`<div class="form-grid"><div class="field"><label>Wilaya</label><select id="setWilaya"><option>Alger</option><option>Oran</option><option>Constantine</option><option>Blida</option></select></div><div class="field"><label>Cycle</label><select id="setCycle"><option>Primaire</option><option>Moyen</option><option>Secondaire</option></select></div><div class="field"><label>Niveau</label><input id="setLevel" value="${esc(state.level)}"></div><div class="field"><label>Matière</label><input id="setSubject" value="${esc(state.subject)}"></div></div><button class="btn primary" style="margin-top:12px" onclick="saveSettings()">Enregistrer</button>`)}${card('Langue de production',`<div class="field"><label>Mode</label><select id="setLang"><option value="auto">Automatique</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option><option value="bi">Bilingue</option></select></div><p class="kpi" style="margin-top:12px;line-height:1.7">En mode automatique, TADRISS suit la langue configurée pour le programme et la matière. Les documents arabes sont générés en RTL.</p>`)}</div>`;
 }
 async function saveProfile(){
   const name=document.getElementById('profName').value.trim();
@@ -436,7 +445,12 @@ function safeName(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/
 function sendAI(){const t=document.getElementById('chatText'),v=t.value.trim();if(!v)return;const box=document.getElementById('messages');box.innerHTML+=`<div class="msg user">${esc(v)}</div>`;t.value='';setTimeout(()=>{box.innerHTML+=`<div class="msg bot"><b>✦ TADRISS IA</b><br>Je transforme votre demande en document pédagogique. Cliquez sur une action rapide pour générer la fiche, le contrôle, le cours ou la remédiation correspondante.</div>`;box.scrollTop=box.scrollHeight},250)}
 function quickAI(){const v=document.getElementById('quickAI').value.trim();if(!v)return toast('Écrivez votre demande.');openGenerator('sheet');setTimeout(()=>{document.getElementById('genPrompt').value=v},50)}
 function closeModal(){document.getElementById('modalBackdrop').classList.remove('open')}
-function saveSettings(){state.wilaya=document.getElementById('setWilaya').value;state.cycle=document.getElementById('setCycle').value;state.level=document.getElementById('setLevel').value;state.subject=document.getElementById('setSubject').value;state.lang=document.getElementById('setLang').value;save();toast('Paramètres enregistrés');setPage('dashboard')}
+function saveSettings(){
+  state.wilaya=document.getElementById('setWilaya').value;state.cycle=document.getElementById('setCycle').value;state.level=document.getElementById('setLevel').value;state.subject=document.getElementById('setSubject').value;state.lang=document.getElementById('setLang').value;
+  const newYear=document.getElementById('setYear')?.value.trim();
+  if(newYear){state.year=newYear;currentAnnee=newYear;}
+  save();toast('Paramètres enregistrés');setPage('dashboard');
+}
 function importFile(){document.getElementById('fileInput').click()}
 function handleFile(e){const f=e.target.files[0];if(!f)return;state.docs.unshift({title:f.name,ext:f.name.split('.').pop().toUpperCase(),date:new Date().toLocaleString('fr-FR'),content:{title:f.name,meta:'Importé',prompt:'Fichier importé dans TADRISS',sections:[['Fichier',`${f.name} · ${Math.round(f.size/1024)} Ko`]],rtl:false}});save();toast(`${f.name} ajouté à Documents`);if(state.page==='documents')setPage('documents');e.target.value=''}
 const render={dashboard:renderDashboard,schedule:renderSchedule,progress:renderProgress,journal:renderJournal,sheets:renderSheets,lessons:renderLessons,assessments:renderAssessments,students:renderEleves,appel:renderAppel,notes:renderNotes,documents:renderDocuments,ai:renderAI,settings:renderSettings};

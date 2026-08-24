@@ -128,7 +128,9 @@ def signup():
 
 def seed_demo_classe(user):
     """Crée une classe et quelques élèves de démonstration pour découvrir l'appli."""
-    classe = Classe(user_id=user.id, nom="4AM B", matiere="Mathématiques")
+    classe = Classe(
+        user_id=user.id, nom="4AM B", matiere="Mathématiques", annee_scolaire=DEFAULT_STATE["year"]
+    )
     db.session.add(classe)
     db.session.flush()
     demo_eleves = [
@@ -324,7 +326,13 @@ def api_classes_list():
     classes = Classe.query.filter_by(user_id=current_user.id).order_by(Classe.nom).all()
     return jsonify(
         [
-            {"id": c.id, "nom": c.nom, "matiere": c.matiere, "nb_eleves": len(c.eleves)}
+            {
+                "id": c.id,
+                "nom": c.nom,
+                "matiere": c.matiere,
+                "annee_scolaire": c.annee_scolaire,
+                "nb_eleves": len(c.eleves),
+            }
             for c in classes
         ]
     )
@@ -338,10 +346,22 @@ def api_classes_create():
     nom = (data.get("nom") or "").strip()
     if not nom:
         abort(400)
-    classe = Classe(user_id=current_user.id, nom=nom, matiere=(data.get("matiere") or "").strip())
+    classe = Classe(
+        user_id=current_user.id,
+        nom=nom,
+        matiere=(data.get("matiere") or "").strip(),
+        annee_scolaire=(data.get("annee_scolaire") or "").strip() or DEFAULT_STATE["year"],
+    )
     db.session.add(classe)
     db.session.commit()
-    return jsonify({"id": classe.id, "nom": classe.nom, "matiere": classe.matiere})
+    return jsonify(
+        {
+            "id": classe.id,
+            "nom": classe.nom,
+            "matiere": classe.matiere,
+            "annee_scolaire": classe.annee_scolaire,
+        }
+    )
 
 
 @app.route("/api/classes/<int:classe_id>", methods=["PUT"])
@@ -354,6 +374,8 @@ def api_classes_update(classe_id):
     if nom:
         classe.nom = nom
     classe.matiere = (data.get("matiere") or "").strip()
+    if "annee_scolaire" in data:
+        classe.annee_scolaire = (data["annee_scolaire"] or "").strip() or classe.annee_scolaire
     db.session.commit()
     return jsonify({"ok": True})
 
@@ -797,6 +819,7 @@ def ensure_column(table_name, column_name, ddl):
 with app.app_context():
     db.create_all()
     ensure_column("user", "phone", "VARCHAR(40) DEFAULT ''")
+    ensure_column("classe", "annee_scolaire", f"VARCHAR(20) DEFAULT '{DEFAULT_STATE['year']}'")
     if ADMIN_EMAIL:
         admin_user = User.query.filter_by(email=ADMIN_EMAIL).first()
         if admin_user and not admin_user.is_admin:

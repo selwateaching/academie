@@ -109,6 +109,7 @@ class Classe(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
     nom = db.Column(db.String(120), nullable=False)
     matiere = db.Column(db.String(120), default="")
+    annee_scolaire = db.Column(db.String(20), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     eleves = db.relationship(
