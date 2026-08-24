@@ -2,7 +2,7 @@
 const defaultState={
  page:'dashboard', lang:'auto', year:'2026 / 2027', wilaya:'Alger', cycle:'Moyen', level:'4AM', subject:'الرياضيات — Mathématiques',
  docs:[], progress:[['Nombres et calculs',72],['Géométrie',54],['Fonctions',41],['Statistiques',63]],
- schedule:[['08:00','Mathématiques','Fractions','4AM','blue','Dim','Nombres et calculs'],['09:00','Mathématiques','Géométrie','4AM','green','Lun','Géométrie'],['10:30','Mathématiques','Aire et périmètre','4AM','green','Mar','Géométrie'],['11:30','Mathématiques','Proportionnalité','4AM','orange','Mer','Fonctions']],
+ schedule:[['08:00','Mathématiques','Fractions','4AM','blue','Dim','Nombres et calculs',true],['09:00','Mathématiques','Géométrie','4AM','green','Lun','Géométrie',false],['10:30','Mathématiques','Aire et périmètre','4AM','green','Mar','Géométrie',false],['11:30','Mathématiques','Proportionnalité','4AM','orange','Mer','Fonctions',false]],
  saved:null
 };
 let state={...defaultState};
@@ -78,13 +78,13 @@ function renderSchedule(){
   const baseTimes=['08:00','09:00','10:30','11:30','13:30'];
   const times=[...new Set([...baseTimes,...state.schedule.map(x=>x[0])])].sort();
   const list=[...state.schedule].sort((a,b)=>dayKeys.indexOf(a[5])-dayKeys.indexOf(b[5])||a[0].localeCompare(b[0]));
-  const listHtml=list.length?`<div class="list">${list.map(s=>{const i=state.schedule.indexOf(s);const seqInfo=s[6]?` · Séquence : ${esc(s[6])}`:'';return `<div class="list-item"><span class="time-pill">${esc(s[0])}</span><div class="grow"><b>${esc(s[2])}</b><small>${esc(dayNames[s[5]]||s[5]||'—')} · ${esc(s[1])} · ${esc(s[3])}${seqInfo}</small></div><span class="tag ${s[4]||''}">Séance</span><button class="link" onclick="openAddSchedule(${i})">Modifier</button><button class="link danger" onclick="deleteScheduleEntry(${i})">Supprimer</button></div>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance</strong><span>Ajoutez votre première séance avec le bouton ci-dessus.</span></div>`;
+  const listHtml=list.length?`<div class="list">${list.map(s=>{const i=state.schedule.indexOf(s);const seqInfo=s[6]?` · Séquence : ${esc(s[6])}`:'';const fait=!!s[7];return `<div class="list-item"><span class="time-pill">${esc(s[0])}</span><div class="grow"><b>${esc(s[2])}</b><small>${esc(dayNames[s[5]]||s[5]||'—')} · ${esc(s[1])} · ${esc(s[3])}${seqInfo}</small></div><span class="tag ${s[4]||''}">Séance</span><button class="btn${fait?' primary':''}" style="padding:6px 10px;font-size:10px" onclick="toggleScheduleFait(${i})">${fait?'✓ Faite':'Marquer faite'}</button><button class="link" onclick="openAddSchedule(${i})">Modifier</button><button class="link danger" onclick="deleteScheduleEntry(${i})">Supprimer</button></div>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance</strong><span>Ajoutez votre première séance avec le bouton ci-dessus.</span></div>`;
   return `<div class="page-head"><div><div class="eyebrow">Organisation</div><h1>Emploi du temps</h1><p>Votre emploi du temps alimente le cahier journal.</p></div><div class="actions"><button class="btn" onclick="openAddSchedule()">+ Ajouter une séance</button><button class="btn primary" onclick="openGenerator('week')">✦ Préparer ma semaine</button></div></div>${card('Semaine actuelle',`<div class="schedule">${['Heure','Dimanche','Lundi','Mardi','Mercredi','Jeudi'].map((d,i)=>`<div class="day">${d}</div>`).join('')}${times.map((tm,ri)=>`<div class="time">${tm}</div>${dayKeys.map((dk,ci)=>{let s=state.schedule.find(x=>x[0]===tm&&x[5]===dk);return `<div class="slot${s?' '+s[4]:''}">${s?`<b>${esc(s[2])}</b><span>${esc(s[1])}</span>`:''}</div>`}).join('')}`).join('')}</div>`)}<div style="height:16px"></div>${card('Toutes les séances',listHtml)}`;
 }
 function openAddSchedule(index){
   index=typeof index==='number'?index:-1;
   const isEdit=index>=0;
-  const s=isEdit?state.schedule[index]:['14:30','Mathématiques','','4AM','blue','Dim',''];
+  const s=isEdit?state.schedule[index]:['14:30','Mathématiques','','4AM','blue','Dim','',false];
   const dayOpt=(v,label)=>`<option value="${v}"${s[5]===v?' selected':''}>${label}</option>`;
   const colorOpt=(v,label)=>`<option value="${v}"${s[4]===v?' selected':''}>${label}</option>`;
   const seqOptions=`<option value=""${!s[6]?' selected':''}>— Aucune —</option>`+state.progress.map(p=>`<option value="${esc(p[0])}"${s[6]===p[0]?' selected':''}>${esc(p[0])}</option>`).join('');
@@ -100,34 +100,49 @@ function submitAddSchedule(index){
   const topic=document.getElementById('asTopic').value.trim()||'Séance';
   const color=document.getElementById('asColor').value;
   const sequence=document.getElementById('asSequence').value;
-  const row=[time,subject,topic,level,color,day,sequence];
+  const fait=index>=0?!!state.schedule[index][7]:false;
+  const row=[time,subject,topic,level,color,day,sequence,fait];
   if(index>=0) state.schedule[index]=row; else state.schedule.push(row);
   save();closeModal();toast(index>=0?'Séance modifiée':'Séance ajoutée');setPage('schedule');
 }
+function toggleScheduleFait(i){const s=state.schedule[i];if(!s)return;s[7]=!s[7];save();setPage('schedule')}
 function deleteScheduleEntry(i){if(!confirm('Supprimer cette séance ?'))return;state.schedule.splice(i,1);save();toast('Séance supprimée');setPage('schedule')}
+function computeSequenceProgress(nom){
+  const linked=state.schedule.filter(s=>s[6]===nom);
+  if(!linked.length)return 0;
+  const done=linked.filter(s=>s[7]).length;
+  return Math.round(done/linked.length*100);
+}
+function createMissingSequencesFromSchedule(){
+  const existingNames=new Set(state.progress.map(p=>p[0]));
+  const unlinked=state.schedule.filter(s=>!s[6]&&s[2]&&s[2].trim());
+  const newTopics=[...new Set(unlinked.map(s=>s[2].trim()))].filter(t=>!existingNames.has(t));
+  if(!newTopics.length){toast("Aucun nouveau sujet à ajouter depuis l'emploi du temps.");return}
+  newTopics.forEach(t=>state.progress.push([t,0]));
+  state.schedule.forEach(s=>{if(!s[6]&&newTopics.includes((s[2]||'').trim()))s[6]=s[2].trim()});
+  save();toast(`${newTopics.length} séquence(s) créée(s) et liée(s) depuis l'emploi du temps`);setPage('progress');
+}
 function renderProgress(){
   const rows=state.progress.length?state.progress.map((p,i)=>{
+    const pct=computeSequenceProgress(p[0]);
     const linked=state.schedule.filter(s=>s[6]===p[0]);
-    const linkedHtml=linked.length?`<p class="kpi" style="margin:6px 0 0">${linked.length} séance(s) liée(s) : ${linked.map(s=>esc(s[2])).join(', ')}</p>`:`<p class="kpi" style="margin:6px 0 0">Aucune séance liée pour l'instant.</p>`;
-    return `<div class="progress-row"><div><span>${esc(p[0])}</span><b>${p[1]}%</b></div><div class="bar"><i style="width:${p[1]}%"></i></div>${linkedHtml}<div class="actions" style="margin-top:6px;gap:10px"><button class="link" onclick="openProgressForm(${i})">Modifier</button><button class="link danger" onclick="deleteProgress(${i})">Supprimer</button></div></div>`;
-  }).join(''):`<div class="empty"><strong>Aucune séquence</strong><span>Ajoutez votre première séquence avec le bouton "+ Séquence".</span></div>`;
-  return `<div class="page-head"><div><div class="eyebrow">Programme algérien</div><h1>Progression annuelle</h1><p>${esc(state.level)} · ${esc(state.subject)}</p></div><div class="actions"><button class="btn" onclick="openProgressForm(-1)">+ Séquence</button><button class="btn primary" onclick="exportDocument('progress')">📄 Exporter</button></div></div><div class="grid grid-2">${card('Avancement',rows)}${card('Référentiel',`<div class="kpi">Configuration active</div><h3 style="margin-top:8px">${esc(state.wilaya)} · ${esc(state.cycle)} · ${esc(state.level)}</h3><p class="kpi" style="line-height:1.8">La structure de TADRISS est prévue pour associer chaque niveau à ses matières, séquences, compétences et séances. Importez vos référentiels officiels lorsque vous les possédez.</p><button class="btn" onclick="importFile()">↑ Importer un référentiel</button>`)}</div>`;
+    const linkedHtml=linked.length?`<p class="kpi" style="margin:6px 0 0">${linked.length} séance(s) liée(s), ${linked.filter(s=>s[7]).length} faite(s) : ${linked.map(s=>esc(s[2])).join(', ')}</p>`:`<p class="kpi" style="margin:6px 0 0">Aucune séance liée pour l'instant — reliez une séance depuis l'Emploi du temps, ou marquez-la "faite" pour faire avancer la barre.</p>`;
+    return `<div class="progress-row"><div><span>${esc(p[0])}</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>${linkedHtml}<div class="actions" style="margin-top:6px;gap:10px"><button class="link" onclick="openProgressForm(${i})">Renommer</button><button class="link danger" onclick="deleteProgress(${i})">Supprimer</button></div></div>`;
+  }).join(''):`<div class="empty"><strong>Aucune séquence</strong><span>Ajoutez-en une, ou créez-les automatiquement depuis l'emploi du temps.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Programme algérien</div><h1>Progression annuelle</h1><p>${esc(state.level)} · ${esc(state.subject)} · La barre avance automatiquement selon les séances marquées "faites".</p></div><div class="actions"><button class="btn" onclick="createMissingSequencesFromSchedule()">↻ Depuis l'emploi du temps</button><button class="btn" onclick="openProgressForm(-1)">+ Séquence</button><button class="btn primary" onclick="exportDocument('progress')">📄 Exporter</button></div></div><div class="grid grid-2">${card('Avancement',rows)}${card('Référentiel',`<div class="kpi">Configuration active</div><h3 style="margin-top:8px">${esc(state.wilaya)} · ${esc(state.cycle)} · ${esc(state.level)}</h3><p class="kpi" style="line-height:1.8">La structure de TADRISS est prévue pour associer chaque niveau à ses matières, séquences, compétences et séances. Importez vos référentiels officiels lorsque vous les possédez.</p><button class="btn" onclick="importFile()">↑ Importer un référentiel</button>`)}</div>`;
 }
 function openProgressForm(index){
   index=typeof index==='number'?index:-1;
   const isEdit=index>=0;
   const p=isEdit?state.progress[index]:['',0];
-  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier la séquence':'+ Nouvelle séquence'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Séquence</label><input id="pgTopic" value="${esc(p[0])}" placeholder="Ex. Nombres et calculs"></div><div class="field"><label>Avancement (%)</label><input id="pgPercent" type="number" min="0" max="100" value="${esc(String(p[1]))}"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitProgressForm(${index})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Renommer la séquence':'+ Nouvelle séquence'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Séquence</label><input id="pgTopic" value="${esc(p[0])}" placeholder="Ex. Nombres et calculs"></div>${isEdit?'<p class="kpi" style="margin-top:8px">L\'avancement (%) est calculé automatiquement selon les séances liées marquées "faites".</p>':''}<div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitProgressForm(${index})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
   document.getElementById('modalBackdrop').classList.add('open');
 }
 function submitProgressForm(index){
   index=typeof index==='number'?index:-1;
   const topic=document.getElementById('pgTopic').value.trim();
   if(!topic){toast('Le nom de la séquence est obligatoire.');return}
-  let pct=parseInt(document.getElementById('pgPercent').value,10);
-  if(isNaN(pct))pct=0;
-  pct=Math.max(0,Math.min(100,pct));
-  const row=[topic,pct];
+  const row=[topic,0];
   if(index>=0){
     const oldTopic=state.progress[index][0];
     state.progress[index]=row;
@@ -138,7 +153,7 @@ function submitProgressForm(index){
   save();closeModal();toast(index>=0?'Séquence modifiée':'Séquence ajoutée');setPage('progress');
 }
 function deleteProgress(i){if(!confirm('Supprimer cette séquence ? Les séances qui y étaient liées perdront ce lien.'))return;const topic=state.progress[i][0];state.progress.splice(i,1);state.schedule.forEach(s=>{if(s[6]===topic) s[6]=''});save();toast('Séquence supprimée');setPage('progress')}
-function renderJournal(){const order=['Dim','Lun','Mar','Mer','Jeu'];const sorted=[...state.schedule].sort((a,b)=>order.indexOf(a[5])-order.indexOf(b[5])||a[0].localeCompare(b[0]));return `<div class="page-head"><div><div class="eyebrow">Traçabilité pédagogique</div><h1>Cahier journal</h1><p>Construit depuis l'emploi du temps et la progression.</p></div><div class="actions"><button class="btn" onclick="window.print()">🖨 Imprimer</button><button class="btn primary" onclick="exportDocument('journal')">📄 Générer le document</button></div></div>${card('Semaine en cours',sorted.length?`<div class="journal-list">${sorted.map(s=>{const seq=state.progress.find(p=>p[0]===s[6]);const seqTag=seq?`<span class="tag green">Séquence : ${esc(seq[0])} (${seq[1]}%)</span>`:'';return `<article class="journal-row"><div class="journal-date">${esc(s[5]||'—')}<b>${esc(s[0])}</b></div><div><h4>${esc(s[2])}</h4><p>${esc(s[1])} · ${esc(s[3])}</p><span class="tag">Objectif · Activité · Évaluation · Remédiation</span> ${seqTag}</div><button class="link" onclick="openGenerator('sheet')">Préparer →</button></article>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance planifiée</strong><span>Ajoutez des séances dans "Emploi du temps" pour construire votre cahier journal.</span></div>`)}`}
+function renderJournal(){const order=['Dim','Lun','Mar','Mer','Jeu'];const sorted=[...state.schedule].sort((a,b)=>order.indexOf(a[5])-order.indexOf(b[5])||a[0].localeCompare(b[0]));return `<div class="page-head"><div><div class="eyebrow">Traçabilité pédagogique</div><h1>Cahier journal</h1><p>Construit depuis l'emploi du temps et la progression.</p></div><div class="actions"><button class="btn" onclick="window.print()">🖨 Imprimer</button><button class="btn primary" onclick="exportDocument('journal')">📄 Générer le document</button></div></div>${card('Semaine en cours',sorted.length?`<div class="journal-list">${sorted.map(s=>{const seq=state.progress.find(p=>p[0]===s[6]);const seqTag=seq?`<span class="tag green">Séquence : ${esc(seq[0])} (${computeSequenceProgress(seq[0])}%)</span>`:'';return `<article class="journal-row"><div class="journal-date">${esc(s[5]||'—')}<b>${esc(s[0])}</b></div><div><h4>${esc(s[2])}</h4><p>${esc(s[1])} · ${esc(s[3])}</p><span class="tag">Objectif · Activité · Évaluation · Remédiation</span> ${seqTag}</div><button class="link" onclick="openGenerator('sheet')">Préparer →</button></article>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance planifiée</strong><span>Ajoutez des séances dans "Emploi du temps" pour construire votre cahier journal.</span></div>`)}`}
 function renderSheets(){return pageList('Fiches pédagogiques','Préparation','Créez des fiches complètes, cohérentes et exportables.','sheet',['Fiche Les fractions','Fiche Proportionnalité'])}
 function renderLessons(){return pageList('Mes cours','Ressources pédagogiques','Cours, résumés, activités et exercices.','course',['Cours — Fractions','Cours — Géométrie'])}
 function pageList(title,ey,p,typ,items){return `<div class="page-head"><div><div class="eyebrow">${ey}</div><h1>${title}</h1><p>${p}</p></div><button class="btn primary" onclick="openGenerator('${typ}')">✦ Générer avec IA</button></div><div class="doc-grid">${items.map((x,i)=>`<article class="doc"><div class="doc-icon">${typ==='sheet'?'✎':'📚'}</div><h4>${x}</h4><p>${state.level} · ${state.subject} · ${state.lang==='fr'?'Français':'Automatique'}</p><div class="actions" style="margin-top:12px"><button class="btn" onclick="openGenerator('${typ}')">Modifier</button><button class="btn" onclick="exportDocument('${typ}')">PDF</button></div></article>`).join('')}</div>`}
@@ -409,6 +424,7 @@ function generateContentLocal(type,p,lev,sub){
   return {title,meta:`${lev} · ${sub}`,prompt:p,sections,rtl:ar};
 }
 async function generateResult(type){
+  window.pendingDocumentType=type;
   const p=document.getElementById('genPrompt').value||'Préparation pédagogique';
   const lev=document.getElementById('gLevel').value;
   const sub=document.getElementById('gSubject').value;
@@ -430,16 +446,25 @@ async function generateResult(type){
   document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>✓ Document généré</h2><button class="close" onclick="closeModal()">×</button></div><div id="preview">${htmlPreview}</div><div class="actions" style="justify-content:flex-end;margin-top:14px"><button class="btn" onclick="savePending()">Enregistrer</button><button class="btn" onclick="downloadPending()">HTML</button><button class="btn" onclick="printPending()">🖨 Imprimer</button><button class="btn primary" onclick="serverGenerate()">📦 PDF + Word</button></div><div id="serverLinks" class="actions" style="justify-content:flex-end;margin-top:8px"></div>`;
 }
 
-function savePending(){if(window.pendingDocument)saveGenerated(JSON.stringify(window.pendingDocument))}
+function savePending(){if(window.pendingDocument)saveGenerated(JSON.stringify(window.pendingDocument),window.pendingDocumentType)}
 function downloadPending(){if(window.pendingDocument)downloadGenerated(JSON.stringify(window.pendingDocument),'html')}
 function printPending(){if(window.pendingDocument)printGenerated(JSON.stringify(window.pendingDocument))}
 async function serverGenerate(){if(!window.pendingDocument)return;try{toast('Génération PDF + Word…');const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(window.pendingDocument)});const d=await r.json();if(!d.ok)throw new Error(d.error||'Erreur');document.getElementById('serverLinks').innerHTML=`<a class="btn" href="${d.files.pdf}" target="_blank">📄 PDF</a><a class="btn" href="${d.files.docx}" download>📝 Word</a><a class="btn" href="${d.files.html}" target="_blank">🌐 HTML</a>`;toast('Documents prêts');}catch(e){toast('Export PDF/Word momentanément indisponible.');}}
-function saveGenerated(raw){const c=JSON.parse(raw);state.docs.unshift({title:c.title,ext:'DOC',date:new Date().toLocaleString('fr-FR'),content:c});save();toast('Document enregistré dans Documents')}
+function saveGenerated(raw,type){const c=JSON.parse(raw);state.docs.unshift({title:c.title,ext:'DOC',date:new Date().toLocaleString('fr-FR'),content:c});if(type==='sheet')ensureSequenceFromFiche(c);save();toast('Document enregistré dans Documents')}
+function ensureSequenceFromFiche(c){
+  let name=(c.title||'').replace(/^(Fiche pédagogique|Lesson Plan|ورقة تحضير بيداغوجية)\s*[—:-]?\s*/i,'').trim();
+  if(!name)return;
+  name=name.slice(0,120);
+  if(!state.progress.some(p=>p[0]===name)){
+    state.progress.push([name,0]);
+    toast(`Séquence "${name}" ajoutée à la Progression depuis la fiche.`);
+  }
+}
 function documentHtml(c){return `<!doctype html><html lang="${c.rtl?'ar':'fr'}" dir="${c.rtl?'rtl':'ltr'}"><head><meta charset="utf-8"><title>${esc(c.title)}</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:40px auto;padding:0 25px;color:#17203f;line-height:1.7}.rtl{direction:rtl;text-align:right}h1{color:#101b4d}h2{color:#101b4d}h3{border-bottom:2px solid #ff8351;padding-bottom:6px}section{margin:22px 0}.meta{color:#75809d}</style></head><body class="${c.rtl?'rtl':''}"><h1>${esc(c.title)}</h1><p class="meta">${esc(c.meta)}</p><p>${esc(c.prompt||'')}</p>${c.sections.map(s=>`<section><h3>${esc(s[0])}</h3><p>${esc(s[1])}</p></section>`).join('')}<hr><small>Généré par TADRISS</small></body></html>`}
 function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function downloadGenerated(raw,fmt){const c=JSON.parse(raw);downloadBlob(new Blob([documentHtml(c)],{type:'text/html;charset=utf-8'}),safeName(c.title)+'.html');toast('Document téléchargé')}
 function downloadSaved(i){const c=state.docs[i].content;downloadBlob(new Blob([documentHtml(c)],{type:'text/html;charset=utf-8'}),safeName(c.title)+'.html')}
-function exportDocument(type){const c=generateContentLocal(type,'Document préparé depuis votre espace TADRISS',state.level,state.subject);saveGenerated(JSON.stringify(c));downloadGenerated(JSON.stringify(c),'html')}
+function exportDocument(type){const c=generateContentLocal(type,'Document préparé depuis votre espace TADRISS',state.level,state.subject);saveGenerated(JSON.stringify(c),type);downloadGenerated(JSON.stringify(c),'html')}
 function printGenerated(raw){const c=JSON.parse(raw);const w=window.open('','_blank');if(!w){toast('Autorisez les fenêtres contextuelles pour exporter en PDF');return}w.document.write(documentHtml(c));w.document.close();w.focus();setTimeout(()=>w.print(),400)}
 function safeName(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').slice(0,80)||'tadriss_document'}
 function sendAI(){const t=document.getElementById('chatText'),v=t.value.trim();if(!v)return;const box=document.getElementById('messages');box.innerHTML+=`<div class="msg user">${esc(v)}</div>`;t.value='';setTimeout(()=>{box.innerHTML+=`<div class="msg bot"><b>✦ TADRISS IA</b><br>Je transforme votre demande en document pédagogique. Cliquez sur une action rapide pour générer la fiche, le contrôle, le cours ou la remédiation correspondante.</div>`;box.scrollTop=box.scrollHeight},250)}

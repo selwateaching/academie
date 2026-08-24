@@ -28,6 +28,18 @@ TYPE_LABELS = {
     "journal": "un cahier journal détaillé",
 }
 
+TYPE_TITLES = {
+    "sheet": "Fiche pédagogique",
+    "course": "Cours",
+    "assessment": "Contrôle",
+    "quiz": "Quiz",
+    "progress": "Séquence de progression",
+    "week": "Préparation de la semaine",
+    "remediation": "Remédiation",
+    "analysis": "Analyse de classe",
+    "journal": "Cahier journal",
+}
+
 LANG_INSTRUCTIONS = {
     "ar": "Rédige entièrement en arabe standard moderne. Le champ \"rtl\" doit être true.",
     "fr": "Rédige entièrement en français. Le champ \"rtl\" doit être false.",
@@ -93,7 +105,7 @@ def fallback_content(doc_type, level, subject, user_prompt):
         ["Évaluation", "Questions courtes pour vérifier la compétence."],
     ]
     return {
-        "title": TYPE_LABELS.get(doc_type, "Document pédagogique").capitalize(),
+        "title": TYPE_TITLES.get(doc_type, "Document pédagogique"),
         "meta": f"{level} · {subject}",
         "prompt": user_prompt,
         "sections": sections,
