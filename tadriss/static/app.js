@@ -263,8 +263,12 @@ async function saveAppel(){
 }
 function printAppel(){
   const classe=classesCache.find(c=>c.id===currentClasseId);
-  const rows=elevesCache.map(e=>`<tr><td>${esc(e.prenom+' '+e.nom)}</td><td></td></tr>`).join('');
-  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Feuille d'appel</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:10px;text-align:left}</style></head><body><h1>Feuille d'appel — ${esc(classe?classe.nom:'')}</h1><p>${appelDate}</p><table><thead><tr><th>Élève</th><th>Présence / Signature</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const label={P:'Présent',R:'Retard',A:'Absent'};
+  const rows=elevesCache.map(e=>{
+    const statut=presenceCache.presences[e.id]||'P';
+    return `<tr><td>${esc(e.prenom+' '+e.nom)}</td><td style="font-weight:700${statut==='A'?';color:#c8102e':statut==='R'?';color:#d4af37':''}">${label[statut]}</td></tr>`;
+  }).join('');
+  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Feuille d'appel</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:10px;text-align:left}</style></head><body><h1>Feuille d'appel — ${esc(classe?classe.nom:'')}</h1><p>${appelDate}</p><table><thead><tr><th>Élève</th><th>Présence</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
   const w=window.open('','_blank');
   if(!w){toast('Autorisez les fenêtres contextuelles pour imprimer.');return}
   w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
