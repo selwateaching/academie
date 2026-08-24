@@ -76,6 +76,13 @@
   <div class="modal" id="modal"></div>
 </div>
 
+<script>
+window.TADRISS_USER={
+  name: {{ user.name|tojson }},
+  email: {{ user.email|tojson }},
+  phone: {{ (user.phone or '')|tojson }}
+};
+</script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

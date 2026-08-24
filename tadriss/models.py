@@ -23,6 +23,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), default="")
+    phone = db.Column(db.String(40), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     paid_until = db.Column(db.DateTime, nullable=True)
     is_admin = db.Column(db.Boolean, default=False)

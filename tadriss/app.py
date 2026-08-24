@@ -19,6 +19,7 @@ from flask import (
     url_for,
 )
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from sqlalchemy import inspect, text
 
 from ai import generate_document
 from models import (
@@ -184,6 +185,18 @@ def index():
 # ---------------------------------------------------------------------------
 # API : état de l'abonné (remplace le localStorage du navigateur)
 # ---------------------------------------------------------------------------
+
+
+@app.route("/api/profile", methods=["PUT"])
+@login_required
+def api_profile_update():
+    data = request.get_json(force=True, silent=True) or {}
+    if "name" in data:
+        current_user.name = (data["name"] or "").strip()
+    if "phone" in data:
+        current_user.phone = (data["phone"] or "").strip()
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 @app.route("/api/state", methods=["GET"])
@@ -770,8 +783,20 @@ def inject_globals():
     return {"trial_days": TRIAL_DAYS}
 
 
+def ensure_column(table_name, column_name, ddl):
+    """Ajoute une colonne manquante sur une table existante (mini-migration sans Alembic)."""
+    inspector = inspect(db.engine)
+    if table_name not in inspector.get_table_names():
+        return
+    existing = {c["name"] for c in inspector.get_columns(table_name)}
+    if column_name not in existing:
+        db.session.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {ddl}"))
+        db.session.commit()
+
+
 with app.app_context():
     db.create_all()
+    ensure_column("user", "phone", "VARCHAR(40) DEFAULT ''")
     if ADMIN_EMAIL:
         admin_user = User.query.filter_by(email=ADMIN_EMAIL).first()
         if admin_user and not admin_user.is_admin:
