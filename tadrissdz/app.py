@@ -23,39 +23,6 @@ def index():
     return send_from_directory(os.path.dirname(__file__), "index.html")
 
 
-@app.get("/debug-key")
-def debug_key():
-    raw = os.environ.get("ANTHROPIC_API_KEY", "")
-    return jsonify(
-        {
-            "length": len(raw),
-            "prefix": raw[:15],
-            "suffix": raw[-6:] if len(raw) >= 6 else raw,
-            "has_leading_or_trailing_space": raw != raw.strip(),
-            "has_newline": "\n" in raw or "\r" in raw,
-        }
-    )
-
-
-@app.get("/debug-workspaces")
-def debug_workspaces():
-    import urllib.error
-    import urllib.request
-
-    raw = os.environ.get("ANTHROPIC_API_KEY", "")
-    req = urllib.request.Request(
-        "https://api.anthropic.com/v1/organizations/workspaces?limit=20",
-        headers={"x-api-key": raw, "anthropic-version": "2023-06-01"},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return jsonify({"status": resp.status, "body": resp.read().decode()})
-    except urllib.error.HTTPError as exc:
-        return jsonify({"status": exc.code, "body": exc.read().decode()})
-    except Exception as exc:  # noqa: BLE001 - diagnostic only
-        return jsonify({"error": str(exc)})
-
-
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
