@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b4d">
+  <title>ProfDigital — Assistant pédagogique numérique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div><strong>ProfDigital</strong><small>Assistant pédagogique</small></div>
+    </div>
+
+    <button class="school-switch" id="schoolSwitch">
+      <span class="avatar">{{ (user.name or user.email)[:2]|upper }}</span><span class="switch-copy"><b>Mon espace enseignant</b><small>2026 / 2027</small></span><span>⌄</span>
+    </button>
+
+    <nav id="nav">
+      <div class="nav-label">MON ESPACE</div>
+      <button class="nav-item active" data-page="dashboard"><span>⌂</span> Tableau de bord</button>
+      <button class="nav-item" data-page="schedule"><span>▦</span> Emploi du temps</button>
+      <button class="nav-item" data-page="progress"><span>◔</span> Progression</button>
+      <button class="nav-item" data-page="journal"><span>▤</span> Cahier journal</button>
+
+      <div class="nav-label">PÉDAGOGIE</div>
+      <button class="nav-item" data-page="lessons"><span>▥</span> Mes cours</button>
+      <button class="nav-item" data-page="sheets"><span>✎</span> Fiches pédagogiques</button>
+      <button class="nav-item" data-page="assessments"><span>✓</span> Contrôles & quiz</button>
+      <button class="nav-item" data-page="students"><span>♙</span> Mes élèves</button>
+      <button class="nav-item" data-page="appel"><span>✓</span> Appel</button>
+      <button class="nav-item" data-page="notes"><span>#</span> Carnet de notes</button>
+      <button class="nav-item" data-page="documents"><span>□</span> Documents</button>
+
+      <div class="nav-label">ProfDigital IA</div>
+      <button class="nav-item ai-nav" data-page="ai"><span>✦</span> Assistant IA <em>NOUVEAU</em></button>
+
+      <div class="nav-label">GESTION</div>
+      <button class="nav-item" data-page="settings"><span>⚙</span> Paramètres</button>
+      {% if user.is_admin %}<a class="nav-item" href="{{ url_for('admin_panel') }}" style="text-decoration:none;display:flex"><span>🛠</span> Admin abonnés</a>{% endif %}
+    </nav>
+
+    <div class="sidebar-bottom">
+      {% if not user.is_paid_active and user.is_trial_active %}
+      <div class="help-card"><span>⏳</span><div><b>Essai gratuit</b><small>{{ user.days_left_trial }} jour(s) restant(s) — <a href="{{ url_for('billing') }}" style="color:#cfe0ff">voir l'abonnement</a></small></div></div>
+      {% endif %}
+      <div class="help-card"><span>?</span><div><b>Besoin d'aide ?</b><small>Centre d'aide ProfDigital</small></div></div>
+      <div class="user-mini"><span class="avatar coral">{{ (user.name or user.email)[:2]|upper }}</span><div><b>{{ user.name or 'Enseignant' }}</b><small>{{ user.email }}</small></div><a href="{{ url_for('logout') }}" title="Déconnexion" style="text-decoration:none;color:#9ea8c9">⎋</a></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" id="mobileMenu">☰</button>
+      <div class="breadcrumbs"><span>ProfDigital</span><b>/</b><strong id="pageTitle">Tableau de bord</strong></div>
+      <div class="top-actions">
+        <button class="icon-btn" title="Notifications">♧<i>3</i></button>
+        <button class="icon-btn" title="Recherche" id="searchBtn">⌕</button>
+        <button class="profile-btn"><span class="avatar small">{{ (user.name or user.email)[:2]|upper }}</span><span>{{ user.name or 'Enseignant' }}</span>⌄</button>
+      </div>
+    </header>
+
+    <section id="content"></section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" hidden accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,image/*">
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+window.PROFDIGITAL_USER={
+  name: {{ user.name|tojson }},
+  email: {{ user.email|tojson }},
+  phone: {{ (user.phone or '')|tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

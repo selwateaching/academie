@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Créer un compte — ProfDigital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="mark">P</div>
+      <div><strong>ProfDigital</strong><small>Assistant pédagogique numérique</small></div>
+    </div>
+    <h1>Créer votre compte</h1>
+    <p class="lead">Essai gratuit de {{ trial_days }} jours, sans engagement.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post">
+      <div class="field">
+        <label>Nom</label>
+        <input type="text" name="name" placeholder="Votre nom" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="vous@exemple.com" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" name="password" placeholder="6 caractères minimum" required minlength="6" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn primary">Créer mon compte</button>
+    </form>
+    <div class="switch">Déjà abonné ? <a href="{{ url_for('login') }}">Se connecter</a></div>
+  </div>
+</div>
+</body>
+</html>

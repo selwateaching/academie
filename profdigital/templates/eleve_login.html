@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espace élève — ProfDigital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="mark">P</div>
+      <div><strong>ProfDigital</strong><small>Espace élève</small></div>
+    </div>
+    <h1>Bonjour 👋</h1>
+    <p class="lead">Saisis le code donné par ton enseignant(e) pour voir tes notes, tes absences et ton bulletin.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post" action="{{ url_for('eleve_login') }}">
+      <div class="field">
+        <label>Code d'accès</label>
+        <input type="text" name="code" value="{{ prefill or '' }}" placeholder="Ex. a1b2c3d4" autocomplete="off" autofocus style="text-align:center;letter-spacing:2px;font-weight:800">
+      </div>
+      <button type="submit" class="btn primary">Entrer</button>
+    </form>
+    <div class="switch">Vous êtes enseignant(e) ? <a href="{{ url_for('login') }}">Connexion enseignant</a></div>
+  </div>
+</div>
+</body>
+</html>

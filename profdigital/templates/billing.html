@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Abonnement — ProfDigital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card" style="width:min(480px,100%)">
+    <div class="auth-brand">
+      <div class="mark">P</div>
+      <div><strong>ProfDigital</strong><small>Assistant pédagogique numérique</small></div>
+    </div>
+
+    {% if user.is_paid_active %}
+      <div class="status-banner paid">Votre abonnement est actif jusqu'au {{ user.paid_until.strftime('%d/%m/%Y') }}.</div>
+      <p class="lead">Merci pour votre confiance. Vous pouvez retourner à votre espace.</p>
+      <a class="btn primary" href="{{ url_for('index') }}">Aller à mon espace</a>
+    {% elif user.is_trial_active %}
+      <div class="status-banner trial">Essai gratuit en cours — {{ user.days_left_trial }} jour(s) restant(s).</div>
+      <p class="lead">Vous pouvez déjà utiliser ProfDigital. Le virement ci-dessous n'est nécessaire qu'à la fin de l'essai.</p>
+      <a class="btn primary" href="{{ url_for('index') }}">Continuer vers mon espace</a>
+    {% else %}
+      <div class="status-banner expired">Votre essai gratuit de {{ trial_days }} jours est terminé.</div>
+      <p class="lead">Pour continuer à utiliser ProfDigital, merci d'effectuer un virement bancaire. Votre accès sera réactivé dès réception.</p>
+    {% endif %}
+
+    <div class="rib-box">
+      <b>Coordonnées bancaires pour le virement</b><br>
+      Titulaire : {{ config.BANK_HOLDER or "à compléter" }}<br>
+      Banque : {{ config.BANK_NAME or "à compléter" }}<br>
+      RIB / IBAN : {{ config.BANK_RIB or "à compléter" }}<br>
+      Référence à indiquer : votre email ({{ user.email }})
+    </div>
+    <p class="lead">Une fois le virement effectué, envoyez-nous une confirmation. Votre compte sera activé manuellement sous peu.</p>
+
+    <div class="switch"><a href="{{ url_for('logout') }}">Se déconnecter</a></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion — ProfDigital</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='auth.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="mark">P</div>
+      <div><strong>ProfDigital</strong><small>Assistant pédagogique numérique</small></div>
+    </div>
+    <h1>Connexion</h1>
+    <p class="lead">Accédez à votre espace enseignant.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="post">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="vous@exemple.com" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Mot de passe</label>
+        <input type="password" name="password" placeholder="Votre mot de passe" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn primary">Se connecter</button>
+    </form>
+    <div class="switch">Pas encore de compte ? <a href="{{ url_for('signup') }}">Créer un compte</a></div>
+  </div>
+</div>
+</body>
+</html>

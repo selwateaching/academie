@@ -1,0 +1,493 @@
+/* ProfDigital v2 - backend-connected (comptes, essai, IA réelle) */
+const defaultState={
+ page:'dashboard', lang:'auto', year:'2026 / 2027', academie:'Paris', cycle:'Collège', level:'6e', subject:'Mathématiques',
+ docs:[], progress:[['Nombres et calculs',72],['Géométrie',54],['Fonctions',41],['Statistiques',63]],
+ schedule:[['08:00','Mathématiques','Fractions','6e','blue','Dim','Nombres et calculs',true],['09:00','Mathématiques','Géométrie','6e','green','Lun','Géométrie',false],['10:30','Mathématiques','Aire et périmètre','6e','green','Mar','Géométrie',false],['11:30','Mathématiques','Proportionnalité','6e','orange','Mer','Fonctions',false]],
+ saved:null
+};
+let state={...defaultState};
+const pages={dashboard:'Tableau de bord',schedule:'Emploi du temps',progress:'Progression annuelle',journal:'Cahier journal',lessons:'Mes cours',sheets:'Fiches pédagogiques',assessments:'Contrôles & quiz',students:'Mes élèves',appel:'Appel',notes:'Carnet de notes',documents:'Documents',ai:'Assistant IA',settings:'Paramètres'};
+
+let classesCache=[];
+let currentClasseId=null;
+let currentAnnee=null;
+let elevesCache=[];
+let evaluationsCache=[];
+let appelDate=new Date().toISOString().slice(0,10);
+let presenceCache={date:appelDate,presences:{}};
+async function ensureClasses(){
+  if(!classesCache.length){
+    try{const r=await fetch('/api/classes');classesCache=await r.json();}catch(e){classesCache=[];}
+  }
+  if(!currentAnnee) currentAnnee=state.year;
+  const inYear=classesCache.filter(c=>(c.annee_scolaire||'—')===currentAnnee);
+  if((!currentClasseId||!inYear.some(c=>c.id===currentClasseId))) currentClasseId=inYear.length?inYear[0].id:null;
+}
+function switchClasse(id){currentClasseId=parseInt(id,10);setPage(state.page)}
+function switchAnnee(v){currentAnnee=v;currentClasseId=null;setPage(state.page)}
+function anneeSelectHtml(id){const annees=[...new Set([...classesCache.map(c=>c.annee_scolaire||'—'),currentAnnee])].sort().reverse();if(annees.length<=1)return '';return `<select id="${id}" onchange="switchAnnee(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${annees.map(a=>`<option value="${esc(a)}"${a===currentAnnee?' selected':''}>${esc(a)}</option>`).join('')}</select>`}
+async function apiFetch(url,options){
+  let r;
+  try{
+    r=await fetch(url,options);
+  }catch(e){
+    throw new Error('Connexion au serveur impossible. Vérifiez votre connexion et réessayez.');
+  }
+  if(!r.ok){
+    let msg=`Erreur serveur (${r.status})`;
+    try{const d=await r.json();if(d&&d.error)msg=d.error;}catch(e){}
+    throw new Error(msg);
+  }
+  if(r.status===204)return null;
+  try{return await r.json();}catch(e){return null;}
+}
+
+const MATIERES=['Mathématiques','Français','Histoire-Géographie','Physique-Chimie','Sciences de la Vie et de la Terre (SVT)','Technologie','Éducation morale et civique (EMC)','Arts plastiques','Éducation musicale','Éducation physique et sportive','Anglais','Espagnol','Arabe','Philosophie','Informatique'];
+function matiereDatalist(){return `<datalist id="matieresList">${MATIERES.map(m=>`<option value="${esc(m)}">`).join('')}</datalist>`}
+const NIVEAUX=[['Primaire',['CP','CE1','CE2','CM1','CM2']],['Collège',['6e','5e','4e','3e']],['Lycée',['Seconde','Première','Terminale']]];
+function niveauOptions(current){return NIVEAUX.map(([grp,items])=>`<optgroup label="${grp}">${items.map(n=>`<option${n===current?' selected':''}>${n}</option>`).join('')}</optgroup>`).join('')}
+const ACADEMIES=['Paris','Versailles','Créteil','Lyon','Marseille','Toulouse','Bordeaux','Lille','Nantes','Strasbourg','Rennes','Grenoble','Montpellier','Nice'];
+
+async function loadFromServer(){
+  try{
+    const r=await fetch('/api/state');
+    if(!r.ok) throw new Error('state fetch failed');
+    const remote=await r.json();
+    state={...defaultState,...remote};
+  }catch(e){
+    toast('Connexion au serveur impossible, mode local temporaire.');
+  }
+}
+function save(){
+  clearTimeout(window.__saveTimer);
+  window.__saveTimer=setTimeout(async()=>{
+    try{
+      await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(state)});
+    }catch(e){/* silencieux : on retentera au prochain changement */}
+  },400);
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2600)}
+function card(title,body,extra=''){return `<section class="card ${extra}"><div class="card-title"><h3>${title}</h3></div>${body}</section>`}
+function setPage(p){state.page=p;save();document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===p));document.getElementById('pageTitle').textContent=pages[p];document.getElementById('content').innerHTML=(render[p]||render.dashboard)();window.scrollTo({top:0,behavior:'smooth'})}
+function stat(icon,n,label){return `<div class="stat"><div class="stat-icon">${icon}</div><div><strong>${n}</strong><span>${label}</span></div></div>`}
+function renderDashboard(){return `<div class="page-head"><div><div class="eyebrow">${state.academie} · ${state.year}</div><h1>Bonjour, enseignant 👋</h1><p>Votre espace pédagogique est prêt.</p></div><div class="actions"><button class="btn ai" onclick="openGenerator('week')">✦ Préparer ma semaine</button><button class="btn primary" onclick="openGenerator('sheet')">+ Nouvelle fiche</button></div></div>
+<section class="hero"><div class="eyebrow">ProfDigital IA</div><h2>Préparez vos cours en quelques secondes.</h2><p>L'IA adapte la séance au cycle, au niveau, à la matière et à la langue du programme. Les documents peuvent être enregistrés puis exportés.</p><div class="ai-input"><input id="quickAI" placeholder="Ex. Prépare une séance de 1h sur les fractions..." onkeydown="if(event.key==='Enter')quickAI()"><button class="btn primary" onclick="quickAI()">Générer ✦</button></div></section>
+<div class="grid grid-4">${stat('📚','68 %','Progression')}${stat('✓','42','Séances réalisées')}${stat('13,8','13,8/20','Moyenne classe')}${stat('5','5','Élèves à accompagner')}</div><div style="height:16px"></div><div class="grid grid-2">${card('Aujourd’hui',`<div class="list">${state.schedule.slice(0,3).map(x=>`<div class="list-item"><span class="time-pill">${esc(x[0])}</span><div class="grow"><b>${esc(x[2])}</b><small>${esc(x[1])} · ${esc(x[3])}</small></div><span class="tag ${x[4]||''}">Séance</span></div>`).join('')}</div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Fiche pédagogique','Séance complète + remédiation','sheet')}${quick('📝','Contrôle','Sujet + barème + corrigé','assessment')}${quick('📅','Cahier journal','Générer à partir de la semaine','journal')}${quick('📚','Cours','Cours + exercices + corrigé','course')}</div>`)}</div>`}
+function quick(i,t,d,type){return `<button class="feature" onclick="openGenerator('${type}')"><span>${i}</span><b>${t}</b><small>${d}</small></button>`}
+function renderSchedule(){
+  const dayKeys=['Dim','Lun','Mar','Mer','Jeu'];
+  const dayNames={Dim:'Dimanche',Lun:'Lundi',Mar:'Mardi',Mer:'Mercredi',Jeu:'Jeudi'};
+  const baseTimes=['08:00','09:00','10:30','11:30','13:30'];
+  const times=[...new Set([...baseTimes,...state.schedule.map(x=>x[0])])].sort();
+  const list=[...state.schedule].sort((a,b)=>dayKeys.indexOf(a[5])-dayKeys.indexOf(b[5])||a[0].localeCompare(b[0]));
+  const listHtml=list.length?`<div class="list">${list.map(s=>{const i=state.schedule.indexOf(s);const seqInfo=s[6]?` · Séquence : ${esc(s[6])}`:'';const fait=!!s[7];return `<div class="list-item"><span class="time-pill">${esc(s[0])}</span><div class="grow"><b>${esc(s[2])}</b><small>${esc(dayNames[s[5]]||s[5]||'—')} · ${esc(s[1])} · ${esc(s[3])}${seqInfo}</small></div><span class="tag ${s[4]||''}">Séance</span><button class="btn${fait?' primary':''}" style="padding:6px 10px;font-size:10px" onclick="toggleScheduleFait(${i})">${fait?'✓ Faite':'Marquer faite'}</button><button class="link" onclick="openAddSchedule(${i})">Modifier</button><button class="link danger" onclick="deleteScheduleEntry(${i})">Supprimer</button></div>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance</strong><span>Ajoutez votre première séance avec le bouton ci-dessus.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Organisation</div><h1>Emploi du temps</h1><p>Votre emploi du temps alimente le cahier journal.</p></div><div class="actions"><button class="btn" onclick="openAddSchedule()">+ Ajouter une séance</button><button class="btn primary" onclick="openGenerator('week')">✦ Préparer ma semaine</button></div></div>${card('Semaine actuelle',`<div class="schedule">${['Heure','Dimanche','Lundi','Mardi','Mercredi','Jeudi'].map((d,i)=>`<div class="day">${d}</div>`).join('')}${times.map((tm,ri)=>`<div class="time">${tm}</div>${dayKeys.map((dk,ci)=>{let s=state.schedule.find(x=>x[0]===tm&&x[5]===dk);return `<div class="slot${s?' '+s[4]:''}">${s?`<b>${esc(s[2])}</b><span>${esc(s[1])}</span>`:''}</div>`}).join('')}`).join('')}</div>`)}<div style="height:16px"></div>${card('Toutes les séances',listHtml)}`;
+}
+function openAddSchedule(index){
+  index=typeof index==='number'?index:-1;
+  const isEdit=index>=0;
+  const s=isEdit?state.schedule[index]:['14:30','Mathématiques','',state.level,'blue','Dim','',false];
+  const dayOpt=(v,label)=>`<option value="${v}"${s[5]===v?' selected':''}>${label}</option>`;
+  const colorOpt=(v,label)=>`<option value="${v}"${s[4]===v?' selected':''}>${label}</option>`;
+  const seqOptions=`<option value=""${!s[6]?' selected':''}>— Aucune —</option>`+state.progress.map(p=>`<option value="${esc(p[0])}"${s[6]===p[0]?' selected':''}>${esc(p[0])}</option>`).join('');
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier la séance':'+ Ajouter une séance'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Jour</label><select id="asDay">${dayOpt('Dim','Dimanche')}${dayOpt('Lun','Lundi')}${dayOpt('Mar','Mardi')}${dayOpt('Mer','Mercredi')}${dayOpt('Jeu','Jeudi')}</select></div><div class="field"><label>Heure</label><input id="asTime" type="time" value="${esc(s[0])}"></div><div class="field"><label>Matière</label><input id="asSubject" value="${esc(s[1])}"></div><div class="field"><label>Niveau</label><input id="asLevel" value="${esc(s[3]||state.level)}"></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Sujet de la séance</label><input id="asTopic" value="${esc(s[2])}" placeholder="Ex. Les fractions"></div><div class="field"><label>Séquence liée (Progression)</label><select id="asSequence">${seqOptions}</select></div></div><div class="field" style="margin-top:12px"><label>Couleur</label><select id="asColor">${colorOpt('blue','Bleu')}${colorOpt('green','Vert')}${colorOpt('orange','Orange')}</select></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitAddSchedule(${index})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+function submitAddSchedule(index){
+  index=typeof index==='number'?index:-1;
+  const day=document.getElementById('asDay').value;
+  const time=document.getElementById('asTime').value||'14:30';
+  const subject=document.getElementById('asSubject').value.trim()||'Matière';
+  const level=document.getElementById('asLevel').value.trim()||state.level;
+  const topic=document.getElementById('asTopic').value.trim()||'Séance';
+  const color=document.getElementById('asColor').value;
+  const sequence=document.getElementById('asSequence').value;
+  const fait=index>=0?!!state.schedule[index][7]:false;
+  const row=[time,subject,topic,level,color,day,sequence,fait];
+  if(index>=0) state.schedule[index]=row; else state.schedule.push(row);
+  save();closeModal();toast(index>=0?'Séance modifiée':'Séance ajoutée');setPage('schedule');
+}
+function toggleScheduleFait(i){const s=state.schedule[i];if(!s)return;s[7]=!s[7];save();setPage('schedule')}
+function deleteScheduleEntry(i){if(!confirm('Supprimer cette séance ?'))return;state.schedule.splice(i,1);save();toast('Séance supprimée');setPage('schedule')}
+function computeSequenceProgress(nom){
+  const linked=state.schedule.filter(s=>s[6]===nom);
+  if(!linked.length)return 0;
+  const done=linked.filter(s=>s[7]).length;
+  return Math.round(done/linked.length*100);
+}
+function createMissingSequencesFromSchedule(){
+  const existingNames=new Set(state.progress.map(p=>p[0]));
+  const unlinked=state.schedule.filter(s=>!s[6]&&s[2]&&s[2].trim());
+  const newTopics=[...new Set(unlinked.map(s=>s[2].trim()))].filter(t=>!existingNames.has(t));
+  if(!newTopics.length){toast("Aucun nouveau sujet à ajouter depuis l'emploi du temps.");return}
+  newTopics.forEach(t=>state.progress.push([t,0]));
+  state.schedule.forEach(s=>{if(!s[6]&&newTopics.includes((s[2]||'').trim()))s[6]=s[2].trim()});
+  save();toast(`${newTopics.length} séquence(s) créée(s) et liée(s) depuis l'emploi du temps`);setPage('progress');
+}
+function renderProgress(){
+  const rows=state.progress.length?state.progress.map((p,i)=>{
+    const pct=computeSequenceProgress(p[0]);
+    const linked=state.schedule.filter(s=>s[6]===p[0]);
+    const linkedHtml=linked.length?`<p class="kpi" style="margin:6px 0 0">${linked.length} séance(s) liée(s), ${linked.filter(s=>s[7]).length} faite(s) : ${linked.map(s=>esc(s[2])).join(', ')}</p>`:`<p class="kpi" style="margin:6px 0 0">Aucune séance liée pour l'instant — reliez une séance depuis l'Emploi du temps, ou marquez-la "faite" pour faire avancer la barre.</p>`;
+    return `<div class="progress-row"><div><span>${esc(p[0])}</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>${linkedHtml}<div class="actions" style="margin-top:6px;gap:10px"><button class="link" onclick="openProgressForm(${i})">Renommer</button><button class="link danger" onclick="deleteProgress(${i})">Supprimer</button></div></div>`;
+  }).join(''):`<div class="empty"><strong>Aucune séquence</strong><span>Ajoutez-en une, ou créez-les automatiquement depuis l'emploi du temps.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Programme scolaire</div><h1>Progression annuelle</h1><p>${esc(state.level)} · ${esc(state.subject)} · La barre avance automatiquement selon les séances marquées "faites".</p></div><div class="actions"><button class="btn" onclick="createMissingSequencesFromSchedule()">↻ Depuis l'emploi du temps</button><button class="btn" onclick="openProgressForm(-1)">+ Séquence</button><button class="btn primary" onclick="exportDocument('progress')">📄 Exporter</button></div></div><div class="grid grid-2">${card('Avancement',rows)}${card('Référentiel',`<div class="kpi">Configuration active</div><h3 style="margin-top:8px">${esc(state.academie)} · ${esc(state.cycle)} · ${esc(state.level)}</h3><p class="kpi" style="line-height:1.8">La structure de ProfDigital est prévue pour associer chaque niveau à ses matières, séquences, compétences et séances. Importez vos référentiels officiels lorsque vous les possédez.</p><button class="btn" onclick="importFile()">↑ Importer un référentiel</button>`)}</div>`;
+}
+function openProgressForm(index){
+  index=typeof index==='number'?index:-1;
+  const isEdit=index>=0;
+  const p=isEdit?state.progress[index]:['',0];
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Renommer la séquence':'+ Nouvelle séquence'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="field"><label>Séquence</label><input id="pgTopic" value="${esc(p[0])}" placeholder="Ex. Nombres et calculs"></div>${isEdit?'<p class="kpi" style="margin-top:8px">L\'avancement (%) est calculé automatiquement selon les séances liées marquées "faites".</p>':''}<div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitProgressForm(${index})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+function submitProgressForm(index){
+  index=typeof index==='number'?index:-1;
+  const topic=document.getElementById('pgTopic').value.trim();
+  if(!topic){toast('Le nom de la séquence est obligatoire.');return}
+  const row=[topic,0];
+  if(index>=0){
+    const oldTopic=state.progress[index][0];
+    state.progress[index]=row;
+    if(oldTopic&&oldTopic!==topic) state.schedule.forEach(s=>{if(s[6]===oldTopic) s[6]=topic});
+  }else{
+    state.progress.push(row);
+  }
+  save();closeModal();toast(index>=0?'Séquence modifiée':'Séquence ajoutée');setPage('progress');
+}
+function deleteProgress(i){if(!confirm('Supprimer cette séquence ? Les séances qui y étaient liées perdront ce lien.'))return;const topic=state.progress[i][0];state.progress.splice(i,1);state.schedule.forEach(s=>{if(s[6]===topic) s[6]=''});save();toast('Séquence supprimée');setPage('progress')}
+function renderJournal(){const order=['Dim','Lun','Mar','Mer','Jeu'];const sorted=[...state.schedule].sort((a,b)=>order.indexOf(a[5])-order.indexOf(b[5])||a[0].localeCompare(b[0]));return `<div class="page-head"><div><div class="eyebrow">Traçabilité pédagogique</div><h1>Cahier journal</h1><p>Construit depuis l'emploi du temps et la progression.</p></div><div class="actions"><button class="btn" onclick="window.print()">🖨 Imprimer</button><button class="btn primary" onclick="exportDocument('journal')">📄 Générer le document</button></div></div>${card('Semaine en cours',sorted.length?`<div class="journal-list">${sorted.map(s=>{const seq=state.progress.find(p=>p[0]===s[6]);const seqTag=seq?`<span class="tag green">Séquence : ${esc(seq[0])} (${computeSequenceProgress(seq[0])}%)</span>`:'';return `<article class="journal-row"><div class="journal-date">${esc(s[5]||'—')}<b>${esc(s[0])}</b></div><div><h4>${esc(s[2])}</h4><p>${esc(s[1])} · ${esc(s[3])}</p><span class="tag">Objectif · Activité · Évaluation · Remédiation</span> ${seqTag}</div><button class="link" onclick="openGenerator('sheet')">Préparer →</button></article>`}).join('')}</div>`:`<div class="empty"><strong>Aucune séance planifiée</strong><span>Ajoutez des séances dans "Emploi du temps" pour construire votre cahier journal.</span></div>`)}`}
+function renderSheets(){return pageList('Fiches pédagogiques','Préparation','Créez des fiches complètes, cohérentes et exportables.','sheet',['Fiche Les fractions','Fiche Proportionnalité'])}
+function renderLessons(){return pageList('Mes cours','Ressources pédagogiques','Cours, résumés, activités et exercices.','course',['Cours — Fractions','Cours — Géométrie'])}
+function pageList(title,ey,p,typ,items){return `<div class="page-head"><div><div class="eyebrow">${ey}</div><h1>${title}</h1><p>${p}</p></div><button class="btn primary" onclick="openGenerator('${typ}')">✦ Générer avec IA</button></div><div class="doc-grid">${items.map((x,i)=>`<article class="doc"><div class="doc-icon">${typ==='sheet'?'✎':'📚'}</div><h4>${x}</h4><p>${state.level} · ${state.subject} · ${state.lang==='fr'?'Français':'Automatique'}</p><div class="actions" style="margin-top:12px"><button class="btn" onclick="openGenerator('${typ}')">Modifier</button><button class="btn" onclick="exportDocument('${typ}')">PDF</button></div></article>`).join('')}</div>`}
+function renderAssessments(){return `<div class="page-head"><div><div class="eyebrow">Évaluation</div><h1>Contrôles & quiz</h1><p>Sujets, barèmes, corrigés et variantes.</p></div><button class="btn primary" onclick="openGenerator('assessment')">✦ Créer un contrôle</button></div>${card('Bibliothèque',`<div class="doc-grid"><article class="doc"><div class="doc-icon">📝</div><h4>Contrôle 1 — Fractions</h4><p>45 min · /20 · Corrigé disponible</p><button class="btn" onclick="exportDocument('assessment')">Exporter</button></article><article class="doc"><div class="doc-icon">🎯</div><h4>Quiz — Proportionnalité</h4><p>15 questions · correction automatique</p><button class="btn" onclick="openGenerator('quiz')">Ouvrir</button></article></div>`)}`}
+function renderEleves(){
+  loadElevesPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Mes élèves</h1><p>Un instant…</p></div></div>`;
+}
+async function loadElevesPage(){
+  await ensureClasses();
+  if(state.page!=='students')return;
+  if(!currentClasseId){
+    elevesCache=[];
+    document.getElementById('content').innerHTML=elevesPageHtml();
+    return;
+  }
+  try{
+    const r=await fetch(`/api/classes/${currentClasseId}/eleves`);
+    elevesCache=await r.json();
+  }catch(e){elevesCache=[];}
+  if(state.page!=='students')return;
+  document.getElementById('content').innerHTML=elevesPageHtml();
+}
+function classeSelectHtml(id,list){const filtered=list.filter(c=>(c.annee_scolaire||'—')===currentAnnee);return `<select id="${id}" onchange="switchClasse(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px">${filtered.map(c=>`<option value="${c.id}"${c.id===currentClasseId?' selected':''}>${esc(c.nom)}${c.matiere?' · '+esc(c.matiere):''}</option>`).join('')}</select>`}
+function elevesPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=elevesCache.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Élève</th><th>Moyenne</th><th>Responsable</th><th>Action</th></tr></thead><tbody>${elevesCache.map(e=>`<tr><td><b>${esc(e.prenom+' '+e.nom)}</b></td><td>${e.moyenne!==null&&e.moyenne!==undefined?`<span class="score">${Number(e.moyenne).toFixed(2)}</span> <span class="tag ${e.moyenne>=10?'green':'orange'}">${esc(e.mention||'')}</span>`:'<span class="kpi">—</span>'}</td><td>${e.responsable_nom?esc(e.responsable_nom)+(e.responsable_tel?' · '+esc(e.responsable_tel):''):'<span class="kpi">—</span>'}</td><td><button class="link" onclick="openEleveFiche(${e.id})">Voir la fiche</button> <button class="link danger" onclick="deleteEleve(${e.id})">Supprimer</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucun élève dans cette classe</strong><span>Ajoutez votre premier élève.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">${classesCache.length} classe(s)</div><h1>Mes élèves</h1><p>Notes, présences, contacts et bulletins par classe.</p></div><div class="actions">${anneeSelectHtml('eleveAnneeSelect')}${classeSelectHtml('eleveClasseSelect',classesCache)}<button class="btn" onclick="openClasseForm()">+ Nouvelle classe</button><button class="btn primary" onclick="openEleveForm(-1)">+ Ajouter un élève</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+(classe&&classe.annee_scolaire?' · '+esc(classe.annee_scolaire):''),rows)}`;
+}
+function openClasseForm(){
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>+ Nouvelle classe</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Nom de la classe</label><input id="clNom" placeholder="Ex. 6e B"></div><div class="field"><label>Matière</label><input id="clMatiere" list="matieresList" placeholder="Ex. Mathématiques"></div></div><div class="field" style="margin-top:12px"><label>Année scolaire</label><input id="clAnnee" value="${esc(currentAnnee||state.year)}" placeholder="Ex. 2026 / 2027"></div>${matiereDatalist()}<div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitClasseForm()">Créer</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitClasseForm(){
+  const nom=document.getElementById('clNom').value.trim();
+  if(!nom){toast('Le nom de la classe est obligatoire.');return}
+  const matiere=document.getElementById('clMatiere').value.trim();
+  const annee=document.getElementById('clAnnee').value.trim()||state.year;
+  try{
+    const d=await apiFetch('/api/classes',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nom,matiere,annee_scolaire:annee})});
+    classesCache=[];currentAnnee=annee;currentClasseId=d.id;
+    closeModal();toast('Classe créée');setPage(state.page);
+  }catch(e){toast(e.message||'Impossible de créer la classe.');}
+}
+function openEleveForm(id){
+  const isEdit=id>0;
+  const e=isEdit?elevesCache.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier l’élève':'+ Ajouter un élève'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Prénom</label><input id="elPrenom" value="${esc(e?e.prenom:'')}"></div><div class="field"><label>Nom</label><input id="elNom" value="${esc(e?e.nom:'')}"></div><div class="field"><label>Date de naissance</label><input id="elNaissance" type="date" value="${esc(e?e.date_naissance:'')}"></div><div class="field"><label>Observations</label><input id="elObs" value="${esc(e?e.observations:'')}"></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Responsable (nom)</label><input id="elRespNom" value="${esc(e?e.responsable_nom:'')}"></div><div class="field"><label>Lien</label><input id="elRespLien" value="${esc(e?e.responsable_lien:'')}" placeholder="Père, Mère, Tuteur..."></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Téléphone</label><input id="elRespTel" value="${esc(e?e.responsable_tel:'')}"></div><div class="field"><label>Email</label><input id="elRespEmail" value="${esc(e?e.responsable_email:'')}"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitEleveForm(${isEdit?id:-1})">${isEdit?'Enregistrer':'Ajouter'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitEleveForm(id){
+  const payload={
+    prenom:document.getElementById('elPrenom').value.trim(),
+    nom:document.getElementById('elNom').value.trim(),
+    date_naissance:document.getElementById('elNaissance').value,
+    observations:document.getElementById('elObs').value.trim(),
+    responsable_nom:document.getElementById('elRespNom').value.trim(),
+    responsable_lien:document.getElementById('elRespLien').value.trim(),
+    responsable_tel:document.getElementById('elRespTel').value.trim(),
+    responsable_email:document.getElementById('elRespEmail').value.trim()
+  };
+  if(!payload.prenom||!payload.nom){toast('Prénom et nom sont obligatoires.');return}
+  try{
+    const url=id>0?`/api/eleves/${id}`:`/api/classes/${currentClasseId}/eleves`;
+    const method=id>0?'PUT':'POST';
+    await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    closeModal();toast(id>0?'Élève modifié':'Élève ajouté');setPage(state.page);
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement.');}
+}
+async function deleteEleve(id){
+  if(!confirm('Supprimer cet élève ? Ses notes et absences seront aussi supprimées.'))return;
+  try{await apiFetch(`/api/eleves/${id}`,{method:'DELETE'});toast('Élève supprimé');setPage(state.page);}catch(e){toast(e.message||'Erreur lors de la suppression.');}
+}
+async function openEleveFiche(id){
+  const e=elevesCache.find(x=>x.id===id);
+  if(!e)return;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${esc(e.prenom+' '+e.nom)}</h2><button class="close" onclick="closeModal()">×</button></div><div id="ficheBody">Chargement…</div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+  try{
+    const [bul,abs]=await Promise.all([
+      fetch(`/api/eleves/${id}/bulletin`).then(r=>r.json()),
+      fetch(`/api/eleves/${id}/absences`).then(r=>r.json())
+    ]);
+    const notesRows=bul.evaluations.length?bul.evaluations.map(ev=>`<tr><td>${esc(ev.intitule)}</td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${ev.valeur!==null?Number(ev.valeur).toFixed(2):'—'}</td></tr>`).join(''):'<tr><td colspan="5" class="kpi">Aucune évaluation</td></tr>';
+    const absRows=abs.length?abs.map(a=>`<div class="list-item"><span class="tag${a.statut==='R'?' orange':''}">${a.statut==='R'?'Retard':'Absent'}</span><div class="grow">${esc(a.date)}</div></div>`).join(''):'<div class="empty"><strong>Aucune absence</strong></div>';
+    document.getElementById('ficheBody').innerHTML=`<div class="grid grid-2"><div><p class="kpi"><b>Responsable :</b> ${esc(e.responsable_nom||'—')} ${e.responsable_lien?'('+esc(e.responsable_lien)+')':''}</p><p class="kpi"><b>Téléphone :</b> ${esc(e.responsable_tel||'—')} · <b>Email :</b> ${esc(e.responsable_email||'—')}</p><p class="kpi"><b>Observations :</b> ${esc(e.observations||'—')}</p></div><div><div style="display:flex;align-items:center;gap:14px"><div style="font:900 32px Nunito;color:var(--navy)">${bul.moyenne!==null?Number(bul.moyenne).toFixed(2):'—'}</div>${bul.mention?`<span class="pill paid">${esc(bul.mention)}</span>`:''}</div><p class="kpi" style="margin-top:8px"><b>Code espace élève :</b> ${esc(e.access_code)}<br><a href="#" onclick="copyEleveLink('${esc(e.access_code)}');return false">copier le lien</a> · <button class="link" onclick="regenerateCode(${e.id})">régénérer</button></p></div></div><div class="table-wrap" style="margin-top:14px"><table class="table"><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Note</th></tr></thead><tbody>${notesRows}</tbody></table></div><div style="margin-top:14px"><b style="font-size:11px">Absences</b><div class="list" style="margin-top:8px">${absRows}</div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="openEleveForm(${e.id})">Modifier</button><button class="btn primary" onclick="printBulletin(${e.id})">🖨 Imprimer le bulletin</button></div>`;
+  }catch(err){
+    document.getElementById('ficheBody').innerHTML='<div class="empty"><strong>Erreur de chargement</strong></div>';
+  }
+}
+function copyEleveLink(code){
+  const link=`${location.origin}/eleve?code=${code}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(link).then(()=>toast('Lien copié !')).catch(()=>toast(link));
+  else toast(link);
+}
+async function regenerateCode(id){
+  if(!confirm('Régénérer le code ? L\'ancien code ne fonctionnera plus.'))return;
+  try{await apiFetch(`/api/eleves/${id}/regenerate_code`,{method:'POST'});toast('Nouveau code généré');openEleveFiche(id);}catch(e){toast(e.message||'Erreur.');}
+}
+function printBulletin(id){
+  fetch(`/api/eleves/${id}/bulletin`).then(r=>r.json()).then(b=>{
+    const rows=b.evaluations.map(ev=>`<tr><td>${esc(ev.intitule)}</td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${ev.valeur!==null?Number(ev.valeur).toFixed(2):'—'}</td></tr>`).join('');
+    const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Bulletin — ${esc(b.eleve.prenom)} ${esc(b.eleve.nom)}</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}h1{color:#101b4d}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:13px}th{background:#f3f3f3}</style></head><body><h1>Bulletin — ${esc(b.eleve.prenom)} ${esc(b.eleve.nom)}</h1><p>Classe : ${esc(b.classe)}</p><p><b>Moyenne : ${b.moyenne!==null?Number(b.moyenne).toFixed(2):'—'}/20</b> ${b.mention?'— '+esc(b.mention):''}</p><table><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Note</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+    const w=window.open('','_blank');
+    if(!w){toast('Autorisez les fenêtres contextuelles pour imprimer.');return}
+    w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+  });
+}
+function renderAppel(){
+  loadAppelPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Appel</h1><p>Un instant…</p></div></div>`;
+}
+async function loadAppelPage(){
+  await ensureClasses();
+  if(state.page!=='appel')return;
+  if(!currentClasseId){
+    elevesCache=[];presenceCache={date:appelDate,presences:{}};
+    document.getElementById('content').innerHTML=appelPageHtml();
+    return;
+  }
+  try{
+    const [elRes,prRes]=await Promise.all([
+      fetch(`/api/classes/${currentClasseId}/eleves`).then(r=>r.json()),
+      fetch(`/api/classes/${currentClasseId}/presence?date=${appelDate}`).then(r=>r.json())
+    ]);
+    elevesCache=elRes;presenceCache=prRes;
+  }catch(e){elevesCache=[];presenceCache={date:appelDate,presences:{}};}
+  if(state.page!=='appel')return;
+  document.getElementById('content').innerHTML=appelPageHtml();
+}
+function appelPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=elevesCache.length?elevesCache.map(e=>{
+    const statut=presenceCache.presences[e.id]||'P';
+    const btn=(v,label)=>`<button class="btn${statut===v?' primary':''}" style="padding:6px 10px;font-size:10px" onclick="setPresence(${e.id},'${v}')">${label}</button>`;
+    return `<div class="list-item"><div class="grow"><b>${esc(e.prenom+' '+e.nom)}</b></div><div class="actions" style="gap:6px">${btn('P','Présent')}${btn('R','Retard')}${btn('A','Absent')}</div></div>`;
+  }).join(''):`<div class="empty"><strong>Aucun élève dans cette classe</strong></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Présences</div><h1>Appel</h1><p>Marquez chaque élève, puis enregistrez.</p></div><div class="actions">${anneeSelectHtml('appelAnneeSelect')}${classeSelectHtml('appelClasseSelect',classesCache)}<input type="date" id="appelDateInput" value="${appelDate}" onchange="changeAppelDate(this.value)" style="border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-size:11px"><button class="btn" onclick="printAppel()">🖨 Imprimer</button><button class="btn primary" onclick="saveAppel()">Enregistrer l'appel</button></div></div>${card('Classe : '+esc(classe?classe.nom:'')+' — '+appelDate,rows)}`;
+}
+function changeAppelDate(v){appelDate=v;setPage('appel')}
+function setPresence(eleveId,statut){presenceCache.presences[eleveId]=statut;document.getElementById('content').innerHTML=appelPageHtml();}
+async function saveAppel(){
+  try{
+    await apiFetch(`/api/classes/${currentClasseId}/presence`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:appelDate,presences:presenceCache.presences})});
+    toast('Appel enregistré');
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement de l\'appel.');}
+}
+function printAppel(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const label={P:'Présent',R:'Retard',A:'Absent'};
+  const rows=elevesCache.map(e=>{
+    const statut=presenceCache.presences[e.id]||'P';
+    return `<tr><td>${esc(e.prenom+' '+e.nom)}</td><td style="font-weight:700${statut==='A'?';color:#c8102e':statut==='R'?';color:#d4af37':''}">${label[statut]}</td></tr>`;
+  }).join('');
+  const u=window.PROFDIGITAL_USER||{};
+  const profLine=[u.name,u.phone,u.email].filter(Boolean).join(' · ');
+  const matiereLine=classe&&classe.matiere?`<p>Matière : ${esc(classe.matiere)}</p>`:'';
+  const profBlock=profLine?`<p>Enseignant(e) : ${esc(profLine)}</p>`:'';
+  const html=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Feuille d'appel</title><style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#17203f}p{margin:4px 0;font-size:13px}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #ddd;padding:10px;text-align:left}</style></head><body><h1>Feuille d'appel — ${esc(classe?classe.nom:'')}</h1><p>${appelDate}</p>${matiereLine}${profBlock}<table><thead><tr><th>Élève</th><th>Présence</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){toast('Autorisez les fenêtres contextuelles pour imprimer.');return}
+  w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+}
+function renderNotes(){
+  loadNotesPage();
+  return `<div class="page-head"><div><div class="eyebrow">Chargement</div><h1>Carnet de notes</h1><p>Un instant…</p></div></div>`;
+}
+async function loadNotesPage(){
+  await ensureClasses();
+  if(state.page!=='notes')return;
+  if(!currentClasseId){
+    elevesCache=[];evaluationsCache=[];
+    document.getElementById('content').innerHTML=notesPageHtml();
+    return;
+  }
+  try{
+    const [elRes,evRes]=await Promise.all([
+      fetch(`/api/classes/${currentClasseId}/eleves`).then(r=>r.json()),
+      fetch(`/api/classes/${currentClasseId}/evaluations`).then(r=>r.json())
+    ]);
+    elevesCache=elRes;evaluationsCache=evRes;
+  }catch(e){elevesCache=[];evaluationsCache=[];}
+  if(state.page!=='notes')return;
+  document.getElementById('content').innerHTML=notesPageHtml();
+}
+function notesPageHtml(){
+  const classe=classesCache.find(c=>c.id===currentClasseId);
+  const rows=evaluationsCache.length?`<div class="table-wrap"><table class="table"><thead><tr><th>Évaluation</th><th>Type</th><th>Date</th><th>Coef.</th><th>Moyenne classe</th><th>Action</th></tr></thead><tbody>${evaluationsCache.map(ev=>{
+    const valeurs=Object.values(ev.notes||{}).filter(v=>v!==null&&v!==undefined);
+    const moyClasse=valeurs.length?(valeurs.reduce((a,b)=>a+b,0)/valeurs.length).toFixed(2):'—';
+    return `<tr><td><b>${esc(ev.intitule)}</b></td><td>${esc(ev.type)}</td><td>${esc(ev.date||'—')}</td><td>${ev.coefficient}</td><td>${moyClasse}</td><td><button class="link" onclick="openNotesEntry(${ev.id})">Saisir les notes</button> <button class="link" onclick="openEvaluationForm(${ev.id})">Modifier</button> <button class="link danger" onclick="deleteEvaluation(${ev.id})">Supprimer</button></td></tr>`;
+  }).join('')}</tbody></table></div>`:`<div class="empty"><strong>Aucune évaluation</strong><span>Créez votre première évaluation.</span></div>`;
+  return `<div class="page-head"><div><div class="eyebrow">Évaluations</div><h1>Carnet de notes</h1><p>Coefficients, notes et moyennes automatiques.</p></div><div class="actions">${anneeSelectHtml('notesAnneeSelect')}${classeSelectHtml('notesClasseSelect',classesCache)}<button class="btn primary" onclick="openEvaluationForm(-1)">+ Nouvelle évaluation</button></div></div>${card('Classe : '+esc(classe?classe.nom:''),rows)}`;
+}
+function openEvaluationForm(id){
+  const isEdit=id>0;
+  const ev=isEdit?evaluationsCache.find(x=>x.id===id):null;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>${isEdit?'Modifier l’évaluation':'+ Nouvelle évaluation'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Intitulé</label><input id="evIntitule" value="${esc(ev?ev.intitule:'')}" placeholder="Ex. Contrôle n°1"></div><div class="field"><label>Type</label><input id="evType" value="${esc(ev?ev.type:'Contrôle')}"></div></div><div class="form-grid" style="margin-top:12px"><div class="field"><label>Date</label><input id="evDate" type="date" value="${esc(ev?ev.date:'')}"></div><div class="field"><label>Coefficient</label><input id="evCoef" type="number" min="1" value="${ev?ev.coefficient:1}"></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitEvaluationForm(${isEdit?id:-1})">${isEdit?'Enregistrer':'Créer'}</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitEvaluationForm(id){
+  const intitule=document.getElementById('evIntitule').value.trim();
+  if(!intitule){toast('L\'intitulé est obligatoire.');return}
+  const payload={intitule,type:document.getElementById('evType').value.trim()||'Contrôle',date:document.getElementById('evDate').value,coefficient:parseInt(document.getElementById('evCoef').value,10)||1};
+  try{
+    const url=id>0?`/api/evaluations/${id}`:`/api/classes/${currentClasseId}/evaluations`;
+    const method=id>0?'PUT':'POST';
+    await apiFetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    closeModal();toast(id>0?'Évaluation modifiée':'Évaluation créée');setPage('notes');
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement.');}
+}
+async function deleteEvaluation(id){
+  if(!confirm('Supprimer cette évaluation et toutes ses notes ?'))return;
+  try{await apiFetch(`/api/evaluations/${id}`,{method:'DELETE'});toast('Évaluation supprimée');setPage('notes');}catch(e){toast(e.message||'Erreur.');}
+}
+function openNotesEntry(evaluationId){
+  const ev=evaluationsCache.find(x=>x.id===evaluationId);
+  if(!ev)return;
+  const rows=elevesCache.map(e=>`<div class="field" style="margin-bottom:8px"><label>${esc(e.prenom+' '+e.nom)}</label><input class="noteInput" data-eleve="${e.id}" type="number" min="0" max="20" step="0.25" value="${ev.notes&&ev.notes[e.id]!==undefined&&ev.notes[e.id]!==null?ev.notes[e.id]:''}" placeholder="/20"></div>`).join('');
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>Notes — ${esc(ev.intitule)}</h2><button class="close" onclick="closeModal()">×</button></div><div>${rows}</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="submitNotesEntry(${evaluationId})">Enregistrer les notes</button></div>`;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+async function submitNotesEntry(evaluationId){
+  const inputs=document.querySelectorAll('.noteInput');
+  const notes={};
+  inputs.forEach(inp=>{notes[inp.dataset.eleve]=inp.value===''?null:inp.value;});
+  try{
+    await apiFetch(`/api/evaluations/${evaluationId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})});
+    closeModal();toast('Notes enregistrées');setPage('notes');
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement des notes.');}
+}
+function renderDocuments(){return `<div class="page-head"><div><div class="eyebrow">Bibliothèque</div><h1>Documents</h1><p>Vos documents générés et importés restent liés à votre compte.</p></div><div class="actions"><button class="btn" onclick="importFile()">↑ Importer</button><button class="btn primary" onclick="openGenerator('course')">✦ Créer avec IA</button></div></div>${card('Types pris en charge',`<div class="feature-grid"><div class="feature"><span>📄</span><b>PDF</b><small>Lecture et préparation pour analyse.</small></div><div class="feature"><span>📝</span><b>Word</b><small>Documents pédagogiques exportables.</small></div><div class="feature"><span>📊</span><b>Excel</b><small>Listes, notes et classes.</small></div><div class="feature"><span>📽</span><b>PowerPoint</b><small>Ressources de cours.</small></div></div>`)}<div style="height:16px"></div>${card('Mes documents générés',state.docs.length?`<div class="list">${state.docs.map((d,i)=>`<div class="list-item"><span class="doc-icon" style="margin:0">${esc(d.ext)}</span><div class="grow"><b>${esc(d.title)}</b><small>${esc(d.date)}</small></div><button class="btn" onclick="downloadSaved(${i})">Télécharger</button><button class="link danger" onclick="deleteDocument(${i})">Supprimer</button></div>`).join('')}</div>`:`<div class="empty"><strong>Aucun document généré</strong><span>Créez une fiche, un cours ou un contrôle avec l'IA.</span></div>`)}`}
+function deleteDocument(i){if(!confirm('Supprimer ce document ?'))return;state.docs.splice(i,1);save();toast('Document supprimé');setPage('documents')}
+function renderAI(){return `<div class="page-head"><div><div class="eyebrow">Intelligence pédagogique</div><h1>Assistant IA ProfDigital</h1><p>Génération guidée par votre contexte, propulsée par Claude.</p></div></div><div class="ai-grid">${card('Conversation',`<div class="chat"><div class="messages" id="messages"><div class="msg bot"><b>Bonjour 👋</b><br>Je peux préparer une séance, un cours, un contrôle, une remédiation ou votre semaine.</div></div><div class="chat-input"><textarea id="chatText" placeholder="Ex. Prépare une remédiation sur les fractions..."></textarea><button class="btn ai" onclick="sendAI()">Envoyer ✦</button></div></div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Préparer une séance','Fiche complète','sheet')}${quick('📝','Créer un contrôle','Sujet + corrigé','assessment')}${quick('🎯','Remédiation','Activités ciblées','remediation')}${quick('📅','Préparer ma semaine','Planification','week')}${quick('📚','Créer un cours','Cours + exercices','course')}${quick('📊','Analyser ma classe','Résultats','analysis')}</div>`)}</div></div>`}
+function renderSettings(){
+  const u=window.PROFDIGITAL_USER||{name:'',email:'',phone:''};
+  return `<div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Paramètres</h1><p>Personnalisez votre profil et le contexte pédagogique.</p></div></div><div class="grid grid-2">${card('Profil enseignant',`<div class="form-grid"><div class="field"><label>Nom complet</label><input id="profName" value="${esc(u.name)}"></div><div class="field"><label>Téléphone</label><input id="profPhone" value="${esc(u.phone)}" placeholder="Ex. 06 12 34 56 78"></div></div><div class="field" style="margin-top:12px"><label>Email (identifiant, non modifiable)</label><input value="${esc(u.email)}" disabled></div><p class="kpi" style="margin-top:10px">Ce nom et ce téléphone apparaissent sur les documents imprimés (feuille d'appel, bulletins).</p><button class="btn primary" style="margin-top:10px" onclick="saveProfile()">Enregistrer le profil</button>`)}${card('Année scolaire',`<div class="field"><label>Année scolaire active</label><input id="setYear" value="${esc(state.year)}" placeholder="Ex. 2026 / 2027"></div><p class="kpi" style="margin-top:10px;line-height:1.6">Sert de valeur par défaut pour les nouvelles classes. Passer à l'année suivante ne supprime ni ne modifie rien : les anciennes classes, notes et présences restent consultables via le sélecteur d'année dans "Mes élèves", "Appel" et "Notes".</p><button class="btn primary" style="margin-top:10px" onclick="saveSettings()">Enregistrer</button>`)}${card('Contexte pédagogique',`<div class="form-grid"><div class="field"><label>Académie</label><select id="setWilaya">${ACADEMIES.map(a=>`<option${a===state.academie?' selected':''}>${a}</option>`).join('')}</select></div><div class="field"><label>Cycle</label><select id="setCycle"><option${state.cycle==='Primaire'?' selected':''}>Primaire</option><option${state.cycle==='Collège'?' selected':''}>Collège</option><option${state.cycle==='Lycée'?' selected':''}>Lycée</option></select></div><div class="field"><label>Niveau</label><select id="setLevel">${niveauOptions(state.level)}</select></div><div class="field"><label>Matière</label><input id="setSubject" list="matieresList" value="${esc(state.subject)}"></div></div><button class="btn primary" style="margin-top:12px" onclick="saveSettings()">Enregistrer</button>`)}${card('Langue de production',`<div class="field"><label>Mode</label><select id="setLang"><option value="auto">Automatique</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option><option value="es">Español</option><option value="bi">Bilingue</option></select></div><p class="kpi" style="margin-top:12px;line-height:1.7">En mode automatique, ProfDigital suit la langue configurée pour le programme et la matière. Les documents arabes sont générés en RTL.</p>`)}</div>`;
+}
+async function saveProfile(){
+  const name=document.getElementById('profName').value.trim();
+  const phone=document.getElementById('profPhone').value.trim();
+  try{
+    await apiFetch('/api/profile',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
+    window.PROFDIGITAL_USER=window.PROFDIGITAL_USER||{};
+    window.PROFDIGITAL_USER.name=name;window.PROFDIGITAL_USER.phone=phone;
+    toast('Profil enregistré');
+  }catch(e){toast(e.message||'Erreur lors de l\'enregistrement du profil.');}
+}
+function openGenerator(type){const labels={sheet:'Créer une fiche pédagogique',course:'Générer un cours',assessment:'Créer un contrôle',quiz:'Créer un quiz',progress:'Créer une progression',schedule:'Ajouter une séance',student:'Ajouter un élève',remediation:'Préparer une remédiation',week:'Préparer ma semaine',analysis:'Analyser ma classe',journal:'Générer le cahier journal'};document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>✦ ${labels[type]||'Assistant ProfDigital'}</h2><button class="close" onclick="closeModal()">×</button></div><div class="form-grid"><div class="field"><label>Cycle</label><select id="gCycle"><option${state.cycle==='Primaire'?' selected':''}>Primaire</option><option${state.cycle==='Collège'?' selected':''}>Collège</option><option${state.cycle==='Lycée'?' selected':''}>Lycée</option></select></div><div class="field"><label>Niveau</label><select id="gLevel">${niveauOptions(state.level)}</select></div><div class="field"><label>Matière</label><input id="gSubject" list="matieresList" value="${esc(state.subject)}"></div><div class="field"><label>Langue</label><select id="gLang"><option value="auto">Automatique</option><option value="ar">العربية</option><option value="fr">Français</option><option value="en">English</option><option value="es">Español</option><option value="bi">Bilingue</option></select></div></div>${matiereDatalist()}<div class="field" style="margin-top:12px"><label>Consigne</label><textarea id="genPrompt">${esc(type==='sheet'?'Prépare une séance de 1 heure sur les fractions avec situation-problème, objectifs, activités, évaluation et remédiation.':type==='assessment'?'Crée un contrôle de 45 minutes sur les fractions, noté sur 20, avec barème et corrigé.':type==='course'?'Crée un cours complet sur les fractions avec exemples et exercices corrigés.':type==='week'?'Prépare ma semaine à partir de mon emploi du temps et de ma progression.':'Décris précisément le document à produire.')}</textarea></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn primary" onclick="generateResult('${type}')">✦ Générer le document</button></div>`;document.getElementById('modalBackdrop').classList.add('open')}
+function language(){const v=document.getElementById('gLang')?.value||state.lang;if(v==='ar')return 'ar';if(v==='en')return 'en';if(v==='es')return 'es';if(v==='bi')return 'bi';if(v==='auto')return state.lang==='ar'?'ar':state.lang==='en'?'en':state.lang==='es'?'es':'fr';return 'fr'}
+function generateContentLocal(type,p,lev,sub){
+  const lang=language();const ar=lang==='ar';const en=lang==='en';const es=lang==='es';
+  const titles={
+    ar:{sheet:'ورقة تحضير بيداغوجية',assessment:'اختبار وتقويم',course:'درس',week:'خطة الأسبوع',journal:'دفتر اليومية',_:'وثيقة بيداغوجية'},
+    en:{sheet:'Lesson Plan',assessment:'Test / Assessment',course:'Lesson',week:'Weekly Preparation',journal:'Class Journal',_:'Teaching Document'},
+    es:{sheet:'Ficha pedagógica',assessment:'Control / examen',course:'Clase',week:'Preparación de la semana',journal:'Diario de clase',_:'Documento pedagógico'},
+    fr:{sheet:'Fiche pédagogique',assessment:'Contrôle / devoir',course:'Cours',week:'Préparation de la semaine',journal:'Cahier journal',_:'Document pédagogique'}
+  };
+  const t=titles[lang]||titles.fr;
+  const title=t[type]||t._;
+  const sectionsByLang={
+    ar:[['الأهداف','فهم المفهوم وتوظيفه في وضعيات متنوعة.'],['المكتسبات القبلية','مراجعة المعارف الضرورية قبل بدء التعلم.'],['الوضعية المشكلة','وضعية انطلاق مرتبطة بمستوى المتعلمين.'],['سيرورة الحصة','تمهيد ← بحث ← مناقشة ← بناء التعلم ← تطبيق ← تقويم.'],['النشاطات','أنشطة فردية وجماعية مع توجيه تدريجي.'],['التقويم','أسئلة قصيرة للتحقق من اكتساب الكفاءة.'],['المعالجة','أنشطة موجهة للمتعلمين الذين يواجهون صعوبات.']],
+    en:[['Objectives','Understand the concept and use it in varied situations.'],['Prerequisites','Check the knowledge needed before the lesson.'],['Warm-up / Problem situation','A starting situation suited to the students\' level.'],['Lesson flow','Warm-up → exploration → discussion → concept building → practice → assessment.'],['Activities','Individual and group activities with gradual guidance.'],['Assessment','Short questions and exercises to check the skill.'],['Remediation','Targeted activities for struggling students.']],
+    es:[['Objetivos','Comprender la noción y utilizarla en situaciones variadas.'],['Requisitos previos','Verificar los conocimientos necesarios antes de la clase.'],['Situación-problema','Una situación de inicio adaptada al nivel de los alumnos.'],['Desarrollo','Presentación → investigación → puesta en común → construcción del concepto → aplicación → evaluación.'],['Actividades','Actividades individuales y colectivas con guía progresiva.'],['Evaluación','Preguntas cortas y ejercicios para verificar la competencia.'],['Refuerzo','Actividades específicas para alumnos con dificultades.']],
+    fr:[['Objectifs','Comprendre la notion et la mobiliser dans des situations variées.'],['Prérequis','Vérifier les connaissances nécessaires avant la séance.'],['Situation-problème','Une situation de départ contextualisée au niveau des élèves.'],['Déroulement','Mise en situation → recherche → mise en commun → institutionnalisation → application → évaluation.'],['Activités','Activités individuelles et collectives avec guidage progressif.'],['Évaluation','Questions courtes et exercices pour vérifier la compétence.'],['Remédiation','Activités ciblées pour les élèves en difficulté.']]
+  };
+  const sections=(sectionsByLang[lang]||sectionsByLang.fr).map(s=>[...s]);
+  if(type==='assessment')sections.push(ar?['الباريم','التمرين 1: 5 ن · التمرين 2: 7 ن · التمرين 3: 8 ن']:en?['Grading scale','Exercise 1: 5 pts · Exercise 2: 7 pts · Exercise 3: 8 pts']:es?['Baremo','Ejercicio 1: 5 pts · Ejercicio 2: 7 pts · Ejercicio 3: 8 pts']:['Barème','Exercice 1 : 5 pts · Exercice 2 : 7 pts · Exercice 3 : 8 pts']);
+  if(type==='course')sections.push(ar?['تمارين تطبيقية','تمرين 1، تمرين 2، تمرين 3 مع التصحيح.']:en?['Corrected exercises','Exercise 1, exercise 2 and exercise 3 with correction.']:es?['Ejercicios corregidos','Ejercicio 1, ejercicio 2 y ejercicio 3 con corrección.']:['Exercices corrigés','Exercice 1, exercice 2 et exercice 3 avec correction.']);
+  return {title,meta:`${lev} · ${sub}`,prompt:p,sections,rtl:ar};
+}
+async function generateResult(type){
+  window.pendingDocumentType=type;
+  const p=document.getElementById('genPrompt').value||'Préparation pédagogique';
+  const lev=document.getElementById('gLevel').value;
+  const sub=document.getElementById('gSubject').value;
+  const lang=document.getElementById('gLang')?.value||state.lang;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>✦ Génération en cours…</h2></div><div style="padding:40px 10px;text-align:center;color:var(--muted)">L'IA ProfDigital prépare votre document, un instant…</div>`;
+  let c;
+  try{
+    const r=await fetch('/api/ai/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,level:lev,subject:sub,lang,prompt:p})});
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||'Erreur IA');
+    c=d.document;
+    if(c._ai_error) toast('IA momentanément indisponible, document de base généré.');
+  }catch(e){
+    toast('IA momentanément indisponible, document de base généré.');
+    c=generateContentLocal(type,p,lev,sub);
+  }
+  const htmlPreview=`<article class="generated ${c.rtl?'rtl':''}"><div class="generated-head"><span class="eyebrow">ProfDigital · ${esc(c.meta)}</span><h2>${esc(c.title)}</h2><p>${esc(c.prompt||'')}</p></div>${c.sections.map(s=>`<section><h3>${esc(s[0])}</h3><p>${esc(s[1])}</p></section>`).join('')}</article>`;
+  window.pendingDocument=c;
+  document.getElementById('modal').innerHTML=`<div class="modal-head"><h2>✓ Document généré</h2><button class="close" onclick="closeModal()">×</button></div><div id="preview">${htmlPreview}</div><div class="actions" style="justify-content:flex-end;margin-top:14px"><button class="btn" onclick="savePending()">Enregistrer</button><button class="btn" onclick="downloadPending()">HTML</button><button class="btn" onclick="printPending()">🖨 Imprimer</button><button class="btn primary" onclick="serverGenerate()">📦 PDF + Word</button></div><div id="serverLinks" class="actions" style="justify-content:flex-end;margin-top:8px"></div>`;
+}
+
+function savePending(){if(window.pendingDocument)saveGenerated(JSON.stringify(window.pendingDocument),window.pendingDocumentType)}
+function downloadPending(){if(window.pendingDocument)downloadGenerated(JSON.stringify(window.pendingDocument),'html')}
+function printPending(){if(window.pendingDocument)printGenerated(JSON.stringify(window.pendingDocument))}
+async function serverGenerate(){if(!window.pendingDocument)return;try{toast('Génération PDF + Word…');const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(window.pendingDocument)});const d=await r.json();if(!d.ok)throw new Error(d.error||'Erreur');document.getElementById('serverLinks').innerHTML=`<a class="btn" href="${d.files.pdf}" target="_blank">📄 PDF</a><a class="btn" href="${d.files.docx}" download>📝 Word</a><a class="btn" href="${d.files.html}" target="_blank">🌐 HTML</a>`;toast('Documents prêts');}catch(e){toast('Export PDF/Word momentanément indisponible.');}}
+function saveGenerated(raw,type){const c=JSON.parse(raw);state.docs.unshift({title:c.title,ext:'DOC',date:new Date().toLocaleString('fr-FR'),content:c});if(type==='sheet')ensureSequenceFromFiche(c);save();toast('Document enregistré dans Documents')}
+function ensureSequenceFromFiche(c){
+  let name=(c.title||'').replace(/^(Fiche pédagogique|Lesson Plan|ورقة تحضير بيداغوجية)\s*[—:-]?\s*/i,'').trim();
+  if(!name)return;
+  name=name.slice(0,120);
+  if(!state.progress.some(p=>p[0]===name)){
+    state.progress.push([name,0]);
+    toast(`Séquence "${name}" ajoutée à la Progression depuis la fiche.`);
+  }
+}
+function documentHtml(c){return `<!doctype html><html lang="${c.rtl?'ar':'fr'}" dir="${c.rtl?'rtl':'ltr'}"><head><meta charset="utf-8"><title>${esc(c.title)}</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:40px auto;padding:0 25px;color:#17203f;line-height:1.7}.rtl{direction:rtl;text-align:right}h1{color:#101b4d}h2{color:#101b4d}h3{border-bottom:2px solid #ff8351;padding-bottom:6px}section{margin:22px 0}.meta{color:#75809d}</style></head><body class="${c.rtl?'rtl':''}"><h1>${esc(c.title)}</h1><p class="meta">${esc(c.meta)}</p><p>${esc(c.prompt||'')}</p>${c.sections.map(s=>`<section><h3>${esc(s[0])}</h3><p>${esc(s[1])}</p></section>`).join('')}<hr><small>Généré par ProfDigital</small></body></html>`}
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
+function downloadGenerated(raw,fmt){const c=JSON.parse(raw);downloadBlob(new Blob([documentHtml(c)],{type:'text/html;charset=utf-8'}),safeName(c.title)+'.html');toast('Document téléchargé')}
+function downloadSaved(i){const c=state.docs[i].content;downloadBlob(new Blob([documentHtml(c)],{type:'text/html;charset=utf-8'}),safeName(c.title)+'.html')}
+function exportDocument(type){const c=generateContentLocal(type,'Document préparé depuis votre espace ProfDigital',state.level,state.subject);saveGenerated(JSON.stringify(c),type);downloadGenerated(JSON.stringify(c),'html')}
+function printGenerated(raw){const c=JSON.parse(raw);const w=window.open('','_blank');if(!w){toast('Autorisez les fenêtres contextuelles pour exporter en PDF');return}w.document.write(documentHtml(c));w.document.close();w.focus();setTimeout(()=>w.print(),400)}
+function safeName(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').slice(0,80)||'profdigital_document'}
+function sendAI(){const t=document.getElementById('chatText'),v=t.value.trim();if(!v)return;const box=document.getElementById('messages');box.innerHTML+=`<div class="msg user">${esc(v)}</div>`;t.value='';setTimeout(()=>{box.innerHTML+=`<div class="msg bot"><b>✦ ProfDigital IA</b><br>Je transforme votre demande en document pédagogique. Cliquez sur une action rapide pour générer la fiche, le contrôle, le cours ou la remédiation correspondante.</div>`;box.scrollTop=box.scrollHeight},250)}
+function quickAI(){const v=document.getElementById('quickAI').value.trim();if(!v)return toast('Écrivez votre demande.');openGenerator('sheet');setTimeout(()=>{document.getElementById('genPrompt').value=v},50)}
+function closeModal(){document.getElementById('modalBackdrop').classList.remove('open')}
+function saveSettings(){
+  state.academie=document.getElementById('setWilaya').value;state.cycle=document.getElementById('setCycle').value;state.level=document.getElementById('setLevel').value;state.subject=document.getElementById('setSubject').value;state.lang=document.getElementById('setLang').value;
+  const newYear=document.getElementById('setYear')?.value.trim();
+  if(newYear){state.year=newYear;currentAnnee=newYear;}
+  save();toast('Paramètres enregistrés');setPage('dashboard');
+}
+function importFile(){document.getElementById('fileInput').click()}
+function handleFile(e){const f=e.target.files[0];if(!f)return;state.docs.unshift({title:f.name,ext:f.name.split('.').pop().toUpperCase(),date:new Date().toLocaleString('fr-FR'),content:{title:f.name,meta:'Importé',prompt:'Fichier importé dans ProfDigital',sections:[['Fichier',`${f.name} · ${Math.round(f.size/1024)} Ko`]],rtl:false}});save();toast(`${f.name} ajouté à Documents`);if(state.page==='documents')setPage('documents');e.target.value=''}
+const render={dashboard:renderDashboard,schedule:renderSchedule,progress:renderProgress,journal:renderJournal,sheets:renderSheets,lessons:renderLessons,assessments:renderAssessments,students:renderEleves,appel:renderAppel,notes:renderNotes,documents:renderDocuments,ai:renderAI,settings:renderSettings};
+document.addEventListener('click',e=>{const n=e.target.closest('.nav-item');if(n&&n.dataset.page){e.preventDefault();setPage(n.dataset.page)}if(e.target.id==='mobileMenu')document.querySelector('.sidebar').classList.toggle('open');if(e.target.id==='modalBackdrop')closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.addEventListener('DOMContentLoaded',async()=>{
+  document.getElementById('fileInput')?.addEventListener('change',handleFile);
+  await loadFromServer();
+  setPage(state.page||'dashboard');
+});
