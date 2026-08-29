@@ -1410,7 +1410,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 <div class="pg" id="pg-mails">
   <div class="sh"><div><div class="sht">Courrier</div></div><button class="btn bt" onclick="OM('mMail')">Nouveau message</button></div>
   <div class="g2">
-    <div class="card"><div class="ch"><div class="ct">Messages envoyés</div><button class="btn bo bsm" onclick="if(confirm('Supprimer tous les messages ?')){D.ml=[];sv();rMails();}">Vider</button></div><div class="cb" id="mailS" style="max-height:500px;overflow-y:auto"></div></div>
+    <div class="card"><div class="ch"><div class="ct">Messages envoyés</div><button class="btn bo bsm" onclick="if(confirm(CURRENT_LANG==='ar'?'حذف جميع الرسائل ؟':'Supprimer tous les messages ?')){D.ml=[];sv();rMails();}">Vider</button></div><div class="cb" id="mailS" style="max-height:500px;overflow-y:auto"></div></div>
     <div class="card"><div class="ch"><div class="ct">Rédiger</div></div><div class="cb">
       <div class="fg"><label class="fl">Destinataire</label>
         <select class="fs" id="mailTo" onchange="onMailToChange()">
@@ -1605,7 +1605,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <button class="btn bt" style="width:100%" onclick="saveP()">Sauvegarder</button>
       </div></div>
       <div class="card"><div class="ch"><div class="ct" style="color:var(--r)">Zone dangereuse</div></div><div class="cb">
-        <button class="btn br2" style="width:100%" onclick="if(confirm('Effacer toutes les données ?')){localStorage.clear();location.reload()}">Réinitialiser toutes les données</button>
+        <button class="btn br2" style="width:100%" onclick="if(confirm(CURRENT_LANG==='ar'?'مسح جميع البيانات ؟':'Effacer toutes les données ?')){localStorage.clear();location.reload()}">Réinitialiser toutes les données</button>
       </div></div>
     </div>
   </div>
@@ -1657,7 +1657,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div style="display:flex;gap:.6rem;margin-top:.8rem;">
           <button class="btn bo bsm" style="flex:1;" onclick="shareAllByWhatsapp()">📱 Partager via WhatsApp</button>
-          <button class="btn bo bsm" style="flex:1;" onclick="N('Export PDF des codes...','info')">📄 Exporter les codes</button>
+          <button class="btn bo bsm" style="flex:1;" onclick="N(CURRENT_LANG==='ar'?'تصدير الرموز بصيغة PDF...':'Export PDF des codes...','info')">📄 Exporter les codes</button>
         </div>
       </div>
     </div>
@@ -3645,7 +3645,7 @@ function extractClaudeText(data) {
 /* ===== IMPRESSION PROPRE (A4, sans barre latérale ni surplus) ===== */
 function printCleanPage(title, contentHTML) {
   var w = window.open('', '_blank');
-  if (!w) { N('Autorisez les pop-ups pour imprimer.', 'err'); return; }
+  if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
   var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + (title || 'Tadriss DZ') + '</title>' +
     '<style>' +
     '@page{size:A4;margin:14mm;}' +
@@ -4298,28 +4298,28 @@ function rNotes() {
   document.getElementById('nBd').innerHTML = bd;
 }
 function saveNote() {
-  var int = document.getElementById('nIn').value.trim(); if (!int) { N('Intitulé requis','err'); return; }
+  var int = document.getElementById('nIn').value.trim(); if (!int) { N(CURRENT_LANG==='ar'?'العنوان مطلوب':'Intitulé requis','err'); return; }
   var ns = {}; gCE().forEach(function(e) { var v = document.getElementById('ni_'+e.id); if (v&&v.value!=='') ns[e.id] = parseFloat(v.value); });
   var payload = {int:int,date:document.getElementById('nDt').value,type:document.getElementById('nTy').value,coef:parseInt(document.getElementById('nCo').value)||1,notes:ns};
   if (D._evId) {
     var idx = D.ev.findIndex(function(x){ return x.id===D._evId; });
     if (idx>=0) D.ev[idx] = Object.assign(D.ev[idx], payload);
-    N('"'+int+'" modifiée !','ok');
+    N((CURRENT_LANG==='ar'?'تم تعديل "':'"')+int+(CURRENT_LANG==='ar'?'"':'" modifiée !'),'ok');
   } else {
     payload.id = D.ev.length ? Math.max.apply(null,D.ev.map(function(e){return e.id;}))+1 : 1;
     D.ev.push(payload);
-    N('"'+int+'" enregistrée !','ok');
+    N((CURRENT_LANG==='ar'?'تم حفظ "':'"')+int+(CURRENT_LANG==='ar'?'"':'" enregistrée !'),'ok');
   }
   sv(); CM('mNote'); rNotes();
 }
 function openEditEval(id) { D._evId = id; OM('mNote'); }
 function delEval(id) {
   var ev = D.ev.find(function(x){ return x.id===id; }); if (!ev) return;
-  if (!confirm('Supprimer l\'évaluation "'+ev.int+'" ? Cette action retire ses notes du Carnet de notes et des Bulletins, et est irréversible.')) return;
+  if (!confirm(CURRENT_LANG==='ar'?('حذف التقييم "'+ev.int+'" ؟ سيؤدي هذا الإجراء إلى إزالة علاماته من دفتر النقاط والكشوف، وهو غير قابل للتراجع.'):('Supprimer l\'évaluation "'+ev.int+'" ? Cette action retire ses notes du Carnet de notes et des Bulletins, et est irréversible.'))) return;
   D.ev = D.ev.filter(function(x){ return x.id!==id; });
   sv(); rNotes();
   if (typeof rDash === 'function') rDash();
-  N('Évaluation supprimée.','ok');
+  N(CURRENT_LANG==='ar'?'تم حذف التقييم.':'Évaluation supprimée.','ok');
 }
 
 /* ===== BULLETIN ===== */
@@ -4490,7 +4490,7 @@ function rProg() {
   }).join('');
 }
 function tgProg(el) { var b = el.nextElementSibling; b.classList.toggle('open'); }
-function useProg(chap) { go('cours_ia'); document.getElementById('crsT').value = chap; document.getElementById('crsN').value = document.getElementById('progNiveau').value; N('Chapitre chargé dans Cours IA !','ok'); }
+function useProg(chap) { go('cours_ia'); document.getElementById('crsT').value = chap; document.getElementById('crsN').value = document.getElementById('progNiveau').value; N(CURRENT_LANG==='ar'?'تم تحميل الفصل في دروس الذكاء الاصطناعي !':'Chapitre chargé dans Cours IA !','ok'); }
 
 /* ===== DOSSIERS ===== */
 function getMatIco() {
@@ -4587,28 +4587,28 @@ function doAddFile() {
   var f = D.fo.find(function(x){return x.id===D.oFid;}); if(!f) return;
   if(mode==='url'){
     var url=document.getElementById('addUrl').value.trim(), nm=document.getElementById('addUrlNm').value.trim();
-    if(!url){N('URL requise','err');return;}
+    if(!url){N(CURRENT_LANG==='ar'?'الرابط مطلوب':'URL requise','err');return;}
     if(!nm) nm=url.split('/').pop()||'Lien';
     f.fi.push({nm:nm,url:url,type:'url'});
   } else if(mode==='drive'){
     var dl=document.getElementById('addDriveLink').value.trim(), dnm=document.getElementById('addDriveNm').value.trim();
-    if(!dl){N('Lien Drive requis','err');return;}
+    if(!dl){N(CURRENT_LANG==='ar'?'رابط Drive مطلوب':'Lien Drive requis','err');return;}
     if(!dnm) dnm='Fichier Drive';
     f.fi.push({nm:dnm,url:dl,type:'drive'});
   } else {
     var fi=document.getElementById('addFileInput').files[0];
-    if(!fi){N('Choisissez un fichier','err');return;}
+    if(!fi){N(CURRENT_LANG==='ar'?'اختر ملفًا':'Choisissez un fichier','err');return;}
     var reader=new FileReader();
     reader.onload=function(e){ f.fi.push({nm:fi.name,data:e.target.result,type:'local',size:fi.size}); sv(); openFO(f.id); N(fi.name+T('file_ajoute'),'ok'); };
     reader.readAsDataURL(fi); CM('mAddFile'); return;
   }
-  sv(); CM('mAddFile'); openFO(f.id); N('Ajouté !','ok');
+  sv(); CM('mAddFile'); openFO(f.id); N(CURRENT_LANG==='ar'?'تمت الإضافة !':'Ajouté !','ok');
   document.getElementById('addUrl').value=''; document.getElementById('addUrlNm').value='';
   document.getElementById('addDriveLink').value=''; document.getElementById('addDriveNm').value='';
 }
 function rmF(fid,idx) { var f=D.fo.find(function(x){return x.id===fid;}); if (f){f.fi.splice(idx,1);sv();openFO(fid);} }
-function renFO(id) { var f=D.fo.find(function(x){return x.id===id;}); if (!f) return; var nm=prompt('Nouveau nom:',f.nm); if (nm){f.nm=nm;sv();rFo();N('Renommé !','ok');} }
-function delFO(id) { if (!confirm('Supprimer ce dossier ?')) return; D.fo=D.fo.filter(function(f){return f.id!==id;}); sv(); rFo(); }
+function renFO(id) { var f=D.fo.find(function(x){return x.id===id;}); if (!f) return; var nm=prompt(CURRENT_LANG==='ar'?'الاسم الجديد:':'Nouveau nom:',f.nm); if (nm){f.nm=nm;sv();rFo();N(CURRENT_LANG==='ar'?'تمت إعادة التسمية !':'Renommé !','ok');} }
+function delFO(id) { if (!confirm(CURRENT_LANG==='ar'?'حذف هذا المجلد ؟':'Supprimer ce dossier ?')) return; D.fo=D.fo.filter(function(f){return f.id!==id;}); sv(); rFo(); }
 function selC(el) { document.querySelectorAll('.cdot').forEach(function(c){c.classList.remove('sel');}); el.classList.add('sel'); D.selC=el.getAttribute('data-c'); }
 function selI(el) { document.querySelectorAll('.ico').forEach(function(i){i.style.borderColor='transparent';i.style.background='transparent';}); el.style.borderColor='var(--t)'; el.style.background='var(--tp)'; D.selI=el.getAttribute('data-i'); }
 function saveF() { var nm=document.getElementById('fNm').value.trim(); if (!nm){N(T('nom_req'),'err');return;} var id=D.fo.length?Math.max.apply(null,D.fo.map(function(f){return f.id;}))+1:1; D.fo.push({id:id,nm:nm,col:D.selC||'#006B3F',ico:D.selI||'📁',fi:[],partageMode:'aucun',partageElevesIds:[]}); sv();CM('mFolder');rFo();N('"'+nm+'" créé !','ok'); document.getElementById('fNm').value=''; }
@@ -4657,7 +4657,7 @@ function saveAp() {
   if (!D.apDetails) D.apDetails = {};
   D.apDetails[k]=JSON.parse(JSON.stringify(apJust));
   sv();
-  N('Appel validé et sauvegardé !','ok');
+  N(CURRENT_LANG==='ar'?'تم التحقق من الغياب وحفظه !':'Appel validé et sauvegardé !','ok');
 }
 function printAppel() {
   var now = new Date();
@@ -4710,7 +4710,7 @@ function rCal() {
 function calP() { calM=new Date(calM.getFullYear(),calM.getMonth()-1,1); rCal(); }
 function calN() { calM=new Date(calM.getFullYear(),calM.getMonth()+1,1); rCal(); }
 function addQE() { var t=document.getElementById('qET').value.trim(),d=document.getElementById('qED').value; if (!t||!d){N(T('titre_date_req'),'err');return;} var id=D.evt.length?Math.max.apply(null,D.evt.map(function(e){return e.id;}))+1:1; D.evt.push({id:id,title:t,date:d,type:document.getElementById('qETy').value}); sv();rCal();N(T('evt_ajoute'),'ok'); document.getElementById('qET').value=''; }
-function saveEv() { var t=document.getElementById('evT').value.trim(),d=document.getElementById('evD').value; if (!t||!d){N(T('titre_date_req'),'err');return;} var id=D.evt.length?Math.max.apply(null,D.evt.map(function(e){return e.id;}))+1:1; D.evt.push({id:id,title:t,date:d,type:document.getElementById('evTy').value,notes:document.getElementById('evN').value}); sv();CM('mEvent');rCal();N('Créé !','ok'); }
+function saveEv() { var t=document.getElementById('evT').value.trim(),d=document.getElementById('evD').value; if (!t||!d){N(T('titre_date_req'),'err');return;} var id=D.evt.length?Math.max.apply(null,D.evt.map(function(e){return e.id;}))+1:1; D.evt.push({id:id,title:t,date:d,type:document.getElementById('evTy').value,notes:document.getElementById('evN').value}); sv();CM('mEvent');rCal();N(CURRENT_LANG==='ar'?'تم الإنشاء !':'Créé !','ok'); }
 function delEv(id) { D.evt=D.evt.filter(function(e){return e.id!==id;}); sv(); rCal(); }
 
 /* ===== CAHIER JOURNAL ===== */
@@ -4835,7 +4835,7 @@ function seanceDepuisProga() {
       if (pj.sequences.length) found = {pj:pj, sq:pj.sequences[0]};
     }
   }
-  if (!found) { N('Aucune séquence dans la Progression annuelle. Ajoute-en une d\'abord.', 'err'); return; }
+  if (!found) { N(CURRENT_LANG==='ar'?'لا توجد أي حصة في التدرج السنوي. أضف واحدة أولاً.':'Aucune séquence dans la Progression annuelle. Ajoute-en une d\'abord.', 'err'); return; }
   _pendingProgLink = { projetId: found.pj.id, seqId: found.sq.id };
   D._sId = null;
   OM('mSeance');
@@ -4855,7 +4855,7 @@ function seanceDepuisProga() {
   if (found.pj.tacheFinale) objectifs.push('Tâche finale du projet : ' + found.pj.tacheFinale);
   if (found.sq.production) objectifs.push('Production attendue : ' + found.sq.production);
   document.getElementById('sjObjectifs').value = objectifs.join('\n');
-  N('Pré-rempli depuis "' + found.sq.nom + '"', 'ok');
+  N((CURRENT_LANG==='ar'?'تمت التعبئة المسبقة من "':'Pré-rempli depuis "') + found.sq.nom + '"', 'ok');
 }
 window.seanceDepuisProga = seanceDepuisProga;
 
@@ -4869,7 +4869,7 @@ function advanceSequenceStatut(projetId, seqId, nouveauStatut) {
 
 function saveSeance() {
   var d = document.getElementById('sjD').value, titre = document.getElementById('sjTitre').value.trim();
-  if (!d||!titre) { N('Date et titre requis','err'); return; }
+  if (!d||!titre) { N(CURRENT_LANG==='ar'?'التاريخ والعنوان مطلوبان':'Date et titre requis','err'); return; }
   var obj = {
     date:d, heure:document.getElementById('sjH').value, cid:parseInt(document.getElementById('sjCls').value)||null,
     duree:document.getElementById('sjDur').value, titre:titre, contenu:document.getElementById('sjContenu').value,
@@ -4890,19 +4890,19 @@ function saveSeance() {
   sv(); CM('mSeance'); rCahier();
   var jourSemaine = new Date(d + 'T00:00:00').getDay(); /* 0=Dimanche ... 5=Vendredi, 6=Samedi */
   if (jourSemaine === 5 || jourSemaine === 6) {
-    N('Séance enregistrée, mais attention : cette date tombe un ' + (jourSemaine===5?'Vendredi':'Samedi') + ', en dehors de la semaine scolaire (Dimanche-Jeudi) — elle n\'apparaîtra dans aucune vue du Cahier journal. Vérifie la date si ce n\'était pas voulu.', 'err');
+    N(CURRENT_LANG==='ar'?('تم حفظ الحصة، لكن انتبه: هذا التاريخ يصادف يوم ' + (jourSemaine===5?'الجمعة':'السبت') + '، خارج الأسبوع الدراسي (الأحد-الخميس) — لن تظهر في أي عرض من دفتر النصوص. تحقق من التاريخ إن لم يكن ذلك مقصودًا.'):('Séance enregistrée, mais attention : cette date tombe un ' + (jourSemaine===5?'Vendredi':'Samedi') + ', en dehors de la semaine scolaire (Dimanche-Jeudi) — elle n\'apparaîtra dans aucune vue du Cahier journal. Vérifie la date si ce n\'était pas voulu.'), 'err');
   } else {
-    N('Séance enregistrée !','ok');
+    N(CURRENT_LANG==='ar'?'تم حفظ الحصة !':'Séance enregistrée !','ok');
   }
 }
 function editSeance(id) { D._sId = id; OM('mSeance'); }
 function toggleSeanceStatut(id) {
   var s=D.cj.find(function(x){ return x.id===id; }); if (!s) return;
   s.statut = s.statut==='acheve' ? 'inacheve' : 'acheve';
-  if (s.statut==='acheve' && s.progLink) { advanceSequenceStatut(s.progLink.projetId, s.progLink.seqId, 'termine'); N('Séance achevée — séquence "'+s.titre+'" marquée terminée dans la Progression annuelle.', 'ok'); }
+  if (s.statut==='acheve' && s.progLink) { advanceSequenceStatut(s.progLink.projetId, s.progLink.seqId, 'termine'); N((CURRENT_LANG==='ar'?'تم إنجاز الحصة — تم تعليم الوحدة "':'Séance achevée — séquence "')+s.titre+(CURRENT_LANG==='ar'?'" كمنتهية في التدرج السنوي.':'" marquée terminée dans la Progression annuelle.'), 'ok'); }
   sv(); rCahier();
 }
-function delSeance(id) { if (!confirm('Supprimer cette séance ?')) return; D.cj=D.cj.filter(function(x){ return x.id!==id; }); sv(); rCahier(); }
+function delSeance(id) { if (!confirm(CURRENT_LANG==='ar'?'حذف هذه الحصة ؟':'Supprimer cette séance ?')) return; D.cj=D.cj.filter(function(x){ return x.id!==id; }); sv(); rCahier(); }
 function cjPrint() {
   var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
   var title = 'Cahier journal — Semaine du '+cjWeek.getDate()+' '+MO[cjWeek.getMonth()]+' au '+endW.getDate()+' '+MO[endW.getMonth()];
@@ -4983,7 +4983,7 @@ function saveCreneau() {
   if (!cid) { D.edt[key] = { cid: null, salle: salle, libre: true }; }
   else { D.edt[key] = { cid: parseInt(cid), salle: salle }; }
   sv(); CM('mCreneau'); rEdt();
-  N('Emploi du temps mis à jour !','ok');
+  N(CURRENT_LANG==='ar'?'تم تحديث جدول التوقيت !':'Emploi du temps mis à jour !','ok');
 }
 function delCreneau() {
   var key = _edtCurJour+'_'+_edtCurSlot;
@@ -5117,7 +5117,7 @@ window.editSequence = function(projetId, seqId) {
 };
 function saveSequence() {
   var nom = document.getElementById('sqNom').value.trim();
-  if (!nom) { N('Nom de la séquence requis', 'err'); return; }
+  if (!nom) { N(CURRENT_LANG==='ar'?'اسم الحصة مطلوب':'Nom de la séquence requis', 'err'); return; }
   var pj = D.progression.find(function(p){ return p.id===_sqEditProjetId; }); if (!pj) return;
   var obj = {
     nom: nom, statut: document.getElementById('sqStatut').value,
@@ -5138,10 +5138,10 @@ function saveSequence() {
     pj.sequences.push(obj);
   }
   sv(); CM('mSequence'); rProga();
-  N('Séquence enregistrée !', 'ok');
+  N(CURRENT_LANG==='ar'?'تم حفظ الحصة !':'Séquence enregistrée !', 'ok');
 }
 window.delSequence = function() {
-  if (!confirm('Supprimer cette séquence ?')) return;
+  if (!confirm(CURRENT_LANG==='ar'?'حذف هذه الحصة (الوحدة) ؟':'Supprimer cette séquence ?')) return;
   var pj = D.progression.find(function(p){ return p.id===_sqEditProjetId; }); if (!pj) return;
   pj.sequences = pj.sequences.filter(function(s){ return s.id!==_sqEditId; });
   sv(); CM('mSequence'); rProga();
@@ -5154,21 +5154,21 @@ window.cycleSeqStatut = function(projetId, seqId) {
 };
 function saveProjet() {
   var nom = document.getElementById('pjNom').value.trim();
-  if (!nom) { N('Nom requis', 'err'); return; }
+  if (!nom) { N(CURRENT_LANG==='ar'?'الاسم مطلوب':'Nom requis', 'err'); return; }
   var id = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
   D.progression.push({ id: id, nom: nom, tacheFinale: document.getElementById('pjTache').value.trim(), sequences: [] });
   sv(); CM('mProjet'); rProga();
   document.getElementById('pjNom').value=''; document.getElementById('pjTache').value='';
-  N('Projet créé !', 'ok');
+  N(CURRENT_LANG==='ar'?'تم إنشاء المشروع !':'Projet créé !', 'ok');
 }
 window.delProjet = function(id) {
-  if (!confirm('Supprimer ce Projet/Unité et toutes ses séquences ?')) return;
+  if (!confirm(CURRENT_LANG==='ar'?'حذف هذا المشروع/الوحدة وجميع حصصه ؟':'Supprimer ce Projet/Unité et toutes ses séquences ?')) return;
   D.progression = D.progression.filter(function(p){ return p.id!==id; });
   sv(); rProga();
 };
 
 async function genProgaIA() {
-  var niveau = prompt('Pour quel niveau veux-tu générer une proposition de progression annuelle ?\n(Ex: 4AM, 5AP, 2AS...)', '4AM');
+  var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟\n(مثال: 4AM, 5AP, 2AS...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ?\n(Ex: 4AM, 5AP, 2AS...)', '4AM');
   if (!niveau || !niveau.trim()) return;
   var q = { autorise: true };
   try {
@@ -5176,7 +5176,7 @@ async function genProgaIA() {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.', 'err'); return; }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var isL = progaIsLangue();
   var btn = document.getElementById('btnGenProga');
   btn.textContent = '⏳ Génération...'; btn.disabled = true;
@@ -5204,9 +5204,9 @@ async function genProgaIA() {
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(function(data){
       btn.innerHTML = GEN_ICON + ' Générer une proposition (IA)'; btn.disabled = false;
-      if (data.error) { N('Erreur API : ' + (data.error.message || data.error.type || 'inconnue'), 'err'); return; }
+      if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ') + (data.error.message || data.error.type || 'inconnue'), 'err'); return; }
       var text = extractClaudeText(data);
-      if (!text) { N('Réponse vide de l\'IA.', 'err'); return; }
+      if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي.':'Réponse vide de l\'IA.', 'err'); return; }
       var clean = text.replace(/```json/g,'').replace(/```/g,'').trim();
       try {
         var parsed = JSON.parse(clean);
@@ -5222,12 +5222,12 @@ async function genProgaIA() {
             })
           };
         });
-        if (D.progression.length && !confirm('Remplacer la progression actuelle par cette proposition IA ?')) return;
+        if (D.progression.length && !confirm(CURRENT_LANG==='ar'?'استبدال التدرج الحالي بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle par cette proposition IA ?')) return;
         D.progression = projets;
         sv(); rProga();
-        N('Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
+        N(CURRENT_LANG==='ar'?'تم إنشاء الاقتراح ! عدّله حسب احتياجاتك.':'Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
       } catch (e) {
-        N('Erreur de format dans la réponse IA. Réessaie.', 'err');
+        N(CURRENT_LANG==='ar'?'خطأ في تنسيق استجابة الذكاء الاصطناعي. أعد المحاولة.':'Erreur de format dans la réponse IA. Réessaie.', 'err');
       }
     })
     .catch(function(err){ btn.innerHTML = GEN_ICON + ' Générer une proposition (IA)'; btn.disabled = false; N(messageErreurGeneration(err), 'err'); });
@@ -5278,17 +5278,17 @@ async function genQuiz() {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.', 'err'); return; }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('qzN').value, nb=document.getElementById('qzNb').value, ty=document.getElementById('qzT').value, df=document.getElementById('qzD').value, ins=document.getElementById('qzI').value, lang=document.getElementById('qzLang').value, mat=D.s.mat;
-  if (!mat) { N('Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
+  if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   var btn=document.getElementById('btnGQ'); btn.textContent=T('generation'); btn.disabled=true;
   var bk=String.fromCharCode(96);
   var prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+(lang==='ar'?'arabe':'français')+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.';
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
     btn.innerHTML=T('gen_quiz'); btn.disabled=false;
-    if (data.error) { N('Erreur API : '+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('qzDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
+    if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('qzDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
-    if (!text) { N('Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
+    if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var re1=new RegExp(bk+bk+bk+'json','g'), re2=new RegExp(bk+bk+bk,'g');
     var clean=text.replace(re1,'').replace(re2,'').trim();
     try { var qz=JSON.parse(clean); curQz=qz; dispQz(qz); document.getElementById('btnSQ').style.display='inline-flex'; }
@@ -5318,17 +5318,17 @@ function loadQz(id){var q=D.qz.find(function(x){return x.id===id;});if(q){curQz=
 function delQz(id){D.qz=D.qz.filter(function(q){return q.id!==id;});sv();renderSQ();}
 function clearQz(){if(!confirm(T('suppr_quiz')))return;D.qz=[];sv();renderSQ();}
 function corriger() {
-  if (!curQz){N('Générez un quiz d\'abord','err');return;}
-  var copie=document.getElementById('corrC').value.trim(); if (!copie){N('Collez les réponses','err');return;}
+  if (!curQz){N(CURRENT_LANG==='ar'?'أنشئ اختبارًا أولاً':'Générez un quiz d\'abord','err');return;}
+  var copie=document.getElementById('corrC').value.trim(); if (!copie){N(CURRENT_LANG==='ar'?'الصق الإجابات':'Collez les réponses','err');return;}
   var eid=parseInt(document.getElementById('corrEl').value), eleve=D.el.find(function(e){return e.id===eid;});
   var btn=document.getElementById('btnCorr'); btn.textContent='Correction en cours...'; btn.disabled=true;
   var bk=String.fromCharCode(96), qj=JSON.stringify(curQz.questions||[]);
   var prompt='Tu es correcteur. Quiz:\n'+qj+'\n\nRéponses élève:\n'+copie+'\n\nCorrige et réponds en JSON. Reste très concis : "commentaire" en une courte phrase (10-15 mots max):\n{"note":15,"sur":20,"appreciation":"Bien...","corrections":[{"num":1,"correct":true,"commentaire":"..."}]}\nJSON uniquement.';
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
     btn.textContent='Corriger avec l\'IA'; btn.disabled=false;
-    if (data.error) { N('Erreur API : '+(data.error.message||data.error.type||'inconnue'),'err'); return; }
+    if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); return; }
     var text=extractClaudeText(data);
-    if (!text) { N('Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
+    if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var re1=new RegExp(bk+bk+bk+'json','g'),re2=new RegExp(bk+bk+bk,'g');
     var clean=text.replace(re1,'').replace(re2,'').trim();
     try{
@@ -5337,7 +5337,7 @@ function corriger() {
       var h='<div style="background:var(--bg);border-radius:9px;padding:1.2rem;border:1px solid var(--br)"><div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem"><div style="font-family:Syne,sans-serif;font-size:2rem;font-weight:800;color:'+col+'">'+nt+'/'+su+'</div><div><div style="font-size:.9rem;font-weight:600">'+(eleve?eleve.pr+' '+eleve.no:'Élève')+'</div><div style="font-size:.75rem;color:var(--ink3)">'+res.appreciation+'</div></div></div>';
       if (res.corrections) res.corrections.forEach(function(cr){h+='<div style="display:flex;gap:8px;padding:6px 10px;border-radius:6px;margin-bottom:4px;background:'+(cr.correct?'var(--gp)':'var(--rp)')+';border:1px solid '+(cr.correct?'var(--g)':'var(--r)')+'"><span>'+(cr.correct?'✓':'✗')+'</span><div style="font-size:.78rem"><strong>Q'+cr.num+'</strong> — '+cr.commentaire+'</div></div>';});
       h+='</div>'; document.getElementById('corrRes').innerHTML=h;
-      if (eleve&&!isNaN(nt)){var evid=Date.now();D.ev.push({id:evid,int:T('quiz_ia_prefix')+curQz.sujet,date:new Date().toISOString().split('T')[0],type:'Quiz',coef:1,notes:{}});D.ev[D.ev.length-1].notes[eid]=parseFloat(nt);sv();N('Note '+nt+'/'+su+' enregistrée !','ok');}
+      if (eleve&&!isNaN(nt)){var evid=Date.now();D.ev.push({id:evid,int:T('quiz_ia_prefix')+curQz.sujet,date:new Date().toISOString().split('T')[0],type:'Quiz',coef:1,notes:{}});D.ev[D.ev.length-1].notes[eid]=parseFloat(nt);sv();N((CURRENT_LANG==='ar'?'تم حفظ العلامة ':'Note ')+nt+'/'+su+(CURRENT_LANG==='ar'?' !':' enregistrée !'),'ok');}
     }catch(e){N(T('erreur_correction'),'err');}
   }).catch(function(err){btn.textContent='Corriger avec l\'IA';btn.disabled=false;N(messageErreurGeneration(err),'err');});
 }
@@ -5474,9 +5474,9 @@ async function genCours(extraInstruction) {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.', 'err'); return; }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
-  if (!mat) { N('Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
+  if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true;
   var isLangue = (ty === 'fiche_peda') && isLangueMatiere(mat);
   var acCls = gAC();
@@ -5600,9 +5600,9 @@ async function genCours(extraInstruction) {
     return r.json();
   }).then(function(data){
     btn.innerHTML=T('gen_cours'); btn.disabled=false;
-    if (data.error) { N('Erreur API : '+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
+    if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
-    if (!text) { N('Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
+    if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var contenuFinal = (ty === 'fiche_peda') ? (enteteHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
@@ -5610,7 +5610,7 @@ async function genCours(extraInstruction) {
     document.getElementById('btnTcSimplify').style.display='inline-flex';
     if (ty === 'fiche_peda') {
       addFichePedaToJournal(titre, mat, nv, dur);
-      N('Fiche pédagogique générée et ajoutée au Cahier journal (aujourd\'hui) !','ok');
+      N(CURRENT_LANG==='ar'?'تم إنشاء ورقة التحضير وإضافتها إلى دفتر النصوص (اليوم) !':'Fiche pédagogique générée et ajoutée au Cahier journal (aujourd\'hui) !','ok');
     }
   }).catch(function(err){btn.innerHTML=T('gen_cours');btn.disabled=false;N(messageErreurGeneration(err),'err');});
 }
@@ -5740,13 +5740,15 @@ function dispCrs(crs, keepMode){
 function saveCours(){if(!curCrs)return;curCrs.folderId=D.crsActiveFolder||1;D.crs.unshift(curCrs);sv();renderSC();N(T('cours_sauvegarde'),'ok');document.getElementById('btnSCrs').style.display='none';}
 function renderCrsFolderBar(){
   var el=document.getElementById('crsFolderBar'); if(!el) return;
+  var isAR = (CURRENT_LANG==='ar');
   var html = D.crsFolders.map(function(f){
     var cnt = D.crs.filter(function(c){return (c.folderId||1)===f.id;}).length;
     var on = (D.crsActiveFolder||1)===f.id;
-    var delBtn = f.id===1 ? '' : '<span onclick="event.stopPropagation();delCrsFolder('+f.id+')" style="margin-left:6px;cursor:pointer;opacity:.75" title="Supprimer ce dossier">✕</span>';
-    return '<button class="btn bxs" style="background:'+(on?'var(--t)':'var(--bg)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--t)':'var(--br)')+';cursor:pointer;" onclick="setCrsFolder('+f.id+')">📁 '+f.nm+' ('+cnt+')'+delBtn+'</button>';
+    var nm = (f.id===1) ? (isAR?'عام':'Général') : f.nm;
+    var delBtn = f.id===1 ? '' : '<span onclick="event.stopPropagation();delCrsFolder('+f.id+')" style="margin-left:6px;cursor:pointer;opacity:.75" title="'+(isAR?'حذف هذا المجلد':'Supprimer ce dossier')+'">✕</span>';
+    return '<button class="btn bxs" style="background:'+(on?'var(--t)':'var(--bg)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--t)':'var(--br)')+';cursor:pointer;" onclick="setCrsFolder('+f.id+')">📁 '+nm+' ('+cnt+')'+delBtn+'</button>';
   }).join('');
-  html += '<button class="btn bxs bo" style="cursor:pointer;" onclick="addCrsFolder()">+ Dossier</button>';
+  html += '<button class="btn bxs bo" style="cursor:pointer;" onclick="addCrsFolder()">'+(isAR?'+ مجلد':'+ Dossier')+'</button>';
   el.innerHTML = html;
 }
 function setCrsFolder(id){ D.crsActiveFolder=id; sv(); renderCrsFolderBar(); renderSC(); }
@@ -5765,12 +5767,12 @@ function delCrsFolder(id){
   N(isAR ? 'تم حذف المجلد "'+f.nm+'".' : 'Dossier "'+f.nm+'" supprimé.','ok');
 }
 function addCrsFolder(){
-  var nm = prompt('Nom du nouveau dossier :'); if(!nm||!nm.trim()) return;
+  var nm = prompt(CURRENT_LANG==='ar'?'اسم المجلد الجديد :':'Nom du nouveau dossier :'); if(!nm||!nm.trim()) return;
   var id = D.crsFolders.length ? Math.max.apply(null,D.crsFolders.map(function(f){return f.id;}))+1 : 1;
   D.crsFolders.push({id:id,nm:nm.trim()});
   D.crsActiveFolder = id;
   sv(); renderCrsFolderBar(); renderSC();
-  N('Dossier "'+nm.trim()+'" créé !','ok');
+  N((CURRENT_LANG==='ar'?'تم إنشاء المجلد "':'Dossier "')+nm.trim()+(CURRENT_LANG==='ar'?'" !':'" créé !'),'ok');
 }
 function moveCrsToFolder(courseId, newFolderId){
   var c = D.crs.find(function(x){return x.id===courseId;}); if(!c) return;
@@ -5870,10 +5872,10 @@ function sendMail(){
   document.getElementById('mailSj').value='';document.getElementById('mailBd').value='';
   window._mailF=''; var lbl=document.getElementById('mailFLbl'); if(lbl) lbl.textContent='Choisir un fichier'; var fInp=document.getElementById('mailF'); if(fInp) fInp.value='';
   rMails();
-  N('Gmail ouvert pour "'+dest+'" !'+note,'ok');
+  N((CURRENT_LANG==='ar'?'تم فتح Gmail لـ "':'Gmail ouvert pour "')+dest+(CURRENT_LANG==='ar'?'" !':'" !')+note,'ok');
 }
-function sendMM(){var to=document.getElementById('mTo').value.trim(),sj=document.getElementById('mSj').value.trim(),bd=document.getElementById('mBd').value.trim();if(!to||!sj){N('Destinataire et objet requis','err');return;}D.ml.unshift({id:Date.now(),to:to,sj:sj,bd:bd,dt:new Date().toLocaleDateString('fr-FR')});sv();CM('mMail');rMails();N('Envoyé !','ok');}
-function delMail(id){ if(!confirm('Supprimer ce message ?')) return; D.ml = D.ml.filter(function(m){ return m.id!==id; }); sv(); rMails(); N('Message supprimé.','ok'); }
+function sendMM(){var to=document.getElementById('mTo').value.trim(),sj=document.getElementById('mSj').value.trim(),bd=document.getElementById('mBd').value.trim();if(!to||!sj){N(CURRENT_LANG==='ar'?'المرسل إليه والموضوع مطلوبان':'Destinataire et objet requis','err');return;}D.ml.unshift({id:Date.now(),to:to,sj:sj,bd:bd,dt:new Date().toLocaleDateString('fr-FR')});sv();CM('mMail');rMails();N(CURRENT_LANG==='ar'?'تم الإرسال !':'Envoyé !','ok');}
+function delMail(id){ if(!confirm(CURRENT_LANG==='ar'?'حذف هذه الرسالة ؟':'Supprimer ce message ?')) return; D.ml = D.ml.filter(function(m){ return m.id!==id; }); sv(); rMails(); N(CURRENT_LANG==='ar'?'تم حذف الرسالة.':'Message supprimé.','ok'); }
 
 /* ===== ÉQUIPE ===== */
 function rEq(){document.getElementById('prSub').textContent=D.pr.length+' '+T('contacts');rPrL();rPrM();var s=document.getElementById('msgTo');s.innerHTML='<option value="">'+T('choisir')+'</option><option value="all">Toute l\'équipe</option>'+D.pr.map(function(p){return '<option value="'+p.id+'">'+p.pr+' '+p.nm+' — '+p.ma+'</option>';}).join('');}
@@ -5895,7 +5897,7 @@ function sendMsg(){
   sv();rPrM();
   openGmailCompose(email, sj, bd);
   var note = mf ? (' Pense à joindre "'+mf+'" manuellement dans Gmail (impossible de le faire automatiquement depuis un site web).') : (!email ? ' Aucun email enregistré pour ce destinataire — ajoute-le toi-même dans Gmail.' : '');
-  N('Gmail ouvert pour '+dest+' !'+note,'ok');
+  N((CURRENT_LANG==='ar'?'تم فتح Gmail لـ ':'Gmail ouvert pour ')+dest+' !'+note,'ok');
 }
 function savePr(){var p=document.getElementById('pPr').value.trim(),n=document.getElementById('pNm').value.trim(),ma=document.getElementById('pMa').value;if(!p||!n){N(T('prenom_nom_req'),'err');return;}var cs=['#FF6B6B','#54A0FF','#1DD1A1','#5F27CD','#FF9F43','#C44569','#D4AF37'];var id=D.pr.length?Math.max.apply(null,D.pr.map(function(x){return x.id;}))+1:1;D.pr.push({id:id,pr:p,nm:n,ma:document.getElementById('pMa').value||ma,po:document.getElementById('pPo').value,em:document.getElementById('pEm2').value,tel:document.getElementById('pTel').value,sa:document.getElementById('pSa').value,nt:document.getElementById('pNt').value,c:cs[id%cs.length]});sv();CM('mProf');rEq();N(p+' '+n+T('ajoute_ok'),'ok');['pPr','pNm','pEm2','pTel','pSa','pNt'].forEach(function(id){document.getElementById(id).value='';});}
 function editPr(id){var p=D.pr.find(function(x){return x.id===id;});if(!p)return;document.getElementById('pPr').value=p.pr;document.getElementById('pNm').value=p.nm;document.getElementById('pEm2').value=p.em||'';document.getElementById('pTel').value=p.tel||'';document.getElementById('pSa').value=p.sa||'';document.getElementById('pNt').value=p.nt||'';D.pr=D.pr.filter(function(x){return x.id!==id;});OM('mProf');}
@@ -5906,9 +5908,9 @@ function rClsList(){document.getElementById('clsList').innerHTML=D.cls.map(funct
 function setCls(id){D.cls.forEach(function(c){c.on=c.id===id;});var c=D.cls.find(function(x){return x.id===id;});if(c)document.getElementById('clsAct').textContent=c.nm;sv();CM('mClasse');N('"'+c.nm+'"'+T('activee'),'ok');var pg=document.querySelector('.pg.on');if(pg){var pgId=pg.id.replace('pg-','');if(['eleves','notes','appel','bulletin','dash'].indexOf(pgId)>=0)go(pgId);}}
 function addCls(){var nm=document.getElementById('nCl').value.trim();if(!nm){N(T('nom_req'),'err');return;}var id=D.cls.length?Math.max.apply(null,D.cls.map(function(c){return c.id;}))+1:1;D.cls.push({id:id,nm:nm,mat:document.getElementById('nCM').value||'',nb:parseInt(document.getElementById('nCN').value)||0,on:false});sv();rClsList();N(T('classe_ajoute'),'ok');document.getElementById('nCl').value='';document.getElementById('nCN').value='';}
 function delCls(id){
-  if (D.cls.length<=1){ N('Impossible de supprimer la dernière classe.','err'); return; }
+  if (D.cls.length<=1){ N(CURRENT_LANG==='ar'?'لا يمكن حذف آخر قسم.':'Impossible de supprimer la dernière classe.','err'); return; }
   var c=D.cls.find(function(x){return x.id===id;}); if(!c) return;
-  if (!confirm('Supprimer la classe "'+c.nm+'" ? Les élèves qui y sont rattachés resteront enregistrés mais n\'apparaîtront plus tant qu\'ils ne sont pas réassignés à une autre classe.')) return;
+  if (!confirm(CURRENT_LANG==='ar'?('حذف القسم "'+c.nm+'" ؟ سيبقى التلاميذ المسجلون فيه محفوظين لكنهم لن يظهروا إلى أن تتم إعادة تعيينهم إلى قسم آخر.'):('Supprimer la classe "'+c.nm+'" ? Les élèves qui y sont rattachés resteront enregistrés mais n\'apparaîtront plus tant qu\'ils ne sont pas réassignés à une autre classe.'))) return;
   var wasActive = c.on;
   D.cls = D.cls.filter(function(x){ return x.id!==id; });
   if (wasActive && D.cls.length) {
@@ -5917,7 +5919,7 @@ function delCls(id){
   }
   sv();
   rClsList();
-  N('Classe "'+c.nm+'" supprimée.','ok');
+  N((CURRENT_LANG==='ar'?'تم حذف القسم "':'Classe "')+c.nm+(CURRENT_LANG==='ar'?'".':'" supprimée.'),'ok');
   var pg=document.querySelector('.pg.on');
   if(pg){var pgId=pg.id.replace('pg-','');if(['eleves','notes','appel','bulletin','dash'].indexOf(pgId)>=0)go(pgId);}
 }
@@ -6199,7 +6201,7 @@ function tiaCreateSeance(idx) {
   if (typeof cjWeek !== 'undefined' && typeof getWeekStart === 'function') cjWeek = getWeekStart(new Date(today + 'T00:00:00'));
   m.created = true;
   sv(); tiaRender();
-  N('✅ Séance créée dans le Cahier journal — pense à vérifier la date et la classe.', 'ok');
+  N(CURRENT_LANG==='ar'?'✅ تم إنشاء الحصة في دفتر النصوص — تحقق من التاريخ والقسم.':'✅ Séance créée dans le Cahier journal — pense à vérifier la date et la classe.', 'ok');
   tiaToggle(); go('cahier');
 }
 
@@ -6275,7 +6277,7 @@ function saveP(){
   if(pns) pns.textContent = T('prof')+' ' + p + ' ' + n;
   if(pms) pms.textContent = mat + (D.s.cycle ? ' · ' + D.s.cycle.split(' ')[0] : '');
   if(pav) pav.textContent = p ? p[0].toUpperCase() : 'P';
-  N('Profil mis à jour !','ok');
+  N(CURRENT_LANG==='ar'?'تم تحديث الملف الشخصي !':'Profil mis à jour !','ok');
 }
 
 /* ===== ESPACE ÉLÈVE ===== */
@@ -6299,8 +6301,8 @@ function rEleveAcces() {
 }
 function genCode(id){ return String(Math.floor(100000+Math.abs(Math.sin(id*9999))*900000)).slice(0,6); }
 function genAllCodes(){ D.el.forEach(function(e){e.code=String(Math.floor(100000+Math.random()*900000));}); sv(); rEleveAcces(); N(T('codes_regen'),'ok'); }
-function copyCode(code){ N('Code '+code+' copié !','ok'); }
-function shareCode(nom,code){ N('Message WhatsApp prêt pour '+nom+' — Code: '+code,'info'); }
+function copyCode(code){ N((CURRENT_LANG==='ar'?'تم نسخ الرمز ':'Code ')+code+(CURRENT_LANG==='ar'?' !':' copié !'),'ok'); }
+function shareCode(nom,code){ N((CURRENT_LANG==='ar'?'رسالة واتساب جاهزة لـ ':'Message WhatsApp prêt pour ')+nom+(CURRENT_LANG==='ar'?' — الرمز: ':' — Code: ')+code,'info'); }
 
 /* ===== FILE UPLOAD MODE ===== */
 function setAddMode(mode) {
@@ -7175,13 +7177,13 @@ window.parrCopyLink = function() {
 
 window.authRequestMatiereChange = async function() {
   if (!authCurrentUid) return;
-  var nouvelle = prompt('Quelle matière veux-tu enseigner à la place de "' + (window.D && window.D.s ? window.D.s.mat : '') + '" ?\n\nTu gardes l\'accès à ta matière actuelle en attendant la réponse de l\'administrateur.');
+  var nouvelle = prompt(CURRENT_LANG==='ar'?('ما هي المادة التي تريد تدريسها بدلاً من "' + (window.D && window.D.s ? window.D.s.mat : '') + '" ؟\n\nتحتفظ بالوصول إلى مادتك الحالية في انتظار رد المدير.'):('Quelle matière veux-tu enseigner à la place de "' + (window.D && window.D.s ? window.D.s.mat : '') + '" ?\n\nTu gardes l\'accès à ta matière actuelle en attendant la réponse de l\'administrateur.'));
   if (!nouvelle || !nouvelle.trim()) return;
   try {
     /* IMPORTANT : on NE touche PAS à "status" ni à "matiere" — le prof garde son accès normal
        pendant que la demande attend une décision explicite de l'admin (accepter/refuser). */
     await setDoc(doc(dbFs, 'profs', authCurrentUid), { matiereDemandee: nouvelle.trim(), matiereDemandeeAt: serverTimestamp() }, { merge: true });
-    N('Demande envoyée à l\'administrateur. Tu gardes l\'accès à "' + (window.D.s.mat) + '" en attendant sa réponse.', 'ok');
+    N(CURRENT_LANG==='ar'?('تم إرسال الطلب إلى المدير. تحتفظ بالوصول إلى "' + (window.D.s.mat) + '" في انتظار رده.'):('Demande envoyée à l\'administrateur. Tu gardes l\'accès à "' + (window.D.s.mat) + '" en attendant sa réponse.'), 'ok');
     window._matiereDemandee = nouvelle.trim();
     if (typeof applyMatiereLockUI === 'function') applyMatiereLockUI();
   } catch (e) {
@@ -7195,11 +7197,11 @@ window.authRequestMatiereChange = async function() {
 window.authRequestMatiereAddon = async function() {
   if (!authCurrentUid) return;
   var actuelles = (window._matieresActives || []).join(', ');
-  var nouvelle = prompt('Quelle matière supplémentaire veux-tu ajouter à ton compte (en plus de : ' + actuelles + ') ?\n\nTarif : 400 DA/mois par matière additionnelle. L\'accès est activé par l\'administrateur après confirmation du paiement.');
+  var nouvelle = prompt(CURRENT_LANG==='ar'?('ما هي المادة الإضافية التي تريد إضافتها إلى حسابك (بالإضافة إلى : ' + actuelles + ') ؟\n\nالسعر : 400 دج/شهريًا لكل مادة إضافية. يتم تفعيل الوصول من طرف المدير بعد تأكيد الدفع.'):('Quelle matière supplémentaire veux-tu ajouter à ton compte (en plus de : ' + actuelles + ') ?\n\nTarif : 400 DA/mois par matière additionnelle. L\'accès est activé par l\'administrateur après confirmation du paiement.'));
   if (!nouvelle || !nouvelle.trim()) return;
   try {
     await setDoc(doc(dbFs, 'profs', authCurrentUid), { matiereAddonDemandee: nouvelle.trim(), matiereAddonDemandeeAt: serverTimestamp() }, { merge: true });
-    N('Demande envoyée. L\'administrateur activera "' + nouvelle.trim() + '" (400 DA/mois) après confirmation du paiement.', 'ok');
+    N(CURRENT_LANG==='ar'?('تم إرسال الطلب. سيقوم المدير بتفعيل "' + nouvelle.trim() + '" (400 دج/شهريًا) بعد تأكيد الدفع.'):('Demande envoyée. L\'administrateur activera "' + nouvelle.trim() + '" (400 DA/mois) après confirmation du paiement.'), 'ok');
     window._matiereAddonDemandee = nouvelle.trim();
     if (typeof applyMatiereLockUI === 'function') applyMatiereLockUI();
   } catch (e) {
