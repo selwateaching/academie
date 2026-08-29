@@ -2111,6 +2111,7 @@ var LANG = {
     sp_tab_notes: '📊 Notes',
     sp_tab_absences: '✅ Absences',
     sp_tab_devoirs: '📝 Devoirs',
+    sp_tab_ressources: '📁 Ressources',
     sp_tab_bulletin: '📋 Bulletin',
     sp_tab_agenda: '📅 Agenda',
     sp_notes_title: 'Mes notes',
@@ -2118,6 +2119,7 @@ var LANG = {
     sp_abs_empty: 'Aucune absence enregistrée ✓',
     sp_devoirs_title: 'Mes devoirs à venir',
     sp_devoirs_empty: 'Aucun devoir en attente ✓',
+    sp_ress_title: 'Documents partagés par le professeur',
     sp_bulletin_title: 'Mon bulletin',
     sp_agenda_title: 'Mon agenda',
     sp_agenda_empty: 'Aucun événement à venir',
@@ -2176,6 +2178,7 @@ var LANG = {
     sp_tab_notes: '📊 النقاط',
     sp_tab_absences: '✅ الغيابات',
     sp_tab_devoirs: '📝 الواجبات',
+    sp_tab_ressources: '📁 الموارد',
     sp_tab_bulletin: '📋 الكشف',
     sp_tab_agenda: '📅 جدول الأعمال',
     sp_notes_title: 'نقاطي',
@@ -2183,6 +2186,7 @@ var LANG = {
     sp_abs_empty: 'لا غياب مسجَّل ✓',
     sp_devoirs_title: 'واجباتي القادمة',
     sp_devoirs_empty: 'لا واجب في الانتظار ✓',
+    sp_ress_title: 'مستندات شاركها الأستاذ',
     sp_bulletin_title: 'كشفي',
     sp_agenda_title: 'جدول أعمالي',
     sp_agenda_empty: 'لا أحداث قادمة',
@@ -2669,6 +2673,17 @@ var LANG_JS = {
     dash_moy_insuf: 'Moy. insuffisante',
     dash_aucune_alerte: 'Aucune alerte — Classe sur la bonne voie !',
     el_parents: '💬 Parents',
+    sp_total_ar: 'Total absences/retards',
+    sp_contenu_manque_titre: '📚 Contenu manqué à rattraper',
+    objectifs_lbl: 'Objectifs :',
+    sp_contenu_non_renseigne: "Le contenu détaillé de ces séances n'a pas encore été renseigné par le professeur.",
+    sp_aucun_devoir_venir: 'Aucun devoir à venir !',
+    sp_passe: 'Passé',
+    sp_aujourdhui: "Aujourd'hui",
+    sp_aucun_doc: 'Aucun document pour le moment',
+    sp_telecharger: '⬇ Télécharger',
+    sp_ouvrir: '🔗 Ouvrir',
+    sp_exemple: 'Exemple',
   },
   ar: {
     prof: 'الأستاذ',
@@ -2752,6 +2767,17 @@ var LANG_JS = {
     file_ajoute: ' تمت إضافته!',
     dash_moy_insuf: 'معدل غير كافٍ',
     dash_aucune_alerte: 'لا تنبيهات — الفصل على الطريق الصحيح !',
+    sp_total_ar: 'إجمالي الغيابات والتأخيرات',
+    sp_contenu_manque_titre: '📚 محتوى فائت يجب تداركه',
+    objectifs_lbl: 'الأهداف:',
+    sp_contenu_non_renseigne: 'لم يُدرج الأستاذ بعد المحتوى التفصيلي لهذه الحصص.',
+    sp_aucun_devoir_venir: 'لا واجبات قادمة !',
+    sp_passe: 'منقضٍ',
+    sp_aujourdhui: 'اليوم',
+    sp_aucun_doc: 'لا مستندات حالياً',
+    sp_telecharger: '⬇ تحميل',
+    sp_ouvrir: '🔗 فتح',
+    sp_exemple: 'مثال',
   }
 };
 
@@ -2838,7 +2864,7 @@ function switchLang() {
   if (spLogoutBtn) spLogoutBtn.textContent = LANG[CURRENT_LANG].sp_change_eleve;
 
   /* SP tabs */
-  var tabKeys = ['sp_tab_notes','sp_tab_absences','sp_tab_devoirs','sp_tab_bulletin','sp_tab_agenda'];
+  var tabKeys = ['sp_tab_notes','sp_tab_absences','sp_tab_devoirs','sp_tab_ressources','sp_tab_bulletin','sp_tab_agenda'];
   document.querySelectorAll('.sp-tab').forEach(function(el, i) { if (tabKeys[i]) el.textContent = LANG[CURRENT_LANG][tabKeys[i]]; });
 
   /* SP section titles */
@@ -2852,6 +2878,8 @@ function switchLang() {
   if (spDevT) spDevT.textContent = LANG[CURRENT_LANG].sp_devoirs_title;
   var spDevEmpty = document.querySelector('#sp-devoirs .cb > div');
   if (spDevEmpty) spDevEmpty.textContent = LANG[CURRENT_LANG].sp_devoirs_empty;
+  var spRessT = document.querySelector('#sp-ressources .ct');
+  if (spRessT) spRessT.textContent = LANG[CURRENT_LANG].sp_ress_title;
   var spBulT = document.querySelector('#sp-bulletin .ct');
   if (spBulT) spBulT.textContent = LANG[CURRENT_LANG].sp_bulletin_title;
   var spAgT = document.querySelector('#sp-agenda .ct');
@@ -4290,7 +4318,7 @@ function rDash() {
   document.getElementById('evtD').innerHTML = upc.length ? upc.map(function(v) {
     var d = new Date(v.date), df = Math.ceil((d-now)/86400000);
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--br)"><div style="background:var(--tp);border-radius:6px;padding:5px 9px;text-align:center;min-width:42px"><div style="font-family:Syne,sans-serif;font-size:.95rem;font-weight:800;color:var(--t)">'+d.getDate()+'</div><div style="font-size:.58rem;color:var(--ink3)">'+MO[d.getMonth()]+'</div></div><div style="flex:1"><div style="font-size:.82rem;font-weight:600">'+v.title+'</div><div style="font-size:.68rem;color:var(--ink3)">'+v.type+'</div></div><span style="font-size:.67rem;color:'+(df<=3?'var(--r)':'var(--ink3)')+'">J-'+df+'</span></div>';
-  }).join('') : '<div style="text-align:center;color:var(--ink3);font-size:.8rem;padding:1rem">Aucun événement</div>';
+  }).join('') : '<div style="text-align:center;color:var(--ink3);font-size:.8rem;padding:1rem">'+T('aucun_evt')+'</div>';
   var ns = []; D.ev.forEach(function(v) { Object.values(v.notes).forEach(function(n) { ns.push(n); }); });
   var bks = [{label:'< 10',min:0,max:10,col:'var(--r)'},{label:'10-12',min:10,max:12,col:'var(--a)'},{label:'12-16',min:12,max:16,col:'var(--b)'},{label:'≥ 16',min:16,max:21,col:'var(--t)'}];
   document.getElementById('repC').innerHTML = bks.map(function(b) {
@@ -6618,7 +6646,7 @@ function spRenderRessources() {
     return false;
   });
   if (!dossiersAvecFichiers.length) {
-    box.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink3);">Aucun document pour le moment</div>';
+    box.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink3);">'+T('sp_aucun_doc')+'</div>';
     return;
   }
   box.innerHTML = dossiersAvecFichiers.map(function(f) {
@@ -6626,9 +6654,9 @@ function spRenderRessources() {
     h += f.fi.map(function(fn) {
       var fnm = typeof fn==='object' ? fn.nm : fn, furl = typeof fn==='object' ? fn.url : '', fdata = typeof fn==='object' ? fn.data : '', ftype = typeof fn==='object' ? fn.type : 'local';
       var ic = ftype==='drive' ? '☁️' : ftype==='url' ? '🔗' : (fnm.endsWith('.pdf') ? '📄' : (fnm.match(/\.(png|jpg|jpeg|gif)$/i) ? '🖼️' : (fnm.endsWith('.mp4') ? '🎬' : '📎')));
-      var action = fdata ? '<a href="'+fdata+'" download="'+fnm+'" style="background:var(--tp);color:var(--t);border-radius:5px;padding:4px 10px;font-size:.7rem;text-decoration:none;">⬇ Télécharger</a>'
-        : (furl ? '<a href="'+furl+'" target="_blank" style="background:var(--tp);color:var(--t);border-radius:5px;padding:4px 10px;font-size:.7rem;text-decoration:none;">🔗 Ouvrir</a>'
-        : '<span style="color:var(--ink3);font-size:.68rem;">Exemple</span>');
+      var action = fdata ? '<a href="'+fdata+'" download="'+fnm+'" style="background:var(--tp);color:var(--t);border-radius:5px;padding:4px 10px;font-size:.7rem;text-decoration:none;">'+T('sp_telecharger')+'</a>'
+        : (furl ? '<a href="'+furl+'" target="_blank" style="background:var(--tp);color:var(--t);border-radius:5px;padding:4px 10px;font-size:.7rem;text-decoration:none;">'+T('sp_ouvrir')+'</a>'
+        : '<span style="color:var(--ink3);font-size:.68rem;">'+T('sp_exemple')+'</span>');
       return '<div style="display:flex;align-items:center;gap:10px;padding:.6rem .8rem;border:1px solid var(--br);border-radius:8px;margin-bottom:5px;background:var(--w);"><span style="font-size:1.1rem;">'+ic+'</span><span style="flex:1;font-size:.8rem;">'+fnm+'</span>'+action+'</div>';
     }).join('');
     h += '</div>';
@@ -6646,10 +6674,10 @@ function spRenderNotes() {
   D.ev.forEach(function(v){ if(v.notes[eid]!==undefined) ns.push(v.notes[eid]); });
   if(ns.length){ best=Math.max.apply(null,ns).toFixed(1); worst=Math.min.apply(null,ns).toFixed(1); }
   document.getElementById('spStatsRow').innerHTML =
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:'+mn.c+'">'+mv+'</div><div class="sp-stat-lbl">Moyenne générale</div></div>'+
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--g)">'+best+'</div><div class="sp-stat-lbl">Meilleure note</div></div>'+
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--r)">'+worst+'</div><div class="sp-stat-lbl">Note la plus basse</div></div>'+
-    '<div class="sp-stat"><div class="sp-stat-val">'+ns.length+'</div><div class="sp-stat-lbl">Évaluations</div></div>';
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:'+mn.c+'">'+mv+'</div><div class="sp-stat-lbl">'+T('moy_gen')+'</div></div>'+
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--g)">'+best+'</div><div class="sp-stat-lbl">'+T('meilleure')+'</div></div>'+
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--r)">'+worst+'</div><div class="sp-stat-lbl">'+T('plus_basse')+'</div></div>'+
+    '<div class="sp-stat"><div class="sp-stat-val">'+ns.length+'</div><div class="sp-stat-lbl">'+T('evaluations')+'</div></div>';
   var hd = '<tr><th>'+T('eval_col')+'</th><th>'+T('date_col')+'</th><th>Type</th><th>'+T('note_col')+'</th><th>'+T('coef_col')+'</th></tr>';
   document.getElementById('spNotesHd').innerHTML = hd;
   var bd = D.ev.map(function(v){
@@ -6657,7 +6685,7 @@ function spRenderNotes() {
     var nd = n!==undefined ? n : '--';
     var col = n!==undefined ? (n>=10?'var(--t)':'var(--r)') : 'var(--ink3)';
     return '<tr><td style="font-weight:600;">'+v.int+'</td><td style="font-size:.75rem;color:var(--ink3);">'+v.date+'</td><td><span class="badge bb2">'+v.type+'</span></td><td style="text-align:center;font-size:1.1rem;font-weight:800;color:'+col+'">'+nd+'</td><td style="text-align:center;color:var(--ink3);">×'+v.coef+'</td></tr>';
-  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:1.5rem;">Aucune évaluation pour le moment</td></tr>';
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:1.5rem;">'+T('aucune_eval')+'</td></tr>';
   document.getElementById('spNotesBd').innerHTML = bd;
 }
 
@@ -6684,26 +6712,26 @@ function spRenderAbsences() {
 
   document.getElementById('spAbsBody').innerHTML =
     '<div class="g4" style="margin-bottom:1.2rem;">' +
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:'+(total>5?'var(--r)':'var(--t)')+'">'+total+'</div><div class="sp-stat-lbl">Total absences/retards</div></div>' +
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--r)">'+absOnly+'</div><div class="sp-stat-lbl">Absences</div></div>' +
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--a)">'+(total-absOnly)+'</div><div class="sp-stat-lbl">Retards</div></div>' +
-    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--g)">'+(total===0?'✓':'⚠')+'</div><div class="sp-stat-lbl">'+(total===0?'Aucune absence':T('regulariser'))+'</div></div>' +
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:'+(total>5?'var(--r)':'var(--t)')+'">'+total+'</div><div class="sp-stat-lbl">'+T('sp_total_ar')+'</div></div>' +
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--r)">'+absOnly+'</div><div class="sp-stat-lbl">'+T('absences_lbl')+'</div></div>' +
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--a)">'+(total-absOnly)+'</div><div class="sp-stat-lbl">'+T('retards_lbl')+'</div></div>' +
+    '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--g)">'+(total===0?'✓':'⚠')+'</div><div class="sp-stat-lbl">'+(total===0?T('aucune_absence'):T('regulariser'))+'</div></div>' +
     '</div>' +
     (abs.length ? '<table><thead><tr><th>'+T('date_col')+'</th><th>'+T('statut_col')+'</th></tr></thead><tbody>' +
     abs.map(function(a){ return '<tr><td>'+a.date+'</td><td><span class="badge '+(a.type===T('absent')?'bc2':'ba2')+'">'+a.type+'</span></td></tr>'; }).join('') +
-    '</tbody></table>' : '<div style="text-align:center;padding:2rem;color:var(--g);font-size:1.5rem;">✓ Aucune absence !</div>') +
+    '</tbody></table>' : '<div style="text-align:center;padding:2rem;color:var(--g);font-size:1.5rem;">'+T('aucune_abs_ok')+'</div>') +
     (contenuManque.length ?
-      '<div style="margin-top:1.4rem;"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:.85rem;color:var(--ink);margin-bottom:.7rem;">📚 Contenu manqué à rattraper</div>' +
+      '<div style="margin-top:1.4rem;"><div style="font-family:Syne,sans-serif;font-weight:700;font-size:.85rem;color:var(--ink);margin-bottom:.7rem;">'+T('sp_contenu_manque_titre')+'</div>' +
       contenuManque.map(function(s){
         return '<div style="border:1px solid var(--br);border-radius:9px;padding:.8rem .9rem;margin-bottom:.5rem;background:var(--w);">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
           '<div style="font-weight:700;font-size:.82rem;">'+s.titre+'</div>' +
           '<div style="font-size:.68rem;color:var(--ink3);">'+s.date+'</div></div>' +
           (s.contenu ? '<div style="font-size:.75rem;color:var(--ink2);white-space:pre-wrap;">'+s.contenu+'</div>' : '') +
-          (s.objectifs ? '<div style="font-size:.72rem;color:var(--t);margin-top:4px;"><strong>Objectifs :</strong> '+s.objectifs+'</div>' : '') +
+          (s.objectifs ? '<div style="font-size:.72rem;color:var(--t);margin-top:4px;"><strong>'+T('objectifs_lbl')+'</strong> '+s.objectifs+'</div>' : '') +
           '</div>';
       }).join('') + '</div>'
-    : (absOnly ? '<div style="margin-top:1.2rem;text-align:center;color:var(--ink3);font-size:.75rem;">Le contenu détaillé de ces séances n\'a pas encore été renseigné par le professeur.</div>' : '')
+    : (absOnly ? '<div style="margin-top:1.2rem;text-align:center;color:var(--ink3);font-size:.75rem;">'+T('sp_contenu_non_renseigne')+'</div>' : '')
     );
 }
 
@@ -6724,7 +6752,7 @@ function spRenderDevoirs() {
         '<div style="flex:1;"><div style="font-weight:700;font-size:.88rem;">'+v.title+'</div><div style="font-size:.72rem;color:var(--ink3);">'+v.type+'</div></div>' +
         '<div style="font-size:.75rem;font-weight:700;color:'+urg+';">J-'+df+'</div></div>';
     }).join('') :
-    '<div style="text-align:center;padding:3rem;color:var(--g);"><div style="font-size:2rem;">✓</div><div style="margin-top:.5rem;">Aucun devoir à venir !</div></div>';
+    '<div style="text-align:center;padding:3rem;color:var(--g);"><div style="font-size:2rem;">✓</div><div style="margin-top:.5rem;">'+T('sp_aucun_devoir_venir')+'</div></div>';
 }
 
 function spRenderBulletin() {
@@ -6758,7 +6786,7 @@ function spRenderAgenda() {
       var d=new Date(v.date), df=Math.ceil((d-now)/86400000);
       var passe = df < 0;
       var col = passe ? 'var(--ink3)' : (v.type.indexOf('Contrôle')>=0||v.type.indexOf('Controle')>=0?'var(--r)':v.type.indexOf('Devoir')>=0?'var(--a)':v.type.indexOf('Réunion')>=0?'var(--p)':'var(--t)');
-      var badgeTxt = passe ? 'Passé' : (df===0 ? 'Aujourd\'hui' : 'J-'+df);
+      var badgeTxt = passe ? T('sp_passe') : (df===0 ? T('sp_aujourdhui') : 'J-'+df);
       return '<div style="display:flex;gap:1rem;align-items:center;padding:.8rem 1rem;border:1px solid var(--br);border-radius:9px;margin-bottom:.5rem;background:var(--w);'+(passe?'opacity:.6;':'')+'">' +
         '<div style="background:'+col+'22;border-radius:7px;padding:.4rem .7rem;text-align:center;min-width:42px;">' +
         '<div style="font-family:Syne,sans-serif;font-size:.95rem;font-weight:800;color:'+col+'">'+d.getDate()+'</div>' +
@@ -6766,7 +6794,7 @@ function spRenderAgenda() {
         '<div style="flex:1;"><div style="font-size:.85rem;font-weight:600;">'+v.title+'</div><div style="font-size:.7rem;color:var(--ink3);">'+v.type+'</div></div>' +
         '<span style="font-size:.72rem;font-weight:700;color:'+col+';">'+badgeTxt+'</span></div>';
     }).join('') :
-    '<div style="text-align:center;padding:2rem;color:var(--ink3);">Aucun événement</div>';
+    '<div style="text-align:center;padding:2rem;color:var(--ink3);">'+T('aucun_evt')+'</div>';
 }
 
 function shareAllByWhatsapp() {
