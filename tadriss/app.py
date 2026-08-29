@@ -18,6 +18,8 @@ from flask import (
     session,
     url_for,
 )
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from sqlalchemy import inspect, text
 
@@ -62,6 +64,8 @@ db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+limiter = Limiter(get_remote_address, app=app, storage_uri="memory://", default_limits=[])
+
 ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "").strip().lower()
 
 
@@ -95,7 +99,17 @@ def subscriber_required(fn):
 # ---------------------------------------------------------------------------
 
 
+@app.errorhandler(429)
+def too_many_requests(_exc):
+    return (
+        "Trop de tentatives. Veuillez patienter une minute avant de réessayer.",
+        429,
+        {"Content-Type": "text/plain; charset=utf-8"},
+    )
+
+
 @app.route("/signup", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def signup():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
@@ -144,6 +158,7 @@ def seed_demo_classe(user):
 
 
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("10 per minute", methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
@@ -748,8 +763,17 @@ def api_generate():
         html_path.write_text(html_content, encoding="utf-8")
         HTML(string=html_content, base_url=str(BASE_DIR)).write_pdf(str(pdf_path))
         make_docx_doc(c, str(docx_path))
-    except Exception as exc:  # noqa: BLE001
-        return jsonify({"ok": False, "error": str(exc)}), 500
+    except Exception:  # noqa: BLE001
+        app.logger.exception("Échec de génération PDF/Word pour l'utilisateur %s", current_user.id)
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error": "Impossible de générer le document pour le moment. Veuillez réessayer dans quelques instants.",
+                }
+            ),
+            500,
+        )
     return jsonify(
         {
             "ok": True,

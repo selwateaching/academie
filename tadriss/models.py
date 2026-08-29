@@ -94,8 +94,18 @@ DEFAULT_STATE = {
     "level": "4AM",
     "subject": "الرياضيات — Mathématiques",
     "docs": [],
-    "progress": [],
-    "schedule": [],
+    "progress": [
+        ["Nombres et calculs", 72],
+        ["Géométrie", 54],
+        ["Fonctions", 41],
+        ["Statistiques", 63],
+    ],
+    "schedule": [
+        ["08:00", "Mathématiques", "Fractions", "4AM", "blue", "Dim", "Nombres et calculs", True],
+        ["09:00", "Mathématiques", "Géométrie", "4AM", "green", "Lun", "Géométrie", False],
+        ["10:30", "Mathématiques", "Aire et périmètre", "4AM", "green", "Mar", "Géométrie", False],
+        ["11:30", "Mathématiques", "Proportionnalité", "4AM", "orange", "Mer", "Fonctions", False],
+    ],
     "saved": None,
 }
 
