@@ -783,31 +783,31 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 
   <!-- Témoignages -->
   <div class="site-section" id="avis">
-    <div class="section-kicker">Témoignages</div>
-    <h2 class="section-h2">Ce que disent les<br><span>enseignants algériens</span></h2>
+    <div class="section-kicker" id="avisKicker">Témoignages</div>
+    <h2 class="section-h2" id="avisH2">Ce que disent les<br><span id="avisH2Span">enseignants algériens</span></h2>
     <div class="testi-grid">
       <div class="testi">
         <div class="testi-quote">"</div>
-        <div class="testi-text">J'enseigne les mathématiques en 3ème année secondaire à Alger. L'IA génère mes séries d'exercices type BAC en 5 minutes. Mes élèves ont de meilleures moyennes depuis que j'utilise Tadriss DZ.</div>
+        <div class="testi-text" id="testi1Text">J'enseigne les mathématiques en 3ème année secondaire à Alger. L'IA génère mes séries d'exercices type BAC en 5 minutes. Mes élèves ont de meilleures moyennes depuis que j'utilise Tadriss DZ.</div>
         <div class="testi-author">
           <div class="testi-av" style="background:var(--t);">KA</div>
-          <div><div class="testi-name">Prof. Karim A.</div><div class="testi-role">Mathématiques · Lycée Alger</div></div>
+          <div><div class="testi-name">Prof. Karim A.</div><div class="testi-role" id="testi1Role">Mathématiques · Lycée Alger</div></div>
         </div>
       </div>
       <div class="testi">
         <div class="testi-quote">"</div>
-        <div class="testi-text">Le cahier de textes numérique a tout changé. L'inspecteur consulte mes progressions en ligne. Les parents reçoivent les devoirs directement. Je n'imprime plus rien.</div>
+        <div class="testi-text" id="testi2Text">Le cahier de textes numérique a tout changé. L'inspecteur consulte mes progressions en ligne. Les parents reçoivent les devoirs directement. Je n'imprime plus rien.</div>
         <div class="testi-author">
           <div class="testi-av" style="background:var(--b);">SB</div>
-          <div><div class="testi-name">Prof. Sihem B.</div><div class="testi-role">Français · CEM Constantine</div></div>
+          <div><div class="testi-name">Prof. Sihem B.</div><div class="testi-role" id="testi2Role">Français · CEM Constantine</div></div>
         </div>
       </div>
       <div class="testi">
         <div class="testi-quote">"</div>
-        <div class="testi-text">Nous avons déployé Tadriss DZ avec 45 professeurs. La gestion des absences est instantanée, les parents sont informés automatiquement. La direction est soulagée.</div>
+        <div class="testi-text" id="testi3Text">Nous avons déployé Tadriss DZ avec 45 professeurs. La gestion des absences est instantanée, les parents sont informés automatiquement. La direction est soulagée.</div>
         <div class="testi-author">
           <div class="testi-av" style="background:var(--r);">MR</div>
-          <div><div class="testi-name">M. Medjkane R.</div><div class="testi-role">Directeur · Lycée Oran</div></div>
+          <div><div class="testi-name">M. Medjkane R.</div><div class="testi-role" id="testi3Role">Directeur · Lycée Oran</div></div>
         </div>
       </div>
     </div>
@@ -815,10 +815,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 
   <!-- CTA Final -->
   <div class="site-cta-final">
-    <h2 class="cta-final-title">Rejoignez la révolution<br>numérique de l'éducation algérienne.</h2>
-    <p class="cta-final-sub">14 jours d'essai gratuit. Aucune carte requise. Paiement par virement bancaire.</p>
+    <h2 class="cta-final-title" id="ctaFinalTitle">Rejoignez la révolution<br>numérique de l'éducation algérienne.</h2>
+    <p class="cta-final-sub" id="ctaFinalSub">14 jours d'essai gratuit. Aucune carte requise. Paiement par virement bancaire.</p>
     <div class="hero-btns">
-      <button class="hb hb-main" onclick="toggleView()">Ouvrir l'application gratuitement</button>
+      <button class="hb hb-main" id="ctaFinalBtn" onclick="toggleView()">Ouvrir l'application gratuitement</button>
     </div>
   </div>
 
@@ -827,9 +827,9 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="footer-logo">Tadriss<span> DZ</span></div>
     <div><a href="mailto:contact@veloraia.fr" style="color:rgba(255,255,255,.5);text-decoration:none;">contact@veloraia.fr</a> · www.tadriss.dz</div>
     <div style="display:flex;gap:1.2rem;align-items:center;">
-      <button onclick="OM('mRGPD')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Confidentialité</button>
-      <button onclick="OM('mCGV')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Conditions de vente</button>
-      <span>🇩🇿 République Algérienne · © 2026</span>
+      <button id="footRGPD" onclick="OM('mRGPD')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Confidentialité</button>
+      <button id="footCGV" onclick="OM('mCGV')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Conditions de vente</button>
+      <span id="footCopyright">🇩🇿 République Algérienne · © 2026</span>
     </div>
   </div>
 </div><!-- /site -->
@@ -2957,6 +2957,25 @@ function switchLang() {
       if (span) badge.prepend(span);
     });
   }
+
+  /* Landing page — Avis / Témoignages */
+  var avisKicker = document.getElementById('avisKicker'); if (avisKicker) avisKicker.textContent = isAR ? 'آراء' : 'Témoignages';
+  var avisH2 = document.getElementById('avisH2');
+  if (avisH2) { var avisH2SpanEl = document.getElementById('avisH2Span'); avisH2.childNodes[0].nodeValue = isAR ? 'ماذا يقول' : 'Ce que disent les'; if (avisH2SpanEl) avisH2SpanEl.textContent = isAR ? 'الأساتذة الجزائريون' : 'enseignants algériens'; }
+  var testi1Text = document.getElementById('testi1Text'); if (testi1Text) testi1Text.textContent = isAR ? 'أُدرّس الرياضيات في السنة الثالثة ثانوي بالجزائر العاصمة. الذكاء الاصطناعي ينشئ سلاسل تمارين على نمط البكالوريا في 5 دقائق. معدلات تلاميذي تحسّنت منذ أن استخدمت Tadriss DZ.' : "J'enseigne les mathématiques en 3ème année secondaire à Alger. L'IA génère mes séries d'exercices type BAC en 5 minutes. Mes élèves ont de meilleures moyennes depuis que j'utilise Tadriss DZ.";
+  var testi1Role = document.getElementById('testi1Role'); if (testi1Role) testi1Role.textContent = isAR ? 'الرياضيات · ثانوية الجزائر العاصمة' : 'Mathématiques · Lycée Alger';
+  var testi2Text = document.getElementById('testi2Text'); if (testi2Text) testi2Text.textContent = isAR ? 'دفتر النصوص الرقمي غيّر كل شيء. المفتش يطّلع على تدرجاتي عبر الإنترنت. الأولياء يستلمون الواجبات مباشرة. لم أعد أطبع أي شيء.' : "Le cahier de textes numérique a tout changé. L'inspecteur consulte mes progressions en ligne. Les parents reçoivent les devoirs directement. Je n'imprime plus rien.";
+  var testi2Role = document.getElementById('testi2Role'); if (testi2Role) testi2Role.textContent = isAR ? 'الفرنسية · متوسطة قسنطينة' : 'Français · CEM Constantine';
+  var testi3Text = document.getElementById('testi3Text'); if (testi3Text) testi3Text.textContent = isAR ? 'اعتمدنا Tadriss DZ مع 45 أستاذًا. تسيير الغيابات أصبح فوريًا، والأولياء يُعلَمون تلقائيًا. الإدارة مرتاحة تمامًا.' : "Nous avons déployé Tadriss DZ avec 45 professeurs. La gestion des absences est instantanée, les parents sont informés automatiquement. La direction est soulagée.";
+  var testi3Role = document.getElementById('testi3Role'); if (testi3Role) testi3Role.textContent = isAR ? 'مدير · ثانوية وهران' : 'Directeur · Lycée Oran';
+
+  /* Landing page — CTA final + pied de page */
+  var ctaFinalTitle = document.getElementById('ctaFinalTitle'); if (ctaFinalTitle) ctaFinalTitle.innerHTML = isAR ? 'انضم إلى الثورة<br>الرقمية للتعليم الجزائري.' : 'Rejoignez la révolution<br>numérique de l\'éducation algérienne.';
+  var ctaFinalSub = document.getElementById('ctaFinalSub'); if (ctaFinalSub) ctaFinalSub.textContent = isAR ? 'تجربة مجانية لمدة 14 يومًا. بدون بطاقة. الدفع عبر تحويل بنكي.' : '14 jours d\'essai gratuit. Aucune carte requise. Paiement par virement bancaire.';
+  var ctaFinalBtn = document.getElementById('ctaFinalBtn'); if (ctaFinalBtn) ctaFinalBtn.textContent = isAR ? 'افتح التطبيق مجانًا' : "Ouvrir l'application gratuitement";
+  var footRGPD = document.getElementById('footRGPD'); if (footRGPD) footRGPD.textContent = isAR ? 'الخصوصية' : 'Confidentialité';
+  var footCGV = document.getElementById('footCGV'); if (footCGV) footCGV.textContent = isAR ? 'شروط البيع' : 'Conditions de vente';
+  var footCopyright = document.getElementById('footCopyright'); if (footCopyright) footCopyright.textContent = isAR ? '🇩🇿 الجمهورية الجزائرية · © 2026' : '🇩🇿 République Algérienne · © 2026';
 
   /* ===== UPDATE TITLES & ACTS ===== */
   TITLES = isAR ? TITLES_AR : TITLES_FR;
