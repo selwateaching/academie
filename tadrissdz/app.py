@@ -23,6 +23,20 @@ def index():
     return send_from_directory(os.path.dirname(__file__), "index.html")
 
 
+@app.get("/debug-key")
+def debug_key():
+    raw = os.environ.get("ANTHROPIC_API_KEY", "")
+    return jsonify(
+        {
+            "length": len(raw),
+            "prefix": raw[:15],
+            "suffix": raw[-6:] if len(raw) >= 6 else raw,
+            "has_leading_or_trailing_space": raw != raw.strip(),
+            "has_newline": "\n" in raw or "\r" in raw,
+        }
+    )
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
