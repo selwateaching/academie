@@ -3129,10 +3129,11 @@ function switchLang() {
       var crsObj = document.getElementById('crsObj'); if (crsObj) crsObj.placeholder = isAR ? 'مثال: حل معادلة من الدرجة الأولى بمجهول واحد...' : 'Ex: Savoir résoudre une équation du 1er degré à une inconnue...';
       var crsPrereq = document.getElementById('crsPrereq'); if (crsPrereq) crsPrereq.placeholder = isAR ? 'مثال: العمليات الأساسية، أولويات العمليات...' : 'Ex: Maîtrise des opérations de base, priorités opératoires...';
       var crsType = document.getElementById('crsType');
-      if (crsType && crsType.options.length >= 7) {
-        var crsTypeAR = ['درس كامل','ورقة مراجعة','سلسلة تمارين','مقدمة الفصل','ملخص / خلاصة','موضوع نمط BEM','موضوع نمط BAC'];
-        var crsTypeFR = ['Cours complet',"Fiche de révision","Série d'exercices","Introduction au chapitre","Synthèse / Résumé","Sujet type BEM","Sujet type BAC"];
-        for(var ci=0;ci<7;ci++) crsType.options[ci].text = isAR ? crsTypeAR[ci] : crsTypeFR[ci];
+      if (crsType && crsType.options.length >= 8) {
+        var crsTypeAR = ['📋 ورقة تحضير (نموذج رسمي)','درس كامل','ورقة مراجعة','سلسلة تمارين','مقدمة الفصل','ملخص / خلاصة','موضوع نمط BEM','موضوع نمط BAC'];
+        var crsTypeFR = ['📋 Fiche pédagogique (canevas officiel)','Cours complet',"Fiche de révision","Série d'exercices","Introduction au chapitre","Synthèse / Résumé","Sujet type BEM","Sujet type BAC"];
+        for(var ci=0;ci<8;ci++) crsType.options[ci].text = isAR ? crsTypeAR[ci] : crsTypeFR[ci];
+        onCrsTypeChange();
       }
       var crsDur = document.getElementById('crsDur');
       if (crsDur && crsDur.options.length >= 4) {
@@ -5383,6 +5384,16 @@ function onCrsTypeChange() {
   var mat = getCrsMatiereSelectionnee();
   var show = (ty === 'fiche_peda') && isLangueMatiere(mat);
   document.getElementById('crsLangueFields').style.display = show ? 'block' : 'none';
+  var crsType = document.getElementById('crsType');
+  var opt = crsType.selectedOptions[0];
+  if (opt) {
+    var label = opt.text.replace(/^📋\s*/, '').replace(/\s*\([^)]*\)\s*$/, '');
+    var isAR = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'ar');
+    var pgCrs = document.getElementById('pg-cours_ia');
+    var crsCards = pgCrs ? pgCrs.querySelectorAll('.card') : [];
+    var heading = crsCards[0] ? crsCards[0].querySelector('.ct') : null;
+    if (heading) heading.textContent = (isAR ? 'إنشاء : ' : 'Générer : ') + label;
+  }
 }
 function rCrsIA(){
   renderSC();document.getElementById('btnSCrs').style.display='none';
@@ -5724,12 +5735,23 @@ function renderCrsFolderBar(){
   var html = D.crsFolders.map(function(f){
     var cnt = D.crs.filter(function(c){return (c.folderId||1)===f.id;}).length;
     var on = (D.crsActiveFolder||1)===f.id;
-    return '<button class="btn bxs" style="background:'+(on?'var(--t)':'var(--bg)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--t)':'var(--br)')+';cursor:pointer;" onclick="setCrsFolder('+f.id+')">📁 '+f.nm+' ('+cnt+')</button>';
+    var delBtn = f.id===1 ? '' : '<span onclick="event.stopPropagation();delCrsFolder('+f.id+')" style="margin-left:6px;cursor:pointer;opacity:.75" title="Supprimer ce dossier">✕</span>';
+    return '<button class="btn bxs" style="background:'+(on?'var(--t)':'var(--bg)')+';color:'+(on?'#fff':'var(--ink2)')+';border:1px solid '+(on?'var(--t)':'var(--br)')+';cursor:pointer;" onclick="setCrsFolder('+f.id+')">📁 '+f.nm+' ('+cnt+')'+delBtn+'</button>';
   }).join('');
   html += '<button class="btn bxs bo" style="cursor:pointer;" onclick="addCrsFolder()">+ Dossier</button>';
   el.innerHTML = html;
 }
 function setCrsFolder(id){ D.crsActiveFolder=id; sv(); renderCrsFolderBar(); renderSC(); }
+function delCrsFolder(id){
+  if(id===1) return;
+  var f = D.crsFolders.find(function(x){return x.id===id;}); if(!f) return;
+  if(!confirm('Supprimer le dossier "'+f.nm+'" ? Les documents qu\'il contient seront déplacés vers "Général".')) return;
+  D.crs.forEach(function(c){ if((c.folderId||1)===id) c.folderId=1; });
+  D.crsFolders = D.crsFolders.filter(function(x){return x.id!==id;});
+  if((D.crsActiveFolder||1)===id) D.crsActiveFolder=1;
+  sv(); renderCrsFolderBar(); renderSC();
+  N('Dossier "'+f.nm+'" supprimé.','ok');
+}
 function addCrsFolder(){
   var nm = prompt('Nom du nouveau dossier :'); if(!nm||!nm.trim()) return;
   var id = D.crsFolders.length ? Math.max.apply(null,D.crsFolders.map(function(f){return f.id;}))+1 : 1;
