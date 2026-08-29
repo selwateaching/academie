@@ -270,8 +270,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 
 /* PLANS */
 .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
-.plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;}
+.plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
+.plan::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--t),var(--t2));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
+.plan:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,107,63,.16);border-color:var(--t);}
+.plan:hover::before{transform:scaleX(1);}
 .plan.featured{border-color:var(--t);box-shadow:0 12px 40px rgba(0,107,63,.15);}
+.plan.featured::before{transform:scaleX(1);}
+.plan.featured:hover{transform:translateY(-6px);box-shadow:0 22px 50px rgba(0,107,63,.24);}
 .plan-badge{position:absolute;top:1rem;right:1rem;background:var(--t);color:#fff;font-size:.62rem;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
 .plan-header{padding:1.8rem 1.8rem 1.4rem;border-bottom:1px solid var(--br);}
 .plan-eyebrow{font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t2);margin-bottom:.4rem;}
@@ -287,8 +292,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .plan-feats li.no{color:var(--ink3);}
 .plan-feats li.no::before{content:'✕';color:var(--br);}
 .plan-cta-btn{display:block;width:calc(100% - 3.6rem);margin:0 1.8rem 1.8rem;padding:12px;border-radius:9px;font-family:'Inter',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;text-align:center;border:2px solid var(--t);transition:all .18s;}
+.plan-cta-btn:hover{transform:translateY(-2px);}
 .plan-cta-btn.primary{background:var(--t);color:#fff;}
-.plan-cta-btn.primary:hover{background:var(--t2);}
+.plan-cta-btn.primary:hover{background:var(--t2);box-shadow:0 8px 20px rgba(0,107,63,.3);}
 .plan-cta-btn.outline{background:transparent;color:var(--t);}
 .plan-cta-btn.outline:hover{background:var(--tp);}
 
