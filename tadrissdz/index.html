@@ -698,21 +698,21 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   </div>
   <!-- Tarifs -->
   <div class="site-section alt" id="prix">
-    <div class="section-kicker">Tarifs</div>
-    <h2 class="section-h2">Des prix adaptés<br><span>au pouvoir d'achat algérien</span></h2>
-    <p style="color:var(--ink3);font-size:.9rem;margin-bottom:0;">Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.</p>
+    <div class="section-kicker" id="prixKicker">Tarifs</div>
+    <h2 class="section-h2" id="prixH2">Des prix adaptés<br><span id="prixH2Span">au pouvoir d'achat algérien</span></h2>
+    <p style="color:var(--ink3);font-size:.9rem;margin-bottom:0;" id="prixSub">Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.</p>
     <div class="plans-grid">
       <div class="plan">
         <div class="plan-header">
-          <div class="plan-eyebrow">Individuel</div>
+          <div class="plan-eyebrow" id="planEye1">Individuel</div>
           <div class="plan-name">Starter</div>
-          <div class="plan-desc">Débutez avec les outils essentiels pour 1 matière.</div>
+          <div class="plan-desc" id="planDesc1">Débutez avec les outils essentiels pour 1 matière.</div>
         </div>
         <div class="plan-price">
           <div class="price-num"><span class="price-cur">DA</span>990</div>
-          <div class="price-per">par mois · 1 matière incluse</div>
+          <div class="price-per" id="planPer1">par mois · 1 matière incluse</div>
         </div>
-        <ul class="plan-feats">
+        <ul class="plan-feats" id="planFeats1">
           <li>1 matière (programme officiel)</li>
           <li>Génération de cours et quiz par IA — 40/mois</li>
           <li>Classes et élèves illimités</li>
@@ -721,20 +721,20 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <li>Messagerie parents/élèves</li>
           <li class="no">IA avancée (cours complets)</li>
         </ul>
-        <button class="plan-cta-btn outline" onclick="toggleView()">Commencer Starter</button>
+        <button class="plan-cta-btn outline" id="planCta1" onclick="toggleView()">Commencer Starter</button>
       </div>
       <div class="plan featured">
-        <div class="plan-badge">⭐ Populaire</div>
+        <div class="plan-badge" id="planBadge">⭐ Populaire</div>
         <div class="plan-header">
-          <div class="plan-eyebrow">Individuel</div>
+          <div class="plan-eyebrow" id="planEye2">Individuel</div>
           <div class="plan-name">Pro</div>
-          <div class="plan-desc">L'essentiel complet pour un enseignant exigeant.</div>
+          <div class="plan-desc" id="planDesc2">L'essentiel complet pour un enseignant exigeant.</div>
         </div>
         <div class="plan-price">
           <div class="price-num"><span class="price-cur">DA</span>1 999</div>
-          <div class="price-per">par mois · 1 matière incluse</div>
+          <div class="price-per" id="planPer2">par mois · 1 matière incluse</div>
         </div>
-        <ul class="plan-feats">
+        <ul class="plan-feats" id="planFeats2">
           <li>1 matière (programme complet)</li>
           <li>Génération de cours et quiz par IA avancée — 100/mois</li>
           <li>Classes et élèves illimités</li>
@@ -744,19 +744,19 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <li>Exercices avec corrigés automatiques</li>
           <li>Sujets type BEM / BAC</li>
         </ul>
-        <button class="plan-cta-btn primary" onclick="toggleView()">Commencer Pro</button>
+        <button class="plan-cta-btn primary" id="planCta2" onclick="toggleView()">Commencer Pro</button>
       </div>
       <div class="plan">
         <div class="plan-header">
-          <div class="plan-eyebrow">Établissement</div>
+          <div class="plan-eyebrow" id="planEye3">Établissement</div>
           <div class="plan-name">Institution</div>
-          <div class="plan-desc">Pour lycées, CEM et écoles : tous les profs, tout inclus.</div>
+          <div class="plan-desc" id="planDesc3">Pour lycées, CEM et écoles : tous les profs, tout inclus.</div>
         </div>
         <div class="plan-price">
           <div class="price-num"><span class="price-cur">DA</span>12 000</div>
-          <div class="price-per">par mois · jusqu'à 30 professeurs</div>
+          <div class="price-per" id="planPer3">par mois · jusqu'à 30 professeurs</div>
         </div>
-        <ul class="plan-feats">
+        <ul class="plan-feats" id="planFeats3">
           <li>Toutes les matières · tous niveaux</li>
           <li>IA généreuse — 40 générations/mois par prof</li>
           <li>Élèves illimités · cloud sécurisé</li>
@@ -766,18 +766,18 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <li>Support dédié + formation sur site</li>
           <li>Facturation par bon de commande</li>
         </ul>
-        <button class="plan-cta-btn outline">Contacter l'équipe</button>
+        <button class="plan-cta-btn outline" id="planCta3">Contacter l'équipe</button>
       </div>
     </div>
     <div style="margin-top:2rem;">
-      <div style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;">Méthodes de paiement acceptées</div>
-      <div class="pay-row">
+      <div style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;" id="payKicker">Méthodes de paiement acceptées</div>
+      <div class="pay-row" id="payRow">
         <div class="pay-badge"><span>💳</span> Carte CIB (SATIM)</div>
         <div class="pay-badge"><span>📮</span> Dahabia (Algérie Poste)</div>
         <div class="pay-badge"><span>📱</span> BaridiMob / CCP</div>
         <div class="pay-badge"><span>🏦</span> Virement bancaire RIB</div>
       </div>
-      <p style="font-size:.75rem;color:var(--ink3);margin-top:.8rem;">Aucune carte internationale requise. Établissements : paiement par bon de commande ou mandat administratif.</p>
+      <p style="font-size:.75rem;color:var(--ink3);margin-top:.8rem;" id="paySub">Aucune carte internationale requise. Établissements : paiement par bon de commande ou mandat administratif.</p>
     </div>
   </div>
 
@@ -2889,6 +2889,74 @@ function switchLang() {
     var items = listEl.querySelectorAll('li');
     items.forEach(function(li, i) { var pair = featsLists[listId][i]; if (pair) li.textContent = isAR ? pair[1] : pair[0]; });
   });
+
+  /* Landing page — Tarifs */
+  var prixKicker = document.getElementById('prixKicker'); if (prixKicker) prixKicker.textContent = isAR ? 'الأسعار' : 'Tarifs';
+  var prixH2 = document.getElementById('prixH2');
+  if (prixH2) { var prixH2SpanEl = document.getElementById('prixH2Span'); prixH2.childNodes[0].nodeValue = isAR ? 'أسعار مناسبة' : 'Des prix adaptés'; if (prixH2SpanEl) prixH2SpanEl.textContent = isAR ? 'للقدرة الشرائية الجزائرية' : "au pouvoir d'achat algérien"; }
+  var prixSub = document.getElementById('prixSub'); if (prixSub) prixSub.textContent = isAR ? 'بدون التزام. يمكنك الإلغاء في أي وقت. تجربة مجانية لمدة 14 يومًا.' : 'Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.';
+  var planEye1 = document.getElementById('planEye1'); if (planEye1) planEye1.textContent = isAR ? 'فردي' : 'Individuel';
+  var planEye2 = document.getElementById('planEye2'); if (planEye2) planEye2.textContent = isAR ? 'فردي' : 'Individuel';
+  var planEye3 = document.getElementById('planEye3'); if (planEye3) planEye3.textContent = isAR ? 'مؤسسة' : 'Établissement';
+  var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'ابدأ بالأدوات الأساسية لمادة واحدة.' : 'Débutez avec les outils essentiels pour 1 matière.';
+  var planDesc2 = document.getElementById('planDesc2'); if (planDesc2) planDesc2.textContent = isAR ? 'كل ما يحتاجه المعلم المتميز.' : "L'essentiel complet pour un enseignant exigeant.";
+  var planDesc3 = document.getElementById('planDesc3'); if (planDesc3) planDesc3.textContent = isAR ? 'للثانويات والمتوسطات والمدارس: كل الأساتذة، كل شيء مشمول.' : 'Pour lycées, CEM et écoles : tous les profs, tout inclus.';
+  var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
+  var planPer2 = document.getElementById('planPer2'); if (planPer2) planPer2.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
+  var planPer3 = document.getElementById('planPer3'); if (planPer3) planPer3.textContent = isAR ? 'شهريًا · حتى 30 أستاذًا' : "par mois · jusqu'à 30 professeurs";
+  var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ الأكثر طلبًا' : '⭐ Populaire';
+  var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'ابدأ Starter' : 'Commencer Starter';
+  var planCta2 = document.getElementById('planCta2'); if (planCta2) planCta2.textContent = isAR ? 'ابدأ Pro' : 'Commencer Pro';
+  var planCta3 = document.getElementById('planCta3'); if (planCta3) planCta3.textContent = isAR ? 'تواصل مع الفريق' : "Contacter l'équipe";
+  var planFeatsPairs = {
+    planFeats1: [
+      ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
+      ['Génération de cours et quiz par IA — 40/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 40/شهريًا'],
+      ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
+      ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
+      ['Notes, absences, bulletins PDF','النقاط، الغيابات، كشوف PDF'],
+      ['Messagerie parents/élèves','مراسلة الأولياء/التلاميذ'],
+      ['IA avancée (cours complets)','ذكاء اصطناعي متقدم (دروس كاملة)']
+    ],
+    planFeats2: [
+      ['1 matière (programme complet)','مادة واحدة (البرنامج الكامل)'],
+      ['Génération de cours et quiz par IA avancée — 100/mois','إنشاء دروس واختبارات بذكاء اصطناعي متقدم — 100/شهريًا'],
+      ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
+      ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
+      ['Messagerie parents/élèves illimitée','مراسلة غير محدودة مع الأولياء/التلاميذ'],
+      ['Cours complets générés par IA','دروس كاملة منشأة بالذكاء الاصطناعي'],
+      ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي'],
+      ['Sujets type BEM / BAC','مواضيع على نمط BEM / BAC']
+    ],
+    planFeats3: [
+      ['Toutes les matières · tous niveaux','جميع المواد · جميع المستويات'],
+      ['IA généreuse — 40 générations/mois par prof','ذكاء اصطناعي سخي — 40 عملية إنشاء/شهريًا لكل أستاذ'],
+      ['Élèves illimités · cloud sécurisé','تلاميذ غير محدودين · تخزين سحابي آمن'],
+      ['Progression annuelle générée par IA','تدرج سنوي منشأ بالذكاء الاصطناعي'],
+      ['Gestion emplois du temps','إدارة جدول التوقيت'],
+      ['Fiches pédagogiques conformes MEN','أوراق تحضير مطابقة لبرنامج وزارة التربية'],
+      ['Support dédié + formation sur site','دعم مخصص + تكوين ميداني'],
+      ['Facturation par bon de commande','فوترة عبر أمر الشراء']
+    ]
+  };
+  Object.keys(planFeatsPairs).forEach(function(listId) {
+    var listEl = document.getElementById(listId); if (!listEl) return;
+    var items = listEl.querySelectorAll('li');
+    items.forEach(function(li, i) { var pair = planFeatsPairs[listId][i]; if (pair) li.textContent = isAR ? pair[1] : pair[0]; });
+  });
+  var payKicker = document.getElementById('payKicker'); if (payKicker) payKicker.textContent = isAR ? 'طرق الدفع المقبولة' : 'Méthodes de paiement acceptées';
+  var paySub = document.getElementById('paySub'); if (paySub) paySub.textContent = isAR ? 'لا حاجة لبطاقة دولية. المؤسسات: الدفع عبر أمر الشراء أو الحوالة الإدارية.' : 'Aucune carte internationale requise. Établissements : paiement par bon de commande ou mandat administratif.';
+  var payBadgePairs = [['Carte CIB (SATIM)','بطاقة CIB (SATIM)'],['Dahabia (Algérie Poste)','ذهبية (بريد الجزائر)'],['BaridiMob / CCP','BaridiMob / CCP'],['Virement bancaire RIB','تحويل بنكي RIB']];
+  var payRow = document.getElementById('payRow');
+  if (payRow) {
+    var payBadges = payRow.querySelectorAll('.pay-badge');
+    payBadges.forEach(function(badge, i) {
+      var pair = payBadgePairs[i]; if (!pair) return;
+      var span = badge.querySelector('span');
+      badge.textContent = ' ' + (isAR ? pair[1] : pair[0]);
+      if (span) badge.prepend(span);
+    });
+  }
 
   /* ===== UPDATE TITLES & ACTS ===== */
   TITLES = isAR ? TITLES_AR : TITLES_FR;
