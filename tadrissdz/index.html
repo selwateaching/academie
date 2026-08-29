@@ -1334,7 +1334,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     </div>
     <div>
       <div class="card" style="margin-bottom:1.2rem">
-        <div class="ch"><div class="ct" id="qzDisT">Résultat Quiz</div><div style="display:flex;gap:.6rem"><button class="btn bo bsm" onclick="printCleanPage(document.getElementById('qzDisT').textContent, document.getElementById('qzDis').innerHTML)">Imprimer</button><button class="btn bt bsm" id="btnSQ" style="display:none" onclick="saveQz()">Sauvegarder</button><button class="btn bo bsm" onclick="closeQzResult()" title="Fermer">✕ Fermer</button></div></div>
+        <div class="ch"><div class="ct" id="qzDisT">Résultat Quiz</div><div style="display:flex;gap:.6rem"><button class="btn bo bsm" id="btnQzPrint" onclick="printCleanPage(document.getElementById('qzDisT').textContent, document.getElementById('qzDis').innerHTML)">Imprimer</button><button class="btn bt bsm" id="btnSQ" style="display:none" onclick="saveQz()">Sauvegarder</button><button class="btn bo bsm" id="btnQzClose" onclick="closeQzResult()" title="Fermer">✕ Fermer</button></div></div>
         <div class="cb" style="max-height:380px;overflow-y:auto" id="qzDis"><div style="text-align:center;padding:3rem;color:var(--ink3)"><div style="width:44px;height:44px;margin:0 auto"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><defs><linearGradient id="genBulbQz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulbQz)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg></div><div style="margin-top:.75rem">Entrez un sujet et générez votre quiz</div></div></div>
       </div>
       <div class="card"><div class="ch"><div class="ct">Correction automatique</div></div><div class="cb">
@@ -1394,9 +1394,9 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <button class="btn bo bsm" id="btnTpView" style="display:none" onclick="tpToggleView()">📊 Vue tableau</button>
           <button class="btn bo bsm" id="btnTcRegen" style="display:none" onclick="genCours()" title="Régénérer avec les mêmes paramètres">🔄 Régénérer</button>
           <button class="btn bo bsm" id="btnTcSimplify" style="display:none" onclick="tcSimplify()" title="Refaire une version plus simple">✏️ Simplifier</button>
-          <button class="btn bo bsm" onclick="printCleanPage(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)">Imprimer</button>
+          <button class="btn bo bsm" id="btnTcPrint" onclick="printCleanPage(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)">Imprimer</button>
           <button class="btn bt bsm" id="btnSCrs" style="display:none" onclick="saveCours()">Sauvegarder</button>
-          <button class="btn bo bsm" onclick="closeCrsResult()" title="Fermer">✕ Fermer</button>
+          <button class="btn bo bsm" id="btnTcClose" onclick="closeCrsResult()" title="Fermer">✕ Fermer</button>
         </div>
       </div>
       <div class="cb" style="max-height:680px;overflow-y:auto" id="crsDis">
@@ -3179,7 +3179,8 @@ function switchLang() {
     var qzDisCards = pgQz.querySelectorAll('.g2 > div:last-child .card');
     if (qzDisCards[0]) {
       var qzDCt = document.getElementById('qzDisT'); if (qzDCt && qzDCt.textContent.match(/^(Résultat Quiz|نتيجة الاختبار)$/)) qzDCt.textContent = isAR ? 'نتيجة الاختبار' : 'Résultat Quiz';
-      var qzPrintBtn = qzDisCards[0].querySelector('.btn.bo.bsm'); if (qzPrintBtn) qzPrintBtn.textContent = isAR ? 'طباعة' : 'Imprimer';
+      var qzPrintBtn = document.getElementById('btnQzPrint'); if (qzPrintBtn) qzPrintBtn.textContent = isAR ? 'طباعة' : 'Imprimer';
+      var qzCloseBtn = document.getElementById('btnQzClose'); if (qzCloseBtn) { qzCloseBtn.textContent = isAR ? '✕ إغلاق' : '✕ Fermer'; qzCloseBtn.title = isAR ? 'إغلاق' : 'Fermer'; }
       var qzSaveBtn = document.getElementById('btnSQ'); if (qzSaveBtn) qzSaveBtn.textContent = isAR ? 'حفظ' : 'Sauvegarder';
       var qzEmptyDiv = document.querySelector('#qzDis > div > div:last-child'); if (qzEmptyDiv) qzEmptyDiv.textContent = isAR ? 'أدخل موضوعاً وأنشئ اختبارك' : 'Entrez un sujet et générez votre quiz';
     }
@@ -3239,7 +3240,10 @@ function switchLang() {
     var crsDCard = pgCrs.querySelector('.g2 > .card');
     if (crsDCard) {
       var crsDT = document.getElementById('crsDisT'); if (crsDT && crsDT.textContent.match(/^(Résultat|النتيجة)$/)) crsDT.textContent = isAR ? 'النتيجة' : 'Résultat';
-      var crsPrintBtn = crsDCard.querySelector('.btn.bo.bsm'); if (crsPrintBtn) crsPrintBtn.textContent = isAR ? 'طباعة' : 'Imprimer';
+      var crsRegenBtn = document.getElementById('btnTcRegen'); if (crsRegenBtn) crsRegenBtn.innerHTML = isAR ? '🔄 إعادة الإنشاء' : '🔄 Régénérer';
+      var crsSimplifyBtn = document.getElementById('btnTcSimplify'); if (crsSimplifyBtn) crsSimplifyBtn.innerHTML = isAR ? '✏️ تبسيط' : '✏️ Simplifier';
+      var crsPrintBtn = document.getElementById('btnTcPrint'); if (crsPrintBtn) crsPrintBtn.textContent = isAR ? 'طباعة' : 'Imprimer';
+      var crsCloseBtn = document.getElementById('btnTcClose'); if (crsCloseBtn) { crsCloseBtn.textContent = isAR ? '✕ إغلاق' : '✕ Fermer'; crsCloseBtn.title = isAR ? 'إغلاق' : 'Fermer'; }
       var crsSaveBtn = document.getElementById('btnSCrs'); if (crsSaveBtn) crsSaveBtn.textContent = isAR ? 'حفظ' : 'Sauvegarder';
       var crsEmptyDiv = document.querySelector('#crsDis > div > div:last-child'); if (crsEmptyDiv) crsEmptyDiv.textContent = isAR ? 'أدخل عنواناً وأنشئ درسك' : 'Entrez un titre et générez votre cours';
     }
