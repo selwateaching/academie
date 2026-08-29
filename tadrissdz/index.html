@@ -2980,6 +2980,85 @@ function switchLang() {
   if (typeof rAcquis === 'function' && document.getElementById('pg-acquis') && document.getElementById('pg-acquis').classList.contains('on')) rAcquis();
   if (typeof renderCompList === 'function' && document.getElementById('mCompetence') && document.getElementById('mCompetence').classList.contains('open')) renderCompList();
 
+  /* ===== mPartage ===== */
+  var mPartT = document.getElementById('mPartageT'); if (mPartT) mPartT.textContent = isAR ? 'مشاركة هذا المجلد' : 'Partager ce dossier';
+  var mPartLbls = document.querySelectorAll('#mPartage .fl');
+  var mPartLblPairs = [['Qui peut voir ce dossier ?','من يمكنه رؤية هذا المجلد ؟'],['Sélectionne les élèves','اختر التلاميذ']];
+  mPartLbls.forEach(function(lb,i){ if(mPartLblPairs[i]) lb.textContent = isAR?mPartLblPairs[i][1]:mPartLblPairs[i][0]; });
+  var partModeSel = document.getElementById('partageMode');
+  if (partModeSel && partModeSel.options.length >= 3) {
+    var partAR = ['🔒 خاص — لا أحد (افتراضي)','👁 كامل القسم','☑ تلاميذ محددون (مثلاً: الغائبون لتدارك الدروس)'];
+    var partFR = ['🔒 Privé — personne (par défaut)','👁 Toute la classe','☑ Élèves spécifiques (ex: absents à faire rattraper)'];
+    for(var pmi=0;pmi<3;pmi++) partModeSel.options[pmi].text = isAR ? partAR[pmi] : partFR[pmi];
+  }
+  var mPartBtns = document.querySelectorAll('#mPartage .mf button');
+  if (mPartBtns[0]) mPartBtns[0].textContent = isAR?'إلغاء':'Annuler';
+  if (mPartBtns[1]) mPartBtns[1].textContent = isAR?'حفظ':'Enregistrer';
+
+  /* ===== mProjet ===== */
+  var mProjT = document.querySelector('#mProjet .mt2'); if (mProjT) mProjT.textContent = isAR ? 'مشروع / وحدة جديدة' : 'Nouveau Projet / Unité';
+  var mProjLbls = document.querySelectorAll('#mProjet .fl');
+  var mProjLblPairs = [['Nom du Projet / Unité','اسم المشروع / الوحدة'],['Tâche finale','المهمة النهائية']];
+  mProjLbls.forEach(function(lb,i){ if(mProjLblPairs[i]) lb.textContent = isAR?mProjLblPairs[i][1]:mProjLblPairs[i][0]; });
+  var pjNomInput = document.getElementById('pjNom'); if (pjNomInput) pjNomInput.placeholder = isAR ? 'مثال: المشروع 1 — في حديقة الحيوان !' : 'Ex: Projet 1 — Au zoo !';
+  var pjTacheInput = document.getElementById('pjTache'); if (pjTacheInput) pjTacheInput.placeholder = isAR ? 'مثال: إنجاز ملصق حول حيوان بري...' : 'Ex: Réaliser une affiche sur un animal sauvage...';
+  var mProjBtns = document.querySelectorAll('#mProjet .mf button');
+  if (mProjBtns[0]) mProjBtns[0].textContent = isAR?'إلغاء':'Annuler';
+  if (mProjBtns[1]) mProjBtns[1].textContent = isAR?'إنشاء':'Créer';
+
+  /* ===== mSequence ===== */
+  var mSeqT = document.getElementById('mSeqT'); if (mSeqT) mSeqT.textContent = isAR ? 'الحصة' : 'Séquence';
+  var mSeqLbls = document.querySelectorAll('#mSequence .fl');
+  var mSeqLblPairs = [['Nom de la séquence','اسم الحصة'],['Statut','الحالة'],['Actes de parole','أفعال الكلام'],['Lecture compréhension','القراءة والفهم'],['Lexique','المعجم'],['Grammaire','القواعد'],['Conjugaison','التصريف'],['Orthographe','الإملاء'],['Lecture systématique','القراءة المنهجية'],['Dictée','الإملاء المسموع'],['Production orale / écrite','الإنتاج الشفهي / الكتابي'],['Compétences visées','الكفاءات المستهدفة'],['Nb de séances','عدد الحصص'],['Période prévue','الفترة المقررة']];
+  mSeqLbls.forEach(function(lb,i){ if(mSeqLblPairs[i]) lb.textContent = isAR?mSeqLblPairs[i][1]:mSeqLblPairs[i][0]; });
+  var sqNomInput = document.getElementById('sqNom'); if (sqNomInput) sqNomInput.placeholder = isAR ? 'مثال: الحصة 1 — تقديم حيوان بري' : 'Ex: Séquence 1 — Présenter un animal sauvage';
+  var sqPeriodeInput = document.getElementById('sqPeriode'); if (sqPeriodeInput) sqPeriodeInput.placeholder = isAR ? 'مثال: الأسبوع 3-4' : 'Ex: Semaines 3-4';
+  var sqStatutSel = document.getElementById('sqStatut');
+  if (sqStatutSel && sqStatutSel.options.length >= 3) {
+    var sqStAR = ['⚪ قادمة','🟡 جارية','🟢 منتهية'];
+    var sqStFR = ['⚪ À venir','🟡 En cours','🟢 Terminée'];
+    for(var ssi=0;ssi<3;ssi++) sqStatutSel.options[ssi].text = isAR ? sqStAR[ssi] : sqStFR[ssi];
+  }
+  var sqDelBtn = document.getElementById('sqDelBtn'); if (sqDelBtn) sqDelBtn.textContent = isAR ? '🗑 حذف' : '🗑 Supprimer';
+  var mSeqBtns = document.querySelectorAll('#mSequence .mf button.btn.bo, #mSequence .mf button.btn.bt');
+  if (mSeqBtns[0]) mSeqBtns[0].textContent = isAR?'إلغاء':'Annuler';
+  if (mSeqBtns[1]) mSeqBtns[1].textContent = isAR?'حفظ':'Enregistrer';
+
+  /* ===== mSeance ===== */
+  var mSeanceT = document.getElementById('mSeanceT'); if (mSeanceT) mSeanceT.textContent = isAR ? 'حصة جديدة' : 'Nouvelle séance';
+  var mSjLbls = document.querySelectorAll('#mSeance .fl');
+  var mSjLblPairs = [['Date','التاريخ'],['Horaire','التوقيت'],['Classe','القسم'],['Durée','المدة'],['Thèmes et activités pédagogiques','المواضيع والأنشطة التربوية'],['Détail des activités / Plan de la leçon','تفاصيل الأنشطة / مخطط الدرس'],["Objectifs de compétences / d'apprentissage",'أهداف الكفاءات / التعلم'],['Supports','الوسائل'],['Matière','المادة'],['Statut','الحالة'],['Remarque','ملاحظة']];
+  mSjLbls.forEach(function(lb,i){ if(mSjLblPairs[i]) lb.textContent = isAR?mSjLblPairs[i][1]:mSjLblPairs[i][0]; });
+  var sjDurSel = document.getElementById('sjDur');
+  if (sjDurSel && sjDurSel.options.length >= 3) {
+    var sjDurAR = ['30 دقيقة','ساعة','ساعتان'];
+    var sjDurFR = ['30 min','1h','2h'];
+    for(var sdi=0;sdi<3;sdi++) sjDurSel.options[sdi].text = isAR ? sjDurAR[sdi] : sjDurFR[sdi];
+  }
+  var sjTitreInput = document.getElementById('sjTitre'); if (sjTitreInput) sjTitreInput.placeholder = isAR ? 'مثال: معادلات الدرجة الأولى' : 'Ex: Les équations du 1er degré';
+  var sjContenuInput = document.getElementById('sjContenu'); if (sjContenuInput) sjContenuInput.placeholder = isAR ? 'مثال: النشاط 1 · النشاط 2 · التطبيق...' : 'Ex: Activité 1 · Activité 2 · Application...';
+  var sjObjectifsInput = document.getElementById('sjObjectifs'); if (sjObjectifsInput) sjObjectifsInput.placeholder = isAR ? 'مثال: الكفاءة المستهدفة : ... · الهدف : ...' : 'Ex: Compétence visée : ... · Objectif : ...';
+  var sjSupportsInput = document.getElementById('sjSupports'); if (sjSupportsInput) sjSupportsInput.placeholder = isAR ? 'مثال: الكتاب المدرسي، اللوحة، الملصقات...' : 'Ex: Manuel, ardoise, affiches...';
+  var sjMatInput = document.getElementById('sjMat'); if (sjMatInput) sjMatInput.placeholder = isAR ? 'الرياضيات' : 'Mathématiques';
+  var sjResteInput = document.getElementById('sjReste'); if (sjResteInput) sjResteInput.placeholder = isAR ? 'ملاحظات، ما تبقى معالجته...' : "Observations, ce qu'il reste à traiter...";
+  var sjStatutSel = document.getElementById('sjStatut');
+  if (sjStatutSel && sjStatutSel.options.length >= 2) { sjStatutSel.options[0].text = isAR?'غير منجزة':'Inachevé'; sjStatutSel.options[1].text = isAR?'منجزة':'Achevé'; }
+  var mSeanceBtns = document.querySelectorAll('#mSeance .mf button');
+  if (mSeanceBtns[0]) mSeanceBtns[0].textContent = isAR?'إلغاء':'Annuler';
+  if (mSeanceBtns[1]) mSeanceBtns[1].textContent = isAR?'حفظ':'Enregistrer';
+
+  /* ===== mCreneau ===== */
+  var mCreneauT = document.getElementById('mCreneauT'); if (mCreneauT) mCreneauT.textContent = isAR ? 'الحصة الزمنية' : 'Créneau';
+  var mCrnLbls = document.querySelectorAll('#mCreneau .fl');
+  var mCrnLblPairs = [['Classe','القسم'],['Salle','القاعة']];
+  mCrnLbls.forEach(function(lb,i){ if(mCrnLblPairs[i]) lb.textContent = isAR?mCrnLblPairs[i][1]:mCrnLblPairs[i][0]; });
+  var edtClsSel = document.getElementById('edtCls'); if (edtClsSel && edtClsSel.options[0]) edtClsSel.options[0].text = isAR ? '— حصة حرة —' : '— Créneau libre —';
+  var edtSalleInput = document.getElementById('edtSalle'); if (edtSalleInput) edtSalleInput.placeholder = isAR ? 'مثال: القاعة 12' : 'Ex: Salle 12';
+  var edtDelBtn = document.getElementById('edtDelBtn'); if (edtDelBtn) edtDelBtn.textContent = isAR ? '🗑 حذف' : '🗑 Supprimer';
+  var mCrnBtns = document.querySelectorAll('#mCreneau .mf button.btn.bo, #mCreneau .mf button.btn.bt');
+  if (mCrnBtns[0]) mCrnBtns[0].textContent = isAR?'إلغاء':'Annuler';
+  if (mCrnBtns[1]) mCrnBtns[1].textContent = isAR?'حفظ':'Enregistrer';
+
   /* ===== NOTES PAGE ===== */
   var pgNt = document.getElementById('pg-notes');
   if (pgNt) {
@@ -4532,14 +4611,15 @@ function rFo() {
   }
   document.getElementById('fOpen').style.display = 'none';
   document.getElementById('fGrid').style.display = 'grid';
+  var isARfo = (CURRENT_LANG==='ar');
   document.getElementById('fGrid').innerHTML = D.fo.map(function(f) {
     var mode = f.partageMode || (f.partageEleves ? 'tous' : 'aucun'); /* compat avec l'ancien système booléen */
     var badge;
-    if (mode === 'tous') badge = '<span class="badge bg2" style="position:absolute;top:8px;left:8px;">👁 Toute la classe</span>';
-    else if (mode === 'specifique') badge = '<span class="badge bb2" style="position:absolute;top:8px;left:8px;">☑ '+((f.partageElevesIds||[]).length)+' élève(s)</span>';
-    else badge = '<span class="badge" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);color:#fff;">🔒 Privé</span>';
-    return '<div class="folder" onclick="openFO('+f.id+')" style="border-color:'+f.col+'33;position:relative;">'+badge+'<div class="ftop" style="background:'+f.col+'22;border-bottom:2px solid '+f.col+'44"><div class="ftab" style="background:'+f.col+'"></div>'+(TADRISS_FOLDER_ICONS[f.id]?('<div style="width:46px;height:46px;filter:drop-shadow(0 4px 8px rgba(0,50,30,.18))">'+TADRISS_FOLDER_ICONS[f.id]+'</div>'):('<div style="font-size:2.2rem">'+f.ico+'</div>'))+'</div><div class="fbot"><div class="fnm">'+f.nm+'</div><div class="fct">'+f.fi.length+' fichier(s)</div><div class="fac"><button class="btn bxs" style="background:'+f.col+'22;color:'+f.col+';border:1px solid '+f.col+'44;border-radius:5px;cursor:pointer" onclick="event.stopPropagation();openFO('+f.id+')">Ouvrir</button><button class="btn bxs" style="background:var(--tp);color:var(--t);border:1px solid rgba(0,107,63,.3);border-radius:5px;cursor:pointer" onclick="event.stopPropagation();openPartageModal('+f.id+')">⚙️ Partage</button><button class="btn bxs bo" onclick="event.stopPropagation();renFO('+f.id+')" style="padding:3px 7px">edit</button><button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);border-radius:5px;cursor:pointer" onclick="event.stopPropagation();delFO('+f.id+')">del</button></div></div></div>';
-  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2rem">📁</div><div style="margin-top:.5rem">Aucun dossier — clique sur "+ Nouveau dossier"</div></div>';
+    if (mode === 'tous') badge = '<span class="badge bg2" style="position:absolute;top:8px;left:8px;">👁 '+(isARfo?'كامل القسم':'Toute la classe')+'</span>';
+    else if (mode === 'specifique') badge = '<span class="badge bb2" style="position:absolute;top:8px;left:8px;">☑ '+((f.partageElevesIds||[]).length)+(isARfo?' تلميذ(ة)':' élève(s)')+'</span>';
+    else badge = '<span class="badge" style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,.55);color:#fff;">🔒 '+(isARfo?'خاص':'Privé')+'</span>';
+    return '<div class="folder" onclick="openFO('+f.id+')" style="border-color:'+f.col+'33;position:relative;">'+badge+'<div class="ftop" style="background:'+f.col+'22;border-bottom:2px solid '+f.col+'44"><div class="ftab" style="background:'+f.col+'"></div>'+(TADRISS_FOLDER_ICONS[f.id]?('<div style="width:46px;height:46px;filter:drop-shadow(0 4px 8px rgba(0,50,30,.18))">'+TADRISS_FOLDER_ICONS[f.id]+'</div>'):('<div style="font-size:2.2rem">'+f.ico+'</div>'))+'</div><div class="fbot"><div class="fnm">'+f.nm+'</div><div class="fct">'+f.fi.length+(isARfo?' ملف(ات)':' fichier(s)')+'</div><div class="fac"><button class="btn bxs" style="background:'+f.col+'22;color:'+f.col+';border:1px solid '+f.col+'44;border-radius:5px;cursor:pointer" onclick="event.stopPropagation();openFO('+f.id+')">'+(isARfo?'فتح':'Ouvrir')+'</button><button class="btn bxs" style="background:var(--tp);color:var(--t);border:1px solid rgba(0,107,63,.3);border-radius:5px;cursor:pointer" onclick="event.stopPropagation();openPartageModal('+f.id+')">⚙️ '+(isARfo?'مشاركة':'Partage')+'</button><button class="btn bxs bo" onclick="event.stopPropagation();renFO('+f.id+')" style="padding:3px 7px">'+(isARfo?'تعديل':'edit')+'</button><button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);border-radius:5px;cursor:pointer" onclick="event.stopPropagation();delFO('+f.id+')">'+(isARfo?'حذف':'del')+'</button></div></div></div>';
+  }).join('') || '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2rem">📁</div><div style="margin-top:.5rem">'+(isARfo?'لا يوجد أي مجلد — انقر على "+ مجلد جديد"':'Aucun dossier — clique sur "+ Nouveau dossier"')+'</div></div>';
 }
 var _partageFolderId = null;
 function openPartageModal(id) {
