@@ -220,7 +220,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
     <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1rem;">
       <div><h1 style="font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:800;" id="llActsSectionTitle">📚 Mes activités orales</h1></div>
-      <button class="btn bt" onclick="llOpenActModal()" id="llNewActBtn">+ Créer une activité orale</button>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <button class="btn bo" onclick="llOpenProgression()" id="llProgressionBtn">📈 Progression</button>
+        <button class="btn bo" onclick="llOpenLibrary()" id="llLibraryBtn">📋 Bibliothèque de modèles</button>
+        <button class="btn bt" onclick="llOpenActModal()" id="llNewActBtn">+ Créer une activité orale</button>
+      </div>
     </div>
     <div class="ll-filters" id="llFilters">
       <select class="fs" id="llFilterLangue" onchange="llRenderProfApp()"><option value="">🌍 Toutes langues</option></select>
@@ -334,6 +338,69 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   </div>
 </div>
 
+<!-- BIBLIOTHÈQUE DE MODÈLES -->
+<div class="overlay" id="llModalLibrary">
+  <div class="modal" style="width:640px;">
+    <div class="mh"><div class="mt2" id="llLibTitle">📋 Bibliothèque de modèles</div><button class="mx" onclick="llCloseModal('llModalLibrary')">✕</button></div>
+    <div class="mb">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibBuiltinTitle">Modèles Tadriss</div>
+      <div id="llLibBuiltinList" style="margin-bottom:1.2rem;"></div>
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibCustomTitle">Mes modèles</div>
+      <div id="llLibCustomList"></div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalLibrary')" id="llLibCloseBtn">Fermer</button></div>
+  </div>
+</div>
+
+<!-- MODIFIER UN MODÈLE PERSONNEL -->
+<div class="overlay" id="llModalTemplateEdit">
+  <div class="modal">
+    <div class="mh"><div class="mt2" id="llTplEditTitle">Modifier le modèle</div><button class="mx" onclick="llCloseModal('llModalTemplateEdit')">✕</button></div>
+    <div class="mb">
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llTplFlLangue">Langue</label>
+          <select class="fs" id="llTplLangue">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 Anglais</option>
+            <option value="es">🇪🇸 Espagnol</option>
+            <option value="ar">🇩🇿 Arabe</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llTplFlType">Type d'activité</label><select class="fs" id="llTplType"></select></div>
+      </div>
+      <div class="fg"><label class="fl" id="llTplFlTheme">Thème</label><input class="fi" id="llTplTheme"></div>
+      <div class="fg"><label class="fl" id="llTplFlConsigne">Consigne</label><textarea class="fta" id="llTplConsigne"></textarea></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llTplFlDuree">Durée maximale</label>
+          <select class="fs" id="llTplDureeMax">
+            <option value="30">30 secondes</option>
+            <option value="60">1 minute</option>
+            <option value="120">2 minutes</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llTplFlBareme">Barème</label>
+          <select class="fs" id="llTplBareme"><option value="20">/20</option><option value="10">/10</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalTemplateEdit')" id="llTplCancelBtn">Annuler</button><button class="btn bt" onclick="llSaveTemplateEdit()" id="llTplSaveBtn">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- PROGRESSION D'UN ÉLÈVE -->
+<div class="overlay" id="llModalProgression">
+  <div class="modal" style="width:600px;">
+    <div class="mh"><div class="mt2" id="llProgTitle">📈 Progression orale</div><button class="mx" onclick="llCloseModal('llModalProgression')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl" id="llProgFlEleve">Élève</label><select class="fs" id="llProgEleveSelect" onchange="llRenderProgression()"></select></div>
+      <div id="llProgContent"></div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalProgression')" id="llProgCloseBtn">Fermer</button></div>
+  </div>
+</div>
+
 <!-- STUDIO D'ENREGISTREMENT (élève) -->
 <div class="overlay" id="llStudio">
   <div class="modal" style="width:420px;text-align:center;">
@@ -428,6 +495,24 @@ var LL_LANG_KEYS = {
   llEleveHeroSub:["Écoute, enregistre-toi, progresse.",'استمع، سجّل صوتك، وتقدّم.'],
   llTodoCt:['🔥 À faire','🔥 للإنجاز'],
   llResultsCt:['⭐ Mes résultats','⭐ نتائجي'],
+  llProgressionBtn:['📈 Progression','📈 التقدّم'],
+  llLibraryBtn:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
+  llLibTitle:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
+  llLibBuiltinTitle:['Modèles Tadriss','نماذج Tadriss'],
+  llLibCustomTitle:['Mes modèles','نماذجي'],
+  llLibCloseBtn:['Fermer','إغلاق'],
+  llTplEditTitle:['Modifier le modèle','تعديل النموذج'],
+  llTplFlLangue:['Langue','اللغة'],
+  llTplFlType:["Type d'activité",'نوع النشاط'],
+  llTplFlTheme:['Thème','الموضوع'],
+  llTplFlConsigne:['Consigne','التعليمة'],
+  llTplFlDuree:['Durée maximale','المدة القصوى'],
+  llTplFlBareme:['Barème','السلّم'],
+  llTplCancelBtn:['Annuler','إلغاء'],
+  llTplSaveBtn:['Enregistrer','حفظ'],
+  llProgTitle:['📈 Progression orale','📈 التقدّم الشفهي'],
+  llProgFlEleve:['Élève','التلميذ'],
+  llProgCloseBtn:['Fermer','إغلاق'],
   llNewActBtn:['+ Créer une activité orale','+ إنشاء نشاط شفهي'],
   llEmptyTxt:['Aucune activité orale pour le moment.','لا يوجد أي نشاط شفهي حالياً.'],
   llProdCt:['🎧 Productions des élèves','🎧 إنتاجات التلاميذ'],
@@ -522,6 +607,170 @@ var LL_TYPES = [
   { id:'comprehension',  fr:'Compréhension orale',        ar:'فهم شفهي',        ic:'🎧' }
 ];
 function llTypeById(id) { return LL_TYPES.find(function(t){ return t.id === id; }) || LL_TYPES[0]; }
+
+/* ===== Bibliothèque de modèles (Phase 2) ===== */
+var LL_BUILTIN_TEMPLATES = [
+  { id:'b_en_intro', langueId:'en', typeActivite:'libre', theme:'Introduce yourself', consigne:'Present yourself in 1 to 2 minutes: your name, your age, your city, your hobbies and your family.', dureeMaxSec:120, bareme:20 },
+  { id:'b_en_family', langueId:'en', typeActivite:'question', theme:'My family', consigne:'Describe your family: how many people, their names, their jobs or studies.', dureeMaxSec:90, bareme:20 },
+  { id:'b_en_hobbies', langueId:'en', typeActivite:'dialogue', theme:'My hobbies', consigne:'Talk about your favourite hobbies and explain why you enjoy them.', dureeMaxSec:90, bareme:20 },
+  { id:'b_es_presentarse', langueId:'es', typeActivite:'libre', theme:'Presentarse', consigne:'Preséntate en 1 a 2 minutos: tu nombre, tu edad, tu ciudad y tus pasatiempos.', dureeMaxSec:120, bareme:20 },
+  { id:'b_es_familia', langueId:'es', typeActivite:'question', theme:'Mi familia', consigne:'Describe a tu familia: cuántas personas, sus nombres, sus profesiones o estudios.', dureeMaxSec:90, bareme:20 },
+  { id:'b_fr_presenter', langueId:'fr', typeActivite:'libre', theme:'Se présenter', consigne:"Présente-toi en 1 à 2 minutes : ton nom, ton âge, ta ville, tes loisirs et ta famille.", dureeMaxSec:120, bareme:20 },
+  { id:'b_fr_chemin', langueId:'fr', typeActivite:'dialogue', theme:'Demander son chemin', consigne:"Imagine un dialogue où tu demandes ton chemin à un passant pour aller à la poste.", dureeMaxSec:90, bareme:20 },
+  { id:'b_ar_intro', langueId:'ar', typeActivite:'libre', theme:'تقديم النفس', consigne:'قدّم نفسك في دقيقة إلى دقيقتين: اسمك، سنّك، مدينتك، هواياتك وعائلتك.', dureeMaxSec:120, bareme:20 },
+  { id:'b_ar_famille', langueId:'ar', typeActivite:'question', theme:'عائلتي', consigne:'صف عائلتك: عدد أفرادها، أسماءهم، مهنهم أو دراستهم.', dureeMaxSec:90, bareme:20 }
+];
+function llTemplateLabel(t, isAR) {
+  var lg = LL_LANGUES.find(function(l){ return l.id === t.langueId; }) || LL_LANGUES[0];
+  var ty = llTypeById(t.typeActivite);
+  return { lg: lg, ty: ty };
+}
+function llRenderTemplateRow(t, isCustom, isAR) {
+  var info = llTemplateLabel(t, isAR);
+  var actions = '<button class="btn bt bsm" onclick="llUseTemplate(\''+t.id+'\')">▶ '+(isAR?'استخدام':'Utiliser')+'</button>' +
+    '<button class="btn bo bsm" onclick="llDuplicateTemplate(\''+t.id+'\')">📋 '+(isAR?'نسخ':'Dupliquer')+'</button>';
+  if (isCustom) actions += '<button class="btn bo bsm" onclick="llEditTemplate(\''+t.id+'\')">✏️ '+(isAR?'تعديل':'Modifier')+'</button>' +
+    '<button class="btn bo bsm" onclick="llDeleteTemplate(\''+t.id+'\')">🗑️</button>';
+  return '<div style="display:flex;align-items:center;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--br);flex-wrap:wrap;">' +
+    '<div style="flex:1;min-width:160px;"><div style="font-weight:700;font-size:.85rem;">'+info.lg.flag+' '+t.theme+'</div>' +
+    '<div style="font-size:.7rem;color:var(--ink3);">'+info.ty.ic+' '+(isAR?info.ty.ar:info.ty.fr)+'</div></div>' +
+    '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">'+actions+'</div></div>';
+}
+window.llOpenLibrary = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var data = llReadData(uid);
+  var custom = data.templates || [];
+  document.getElementById('llLibBuiltinList').innerHTML = LL_BUILTIN_TEMPLATES.map(function(t){ return llRenderTemplateRow(t, false, isAR); }).join('');
+  document.getElementById('llLibCustomList').innerHTML = custom.length ? custom.map(function(t){ return llRenderTemplateRow(t, true, isAR); }).join('') : ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج شخصي بعد — استخدم "نسخ" على نموذج أعلاه لبدء واحد.':'Aucun modèle personnel pour le moment — utilise "Dupliquer" sur un modèle ci-dessus pour en créer un.')+'</div>');
+  document.getElementById('llModalLibrary').classList.add('open');
+};
+function llFindTemplate(id) {
+  var t = LL_BUILTIN_TEMPLATES.find(function(x){ return x.id === id; });
+  if (t) return { tpl: t, custom: false };
+  var data = llReadData(LL_STATE.profUid);
+  t = (data.templates||[]).find(function(x){ return x.id === id; });
+  return t ? { tpl: t, custom: true } : null;
+}
+window.llUseTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found) return;
+  llCloseModal('llModalLibrary');
+  llOpenActModal();
+  var t = found.tpl;
+  document.getElementById('llLangue').value = t.langueId;
+  document.getElementById('llTypeActivite').value = t.typeActivite;
+  document.getElementById('llTheme').value = t.theme;
+  document.getElementById('llConsigne').value = t.consigne;
+  document.getElementById('llDureeMax').value = t.dureeMaxSec;
+  document.getElementById('llBareme').value = t.bareme;
+};
+window.llDuplicateTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found) return;
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  data.templates = data.templates || [];
+  var copy = JSON.parse(JSON.stringify(found.tpl));
+  copy.id = 'c_' + Date.now();
+  data.templates.push(copy);
+  llSaveData(uid, data);
+  llOpenLibrary();
+};
+window.llDeleteTemplate = function(id) {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  if (!confirm(isAR ? 'حذف هذا النموذج؟' : 'Supprimer ce modèle ?')) return;
+  var data = llReadData(uid);
+  data.templates = (data.templates||[]).filter(function(t){ return t.id !== id; });
+  llSaveData(uid, data);
+  llOpenLibrary();
+};
+window.llEditTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found || !found.custom) return;
+  var isAR = LL_CUR === 'ar';
+  LL_STATE.editTplId = id;
+  document.getElementById('llTplType').innerHTML = LL_TYPES.map(function(t){ return '<option value="'+t.id+'">'+t.ic+' '+(isAR?t.ar:t.fr)+'</option>'; }).join('');
+  var t = found.tpl;
+  document.getElementById('llTplLangue').value = t.langueId;
+  document.getElementById('llTplType').value = t.typeActivite;
+  document.getElementById('llTplTheme').value = t.theme;
+  document.getElementById('llTplConsigne').value = t.consigne;
+  document.getElementById('llTplDureeMax').value = t.dureeMaxSec;
+  document.getElementById('llTplBareme').value = t.bareme;
+  llCloseModal('llModalLibrary');
+  document.getElementById('llModalTemplateEdit').classList.add('open');
+};
+window.llSaveTemplateEdit = function() {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var t = (data.templates||[]).find(function(x){ return x.id === LL_STATE.editTplId; });
+  if (!t) return;
+  t.langueId = document.getElementById('llTplLangue').value;
+  t.typeActivite = document.getElementById('llTplType').value;
+  t.theme = document.getElementById('llTplTheme').value.trim();
+  t.consigne = document.getElementById('llTplConsigne').value.trim();
+  t.dureeMaxSec = parseInt(document.getElementById('llTplDureeMax').value);
+  t.bareme = parseInt(document.getElementById('llTplBareme').value);
+  llSaveData(uid, data);
+  llCloseModal('llModalTemplateEdit');
+  llOpenLibrary();
+};
+
+/* ===== Progression d'un élève (Phase 2) ===== */
+window.llOpenProgression = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  var sel = document.getElementById('llProgEleveSelect');
+  sel.innerHTML = (roster.el||[]).map(function(e) {
+    var cls = (roster.cls||[]).find(function(c){ return c.id === e.cid; });
+    return '<option value="'+e.id+'">'+e.pr+' '+e.no+(cls?(' — '+cls.nm):'')+'</option>';
+  }).join('');
+  document.getElementById('llModalProgression').classList.add('open');
+  llRenderProgression();
+};
+window.llRenderProgression = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var eid = parseInt(document.getElementById('llProgEleveSelect').value);
+  var data = llReadData(uid);
+  var subs = (data.subs||[]).filter(function(s){ return s.eleveId === eid && s.note != null; });
+  var box = document.getElementById('llProgContent');
+  if (!subs.length) { box.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--ink3);">'+(isAR?'لا توجد نتائج بعد لهذا التلميذ.':'Aucun résultat pour le moment pour cet élève.')+'</div>'; return; }
+  var notesSur20 = subs.map(function(s) {
+    var a = (data.acts||[]).find(function(x){ return x.id === s.actId; });
+    var bareme = a ? a.bareme : 20;
+    return bareme ? (s.note/bareme)*20 : s.note;
+  });
+  var moyenne = notesSur20.reduce(function(a,b){return a+b;},0) / notesSur20.length;
+  var withCrit = subs.filter(function(s){ return s.criteres; });
+  var critAvg = {};
+  LL_CRITERES.forEach(function(c) {
+    var vals = withCrit.map(function(s){ return s.criteres[c.id]; }).filter(function(v){ return v != null; });
+    critAvg[c.id] = vals.length ? (vals.reduce(function(a,b){return a+b;},0)/vals.length) : null;
+  });
+  var html = '<div class="ll-stats" style="grid-template-columns:1fr 1fr 1fr;margin-top:1rem;">' +
+    '<div class="ll-stat"><div class="ic">📝</div><div class="v">'+subs.length+'</div><div class="l">'+(isAR?'أنشطة منجزة':'Activités réalisées')+'</div></div>' +
+    '<div class="ll-stat"><div class="ic">🔁</div><div class="v">'+subs.length+'</div><div class="l">'+(isAR?'عدد المحاولات':'Nombre de tentatives')+'</div></div>' +
+    '<div class="ll-stat"><div class="ic">⭐</div><div class="v">'+moyenne.toFixed(1)+'/20</div><div class="l">'+(isAR?'المعدل':'Moyenne')+'</div></div>' +
+    '</div>';
+  if (withCrit.length) {
+    html += '<div style="margin-top:1rem;">' + LL_CRITERES.map(function(c) {
+      var v = critAvg[c.id];
+      var pct = v != null ? Math.round((v/5)*100) : 0;
+      return '<div style="margin-bottom:.7rem;"><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px;"><span>'+(isAR?c.ar:c.fr)+'</span><span style="font-weight:700;">'+(v!=null?v.toFixed(1):'—')+'/5</span></div>' +
+        '<div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--t);"></div></div></div>';
+    }).join('') + '</div>';
+  }
+  html += '<div style="margin-top:1rem;"><div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.5rem;">'+(isAR?'سجلّ النقاط':'Historique des notes')+'</div>' +
+    '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">' + subs.slice().sort(function(a,b){ return new Date(a.envoyeLe)-new Date(b.envoyeLe); }).map(function(s) {
+      var col = s.note >= 14 ? 'var(--g)' : s.note >= 10 ? 'var(--a)' : 'var(--r)';
+      return '<span class="badge" style="background:'+col+';color:#fff;">'+s.note+'</span>';
+    }).join('') + '</div></div>';
+  box.innerHTML = html;
+};
 function llIsLangueMatiere(mat) {
   var m = (mat||'').toLowerCase();
   try { m = m.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
@@ -924,6 +1173,12 @@ function llRenderProdList(uid, act) {
       '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">✓ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+' · ⏱ '+dureeTxt+'</div>';
     if (audioSrc) left += '<audio controls style="width:100%;margin-bottom:.5rem;" src="'+audioSrc+'"></audio><button class="btn bo bsm" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+(e.pr+'_'+e.no).replace(/'/g,"")+'\')">⬇️ '+(isAR?'تحميل':'Télécharger')+'</button>';
     left += '</div>';
+    var vcSrc = sub.commentVocalKey ? llAudioGet(uid, sub.commentVocalKey) : null;
+    var vcHtml = '<div class="fg" id="llVcBox_'+e.id+'">' +
+      '<label class="fl" style="font-size:.68rem;">'+(isAR?'تعليق صوتي':'Commentaire vocal')+'</label>' +
+      '<button type="button" class="btn bo bsm" id="llVcBtn_'+e.id+'" onclick="llVoiceCommentToggle('+act.id+','+e.id+')">🎙️ '+(isAR?'تسجيل':'Enregistrer')+'</button>' +
+      '<audio id="llVcPlayer_'+e.id+'" controls style="display:'+(vcSrc?'block':'none')+';width:100%;margin-top:.4rem;"'+(vcSrc?(' src="'+vcSrc+'"'):'')+'></audio>' +
+      '</div>';
     var right;
     if (useGrid) {
       var crit = sub.criteres || {};
@@ -933,12 +1188,14 @@ function llRenderProdList(uid, act) {
       }).join('') +
         '<div class="ll-crit-total" id="llCritTotal_'+e.id+'">'+(isAR?'المجموع: ':'Total : ')+(sub.note!=null?sub.note:'—')+'/20</div>' +
         '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        vcHtml +
         '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ التنقيط':'Enregistrer la note')+'</button>' +
         '</div>';
     } else {
       right = '<div>' +
         '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'النقطة':'Note')+' /'+act.bareme+'</label><input type="number" min="0" max="'+act.bareme+'" class="fi" id="llNote_'+e.id+'" value="'+(sub.note!=null?sub.note:'')+'"></div>' +
         '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        vcHtml +
         '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ':'Enregistrer')+'</button>' +
         '</div>';
     }
@@ -956,6 +1213,53 @@ window.llUpdateCritTotal = function(actId, eleveId) {
   var isAR = LL_CUR === 'ar';
   var totalEl = document.getElementById('llCritTotal_'+eleveId);
   if (totalEl) totalEl.textContent = (isAR?'المجموع: ':'Total : ') + total + '/20';
+};
+
+/* Commentaire vocal du professeur : même mécanisme d'enregistrement que le studio élève
+   (MediaRecorder), stocké séparément par production (commentvoc_{actId}_{eleveId}) dans
+   le même magasin audio isolé (jamais dans la sauvegarde cloud). */
+var LL_VC = { recording:false, recorder:null, chunks:[], actId:null, eleveId:null, stream:null };
+window.llVoiceCommentToggle = function(actId, eleveId) {
+  var btn = document.getElementById('llVcBtn_'+eleveId);
+  var isAR = LL_CUR === 'ar';
+  if (LL_VC.recording && LL_VC.eleveId === eleveId) {
+    LL_VC.recorder.stop();
+    return;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert(isAR?'تعذّر الوصول إلى الميكروفون.':'Impossible d\'accéder au microphone.'); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    LL_VC.stream = stream; LL_VC.actId = actId; LL_VC.eleveId = eleveId; LL_VC.chunks = [];
+    var mime = '';
+    ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].some(function(m){ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) { mime = m; return true; } return false; });
+    LL_VC.recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    LL_VC.recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) LL_VC.chunks.push(e.data); };
+    LL_VC.recorder.onstop = function() {
+      LL_VC.stream.getTracks().forEach(function(t){ t.stop(); });
+      LL_VC.recording = false;
+      var blob = new Blob(LL_VC.chunks, { type: LL_VC.recorder.mimeType || 'audio/webm' });
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var uid = LL_STATE.profUid;
+        var data = llReadData(uid);
+        var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
+        if (!sub) return;
+        var key = 'commentvoc_' + actId + '_' + eleveId;
+        if (sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
+        llAudioSave(uid, key, e.target.result);
+        sub.commentVocalKey = key;
+        llSaveData(uid, data);
+        var player = document.getElementById('llVcPlayer_'+eleveId);
+        if (player) { player.src = e.target.result; player.style.display = 'block'; }
+      };
+      reader.readAsDataURL(blob);
+      btn.textContent = '🎙️ ' + (isAR?'إعادة التسجيل':'Réenregistrer');
+      btn.classList.remove('bt'); btn.classList.add('bo');
+    };
+    LL_VC.recorder.start();
+    LL_VC.recording = true;
+    btn.textContent = '⏹ ' + (isAR?'إيقاف':'Arrêter');
+    btn.classList.remove('bo'); btn.classList.add('bt');
+  }).catch(function() { alert(isAR?'تعذّر الوصول إلى الميكروفون.':'Impossible d\'accéder au microphone.'); });
 };
 window.llNoterSub = function(actId, eleveId) {
   var uid = LL_STATE.profUid;
@@ -1009,6 +1313,7 @@ window.llDeleteSub = function(actId, eleveId) {
   var data = llReadData(uid);
   var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
   if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
+  if (sub && sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
   data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eleveId); });
   llSaveData(uid, data);
   llRemoveTadrissEvalNote(uid, actId, eleveId);
@@ -1136,6 +1441,7 @@ function llRenderEleveApp() {
       '</div>' +
       critHtml +
       (sub.commentaire ? ('<div style="font-size:.8rem;color:var(--ink2);margin-top:.4rem;">💬 '+sub.commentaire+'</div>') : '') +
+      (sub.commentVocalKey ? ('<audio controls style="width:100%;margin-top:.5rem;" src="'+llAudioGet(uid, sub.commentVocalKey)+'"></audio>') : '') +
       '</div>';
   }).join('');
 }
@@ -1147,6 +1453,7 @@ window.llEleveDeleteSub = function(actId) {
   var data = llReadData(uid);
   var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eid; });
   if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
+  if (sub && sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
   data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eid); });
   llSaveData(uid, data);
   llRemoveTadrissEvalNote(uid, actId, eid);
@@ -1298,8 +1605,12 @@ window.llStudioSend = function() {
   data.subs = data.subs || [];
   var dureeSec = LL_ST.dureeSec != null ? LL_ST.dureeSec : null;
   var existing = data.subs.find(function(s){ return s.actId === actId && s.eleveId === eid; });
-  if (existing) { if (existing.audioKey) llAudioDelete(uid, existing.audioKey); existing.audioKey = key; existing.envoyeLe = new Date().toISOString(); existing.note = null; existing.commentaire = ''; existing.dureeSec = dureeSec; existing.criteres = null; }
-  else data.subs.push({ actId: actId, eleveId: eid, audioKey: key, envoyeLe: new Date().toISOString(), note: null, commentaire: '', dureeSec: dureeSec, criteres: null });
+  if (existing) {
+    if (existing.audioKey) llAudioDelete(uid, existing.audioKey);
+    if (existing.commentVocalKey) { llAudioDelete(uid, existing.commentVocalKey); existing.commentVocalKey = null; }
+    existing.audioKey = key; existing.envoyeLe = new Date().toISOString(); existing.note = null; existing.commentaire = ''; existing.dureeSec = dureeSec; existing.criteres = null;
+  }
+  else data.subs.push({ actId: actId, eleveId: eid, audioKey: key, envoyeLe: new Date().toISOString(), note: null, commentaire: '', dureeSec: dureeSec, criteres: null, commentVocalKey: null });
   llSaveData(uid, data);
   llCloseModal('llStudio');
   llRenderEleveApp();
