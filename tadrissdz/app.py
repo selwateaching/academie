@@ -23,6 +23,11 @@ def index():
     return send_from_directory(os.path.dirname(__file__), "index.html")
 
 
+@app.get("/labolangues.html")
+def labolangues():
+    return send_from_directory(os.path.dirname(__file__), "labolangues.html")
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
