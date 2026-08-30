@@ -701,6 +701,7 @@ window.llDeleteAct = function() {
   data.subs = (data.subs||[]).filter(function(s){ return s.actId !== id; });
   data.acts = (data.acts||[]).filter(function(a){ return a.id !== id; });
   llSaveData(uid, data);
+  llRemoveTadrissEval(uid, id);
   llCloseProd();
 };
 function llRenderProdList(uid, act) {
@@ -734,8 +735,31 @@ window.llNoterSub = function(actId, eleveId) {
   sub.commentaire = document.getElementById('llComment_'+eleveId).value.trim();
   llSaveData(uid, data);
   var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  if (sub.note != null) llSyncNoteToTadriss(uid, act, eleveId, sub.note);
   llRenderProdList(uid, act);
 };
+
+/* Fait apparaître automatiquement la note d'une production orale dans "Notes et moyennes"
+   de Tadriss (localStorage TADRISS_DZ_{uid}), comme une évaluation normale — une seule
+   évaluation par activité Labo Langues (identifiée par _laboActId), mise à jour à chaque
+   notation plutôt que dupliquée. Écriture directe en localStorage : le prochain sv() lancé
+   depuis Tadriss (à sa prochaine modification) la fera remonter dans la sauvegarde cloud
+   comme le reste, sans qu'on ait besoin d'y toucher depuis ce fichier séparé. */
+function llSyncNoteToTadriss(uid, act, eleveId, note) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) td.ev = [];
+  var ev = td.ev.find(function(e) { return e._laboActId === act.id; });
+  if (!ev) {
+    ev = { id: Date.now(), int: '🎙️ Oral — ' + act.theme, date: new Date().toISOString().slice(0, 10), type: 'Oral', coef: 1, notes: {}, _laboActId: act.id };
+    td.ev.push(ev);
+  } else {
+    ev.int = '🎙️ Oral — ' + act.theme; /* garde le titre synchro si l'activité a été renommée depuis */
+  }
+  ev.notes[eleveId] = note;
+  try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {}
+}
 window.llDeleteSub = function(actId, eleveId) {
   var uid = LL_STATE.profUid;
   var data = llReadData(uid);
@@ -743,9 +767,31 @@ window.llDeleteSub = function(actId, eleveId) {
   if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
   data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eleveId); });
   llSaveData(uid, data);
+  llRemoveTadrissEvalNote(uid, actId, eleveId);
   var act = (data.acts||[]).find(function(a){ return a.id === actId; });
   llRenderProdList(uid, act);
 };
+/* Retire la note d'un élève de l'évaluation Tadriss synchronisée pour cette activité
+   (utilisé quand le prof supprime une production individuelle notée). */
+function llRemoveTadrissEvalNote(uid, actId, eleveId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) return;
+  var ev = td.ev.find(function(e) { return e._laboActId === actId; });
+  if (ev && ev.notes) { delete ev.notes[eleveId]; try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
+/* Retire entièrement l'évaluation Tadriss synchronisée pour une activité
+   (utilisé quand le prof supprime l'activité entière). */
+function llRemoveTadrissEval(uid, actId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) return;
+  var before = td.ev.length;
+  td.ev = td.ev.filter(function(e) { return e._laboActId !== actId; });
+  if (td.ev.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
 window.llDownloadAudio = function(dataUrl, name) {
   var a = document.createElement('a');
   a.href = dataUrl; a.download = (name||'audio') + '.webm';
@@ -823,6 +869,7 @@ window.llEleveDeleteSub = function(actId) {
   if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
   data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eid); });
   llSaveData(uid, data);
+  llRemoveTadrissEvalNote(uid, actId, eid);
   llRenderEleveApp();
 };
 
