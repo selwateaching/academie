@@ -76,6 +76,37 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 @keyframes llSpin{to{transform:rotate(360deg);}}
 #llActivateMsg{animation:llFadeUp .3s ease both;}
 [lang="ar"] .fg2, [lang="ar"] .g2, [lang="ar"] .g4 { direction:rtl; }
+
+/* ===== Identité propre au Labo Langues (Phase 1 de la refonte) ===== */
+.ll-hero{background:linear-gradient(135deg,var(--t) 0%,var(--t2) 55%,#0891B2 100%);border-radius:16px;padding:1.6rem 1.7rem;color:#fff;margin-bottom:1.3rem;position:relative;overflow:hidden;}
+.ll-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);}
+.ll-hero::before{content:'';position:absolute;right:60px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);}
+.ll-hero h1{font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;position:relative;z-index:1;}
+.ll-hero .sub{font-size:.85rem;opacity:.92;margin-top:.3rem;position:relative;z-index:1;}
+.ll-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.3rem;}
+@media (max-width:700px){.ll-stats{grid-template-columns:1fr 1fr;}}
+.ll-stat{background:var(--w);border-radius:12px;border:1px solid var(--br);padding:1rem 1.1rem;position:relative;overflow:hidden;transition:transform .18s;}
+.ll-stat:hover{transform:translateY(-2px);}
+.ll-stat .ic{font-size:1.3rem;margin-bottom:.4rem;}
+.ll-stat .v{font-family:'Inter',sans-serif;font-size:1.55rem;font-weight:800;line-height:1;color:var(--ink);}
+.ll-stat .l{font-size:.68rem;color:var(--ink3);margin-top:.35rem;}
+.ll-stat.warn .v{color:var(--a);}
+.ll-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;flex-shrink:0;}
+.ll-tograde-row{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--br);transition:background .15s;}
+.ll-tograde-row:hover{background:var(--bg);}
+.ll-tograde-row:last-child{border-bottom:none;}
+.ll-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;color:var(--t);background:var(--tp);padding:2px 8px;border-radius:20px;}
+.ll-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:5px;}
+.ll-status-dot.none{background:var(--ink3);}
+.ll-status-dot.progress{background:var(--a);}
+.ll-status-dot.done{background:var(--g);}
+.ll-filters{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem;}
+.ll-filters select{width:auto;min-width:140px;}
+.ll-crit-row{display:grid;grid-template-columns:110px 1fr 34px;align-items:center;gap:.7rem;margin-bottom:.5rem;font-size:.8rem;}
+.ll-crit-row input[type="range"]{width:100%;accent-color:var(--t);}
+.ll-crit-total{background:var(--tp);border-radius:9px;padding:.7rem 1rem;text-align:center;font-weight:800;color:var(--t);font-size:1.1rem;margin:.6rem 0;}
+#llWaveformCanvas{width:100%;height:64px;border-radius:9px;background:var(--bg);display:block;}
+.ll-empty-illus{font-size:2.4rem;margin-bottom:.7rem;opacity:.7;}
 </style>
 </head>
 <body>
@@ -170,14 +201,41 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
   <!-- ESPACE PROFESSEUR -->
   <div id="llProfApp" style="display:none;">
-    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1.2rem;">
-      <div><h1 style="font-family:'Inter',sans-serif;font-size:1.2rem;font-weight:800;" id="llProfTitle">🎙️ Labo Langues — Espace professeur</h1></div>
+    <div id="llProfDashboard">
+      <div class="ll-hero">
+        <h1 id="llProfTitle">🎙️ Labo Langues</h1>
+        <div class="sub" id="llProfHeroSub">Faites pratiquer l'oral à vos élèves.</div>
+      </div>
+      <div class="ll-stats">
+        <div class="ll-stat warn"><div class="ic">🎧</div><div class="v" id="llStatToGrade">0</div><div class="l" id="llStatToGradeL">Productions à corriger</div></div>
+        <div class="ll-stat"><div class="ic">📝</div><div class="v" id="llStatActs">0</div><div class="l" id="llStatActsL">Activités actives</div></div>
+        <div class="ll-stat"><div class="ic">👨‍🎓</div><div class="v" id="llStatEleves">0</div><div class="l" id="llStatElevesL">Élèves actifs</div></div>
+        <div class="ll-stat"><div class="ic">⭐</div><div class="v" id="llStatMoyenne">—</div><div class="l" id="llStatMoyenneL">Moyenne orale</div></div>
+      </div>
+      <div class="card" id="llToGradeCard" style="margin-bottom:1.3rem;display:none;">
+        <div class="ch"><div class="ct" id="llToGradeCt">🎧 À corriger</div></div>
+        <div id="llToGradeList"></div>
+      </div>
+    </div>
+
+    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1rem;">
+      <div><h1 style="font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:800;" id="llActsSectionTitle">📚 Mes activités orales</h1></div>
       <button class="btn bt" onclick="llOpenActModal()" id="llNewActBtn">+ Créer une activité orale</button>
+    </div>
+    <div class="ll-filters" id="llFilters">
+      <select class="fs" id="llFilterLangue" onchange="llRenderProfApp()"><option value="">🌍 Toutes langues</option></select>
+      <select class="fs" id="llFilterClasse" onchange="llRenderProfApp()"><option value="">👥 Toutes classes</option></select>
+      <select class="fs" id="llFilterStatut" onchange="llRenderProfApp()">
+        <option value="">🟢 Tous statuts</option>
+        <option value="none" id="llFilterStatutNone">Aucune réponse</option>
+        <option value="progress" id="llFilterStatutProgress">En cours</option>
+        <option value="done" id="llFilterStatutDone">Terminée</option>
+      </select>
     </div>
     <div class="g4" id="llActList" style="margin-bottom:1.2rem;"></div>
     <div class="card" id="llEmptyCard" style="display:none;">
       <div class="cb" style="text-align:center;padding:2.4rem 1rem;color:var(--ink3);">
-        <div style="font-size:2rem;margin-bottom:.6rem;">🎙️</div>
+        <div class="ll-empty-illus">🎙️🗣️🎧</div>
         <div id="llEmptyTxt">Aucune activité orale pour le moment.</div>
       </div>
     </div>
@@ -206,11 +264,22 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
   <!-- ÉLÈVE : LISTE ACTIVITÉS -->
   <div id="llEleveApp" style="display:none;">
-    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1rem;">
-      <h1 style="font-family:'Inter',sans-serif;font-size:1.15rem;font-weight:800;" id="llEleveAppTitle">🎙️ Mes activités orales</h1>
+    <div class="ll-hero">
+      <h1 id="llEleveAppTitle">🎙️ Ma pratique orale</h1>
+      <div class="sub" id="llEleveHeroSub">Écoute, enregistre-toi, progresse.</div>
+    </div>
+    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:.7rem;">
+      <div></div>
       <button class="btn bo bsm" onclick="llEleveLogout()" id="llEleveLogoutBtn">Changer d'élève</button>
     </div>
-    <div class="card"><div class="cb" style="padding:0;" id="llEleveActList"></div></div>
+    <div class="card" style="margin-bottom:1.2rem;">
+      <div class="ch"><div class="ct" id="llTodoCt">🔥 À faire</div></div>
+      <div class="cb" style="padding:0;" id="llEleveTodoList"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct" id="llResultsCt">⭐ Mes résultats</div></div>
+      <div class="cb" style="padding:0;" id="llEleveDoneList"></div>
+    </div>
   </div>
 
 </div>
@@ -231,6 +300,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
         </div>
         <div class="fg"><label class="fl" id="llFlClasse">Classe</label><select class="fs" id="llClasse" onchange="llOnClasseChange()"></select></div>
       </div>
+      <div class="fg"><label class="fl" id="llFlType">Type d'activité</label><select class="fs" id="llTypeActivite"></select></div>
       <div class="fg"><label class="fl" id="llFlDest">Destinataires</label>
         <select class="fs" id="llAssigneMode" onchange="llOnAssigneModeChange()">
           <option value="tous" id="llOptTous">Toute la classe</option>
@@ -271,7 +341,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div style="font-weight:800;font-size:.85rem;letter-spacing:.05em;color:var(--t);margin-bottom:.3rem;" id="llStudioTitle">🎙️ STUDIO AUDIO</div>
       <div style="font-size:.78rem;color:var(--ink3);margin-bottom:.2rem;" id="llStudioLangue"></div>
       <div style="font-weight:700;font-size:1.05rem;margin-bottom:1.1rem;" id="llStudioTheme"></div>
-      <div class="ll-mic-wrap">🎙️</div>
+      <div class="ll-mic-wrap" id="llMicWrap">🎙️</div>
+      <canvas id="llWaveformCanvas" width="360" height="64" style="display:none;margin-bottom:.8rem;"></canvas>
       <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:1.1rem;" id="llStudioTimer">00:00 / 02:00</div>
       <div style="display:flex;flex-direction:column;gap:.6rem;">
         <button class="btn bt" id="llStudioStartBtn" onclick="llStudioStart()" style="width:100%;background:#E63946;">🔴 Démarrer</button>
@@ -342,7 +413,21 @@ var LL_LANG_KEYS = {
   llActivateTitle:['Envie d\'activer le Labo Langues pour tes classes ?','هل ترغب في تفعيل مخبر اللغات لأقسامك؟'],
   llActivateSub:["Module complémentaire facturé en plus de ton abonnement Tadriss.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في Tadriss.'],
   llActivateBtn:["Demander l'activation",'طلب التفعيل'],
-  llProfTitle:['🎙️ Labo Langues — Espace professeur','🎙️ مخبر اللغات — فضاء الأستاذ'],
+  llProfTitle:['🎙️ Labo Langues','🎙️ مخبر اللغات'],
+  llProfHeroSub:['Faites pratiquer l\'oral à vos élèves.','درّب تلاميذك على التعبير الشفهي.'],
+  llStatToGradeL:['Productions à corriger','إنتاجات للتصحيح'],
+  llStatActsL:['Activités actives','أنشطة نشطة'],
+  llStatElevesL:['Élèves actifs','تلاميذ نشيطون'],
+  llStatMoyenneL:['Moyenne orale','المعدل الشفهي'],
+  llToGradeCt:['🎧 À corriger','🎧 للتصحيح'],
+  llActsSectionTitle:['📚 Mes activités orales','📚 أنشطتي الشفهية'],
+  llFlType:["Type d'activité",'نوع النشاط'],
+  llFilterStatutNone:['Aucune réponse','لا استجابة'],
+  llFilterStatutProgress:['En cours','قيد الإنجاز'],
+  llFilterStatutDone:['Terminée','مكتملة'],
+  llEleveHeroSub:["Écoute, enregistre-toi, progresse.",'استمع، سجّل صوتك، وتقدّم.'],
+  llTodoCt:['🔥 À faire','🔥 للإنجاز'],
+  llResultsCt:['⭐ Mes résultats','⭐ نتائجي'],
   llNewActBtn:['+ Créer une activité orale','+ إنشاء نشاط شفهي'],
   llEmptyTxt:['Aucune activité orale pour le moment.','لا يوجد أي نشاط شفهي حالياً.'],
   llProdCt:['🎧 Productions des élèves','🎧 إنتاجات التلاميذ'],
@@ -426,6 +511,17 @@ var LL_LANGUES = [
   { id:'es', fr:'Espagnol', ar:'الإسبانية', flag:'🇪🇸' },
   { id:'ar', fr:'Arabe',    ar:'العربية',   flag:'🇩🇿' }
 ];
+/* ===== Types d'activité orale ===== */
+var LL_TYPES = [
+  { id:'libre',          fr:'Expression libre',         ar:'تعبير حر',        ic:'🎙️' },
+  { id:'lecture',        fr:'Lecture à voix haute',      ar:'قراءة بصوت عال',  ic:'📖' },
+  { id:'ecoute_repete',  fr:'Écouter et répéter',        ar:'استمع وكرر',      ic:'🔊' },
+  { id:'question',       fr:'Répondre à une question',   ar:'أجب عن سؤال',    ic:'💬' },
+  { id:'dialogue',       fr:'Dialogue',                  ar:'حوار',           ic:'🗣️' },
+  { id:'jeu_role',       fr:'Jeu de rôle',                ar:'لعب أدوار',       ic:'🎭' },
+  { id:'comprehension',  fr:'Compréhension orale',        ar:'فهم شفهي',        ic:'🎧' }
+];
+function llTypeById(id) { return LL_TYPES.find(function(t){ return t.id === id; }) || LL_TYPES[0]; }
 function llIsLangueMatiere(mat) {
   var m = (mat||'').toLowerCase();
   try { m = m.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
@@ -546,32 +642,124 @@ function llEligibles(uid, a) {
   if (a.assigneMode === 'specifique') list = list.filter(function(e){ return (a.assigneElevesIds||[]).indexOf(e.id) >= 0; });
   return list;
 }
+var LL_AVATAR_COLORS = ['#006B3F','#3B82F6','#8B5CF6','#D4AF37','#C8102E','#0891B2','#DB2777','#EA580C'];
+function llAvatarColor(name) {
+  var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return LL_AVATAR_COLORS[h % LL_AVATAR_COLORS.length];
+}
+function llActStatus(uid, a, data) {
+  var elig = llEligibles(uid, a);
+  var subs = (data.subs||[]).filter(function(s){ return s.actId === a.id; });
+  var notees = subs.filter(function(s){ return s.note != null; }).length;
+  var status = !subs.length ? 'none' : (elig.length && notees === elig.length ? 'done' : 'progress');
+  return { elig: elig, subs: subs, notees: notees, status: status };
+}
+/* Rafraîchit uniquement les indicateurs + la liste "à corriger" du tableau de bord,
+   sans changer l'écran actuellement affiché (utilisé après notation/suppression
+   pendant qu'on reste sur l'écran de correction). */
+function llRefreshStats(uid) {
+  var data = llReadData(uid);
+  var acts = data.acts || [];
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  var allSubs = data.subs || [];
+  var toGrade = allSubs.filter(function(s){ return s.note == null; });
+  var elevesActifsSet = {}; allSubs.forEach(function(s){ elevesActifsSet[s.eleveId] = true; });
+  var notesSur20 = allSubs.filter(function(s){ return s.note != null; }).map(function(s){
+    var a = acts.find(function(x){ return x.id === s.actId; });
+    var bareme = a ? a.bareme : 20;
+    return bareme ? (s.note / bareme) * 20 : s.note;
+  });
+  var moyenne = notesSur20.length ? (notesSur20.reduce(function(a,b){return a+b;},0) / notesSur20.length) : null;
+  document.getElementById('llStatToGrade').textContent = toGrade.length;
+  document.getElementById('llStatActs').textContent = acts.length;
+  document.getElementById('llStatEleves').textContent = Object.keys(elevesActifsSet).length;
+  document.getElementById('llStatMoyenne').textContent = moyenne != null ? (moyenne.toFixed(1) + '/20') : '—';
+
+  /* --- À corriger --- */
+  var toGradeCard = document.getElementById('llToGradeCard');
+  if (!toGrade.length) { toGradeCard.style.display = 'none'; }
+  else {
+    toGradeCard.style.display = 'block';
+    var rows = toGrade.slice().sort(function(x,y){ return new Date(y.envoyeLe) - new Date(x.envoyeLe); }).slice(0, 8).map(function(s) {
+      var a = acts.find(function(x){ return x.id === s.actId; }) || {};
+      var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
+      var el = (roster.el||[]).find(function(e){ return e.id === s.eleveId; });
+      var nom = el ? (el.pr + ' ' + el.no) : ('#' + s.eleveId);
+      var initiales = el ? (el.pr[0] + (el.no ? el.no[0] : '')) : '?';
+      var duree = s.dureeSec != null ? llFormatDuree(s.dureeSec) : (a.dureeMaxSec ? ('≤ ' + llFormatDuree(a.dureeMaxSec)) : '—');
+      return '<div class="ll-tograde-row">' +
+        '<div class="ll-avatar" style="background:'+llAvatarColor(nom)+'">'+initiales+'</div>' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="font-weight:700;font-size:.84rem;">'+nom+'</div>' +
+        '<div style="font-size:.7rem;color:var(--ink3);">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' · '+a.theme+' · ⏱ '+duree+' · '+new Date(s.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+'</div>' +
+        '</div>' +
+        '<button class="btn bt bsm" onclick="llOpenProd('+a.id+')">'+(isAR?'تصحيح':'Corriger')+'</button>' +
+        '</div>';
+    }).join('');
+    document.getElementById('llToGradeList').innerHTML = rows;
+  }
+}
 function llRenderProfApp() {
   var uid = LL_STATE.profUid;
   var data = llReadData(uid);
   var acts = data.acts || [];
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  llRefreshStats(uid);
+
+  /* --- Filtres (options) --- */
+  var fLangueSel = document.getElementById('llFilterLangue');
+  var curLangueVal = fLangueSel.value;
+  fLangueSel.innerHTML = '<option value="">'+(isAR?'🌍 كل اللغات':'🌍 Toutes langues')+'</option>' + LL_LANGUES.map(function(l){ return '<option value="'+l.id+'">'+l.flag+' '+(isAR?l.ar:l.fr)+'</option>'; }).join('');
+  fLangueSel.value = curLangueVal;
+  var fClasseSel = document.getElementById('llFilterClasse');
+  var curClasseVal = fClasseSel.value;
+  fClasseSel.innerHTML = '<option value="">'+(isAR?'👥 كل الأقسام':'👥 Toutes classes')+'</option>' + (roster.cls||[]).map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  fClasseSel.value = curClasseVal;
+
+  var filtLangue = fLangueSel.value, filtClasse = fClasseSel.value, filtStatut = document.getElementById('llFilterStatut').value;
   var box = document.getElementById('llActList');
   var empty = document.getElementById('llEmptyCard');
   document.getElementById('llProdView').style.display = 'none';
   box.style.display = 'grid';
+  document.getElementById('llFilters').style.display = acts.length ? 'flex' : 'none';
   if (!acts.length) { box.innerHTML = ''; empty.style.display = 'block'; return; }
+
+  var visibleActs = acts.filter(function(a) {
+    if (filtLangue && a.langueId !== filtLangue) return false;
+    if (filtClasse && String(a.classeId) !== filtClasse) return false;
+    if (filtStatut && llActStatus(uid, a, data).status !== filtStatut) return false;
+    return true;
+  });
+  if (!visibleActs.length) {
+    empty.style.display = 'block';
+    document.getElementById('llEmptyTxt').textContent = isAR ? 'لا يوجد نشاط يطابق هذا التصفية.' : 'Aucune activité ne correspond à ce filtre.';
+    box.innerHTML = '';
+    return;
+  }
   empty.style.display = 'none';
-  var isAR = LL_CUR === 'ar';
-  var roster = llReadRoster(uid);
-  box.innerHTML = acts.slice().reverse().map(function(a) {
+  box.innerHTML = visibleActs.slice().reverse().map(function(a) {
     var cls = (roster.cls||[]).find(function(c){ return c.id === a.classeId; });
     var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
-    var elig = llEligibles(uid, a);
-    var subs = (data.subs||[]).filter(function(s){ return s.actId === a.id; });
-    var notees = subs.filter(function(s){ return s.note != null; }).length;
+    var ty = llTypeById(a.typeActivite);
+    var st = llActStatus(uid, a, data);
+    var statutLbl = st.status === 'done' ? (isAR?'مكتمل':'Terminée') : st.status === 'progress' ? (isAR?'قيد الإنجاز':'En cours') : (isAR?'لا رد':'Aucune réponse');
+    var dateLimiteTxt = a.dateLimite ? ('📅 ' + new Date(a.dateLimite).toLocaleDateString(isAR?'ar-DZ':'fr-FR')) : '';
     return '<div class="card ll-act-card" onclick="llOpenProd('+a.id+')"><div class="cb">' +
-      '<div style="font-size:1.5rem;margin-bottom:.4rem;">'+lg.flag+'</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">' +
+      '<div style="font-size:1.4rem;">'+lg.flag+'</div>' +
+      '<span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+      '</div>' +
       '<div style="font-weight:700;font-size:.9rem;margin-bottom:.2rem;">'+a.theme+'</div>' +
-      '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.6rem;">'+(isAR?lg.ar:lg.fr)+' · '+(cls?cls.nm:'')+'</div>' +
-      '<div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--ink3);">' +
-      '<span>📤 '+subs.length+'/'+elig.length+'</span><span>✔ '+notees+'</span></div></div></div>';
+      '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">'+(isAR?lg.ar:lg.fr)+' · 👥 '+(cls?cls.nm:'')+(dateLimiteTxt?(' · '+dateLimiteTxt):'')+'</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--ink3);">' +
+      '<span>📤 '+st.subs.length+'/'+st.elig.length+' · ✔ '+st.notees+'</span>' +
+      '<span><span class="ll-status-dot '+st.status+'"></span>'+statutLbl+'</span>' +
+      '</div></div></div>';
   }).join('');
 }
+window.llRenderProfApp = llRenderProfApp; /* appelée depuis les attributs onchange des filtres (portée globale) */
 window.llEditCurrentAct = function() { llOpenActModal(LL_STATE.curAct); };
 window.llOpenActModal = function(editActId) {
   var uid = LL_STATE.profUid;
@@ -586,6 +774,8 @@ window.llOpenActModal = function(editActId) {
   document.getElementById('llModalActTitle').textContent = act ? (isAR ? 'تعديل النشاط' : "Modifier l'activité") : (isAR ? 'إنشاء نشاط شفهي' : 'Créer une activité orale');
   document.getElementById('llSaveBtn').textContent = act ? (isAR ? 'حفظ' : 'Enregistrer') : (isAR ? 'إنشاء' : 'Créer');
   document.getElementById('llClasse').innerHTML = (roster.cls||[]).map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  document.getElementById('llTypeActivite').innerHTML = LL_TYPES.map(function(t){ return '<option value="'+t.id+'">'+t.ic+' '+(isAR?t.ar:t.fr)+'</option>'; }).join('');
+  document.getElementById('llTypeActivite').value = act ? (act.typeActivite || 'libre') : 'libre';
   document.getElementById('llLangue').value = act ? act.langueId : 'fr';
   document.getElementById('llClasse').value = act ? act.classeId : (roster.cls && roster.cls[0] ? roster.cls[0].id : '');
   document.getElementById('llAssigneMode').value = act ? act.assigneMode : 'tous';
@@ -634,6 +824,7 @@ window.llSaveAct = function() {
   var existing = editId ? data.acts.find(function(a){ return a.id === editId; }) : null;
   var act = existing || { id: Date.now(), audioModeleKey: null, createdAt: new Date().toISOString() };
   act.langueId = document.getElementById('llLangue').value;
+  act.typeActivite = document.getElementById('llTypeActivite').value;
   act.classeId = classeId;
   act.assigneMode = mode;
   act.assigneElevesIds = elevesIds;
@@ -704,39 +895,92 @@ window.llDeleteAct = function() {
   llRemoveTadrissEval(uid, id);
   llCloseProd();
 };
+var LL_CRITERES = [
+  { id:'pron', fr:'Prononciation', ar:'النطق' },
+  { id:'fluidite', fr:'Fluidité', ar:'الطلاقة' },
+  { id:'vocab', fr:'Vocabulaire', ar:'المفردات' },
+  { id:'gram', fr:'Grammaire', ar:'القواعد' }
+];
 function llRenderProdList(uid, act) {
   var data = llReadData(uid);
   var isAR = LL_CUR === 'ar';
   var eligibles = llEligibles(uid, act);
   var box = document.getElementById('llProdList');
   if (!eligibles.length) { box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--ink3);">'+(isAR?'لا يوجد تلاميذ':'Aucun élève')+'</div>'; return; }
+  var useGrid = act.bareme === 20; /* la grille à 4 critères /5 ne s'applique que sur un barème /20 */
   box.innerHTML = eligibles.map(function(e) {
+    var nom = e.pr + ' ' + e.no;
+    var initiales = e.pr[0] + (e.no ? e.no[0] : '');
     var sub = (data.subs||[]).find(function(s){ return s.actId === act.id && s.eleveId === e.id; });
-    var head = '<div style="padding:.9rem 1.1rem;border-bottom:1px solid var(--br);"><div style="font-weight:700;font-size:.85rem;margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center;"><span>'+e.pr+' '+e.no+'</span>';
-    if (!sub) return head + '</div><div style="font-size:.78rem;color:var(--ink3);">⏳ '+(isAR?'في انتظار الإرسال':"En attente d'envoi")+'</div></div>';
+    var head = '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">' +
+      '<div class="ll-avatar" style="background:'+llAvatarColor(nom)+';width:32px;height:32px;font-size:.75rem;">'+initiales+'</div>' +
+      '<div style="flex:1;font-weight:700;font-size:.85rem;">'+nom+'</div>';
+    if (!sub) return head + '</div><div style="font-size:.78rem;color:var(--ink3);padding-inline-start:2.6rem;">⏳ '+(isAR?'في انتظار الإرسال':"En attente d'envoi")+'</div></div>';
     head += '<button class="btn bo bsm" onclick="llDeleteSub('+act.id+','+e.id+')">🗑</button></div>';
     var audioSrc = sub.audioKey ? llAudioGet(uid, sub.audioKey) : null;
-    var body = '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">✓ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+'</div>';
-    if (audioSrc) body += '<audio controls style="width:100%;margin-bottom:.5rem;" src="'+audioSrc+'"></audio><button class="btn bo bsm" style="margin-bottom:.6rem;" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+(e.pr+'_'+e.no).replace(/'/g,"")+'\')">⬇️ '+(isAR?'تحميل':'Télécharger')+'</button>';
-    body += '<div style="display:flex;gap:.6rem;align-items:flex-end;flex-wrap:wrap;">' +
-      '<div style="flex:0 0 90px;"><label class="fl" style="font-size:.68rem;">'+(isAR?'النقطة':'Note')+' /'+act.bareme+'</label><input type="number" min="0" max="'+act.bareme+'" class="fi" id="llNote_'+e.id+'" value="'+(sub.note!=null?sub.note:'')+'"></div>' +
-      '<div style="flex:1;min-width:160px;"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
-      '<button class="btn bt bsm" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ':'Enregistrer')+'</button></div>';
+    var dureeTxt = sub.dureeSec != null ? llFormatDuree(sub.dureeSec) : '—';
+    var left = '<div>' +
+      '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">✓ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+' · ⏱ '+dureeTxt+'</div>';
+    if (audioSrc) left += '<audio controls style="width:100%;margin-bottom:.5rem;" src="'+audioSrc+'"></audio><button class="btn bo bsm" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+(e.pr+'_'+e.no).replace(/'/g,"")+'\')">⬇️ '+(isAR?'تحميل':'Télécharger')+'</button>';
+    left += '</div>';
+    var right;
+    if (useGrid) {
+      var crit = sub.criteres || {};
+      right = '<div>' + LL_CRITERES.map(function(c) {
+        var v = crit[c.id] != null ? crit[c.id] : 3;
+        return '<div class="ll-crit-row"><span>'+(isAR?c.ar:c.fr)+'</span><input type="range" min="0" max="5" step="1" value="'+v+'" id="llCrit_'+c.id+'_'+e.id+'" oninput="llUpdateCritTotal('+act.id+','+e.id+')"><span id="llCritVal_'+c.id+'_'+e.id+'" style="text-align:center;font-weight:700;">'+v+'</span></div>';
+      }).join('') +
+        '<div class="ll-crit-total" id="llCritTotal_'+e.id+'">'+(isAR?'المجموع: ':'Total : ')+(sub.note!=null?sub.note:'—')+'/20</div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ التنقيط':'Enregistrer la note')+'</button>' +
+        '</div>';
+    } else {
+      right = '<div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'النقطة':'Note')+' /'+act.bareme+'</label><input type="number" min="0" max="'+act.bareme+'" class="fi" id="llNote_'+e.id+'" value="'+(sub.note!=null?sub.note:'')+'"></div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ':'Enregistrer')+'</button>' +
+        '</div>';
+    }
+    var body = '<div class="g2" style="gap:1rem;padding-inline-start:2.6rem;">' + left + right + '</div>';
     return head + body + '</div>';
   }).join('');
 }
+window.llUpdateCritTotal = function(actId, eleveId) {
+  var total = 0;
+  LL_CRITERES.forEach(function(c) {
+    var input = document.getElementById('llCrit_'+c.id+'_'+eleveId);
+    var span = document.getElementById('llCritVal_'+c.id+'_'+eleveId);
+    if (input) { span.textContent = input.value; total += parseInt(input.value); }
+  });
+  var isAR = LL_CUR === 'ar';
+  var totalEl = document.getElementById('llCritTotal_'+eleveId);
+  if (totalEl) totalEl.textContent = (isAR?'المجموع: ':'Total : ') + total + '/20';
+};
 window.llNoterSub = function(actId, eleveId) {
   var uid = LL_STATE.profUid;
   var data = llReadData(uid);
   var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
   if (!sub) return;
-  var n = document.getElementById('llNote_'+eleveId).value;
-  sub.note = n !== '' ? parseFloat(n) : null;
+  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  var gridInput = document.getElementById('llCrit_pron_'+eleveId);
+  if (gridInput) {
+    var crit = {}, total = 0;
+    LL_CRITERES.forEach(function(c) {
+      var v = parseInt(document.getElementById('llCrit_'+c.id+'_'+eleveId).value);
+      crit[c.id] = v; total += v;
+    });
+    sub.criteres = crit;
+    sub.note = total;
+  } else {
+    var n = document.getElementById('llNote_'+eleveId).value;
+    sub.note = n !== '' ? parseFloat(n) : null;
+  }
   sub.commentaire = document.getElementById('llComment_'+eleveId).value.trim();
   llSaveData(uid, data);
-  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
   if (sub.note != null) llSyncNoteToTadriss(uid, act, eleveId, sub.note);
   llRenderProdList(uid, act);
+  llRefreshStats(uid);
 };
 
 /* Fait apparaître automatiquement la note d'une production orale dans "Notes et moyennes"
@@ -770,6 +1014,7 @@ window.llDeleteSub = function(actId, eleveId) {
   llRemoveTadrissEvalNote(uid, actId, eleveId);
   var act = (data.acts||[]).find(function(a){ return a.id === actId; });
   llRenderProdList(uid, act);
+  llRefreshStats(uid);
 };
 /* Retire la note d'un élève de l'évaluation Tadriss synchronisée pour cette activité
    (utilisé quand le prof supprime une production individuelle notée). */
@@ -838,17 +1083,32 @@ function llRenderEleveApp() {
     if (a.assigneMode === 'specifique') return (a.assigneElevesIds||[]).indexOf(eid) >= 0;
     return true;
   });
-  var box = document.getElementById('llEleveActList');
-  if (!acts.length) { box.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink3);">'+(isAR?'لا يوجد أي نشاط شفهي حالياً ✓':'Aucune activité orale pour le moment ✓')+'</div>'; return; }
-  box.innerHTML = acts.slice().reverse().map(function(a) {
+  var todoBox = document.getElementById('llEleveTodoList');
+  var doneBox = document.getElementById('llEleveDoneList');
+  var resultsCard = document.getElementById('llResultsCt').parentElement.parentElement;
+  if (!acts.length) {
+    todoBox.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink3);">'+(isAR?'لا يوجد أي نشاط شفهي حالياً ✓':'Aucune activité orale pour le moment ✓')+'</div>';
+    doneBox.innerHTML = '';
+    resultsCard.style.display = 'none';
+    return;
+  }
+  var todo = [], done = [];
+  acts.forEach(function(a) {
     var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
+    var ty = llTypeById(a.typeActivite);
     var sub = (data.subs||[]).find(function(s){ return s.actId === a.id && s.eleveId === eid; });
+    (sub && sub.note != null ? done : todo).push({ a:a, lg:lg, ty:ty, sub:sub });
+  });
+
+  if (!todo.length) todoBox.innerHTML = '<div style="text-align:center;padding:1.6rem;color:var(--g);">✓ '+(isAR?'كل شيء منجز!':'Tout est fait !')+'</div>';
+  else todoBox.innerHTML = todo.map(function(x) {
+    var a = x.a, lg = x.lg, ty = x.ty, sub = x.sub;
     var canRedo = !sub || a.plusieursTentatives;
-    var statut = !sub ? ('<span style="color:var(--a);">'+(isAR?'لم يُنجز بعد':'À faire')+'</span>')
-      : (sub.note != null ? ('<span style="color:var(--t);">'+(isAR?'✓ تم التصحيح: ':'✓ Noté : ')+sub.note+'/'+a.bareme+(sub.commentaire?(' — '+sub.commentaire):'')+'</span>')
-      : ('<span style="color:var(--t);">'+(isAR?'✓ تم الإرسال':'✓ Envoyé')+'</span>'));
-    var btnLabel = !sub ? (isAR?'🎙️ بدء التسجيل':'🎙️ Commencer l\'enregistrement') : (isAR?'🔄 إعادة المحاولة':'🔄 Recommencer');
+    var statut = !sub ? ('<span style="color:var(--a);">🔥 '+(isAR?'لم يُنجز بعد':'À faire')+'</span>')
+      : ('<span style="color:var(--t);">'+(isAR?'✓ تم الإرسال، بانتظار التصحيح':'✓ Envoyé, en attente de correction')+'</span>');
+    var btnLabel = !sub ? (isAR?'🎙️ بدء التسجيل':"🎙️ Commencer l'enregistrement") : (isAR?'🔄 إعادة المحاولة':'🔄 Recommencer');
     return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;"><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span></div>' +
       '<div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div>' +
       '<div style="font-size:.78rem;color:var(--ink2);margin-bottom:.5rem;">'+a.consigne+'</div>' +
       '<div style="font-size:.72rem;margin-bottom:.6rem;">'+statut+'</div>' +
@@ -856,6 +1116,26 @@ function llRenderEleveApp() {
       (canRedo ? '<button class="btn bt bsm" onclick="llOpenStudio('+a.id+')">'+btnLabel+'</button>' : '') +
       (sub ? '<button class="btn bo bsm" onclick="llEleveDeleteSub('+a.id+')">🗑 '+(isAR?'حذف إرسالي':'Supprimer mon envoi')+'</button>' : '') +
       '</div>' +
+      '</div>';
+  }).join('');
+
+  resultsCard.style.display = done.length ? 'block' : 'none';
+  doneBox.innerHTML = done.map(function(x) {
+    var a = x.a, lg = x.lg, ty = x.ty, sub = x.sub;
+    var critHtml = '';
+    if (sub.criteres) {
+      critHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .8rem;margin:.5rem 0;font-size:.75rem;">' + LL_CRITERES.map(function(c) {
+        return '<div>'+(isAR?c.ar:c.fr)+' : <strong>'+(sub.criteres[c.id]!=null?sub.criteres[c.id]:'—')+'/5</strong></div>';
+      }).join('') + '</div>';
+    }
+    return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;">' +
+      '<div><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+      '<div style="font-weight:700;font-size:.9rem;margin-top:.4rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div></div>' +
+      '<div style="font-weight:800;color:var(--t);font-size:1.2rem;white-space:nowrap;">⭐ '+sub.note+'/'+a.bareme+'</div>' +
+      '</div>' +
+      critHtml +
+      (sub.commentaire ? ('<div style="font-size:.8rem;color:var(--ink2);margin-top:.4rem;">💬 '+sub.commentaire+'</div>') : '') +
       '</div>';
   }).join('');
 }
@@ -874,7 +1154,7 @@ window.llEleveDeleteSub = function(actId) {
 };
 
 /* ===== STUDIO D'ENREGISTREMENT ===== */
-var LL_ST = { actId:null, maxSec:60, seconds:0, stream:null, recorder:null, chunks:[], dataUrl:null, timerId:null };
+var LL_ST = { actId:null, maxSec:60, seconds:0, stream:null, recorder:null, chunks:[], dataUrl:null, timerId:null, rafId:null, audioCtx:null, dureeSec:null };
 window.llOpenStudio = function(actId) {
   var uid = LL_STATE.eleveUid;
   var data = llReadData(uid);
@@ -892,9 +1172,48 @@ window.llOpenStudio = function(actId) {
   document.getElementById('llStudioPauseRow').style.display = 'none';
   document.getElementById('llStudioPreviewRow').style.display = 'none';
   document.getElementById('llStudioErr').style.display = 'none';
+  document.getElementById('llMicWrap').style.display = 'flex';
+  document.getElementById('llWaveformCanvas').style.display = 'none';
   document.getElementById('llStudio').classList.add('open');
 };
-function llStudioCleanup() { if (LL_ST.stream) { LL_ST.stream.getTracks().forEach(function(t){ t.stop(); }); LL_ST.stream = null; } if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; } }
+function llStudioCleanup() {
+  if (LL_ST.stream) { LL_ST.stream.getTracks().forEach(function(t){ t.stop(); }); LL_ST.stream = null; }
+  if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; }
+  if (LL_ST.rafId) { cancelAnimationFrame(LL_ST.rafId); LL_ST.rafId = null; }
+  if (LL_ST.audioCtx) { try { LL_ST.audioCtx.close(); } catch(e) {} LL_ST.audioCtx = null; }
+  var wrap = document.getElementById('llMicWrap'), canvas = document.getElementById('llWaveformCanvas');
+  if (wrap) wrap.style.display = 'flex';
+  if (canvas) canvas.style.display = 'none';
+}
+/* Dessine une forme d'onde en direct pendant l'enregistrement (Web Audio API AnalyserNode).
+   Purement visuel — n'affecte ni le format ni la qualité de l'enregistrement réel (MediaRecorder). */
+function llStudioStartWaveform(stream) {
+  try {
+    var canvas = document.getElementById('llWaveformCanvas');
+    var ctx = canvas.getContext('2d');
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    LL_ST.audioCtx = new AudioCtx();
+    var source = LL_ST.audioCtx.createMediaStreamSource(stream);
+    var analyser = LL_ST.audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    var data = new Uint8Array(analyser.frequencyBinCount);
+    document.getElementById('llMicWrap').style.display = 'none';
+    canvas.style.display = 'block';
+    function draw() {
+      LL_ST.rafId = requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(data);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var barW = canvas.width / data.length;
+      for (var i = 0; i < data.length; i++) {
+        var h = (data[i] / 255) * canvas.height;
+        ctx.fillStyle = '#006B3F';
+        ctx.fillRect(i * barW, canvas.height - h, barW - 1, h);
+      }
+    }
+    draw();
+  } catch (e) { /* pas grave si non supporté : le studio reste utilisable sans forme d'onde */ }
+}
 function llStudioTick() {
   LL_ST.seconds++;
   document.getElementById('llStudioTimer').textContent = llFormatDuree(LL_ST.seconds) + ' / ' + llFormatDuree(LL_ST.maxSec);
@@ -912,6 +1231,7 @@ window.llStudioStart = function() {
     LL_ST.chunks = [];
     LL_ST.recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) LL_ST.chunks.push(e.data); };
     LL_ST.recorder.onstop = function() {
+      LL_ST.dureeSec = LL_ST.seconds;
       var blob = new Blob(LL_ST.chunks, { type: LL_ST.recorder.mimeType || 'audio/webm' });
       var reader = new FileReader();
       reader.onload = function(e) {
@@ -930,6 +1250,7 @@ window.llStudioStart = function() {
     document.getElementById('llStudioOr').style.display = 'none';
     document.getElementById('llStudioPauseRow').style.display = 'flex';
     LL_ST.timerId = setInterval(llStudioTick, 1000);
+    llStudioStartWaveform(stream);
   }).catch(function() { errEl.textContent = LL_CUR==='ar' ? 'تعذّر الوصول إلى الميكروفون.' : 'Impossible d\'accéder au microphone.'; errEl.style.display = 'block'; });
 };
 window.llStudioPause = function() {
@@ -942,6 +1263,7 @@ window.llStudioPause = function() {
 window.llStudioStop = function() { if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; } if (LL_ST.recorder && LL_ST.recorder.state !== 'inactive') LL_ST.recorder.stop(); };
 window.llStudioImport = function(input) {
   if (!input.files || !input.files[0]) return;
+  LL_ST.dureeSec = null;
   var reader = new FileReader();
   reader.onload = function(e) {
     LL_ST.dataUrl = e.target.result;
@@ -950,17 +1272,22 @@ window.llStudioImport = function(input) {
     document.getElementById('llStudioImportLbl').style.display = 'none';
     document.getElementById('llStudioOr').style.display = 'none';
     document.getElementById('llStudioPreviewRow').style.display = 'flex';
+    var probe = new Audio(); probe.preload = 'metadata';
+    probe.onloadedmetadata = function() { if (isFinite(probe.duration)) LL_ST.dureeSec = Math.round(probe.duration); };
+    probe.src = LL_ST.dataUrl;
   };
   reader.readAsDataURL(input.files[0]);
 };
 window.llStudioRedo = function() {
-  LL_ST.chunks = []; LL_ST.dataUrl = null;
+  LL_ST.chunks = []; LL_ST.dataUrl = null; LL_ST.dureeSec = null;
   document.getElementById('llStudioPreview').src = '';
   document.getElementById('llStudioPreviewRow').style.display = 'none';
   document.getElementById('llStudioStartBtn').style.display = 'block';
   document.getElementById('llStudioImportLbl').style.display = 'block';
   document.getElementById('llStudioOr').style.display = 'block';
   document.getElementById('llStudioTimer').textContent = '00:00 / ' + llFormatDuree(LL_ST.maxSec);
+  document.getElementById('llMicWrap').style.display = 'flex';
+  document.getElementById('llWaveformCanvas').style.display = 'none';
 };
 window.llStudioSend = function() {
   if (!LL_ST.dataUrl || !LL_STATE.eleve) return;
@@ -969,9 +1296,10 @@ window.llStudioSend = function() {
   llAudioSave(uid, key, LL_ST.dataUrl);
   var data = llReadData(uid);
   data.subs = data.subs || [];
+  var dureeSec = LL_ST.dureeSec != null ? LL_ST.dureeSec : null;
   var existing = data.subs.find(function(s){ return s.actId === actId && s.eleveId === eid; });
-  if (existing) { if (existing.audioKey) llAudioDelete(uid, existing.audioKey); existing.audioKey = key; existing.envoyeLe = new Date().toISOString(); existing.note = null; existing.commentaire = ''; }
-  else data.subs.push({ actId: actId, eleveId: eid, audioKey: key, envoyeLe: new Date().toISOString(), note: null, commentaire: '' });
+  if (existing) { if (existing.audioKey) llAudioDelete(uid, existing.audioKey); existing.audioKey = key; existing.envoyeLe = new Date().toISOString(); existing.note = null; existing.commentaire = ''; existing.dureeSec = dureeSec; existing.criteres = null; }
+  else data.subs.push({ actId: actId, eleveId: eid, audioKey: key, envoyeLe: new Date().toISOString(), note: null, commentaire: '', dureeSec: dureeSec, criteres: null });
   llSaveData(uid, data);
   llCloseModal('llStudio');
   llRenderEleveApp();
