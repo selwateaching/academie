@@ -607,52 +607,52 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 
   <!-- Problème -->
   <div class="site-section" style="background:var(--w);">
-    <div class="section-kicker">Le problème que nous résolvons</div>
-    <h2 class="section-h2">Vous préparez vos cours le week-end.<br><span>Et si ce n'était plus nécessaire ?</span></h2>
+    <div class="section-kicker" id="probKicker">Le problème que nous résolvons</div>
+    <h2 class="section-h2" id="probH2">Vous préparez vos cours le week-end.<br><span>Et si ce n'était plus nécessaire ?</span></h2>
     <div class="prob-grid">
       <div class="prob-side">
         <div class="prob-item">
           <div class="prob-icon">⏱</div>
-          <div class="prob-text"><strong>3 à 5h perdues chaque dimanche</strong><span>À préparer des cours, calculer des moyennes, rédiger des exercices à la main.</span></div>
+          <div class="prob-text" id="probItem1"><strong>3 à 5h perdues chaque dimanche</strong><span>À préparer des cours, calculer des moyennes, rédiger des exercices à la main.</span></div>
         </div>
         <div class="prob-item">
           <div class="prob-icon">📱</div>
-          <div class="prob-text"><strong>WhatsApp comme seul outil de communication</strong><span>Mélange vie pro/perso, pas de traçabilité, parents difficiles à joindre.</span></div>
+          <div class="prob-text" id="probItem2"><strong>WhatsApp comme seul outil de communication</strong><span>Mélange vie pro/perso, pas de traçabilité, parents difficiles à joindre.</span></div>
         </div>
         <div class="prob-item">
           <div class="prob-icon">📋</div>
-          <div class="prob-text"><strong>Bulletins et carnets de notes papier</strong><span>Calculs manuels, erreurs possibles, perte de temps en conseil de classe.</span></div>
+          <div class="prob-text" id="probItem3"><strong>Bulletins et carnets de notes papier</strong><span>Calculs manuels, erreurs possibles, perte de temps en conseil de classe.</span></div>
         </div>
         <div class="prob-item">
           <div class="prob-icon">🗂</div>
-          <div class="prob-text"><strong>Aucun outil adapté au programme algérien</strong><span>Les applications étrangères ignorent le curriculum national MEN.</span></div>
+          <div class="prob-text" id="probItem4"><strong>Aucun outil adapté au programme algérien</strong><span>Les applications étrangères ignorent le curriculum national MEN.</span></div>
         </div>
       </div>
       <div class="compare-box">
-        <div style="font-family:'Inter',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:1.2rem;">Avant / Après Tadriss DZ</div>
+        <div id="probCompareKicker" style="font-family:'Inter',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:1.2rem;">Avant / Après Tadriss DZ</div>
         <div class="cb-row">
           <span class="cb-label cb-before">AVANT</span>
-          <span class="cb-text">Préparer un cours : 90 minutes</span>
+          <span class="cb-text" id="probCb1">Préparer un cours : 90 minutes</span>
         </div>
         <div class="cb-row">
           <span class="cb-label cb-after">APRÈS</span>
-          <span class="cb-text hi">Générer avec l'IA : 8 minutes ✓</span>
+          <span class="cb-text hi" id="probCb1After">Générer avec l'IA : 8 minutes ✓</span>
         </div>
         <div class="cb-row">
           <span class="cb-label cb-before">AVANT</span>
-          <span class="cb-text">Calcul moyennes : 45 min/classe</span>
+          <span class="cb-text" id="probCb2">Calcul moyennes : 45 min/classe</span>
         </div>
         <div class="cb-row">
           <span class="cb-label cb-after">APRÈS</span>
-          <span class="cb-text hi">Calcul automatique : instantané ✓</span>
+          <span class="cb-text hi" id="probCb2After">Calcul automatique : instantané ✓</span>
         </div>
         <div class="cb-row">
           <span class="cb-label cb-before">AVANT</span>
-          <span class="cb-text">Informer un parent d'absence : appel téléphonique</span>
+          <span class="cb-text" id="probCb3">Informer un parent d'absence : appel téléphonique</span>
         </div>
         <div class="cb-row" style="border:none;margin:0;padding:0;margin-top:1rem;">
           <span class="cb-label cb-after">APRÈS</span>
-          <span class="cb-text hi">Notification automatique au parent ✓</span>
+          <span class="cb-text hi" id="probCb3After">Notification automatique au parent ✓</span>
         </div>
       </div>
     </div>
@@ -2794,6 +2794,21 @@ var LANG_JS = {
     guide_subtitle: 'Pas à pas, pour bien démarrer avec Tadriss DZ',
     guide_print_btn: '🖨 Imprimer le guide',
     guide_ar_notice: '',
+    prob_kicker: 'Le problème que nous résolvons',
+    prob_h2: 'Vous préparez vos cours le week-end.<br><span>Et si ce n\'était plus nécessaire ?</span>',
+    prob_item1: '<strong>3 à 5h perdues chaque dimanche</strong><span>À préparer des cours, calculer des moyennes, rédiger des exercices à la main.</span>',
+    prob_item2: '<strong>WhatsApp comme seul outil de communication</strong><span>Mélange vie pro/perso, pas de traçabilité, parents difficiles à joindre.</span>',
+    prob_item3: '<strong>Bulletins et carnets de notes papier</strong><span>Calculs manuels, erreurs possibles, perte de temps en conseil de classe.</span>',
+    prob_item4: '<strong>Aucun outil adapté au programme algérien</strong><span>Les applications étrangères ignorent le curriculum national MEN.</span>',
+    prob_compare_kicker: 'Avant / Après Tadriss DZ',
+    prob_cb1: 'Préparer un cours : 90 minutes',
+    prob_cb1_after: 'Générer avec l\'IA : 8 minutes ✓',
+    prob_cb2: 'Calcul moyennes : 45 min/classe',
+    prob_cb2_after: 'Calcul automatique : instantané ✓',
+    prob_cb3: 'Informer un parent d\'absence : appel téléphonique',
+    prob_cb3_after: 'Notification automatique au parent ✓',
+    prob_avant: 'AVANT',
+    prob_apres: 'APRÈS',
   },
   ar: {
     prof: 'الأستاذ',
@@ -2998,6 +3013,21 @@ var LANG_JS = {
     guide_subtitle: 'خطوة بخطوة، لبدء استخدام Tadriss DZ بسهولة',
     guide_print_btn: '🖨 طباعة الدليل',
     guide_ar_notice: '⚠️ محتوى هذا الدليل متوفر حالياً باللغة الفرنسية فقط.',
+    prob_kicker: 'المشكلة التي نحلّها',
+    prob_h2: 'تحضّر دروسك في نهاية الأسبوع.<br><span>ماذا لو لم يعد ذلك ضرورياً؟</span>',
+    prob_item1: '<strong>3 إلى 5 ساعات ضائعة كل يوم أحد</strong><span>لتحضير الدروس، حساب المعدلات، وكتابة التمارين يدوياً.</span>',
+    prob_item2: '<strong>واتساب كأداة تواصل وحيدة</strong><span>خلط بين الحياة المهنية والشخصية، دون تتبع، وصعوبة التواصل مع الأولياء.</span>',
+    prob_item3: '<strong>كشوف النقاط ودفاتر الملاحظات الورقية</strong><span>حسابات يدوية، احتمال الأخطاء، وضياع الوقت في مجلس القسم.</span>',
+    prob_item4: '<strong>لا توجد أداة ملائمة للبرنامج الجزائري</strong><span>التطبيقات الأجنبية لا تراعي المنهاج الوطني لوزارة التربية.</span>',
+    prob_compare_kicker: 'قبل / بعد Tadriss DZ',
+    prob_cb1: 'تحضير درس: 90 دقيقة',
+    prob_cb1_after: 'التوليد بالذكاء الاصطناعي: 8 دقائق ✓',
+    prob_cb2: 'حساب المعدلات: 45 د/قسم',
+    prob_cb2_after: 'حساب تلقائي: فوري ✓',
+    prob_cb3: 'إخبار ولي الأمر بالغياب: مكالمة هاتفية',
+    prob_cb3_after: 'إشعار تلقائي لولي الأمر ✓',
+    prob_avant: 'قبل',
+    prob_apres: 'بعد',
   }
 };
 
@@ -3119,6 +3149,22 @@ function switchLang() {
   var ssNums = document.querySelectorAll('.ss-label');
   var ssLabelKeys = ['ss_label_1','ss_label_2','ss_label_3','ss_label_4'];
   ssNums.forEach(function(el, i) { if (ssLabelKeys[i]) el.textContent = LANG[CURRENT_LANG][ssLabelKeys[i]]; });
+
+  /* Landing page — Problème que nous résolvons */
+  var probKicker = document.getElementById('probKicker'); if (probKicker) probKicker.textContent = T('prob_kicker');
+  var probH2 = document.getElementById('probH2'); if (probH2) probH2.innerHTML = T('prob_h2');
+  ['probItem1','probItem2','probItem3','probItem4'].forEach(function(id, i) {
+    var el = document.getElementById(id); if (el) el.innerHTML = T('prob_item' + (i+1));
+  });
+  var probCompareKicker = document.getElementById('probCompareKicker'); if (probCompareKicker) probCompareKicker.textContent = T('prob_compare_kicker');
+  document.getElementById('probCb1') && (document.getElementById('probCb1').textContent = T('prob_cb1'));
+  document.getElementById('probCb1After') && (document.getElementById('probCb1After').textContent = T('prob_cb1_after'));
+  document.getElementById('probCb2') && (document.getElementById('probCb2').textContent = T('prob_cb2'));
+  document.getElementById('probCb2After') && (document.getElementById('probCb2After').textContent = T('prob_cb2_after'));
+  document.getElementById('probCb3') && (document.getElementById('probCb3').textContent = T('prob_cb3'));
+  document.getElementById('probCb3After') && (document.getElementById('probCb3After').textContent = T('prob_cb3_after'));
+  document.querySelectorAll('.cb-before').forEach(function(el) { el.textContent = T('prob_avant'); });
+  document.querySelectorAll('.cb-after').forEach(function(el) { el.textContent = T('prob_apres'); });
 
   /* Landing page — Fonctionnalités (3 catégories) */
   var featsKicker = document.getElementById('featsKicker'); if (featsKicker) featsKicker.textContent = isAR ? 'الميزات' : 'Fonctionnalités';
