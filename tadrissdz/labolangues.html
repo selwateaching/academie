@@ -274,7 +274,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div class="sub" id="llEleveHeroSub">Écoute, enregistre-toi, progresse.</div>
     </div>
     <div class="ch" style="background:none;border:none;padding:0;margin-bottom:.7rem;">
-      <div></div>
+      <div style="display:flex;flex-direction:column;justify-content:center;">
+        <span id="llEleveNameTxt" style="font-weight:700;font-size:.9rem;"></span>
+        <span id="llEleveClasseTxt" style="font-size:.68rem;color:var(--ink3);"></span>
+      </div>
       <button class="btn bo bsm" onclick="llEleveLogout()" id="llEleveLogoutBtn">Changer d'élève</button>
     </div>
     <div class="card" style="margin-bottom:1.2rem;">
@@ -1392,7 +1395,13 @@ window.llDownloadAudio = function(dataUrl, name) {
 
 /* ===== ESPACE ÉLÈVE ===== */
 window.llGoEleve = function() { llShow('llEleveLogin'); };
-window.llEleveLogout = function() { LL_STATE.eleve = null; LL_STATE.eleveUid = null; document.getElementById('llEleveCode').value = ''; llShow('llEleveLogin'); };
+window.llEleveLogout = function() {
+  LL_STATE.eleve = null; LL_STATE.eleveUid = null;
+  document.getElementById('llEleveCode').value = '';
+  document.getElementById('llEleveNameTxt').textContent = '';
+  document.getElementById('llEleveClasseTxt').textContent = '';
+  llShow('llEleveLogin');
+};
 window.llEleveLoginSubmit = function() {
   var code = document.getElementById('llEleveCode').value.trim();
   var errEl = document.getElementById('llEleveErr');
@@ -1418,6 +1427,9 @@ window.llEleveLoginSubmit = function() {
   }
   if (!found) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صحيح.' : 'Code incorrect.'; return; }
   LL_STATE.eleve = found; LL_STATE.eleveUid = foundUid;
+  var cls = (roster.cls||[]).find(function(c){ return c.id === found.cid; });
+  document.getElementById('llEleveNameTxt').textContent = found.pr + ' ' + found.no;
+  document.getElementById('llEleveClasseTxt').textContent = cls ? cls.nm : '';
   llShow('llEleveApp');
   llRenderEleveApp();
 };
