@@ -23,6 +23,11 @@ def index():
     return send_from_directory(os.path.dirname(__file__), "index.html")
 
 
+@app.get("/index.html")
+def index_html():
+    return send_from_directory(os.path.dirname(__file__), "index.html")
+
+
 @app.get("/labolangues.html")
 def labolangues():
     return send_from_directory(os.path.dirname(__file__), "labolangues.html")
