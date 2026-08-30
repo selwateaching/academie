@@ -84,8 +84,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <div class="brand">🎙️ <span id="llBrandTxt">Labo Langues</span></div>
   <div style="display:flex;align-items:center;gap:1rem;">
     <button class="btn bo bsm" onclick="llToggleLang()" id="llLangBtn">العربية</button>
+    <button class="btn bo bsm" onclick="llShowDiag()">🔍 Diagnostic</button>
     <a class="back" href="index.html" id="llBackLink">← Retour à Tadriss</a>
   </div>
+</div>
+
+<div id="llDiagPanel" style="display:none;background:#1A1A1F;color:#0f0;font-family:monospace;font-size:.78rem;padding:1rem 1.4rem;white-space:pre-wrap;line-height:1.6;max-height:50vh;overflow-y:auto;">
+  <div style="display:flex;justify-content:space-between;color:#fff;margin-bottom:.6rem;"><strong>🔍 Diagnostic</strong><button onclick="document.getElementById('llDiagPanel').style.display='none'" style="background:none;border:1px solid #666;color:#fff;border-radius:5px;cursor:pointer;">Fermer</button></div>
+  <div id="llDiagContent"></div>
 </div>
 
 <div id="llContainer">
@@ -376,6 +382,37 @@ function llApplyLang() {
   document.querySelectorAll('#llLangue, #llLangue option').length; /* noop guard */
 }
 window.llToggleLang = function() { LL_CUR = LL_CUR === 'fr' ? 'ar' : 'fr'; llApplyLang(); };
+
+/* Diagnostic visible à l'écran (sans avoir besoin d'ouvrir les outils développeur) :
+   liste, pour chaque compte présent sur cet appareil, ses classes/élèves (localStorage TADRISS_DZ_*)
+   et ses activités Labo Langues (localStorage LABOLANGUES_*), pour repérer une incohérence de compte. */
+window.llShowDiag = function() {
+  var lines = [];
+  var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('TADRISS_DZ_') === 0; });
+  if (!rosterKeys.length) lines.push('Aucun compte Tadriss trouvé sur cet appareil/navigateur.');
+  rosterKeys.forEach(function(k) {
+    try {
+      var d = JSON.parse(localStorage.getItem(k));
+      var uid = k.replace('TADRISS_DZ_', '');
+      lines.push('COMPTE (uid ' + uid + ')');
+      lines.push('  Classes : ' + (d.cls || []).map(function(c) { return c.id + ':' + c.nm; }).join(', ') || '(aucune)');
+      lines.push('  Élèves  : ' + (d.el || []).map(function(e) { return e.pr + ' ' + e.no + ' [classe ' + e.cid + ', code ' + (e.code || llGenCode(e.id)) + ']'; }).join(', ') || '(aucun)');
+    } catch (e) { lines.push('COMPTE ' + k + ' : erreur de lecture'); }
+  });
+  lines.push('');
+  var actKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('LABOLANGUES_') === 0 && k.indexOf('_audio') < 0; });
+  if (!actKeys.length) lines.push('Aucune activité Labo Langues trouvée sur cet appareil/navigateur.');
+  actKeys.forEach(function(k) {
+    try {
+      var d = JSON.parse(localStorage.getItem(k));
+      var uid = k.replace('LABOLANGUES_', '');
+      lines.push('ACTIVITÉS du compte (uid ' + uid + ')');
+      lines.push('  ' + (d.acts || []).map(function(a) { return a.theme + ' [classe ' + a.classeId + ']'; }).join('\n  ') || '(aucune activité créée)');
+    } catch (e) { lines.push('ACTIVITÉS ' + k + ' : erreur de lecture'); }
+  });
+  document.getElementById('llDiagContent').textContent = lines.join('\n');
+  document.getElementById('llDiagPanel').style.display = 'block';
+};
 llApplyLang();
 
 /* ===== Constantes langues ===== */
@@ -698,9 +735,19 @@ window.llEleveLoginSubmit = function() {
   errEl.textContent = '';
   if (code.length < 4) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صالح.' : 'Code invalide.'; return; }
   var keys = Object.keys(localStorage).filter(function(k){ return k.indexOf('TADRISS_DZ_') === 0; });
+  var uids = keys.map(function(k){ return k.replace('TADRISS_DZ_', ''); });
+  /* Plusieurs comptes profs jamais personnalisés partagent les mêmes données de démonstration
+     (mêmes élèves, mêmes codes) : on cherche en priorité parmi les comptes qui ont déjà créé au
+     moins une activité Labo Langues (LABOLANGUES_{uid} existe), pour éviter de tomber sur un
+     compte de démo sans rapport. On ne retombe sur les autres comptes qu'à défaut. */
+  uids.sort(function(a, b){
+    var aHas = localStorage.getItem('LABOLANGUES_' + a) ? 0 : 1;
+    var bHas = localStorage.getItem('LABOLANGUES_' + b) ? 0 : 1;
+    return aHas - bHas;
+  });
   var found = null, foundUid = null;
-  for (var i = 0; i < keys.length; i++) {
-    var uid = keys[i].replace('TADRISS_DZ_', '');
+  for (var i = 0; i < uids.length; i++) {
+    var uid = uids[i];
     var roster = llReadRoster(uid);
     var match = (roster.el||[]).find(function(e){ return (e.code || llGenCode(e.id)) === code; });
     if (match) { found = match; foundUid = uid; break; }
