@@ -563,15 +563,19 @@ window.llToggleLang = function() { LL_CUR = LL_CUR === 'fr' ? 'ar' : 'fr'; llApp
    et ses activités Labo Langues (localStorage LABOLANGUES_*), pour repérer une incohérence de compte. */
 window.llShowDiag = function() {
   var lines = [];
+  var cu = LL_STATE.firebaseUser;
+  lines.push('COMPTE ACTUELLEMENT CONNECTÉ ICI : ' + (cu ? ((cu.email || '(sans email)') + ' — uid ' + cu.uid) : '(aucun, non connecté)'));
+  lines.push('');
   var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('TADRISS_DZ_') === 0; });
   if (!rosterKeys.length) lines.push('Aucun compte Tadriss trouvé sur cet appareil/navigateur.');
   rosterKeys.forEach(function(k) {
     try {
       var d = JSON.parse(localStorage.getItem(k));
       var uid = k.replace('TADRISS_DZ_', '');
-      lines.push('COMPTE (uid ' + uid + ')');
+      lines.push('COMPTE (uid ' + uid + ')' + (cu && cu.uid === uid ? '  ← compte connecté ici' : ''));
       lines.push('  Classes : ' + (d.cls || []).map(function(c) { return c.id + ':' + c.nm; }).join(', ') || '(aucune)');
       lines.push('  Élèves  : ' + (d.el || []).map(function(e) { return e.pr + ' ' + e.no + ' [classe ' + e.cid + ', code ' + (e.code || llGenCode(e.id)) + ']'; }).join(', ') || '(aucun)');
+      lines.push('  Évaluations (Notes et moyennes) : ' + (d.ev || []).map(function(v) { return v.int + (v._laboActId ? ' [🎙️ synchro Labo Langues]' : ''); }).join(', ') || '(aucune)');
     } catch (e) { lines.push('COMPTE ' + k + ' : erreur de lecture'); }
   });
   lines.push('');
@@ -581,8 +585,13 @@ window.llShowDiag = function() {
     try {
       var d = JSON.parse(localStorage.getItem(k));
       var uid = k.replace('LABOLANGUES_', '');
-      lines.push('ACTIVITÉS du compte (uid ' + uid + ')');
-      lines.push('  ' + (d.acts || []).map(function(a) { return a.theme + ' [classe ' + a.classeId + ']'; }).join('\n  ') || '(aucune activité créée)');
+      lines.push('ACTIVITÉS du compte (uid ' + uid + ')' + (cu && cu.uid === uid ? '  ← compte connecté ici' : ''));
+      (d.acts || []).forEach(function(a) {
+        var subs = (d.subs || []).filter(function(s) { return s.actId === a.id; });
+        var subsTxt = subs.map(function(s) { return 'élève ' + s.eleveId + ' → note ' + (s.note != null ? s.note : 'non notée'); }).join(', ') || 'aucun envoi';
+        lines.push('  ' + a.theme + ' [classe ' + a.classeId + '] : ' + subsTxt);
+      });
+      if (!(d.acts || []).length) lines.push('  (aucune activité créée)');
     } catch (e) { lines.push('ACTIVITÉS ' + k + ' : erreur de lecture'); }
   });
   document.getElementById('llDiagContent').textContent = lines.join('\n');
@@ -1087,6 +1096,7 @@ window.llSaveAct = function() {
   function finish() {
     if (!existing) data.acts.push(act);
     llSaveData(uid, data);
+    llSyncDevoirToTadriss(uid, act);
     llCloseModal('llModalAct');
     LL_STATE.editActId = null;
     if (editId) llOpenProd(editId); else llRenderProfApp();
@@ -1143,6 +1153,7 @@ window.llDeleteAct = function() {
   data.acts = (data.acts||[]).filter(function(a){ return a.id !== id; });
   llSaveData(uid, data);
   llRemoveTadrissEval(uid, id);
+  llRemoveTadrissDevoir(uid, id);
   llCloseProd();
 };
 var LL_CRITERES = [
@@ -1342,6 +1353,36 @@ function llRemoveTadrissEval(uid, actId) {
   var before = td.ev.length;
   td.ev = td.ev.filter(function(e) { return e._laboActId !== actId; });
   if (td.ev.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
+/* Crée/actualise un événement "Devoir" dans l'agenda Tadriss quand l'activité a une date limite,
+   pour qu'elle apparaisse dans "Mes devoirs à venir" côté élève avant même d'être notée.
+   Si la date limite est retirée, l'événement synchronisé est supprimé (rien à afficher). */
+function llSyncDevoirToTadriss(uid, act) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.evt)) td.evt = [];
+  var evt = td.evt.find(function(e) { return e._laboActId === act.id; });
+  if (!act.dateLimite) {
+    if (evt) td.evt = td.evt.filter(function(e) { return e._laboActId !== act.id; });
+  } else if (!evt) {
+    var id = td.evt.length ? Math.max.apply(null, td.evt.map(function(e){ return e.id; })) + 1 : 1;
+    td.evt.push({ id: id, title: '🎙️ Oral — ' + act.theme, date: act.dateLimite, type: 'Devoir', _laboActId: act.id });
+  } else {
+    evt.title = '🎙️ Oral — ' + act.theme;
+    evt.date = act.dateLimite;
+  }
+  try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {}
+}
+/* Retire l'événement "Devoir" synchronisé (utilisé quand le prof supprime l'activité entière). */
+function llRemoveTadrissDevoir(uid, actId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.evt)) return;
+  var before = td.evt.length;
+  td.evt = td.evt.filter(function(e) { return e._laboActId !== actId; });
+  if (td.evt.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
 }
 window.llDownloadAudio = function(dataUrl, name) {
   var a = document.createElement('a');
