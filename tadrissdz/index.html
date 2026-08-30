@@ -683,6 +683,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <li>Cahier journal</li>
           <li>Fiches de préparation</li>
           <li>Évaluations</li>
+          <li>Emploi du temps</li>
+          <li>Agenda professionnel</li>
         </ul>
       </div>
       <div class="feat-cat-card">
@@ -1229,6 +1231,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg2"><div class="fg"><label class="fl">Date</label><input type="date" class="fi" id="qED"></div><div class="fg"><label class="fl">Type</label><select class="fs" id="qETy"><option>Devoir</option><option>Contrôle</option><option>Réunion</option><option>Conseil</option></select></div></div>
         <button class="btn bt" style="width:100%" onclick="addQE()">Ajouter</button>
       </div></div>
+      <div class="card" style="margin-top:1rem"><div class="ch"><div class="ct" id="feriesCt">Prochains jours fériés</div></div><div class="cb" id="feriesL"></div></div>
     </div>
   </div>
 </div>
@@ -1281,6 +1284,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <tbody id="edtGrid"></tbody>
     </table>
   </div></div>
+  <div class="card" style="margin-top:1rem"><div class="ch"><div class="ct" id="feriesEdtCt">Prochains jours fériés</div></div><div class="cb" id="feriesEdtL"></div></div>
 </div>
 
 <!-- ===== PROGRAMME NATIONAL ===== -->
@@ -3176,7 +3180,7 @@ function switchLang() {
   var featsCat3Tt = document.getElementById('featsCat3Tt'); if (featsCat3Tt) featsCat3Tt.textContent = isAR ? 'التواصل والإدارة' : 'Communication & gestion';
   var featsLists = {
     featsCat1List: [['IA pédagogique','الذكاء الاصطناعي التربوي'],['Cours','الدروس'],['Exercices','التمارين'],['Quiz','الاختبارات (Quiz)']],
-    featsCat2List: [['Progressions','التدرجات'],['Cahier journal','دفتر النصوص'],['Fiches de préparation','أوراق التحضير'],['Évaluations','التقييمات']],
+    featsCat2List: [['Progressions','التدرجات'],['Cahier journal','دفتر النصوص'],['Fiches de préparation','أوراق التحضير'],['Évaluations','التقييمات'],['Emploi du temps','جدول التوقيت'],['Agenda professionnel','الأجندة المهنية']],
     featsCat3List: [['Communication parents','التواصل مع الأولياء'],['Appel numérique','الغياب الرقمي'],['Cloud','التخزين السحابي'],['Suivi des élèves','متابعة التلاميذ']]
   };
   Object.keys(featsLists).forEach(function(listId) {
@@ -3471,6 +3475,8 @@ function switchLang() {
     var edtHdMar = document.getElementById('edtHdMar'); if (edtHdMar) edtHdMar.textContent = jourCjLbl(2);
     var edtHdMer = document.getElementById('edtHdMer'); if (edtHdMer) edtHdMer.textContent = jourCjLbl(3);
     var edtHdJeu = document.getElementById('edtHdJeu'); if (edtHdJeu) edtHdJeu.textContent = jourCjLbl(4);
+    var feriesEdtCt = document.getElementById('feriesEdtCt'); if (feriesEdtCt) feriesEdtCt.textContent = isAR ? 'أقرب الأعياد والعطل الرسمية' : 'Prochains jours fériés';
+    if (typeof rEdt === 'function' && document.getElementById('edtGrid')) rEdt();
   }
 
   /* ===== PROGRESSION ANNUELLE PAGE ===== */
@@ -3588,6 +3594,8 @@ function switchLang() {
       var qET = document.getElementById('qET'); if (qET) qET.placeholder = isAR ? 'مثال: فرض الفصل 5' : 'Ex: Contrôle ch.5';
       var calAddBtn = calCards[2].querySelector('.btn.bt'); if (calAddBtn) calAddBtn.textContent = isAR ? 'إضافة' : 'Ajouter';
     }
+    var feriesCt = document.getElementById('feriesCt'); if (feriesCt) feriesCt.textContent = isAR ? 'أقرب الأعياد والعطل الرسمية' : 'Prochains jours fériés';
+    if (typeof rCal === 'function' && document.getElementById('feriesL')) rCal();
   }
 
   /* ===== PROGRAMME PAGE ===== */
@@ -5242,24 +5250,76 @@ function printAppel() {
 /* ===== CALENDRIER ===== */
 var calM = new Date(2026,3,1);
 var JOURS=['L','M','M','J','V','S','D'];
+var JOURS_AR=['ن','ث','ر','خ','ج','س','ح'];
+function jourLetterLbl(i) { return CURRENT_LANG==='ar' ? JOURS_AR[i] : JOURS[i]; }
 var MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var MOIS_AR=['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+function moisLbl(i) { return CURRENT_LANG==='ar' ? MOIS_AR[i] : MOIS[i]; }
+/* Jours fériés officiels en Algérie. Dates civiles fixes garanties ; dates religieuses (lunaires)
+   estimées par calcul astronomique standard — à confirmer chaque année par le Ministère des Affaires
+   religieuses (annonce généralement 1-2 jours avant, selon l'observation de la lune). */
+var JOURS_FERIES_DZ = {
+  '2025-01-01': {fr:'Nouvel An', ar:'رأس السنة الميلادية'},
+  '2025-01-12': {fr:'Yennayer (Nouvel An amazigh)', ar:'يناير (رأس السنة الأمازيغية)'},
+  '2025-03-31': {fr:'Aïd El Fitr', ar:'عيد الفطر'},
+  '2025-04-01': {fr:'Aïd El Fitr (2e jour)', ar:'عيد الفطر (اليوم الثاني)'},
+  '2025-05-01': {fr:'Fête du Travail', ar:'عيد العمال'},
+  '2025-06-06': {fr:'Aïd El Adha', ar:'عيد الأضحى'},
+  '2025-06-07': {fr:'Aïd El Adha (2e jour)', ar:'عيد الأضحى (اليوم الثاني)'},
+  '2025-06-26': {fr:'1er Moharram (Nouvel An Hégire)', ar:'رأس السنة الهجرية'},
+  '2025-07-05': {fr:'Fête de l\'Indépendance', ar:'عيد الاستقلال'},
+  '2025-09-04': {fr:'Mawlid Ennabaoui', ar:'المولد النبوي الشريف'},
+  '2025-11-01': {fr:'Anniversaire du 1er Novembre 1954', ar:'ذكرى أول نوفمبر 1954'},
+  '2026-01-01': {fr:'Nouvel An', ar:'رأس السنة الميلادية'},
+  '2026-01-12': {fr:'Yennayer (Nouvel An amazigh)', ar:'يناير (رأس السنة الأمازيغية)'},
+  '2026-03-20': {fr:'Aïd El Fitr', ar:'عيد الفطر'},
+  '2026-03-21': {fr:'Aïd El Fitr (2e jour)', ar:'عيد الفطر (اليوم الثاني)'},
+  '2026-05-01': {fr:'Fête du Travail', ar:'عيد العمال'},
+  '2026-05-27': {fr:'Aïd El Adha', ar:'عيد الأضحى'},
+  '2026-05-28': {fr:'Aïd El Adha (2e jour)', ar:'عيد الأضحى (اليوم الثاني)'},
+  '2026-06-16': {fr:'1er Moharram (Nouvel An Hégire)', ar:'رأس السنة الهجرية'},
+  '2026-07-05': {fr:'Fête de l\'Indépendance', ar:'عيد الاستقلال'},
+  '2026-08-25': {fr:'Mawlid Ennabaoui', ar:'المولد النبوي الشريف'},
+  '2026-11-01': {fr:'Anniversaire du 1er Novembre 1954', ar:'ذكرى أول نوفمبر 1954'},
+};
+function ferieDuJour(ds) { return JOURS_FERIES_DZ[ds] || null; }
+function ferieLabel(f) { return CURRENT_LANG==='ar' ? f.ar : f.fr; }
+function prochainesFeries(n) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  return Object.keys(JOURS_FERIES_DZ)
+    .filter(function(ds){ return new Date(ds+'T00:00:00') >= today; })
+    .sort()
+    .slice(0, n || 5)
+    .map(function(ds){ return {date: ds, f: JOURS_FERIES_DZ[ds]}; });
+}
 function rCal() {
-  document.getElementById('calL').textContent=MOIS[calM.getMonth()]+' '+calM.getFullYear();
+  document.getElementById('calL').textContent=moisLbl(calM.getMonth())+' '+calM.getFullYear();
   document.getElementById('qED').valueAsDate=new Date();
   var g=document.getElementById('calG');
-  g.innerHTML=JOURS.map(function(d){return '<div style="text-align:center;font-size:.62rem;font-weight:700;color:var(--ink3);padding:4px">'+d+'</div>';}).join('');
+  g.innerHTML=JOURS.map(function(d,ji){return '<div style="text-align:center;font-size:.62rem;font-weight:700;color:var(--ink3);padding:4px">'+jourLetterLbl(ji)+'</div>';}).join('');
   var f=new Date(calM.getFullYear(),calM.getMonth(),1), l=new Date(calM.getFullYear(),calM.getMonth()+1,0);
   var dw=(f.getDay()+6)%7, td=new Date();
   for (var i=0;i<dw;i++) g.innerHTML+='<div style="padding:4px;min-height:55px;border-radius:6px;opacity:.3"></div>';
   for (var dy=1;dy<=l.getDate();dy++) {
     var dt=new Date(calM.getFullYear(),calM.getMonth(),dy), it=dt.toDateString()===td.toDateString();
     var ds=dt.toISOString().split('T')[0];
+    var ferie=ferieDuJour(ds);
     var evs=D.evt.filter(function(v){return v.date===ds;});
     var eh=evs.map(function(v){var col=v.type.indexOf('Contrôle')>=0?'#C8102E':v.type.indexOf('Devoir')>=0?'#D4AF37':v.type.indexOf('Réunion')>=0?'#8B5CF6':'#006B3F';return '<div style="font-size:.55rem;border-radius:3px;padding:1px 4px;margin-top:2px;background:'+col+'22;color:'+col+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+v.title+'</div>';}).join('');
-    g.innerHTML+='<div style="padding:4px;min-height:55px;border-radius:6px;border:1px solid '+(it?'var(--t)':'var(--br)')+';background:'+(it?'var(--tp)':'#fff')+';font-size:.7rem;cursor:pointer" onmouseover="this.style.background=\'var(--tp)\'" onmouseout="this.style.background=\''+(it?'var(--tp)':'#fff')+'\'"><div style="font-weight:700;color:'+(it?'var(--t)':'var(--ink)')+'">'+dy+'</div>'+eh+'</div>';
+    var ferieH=ferie?'<div style="font-size:.55rem;border-radius:3px;padding:1px 4px;margin-top:2px;background:#00A06022;color:#00A060;font-weight:700;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="'+ferieLabel(ferie)+'">🇩🇿 '+ferieLabel(ferie)+'</div>':'';
+    var bg = ferie ? '#00A0600d' : (it?'var(--tp)':'#fff');
+    g.innerHTML+='<div style="padding:4px;min-height:55px;border-radius:6px;border:1px solid '+(ferie?'#00A06055':(it?'var(--t)':'var(--br)'))+';background:'+bg+';font-size:.7rem;cursor:pointer" onmouseover="this.style.background=\'var(--tp)\'" onmouseout="this.style.background=\''+bg+'\'"><div style="font-weight:700;color:'+(it?'var(--t)':'var(--ink)')+'">'+dy+'</div>'+ferieH+eh+'</div>';
   }
   var upc=D.evt.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   document.getElementById('evtL').innerHTML=upc.length?upc.map(function(v){var d=new Date(v.date),pt=d<new Date();return '<div style="display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--br);'+(pt?'opacity:.45':'')+'"><div style="font-family:Syne,sans-serif;font-size:.8rem;font-weight:700;color:var(--t);min-width:45px">'+d.getDate()+' '+moLbl(d.getMonth())+'</div><div style="flex:1"><div style="font-size:.8rem;font-weight:600">'+v.title+'</div><div style="font-size:.68rem;color:var(--ink3)">'+v.type+'</div></div><button style="background:var(--rp);color:var(--r);border:none;border-radius:4px;padding:3px 7px;cursor:pointer;font-size:.68rem" onclick="delEv('+v.id+')">x</button></div>';}).join(''):'<div style="text-align:center;color:var(--ink3);font-size:.8rem">'+T('aucun_evt')+'</div>';
+  var feriesL = document.getElementById('feriesL');
+  if (feriesL) {
+    var fList = prochainesFeries(5);
+    feriesL.innerHTML = fList.length ? fList.map(function(item){
+      var d = new Date(item.date+'T00:00:00');
+      return '<div style="display:flex;gap:9px;align-items:center;padding:7px 0;border-bottom:1px solid var(--br);"><div style="font-family:Syne,sans-serif;font-size:.78rem;font-weight:700;color:#00A060;min-width:45px">'+d.getDate()+' '+moLbl(d.getMonth())+'</div><div style="flex:1;font-size:.78rem;">🇩🇿 '+ferieLabel(item.f)+'</div></div>';
+    }).join('') : '<div style="text-align:center;color:var(--ink3);font-size:.8rem">'+(CURRENT_LANG==='ar'?'لا توجد بيانات':'Aucune donnée')+'</div>';
+  }
 }
 function calP() { calM=new Date(calM.getFullYear(),calM.getMonth()-1,1); rCal(); }
 function calN() { calM=new Date(calM.getFullYear(),calM.getMonth()+1,1); rCal(); }
@@ -5515,6 +5575,14 @@ function rEdt() {
     html += '</tr>';
   });
   document.getElementById('edtGrid').innerHTML = html;
+  var feriesEdtL = document.getElementById('feriesEdtL');
+  if (feriesEdtL) {
+    var fList = prochainesFeries(5);
+    feriesEdtL.innerHTML = fList.length ? fList.map(function(item){
+      var d = new Date(item.date+'T00:00:00');
+      return '<div style="display:flex;gap:9px;align-items:center;padding:7px 0;border-bottom:1px solid var(--br);"><div style="font-family:Syne,sans-serif;font-size:.78rem;font-weight:700;color:#00A060;min-width:45px">'+d.getDate()+' '+moLbl(d.getMonth())+'</div><div style="flex:1;font-size:.78rem;">🇩🇿 '+ferieLabel(item.f)+'</div></div>';
+    }).join('') : '<div style="text-align:center;color:var(--ink3);font-size:.8rem">'+(isAREd?'لا توجد بيانات':'Aucune donnée')+'</div>';
+  }
 }
 
 function openCreneau(jourIdx, slotIdx) {
