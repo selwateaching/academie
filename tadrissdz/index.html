@@ -6947,6 +6947,8 @@ function tiaToggle() {
   if (opening) { tiaRender(); var inp = document.getElementById('tiaIn'); if (inp) setTimeout(function () { inp.focus(); }, 60); }
 }
 function tiaRenderWelcome(box) {
+  var laboBtn = (typeof isLangueMatiere === 'function' && isLangueMatiere(D.s.mat)) ?
+    '<button class="tia-qb" onclick="tiaQuick(\'labolangues\')">🎙️ Découvrir Labo Langues</button>' : '';
   box.innerHTML = '<div class="tia-msg bot">👋 Bonjour ! Je suis Tadriss IA, votre copilote pédagogique. Que souhaitez-vous créer ?</div>' +
     '<div class="tia-quick">' +
       '<button class="tia-qb" onclick="tiaQuick(\'fiche\')">✨ Créer une fiche pédagogique</button>' +
@@ -6954,6 +6956,7 @@ function tiaRenderWelcome(box) {
       '<button class="tia-qb" onclick="tiaQuick(\'activite\')">📝 Créer une activité</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'cahier\')">🗓️ Créer mon cahier journal</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'differ\')">🎯 Différencier une activité</button>' +
+      laboBtn +
     '</div>';
 }
 function tiaCardHTML(obj, idx, created) {
@@ -7005,6 +7008,8 @@ function tiaQuick(kind) {
   } else if (kind === 'differ') {
     TIA_PENDING_MODE = 'differ';
     tiaPush('bot', 'Collez l\'activité ou la consigne à différencier, et précisez le profil des élèves concernés (difficulté, avancé...).');
+  } else if (kind === 'labolangues') {
+    tiaPush('bot', '🎙️ Labo Langues est un module complémentaire pour faire pratiquer l\'oral à vos élèves : enregistrement, correction avec grille de critères, suivi de la progression. C\'est un module payant en plus de Tadriss, activé manuellement après votre demande. Pour le découvrir : retournez au tableau de bord, carte « Labo Langues » → « Découvrir ».');
   }
 }
 function tiaDetectMode(text) {
