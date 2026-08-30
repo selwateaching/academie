@@ -124,12 +124,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div class="cb">
         <div style="font-weight:700;font-size:.9rem;margin-bottom:.7rem;">🎙️ <span id="llDemoActTitle">Activité : Introduce yourself</span></div>
         <div style="display:flex;align-items:center;gap:.8rem;padding:.8rem;background:var(--bg);border-radius:9px;">
-          <div style="width:34px;height:34px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">S</div>
-          <div style="flex:1;">
-            <div style="font-weight:700;font-size:.85rem;">Sara — 1:24</div>
-            <div style="font-size:.72rem;color:var(--ink3);" id="llDemoListen">▶️ Écouter (exemple)</div>
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">S</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.85rem;">Sara — <span id="llDemoTimer">1:24</span></div>
+            <button onclick="llDemoPlayToggle()" id="llDemoPlayBtn" style="background:none;border:none;padding:0;cursor:pointer;font-size:.72rem;color:var(--t);font-weight:700;font-family:'Inter',sans-serif;">▶️ Écouter (exemple)</button>
+            <div style="height:4px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden;">
+              <div id="llDemoProgress" style="height:100%;width:0%;background:var(--t);transition:width .1s linear;"></div>
+            </div>
           </div>
-          <div style="text-align:right;">
+          <div style="text-align:right;flex-shrink:0;">
             <div style="font-weight:800;color:var(--t);">⭐ 17/20</div>
           </div>
         </div>
@@ -313,7 +316,7 @@ var LL_LANG_KEYS = {
   llDemoCt:['🎧 Exemple de production corrigée','🎧 مثال عن إنتاج مصحح'],
   llDemoBadge:['Exemple','مثال'],
   llDemoActTitle:['Activité : Introduce yourself','النشاط: Introduce yourself'],
-  llDemoListen:['▶️ Écouter (exemple)','▶️ استماع (مثال)'],
+  llDemoPlayBtn:['▶️ Écouter (exemple)','▶️ استماع (مثال)'],
   llDemoComment:["Très bonne prononciation, continue à travailler l'intonation des questions.",'نطق جيد جداً، واصل العمل على تنغيم الأسئلة.'],
   llActivateTitle:['Envie d\'activer le Labo Langues pour tes classes ?','هل ترغب في تفعيل مخبر اللغات لأقسامك؟'],
   llActivateSub:["Module complémentaire facturé en plus de ton abonnement Tadriss.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في Tadriss.'],
@@ -432,6 +435,41 @@ function llRenderDiscovery(p) {
     msg.style.display = 'none';
   }
 }
+/* Démo fictive : simule une lecture (barre de progression) pour rendre l'exemple interactif,
+   sans faire croire à un vrai enregistrement audio (aucun fichier n'existe réellement). */
+var LL_DEMO_DUR = 84; /* secondes, correspond à l'affichage "1:24" */
+var _llDemoPlaying = false, _llDemoTimer = null, _llDemoElapsed = 0;
+function llDemoFormatTime(sec) { var m = Math.floor(sec/60), s = Math.round(sec%60); return m+':'+(s<10?'0':'')+s; }
+window.llDemoPlayToggle = function() {
+  var btn = document.getElementById('llDemoPlayBtn');
+  var bar = document.getElementById('llDemoProgress');
+  var timer = document.getElementById('llDemoTimer');
+  var isAR = LL_CUR === 'ar';
+  if (_llDemoPlaying) {
+    _llDemoPlaying = false;
+    if (_llDemoTimer) { clearInterval(_llDemoTimer); _llDemoTimer = null; }
+    btn.textContent = isAR ? '▶️ استماع (مثال)' : '▶️ Écouter (exemple)';
+    return;
+  }
+  _llDemoPlaying = true;
+  _llDemoElapsed = 0;
+  btn.textContent = isAR ? '⏸ لحظة... (مثال)' : '⏸ Lecture en cours... (exemple)';
+  /* Aperçu accéléré (~4s réelles) plutôt qu'une vraie durée de 1:24 — c'est un exemple fictif, pas un fichier audio réel */
+  var pasParTick = LL_DEMO_DUR / 40;
+  _llDemoTimer = setInterval(function() {
+    _llDemoElapsed += pasParTick;
+    var pct = Math.min(100, (_llDemoElapsed / LL_DEMO_DUR) * 100);
+    bar.style.width = pct + '%';
+    timer.textContent = llDemoFormatTime(Math.max(0, LL_DEMO_DUR - _llDemoElapsed));
+    if (_llDemoElapsed >= LL_DEMO_DUR) {
+      clearInterval(_llDemoTimer); _llDemoTimer = null; _llDemoPlaying = false;
+      bar.style.width = '0%';
+      timer.textContent = llDemoFormatTime(LL_DEMO_DUR);
+      btn.textContent = isAR ? '▶️ استماع (مثال)' : '▶️ Écouter (exemple)';
+    }
+  }, 100);
+};
+
 window.llDemanderActivation = function() {
   if (!LL_STATE.profUid) return;
   setDoc(doc(dbFs, 'profs', LL_STATE.profUid), { laboLanguesDemandee: true, laboLanguesDemandeeAt: serverTimestamp() }, { merge: true }).then(function() {
