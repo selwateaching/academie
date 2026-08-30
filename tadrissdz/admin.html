@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration — Tadriss</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;
+  --t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--br:#E2DDD5;--rd:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
+.topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.4rem;height:58px;display:flex;align-items:center;justify-content:space-between;}
+.brand{font-weight:800;font-size:1.02rem;}
+a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
+a.back:hover{color:var(--t);}
+.wrap{max-width:1000px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
+.card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:1.4rem;}
+.ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
+.ct{font-weight:700;font-size:.92rem;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;background:var(--ap);color:var(--a);}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--bg);padding:9px 12px;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);}
+td{padding:10px 12px;font-size:.83rem;border-bottom:1px solid var(--br);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
+.bt:disabled{opacity:.5;cursor:not-allowed;}
+.empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
+#llLoading,#llNeedLogin,#llNotAdmin{text-align:center;padding:4rem 1rem;color:var(--ink3);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">🛠️ Administration Tadriss</div>
+  <a class="back" href="index.html">← Retour à Tadriss</a>
+</div>
+<div class="wrap">
+  <div id="aLoading">Chargement…</div>
+  <div id="aNeedLogin" style="display:none;text-align:center;padding:3rem 1rem;">
+    <div style="font-weight:700;margin-bottom:.8rem;">Connecte-toi d'abord sur Tadriss avec ton compte admin.</div>
+    <a class="btn bt" href="index.html" style="display:inline-block;text-decoration:none;">Aller sur Tadriss</a>
+  </div>
+  <div id="aNotAdmin" style="display:none;text-align:center;padding:3rem 1rem;">
+    <div style="font-weight:700;">Ce compte n'est pas administrateur.</div>
+  </div>
+
+  <div id="aDash" style="display:none;">
+    <div class="card">
+      <div class="ch"><div class="ct">🎙️ Demandes d'activation — Labo Langues</div><span class="badge" id="aLaboCount">0</span></div>
+      <div id="aLaboBody"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">📚 Demandes de changement de matière</div><span class="badge" id="aMatChangeCount">0</span></div>
+      <div id="aMatChangeBody"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">➕ Demandes d'ajout de matière (add-on)</div><span class="badge" id="aMatAddonCount">0</span></div>
+      <div id="aMatAddonBody"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
+  authDomain: "tadriss-dz-c5884.firebaseapp.com",
+  projectId: "tadriss-dz-c5884",
+  storageBucket: "tadriss-dz-c5884.firebasestorage.app",
+  messagingSenderId: "647327995081",
+  appId: "1:647327995081:web:75e128a1748cfa4f126918"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const dbFs = getFirestore(fbApp);
+
+function aShow(id) {
+  ['aLoading','aNeedLogin','aNotAdmin','aDash'].forEach(function(x) {
+    document.getElementById(x).style.display = (x === id) ? 'block' : 'none';
+  });
+}
+
+onAuthStateChanged(auth, async function(user) {
+  if (!user) { aShow('aNeedLogin'); return; }
+  try {
+    var adminSnap = await getDoc(doc(dbFs, 'admins', user.uid));
+    if (!adminSnap.exists()) { aShow('aNotAdmin'); return; }
+  } catch (e) { aShow('aNotAdmin'); return; }
+  aShow('aDash');
+  loadRequests();
+});
+
+function profLabel(p) {
+  return (p.prenom || '') + ' ' + (p.nom || '') + ' — ' + (p.email || '') + (p.etablissement ? (' · ' + p.etablissement) : '');
+}
+
+async function loadRequests() {
+  var allProfs = [];
+  try {
+    var snap = await getDocs(collection(dbFs, 'profs'));
+    snap.forEach(function(d) { allProfs.push(Object.assign({ id: d.id }, d.data())); });
+  } catch (e) {
+    document.getElementById('aLaboBody').innerHTML = '<div class="empty">Erreur de lecture : ' + (e && e.message ? e.message : e) + '<br><small>Vérifie les règles de sécurité Firestore (lecture de la collection "profs" pour les admins).</small></div>';
+    return;
+  }
+
+  var labo = allProfs.filter(function(p) { return p.laboLanguesDemandee && !p.laboLanguesActif; });
+  var matChange = allProfs.filter(function(p) { return p.matiereDemandee; });
+  var matAddon = allProfs.filter(function(p) { return p.matiereAddonDemandee; });
+
+  document.getElementById('aLaboCount').textContent = labo.length;
+  document.getElementById('aMatChangeCount').textContent = matChange.length;
+  document.getElementById('aMatAddonCount').textContent = matAddon.length;
+
+  document.getElementById('aLaboBody').innerHTML = labo.length ? renderTable(labo, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Matière', render: function(p) { return p.matiere || ''; } },
+    { label: 'Action', render: function(p) { return '<button class="btn bt" onclick="window.aActivateLabo(\'' + p.id + '\')">Activer</button>'; } }
+  ]) : '<div class="empty">Aucune demande en attente ✓</div>';
+
+  document.getElementById('aMatChangeBody').innerHTML = matChange.length ? renderTable(matChange, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Matière actuelle', render: function(p) { return p.matiere || ''; } },
+    { label: 'Matière demandée', render: function(p) { return p.matiereDemandee || ''; } },
+    { label: 'Action', render: function(p) { return '<button class="btn bt" onclick="window.aApplyMatiereChange(\'' + p.id + '\',\'' + (p.matiereDemandee||'').replace(/'/g,"\\'") + '\')">Valider</button>'; } }
+  ]) : '<div class="empty">Aucune demande en attente ✓</div>';
+
+  document.getElementById('aMatAddonBody').innerHTML = matAddon.length ? renderTable(matAddon, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Matière principale', render: function(p) { return p.matiere || ''; } },
+    { label: 'Matière demandée en plus', render: function(p) { return p.matiereAddonDemandee || ''; } },
+    { label: 'Action', render: function(p) { return '<button class="btn bt" onclick="window.aApplyMatiereAddon(\'' + p.id + '\',\'' + (p.matiereAddonDemandee||'').replace(/'/g,"\\'") + '\')">Valider</button>'; } }
+  ]) : '<div class="empty">Aucune demande en attente ✓</div>';
+}
+
+function renderTable(rows, cols) {
+  var head = '<tr>' + cols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('') + '</tr>';
+  var body = rows.map(function(p) { return '<tr>' + cols.map(function(c) { return '<td>' + c.render(p) + '</td>'; }).join('') + '</tr>'; }).join('');
+  return '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+}
+
+window.aActivateLabo = async function(profId) {
+  await setDoc(doc(dbFs, 'profs', profId), { laboLanguesActif: true, laboLanguesDemandee: false }, { merge: true });
+  loadRequests();
+};
+window.aApplyMatiereChange = async function(profId, nouvelleMatiere) {
+  await setDoc(doc(dbFs, 'profs', profId), { matiere: nouvelleMatiere, matiereDemandee: null }, { merge: true });
+  loadRequests();
+};
+window.aApplyMatiereAddon = async function(profId, nouvelleMatiere) {
+  var snap = await getDoc(doc(dbFs, 'profs', profId));
+  var p = snap.data() || {};
+  var actives = Array.isArray(p.matieresActives) ? p.matieresActives.slice() : (p.matiere ? [p.matiere] : []);
+  if (actives.indexOf(nouvelleMatiere) < 0) actives.push(nouvelleMatiere);
+  await setDoc(doc(dbFs, 'profs', profId), { matieresActives: actives, matiereAddonDemandee: null }, { merge: true });
+  loadRequests();
+};
+</script>
+</body>
+</html>

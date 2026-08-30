@@ -28,6 +28,11 @@ def labolangues():
     return send_from_directory(os.path.dirname(__file__), "labolangues.html")
 
 
+@app.get("/admin.html")
+def admin():
+    return send_from_directory(os.path.dirname(__file__), "admin.html")
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
