@@ -45,6 +45,7 @@ tr:last-child td{border-bottom:none;}
   </div>
   <div id="aNotAdmin" style="display:none;text-align:center;padding:3rem 1rem;">
     <div style="font-weight:700;">Ce compte n'est pas administrateur.</div>
+    <div id="aNotAdminDetail" style="margin-top:.8rem;font-size:.78rem;color:var(--ink3);"></div>
   </div>
 
   <div id="aDash" style="display:none;">
@@ -90,8 +91,20 @@ onAuthStateChanged(auth, async function(user) {
   if (!user) { aShow('aNeedLogin'); return; }
   try {
     var adminSnap = await getDoc(doc(dbFs, 'admins', user.uid));
-    if (!adminSnap.exists()) { aShow('aNotAdmin'); return; }
-  } catch (e) { aShow('aNotAdmin'); return; }
+    if (!adminSnap.exists()) {
+      aShow('aNotAdmin');
+      document.getElementById('aNotAdminDetail').textContent =
+        'Compte connecté : ' + (user.email || user.uid) + ' (uid : ' + user.uid + '). ' +
+        'Aucun document "admins/' + user.uid + '" trouvé dans Firestore — l\'identifiant du document admin ne correspond pas à cet uid.';
+      return;
+    }
+  } catch (e) {
+    aShow('aNotAdmin');
+    document.getElementById('aNotAdminDetail').textContent =
+      'Erreur en vérifiant les droits admin (uid : ' + user.uid + ') : ' + (e && e.message ? e.message : e) +
+      '. Si le message mentionne "permission" ou "insufficient", ce sont les règles de sécurité Firestore qui bloquent la lecture de "admins/' + user.uid + '".';
+    return;
+  }
   aShow('aDash');
   loadRequests();
 });
