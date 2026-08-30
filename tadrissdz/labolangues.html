@@ -646,13 +646,30 @@ function llRenderTemplateRow(t, isCustom, isAR) {
     '<div style="font-size:.7rem;color:var(--ink3);">'+info.ty.ic+' '+(isAR?info.ty.ar:info.ty.fr)+'</div></div>' +
     '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">'+actions+'</div></div>';
 }
+/* Regroupe une liste de modèles par langue (un en-tête par langue), en ne gardant que
+   les langues effectivement enseignées par le prof connecté. */
+function llGroupTemplatesByLangue(list, isCustom, isAR, allowedIds) {
+  var filtered = list.filter(function(t){ return allowedIds.indexOf(t.langueId) >= 0; });
+  if (!filtered.length) return '';
+  var groups = {};
+  filtered.forEach(function(t){ (groups[t.langueId] = groups[t.langueId] || []).push(t); });
+  return LL_LANGUES.filter(function(l){ return groups[l.id]; }).map(function(l){
+    return '<div style="margin-bottom:.4rem;">' +
+      '<div style="font-weight:700;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:.7rem 0 .1rem;">'+l.flag+' '+(isAR?l.ar:l.fr)+'</div>' +
+      groups[l.id].map(function(t){ return llRenderTemplateRow(t, isCustom, isAR); }).join('') +
+      '</div>';
+  }).join('');
+}
 window.llOpenLibrary = function() {
   var uid = LL_STATE.profUid;
   var isAR = LL_CUR === 'ar';
   var data = llReadData(uid);
   var custom = data.templates || [];
-  document.getElementById('llLibBuiltinList').innerHTML = LL_BUILTIN_TEMPLATES.map(function(t){ return llRenderTemplateRow(t, false, isAR); }).join('');
-  document.getElementById('llLibCustomList').innerHTML = custom.length ? custom.map(function(t){ return llRenderTemplateRow(t, true, isAR); }).join('') : ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج شخصي بعد — استخدم "نسخ" على نموذج أعلاه لبدء واحد.':'Aucun modèle personnel pour le moment — utilise "Dupliquer" sur un modèle ci-dessus pour en créer un.')+'</div>');
+  var allowedIds = llProfLangueIds(LL_STATE.profDoc);
+  document.getElementById('llLibBuiltinList').innerHTML = llGroupTemplatesByLangue(LL_BUILTIN_TEMPLATES, false, isAR, allowedIds) ||
+    ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج متاح لمادتك/مادتك.':'Aucun modèle disponible pour votre/vos matière(s).')+'</div>');
+  document.getElementById('llLibCustomList').innerHTML = llGroupTemplatesByLangue(custom, true, isAR, allowedIds) ||
+    ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج شخصي بعد — استخدم "نسخ" على نموذج أعلاه لبدء واحد.':'Aucun modèle personnel pour le moment — utilise "Dupliquer" sur un modèle ci-dessus pour en créer un.')+'</div>');
   document.getElementById('llModalLibrary').classList.add('open');
 };
 function llFindTemplate(id) {
@@ -787,6 +804,27 @@ function llIsLangueMatiere(mat) {
   return m.indexOf('arabe')>=0 || m.indexOf('francais')>=0 || m.indexOf('anglais')>=0 || m.indexOf('espagnol')>=0 || m.indexOf('tamazight')>=0 || m.indexOf('langue')>=0;
 }
 function llGenCode(id) { return String(Math.floor(100000+Math.abs(Math.sin(id*9999))*900000)).slice(0,6); }
+function llMatiereToLangueId(mat) {
+  var m = (mat||'').toLowerCase();
+  try { m = m.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
+  if (m.indexOf('francais')>=0) return 'fr';
+  if (m.indexOf('anglais')>=0) return 'en';
+  if (m.indexOf('espagnol')>=0) return 'es';
+  if (m.indexOf('arabe')>=0) return 'ar';
+  return null;
+}
+/* Langues effectivement enseignées par le prof connecté (matière principale + matières
+   add-on éventuelles), pour ne montrer dans la bibliothèque que des modèles pertinents. */
+function llProfLangueIds(p) {
+  p = p || {};
+  var mats = [p.matiere].concat(Array.isArray(p.matieresActives) ? p.matieresActives : []);
+  var ids = [];
+  mats.forEach(function(m) {
+    var id = llMatiereToLangueId(m);
+    if (id && ids.indexOf(id) < 0) ids.push(id);
+  });
+  return ids.length ? ids : LL_LANGUES.map(function(l){ return l.id; });
+}
 
 /* ===== Lecture (seule) du trousseau Tadriss + stockage propre au Labo Langues ===== */
 function llReadRoster(uid) {
