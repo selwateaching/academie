@@ -1006,26 +1006,26 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <!-- WAITING -->
       <div id="authViewWaiting" style="display:none;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:.6rem;">⏳</div>
-        <p style="font-size:.85rem;color:var(--ink2);margin-bottom:1.2rem;">Ton compte a bien été créé mais doit encore être validé par l'administrateur de ton établissement. Reviens un peu plus tard.</p>
-        <button class="sp-btn" onclick="authLogoutProf()">Se déconnecter</button>
+        <p id="authWaitingText" style="font-size:.85rem;color:var(--ink2);margin-bottom:1.2rem;">Ton compte a bien été créé mais doit encore être validé par l'administrateur de ton établissement. Reviens un peu plus tard.</p>
+        <button class="sp-btn" id="authWaitingLogoutBtn" onclick="authLogoutProf()">Se déconnecter</button>
       </div>
 
       <!-- SUSPENDED -->
       <div id="authViewSuspended" style="display:none;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:.6rem;">🚫</div>
-        <p style="font-size:.85rem;color:var(--r);margin-bottom:1.2rem;">Ton compte a été suspendu. Contacte l'administrateur de ton établissement.</p>
-        <button class="sp-btn" onclick="authLogoutProf()">Se déconnecter</button>
+        <p id="authSuspendedText" style="font-size:.85rem;color:var(--r);margin-bottom:1.2rem;">Ton compte a été suspendu. Contacte l'administrateur de ton établissement.</p>
+        <button class="sp-btn" id="authSuspendedLogoutBtn" onclick="authLogoutProf()">Se déconnecter</button>
       </div>
 
       <!-- EXPIRED (abonnement) -->
       <div id="authViewExpired" style="display:none;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:.6rem;">💳</div>
-        <p style="font-size:.85rem;color:var(--r);margin-bottom:.6rem;">Ton abonnement Tadriss DZ est arrivé à expiration.</p>
+        <p id="authExpiredLead" style="font-size:.85rem;color:var(--r);margin-bottom:.6rem;">Ton abonnement Tadriss DZ est arrivé à expiration.</p>
         <p id="authExpiredDetail" style="font-size:.78rem;color:var(--ink2);margin-bottom:1.2rem;">Merci de renouveler ton paiement (CIB, Dahabia, BaridiMob ou virement RIB) auprès de l'administrateur de ton établissement pour retrouver l'accès.</p>
-        <button class="sp-btn" onclick="authLogoutProf()">Se déconnecter</button>
+        <button class="sp-btn" id="authExpiredLogoutBtn" onclick="authLogoutProf()">Se déconnecter</button>
       </div>
 
-      <div class="sp-hint">🇩🇿 Connexion sécurisée · Tadriss DZ</div>
+      <div class="sp-hint" id="authSecureHint">🇩🇿 Connexion sécurisée · Tadriss DZ</div>
     </div>
   </div>
 </div>
@@ -2879,6 +2879,45 @@ var LANG_JS = {
       '<p>TADRISS est né de mon passé d\'enseignante et de ma passion pour l\'innovation.</p>'+
       '<p>Pour vous faire gagner du temps.<br>Pour alléger votre quotidien.<br>Pour vous permettre de vous concentrer sur ce qui compte vraiment : transmettre.</p>',
     about_tagline: '🇩🇿 TADRISS — L\'intelligence artificielle au service des enseignants.',
+    deconnexion_lbl: 'Se déconnecter',
+    auth_waiting_text: 'Ton compte a bien été créé mais doit encore être validé par l\'administrateur de ton établissement. Reviens un peu plus tard.',
+    auth_suspended_text: 'Ton compte a été suspendu. Contacte l\'administrateur de ton établissement.',
+    auth_expired_lead: 'Ton abonnement Tadriss DZ est arrivé à expiration.',
+    auth_expired_detail_static: 'Merci de renouveler ton paiement (CIB, Dahabia, BaridiMob ou virement RIB) auprès de l\'administrateur de ton établissement pour retrouver l\'accès.',
+    auth_secure_hint: '🇩🇿 Connexion sécurisée · Tadriss DZ',
+    auth_moyens_paiement: 'CIB, Dahabia, BaridiMob ou virement RIB',
+    auth_not_prof_account: 'Ce compte n\'est pas un compte professeur.',
+    abo_primaire_badge: 'Cycle Primaire — toutes les matières incluses',
+    abo_primaire_note: 'Un enseignant du Primaire enseigne toutes les matières à sa classe : elles sont donc toutes incluses d\'office, sans supplément.',
+    abo_matiere_principale: 'Matière principale',
+    abo_matiere_additionnelle: 'Matière additionnelle',
+    abo_badge_base: 'Base 1 999 DA',
+    abo_badge_plus: '+400 DA/mois',
+    abo_note_supplement: 'Une matière additionnelle coûte 400 DA/mois sur le même compte (Paramètres → « + Ajouter une matière supplémentaire »). Pour un autre cycle d\'enseignement (ex: Primaire en plus du Moyen), crée un compte séparé.',
+    abo_plan_primaire_name: 'Pro · Toutes matières (Primaire)',
+    abo_plan_name_prefix: 'Pro · ',
+    abo_par_mois: ' DA / mois',
+    abo_renouvellement: ' · Renouvellement le ',
+    aucun_paiement_lbl: 'Aucun paiement enregistré pour le moment',
+    abo_expire_badge: '⚠ Expiré',
+    abo_quota_restant_suffix: ' génération(s) restante(s) ce mois',
+    abo_quota_indispo: 'Indisponible pour le moment',
+    lock_primaire_prefix: '✓ Cycle Primaire : toutes les matières (',
+    lock_primaire_suffix: ') sont incluses dans ton abonnement — tu peux générer du contenu pour n\'importe laquelle sans restriction.',
+    lock_matiere_verrouillee: '🔒 Matière principale verrouillée après validation par l\'administrateur, pour garantir que le contenu généré par l\'IA correspond bien à ta matière enseignée.',
+    lock_demande_prefix: '⏳ Demande en cours : passage à "',
+    lock_demande_mid: '" — en attente de décision de l\'admin. Tu continues d\'utiliser "',
+    lock_demande_suffix: '" normalement pendant ce temps.',
+    lock_demander_changement_btn: 'Demander un changement de matière',
+    lock_matieres_actives_prefix: '📚 Matières actives sur ce compte : ',
+    lock_addon_demande_prefix: '⏳ Demande en cours : ajout de "',
+    lock_addon_demande_suffix: '" — en attente de confirmation du paiement et de validation admin.',
+    lock_ajouter_matiere_btn: '+ Ajouter une matière supplémentaire — 400 DA/mois',
+    tp_th_etape: 'Étape',
+    tp_th_duree: 'Durée',
+    tp_th_modalite: 'Modalité',
+    tp_th_deroulement: 'Déroulement',
+    ap_type_col: 'Type',
     prob_kicker: 'Le problème que nous résolvons',
     prob_h2: 'Vous préparez vos cours le week-end.<br><span>Et si ce n\'était plus nécessaire ?</span>',
     prob_item1: '<strong>3 à 5h perdues chaque dimanche</strong><span>À préparer des cours, calculer des moyennes, rédiger des exercices à la main.</span>',
@@ -3129,6 +3168,45 @@ var LANG_JS = {
       '<p>وُلد TADRISS من ماضيّ كمعلمة ومن شغفي بالابتكار.</p>'+
       '<p>لتوفير وقتكم.<br>لتخفيف يومياتكم.<br>للسماح لكم بالتركيز على ما يهم حقاً: نقل المعرفة.</p>',
     about_tagline: '🇩🇿 TADRISS — الذكاء الاصطناعي في خدمة المعلمين.',
+    deconnexion_lbl: 'تسجيل الخروج',
+    auth_waiting_text: 'تم إنشاء حسابك بنجاح لكنه لا يزال بانتظار التحقق من طرف إدارة مؤسستك. عد بعد قليل.',
+    auth_suspended_text: 'تم تعليق حسابك. تواصل مع إدارة مؤسستك.',
+    auth_expired_lead: 'انتهت صلاحية اشتراكك في Tadriss DZ.',
+    auth_expired_detail_static: 'يرجى تجديد دفعتك (CIB، الذهبية، BaridiMob أو تحويل بنكي RIB) لدى إدارة مؤسستك لاستعادة الوصول.',
+    auth_secure_hint: '🇩🇿 اتصال آمن · Tadriss DZ',
+    auth_moyens_paiement: 'CIB، الذهبية، BaridiMob أو تحويل بنكي RIB',
+    auth_not_prof_account: 'هذا الحساب ليس حساب أستاذ.',
+    abo_primaire_badge: 'الطور الابتدائي — جميع المواد مشمولة',
+    abo_primaire_note: 'يُدرّس أستاذ الابتدائي جميع المواد لقسمه: لذلك فهي مشمولة تلقائياً بدون أي إضافة.',
+    abo_matiere_principale: 'المادة الرئيسية',
+    abo_matiere_additionnelle: 'مادة إضافية',
+    abo_badge_base: 'الأساسي 1999 دج',
+    abo_badge_plus: '+400 دج/شهر',
+    abo_note_supplement: 'تكلف كل مادة إضافية 400 دج/شهر على نفس الحساب (الإعدادات ← « + إضافة مادة إضافية »). لطور تعليمي آخر (مثلاً الابتدائي بالإضافة إلى المتوسط)، أنشئ حساباً منفصلاً.',
+    abo_plan_primaire_name: 'Pro · جميع المواد (الابتدائي)',
+    abo_plan_name_prefix: 'Pro · ',
+    abo_par_mois: ' دج / شهر',
+    abo_renouvellement: ' · التجديد في ',
+    aucun_paiement_lbl: 'لا يوجد أي دفع مسجَّل حالياً',
+    abo_expire_badge: '⚠ منتهي',
+    abo_quota_restant_suffix: ' عملية توليد متبقية هذا الشهر',
+    abo_quota_indispo: 'غير متوفر حالياً',
+    lock_primaire_prefix: '✓ الطور الابتدائي: جميع المواد (',
+    lock_primaire_suffix: ') مشمولة في اشتراكك — يمكنك توليد محتوى لأي واحدة منها دون قيود.',
+    lock_matiere_verrouillee: '🔒 المادة الرئيسية مقفلة بعد التحقق من طرف الإدارة، لضمان أن المحتوى المُولَّد بالذكاء الاصطناعي يطابق فعلاً المادة التي تدرّسها.',
+    lock_demande_prefix: '⏳ طلب قيد المعالجة: التحول إلى "',
+    lock_demande_mid: '" — بانتظار قرار الإدارة. تستمر في استخدام "',
+    lock_demande_suffix: '" بشكل طبيعي خلال هذه الفترة.',
+    lock_demander_changement_btn: 'طلب تغيير المادة',
+    lock_matieres_actives_prefix: '📚 المواد النشطة في هذا الحساب: ',
+    lock_addon_demande_prefix: '⏳ طلب قيد المعالجة: إضافة "',
+    lock_addon_demande_suffix: '" — بانتظار تأكيد الدفع وموافقة الإدارة.',
+    lock_ajouter_matiere_btn: '+ إضافة مادة إضافية — 400 دج/شهر',
+    tp_th_etape: 'المرحلة',
+    tp_th_duree: 'المدة',
+    tp_th_modalite: 'الصيغة',
+    tp_th_deroulement: 'سير الحصة',
+    ap_type_col: 'النوع',
     prob_kicker: 'المشكلة التي نحلّها',
     prob_h2: 'تحضّر دروسك في نهاية الأسبوع.<br><span>ماذا لو لم يعد ذلك ضرورياً؟</span>',
     prob_item1: '<strong>3 إلى 5 ساعات ضائعة كل يوم أحد</strong><span>لتحضير الدروس، حساب المعدلات، وكتابة التمارين يدوياً.</span>',
@@ -3281,6 +3359,16 @@ function switchLang() {
   document.getElementById('probCb3After') && (document.getElementById('probCb3After').textContent = T('prob_cb3_after'));
   document.querySelectorAll('.cb-before').forEach(function(el) { el.textContent = T('prob_avant'); });
   document.querySelectorAll('.cb-after').forEach(function(el) { el.textContent = T('prob_apres'); });
+
+  /* Auth gate (waiting / suspended / expired screens) */
+  var authWaitingText = document.getElementById('authWaitingText'); if (authWaitingText) authWaitingText.textContent = T('auth_waiting_text');
+  var authWaitingLogoutBtn = document.getElementById('authWaitingLogoutBtn'); if (authWaitingLogoutBtn) authWaitingLogoutBtn.textContent = T('deconnexion_lbl');
+  var authSuspendedText = document.getElementById('authSuspendedText'); if (authSuspendedText) authSuspendedText.textContent = T('auth_suspended_text');
+  var authSuspendedLogoutBtn = document.getElementById('authSuspendedLogoutBtn'); if (authSuspendedLogoutBtn) authSuspendedLogoutBtn.textContent = T('deconnexion_lbl');
+  var authExpiredLead = document.getElementById('authExpiredLead'); if (authExpiredLead) authExpiredLead.textContent = T('auth_expired_lead');
+  var authExpiredDetailEl = document.getElementById('authExpiredDetail'); if (authExpiredDetailEl && !authExpiredDetailEl.dataset.dynamic) authExpiredDetailEl.textContent = T('auth_expired_detail_static');
+  var authExpiredLogoutBtn = document.getElementById('authExpiredLogoutBtn'); if (authExpiredLogoutBtn) authExpiredLogoutBtn.textContent = T('deconnexion_lbl');
+  var authSecureHint = document.getElementById('authSecureHint'); if (authSecureHint) authSecureHint.textContent = T('auth_secure_hint');
 
   /* Landing page — Qui suis-je */
   var aboutKicker = document.getElementById('aboutKicker'); if (aboutKicker) aboutKicker.textContent = T('about_kicker');
@@ -3820,8 +3908,8 @@ function switchLang() {
     var crsDCard = pgCrs.querySelector('.g2 > .card');
     if (crsDCard) {
       var crsDT = document.getElementById('crsDisT'); if (crsDT && crsDT.textContent.match(/^(Résultat|النتيجة)$/)) crsDT.textContent = isAR ? 'النتيجة' : 'Résultat';
-      var crsRegenBtn = document.getElementById('btnTcRegen'); if (crsRegenBtn) crsRegenBtn.innerHTML = isAR ? '🔄 إعادة الإنشاء' : '🔄 Régénérer';
-      var crsSimplifyBtn = document.getElementById('btnTcSimplify'); if (crsSimplifyBtn) crsSimplifyBtn.innerHTML = isAR ? '✏️ تبسيط' : '✏️ Simplifier';
+      var crsRegenBtn = document.getElementById('btnTcRegen'); if (crsRegenBtn) { crsRegenBtn.innerHTML = isAR ? '🔄 إعادة الإنشاء' : '🔄 Régénérer'; crsRegenBtn.title = isAR ? 'إعادة الإنشاء بنفس المعطيات' : 'Régénérer avec les mêmes paramètres'; }
+      var crsSimplifyBtn = document.getElementById('btnTcSimplify'); if (crsSimplifyBtn) { crsSimplifyBtn.innerHTML = isAR ? '✏️ تبسيط' : '✏️ Simplifier'; crsSimplifyBtn.title = isAR ? 'إعادة صياغة نسخة أبسط' : 'Refaire une version plus simple'; }
       var crsPrintBtn = document.getElementById('btnTcPrint'); if (crsPrintBtn) crsPrintBtn.textContent = isAR ? 'طباعة' : 'Imprimer';
       var crsViewBtn = document.getElementById('btnTpView'); if (crsViewBtn) crsViewBtn.textContent = (typeof TP_VIEW_MODE !== 'undefined' && TP_VIEW_MODE === 'table') ? T('vue_fiche_btn') : T('vue_tableau_btn');
       var crsCloseBtn = document.getElementById('btnTcClose'); if (crsCloseBtn) { crsCloseBtn.textContent = isAR ? '✕ إغلاق' : '✕ Fermer'; crsCloseBtn.title = isAR ? 'إغلاق' : 'Fermer'; }
@@ -4281,7 +4369,9 @@ window.showPaymentWarningBanner = function(joursRestants) {
     banner.style.display = 'none';
     return;
   }
-  txt.textContent = '⏳ Ton abonnement expire dans ' + joursRestants + ' jour(s). Pense à renouveler ton paiement (CIB, Dahabia, BaridiMob ou virement RIB) auprès de l\'administrateur pour éviter toute coupure d\'accès.';
+  txt.textContent = CURRENT_LANG==='ar'
+    ? ('⏳ ينتهي اشتراكك خلال ' + joursRestants + ' يوم/أيام. فكّر في تجديد دفعتك (' + T('auth_moyens_paiement') + ') لدى الإدارة لتجنب انقطاع الوصول.')
+    : ('⏳ Ton abonnement expire dans ' + joursRestants + ' jour(s). Pense à renouveler ton paiement (' + T('auth_moyens_paiement') + ') auprès de l\'administrateur pour éviter toute coupure d\'accès.');
   banner.style.display = 'flex';
 };
 
@@ -4290,7 +4380,9 @@ window.showPaymentWarningBanner = function(joursRestants) {
 function messageErreurGeneration(err) {
   /* Traduit toute erreur technique (timeout serveur, réponse non-JSON, etc.) en un message
      clair pour le prof, jamais un texte de code brut. */
-  return 'La génération a pris trop de temps ou le serveur n\'a pas répondu à temps. Réessaie dans quelques instants — si le problème persiste, réessaie avec un sujet plus court ou une durée plus courte.';
+  return CURRENT_LANG==='ar'
+    ? 'استغرق التوليد وقتاً طويلاً أو لم يستجب الخادم في الوقت المناسب. أعد المحاولة بعد قليل — إذا استمرت المشكلة، جرّب موضوعاً أقصر أو مدة أقصر.'
+    : 'La génération a pris trop de temps ou le serveur n\'a pas répondu à temps. Réessaie dans quelques instants — si le problème persiste, réessaie avec un sujet plus court ou une durée plus courte.';
 }
 function extractClaudeText(data) {
   if (!data || !data.content || !data.content.length) return '';
@@ -4310,14 +4402,15 @@ function extractClaudeText(data) {
 function printCleanPage(title, contentHTML) {
   var w = window.open('', '_blank');
   if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
-  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + (title || 'Tadriss DZ') + '</title>' +
+  var isARpp = CURRENT_LANG==='ar';
+  var html = '<!DOCTYPE html><html '+(isARpp?'dir="rtl" lang="ar"':'lang="fr"')+'><head><meta charset="UTF-8"><title>' + (title || 'Tadriss DZ') + '</title>' +
     '<style>' +
     '@page{size:A4;margin:14mm;}' +
     ':root{--bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;--t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--b:#3B82F6;--bp:#EFF6FF;--p:#8B5CF6;--pp:#F5F3FF;--g:#22C55E;--gp:#F0FDF4;--br:#E2DDD5;--rd:12px;}' +
     '*{box-sizing:border-box;}' +
     'body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);margin:0;padding:0;font-size:13px;line-height:1.5;}' +
     'table{width:100%;border-collapse:collapse;margin-top:8px;}' +
-    'th{background:var(--bg);text-align:left;padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);border-bottom:1px solid var(--br);}' +
+    'th{background:var(--bg);text-align:'+(isARpp?'right':'left')+';padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);border-bottom:1px solid var(--br);}' +
     'td{padding:6px 8px;font-size:12px;border-bottom:1px solid var(--br);}' +
     '.badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600;}' +
     '.bg2{background:var(--gp);color:var(--g);}.bc2{background:var(--rp);color:var(--r);}.ba2{background:var(--ap);color:var(--a);}.bb2{background:var(--bp);color:var(--b);}.bt2{background:var(--tp);color:var(--t);}' +
@@ -4847,17 +4940,18 @@ function msgParent(id) {
 }
 function exportElevesPDF() {
   var ce = gCE(), ac = gAC();
-  var html = '<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:20px;}h2{color:#006B3F;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#006B3F;color:#fff;padding:8px;text-align:left;font-size:12px;}td{padding:7px 8px;border-bottom:1px solid #ddd;font-size:12px;}tr:nth-child(even){background:#f5f5f5;}.ok{color:#006B3F;font-weight:bold;}.bad{color:#C8102E;font-weight:bold;}</style></head><body>';
-  html += '<h2>🇩🇿 ' + (D.s.et||'Etablissement') + ' — Liste des élèves</h2>';
-  html += '<p><strong>Classe :</strong> ' + (ac?ac.nm:'') + ' &nbsp;|&nbsp; <strong>Matière :</strong> ' + D.s.mat + ' &nbsp;|&nbsp; <strong>Année :</strong> ' + D.s.an + '</p>';
-  html += '<table><thead><tr><th>#</th><th>Prénom</th><th>Nom</th><th>Moyenne /20</th><th>Mention</th><th>Parent / Tuteur</th><th>Téléphone</th></tr></thead><tbody>';
+  var isARpdf = CURRENT_LANG==='ar';
+  var html = '<html '+(isARpdf?'dir="rtl" lang="ar"':'lang="fr"')+'><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:20px;}h2{color:#006B3F;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#006B3F;color:#fff;padding:8px;text-align:'+(isARpdf?'right':'left')+';font-size:12px;}td{padding:7px 8px;border-bottom:1px solid #ddd;font-size:12px;}tr:nth-child(even){background:#f5f5f5;}.ok{color:#006B3F;font-weight:bold;}.bad{color:#C8102E;font-weight:bold;}</style></head><body>';
+  html += '<h2>🇩🇿 ' + (D.s.et||(isARpdf?'مؤسسة تعليمية':'Etablissement')) + ' — ' + (isARpdf?'قائمة التلاميذ':'Liste des élèves') + '</h2>';
+  html += '<p><strong>'+T('classe_lbl')+' :</strong> ' + (ac?ac.nm:'') + ' &nbsp;|&nbsp; <strong>'+(isARpdf?'المادة':'Matière')+' :</strong> ' + D.s.mat + ' &nbsp;|&nbsp; <strong>'+(isARpdf?'السنة':'Année')+' :</strong> ' + D.s.an + '</p>';
+  html += '<table><thead><tr><th>#</th><th>'+(isARpdf?'الاسم':'Prénom')+'</th><th>'+(isARpdf?'اللقب':'Nom')+'</th><th>'+(isARpdf?'المعدل /20':'Moyenne /20')+'</th><th>'+(isARpdf?'الملاحظة':'Mention')+'</th><th>'+(isARpdf?'ولي الأمر':'Parent / Tuteur')+'</th><th>'+(isARpdf?'الهاتف':'Téléphone')+'</th></tr></thead><tbody>';
   ce.forEach(function(e,i){
     var m=calcMoy(e.id), mv=m!==null?m.toFixed(1):'--';
     var mn=m!==null?(m>=16?T('mention_tbe'):m>=14?T('mention_b'):m>=12?T('mention_ab'):m>=10?T('mention_p'):T('mention_i')):'—';
     var cls=m!==null&&m>=10?'ok':'bad';
     html+='<tr><td>'+(i+1)+'</td><td>'+e.pr+'</td><td>'+e.no+'</td><td class="'+cls+'">'+mv+'</td><td>'+mn+'</td><td>'+(e.r1n||'—')+'</td><td>'+(e.r1t||'—')+'</td></tr>';
   });
-  html += '</tbody></table><p style="margin-top:20px;font-size:11px;color:#999;">Généré par Tadriss DZ · Prof. '+D.s.pre+' '+D.s.nom+' · '+new Date().toLocaleDateString('fr-FR')+'</p></body></html>';
+  html += '</tbody></table><p style="margin-top:20px;font-size:11px;color:#999;">'+(isARpdf?'أُنشئ بواسطة Tadriss DZ · الأستاذ ':'Généré par Tadriss DZ · Prof. ')+D.s.pre+' '+D.s.nom+' · '+new Date().toLocaleDateString('fr-FR')+'</p></body></html>';
   var w = window.open('','_blank');
   w.document.write(html);
   w.document.close();
@@ -6445,7 +6539,7 @@ function tpRenderCards(parsed) {
 function tpRenderTable(parsed) {
   var out = parsed.before;
   if (parsed.steps.length) {
-    out += '<table class="pp-tbl"><thead><tr><th style="width:34px">#</th><th>Étape</th><th style="width:80px">Durée</th><th style="width:120px">Modalité</th><th>Déroulement</th></tr></thead><tbody>';
+    out += '<table class="pp-tbl"><thead><tr><th style="width:34px">#</th><th>'+T('tp_th_etape')+'</th><th style="width:80px">'+T('tp_th_duree')+'</th><th style="width:120px">'+T('tp_th_modalite')+'</th><th>'+T('tp_th_deroulement')+'</th></tr></thead><tbody>';
     var stepNum = 0;
     parsed.steps.forEach(function (s) {
       var isRemed = /rem[ée]diation/i.test(s.titre);
@@ -7211,7 +7305,7 @@ function spRenderNotes() {
     '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--g)">'+best+'</div><div class="sp-stat-lbl">'+T('meilleure')+'</div></div>'+
     '<div class="sp-stat"><div class="sp-stat-val" style="color:var(--r)">'+worst+'</div><div class="sp-stat-lbl">'+T('plus_basse')+'</div></div>'+
     '<div class="sp-stat"><div class="sp-stat-val">'+ns.length+'</div><div class="sp-stat-lbl">'+T('evaluations')+'</div></div>';
-  var hd = '<tr><th>'+T('eval_col')+'</th><th>'+T('date_col')+'</th><th>Type</th><th>'+T('note_col')+'</th><th>'+T('coef_col')+'</th></tr>';
+  var hd = '<tr><th>'+T('eval_col')+'</th><th>'+T('date_col')+'</th><th>'+T('ap_type_col')+'</th><th>'+T('note_col')+'</th><th>'+T('coef_col')+'</th></tr>';
   document.getElementById('spNotesHd').innerHTML = hd;
   var bd = D.ev.map(function(v){
     var n = v.notes[eid];
@@ -7344,10 +7438,11 @@ function shareAllByWhatsapp() {
 
 function exportNotesPDF() {
   var ce=gCE(), ac=gAC(), tri=document.getElementById('notesTri')?document.getElementById('notesTri').value:'T2';
-  var html='<html><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{color:#006B3F;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#006B3F;color:#fff;padding:7px;text-align:center;font-size:11px;}td{padding:6px 8px;border:1px solid #ddd;text-align:center;}.ok{color:#006B3F;font-weight:bold;}.bad{color:#C8102E;font-weight:bold;}.nom{text-align:left;font-weight:600;}</style></head><body>';
-  html+='<h2>🇩🇿 '+(D.s.et||'Etablissement')+' — Carnet de notes</h2>';
-  html+='<p><strong>Classe :</strong> '+(ac?ac.nm:'')+' &nbsp;|&nbsp; <strong>Matière :</strong> '+D.s.mat+' &nbsp;|&nbsp; <strong>'+tri+'</strong></p>';
-  html+='<table><thead><tr><th style="text-align:left;">'+T('eleve_col')+'</th>';
+  var isARnp = CURRENT_LANG==='ar';
+  var html='<html '+(isARnp?'dir="rtl" lang="ar"':'lang="fr"')+'><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:20px;font-size:12px;}h2{color:#006B3F;}table{width:100%;border-collapse:collapse;margin-top:15px;}th{background:#006B3F;color:#fff;padding:7px;text-align:center;font-size:11px;}td{padding:6px 8px;border:1px solid #ddd;text-align:center;}.ok{color:#006B3F;font-weight:bold;}.bad{color:#C8102E;font-weight:bold;}.nom{text-align:'+(isARnp?'right':'left')+';font-weight:600;}</style></head><body>';
+  html+='<h2>🇩🇿 '+(D.s.et||(isARnp?'مؤسسة تعليمية':'Etablissement'))+' — '+(isARnp?'دفتر النقاط':'Carnet de notes')+'</h2>';
+  html+='<p><strong>'+T('classe_lbl')+' :</strong> '+(ac?ac.nm:'')+' &nbsp;|&nbsp; <strong>'+(isARnp?'المادة':'Matière')+' :</strong> '+D.s.mat+' &nbsp;|&nbsp; <strong>'+tri+'</strong></p>';
+  html+='<table><thead><tr><th style="text-align:'+(isARnp?'right':'left')+';">'+T('eleve_col')+'</th>';
   D.ev.forEach(function(v){ html+='<th>'+v.int+'<br><small>×'+v.coef+'</small></th>'; });
   html+='<th>'+T('moy_col')+'</th></tr></thead><tbody>';
   ce.forEach(function(e){
@@ -7356,7 +7451,7 @@ function exportNotesPDF() {
     D.ev.forEach(function(v){ var n=v.notes[e.id]; html+='<td class="'+(n!==undefined&&n>=10?'ok':n!==undefined?'bad':'')+'">'+(n!==undefined?n:'—')+'</td>'; });
     html+='<td class="'+cls+'"><strong>'+mv+'</strong></td></tr>';
   });
-  html+='</tbody></table><p style="margin-top:15px;font-size:10px;color:#999;">Tadriss DZ · Prof. '+D.s.pre+' '+D.s.nom+' · '+new Date().toLocaleDateString('fr-FR')+'</p></body></html>';
+  html+='</tbody></table><p style="margin-top:15px;font-size:10px;color:#999;">Tadriss DZ · '+(isARnp?'الأستاذ ':'Prof. ')+D.s.pre+' '+D.s.nom+' · '+new Date().toLocaleDateString('fr-FR')+'</p></body></html>';
   var w=window.open('','_blank'); w.document.write(html); w.document.close(); w.focus();
   setTimeout(function(){ w.print(); },500);
 }
@@ -7784,7 +7879,7 @@ function applyMatiereLockUI() {
     if (custom) { custom.disabled = false; custom.style.opacity = '1'; }
     if (note) {
       note.style.display = 'block';
-      note.innerHTML = '✓ Cycle Primaire : toutes les matières (' + (window._matieresActives||[]).join(', ') + ') sont incluses dans ton abonnement — tu peux générer du contenu pour n\'importe laquelle sans restriction.';
+      note.innerHTML = T('lock_primaire_prefix') + (window._matieresActives||[]).join(', ') + T('lock_primaire_suffix');
     }
     return;
   }
@@ -7793,18 +7888,18 @@ function applyMatiereLockUI() {
     if (custom) { custom.disabled = true; custom.style.opacity = '.65'; }
     if (note) {
       note.style.display = 'block';
-      var html = '🔒 Matière principale verrouillée après validation par l\'administrateur, pour garantir que le contenu généré par l\'IA correspond bien à ta matière enseignée.';
+      var html = T('lock_matiere_verrouillee');
       if (window._matiereDemandee) {
-        html += '<br><br>⏳ Demande en cours : passage à "<strong>' + window._matiereDemandee + '</strong>" — en attente de décision de l\'admin. Tu continues d\'utiliser "' + (window.D&&window.D.s?window.D.s.mat:'') + '" normalement pendant ce temps.';
+        html += '<br><br>' + T('lock_demande_prefix') + '<strong>' + window._matiereDemandee + '</strong>' + T('lock_demande_mid') + (window.D&&window.D.s?window.D.s.mat:'') + T('lock_demande_suffix');
       } else {
-        html += '<button class="btn bo bsm" style="margin-top:.5rem;display:block;width:100%;" onclick="authRequestMatiereChange()">Demander un changement de matière</button>';
+        html += '<button class="btn bo bsm" style="margin-top:.5rem;display:block;width:100%;" onclick="authRequestMatiereChange()">' + T('lock_demander_changement_btn') + '</button>';
       }
       html += '<hr style="border:none;border-top:1px solid rgba(0,0,0,.1);margin:.8rem 0;">';
-      html += '<div style="font-weight:700;margin-bottom:.3rem;">📚 Matières actives sur ce compte : ' + (window._matieresActives||[]).join(', ') + '</div>';
+      html += '<div style="font-weight:700;margin-bottom:.3rem;">' + T('lock_matieres_actives_prefix') + (window._matieresActives||[]).join(', ') + '</div>';
       if (window._matiereAddonDemandee) {
-        html += '⏳ Demande en cours : ajout de "<strong>' + window._matiereAddonDemandee + '</strong>" — en attente de confirmation du paiement et de validation admin.';
+        html += T('lock_addon_demande_prefix') + '<strong>' + window._matiereAddonDemandee + '</strong>' + T('lock_addon_demande_suffix');
       } else {
-        html += '<button class="btn bo bsm" style="display:block;width:100%;" onclick="authRequestMatiereAddon()">+ Ajouter une matière supplémentaire — 400 DA/mois</button>';
+        html += '<button class="btn bo bsm" style="display:block;width:100%;" onclick="authRequestMatiereAddon()">' + T('lock_ajouter_matiere_btn') + '</button>';
       }
       note.innerHTML = html;
     }
@@ -7820,38 +7915,39 @@ window.applyMatiereLockUI = applyMatiereLockUI;
 window.rAboMatieres = function() {
   var box = document.getElementById('aboMatieresBox');
   if (!box) return;
+  var isAR = window.CURRENT_LANG === 'ar';
   var mat = window.D.s.mat;
   var primaire = typeof isPrimaire === 'function' && isPrimaire();
   var actives = window._matieresActives || [mat];
   var html = '';
   if (primaire) {
-    html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + actives.join(' · ') + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">Cycle Primaire — toutes les matières incluses</div></div></div>';
-    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">Un enseignant du Primaire enseigne toutes les matières à sa classe : elles sont donc toutes incluses d\'office, sans supplément.</div>';
+    html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + actives.join(' · ') + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + T('abo_primaire_badge') + '</div></div></div>';
+    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">' + T('abo_primaire_note') + '</div>';
   } else {
     actives.forEach(function(m, i) {
       html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem">';
-      html += '<div style="display:flex;align-items:center;gap:.8rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + m + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + (i===0?'Matière principale':'Matière additionnelle') + '</div></div></div>';
-      html += '<span class="badge bt2">' + (i===0?'Base 1 999 DA':'+400 DA/mois') + '</span>';
+      html += '<div style="display:flex;align-items:center;gap:.8rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + m + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + (i===0?T('abo_matiere_principale'):T('abo_matiere_additionnelle')) + '</div></div></div>';
+      html += '<span class="badge bt2">' + (i===0?T('abo_badge_base'):T('abo_badge_plus')) + '</span>';
       html += '</div>';
     });
-    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">Une matière additionnelle coûte 400 DA/mois sur le même compte (Paramètres → « + Ajouter une matière supplémentaire »). Pour un autre cycle d\'enseignement (ex: Primaire en plus du Moyen), crée un compte séparé.</div>';
+    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">' + T('abo_note_supplement') + '</div>';
   }
   box.innerHTML = html;
 
   /* Bandeau "Plan actuel" */
   var montantMensuel = primaire ? 1999 : (1999 + Math.max(0, actives.length - 1) * 400);
   var planNameEl = document.getElementById('aboPlanName');
-  if (planNameEl) planNameEl.textContent = primaire ? 'Pro · Toutes matières (Primaire)' : 'Pro · ' + actives.join(' + ');
+  if (planNameEl) planNameEl.textContent = primaire ? T('abo_plan_primaire_name') : T('abo_plan_name_prefix') + actives.join(' + ');
   var planDetailEl = document.getElementById('aboPlanDetail');
   var prochain = window._prochainPaiement;
   if (planDetailEl) {
-    planDetailEl.textContent = montantMensuel + ' DA / mois' + (prochain ? ' · Renouvellement le ' + new Date(prochain).toLocaleDateString('fr-FR') : ' · Aucun paiement enregistré pour le moment');
+    planDetailEl.textContent = montantMensuel + T('abo_par_mois') + (prochain ? T('abo_renouvellement') + new Date(prochain).toLocaleDateString('fr-FR') : ' · ' + T('aucun_paiement_lbl'));
   }
   var statusEl = document.getElementById('aboStatusBadge');
   if (statusEl) {
     var jr = prochain ? Math.ceil((new Date(prochain) - new Date()) / 86400000) : null;
-    if (jr !== null && jr < 0) { statusEl.textContent = '⚠ Expiré'; statusEl.style.background='rgba(200,16,46,.3)'; statusEl.style.borderColor='rgba(200,16,46,.5)'; statusEl.style.color='#ffb3bd'; }
-    else { statusEl.textContent = '✓ Actif'; statusEl.style.background=''; statusEl.style.borderColor=''; statusEl.style.color=''; }
+    if (jr !== null && jr < 0) { statusEl.textContent = T('abo_expire_badge'); statusEl.style.background='rgba(200,16,46,.3)'; statusEl.style.borderColor='rgba(200,16,46,.5)'; statusEl.style.color='#ffb3bd'; }
+    else { statusEl.textContent = T('code_actif_badge'); statusEl.style.background=''; statusEl.style.borderColor=''; statusEl.style.color=''; }
   }
 
   /* Historique de facturation réel */
@@ -7859,7 +7955,7 @@ window.rAboMatieres = function() {
   if (histBox) {
     var hist = (window._historiquePaiements || []).slice().reverse();
     if (!hist.length) {
-      histBox.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--ink3);padding:1rem;">Aucun paiement enregistré pour le moment</td></tr>';
+      histBox.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--ink3);padding:1rem;">' + T('aucun_paiement_lbl') + '</td></tr>';
     } else {
       histBox.innerHTML = hist.map(function(h) {
         return '<tr><td>' + new Date(h.date).toLocaleDateString('fr-FR') + '</td><td><strong>' + h.montant + ' DA</strong></td><td>' + h.methode + '</td><td style="font-size:.75rem;color:var(--ink3);">' + (h.reference || '—') + '</td></tr>';
@@ -7880,9 +7976,9 @@ window.rAboMatieres = function() {
         var elUtilise = document.getElementById('aboQuotaUtilise'); if (elUtilise) elUtilise.textContent = utilise;
         var elTotal = document.getElementById('aboQuotaTotal'); if (elTotal) elTotal.textContent = quotaTotal;
         var elBar = document.getElementById('aboQuotaBar'); if (elBar) elBar.style.width = pct + '%';
-        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = restant + ' génération(s) restante(s) ce mois';
+        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = restant + T('abo_quota_restant_suffix');
       }).catch(function() {
-        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = 'Indisponible pour le moment';
+        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = T('abo_quota_indispo');
       });
     }
   }
@@ -7936,7 +8032,7 @@ window.authRequestMatiereChange = async function() {
     window._matiereDemandee = nouvelle.trim();
     if (typeof applyMatiereLockUI === 'function') applyMatiereLockUI();
   } catch (e) {
-    alert('Erreur lors de la demande : ' + (e && e.message ? e.message : 'inconnue'));
+    alert((CURRENT_LANG==='ar'?'خطأ أثناء الطلب: ':'Erreur lors de la demande : ') + (e && e.message ? e.message : (CURRENT_LANG==='ar'?'غير معروف':'inconnue')));
   }
 };
 
@@ -7954,7 +8050,7 @@ window.authRequestMatiereAddon = async function() {
     window._matiereAddonDemandee = nouvelle.trim();
     if (typeof applyMatiereLockUI === 'function') applyMatiereLockUI();
   } catch (e) {
-    alert('Erreur lors de la demande : ' + (e && e.message ? e.message : 'inconnue'));
+    alert((CURRENT_LANG==='ar'?'خطأ أثناء الطلب: ':'Erreur lors de la demande : ') + (e && e.message ? e.message : (CURRENT_LANG==='ar'?'غير معروف':'inconnue')));
   }
 };
 
@@ -7988,7 +8084,7 @@ onAuthStateChanged(auth, async function(user) {
       /* Compte Firebase existe mais pas de profil prof (ex: compte admin/élève utilisé par erreur ici) */
       await signOut(auth);
       app.style.display = 'none';
-      if (window._loginRequested) { gate.style.display = 'flex'; authShowView('login'); document.getElementById('authErr').textContent = 'Ce compte n\'est pas un compte professeur.'; }
+      if (window._loginRequested) { gate.style.display = 'flex'; authShowView('login'); document.getElementById('authErr').textContent = T('auth_not_prof_account'); }
       else { gate.style.display = 'none'; }
       return;
     }
@@ -8002,7 +8098,12 @@ onAuthStateChanged(auth, async function(user) {
         /* Abonnement expiré : accès bloqué */
         app.style.display = 'none';
         var detailEl = document.getElementById('authExpiredDetail');
-        if (detailEl) detailEl.textContent = 'Ton abonnement a expiré il y a ' + Math.abs(joursRestants) + ' jour(s). Merci de renouveler ton paiement (CIB, Dahabia, BaridiMob ou virement RIB) auprès de l\'administrateur de ton établissement pour retrouver l\'accès.';
+        if (detailEl) {
+          detailEl.dataset.dynamic = '1';
+          detailEl.textContent = (CURRENT_LANG==='ar'
+            ? ('انتهت صلاحية اشتراكك منذ ' + Math.abs(joursRestants) + ' يوم/أيام. ' + T('auth_expired_detail_static'))
+            : ('Ton abonnement a expiré il y a ' + Math.abs(joursRestants) + ' jour(s). ' + T('auth_expired_detail_static')));
+        }
         if (window._loginRequested) { gate.style.display = 'flex'; authShowView('expired'); }
         else { gate.style.display = 'none'; }
         return;
