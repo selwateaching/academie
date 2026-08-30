@@ -185,7 +185,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
     <div id="llProdView" style="display:none;">
       <div class="ch" style="background:none;border:none;padding:0 0 1rem;">
         <div style="display:flex;align-items:center;gap:.7rem;"><button class="btn bo bsm" onclick="llCloseProd()">← Retour</button><div class="ct" id="llProdTitle" style="font-size:1rem;"></div></div>
-        <button class="btn bo bsm" onclick="llDeleteAct()" id="llDeleteActBtn">🗑 Supprimer l'activité</button>
+        <div style="display:flex;gap:.6rem;">
+          <button class="btn bo bsm" onclick="llEditCurrentAct()" id="llEditActBtn">✏️ Modifier</button>
+          <button class="btn bo bsm" onclick="llDeleteAct()" id="llDeleteActBtn">🗑 Supprimer l'activité</button>
+        </div>
       </div>
       <div class="card" style="margin-bottom:1rem;"><div class="cb" id="llProdConsigne"></div></div>
       <div class="card"><div class="ch"><div class="ct" id="llProdCt">🎧 Productions des élèves</div></div><div class="cb" style="padding:0;" id="llProdList"></div></div>
@@ -343,6 +346,7 @@ var LL_LANG_KEYS = {
   llNewActBtn:['+ Créer une activité orale','+ إنشاء نشاط شفهي'],
   llEmptyTxt:['Aucune activité orale pour le moment.','لا يوجد أي نشاط شفهي حالياً.'],
   llProdCt:['🎧 Productions des élèves','🎧 إنتاجات التلاميذ'],
+  llEditActBtn:['✏️ Modifier','✏️ تعديل'],
   llDeleteActBtn:["🗑 Supprimer l'activité",'🗑 حذف النشاط'],
   llEleveLoginTxt:["Entre ton code d'accès Tadriss",'أدخل رمز الوصول الخاص بك'],
   llEleveLoginBtn:['Valider','تأكيد'],
@@ -568,20 +572,37 @@ function llRenderProfApp() {
       '<span>📤 '+subs.length+'/'+elig.length+'</span><span>✔ '+notees+'</span></div></div></div>';
   }).join('');
 }
-window.llOpenActModal = function() {
+window.llEditCurrentAct = function() { llOpenActModal(LL_STATE.curAct); };
+window.llOpenActModal = function(editActId) {
   var uid = LL_STATE.profUid;
   var roster = llReadRoster(uid);
+  var isAR = LL_CUR === 'ar';
+  var act = null;
+  if (editActId) {
+    var data = llReadData(uid);
+    act = (data.acts||[]).find(function(a){ return a.id === editActId; });
+  }
+  LL_STATE.editActId = act ? editActId : null;
+  document.getElementById('llModalActTitle').textContent = act ? (isAR ? 'تعديل النشاط' : "Modifier l'activité") : (isAR ? 'إنشاء نشاط شفهي' : 'Créer une activité orale');
+  document.getElementById('llSaveBtn').textContent = act ? (isAR ? 'حفظ' : 'Enregistrer') : (isAR ? 'إنشاء' : 'Créer');
   document.getElementById('llClasse').innerHTML = (roster.cls||[]).map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
-  document.getElementById('llLangue').value = 'fr';
-  document.getElementById('llAssigneMode').value = 'tous';
-  document.getElementById('llTheme').value = '';
-  document.getElementById('llConsigne').value = '';
-  document.getElementById('llDureeMax').value = '60';
-  document.getElementById('llBareme').value = '20';
-  document.getElementById('llDateLimite').value = '';
-  document.getElementById('llPlusieursTentatives').checked = true;
+  document.getElementById('llLangue').value = act ? act.langueId : 'fr';
+  document.getElementById('llClasse').value = act ? act.classeId : (roster.cls && roster.cls[0] ? roster.cls[0].id : '');
+  document.getElementById('llAssigneMode').value = act ? act.assigneMode : 'tous';
+  document.getElementById('llTheme').value = act ? act.theme : '';
+  document.getElementById('llConsigne').value = act ? act.consigne : '';
+  document.getElementById('llDureeMax').value = act ? act.dureeMaxSec : '60';
+  document.getElementById('llBareme').value = act ? act.bareme : '20';
+  document.getElementById('llDateLimite').value = act ? (act.dateLimite || '') : '';
+  document.getElementById('llPlusieursTentatives').checked = act ? !!act.plusieursTentatives : true;
   document.getElementById('llAudioModeleInput').value = '';
   llOnClasseChange();
+  if (act && act.assigneMode === 'specifique') {
+    (act.assigneElevesIds||[]).forEach(function(id) {
+      var cb = document.querySelector('.llElCb[value="'+id+'"]');
+      if (cb) cb.checked = true;
+    });
+  }
   llOnAssigneModeChange();
   document.getElementById('llModalAct').classList.add('open');
 };
@@ -607,32 +628,37 @@ window.llSaveAct = function() {
   var mode = document.getElementById('llAssigneMode').value;
   var elevesIds = [];
   if (mode === 'specifique') document.querySelectorAll('.llElCb:checked').forEach(function(cb){ elevesIds.push(parseInt(cb.value)); });
-  var act = {
-    id: Date.now(),
-    langueId: document.getElementById('llLangue').value,
-    classeId: classeId,
-    assigneMode: mode,
-    assigneElevesIds: elevesIds,
-    theme: theme,
-    consigne: consigne,
-    dureeMaxSec: parseInt(document.getElementById('llDureeMax').value),
-    bareme: parseInt(document.getElementById('llBareme').value),
-    dateLimite: document.getElementById('llDateLimite').value,
-    plusieursTentatives: document.getElementById('llPlusieursTentatives').checked,
-    audioModeleKey: null,
-    createdAt: new Date().toISOString()
-  };
+  var editId = LL_STATE.editActId;
+  var data = llReadData(uid);
+  data.acts = data.acts || [];
+  var existing = editId ? data.acts.find(function(a){ return a.id === editId; }) : null;
+  var act = existing || { id: Date.now(), audioModeleKey: null, createdAt: new Date().toISOString() };
+  act.langueId = document.getElementById('llLangue').value;
+  act.classeId = classeId;
+  act.assigneMode = mode;
+  act.assigneElevesIds = elevesIds;
+  act.theme = theme;
+  act.consigne = consigne;
+  act.dureeMaxSec = parseInt(document.getElementById('llDureeMax').value);
+  act.bareme = parseInt(document.getElementById('llBareme').value);
+  act.dateLimite = document.getElementById('llDateLimite').value;
+  act.plusieursTentatives = document.getElementById('llPlusieursTentatives').checked;
   function finish() {
-    var data = llReadData(uid);
-    data.acts = data.acts || []; data.acts.push(act);
+    if (!existing) data.acts.push(act);
     llSaveData(uid, data);
     llCloseModal('llModalAct');
-    llRenderProfApp();
+    LL_STATE.editActId = null;
+    if (editId) llOpenProd(editId); else llRenderProfApp();
   }
   var fileInput = document.getElementById('llAudioModeleInput');
   if (fileInput.files && fileInput.files[0]) {
     var reader = new FileReader();
-    reader.onload = function(e) { act.audioModeleKey = 'modele_' + act.id; llAudioSave(uid, act.audioModeleKey, e.target.result); finish(); };
+    reader.onload = function(e) {
+      if (act.audioModeleKey) llAudioDelete(uid, act.audioModeleKey);
+      act.audioModeleKey = 'modele_' + act.id;
+      llAudioSave(uid, act.audioModeleKey, e.target.result);
+      finish();
+    };
     reader.readAsDataURL(fileInput.files[0]);
   } else finish();
 };
@@ -780,10 +806,25 @@ function llRenderEleveApp() {
       '<div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div>' +
       '<div style="font-size:.78rem;color:var(--ink2);margin-bottom:.5rem;">'+a.consigne+'</div>' +
       '<div style="font-size:.72rem;margin-bottom:.6rem;">'+statut+'</div>' +
+      '<div style="display:flex;gap:.6rem;">' +
       (canRedo ? '<button class="btn bt bsm" onclick="llOpenStudio('+a.id+')">'+btnLabel+'</button>' : '') +
+      (sub ? '<button class="btn bo bsm" onclick="llEleveDeleteSub('+a.id+')">🗑 '+(isAR?'حذف إرسالي':'Supprimer mon envoi')+'</button>' : '') +
+      '</div>' +
       '</div>';
   }).join('');
 }
+
+window.llEleveDeleteSub = function(actId) {
+  var uid = LL_STATE.eleveUid, eid = LL_STATE.eleve.id;
+  var isAR = LL_CUR === 'ar';
+  if (!confirm(isAR ? 'حذف إرسالك لهذا النشاط؟' : 'Supprimer ton envoi pour cette activité ?')) return;
+  var data = llReadData(uid);
+  var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eid; });
+  if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
+  data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eid); });
+  llSaveData(uid, data);
+  llRenderEleveApp();
+};
 
 /* ===== STUDIO D'ENREGISTREMENT ===== */
 var LL_ST = { actId:null, maxSec:60, seconds:0, stream:null, recorder:null, chunks:[], dataUrl:null, timerId:null };
