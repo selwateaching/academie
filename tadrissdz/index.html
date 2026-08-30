@@ -239,6 +239,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .section-h2{font-family:'Inter',serif;font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;line-height:1.2;margin-bottom:1.5rem;}
 .section-h2 span{color:var(--t);}
 
+/* ABOUT / QUI SUIS-JE */
+.about-story{max-width:760px;margin:0 auto;color:var(--ink2);font-size:.95rem;line-height:1.85;}
+.about-story h3{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;color:var(--t);margin:2.2rem 0 1rem;}
+.about-story h3:first-child{margin-top:0;}
+.about-story p{margin:0 0 1rem;}
+.about-story .about-tagline{margin-top:2.5rem;padding:1.4rem 1.8rem;background:var(--tp);border-radius:12px;font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;color:var(--t);text-align:center;}
+
 /* FEATURES — 3 CATEGORY CARDS */
 .feats-sub{color:var(--ink3);font-size:.9rem;margin:0 0 2rem;}
 .feat-cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.4rem;}
@@ -574,6 +581,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <a href="#feats" data-i18n="nav_feats">Fonctionnalités</a>
       <a href="#prix" data-i18n="nav_prix">Tarifs</a>
       <a href="#avis" data-i18n="nav_avis">Avis</a>
+      <a href="#apropos" data-i18n="nav_apropos">Qui suis-je</a>
       <a href="#" class="nav-cta" data-i18n="nav_cta" onclick="toggleView();return false;">Ouvrir l'App</a>
     </div>
   </nav>
@@ -813,6 +821,43 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <div><div class="testi-name">M. Medjkane R.</div><div class="testi-role" id="testi3Role">Directeur · Lycée Oran</div></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Qui suis-je -->
+  <div class="site-section alt" id="apropos">
+    <div class="section-kicker" id="aboutKicker">❤️ Qui suis-je ?</div>
+    <h2 class="section-h2" id="aboutH2">Une enseignante devenue formatrice, entrepreneure…<br><span>puis passionnée d'intelligence artificielle.</span></h2>
+    <div class="about-story" id="aboutBody">
+      <p>Pendant 17 ans, j'ai été enseignante en Algérie, à Oran, dans le secondaire puis à l'université, au sein de la faculté des langues.</p>
+      <p>À cette époque, préparer ses cours demandait énormément de temps.<br>Pas d'Internet.<br>Pas de Google.<br>Pas d'intelligence artificielle.<br>Pas de ressources disponibles en quelques secondes.</p>
+      <p>Pour trouver un exercice, un sujet d'examen ou une idée de cours, il fallait parfois aller d'un lycée à l'autre, demander, chercher, photocopier, échanger avec des collègues…</p>
+      <p>Et quand la semaine était terminée, les week-ends n'étaient pas vraiment des week-ends. Je passais une grande partie de mon temps à préparer mes cours pour la semaine suivante, tout en essayant de trouver du temps pour ma famille.</p>
+      <p>Je connais donc parfaitement cette réalité.</p>
+      <h3>🇫🇷 Puis ma vie a changé.</h3>
+      <p>À la fin des années 90, je me suis installée en France. C'est là que j'ai découvert l'informatique. Et cette découverte a progressivement changé ma carrière.</p>
+      <p>Je suis devenue formatrice, puis j'ai créé à Toulouse mon propre centre de formation, SelwaTeaching, spécialisé dans les langues et la bureautique, notamment Excel pour les entreprises.</p>
+      <p>Ma particularité ? Je ne voulais pas simplement apprendre aux gens à utiliser un logiciel. Je voulais résoudre leurs vrais problèmes. Mes apprenants arrivaient avec leurs propres fichiers, leurs propres projets et leurs propres difficultés professionnelles.</p>
+      <p>À force de chercher des solutions à leurs demandes, j'ai découvert l'automatisation avec Excel, puis je me suis formée encore et encore.</p>
+      <h3>🤖 Et puis l'IA est arrivée…</h3>
+      <p>L'intelligence artificielle a littéralement bouleversé ma carrière. Je suis devenue passionnée par cette technologie. Je me suis formée à l'IA, à l'automatisation et à toutes les possibilités qu'elle pouvait offrir. J'ai même commencé à automatiser certaines activités professionnelles de mon fils.</p>
+      <p>Et plus j'apprenais… plus une idée revenait dans ma tête.</p>
+      <h3>💡 Je me suis souvenue de l'enseignante que j'étais.</h3>
+      <p>Je me suis souvenue de ces soirées. De ces week-ends. De ces heures passées à préparer mes cours. De ces exercices qu'il fallait chercher. De ces sujets d'examen qu'il fallait obtenir. De cette charge de travail invisible que beaucoup d'enseignants connaissent encore aujourd'hui.</p>
+      <p>Et je me suis posé une question :<br>« Si l'IA peut aujourd'hui m'aider à automatiser autant de tâches professionnelles, pourquoi ne pourrait-elle pas aussi soulager les enseignants ? »</p>
+      <p>C'est ainsi qu'est née l'idée de TADRISS.</p>
+      <h3>🇩🇿 TADRISS, c'est avant tout un hommage aux enseignants.</h3>
+      <p>Je n'ai pas créé Tadriss pour remplacer l'enseignant. Je l'ai créé pour lui faire gagner du temps.</p>
+      <p>Pour qu'il puisse préparer un cours plus rapidement. Créer des exercices. Préparer un quiz. Construire une évaluation. Créer une fiche pédagogique. Organiser ses progressions. Gérer ses classes.</p>
+      <p>Et surtout… retrouver un peu de temps pour lui-même et pour sa famille.</p>
+      <p>Parce que derrière chaque enseignant, il y a une personne. Une personne qui travaille, qui prépare, qui corrige, qui recommence… et qui a elle aussi besoin de souffler.</p>
+      <h3>❤️ Si Tadriss peut vous faire gagner quelques heures…</h3>
+      <p>Alors mon objectif est atteint.</p>
+      <p>Je sais ce que représente la préparation d'une semaine de cours. Je l'ai vécu. Je sais ce que représente le fait de chercher pendant des heures une ressource que l'on aurait aimé trouver en quelques minutes. Je l'ai vécu.</p>
+      <p>Et aujourd'hui, grâce à l'IA et à la technologie, j'ai voulu transformer cette expérience en une solution pour les enseignants.</p>
+      <p>TADRISS est né de mon passé d'enseignante et de ma passion pour l'innovation.</p>
+      <p>Pour vous faire gagner du temps.<br>Pour alléger votre quotidien.<br>Pour vous permettre de vous concentrer sur ce qui compte vraiment : transmettre.</p>
+      <div class="about-tagline" id="aboutTagline">🇩🇿 TADRISS — L'intelligence artificielle au service des enseignants.</div>
     </div>
   </div>
 
@@ -2065,6 +2110,7 @@ var LANG = {
     nav_feats: 'Fonctionnalités',
     nav_prix: 'Tarifs',
     nav_avis: 'Avis',
+    nav_apropos: 'Qui suis-je',
     nav_cta: "Ouvrir l'App",
     hero_main: "Ouvrir l'application",
     hero_out: 'Voir les tarifs',
@@ -2136,6 +2182,7 @@ var LANG = {
     nav_feats: 'الميزات',
     nav_prix: 'الأسعار',
     nav_avis: 'الآراء',
+    nav_apropos: 'من أنا',
     nav_cta: 'فتح التطبيق',
     hero_main: 'فتح التطبيق',
     hero_out: 'عرض الأسعار',
@@ -2799,6 +2846,37 @@ var LANG_JS = {
     guide_subtitle: 'Pas à pas, pour bien démarrer avec Tadriss DZ',
     guide_print_btn: '🖨 Imprimer le guide',
     guide_ar_notice: '',
+    about_kicker: '❤️ Qui suis-je ?',
+    about_h2: 'Une enseignante devenue formatrice, entrepreneure…<br><span>puis passionnée d\'intelligence artificielle.</span>',
+    about_body: '<p>Pendant 17 ans, j\'ai été enseignante en Algérie, à Oran, dans le secondaire puis à l\'université, au sein de la faculté des langues.</p>'+
+      '<p>À cette époque, préparer ses cours demandait énormément de temps.<br>Pas d\'Internet.<br>Pas de Google.<br>Pas d\'intelligence artificielle.<br>Pas de ressources disponibles en quelques secondes.</p>'+
+      '<p>Pour trouver un exercice, un sujet d\'examen ou une idée de cours, il fallait parfois aller d\'un lycée à l\'autre, demander, chercher, photocopier, échanger avec des collègues…</p>'+
+      '<p>Et quand la semaine était terminée, les week-ends n\'étaient pas vraiment des week-ends. Je passais une grande partie de mon temps à préparer mes cours pour la semaine suivante, tout en essayant de trouver du temps pour ma famille.</p>'+
+      '<p>Je connais donc parfaitement cette réalité.</p>'+
+      '<h3>🇫🇷 Puis ma vie a changé.</h3>'+
+      '<p>À la fin des années 90, je me suis installée en France. C\'est là que j\'ai découvert l\'informatique. Et cette découverte a progressivement changé ma carrière.</p>'+
+      '<p>Je suis devenue formatrice, puis j\'ai créé à Toulouse mon propre centre de formation, SelwaTeaching, spécialisé dans les langues et la bureautique, notamment Excel pour les entreprises.</p>'+
+      '<p>Ma particularité ? Je ne voulais pas simplement apprendre aux gens à utiliser un logiciel. Je voulais résoudre leurs vrais problèmes. Mes apprenants arrivaient avec leurs propres fichiers, leurs propres projets et leurs propres difficultés professionnelles.</p>'+
+      '<p>À force de chercher des solutions à leurs demandes, j\'ai découvert l\'automatisation avec Excel, puis je me suis formée encore et encore.</p>'+
+      '<h3>🤖 Et puis l\'IA est arrivée…</h3>'+
+      '<p>L\'intelligence artificielle a littéralement bouleversé ma carrière. Je suis devenue passionnée par cette technologie. Je me suis formée à l\'IA, à l\'automatisation et à toutes les possibilités qu\'elle pouvait offrir. J\'ai même commencé à automatiser certaines activités professionnelles de mon fils.</p>'+
+      '<p>Et plus j\'apprenais… plus une idée revenait dans ma tête.</p>'+
+      '<h3>💡 Je me suis souvenue de l\'enseignante que j\'étais.</h3>'+
+      '<p>Je me suis souvenue de ces soirées. De ces week-ends. De ces heures passées à préparer mes cours. De ces exercices qu\'il fallait chercher. De ces sujets d\'examen qu\'il fallait obtenir. De cette charge de travail invisible que beaucoup d\'enseignants connaissent encore aujourd\'hui.</p>'+
+      '<p>Et je me suis posé une question :<br>« Si l\'IA peut aujourd\'hui m\'aider à automatiser autant de tâches professionnelles, pourquoi ne pourrait-elle pas aussi soulager les enseignants ? »</p>'+
+      '<p>C\'est ainsi qu\'est née l\'idée de TADRISS.</p>'+
+      '<h3>🇩🇿 TADRISS, c\'est avant tout un hommage aux enseignants.</h3>'+
+      '<p>Je n\'ai pas créé Tadriss pour remplacer l\'enseignant. Je l\'ai créé pour lui faire gagner du temps.</p>'+
+      '<p>Pour qu\'il puisse préparer un cours plus rapidement. Créer des exercices. Préparer un quiz. Construire une évaluation. Créer une fiche pédagogique. Organiser ses progressions. Gérer ses classes.</p>'+
+      '<p>Et surtout… retrouver un peu de temps pour lui-même et pour sa famille.</p>'+
+      '<p>Parce que derrière chaque enseignant, il y a une personne. Une personne qui travaille, qui prépare, qui corrige, qui recommence… et qui a elle aussi besoin de souffler.</p>'+
+      '<h3>❤️ Si Tadriss peut vous faire gagner quelques heures…</h3>'+
+      '<p>Alors mon objectif est atteint.</p>'+
+      '<p>Je sais ce que représente la préparation d\'une semaine de cours. Je l\'ai vécu. Je sais ce que représente le fait de chercher pendant des heures une ressource que l\'on aurait aimé trouver en quelques minutes. Je l\'ai vécu.</p>'+
+      '<p>Et aujourd\'hui, grâce à l\'IA et à la technologie, j\'ai voulu transformer cette expérience en une solution pour les enseignants.</p>'+
+      '<p>TADRISS est né de mon passé d\'enseignante et de ma passion pour l\'innovation.</p>'+
+      '<p>Pour vous faire gagner du temps.<br>Pour alléger votre quotidien.<br>Pour vous permettre de vous concentrer sur ce qui compte vraiment : transmettre.</p>',
+    about_tagline: '🇩🇿 TADRISS — L\'intelligence artificielle au service des enseignants.',
     prob_kicker: 'Le problème que nous résolvons',
     prob_h2: 'Vous préparez vos cours le week-end.<br><span>Et si ce n\'était plus nécessaire ?</span>',
     prob_item1: '<strong>3 à 5h perdues chaque dimanche</strong><span>À préparer des cours, calculer des moyennes, rédiger des exercices à la main.</span>',
@@ -3018,6 +3096,37 @@ var LANG_JS = {
     guide_subtitle: 'خطوة بخطوة، لبدء استخدام Tadriss DZ بسهولة',
     guide_print_btn: '🖨 طباعة الدليل',
     guide_ar_notice: '⚠️ محتوى هذا الدليل متوفر حالياً باللغة الفرنسية فقط.',
+    about_kicker: '❤️ من أنا؟',
+    about_h2: 'معلمة أصبحت مكوّنة، رائدة أعمال…<br><span>ثم شغوفة بالذكاء الاصطناعي.</span>',
+    about_body: '<p>لمدة 17 عاماً، كنت معلمة في الجزائر، بوهران، في التعليم الثانوي ثم في الجامعة، بكلية اللغات.</p>'+
+      '<p>في تلك الفترة، كان تحضير الدروس يتطلب وقتاً طويلاً جداً.<br>لا إنترنت.<br>لا جوجل.<br>لا ذكاء اصطناعي.<br>لا موارد متاحة في ثوانٍ معدودة.</p>'+
+      '<p>لإيجاد تمرين أو موضوع امتحان أو فكرة درس، كان يجب أحياناً التنقل من ثانوية إلى أخرى، السؤال، البحث، التصوير، وتبادل الأفكار مع الزملاء…</p>'+
+      '<p>وعندما تنتهي الأسبوع، لم تكن عطلة نهاية الأسبوع عطلة حقيقية. كنت أقضي جزءاً كبيراً من وقتي في تحضير دروس الأسبوع الموالي، بينما أحاول إيجاد وقت لعائلتي.</p>'+
+      '<p>لذلك أعرف هذا الواقع تماماً.</p>'+
+      '<h3>🇫🇷 ثم تغيرت حياتي.</h3>'+
+      '<p>في أواخر التسعينيات، استقررت في فرنسا. هناك اكتشفت عالم المعلوماتية. وقد غيّر هذا الاكتشاف مسيرتي المهنية تدريجياً.</p>'+
+      '<p>أصبحت مكوّنة، ثم أسست في تولوز مركز التكوين الخاص بي، SelwaTeaching، المتخصص في اللغات والمكتبية، وخاصة برنامج Excel للشركات.</p>'+
+      '<p>ما الذي يميزني؟ لم أكن أريد فقط تعليم الناس استخدام برنامج ما. كنت أريد حل مشاكلهم الحقيقية. كان المتكوّنون يأتون بملفاتهم الخاصة، مشاريعهم الخاصة، وصعوباتهم المهنية الخاصة.</p>'+
+      '<p>ومن خلال البحث عن حلول لطلباتهم، اكتشفت الأتمتة في Excel، ثم واصلت التكوين مراراً وتكراراً.</p>'+
+      '<h3>🤖 ثم جاء الذكاء الاصطناعي…</h3>'+
+      '<p>لقد غيّر الذكاء الاصطناعي مسيرتي المهنية بشكل جذري. أصبحت شغوفة بهذه التكنولوجيا. تكوّنت في الذكاء الاصطناعي، والأتمتة، وكل الإمكانيات التي يمكن أن تقدمها. حتى أنني بدأت في أتمتة بعض الأنشطة المهنية لابني.</p>'+
+      '<p>وكلما تعلمت أكثر… كانت فكرة تعود إلى ذهني.</p>'+
+      '<h3>💡 تذكرت المعلمة التي كنتها.</h3>'+
+      '<p>تذكرت تلك الأمسيات. تلك العطل نهاية الأسبوع. تلك الساعات التي أمضيتها في تحضير دروسي. تلك التمارين التي كان يجب البحث عنها. تلك مواضيع الامتحانات التي كان يجب الحصول عليها. ذلك العبء الخفي الذي لا يزال يعرفه الكثير من المعلمين اليوم.</p>'+
+      '<p>وطرحت على نفسي سؤالاً:<br>« إذا كان الذكاء الاصطناعي يستطيع اليوم مساعدتي في أتمتة الكثير من المهام المهنية، فلماذا لا يستطيع أيضاً تخفيف العبء عن المعلمين؟ »</p>'+
+      '<p>وهكذا وُلدت فكرة TADRISS.</p>'+
+      '<h3>🇩🇿 TADRISS هو قبل كل شيء تحية إجلال للمعلمين.</h3>'+
+      '<p>لم أنشئ Tadriss لأحل محل المعلم. أنشأته لأوفّر له الوقت.</p>'+
+      '<p>ليتمكن من تحضير درس بشكل أسرع. إنشاء تمارين. تحضير اختبار. بناء تقييم. إنشاء ورقة تحضير. تنظيم تدرجاته السنوية. تسيير أقسامه.</p>'+
+      '<p>وقبل كل شيء… استعادة بعض الوقت لنفسه ولعائلته.</p>'+
+      '<p>لأن وراء كل معلم، هناك إنسان. إنسان يعمل، يحضّر، يصحّح، يعيد الكرّة… وهو أيضاً بحاجة إلى أن يتنفس.</p>'+
+      '<h3>❤️ إذا كان Tadriss يمكنه أن يوفّر لكم بضع ساعات…</h3>'+
+      '<p>فهدفي قد تحقق.</p>'+
+      '<p>أعرف ما تعنيه تحضير أسبوع من الدروس. عشت ذلك. أعرف ما يعنيه قضاء ساعات في البحث عن مورد كان بالإمكان إيجاده في دقائق معدودة. عشت ذلك.</p>'+
+      '<p>واليوم، بفضل الذكاء الاصطناعي والتكنولوجيا، أردت تحويل هذه التجربة إلى حل للمعلمين.</p>'+
+      '<p>وُلد TADRISS من ماضيّ كمعلمة ومن شغفي بالابتكار.</p>'+
+      '<p>لتوفير وقتكم.<br>لتخفيف يومياتكم.<br>للسماح لكم بالتركيز على ما يهم حقاً: نقل المعرفة.</p>',
+    about_tagline: '🇩🇿 TADRISS — الذكاء الاصطناعي في خدمة المعلمين.',
     prob_kicker: 'المشكلة التي نحلّها',
     prob_h2: 'تحضّر دروسك في نهاية الأسبوع.<br><span>ماذا لو لم يعد ذلك ضرورياً؟</span>',
     prob_item1: '<strong>3 إلى 5 ساعات ضائعة كل يوم أحد</strong><span>لتحضير الدروس، حساب المعدلات، وكتابة التمارين يدوياً.</span>',
@@ -3170,6 +3279,11 @@ function switchLang() {
   document.getElementById('probCb3After') && (document.getElementById('probCb3After').textContent = T('prob_cb3_after'));
   document.querySelectorAll('.cb-before').forEach(function(el) { el.textContent = T('prob_avant'); });
   document.querySelectorAll('.cb-after').forEach(function(el) { el.textContent = T('prob_apres'); });
+
+  /* Landing page — Qui suis-je */
+  var aboutKicker = document.getElementById('aboutKicker'); if (aboutKicker) aboutKicker.textContent = T('about_kicker');
+  var aboutH2 = document.getElementById('aboutH2'); if (aboutH2) aboutH2.innerHTML = T('about_h2');
+  var aboutBody = document.getElementById('aboutBody'); if (aboutBody) aboutBody.innerHTML = T('about_body') + '<div class="about-tagline" id="aboutTagline">' + T('about_tagline') + '</div>';
 
   /* Landing page — Fonctionnalités (3 catégories) */
   var featsKicker = document.getElementById('featsKicker'); if (featsKicker) featsKicker.textContent = isAR ? 'الميزات' : 'Fonctionnalités';
