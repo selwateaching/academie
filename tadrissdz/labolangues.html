@@ -1478,6 +1478,14 @@ function llRenderEleveApp() {
         return '<div>'+(isAR?c.ar:c.fr)+' : <strong>'+(sub.criteres[c.id]!=null?sub.criteres[c.id]:'—')+'/5</strong></div>';
       }).join('') + '</div>';
     }
+    var audioSrc = sub.audioKey ? llAudioGet(uid, sub.audioKey) : null;
+    var dureeTxt = sub.dureeSec != null ? llFormatDuree(sub.dureeSec) : '—';
+    var recHtml = '<div style="font-size:.72rem;color:var(--ink3);margin-top:.5rem;">🎙️ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+' · ⏱ '+dureeTxt+'</div>';
+    if (audioSrc) recHtml += '<audio controls style="width:100%;margin-top:.4rem;" src="'+audioSrc+'"></audio>' +
+      '<div style="display:flex;gap:.5rem;margin-top:.4rem;">' +
+      '<button class="btn bo bsm" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+a.theme.replace(/[^a-zA-Z0-9]/g,'_')+'\')">⬇️ '+(isAR?'تحميل':'Exporter')+'</button>' +
+      '<button class="btn bo bsm" onclick="llEleveDeleteSub('+a.id+')">🗑 '+(isAR?'حذف':'Supprimer')+'</button>' +
+      '</div>';
     return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;">' +
       '<div><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
@@ -1487,6 +1495,7 @@ function llRenderEleveApp() {
       critHtml +
       (sub.commentaire ? ('<div style="font-size:.8rem;color:var(--ink2);margin-top:.4rem;">💬 '+sub.commentaire+'</div>') : '') +
       (sub.commentVocalKey ? ('<audio controls style="width:100%;margin-top:.5rem;" src="'+llAudioGet(uid, sub.commentVocalKey)+'"></audio>') : '') +
+      recHtml +
       '</div>';
   }).join('');
 }
