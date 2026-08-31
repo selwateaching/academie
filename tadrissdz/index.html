@@ -6,6 +6,7 @@
 <title>Tadriss DZ</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 
 <style>
@@ -491,6 +492,15 @@ tr:hover td{background:var(--tp);}
 .pp-section.pp-sub{background:var(--bp);color:var(--b);}
 .pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);}
 .pp-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;}
+/* Fiche pédagogique Primaire — style test : cursif, pastel, icônes, peu chargé */
+.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFCF6;}
+.pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}
+.pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}
+.pp-primaire-title{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;color:#5B4B8A;line-height:1.1;}
+.pp-primaire-sub{font-size:.82rem;color:#9086A8;margin-top:.1rem;}
+.pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}
+.pp-primaire .pp-section{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:700;background:#DCF2E6;color:#2E7D5B;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}
+.pp-primaire .pp-section.pp-sub{background:#E4E9FB;color:#3E4FA0;}
 .pp-step-body{flex:1;font-size:.82rem;line-height:1.6;}
 .pp-step-title{font-weight:800;margin-bottom:.25rem;}
 .pp-tbl{width:100%;border-collapse:collapse;margin-top:.3rem;}
@@ -6627,6 +6637,24 @@ function tpToggleView() {
   TP_VIEW_MODE = (TP_VIEW_MODE === 'table') ? 'cards' : 'table';
   dispCrs(curCrs, true);
 }
+/* Petit jeu d'icônes pastel/cartoon, sans texte, style cohérent — utilisé pour
+   habiller visuellement les fiches pédagogiques du Primaire (test demandé par la cliente). */
+function ficheIconPrimaire(matiere) {
+  var m = (matiere || '').toLowerCase();
+  if (m.indexOf('oral') >= 0) {
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCEEDC"/><path d="M24 20c-6 3-9 9-9 15c0 9 8 17 17 17s17-8 17-17c0-3-1-6-2-8" fill="none" stroke="#6FAF8E" stroke-width="3.2" stroke-linecap="round"/><path d="M28 26c3-2 6-2 8 1" fill="none" stroke="#6FAF8E" stroke-width="2.6" stroke-linecap="round"/></svg>';
+  }
+  if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) {
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCE6FA"/><rect x="16" y="34" width="14" height="14" rx="4" fill="#8FAEE0"/><rect x="34" y="34" width="14" height="14" rx="4" fill="#B7CBEF"/><rect x="25" y="18" width="14" height="14" rx="4" fill="#B7CBEF"/></svg>';
+  }
+  if (m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('orthograph') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('grammaire') >= 0) {
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#FBF0D6"/><rect x="28" y="14" width="8" height="30" rx="4" fill="#F0C86A" transform="rotate(20 32 29)"/><polygon points="24,42 40,42 32,54" fill="#F5DFA0" transform="rotate(20 32 29)"/></svg>';
+  }
+  if (m.indexOf('sciences') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) {
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DEF2E8"/><circle cx="32" cy="26" r="10" fill="none" stroke="#6FB89A" stroke-width="3"/><rect x="27" y="34" width="10" height="12" rx="3" fill="#6FB89A"/></svg>';
+  }
+  return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#F6E3EF"/><path d="M32 16l4.5 12.5H50l-11 8 4.2 13.5L32 42l-11.2 8L25 36.5l-11-8h13.5z" fill="#DFA9C9"/></svg>';
+}
 function dispCrs(crs, keepMode){
   if (!keepMode) TP_VIEW_MODE = 'cards';
   document.getElementById('crsDisT').textContent=crs.titre;
@@ -6641,7 +6669,12 @@ function dispCrs(crs, keepMode){
     corps = crs.contenu || '';
     hasSteps = false;
   }
-  document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+  var estFichePrimaire = (crs.type === 'fiche_peda') && (typeof isPrimaire === 'function') && isPrimaire();
+  if (estFichePrimaire) {
+    document.getElementById('crsDis').innerHTML='<div class="pp-primaire"><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+  } else {
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+  }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
   if (btn) {
