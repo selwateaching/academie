@@ -6514,7 +6514,7 @@ async function genCours(extraInstruction) {
       '\n\nRègles de base : aligne sur le programme officiel MEN algérien ; utilise des exemples et contextes algériens concrets (noms, lieux, monnaie DA) ; commence directement par le contenu, sans titre ni phrase d\'introduction générique du type "Voici un cours sur...".'+
       visualSystem;
   }
-  var maxTok = (ty === 'fiche_peda') ? 2000 : 4000; /* le système visuel (encadrés, étapes, diagrammes) est plus verbeux qu'un texte simple */
+  var maxTok = (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin */
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){
     if (!r.ok) { throw new Error('SERVEUR_INDISPONIBLE'); }
