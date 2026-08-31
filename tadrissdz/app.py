@@ -38,6 +38,16 @@ def admin():
     return send_from_directory(os.path.dirname(__file__), "admin.html")
 
 
+@app.get("/labo-prof.png")
+def labo_prof_png():
+    return send_from_directory(os.path.dirname(__file__), "labo-prof.png")
+
+
+@app.get("/labo-eleve.png")
+def labo_eleve_png():
+    return send_from_directory(os.path.dirname(__file__), "labo-eleve.png")
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
