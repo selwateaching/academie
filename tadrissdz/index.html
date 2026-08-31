@@ -493,7 +493,10 @@ tr:hover td{background:var(--tp);}
 .pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);}
 .pp-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;}
 /* Fiche pédagogique Primaire — style test : cursif, pastel, icônes, peu chargé */
-.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}
+.pp-primaire{position:relative;border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}
+.pp-primaire-star{position:absolute;pointer-events:none;}
+.pp-primaire-star-tl{top:10px;left:14px;}
+.pp-primaire-star-br{bottom:10px;right:14px;}
 .pp-primaire .pp-step{background:#FFFFFF;border:1px solid var(--br);border-left-width:4px;}
 .pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}
 .pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}
@@ -4492,7 +4495,10 @@ function printCleanPage(title, contentHTML) {
     '.pp-tbl th{background:var(--tp);color:var(--t);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--t);}' +
     '.pp-tbl td{padding:6px 8px;font-size:11px;line-height:1.5;border:1px solid var(--br);vertical-align:top;}' +
     '.pp-tbl tr:nth-child(even) td{background:var(--bg);}' +
-    '.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}' +
+    '.pp-primaire{position:relative;border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}' +
+    '.pp-primaire-star{position:absolute;pointer-events:none;}' +
+    '.pp-primaire-star-tl{top:10px;left:14px;}' +
+    '.pp-primaire-star-br{bottom:10px;right:14px;}' +
     '.pp-primaire .pp-step{background:#FFFFFF;border:1px solid var(--br);border-left-width:4px;}' +
     '.pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}' +
     '.pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}' +
@@ -6670,23 +6676,38 @@ function tpToggleView() {
   TP_VIEW_MODE = (TP_VIEW_MODE === 'table') ? 'cards' : 'table';
   dispCrs(curCrs, true);
 }
+/* Palette pastel par niveau (Primaire) — cf. demande cliente : 3AP rose, 4AP bleu, 5AP vert. */
+var NIVEAU_PALETTE = {
+  '1AP': { bg:'#FDE9C8', accent:'#E8A33D', border:'#F6D9A0' },
+  '2AP': { bg:'#E8D9F5', accent:'#9B6FD1', border:'#DCC6F0' },
+  '3AP': { bg:'#F8C8D8', accent:'#D9789E', border:'#F5B6CE' },
+  '4AP': { bg:'#C8E7FF', accent:'#5E9FCB', border:'#AED6F5' },
+  '5AP': { bg:'#C8F0D0', accent:'#5FAE7E', border:'#A9E3B8' }
+};
 /* Petit jeu d'icônes pastel/cartoon, sans texte, style cohérent — utilisé pour
-   habiller visuellement les fiches pédagogiques du Primaire (test demandé par la cliente). */
-function ficheIconPrimaire(matiere) {
+   habiller visuellement les fiches pédagogiques du Primaire (test demandé par la cliente).
+   Le fond du cercle suit la palette du niveau (si fourni) ; la forme suit la matière. */
+function ficheIconPrimaire(matiere, niveau) {
   var m = (matiere || '').toLowerCase();
+  var pal = NIVEAU_PALETTE[(niveau || '').trim()];
+  var bg = pal ? pal.bg : null;
+  var accent = pal ? pal.accent : null;
+  if (m.indexOf('lecture') >= 0 || m.indexOf('lire') >= 0) {
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#FBF0D6')+'"/><path d="M32 22c-4-3-10-3-14 0v20c4-3 10-3 14 0c4-3 10-3 14 0V22c-4-3-10-3-14 0z" fill="none" stroke="'+(accent||'#E8A33D')+'" stroke-width="2.8" stroke-linejoin="round"/><line x1="32" y1="22" x2="32" y2="42" stroke="'+(accent||'#E8A33D')+'" stroke-width="2.4"/></svg>';
+  }
   if (m.indexOf('oral') >= 0) {
-    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCEBF7"/><path d="M24 20c-6 3-9 9-9 15c0 9 8 17 17 17s17-8 17-17c0-3-1-6-2-8" fill="none" stroke="#5E9FCB" stroke-width="3.2" stroke-linecap="round"/><path d="M28 26c3-2 6-2 8 1" fill="none" stroke="#5E9FCB" stroke-width="2.6" stroke-linecap="round"/></svg>';
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#DCEBF7')+'"/><path d="M24 20c-6 3-9 9-9 15c0 9 8 17 17 17s17-8 17-17c0-3-1-6-2-8" fill="none" stroke="'+(accent||'#5E9FCB')+'" stroke-width="3.2" stroke-linecap="round"/><path d="M28 26c3-2 6-2 8 1" fill="none" stroke="'+(accent||'#5E9FCB')+'" stroke-width="2.6" stroke-linecap="round"/></svg>';
   }
   if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) {
-    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCE6FA"/><rect x="16" y="34" width="14" height="14" rx="4" fill="#8FAEE0"/><rect x="34" y="34" width="14" height="14" rx="4" fill="#B7CBEF"/><rect x="25" y="18" width="14" height="14" rx="4" fill="#B7CBEF"/></svg>';
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#DCE6FA')+'"/><rect x="16" y="34" width="14" height="14" rx="4" fill="'+(accent||'#8FAEE0')+'"/><rect x="34" y="34" width="14" height="14" rx="4" fill="'+(accent||'#B7CBEF')+'" opacity=".75"/><rect x="25" y="18" width="14" height="14" rx="4" fill="'+(accent||'#B7CBEF')+'" opacity=".75"/></svg>';
   }
   if (m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('orthograph') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('grammaire') >= 0) {
-    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#FBF0D6"/><rect x="28" y="14" width="8" height="30" rx="4" fill="#F0C86A" transform="rotate(20 32 29)"/><polygon points="24,42 40,42 32,54" fill="#F5DFA0" transform="rotate(20 32 29)"/></svg>';
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#FBF0D6')+'"/><rect x="28" y="14" width="8" height="30" rx="4" fill="'+(accent||'#F0C86A')+'" transform="rotate(20 32 29)"/><polygon points="24,42 40,42 32,54" fill="'+(accent||'#F5DFA0')+'" opacity=".8" transform="rotate(20 32 29)"/></svg>';
   }
   if (m.indexOf('sciences') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) {
-    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DEF2E8"/><circle cx="32" cy="26" r="10" fill="none" stroke="#6FB89A" stroke-width="3"/><rect x="27" y="34" width="10" height="12" rx="3" fill="#6FB89A"/></svg>';
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#DEF2E8')+'"/><path d="M27 18h10v12l7 14c1 2-.5 4-3 4H23c-2.5 0-4-2-3-4l7-14z" fill="none" stroke="'+(accent||'#6FB89A')+'" stroke-width="3"/><line x1="26" y1="18" x2="38" y2="18" stroke="'+(accent||'#6FB89A')+'" stroke-width="3" stroke-linecap="round"/></svg>';
   }
-  return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#F6E3EF"/><path d="M32 16l4.5 12.5H50l-11 8 4.2 13.5L32 42l-11.2 8L25 36.5l-11-8h13.5z" fill="#DFA9C9"/></svg>';
+  return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#F6E3EF')+'"/><path d="M32 16l4.5 12.5H50l-11 8 4.2 13.5L32 42l-11.2 8L25 36.5l-11-8h13.5z" fill="'+(accent||'#DFA9C9')+'"/></svg>';
 }
 function dispCrs(crs, keepMode){
   if (!keepMode) TP_VIEW_MODE = 'cards';
@@ -6705,7 +6726,10 @@ function dispCrs(crs, keepMode){
   var niveauEstPrimaire = /^[1-5]AP$/.test((crs.niveau || '').trim());
   var estFichePrimaire = (crs.type === 'fiche_peda') && (niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire()));
   if (estFichePrimaire) {
-    document.getElementById('crsDis').innerHTML='<div class="pp-primaire"><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    var palNiveau = NIVEAU_PALETTE[(crs.niveau || '').trim()];
+    var borderStyle = palNiveau ? (' style="border-color:'+palNiveau.border+'"') : '';
+    var etoile = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.6 6.6L22 9l-5.5 4.6L18 21l-6-3.8L6 21l1.5-7.4L2 9l7.4-.4z" fill="'+(palNiveau?palNiveau.accent:'#DFA9C9')+'" opacity=".55"/></svg>';
+    document.getElementById('crsDis').innerHTML='<div class="pp-primaire"'+borderStyle+'><span class="pp-primaire-star pp-primaire-star-tl">'+etoile+'</span><span class="pp-primaire-star pp-primaire-star-br">'+etoile+'</span><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat, crs.niveau)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   } else {
     document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
