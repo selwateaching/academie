@@ -8139,10 +8139,23 @@ async function getDocRetry(ref, attempts, delayMs) {
     catch (e) { if (i === attempts - 1) throw e; await new Promise(function(r){ setTimeout(r, delayMs); }); }
   }
 }
+var _hadValidUser = false;
 async function handleAuthUser(user) {
   var gate = document.getElementById('authGate');
   var app = document.getElementById('app');
   if (!user) {
+    if (_hadValidUser) {
+      /* On a déjà eu une session valide dans cet onglet : un "non connecté" juste après
+         peut être une fausse alerte du SDK Firebase (accès concurrent à la session
+         partagée quand un second onglet — ex: Labo Langues — s'ouvre en même temps ;
+         cf. les avertissements "heartbeats undefined" dans la console), pas une vraie
+         déconnexion. On revérifie l'état réel après un court délai avant de conclure. */
+      setTimeout(function() {
+        if (auth.currentUser) { handleAuthUser(auth.currentUser); }
+        else { _hadValidUser = false; handleAuthUser(null); }
+      }, 1500);
+      return;
+    }
     app.style.display = 'none';
     /* Personne connecté : on ne force PAS l'écran de connexion — la page d'accueil reste visible par défaut.
        L'écran de connexion n'apparaît que si l'utilisateur clique explicitement pour ouvrir l'app. */
@@ -8154,6 +8167,7 @@ async function handleAuthUser(user) {
     }
     return;
   }
+  _hadValidUser = true;
   var wasAlreadyInApp = app.style.display === 'flex';
   try {
     var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 5, 1500);
