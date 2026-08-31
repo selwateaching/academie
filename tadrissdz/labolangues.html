@@ -56,11 +56,15 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 #llTopbar a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
 #llTopbar a.back:hover{color:var(--t);}
 #llContainer{max-width:920px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
-.ll-chooser-btn{flex:1;min-width:220px;background:var(--w);border:1.5px solid var(--br);border-radius:14px;padding:1.6rem 1.2rem;text-align:center;cursor:pointer;transition:all .18s;}
-.ll-chooser-btn:hover{border-color:var(--t);box-shadow:0 8px 24px rgba(0,107,63,.1);transform:translateY(-2px);}
-.ll-chooser-btn .ic{font-size:2rem;margin-bottom:.6rem;}
-.ll-chooser-btn .t{font-weight:700;font-size:.92rem;}
-.ll-chooser-btn .s{font-size:.72rem;color:var(--ink3);margin-top:.3rem;}
+.ll-chooser-card{flex:1;min-width:230px;background:var(--w);border:1.5px solid var(--br);border-radius:14px;padding:1.8rem 1.4rem;text-align:center;transition:all .18s;}
+.ll-chooser-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.08);transform:translateY(-2px);}
+.ll-chooser-ic{width:64px;height:64px;margin:0 auto .9rem;}
+.ll-chooser-card .t{font-weight:800;font-size:1rem;margin-bottom:.3rem;}
+.ll-chooser-card .s{font-size:.78rem;color:var(--ink3);margin-bottom:1.1rem;min-height:2.1em;}
+.ll-chooser-cta{width:100%;background:#2563EB;color:#fff;}
+.ll-chooser-cta:hover{background:#1D4ED8;}
+.ll-chooser-illus{width:150px;flex-shrink:0;opacity:.92;}
+@media (max-width:820px){.ll-chooser-illus{display:none;}}
 .ll-demo-card{border:1.5px dashed var(--t);background:var(--tp);transition:box-shadow .25s, transform .2s;animation:llGlow 3s ease-in-out infinite;}
 .ll-demo-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,107,63,.14);}
 @keyframes llGlow{0%,100%{box-shadow:0 0 0 rgba(0,107,63,0);}50%{box-shadow:0 0 0 6px rgba(0,107,63,.06);}}
@@ -107,7 +111,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 .ll-crit-row input[type="range"]{width:100%;accent-color:var(--t);}
 .ll-crit-total{background:var(--tp);border-radius:9px;padding:.7rem 1rem;text-align:center;font-weight:800;color:var(--t);font-size:1.1rem;margin:.6rem 0;}
 #llWaveformCanvas{width:100%;height:64px;border-radius:9px;background:var(--bg);display:block;}
-.ll-empty-illus{font-size:2.4rem;margin-bottom:.7rem;opacity:.7;}
+.ll-empty-illus{display:flex;justify-content:center;gap:.6rem;margin-bottom:.9rem;}
+.ll-empty-illus img{width:56px;height:56px;object-fit:contain;}
 
 /* ===== Refonte visuelle Phase 2 : identité "audio/écoute", en-tête compact, cartes riches ===== */
 .ll-ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex-shrink:0;}
@@ -181,19 +186,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
   <!-- CHOISIR PROF / ÉLÈVE -->
   <div id="llChooser" style="display:none;">
-    <h1 style="font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;margin-bottom:.4rem;" id="llChooserTitle">🎙️ Labo Langues</h1>
-    <div style="color:var(--ink3);font-size:.85rem;margin-bottom:1.6rem;" id="llChooserSub">Enregistrez, envoyez et évaluez vos productions orales.</div>
-    <div style="display:flex;gap:1.2rem;flex-wrap:wrap;">
-      <div class="ll-chooser-btn" onclick="llGoProf()">
-        <div class="ic">👨‍🏫</div>
-        <div class="t" id="llChooserProfT">Je suis professeur</div>
-        <div class="s" id="llChooserProfS">Créer des activités, corriger et noter</div>
+    <div style="text-align:center;margin-bottom:2.2rem;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.55rem;margin-bottom:.5rem;">
+        <span id="llChooserMicIc"></span>
+        <h1 style="font-family:'Inter',sans-serif;font-size:1.55rem;font-weight:800;" id="llChooserTitle">Labo Langues</h1>
       </div>
-      <div class="ll-chooser-btn" onclick="llGoEleve()">
-        <div class="ic">🎓</div>
-        <div class="t" id="llChooserEleveT">Je suis élève</div>
-        <div class="s" id="llChooserEleveS">Entrer mon code d'accès</div>
+      <div style="color:var(--ink3);font-size:.88rem;" id="llChooserSub">Enregistrez, envoyez et évaluez vos productions orales.</div>
+    </div>
+    <div style="display:flex;gap:1.6rem;flex-wrap:wrap;align-items:center;justify-content:center;">
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;flex:2;min-width:280px;max-width:600px;">
+        <div class="ll-chooser-card">
+          <div class="ll-chooser-ic" id="llChooserProfIc"></div>
+          <div class="t" id="llChooserProfT">Professeur</div>
+          <div class="s" id="llChooserProfS">Créer des activités, corriger et noter</div>
+          <button class="btn ll-chooser-cta" onclick="llGoProf()" id="llChooserProfBtn">Créer des activités</button>
+        </div>
+        <div class="ll-chooser-card">
+          <div class="ll-chooser-ic" id="llChooserEleveIc"></div>
+          <div class="t" id="llChooserEleveT">Élève</div>
+          <div class="s" id="llChooserEleveS">Entrer mon code d'accès</div>
+          <button class="btn ll-chooser-cta" onclick="llGoEleve()" id="llChooserEleveBtn">Entrer mon code</button>
+        </div>
       </div>
+      <div class="ll-chooser-illus" id="llChooserIllus"></div>
     </div>
   </div>
 
@@ -292,7 +307,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
     <div class="ll-act-grid" id="llActList" style="margin-bottom:1.2rem;"></div>
     <div class="card" id="llEmptyCard" style="display:none;">
       <div class="cb" style="text-align:center;padding:2.4rem 1rem;color:var(--ink3);">
-        <div class="ll-empty-illus">🎙️🗣️🎧</div>
+        <div class="ll-empty-illus" id="llEmptyIllus"></div>
         <div id="llEmptyTxt">Aucune activité orale pour le moment.</div>
       </div>
     </div>
@@ -528,12 +543,14 @@ var LL_LANG_KEYS = {
   llLangBtn:['العربية','Français'],
   llBackLink:['← Retour à Tadriss','← العودة إلى Tadriss'],
   llLoadingTxt:['Chargement…','جارٍ التحميل…'],
-  llChooserTitle:['🎙️ Labo Langues','🎙️ مخبر اللغات'],
+  llChooserTitle:['Labo Langues','مخبر اللغات'],
   llChooserSub:["Enregistrez, envoyez et évaluez vos productions orales.",'سجّل، أرسل وقيّم إنتاجاتك الشفهية.'],
-  llChooserProfT:['Je suis professeur','أنا أستاذ(ة)'],
+  llChooserProfT:['Professeur','أستاذ(ة)'],
   llChooserProfS:['Créer des activités, corriger et noter','إنشاء الأنشطة، التصحيح والتنقيط'],
-  llChooserEleveT:['Je suis élève','أنا تلميذ(ة)'],
+  llChooserProfBtn:['Créer des activités','إنشاء الأنشطة'],
+  llChooserEleveT:['Élève','تلميذ(ة)'],
   llChooserEleveS:["Entrer mon code d'accès",'إدخال رمز الوصول'],
+  llChooserEleveBtn:['Entrer mon code','إدخال الرمز'],
   llNeedLoginTxt:["Connecte-toi d'abord sur Tadriss.",'سجّل الدخول أولاً على Tadriss.'],
   llNeedLoginBtn:['Aller sur Tadriss','الذهاب إلى Tadriss'],
   llNotLangueTxt:['Le Labo Langues est réservé aux professeurs de Français, Anglais, Espagnol et Arabe.','مخبر اللغات مخصص فقط لأساتذة الفرنسية والإنجليزية والإسبانية والعربية.'],
@@ -697,6 +714,14 @@ var LL_ICO = {
   arrowLeft: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
   globe: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
 };
+/* Illustration de l'écran d'accueil (choix Professeur/Élève) : silhouette + badge micro/crayon,
+   dans le même esprit que la maquette fournie (traits fins, bleu, sobre). */
+var LL_CHOOSER_ART = {
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+  prof: '<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="30" fill="#EFF6FF"/><circle cx="32" cy="25" r="10" fill="none" stroke="#2563EB" stroke-width="2.5"/><path d="M14 55c0-11 8-18 18-18s18 7 18 18" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/><g transform="translate(41,39)"><rect x="-4" y="-8" width="8" height="12" rx="4" fill="#2563EB"/><path d="M-7 0a7 7 0 0 0 14 0" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="7" x2="0" y2="11" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/></g></svg>',
+  eleve: '<svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="32" r="30" fill="#EFF6FF"/><circle cx="32" cy="25" r="10" fill="none" stroke="#2563EB" stroke-width="2.5"/><path d="M14 55c0-11 8-18 18-18s18 7 18 18" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/><g transform="translate(43,41) rotate(45)"><rect x="-3" y="-13" width="6" height="18" rx="1" fill="#2563EB"/><polygon points="-3,5 3,5 0,12" fill="#2563EB"/></g></svg>',
+  network: '<svg viewBox="0 0 160 160" width="150" height="150"><circle cx="80" cy="82" r="48" fill="none" stroke="#93C5FD" stroke-width="2"/><ellipse cx="80" cy="82" rx="48" ry="19" fill="none" stroke="#93C5FD" stroke-width="1.5"/><line x1="32" y1="82" x2="128" y2="82" stroke="#93C5FD" stroke-width="1.5"/><path d="M80 34a48 48 0 0 1 0 96" fill="none" stroke="#93C5FD" stroke-width="1.5"/><rect x="104" y="28" width="36" height="24" rx="7" fill="#DBEAFE" stroke="#93C5FD"/><rect x="6" y="104" width="36" height="24" rx="7" fill="#DBEAFE" stroke="#93C5FD"/><circle cx="132" cy="118" r="6" fill="#BFDBFE"/><circle cx="18" cy="38" r="6" fill="#BFDBFE"/></svg>'
+};
 /* Puce de langue (code en toutes lettres FR/EN/ES/AR — plus fiable que le drapeau emoji,
    qui peut s'afficher en texte brut "GB" sur certaines configurations Windows/Edge). */
 function llLangChip(lg) {
@@ -733,6 +758,11 @@ function llInitIcons() {
   set('llFilterLangueIc', LL_ICO.globe);
   set('llFilterClasseIc', LL_ICO.users);
   set('llFilterStatutIc', LL_ICO.filter);
+  set('llEmptyIllus', llImg('cahier', 56) + llImg('eleves', 56) + llImg('notes', 56));
+  set('llChooserMicIc', LL_CHOOSER_ART.mic);
+  set('llChooserProfIc', LL_CHOOSER_ART.prof);
+  set('llChooserEleveIc', LL_CHOOSER_ART.eleve);
+  set('llChooserIllus', LL_CHOOSER_ART.network);
 }
 llInitIcons();
 llApplyLang();
