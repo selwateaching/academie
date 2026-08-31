@@ -4919,10 +4919,7 @@ function rLaboLanguesPromo() {
 function openLaboLangues() {
   var url = 'labolangues.html';
   if (window.authCurrentUid) url += '?uid=' + encodeURIComponent(window.authCurrentUid);
-  /* Navigation dans le même onglet (pas de nouvel onglet) : deux onglets ouverts en même
-     temps peuvent se disputer l'accès à la session Firebase partagée (IndexedDB), ce qui
-     provoquait de fausses déconnexions. Un lien "← Retour à Tadriss" permet de revenir. */
-  window.location.href = url;
+  window.open(url, '_blank');
 }
 
 /* ===== ÉLÈVES ===== */
@@ -8136,16 +8133,41 @@ window.revealAppOrGate = function() {
    (ex: juste après avoir ouvert Labo Langues dans un nouvel onglet) peut voir ses
    requêtes réseau ralenties/throttlées par le navigateur, ce qui faisait échouer
    ce getDoc et déclenchait à tort l'écran de connexion (voir le catch plus bas). */
+/* Journal de diagnostic pour la connexion, invisible par défaut. Ajouter ?authdebug=1 à
+   l'URL affiche un panneau en bas de l'écran avec l'historique horodaté — utile pour
+   comprendre une déconnexion inattendue sans avoir besoin des outils développeur. */
+window._authLog = [];
+function alog(msg) {
+  window._authLog.push(new Date().toLocaleTimeString('fr-FR') + ' — ' + msg);
+  if (window._authLog.length > 60) window._authLog.shift();
+  if (window.location.search.indexOf('authdebug=1') >= 0) renderAuthDebug();
+}
+function renderAuthDebug() {
+  var box = document.getElementById('authDebugBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'authDebugBox';
+    box.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:#111;color:#0f0;font-family:monospace;font-size:11px;padding:8px 10px;z-index:999999;white-space:pre-wrap;line-height:1.5;';
+    document.body.appendChild(box);
+  }
+  box.textContent = window._authLog.join('\n');
+  box.scrollTop = box.scrollHeight;
+}
 async function getDocRetry(ref, attempts, delayMs) {
   for (var i = 0; i < attempts; i++) {
-    try { return await getDoc(ref); }
-    catch (e) { if (i === attempts - 1) throw e; await new Promise(function(r){ setTimeout(r, delayMs); }); }
+    try { var r = await getDoc(ref); alog('getDoc OK (tentative '+(i+1)+')'); return r; }
+    catch (e) {
+      alog('getDoc échoué (tentative '+(i+1)+'/'+attempts+') : ' + (e && e.message ? e.message : e));
+      if (i === attempts - 1) throw e;
+      await new Promise(function(r){ setTimeout(r, delayMs); });
+    }
   }
 }
 var _hadValidUser = false;
 async function handleAuthUser(user) {
   var gate = document.getElementById('authGate');
   var app = document.getElementById('app');
+  alog('onAuthStateChanged → ' + (user ? ('user=' + user.uid) : 'user=null') + ' (appHadFocus=' + (document.visibilityState) + ')');
   if (!user) {
     if (_hadValidUser) {
       /* On a déjà eu une session valide dans cet onglet : un "non connecté" juste après
@@ -8153,12 +8175,14 @@ async function handleAuthUser(user) {
          partagée quand un second onglet — ex: Labo Langues — s'ouvre en même temps ;
          cf. les avertissements "heartbeats undefined" dans la console), pas une vraie
          déconnexion. On revérifie l'état réel après un court délai avant de conclure. */
+      alog('user=null mais session déjà valide avant → attente 1.5s puis re-vérification');
       setTimeout(function() {
-        if (auth.currentUser) { handleAuthUser(auth.currentUser); }
-        else { _hadValidUser = false; handleAuthUser(null); }
+        if (auth.currentUser) { alog('re-vérification : auth.currentUser existe → session confirmée OK'); handleAuthUser(auth.currentUser); }
+        else { alog('re-vérification : auth.currentUser toujours null → déconnexion confirmée'); _hadValidUser = false; handleAuthUser(null); }
       }, 1500);
       return;
     }
+    alog('Pas de session (premier chargement ou déconnexion confirmée) → ' + (window._loginRequested ? 'affichage écran de connexion' : 'page d\'accueil'));
     app.style.display = 'none';
     /* Personne connecté : on ne force PAS l'écran de connexion — la page d'accueil reste visible par défaut.
        L'écran de connexion n'apparaît que si l'utilisateur clique explicitement pour ouvrir l'app. */
@@ -8176,12 +8200,14 @@ async function handleAuthUser(user) {
     var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 5, 1500);
     if (!snap.exists()) {
       /* Compte Firebase existe mais pas de profil prof (ex: compte admin/élève utilisé par erreur ici) */
+      alog('profs/' + user.uid + ' introuvable → signOut (compte non-prof)');
       await signOut(auth);
       app.style.display = 'none';
       if (window._loginRequested) { gate.style.display = 'flex'; authShowView('login'); document.getElementById('authErr').textContent = T('auth_not_prof_account'); }
       else { gate.style.display = 'none'; }
       return;
     }
+    alog('Profil chargé, statut=' + snap.data().status + ' → app affichée');
     var p = snap.data();
     if (p.status === 'validated') {
       var joursRestants = null;
@@ -8227,6 +8253,7 @@ async function handleAuthUser(user) {
        une vraie déconnexion. On ne montre donc JAMAIS le formulaire de connexion ici,
        que l'app ait déjà été affichée ou non — on retente en silence jusqu'à ce que ça
        marche, plutôt que d'exiger à tort une reconnexion. */
+    alog('getDocRetry épuisé (' + (e && e.message ? e.message : e) + ') → nouvel essai dans ' + (wasAlreadyInApp ? '3' : '4') + 's, app inchangée');
     if (!wasAlreadyInApp) N(CURRENT_LANG==='ar'?'⏳ إعادة الاتصال بالخادم...':'⏳ Reconnexion au serveur...', 'info');
     setTimeout(function() { handleAuthUser(user); }, wasAlreadyInApp ? 3000 : 4000);
   }
