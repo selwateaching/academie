@@ -8156,7 +8156,7 @@ async function handleAuthUser(user) {
   }
   var wasAlreadyInApp = app.style.display === 'flex';
   try {
-    var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 3, 900);
+    var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 5, 1500);
     if (!snap.exists()) {
       /* Compte Firebase existe mais pas de profil prof (ex: compte admin/élève utilisé par erreur ici) */
       await signOut(auth);
@@ -8203,16 +8203,15 @@ async function handleAuthUser(user) {
       else { gate.style.display = 'none'; }
     }
   } catch (e) {
-    if (wasAlreadyInApp) {
-      /* Session déjà active dans cet onglet : une erreur réseau passagère ne doit ni
-         déconnecter l'utilisateur ni cacher l'app — on retente en silence plutôt que
-         d'afficher l'écran de connexion (qui donne l'impression d'être déconnecté). */
-      setTimeout(function() { handleAuthUser(user); }, 3000);
-      return;
-    }
-    app.style.display = 'none';
-    if (window._loginRequested) { gate.style.display = 'flex'; authShowView('login'); document.getElementById('authErr').textContent = 'Erreur de connexion au serveur. Réessaie.'; }
-    else { gate.style.display = 'none'; }
+    /* Firebase confirme que "user" est authentifié : un échec ici est un problème
+       réseau/Firestore transitoire (ex: onglet rechargé par le navigateur en revenant
+       d'une mise en veille mémoire, juste après avoir ouvert Labo Langues dans un
+       nouvel onglet — le réseau met parfois quelques secondes à se rétablir), jamais
+       une vraie déconnexion. On ne montre donc JAMAIS le formulaire de connexion ici,
+       que l'app ait déjà été affichée ou non — on retente en silence jusqu'à ce que ça
+       marche, plutôt que d'exiger à tort une reconnexion. */
+    if (!wasAlreadyInApp) N(CURRENT_LANG==='ar'?'⏳ إعادة الاتصال بالخادم...':'⏳ Reconnexion au serveur...', 'info');
+    setTimeout(function() { handleAuthUser(user); }, wasAlreadyInApp ? 3000 : 4000);
   }
 }
 onAuthStateChanged(auth, handleAuthUser);
