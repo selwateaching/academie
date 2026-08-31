@@ -8129,7 +8129,17 @@ window.revealAppOrGate = function() {
   if (gate) { gate.style.display = 'flex'; if (typeof authShowView === 'function') authShowView('login'); }
 };
 
-onAuthStateChanged(auth, async function(user) {
+/* Retente la lecture Firestore avant d'abandonner : un onglet mis en arrière-plan
+   (ex: juste après avoir ouvert Labo Langues dans un nouvel onglet) peut voir ses
+   requêtes réseau ralenties/throttlées par le navigateur, ce qui faisait échouer
+   ce getDoc et déclenchait à tort l'écran de connexion (voir le catch plus bas). */
+async function getDocRetry(ref, attempts, delayMs) {
+  for (var i = 0; i < attempts; i++) {
+    try { return await getDoc(ref); }
+    catch (e) { if (i === attempts - 1) throw e; await new Promise(function(r){ setTimeout(r, delayMs); }); }
+  }
+}
+async function handleAuthUser(user) {
   var gate = document.getElementById('authGate');
   var app = document.getElementById('app');
   if (!user) {
@@ -8144,8 +8154,9 @@ onAuthStateChanged(auth, async function(user) {
     }
     return;
   }
+  var wasAlreadyInApp = app.style.display === 'flex';
   try {
-    var snap = await getDoc(doc(dbFs, 'profs', user.uid));
+    var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 3, 900);
     if (!snap.exists()) {
       /* Compte Firebase existe mais pas de profil prof (ex: compte admin/élève utilisé par erreur ici) */
       await signOut(auth);
@@ -8192,11 +8203,19 @@ onAuthStateChanged(auth, async function(user) {
       else { gate.style.display = 'none'; }
     }
   } catch (e) {
+    if (wasAlreadyInApp) {
+      /* Session déjà active dans cet onglet : une erreur réseau passagère ne doit ni
+         déconnecter l'utilisateur ni cacher l'app — on retente en silence plutôt que
+         d'afficher l'écran de connexion (qui donne l'impression d'être déconnecté). */
+      setTimeout(function() { handleAuthUser(user); }, 3000);
+      return;
+    }
     app.style.display = 'none';
     if (window._loginRequested) { gate.style.display = 'flex'; authShowView('login'); document.getElementById('authErr').textContent = 'Erreur de connexion au serveur. Réessaie.'; }
     else { gate.style.display = 'none'; }
   }
-});
+}
+onAuthStateChanged(auth, handleAuthUser);
 </script>
 
 </body>
