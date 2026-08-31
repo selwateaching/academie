@@ -6410,6 +6410,14 @@ async function genCours(extraInstruction) {
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true;
+  /* "Régénérer" et "Simplifier" appellent aussi genCours(), mais restaient visuellement figés
+     pendant la génération (seul btnGCrs, hors écran à ce moment, montrait un état de chargement) */
+  var btnRegenLoad = document.getElementById('btnTcRegen');
+  var btnSimplifyLoad = document.getElementById('btnTcSimplify');
+  var regenPrevText = btnRegenLoad ? btnRegenLoad.innerHTML : null;
+  var simplifyPrevText = btnSimplifyLoad ? btnSimplifyLoad.innerHTML : null;
+  if (btnRegenLoad && btnRegenLoad.style.display !== 'none') { btnRegenLoad.innerHTML = T('generation'); btnRegenLoad.disabled = true; }
+  if (btnSimplifyLoad && btnSimplifyLoad.style.display !== 'none') { btnSimplifyLoad.innerHTML = T('generation'); btnSimplifyLoad.disabled = true; }
   var isLangue = (ty === 'fiche_peda') && isLangueMatiere(mat);
   var acCls = gAC();
   var dateStr = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
@@ -6534,6 +6542,8 @@ async function genCours(extraInstruction) {
     return r.json();
   }).then(function(data){
     btn.innerHTML=T('gen_cours'); btn.disabled=false;
+    if (btnRegenLoad && regenPrevText !== null) { btnRegenLoad.innerHTML = regenPrevText; btnRegenLoad.disabled = false; }
+    if (btnSimplifyLoad && simplifyPrevText !== null) { btnSimplifyLoad.innerHTML = simplifyPrevText; btnSimplifyLoad.disabled = false; }
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
@@ -6546,7 +6556,12 @@ async function genCours(extraInstruction) {
       addFichePedaToJournal(titre, mat, nv, dur);
       N(CURRENT_LANG==='ar'?'تم إنشاء ورقة التحضير وإضافتها إلى دفتر النصوص (اليوم) !':'Fiche pédagogique générée et ajoutée au Cahier journal (aujourd\'hui) !','ok');
     }
-  }).catch(function(err){btn.innerHTML=T('gen_cours');btn.disabled=false;N(messageErreurGeneration(err),'err');});
+  }).catch(function(err){
+    btn.innerHTML=T('gen_cours');btn.disabled=false;
+    if (btnRegenLoad && regenPrevText !== null) { btnRegenLoad.innerHTML = regenPrevText; btnRegenLoad.disabled = false; }
+    if (btnSimplifyLoad && simplifyPrevText !== null) { btnSimplifyLoad.innerHTML = simplifyPrevText; btnSimplifyLoad.disabled = false; }
+    N(messageErreurGeneration(err),'err');
+  });
 }
 function tcSimplify() {
   genCours('Simplifie ce document par rapport à une version standard : réduis la longueur du texte, garde seulement les éléments visuels les plus essentiels, et simplifie le vocabulaire pour un niveau plus jeune que celui indiqué.');
