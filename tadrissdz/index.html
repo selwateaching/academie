@@ -280,8 +280,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .cb-text.hi{color:rgba(255,255,255,.95);font-weight:600;}
 
 /* PLANS */
-.plans-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:2.5rem;max-width:760px;margin-left:auto;margin-right:auto;}
-@media (max-width:700px){.plans-grid{grid-template-columns:1fr;}}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
+@media (max-width:900px){.plans-grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto;}}
 .plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
 .plan::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--t),var(--t2));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
 .plan:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,107,63,.16);border-color:var(--t);}
@@ -723,8 +723,28 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="site-section alt" id="prix">
     <div class="section-kicker" id="prixKicker">Tarifs</div>
     <h2 class="section-h2" id="prixH2">Des prix adaptés<br><span id="prixH2Span">au pouvoir d'achat algérien</span></h2>
-    <p style="color:var(--ink3);font-size:.9rem;margin-bottom:0;" id="prixSub">Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.</p>
+    <p style="color:var(--ink3);font-size:.9rem;margin-bottom:0;" id="prixSub">Sans engagement. Résiliez à tout moment.</p>
     <div class="plans-grid">
+      <div class="plan">
+        <div class="plan-header">
+          <div class="plan-eyebrow" id="planEye0">Découverte</div>
+          <div class="plan-name">Découverte</div>
+          <div class="plan-desc" id="planDesc0">Un peu de tout, pendant 1 mois, pour se faire une idée.</div>
+        </div>
+        <div class="plan-price">
+          <div class="price-num"><span class="price-cur">DA</span>0</div>
+          <div class="price-per" id="planPer0">pendant 1 mois · 1 matière incluse</div>
+        </div>
+        <ul class="plan-feats" id="planFeats0">
+          <li>1 matière (programme officiel)</li>
+          <li>Un aperçu de toutes les fonctionnalités</li>
+          <li>Cahier journal</li>
+          <li>Fiches pédagogiques (aperçu)</li>
+          <li>Génération de cours et quiz par IA — 10/mois</li>
+          <li>Classes et élèves illimités</li>
+        </ul>
+        <button class="plan-cta-btn outline" id="planCta0" onclick="toggleView()">Commencer gratuitement</button>
+      </div>
       <div class="plan">
         <div class="plan-header">
           <div class="plan-eyebrow" id="planEye1">Individuel</div>
@@ -738,11 +758,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <ul class="plan-feats" id="planFeats1">
           <li>1 matière (programme officiel)</li>
           <li>Génération de cours et quiz par IA — 40/mois</li>
+          <li>Cahier journal</li>
+          <li>Fiches pédagogiques de base</li>
           <li>Classes et élèves illimités</li>
           <li>Cloud privé sécurisé</li>
           <li>Notes, absences, bulletins PDF</li>
           <li>Messagerie parents/élèves</li>
-          <li class="no">IA avancée (cours complets)</li>
+          <li class="no">Sujets type Brevet / BAC</li>
+          <li class="no">Exercices avec corrigés automatiques</li>
         </ul>
         <button class="plan-cta-btn outline" id="planCta1" onclick="toggleView()">Commencer Starter</button>
       </div>
@@ -760,12 +783,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <ul class="plan-feats" id="planFeats2">
           <li>1 matière (programme complet)</li>
           <li>Génération de cours et quiz par IA avancée — 100/mois</li>
+          <li>Cahier journal complet</li>
+          <li>Fiches pédagogiques avancées</li>
           <li>Classes et élèves illimités</li>
           <li>Cloud privé sécurisé</li>
           <li>Messagerie parents/élèves illimitée</li>
           <li>Cours complets générés par IA</li>
+          <li>Sujets type Brevet (BEM) / BAC</li>
           <li>Exercices avec corrigés automatiques</li>
-          <li>Sujets type BEM / BAC</li>
         </ul>
         <button class="plan-cta-btn primary" id="planCta2" onclick="toggleView()">Commencer Pro</button>
       </div>
@@ -854,7 +879,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <!-- CTA Final -->
   <div class="site-cta-final">
     <h2 class="cta-final-title" id="ctaFinalTitle">Rejoignez la révolution<br>numérique de l'éducation algérienne.</h2>
-    <p class="cta-final-sub" id="ctaFinalSub">14 jours d'essai gratuit. Aucune carte requise. Paiement par virement bancaire.</p>
+    <p class="cta-final-sub" id="ctaFinalSub">1 mois d'essai gratuit avec le forfait Découverte. Aucune carte requise. Paiement par virement bancaire.</p>
     <div class="hero-btns">
       <button class="hb hb-main" id="ctaFinalBtn" onclick="toggleView()">Ouvrir l'application gratuitement</button>
     </div>
@@ -3418,35 +3443,52 @@ function switchLang() {
   var prixKicker = document.getElementById('prixKicker'); if (prixKicker) prixKicker.textContent = isAR ? 'الأسعار' : 'Tarifs';
   var prixH2 = document.getElementById('prixH2');
   if (prixH2) { var prixH2SpanEl = document.getElementById('prixH2Span'); prixH2.childNodes[0].nodeValue = isAR ? 'أسعار مناسبة' : 'Des prix adaptés'; if (prixH2SpanEl) prixH2SpanEl.textContent = isAR ? 'للقدرة الشرائية الجزائرية' : "au pouvoir d'achat algérien"; }
-  var prixSub = document.getElementById('prixSub'); if (prixSub) prixSub.textContent = isAR ? 'بدون التزام. يمكنك الإلغاء في أي وقت. تجربة مجانية لمدة 14 يومًا.' : 'Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.';
+  var prixSub = document.getElementById('prixSub'); if (prixSub) prixSub.textContent = isAR ? 'بدون التزام. يمكنك الإلغاء في أي وقت.' : 'Sans engagement. Résiliez à tout moment.';
+  var planEye0 = document.getElementById('planEye0'); if (planEye0) planEye0.textContent = isAR ? 'اكتشاف' : 'Découverte';
   var planEye1 = document.getElementById('planEye1'); if (planEye1) planEye1.textContent = isAR ? 'فردي' : 'Individuel';
   var planEye2 = document.getElementById('planEye2'); if (planEye2) planEye2.textContent = isAR ? 'فردي' : 'Individuel';
+  var planDesc0 = document.getElementById('planDesc0'); if (planDesc0) planDesc0.textContent = isAR ? 'القليل من كل شيء، لمدة شهر، لتكوين فكرة.' : 'Un peu de tout, pendant 1 mois, pour se faire une idée.';
   var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'ابدأ بالأدوات الأساسية لمادة واحدة.' : 'Débutez avec les outils essentiels pour 1 matière.';
   var planDesc2 = document.getElementById('planDesc2'); if (planDesc2) planDesc2.textContent = isAR ? 'كل ما يحتاجه المعلم المتميز.' : "L'essentiel complet pour un enseignant exigeant.";
+  var planPer0 = document.getElementById('planPer0'); if (planPer0) planPer0.textContent = isAR ? 'لمدة شهر · مادة واحدة مشمولة' : 'pendant 1 mois · 1 matière incluse';
   var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
   var planPer2 = document.getElementById('planPer2'); if (planPer2) planPer2.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
   var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ الأكثر طلبًا' : '⭐ Populaire';
+  var planCta0 = document.getElementById('planCta0'); if (planCta0) planCta0.textContent = isAR ? 'ابدأ مجانًا' : 'Commencer gratuitement';
   var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'ابدأ Starter' : 'Commencer Starter';
   var planCta2 = document.getElementById('planCta2'); if (planCta2) planCta2.textContent = isAR ? 'ابدأ Pro' : 'Commencer Pro';
   var planFeatsPairs = {
+    planFeats0: [
+      ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
+      ['Un aperçu de toutes les fonctionnalités','لمحة عن جميع الميزات'],
+      ['Cahier journal','دفتر النصوص'],
+      ['Fiches pédagogiques (aperçu)','أوراق تحضير (لمحة)'],
+      ['Génération de cours et quiz par IA — 10/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 10/شهريًا'],
+      ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين']
+    ],
     planFeats1: [
       ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
       ['Génération de cours et quiz par IA — 40/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 40/شهريًا'],
+      ['Cahier journal','دفتر النصوص'],
+      ['Fiches pédagogiques de base','أوراق تحضير أساسية'],
       ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
       ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
       ['Notes, absences, bulletins PDF','النقاط، الغيابات، كشوف PDF'],
       ['Messagerie parents/élèves','مراسلة الأولياء/التلاميذ'],
-      ['IA avancée (cours complets)','ذكاء اصطناعي متقدم (دروس كاملة)']
+      ['Sujets type Brevet / BAC','مواضيع على نمط شهادة التعليم المتوسط / البكالوريا'],
+      ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي']
     ],
     planFeats2: [
       ['1 matière (programme complet)','مادة واحدة (البرنامج الكامل)'],
       ['Génération de cours et quiz par IA avancée — 100/mois','إنشاء دروس واختبارات بذكاء اصطناعي متقدم — 100/شهريًا'],
+      ['Cahier journal complet','دفتر النصوص الكامل'],
+      ['Fiches pédagogiques avancées','أوراق تحضير متقدمة'],
       ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
       ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
       ['Messagerie parents/élèves illimitée','مراسلة غير محدودة مع الأولياء/التلاميذ'],
       ['Cours complets générés par IA','دروس كاملة منشأة بالذكاء الاصطناعي'],
-      ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي'],
-      ['Sujets type BEM / BAC','مواضيع على نمط BEM / BAC']
+      ['Sujets type Brevet (BEM) / BAC','مواضيع على نمط شهادة التعليم المتوسط / البكالوريا'],
+      ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي']
     ]
   };
   Object.keys(planFeatsPairs).forEach(function(listId) {
@@ -3481,7 +3523,7 @@ function switchLang() {
 
   /* Landing page — CTA final + pied de page */
   var ctaFinalTitle = document.getElementById('ctaFinalTitle'); if (ctaFinalTitle) ctaFinalTitle.innerHTML = isAR ? 'انضم إلى الثورة<br>الرقمية للتعليم الجزائري.' : 'Rejoignez la révolution<br>numérique de l\'éducation algérienne.';
-  var ctaFinalSub = document.getElementById('ctaFinalSub'); if (ctaFinalSub) ctaFinalSub.textContent = isAR ? 'تجربة مجانية لمدة 14 يومًا. بدون بطاقة. الدفع عبر تحويل بنكي.' : '14 jours d\'essai gratuit. Aucune carte requise. Paiement par virement bancaire.';
+  var ctaFinalSub = document.getElementById('ctaFinalSub'); if (ctaFinalSub) ctaFinalSub.textContent = isAR ? 'شهر تجريبي مجاني مع باقة الاكتشاف. بدون بطاقة. الدفع عبر تحويل بنكي.' : '1 mois d\'essai gratuit avec le forfait Découverte. Aucune carte requise. Paiement par virement bancaire.';
   var ctaFinalBtn = document.getElementById('ctaFinalBtn'); if (ctaFinalBtn) ctaFinalBtn.textContent = isAR ? 'افتح التطبيق مجانًا' : "Ouvrir l'application gratuitement";
   var footRGPD = document.getElementById('footRGPD'); if (footRGPD) footRGPD.textContent = isAR ? 'الخصوصية' : 'Confidentialité';
   var footCGV = document.getElementById('footCGV'); if (footCGV) footCGV.textContent = isAR ? 'شروط البيع' : 'Conditions de vente';
