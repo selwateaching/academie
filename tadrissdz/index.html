@@ -7665,6 +7665,11 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const dbFs = getFirestore(fbApp);
+/* Le stockage local (classes, notes, cours, historique IA...) peut devenir volumineux ;
+   sous pression mémoire, le navigateur peut évincer tout le stockage de ce domaine (y
+   compris la session Firebase Auth), ce qui ressemble à une déconnexion inattendue.
+   On demande un stockage "persistant" pour réduire ce risque. */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
 /* Garde la session ouverte même après fermeture du navigateur, tant qu'on ne clique pas "Déconnexion" */
 setPersistence(auth, browserLocalPersistence).catch(function(){});
 

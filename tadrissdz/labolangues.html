@@ -212,6 +212,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
         <div class="ll-stat"><div class="ic">👨‍🎓</div><div class="v" id="llStatEleves">0</div><div class="l" id="llStatElevesL">Élèves actifs</div></div>
         <div class="ll-stat"><div class="ic">⭐</div><div class="v" id="llStatMoyenne">—</div><div class="l" id="llStatMoyenneL">Moyenne orale</div></div>
       </div>
+      <div id="llStorageWarning" style="display:none;background:var(--rp);border:1px solid rgba(200,16,46,.3);border-radius:9px;padding:.8rem 1rem;margin-bottom:1.2rem;font-size:.8rem;color:var(--ink);"></div>
       <div class="card" id="llToGradeCard" style="margin-bottom:1.3rem;display:none;">
         <div class="ch"><div class="ct" id="llToGradeCt">🎧 À corriger</div></div>
         <div id="llToGradeList"></div>
@@ -456,6 +457,13 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const dbFs = getFirestore(fbApp);
+
+/* Les enregistrements audio (base64) peuvent faire grossir le stockage du navigateur
+   pour ce domaine ; sous pression mémoire, le navigateur peut évincer tout le stockage
+   d'une origine (y compris la session Firebase Auth partagée avec Tadriss), ce qui se
+   manifeste comme une déconnexion inattendue. On demande un stockage "persistant" pour
+   réduire ce risque — sans effet visible si déjà accordé ou non supporté. */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
 
 /* ===== Bilingue (indépendant de Tadriss, propre à ce fichier) ===== */
 var LL_LANG_KEYS = {
@@ -997,6 +1005,30 @@ function llRefreshStats(uid) {
     document.getElementById('llToGradeList').innerHTML = rows;
   }
 }
+/* Somme la taille de toutes les clés localStorage de cette origine (Tadriss + Labo Langues
+   partagent le même domaine) : les enregistrements audio en base64 peuvent faire grossir
+   le stockage jusqu'à risquer une éviction par le navigateur (voir plus haut). */
+function llGetLocalStorageUsageMB() {
+  var total = 0;
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      total += k.length + (localStorage.getItem(k) || '').length;
+    }
+  } catch(e) {}
+  return total / (1024*1024);
+}
+function llCheckStorageUsage() {
+  var box = document.getElementById('llStorageWarning');
+  if (!box) return;
+  var mb = llGetLocalStorageUsageMB();
+  var isAR = LL_CUR === 'ar';
+  if (mb < 3.5) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = isAR
+    ? ('⚠️ مساحة التخزين في هذا المتصفح تقترب من الامتلاء (' + mb.toFixed(1) + ' ميغا). قد يسبب هذا انقطاع اتصال غير متوقع. صدّر (⬇️) ثم احذف (🗑) أقدم التسجيلات المصححة لتحرير مساحة.')
+    : ('⚠️ Le stockage de ce navigateur pour Tadriss/Labo Langues approche de sa limite (' + mb.toFixed(1) + ' Mo). Cela peut provoquer des déconnexions inattendues. Exportez (⬇️) puis supprimez (🗑) les enregistrements déjà corrigés les plus anciens pour libérer de la place.');
+}
 function llRenderProfApp() {
   var uid = LL_STATE.profUid;
   var data = llReadData(uid);
@@ -1004,6 +1036,7 @@ function llRenderProfApp() {
   var isAR = LL_CUR === 'ar';
   var roster = llReadRoster(uid);
   llRefreshStats(uid);
+  llCheckStorageUsage();
 
   /* --- Filtres (options) --- */
   var fLangueSel = document.getElementById('llFilterLangue');
