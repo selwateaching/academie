@@ -438,7 +438,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 /* Même projet Firebase que Tadriss (comptes prof déjà existants, accès/facturation
@@ -457,6 +457,11 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const dbFs = getFirestore(fbApp);
+/* Même mode de persistance que Tadriss (index.html), explicitement — les deux pages
+   partagent la même session Firebase Auth stockée pour ce domaine ; laisser l'une des
+   deux sur le mode par défaut du SDK au lieu de le fixer explicitement pouvait créer une
+   incohérence entre les deux onglets ouverts en même temps. */
+setPersistence(auth, browserLocalPersistence).catch(function(){});
 
 /* Les enregistrements audio (base64) peuvent faire grossir le stockage du navigateur
    pour ce domaine ; sous pression mémoire, le navigateur peut évincer tout le stockage
