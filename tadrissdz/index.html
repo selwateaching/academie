@@ -496,6 +496,7 @@ tr:hover td{background:var(--tp);}
 .pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFCF6;}
 .pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}
 .pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}
+.pp-primaire-icon svg{width:100%;height:100%;display:block;}
 .pp-primaire-title{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;color:#5B4B8A;line-height:1.1;}
 .pp-primaire-sub{font-size:.82rem;color:#9086A8;margin-top:.1rem;}
 .pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}
@@ -4463,6 +4464,7 @@ function printCleanPage(title, contentHTML) {
   if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
   var isARpp = CURRENT_LANG==='ar';
   var html = '<!DOCTYPE html><html '+(isARpp?'dir="rtl" lang="ar"':'lang="fr"')+'><head><meta charset="UTF-8"><title>' + (title || 'Tadriss DZ') + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">' +
     '<style>' +
     '@page{size:A4;margin:14mm;}' +
     ':root{--bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;--t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--b:#3B82F6;--bp:#EFF6FF;--p:#8B5CF6;--pp:#F5F3FF;--g:#22C55E;--gp:#F0FDF4;--br:#E2DDD5;--rd:12px;}' +
@@ -4489,6 +4491,15 @@ function printCleanPage(title, contentHTML) {
     '.pp-tbl th{background:var(--tp);color:var(--t);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--t);}' +
     '.pp-tbl td{padding:6px 8px;font-size:11px;line-height:1.5;border:1px solid var(--br);vertical-align:top;}' +
     '.pp-tbl tr:nth-child(even) td{background:var(--bg);}' +
+    '.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFCF6;}' +
+    '.pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}' +
+    '.pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}' +
+    '.pp-primaire-icon svg{width:100%;height:100%;display:block;}' +
+    '.pp-primaire-title{font-family:"Caveat",cursive;font-size:1.9rem;font-weight:700;color:#5B4B8A;line-height:1.1;}' +
+    '.pp-primaire-sub{font-size:.82rem;color:#9086A8;margin-top:.1rem;}' +
+    '.pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}' +
+    '.pp-primaire .pp-section{font-family:"Caveat",cursive;font-size:1.25rem;font-weight:700;background:#DCF2E6;color:#2E7D5B;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}' +
+    '.pp-primaire .pp-section.pp-sub{background:#E4E9FB;color:#3E4FA0;}' +
     '.tc-box{border-radius:10px;padding:10px 14px;margin:12px 0;font-size:12px;line-height:1.6;border-left-width:4px;border-left-style:solid;page-break-inside:avoid;}' +
     '.tc-box-title{display:flex;align-items:center;gap:6px;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}' +
     '.tc-def{background:var(--bp);border-left-color:var(--b);} .tc-def>.tc-box-title{color:var(--b);}' +
