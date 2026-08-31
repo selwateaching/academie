@@ -6669,7 +6669,8 @@ function dispCrs(crs, keepMode){
     corps = crs.contenu || '';
     hasSteps = false;
   }
-  var estFichePrimaire = (crs.type === 'fiche_peda') && (typeof isPrimaire === 'function') && isPrimaire();
+  var niveauEstPrimaire = /^[1-5]AP$/.test((crs.niveau || '').trim());
+  var estFichePrimaire = (crs.type === 'fiche_peda') && (niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire()));
   if (estFichePrimaire) {
     document.getElementById('crsDis').innerHTML='<div class="pp-primaire"><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   } else {
