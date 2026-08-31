@@ -108,6 +108,53 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 .ll-crit-total{background:var(--tp);border-radius:9px;padding:.7rem 1rem;text-align:center;font-weight:800;color:var(--t);font-size:1.1rem;margin:.6rem 0;}
 #llWaveformCanvas{width:100%;height:64px;border-radius:9px;background:var(--bg);display:block;}
 .ll-empty-illus{font-size:2.4rem;margin-bottom:.7rem;opacity:.7;}
+
+/* ===== Refonte visuelle Phase 2 : identité "audio/écoute", en-tête compact, cartes riches ===== */
+.ll-ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex-shrink:0;}
+.ll-hero2{background:linear-gradient(135deg,var(--t) 0%,var(--t2) 55%,#0891B2 100%);border-radius:14px;padding:1.05rem 1.3rem;color:#fff;margin-bottom:1.1rem;position:relative;overflow:hidden;display:flex;align-items:center;gap:.8rem;}
+.ll-hero2::after{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08);}
+.ll-hero2-ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;}
+.ll-hero2-ic .ll-ico{width:1.25em;height:1.25em;}
+.ll-hero2 h1{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:800;position:relative;z-index:1;line-height:1.25;}
+.ll-hero2 .sub{font-size:.76rem;opacity:.9;margin-top:.15rem;position:relative;z-index:1;}
+.ll-sec-title{display:flex;align-items:center;gap:.5rem;font-family:'Inter',sans-serif;font-size:.98rem;font-weight:800;color:var(--ink);margin-bottom:.7rem;}
+.ll-sec-title .ll-ico{color:var(--t);width:1.15em;height:1.15em;}
+.ll-secondary-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.ll-secondary-actions .btn{display:inline-flex;align-items:center;gap:.4rem;}
+.ll-lang-chip{display:inline-flex;align-items:center;gap:.35rem;font-size:.66rem;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:6px;}
+.ll-lang-chip.lang-fr{background:var(--bp);color:var(--b);}
+.ll-lang-chip.lang-en{background:var(--gp);color:var(--g);}
+.ll-lang-chip.lang-es{background:var(--ap);color:var(--a);}
+.ll-lang-chip.lang-ar{background:var(--pp);color:var(--p);}
+.ll-filters{background:var(--w);border:1px solid var(--br);border-radius:12px;padding:.7rem .8rem;}
+.ll-filter-wrap{position:relative;display:inline-flex;align-items:center;}
+.ll-filter-wrap .ll-ico{position:absolute;left:10px;color:var(--ink3);pointer-events:none;}
+.ll-filter-wrap select{padding-inline-start:2rem;border-radius:20px;font-weight:600;cursor:pointer;}
+[lang="ar"] .ll-filter-wrap .ll-ico{left:auto;right:10px;}
+[lang="ar"] .ll-filter-wrap select{padding-inline-start:12px;padding-inline-end:2rem;}
+.ll-act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;}
+.ll-act-card2{cursor:pointer;transition:transform .18s, box-shadow .18s;display:flex;flex-direction:column;}
+.ll-act-card2:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.09);}
+.ll-act-card2 .cb{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.55rem;flex:1;}
+.ll-act-card2-top{display:flex;justify-content:space-between;align-items:center;}
+.ll-act-card2-title{font-weight:700;font-size:.95rem;line-height:1.3;}
+.ll-act-card2-meta{font-size:.72rem;color:var(--ink3);display:flex;flex-wrap:wrap;gap:.3rem .5rem;align-items:center;}
+.ll-act-card2-meta .sep{opacity:.5;}
+.ll-act-card2-foot{margin-top:auto;padding-top:.55rem;border-top:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+.ll-act-card2-stat{font-size:.72rem;color:var(--ink2);display:flex;align-items:center;gap:.3rem;}
+.ll-tograde-row2{display:flex;align-items:center;gap:.85rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--br);flex-wrap:wrap;}
+.ll-tograde-row2:last-child{border-bottom:none;}
+.ll-tograde-row2:hover{background:var(--bg);}
+.ll-tograde-info{flex:1;min-width:180px;}
+.ll-tograde-name{font-weight:700;font-size:.84rem;}
+.ll-tograde-meta{font-size:.7rem;color:var(--ink3);margin-top:.15rem;display:flex;flex-wrap:wrap;gap:.3rem .45rem;align-items:center;}
+.ll-tograde-actions{display:flex;gap:.5rem;flex-shrink:0;}
+.ll-inline-player{width:100%;margin-top:.5rem;flex-basis:100%;}
+@media (max-width:520px){
+  .ll-hero2{padding:.9rem 1.05rem;}
+  .ll-hero2 h1{font-size:.95rem;}
+  .ll-act-grid{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
@@ -202,42 +249,47 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <!-- ESPACE PROFESSEUR -->
   <div id="llProfApp" style="display:none;">
     <div id="llProfDashboard">
-      <div class="ll-hero">
-        <h1 id="llProfTitle">🎙️ Labo Langues</h1>
-        <div class="sub" id="llProfHeroSub">Faites pratiquer l'oral à vos élèves.</div>
+      <div class="ll-hero2">
+        <div class="ll-hero2-ic" id="llHeroIcWrap"></div>
+        <div>
+          <h1 id="llProfTitle">Labo Langues</h1>
+          <div class="sub" id="llProfHeroSub">Faites pratiquer l'oral à vos élèves.</div>
+        </div>
       </div>
       <div class="ll-stats">
-        <div class="ll-stat warn"><div class="ic">🎧</div><div class="v" id="llStatToGrade">0</div><div class="l" id="llStatToGradeL">Productions à corriger</div></div>
-        <div class="ll-stat"><div class="ic">📝</div><div class="v" id="llStatActs">0</div><div class="l" id="llStatActsL">Activités actives</div></div>
-        <div class="ll-stat"><div class="ic">👨‍🎓</div><div class="v" id="llStatEleves">0</div><div class="l" id="llStatElevesL">Élèves actifs</div></div>
-        <div class="ll-stat"><div class="ic">⭐</div><div class="v" id="llStatMoyenne">—</div><div class="l" id="llStatMoyenneL">Moyenne orale</div></div>
+        <div class="ll-stat warn"><div class="ic" id="llStatToGradeIc"></div><div class="v" id="llStatToGrade">0</div><div class="l" id="llStatToGradeL">Productions à corriger</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatActsIc"></div><div class="v" id="llStatActs">0</div><div class="l" id="llStatActsL">Activités</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatElevesIc"></div><div class="v" id="llStatEleves">0</div><div class="l" id="llStatElevesL">Élèves participants</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatMoyenneIc"></div><div class="v" id="llStatMoyenne">—</div><div class="l" id="llStatMoyenneL">Moyenne orale</div></div>
       </div>
       <div id="llStorageWarning" style="display:none;background:var(--rp);border:1px solid rgba(200,16,46,.3);border-radius:9px;padding:.8rem 1rem;margin-bottom:1.2rem;font-size:.8rem;color:var(--ink);"></div>
       <div class="card" id="llToGradeCard" style="margin-bottom:1.3rem;display:none;">
-        <div class="ch"><div class="ct" id="llToGradeCt">🎧 À corriger</div></div>
+        <div class="ch"><div class="ct" id="llToGradeCt" style="display:flex;align-items:center;gap:.4rem;"></div></div>
         <div id="llToGradeList"></div>
       </div>
     </div>
 
+    <div class="ll-secondary-actions">
+      <button class="btn bo" onclick="llOpenProgression()" id="llProgressionBtn"></button>
+      <button class="btn bo" onclick="llOpenLibrary()" id="llLibraryBtn"></button>
+    </div>
     <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1rem;">
-      <div><h1 style="font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:800;" id="llActsSectionTitle">📚 Mes activités orales</h1></div>
+      <div class="ll-sec-title" id="llActsSectionTitle" style="margin-bottom:0;"></div>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
-        <button class="btn bo" onclick="llOpenProgression()" id="llProgressionBtn">📈 Progression</button>
-        <button class="btn bo" onclick="llOpenLibrary()" id="llLibraryBtn">📋 Bibliothèque de modèles</button>
         <button class="btn bt" onclick="llOpenActModal()" id="llNewActBtn">+ Créer une activité orale</button>
       </div>
     </div>
     <div class="ll-filters" id="llFilters">
-      <select class="fs" id="llFilterLangue" onchange="llRenderProfApp()"><option value="">🌍 Toutes langues</option></select>
-      <select class="fs" id="llFilterClasse" onchange="llRenderProfApp()"><option value="">👥 Toutes classes</option></select>
-      <select class="fs" id="llFilterStatut" onchange="llRenderProfApp()">
-        <option value="">🟢 Tous statuts</option>
+      <div class="ll-filter-wrap"><span id="llFilterLangueIc"></span><select class="fs" id="llFilterLangue" onchange="llRenderProfApp()"><option value="">Toutes langues</option></select></div>
+      <div class="ll-filter-wrap"><span id="llFilterClasseIc"></span><select class="fs" id="llFilterClasse" onchange="llRenderProfApp()"><option value="">Toutes classes</option></select></div>
+      <div class="ll-filter-wrap"><span id="llFilterStatutIc"></span><select class="fs" id="llFilterStatut" onchange="llRenderProfApp()">
+        <option value="">Tous statuts</option>
         <option value="none" id="llFilterStatutNone">Aucune réponse</option>
         <option value="progress" id="llFilterStatutProgress">En cours</option>
         <option value="done" id="llFilterStatutDone">Terminée</option>
-      </select>
+      </select></div>
     </div>
-    <div class="g4" id="llActList" style="margin-bottom:1.2rem;"></div>
+    <div class="ll-act-grid" id="llActList" style="margin-bottom:1.2rem;"></div>
     <div class="card" id="llEmptyCard" style="display:none;">
       <div class="cb" style="text-align:center;padding:2.4rem 1rem;color:var(--ink3);">
         <div class="ll-empty-illus">🎙️🗣️🎧</div>
@@ -247,14 +299,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 
     <div id="llProdView" style="display:none;">
       <div class="ch" style="background:none;border:none;padding:0 0 1rem;">
-        <div style="display:flex;align-items:center;gap:.7rem;"><button class="btn bo bsm" onclick="llCloseProd()">← Retour</button><div class="ct" id="llProdTitle" style="font-size:1rem;"></div></div>
+        <div style="display:flex;align-items:center;gap:.7rem;"><button class="btn bo bsm" onclick="llCloseProd()" id="llProdBackBtn"></button><div class="ct" id="llProdTitle" style="font-size:1rem;"></div></div>
         <div style="display:flex;gap:.6rem;">
-          <button class="btn bo bsm" onclick="llEditCurrentAct()" id="llEditActBtn">✏️ Modifier</button>
-          <button class="btn bo bsm" onclick="llDeleteAct()" id="llDeleteActBtn">🗑 Supprimer l'activité</button>
+          <button class="btn bo bsm" onclick="llEditCurrentAct()" id="llEditActBtn"></button>
+          <button class="btn bo bsm" onclick="llDeleteAct()" id="llDeleteActBtn"></button>
         </div>
       </div>
       <div class="card" style="margin-bottom:1rem;"><div class="cb" id="llProdConsigne"></div></div>
-      <div class="card"><div class="ch"><div class="ct" id="llProdCt">🎧 Productions des élèves</div></div><div class="cb" style="padding:0;" id="llProdList"></div></div>
+      <div class="card"><div class="ch"><div class="ct" id="llProdCt" style="display:flex;align-items:center;gap:.4rem;"></div></div><div class="cb" style="padding:0;" id="llProdList"></div></div>
     </div>
   </div>
 
@@ -495,14 +547,14 @@ var LL_LANG_KEYS = {
   llActivateTitle:['Envie d\'activer le Labo Langues pour tes classes ?','هل ترغب في تفعيل مخبر اللغات لأقسامك؟'],
   llActivateSub:["Module complémentaire facturé en plus de ton abonnement Tadriss.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في Tadriss.'],
   llActivateBtn:["Demander l'activation",'طلب التفعيل'],
-  llProfTitle:['🎙️ Labo Langues','🎙️ مخبر اللغات'],
+  llProfTitle:['Labo Langues','مخبر اللغات'],
   llProfHeroSub:['Faites pratiquer l\'oral à vos élèves.','درّب تلاميذك على التعبير الشفهي.'],
   llStatToGradeL:['Productions à corriger','إنتاجات للتصحيح'],
-  llStatActsL:['Activités actives','أنشطة نشطة'],
-  llStatElevesL:['Élèves actifs','تلاميذ نشيطون'],
+  llStatActsL:['Activités','أنشطة'],
+  llStatElevesL:['Élèves participants','تلاميذ مشاركون'],
   llStatMoyenneL:['Moyenne orale','المعدل الشفهي'],
-  llToGradeCt:['🎧 À corriger','🎧 للتصحيح'],
-  llActsSectionTitle:['📚 Mes activités orales','📚 أنشطتي الشفهية'],
+  llToGradeCtTxt:['À corriger','للتصحيح'],
+  llActsSectionTitleTxt:['Mes activités orales','أنشطتي الشفهية'],
   llFlType:["Type d'activité",'نوع النشاط'],
   llFilterStatutNone:['Aucune réponse','لا استجابة'],
   llFilterStatutProgress:['En cours','قيد الإنجاز'],
@@ -510,8 +562,9 @@ var LL_LANG_KEYS = {
   llEleveHeroSub:["Écoute, enregistre-toi, progresse.",'استمع، سجّل صوتك، وتقدّم.'],
   llTodoCt:['🔥 À faire','🔥 للإنجاز'],
   llResultsCt:['⭐ Mes résultats','⭐ نتائجي'],
-  llProgressionBtn:['📈 Progression','📈 التقدّم'],
-  llLibraryBtn:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
+  llProgressionBtnTxt:['Progression','التقدّم'],
+  llLibraryBtnTxt:['Bibliothèque de modèles','مكتبة النماذج'],
+  llProdBackBtnTxt:['Retour','رجوع'],
   llLibTitle:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
   llLibBuiltinTitle:['Modèles Tadriss','نماذج Tadriss'],
   llLibCustomTitle:['Mes modèles','نماذجي'],
@@ -530,9 +583,9 @@ var LL_LANG_KEYS = {
   llProgCloseBtn:['Fermer','إغلاق'],
   llNewActBtn:['+ Créer une activité orale','+ إنشاء نشاط شفهي'],
   llEmptyTxt:['Aucune activité orale pour le moment.','لا يوجد أي نشاط شفهي حالياً.'],
-  llProdCt:['🎧 Productions des élèves','🎧 إنتاجات التلاميذ'],
-  llEditActBtn:['✏️ Modifier','✏️ تعديل'],
-  llDeleteActBtn:["🗑 Supprimer l'activité",'🗑 حذف النشاط'],
+  llProdCtTxt:['Productions des élèves','إنتاجات التلاميذ'],
+  llEditActBtnTxt:['Modifier','تعديل'],
+  llDeleteActBtnTxt:["Supprimer l'activité",'حذف النشاط'],
   llEleveLoginTxt:["Entre ton code d'accès Tadriss",'أدخل رمز الوصول الخاص بك'],
   llEleveLoginBtn:['Valider','تأكيد'],
   llEleveAppTitle:['🎙️ Mes activités orales','🎙️ أنشطتي الشفهية'],
@@ -610,6 +663,63 @@ window.llShowDiag = function() {
   document.getElementById('llDiagContent').textContent = lines.join('\n');
   document.getElementById('llDiagPanel').style.display = 'block';
 };
+
+/* ===== Icônes SVG (remplacent progressivement les emojis — rendu identique sur toutes
+   les machines, contrairement aux drapeaux emoji qui s'affichaient en texte "GB" etc.) ===== */
+var LL_ICO = {
+  mic: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+  headset: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 15v3a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h3z"/><path d="M3 15v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3z"/></svg>',
+  clipboard: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>',
+  users: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  star: '<svg class="ll-ico" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  calendar: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  play: '<svg class="ll-ico" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  edit: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  chart: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  folder: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  filter: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
+  send: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  check: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  clock: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  trash: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  arrowLeft: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+  globe: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+};
+/* Puce de langue (code en toutes lettres FR/EN/ES/AR — plus fiable que le drapeau emoji,
+   qui peut s'afficher en texte brut "GB" sur certaines configurations Windows/Edge). */
+function llLangChip(lg) {
+  return '<span class="ll-lang-chip lang-'+lg.id+'">'+LL_ICO.globe+' '+lg.id.toUpperCase()+'</span>';
+}
+/* Date au format JJ/MM/AAAA uniforme partout (au lieu d'appels ad-hoc à toLocaleDateString). */
+function llFormatDate(isoOrDate) {
+  var d = (isoOrDate instanceof Date) ? isoOrDate : new Date(isoOrDate);
+  if (isNaN(d.getTime())) return '—';
+  var jj = String(d.getDate()).padStart(2,'0'), mm = String(d.getMonth()+1).padStart(2,'0');
+  return jj+'/'+mm+'/'+d.getFullYear();
+}
+/* Injecte les icônes SVG dans les emplacements dédiés du tableau de bord prof, avec un
+   span-enfant pour le texte bilingue (jamais écrasé par llApplyLang, qui ne touche que
+   ce span, contrairement à un textContent direct sur le conteneur qui effacerait l'icône). */
+function llInitIcons() {
+  var set = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  set('llHeroIcWrap', LL_ICO.mic);
+  set('llStatToGradeIc', LL_ICO.headset);
+  set('llStatActsIc', LL_ICO.clipboard);
+  set('llStatElevesIc', LL_ICO.users);
+  set('llStatMoyenneIc', LL_ICO.star);
+  set('llToGradeCt', LL_ICO.headset + ' <span id="llToGradeCtTxt"></span>');
+  set('llActsSectionTitle', LL_ICO.clipboard + ' <span id="llActsSectionTitleTxt"></span>');
+  set('llProgressionBtn', LL_ICO.chart + ' <span id="llProgressionBtnTxt"></span>');
+  set('llLibraryBtn', LL_ICO.folder + ' <span id="llLibraryBtnTxt"></span>');
+  set('llProdBackBtn', LL_ICO.arrowLeft + ' <span id="llProdBackBtnTxt"></span>');
+  set('llEditActBtn', LL_ICO.edit + ' <span id="llEditActBtnTxt"></span>');
+  set('llDeleteActBtn', LL_ICO.trash + ' <span id="llDeleteActBtnTxt"></span>');
+  set('llProdCt', LL_ICO.headset + ' <span id="llProdCtTxt"></span>');
+  set('llFilterLangueIc', LL_ICO.globe);
+  set('llFilterClasseIc', LL_ICO.users);
+  set('llFilterStatutIc', LL_ICO.filter);
+}
+llInitIcons();
 llApplyLang();
 
 /* ===== Constantes langues ===== */
@@ -998,18 +1108,35 @@ function llRefreshStats(uid) {
       var nom = el ? (el.pr + ' ' + el.no) : ('#' + s.eleveId);
       var initiales = el ? (el.pr[0] + (el.no ? el.no[0] : '')) : '?';
       var duree = s.dureeSec != null ? llFormatDuree(s.dureeSec) : (a.dureeMaxSec ? ('≤ ' + llFormatDuree(a.dureeMaxSec)) : '—');
-      return '<div class="ll-tograde-row">' +
+      return '<div class="ll-tograde-row2">' +
         '<div class="ll-avatar" style="background:'+llAvatarColor(nom)+'">'+initiales+'</div>' +
-        '<div style="flex:1;min-width:0;">' +
-        '<div style="font-weight:700;font-size:.84rem;">'+nom+'</div>' +
-        '<div style="font-size:.7rem;color:var(--ink3);">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' · '+a.theme+' · ⏱ '+duree+' · '+new Date(s.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+'</div>' +
+        '<div class="ll-tograde-info">' +
+        '<div class="ll-tograde-name">'+nom+'</div>' +
+        '<div class="ll-tograde-meta">'+llLangChip(lg)+'<span class="sep">·</span>'+a.theme+'<span class="sep">·</span>'+LL_ICO.clock+' '+duree+'<span class="sep">·</span>'+LL_ICO.calendar+' '+llFormatDate(s.envoyeLe)+'</div>' +
         '</div>' +
-        '<button class="btn bt bsm" onclick="llOpenProd('+a.id+')">'+(isAR?'تصحيح':'Corriger')+'</button>' +
+        '<div class="ll-tograde-actions">' +
+        '<button class="btn bo bsm" onclick="llToGradeListen(this,\''+uid+'\',\''+(s.audioKey||'')+'\')">'+LL_ICO.play+' '+(isAR?'استماع':'Écouter')+'</button>' +
+        '<button class="btn bt bsm" onclick="llOpenProd('+a.id+')">'+LL_ICO.edit+' '+(isAR?'تصحيح':'Corriger')+'</button>' +
+        '</div>' +
         '</div>';
     }).join('');
     document.getElementById('llToGradeList').innerHTML = rows;
   }
 }
+/* Lecteur audio inline dans la liste "À corriger" : évite d'ouvrir la vue de correction
+   complète juste pour écouter une production avant de décider de la corriger. */
+window.llToGradeListen = function(btn, uid, audioKey) {
+  var isAR = LL_CUR === 'ar';
+  var row = btn.closest('.ll-tograde-row2');
+  var existing = row.querySelector('.ll-inline-player');
+  if (existing) { existing.remove(); btn.innerHTML = LL_ICO.play + ' ' + (isAR ? 'استماع' : 'Écouter'); return; }
+  var src = audioKey ? llAudioGet(uid, audioKey) : null;
+  var wrap = document.createElement('div');
+  wrap.className = 'll-inline-player';
+  wrap.innerHTML = src ? ('<audio controls autoplay style="width:100%;" src="' + src + '"></audio>') : ('<div style="font-size:.72rem;color:var(--ink3);">' + (isAR ? 'لا يوجد تسجيل' : 'Aucun enregistrement') + '</div>');
+  row.appendChild(wrap);
+  btn.innerHTML = LL_ICO.check + ' ' + (isAR ? 'إخفاء' : 'Masquer');
+};
 /* Somme la taille de toutes les clés localStorage de cette origine (Tadriss + Labo Langues
    partagent le même domaine) : les enregistrements audio en base64 peuvent faire grossir
    le stockage jusqu'à risquer une éviction par le navigateur (voir plus haut). */
@@ -1046,7 +1173,7 @@ function llRenderProfApp() {
   /* --- Filtres (options) --- */
   var fLangueSel = document.getElementById('llFilterLangue');
   var curLangueVal = fLangueSel.value;
-  fLangueSel.innerHTML = '<option value="">'+(isAR?'🌍 كل اللغات':'🌍 Toutes langues')+'</option>' + LL_LANGUES.map(function(l){ return '<option value="'+l.id+'">'+l.flag+' '+(isAR?l.ar:l.fr)+'</option>'; }).join('');
+  fLangueSel.innerHTML = '<option value="">'+(isAR?'كل اللغات':'Toutes langues')+'</option>' + LL_LANGUES.map(function(l){ return '<option value="'+l.id+'">'+(isAR?l.ar:l.fr)+'</option>'; }).join('');
   fLangueSel.value = curLangueVal;
   var fClasseSel = document.getElementById('llFilterClasse');
   var curClasseVal = fClasseSel.value;
@@ -1080,18 +1207,22 @@ function llRenderProfApp() {
     var ty = llTypeById(a.typeActivite);
     var st = llActStatus(uid, a, data);
     var statutLbl = st.status === 'done' ? (isAR?'مكتمل':'Terminée') : st.status === 'progress' ? (isAR?'قيد الإنجاز':'En cours') : (isAR?'لا رد':'Aucune réponse');
-    var dateLimiteTxt = a.dateLimite ? ('📅 ' + new Date(a.dateLimite).toLocaleDateString(isAR?'ar-DZ':'fr-FR')) : '';
-    return '<div class="card ll-act-card" onclick="llOpenProd('+a.id+')"><div class="cb">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem;">' +
-      '<div style="font-size:1.4rem;">'+lg.flag+'</div>' +
-      '<span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+    var dateLimiteTxt = a.dateLimite ? (LL_ICO.calendar + ' ' + llFormatDate(a.dateLimite)) : '';
+    return '<div class="card ll-act-card2" onclick="llOpenProd('+a.id+')"><div class="cb">' +
+      '<div class="ll-act-card2-top">' + llLangChip(lg) +
+      '<span style="font-size:.72rem;color:var(--ink3);display:flex;align-items:center;"><span class="ll-status-dot '+st.status+'"></span>'+statutLbl+'</span>' +
       '</div>' +
-      '<div style="font-weight:700;font-size:.9rem;margin-bottom:.2rem;">'+a.theme+'</div>' +
-      '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">'+(isAR?lg.ar:lg.fr)+' · 👥 '+(cls?cls.nm:'')+(dateLimiteTxt?(' · '+dateLimiteTxt):'')+'</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--ink3);">' +
-      '<span>📤 '+st.subs.length+'/'+st.elig.length+' · ✔ '+st.notees+'</span>' +
-      '<span><span class="ll-status-dot '+st.status+'"></span>'+statutLbl+'</span>' +
-      '</div></div></div>';
+      '<div class="ll-act-card2-title">'+a.theme+'</div>' +
+      '<div class="ll-act-card2-meta">' +
+      '<span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+      '<span class="sep">·</span>'+LL_ICO.users+' '+(cls?cls.nm:'') +
+      (dateLimiteTxt ? ('<span class="sep">·</span>'+dateLimiteTxt) : '') +
+      '</div>' +
+      '<div class="ll-act-card2-foot">' +
+      '<span class="ll-act-card2-stat">'+LL_ICO.send+' '+st.subs.length+'/'+st.elig.length+(isAR?(' · مصحح '+st.notees):(' · corrigé '+st.notees))+'</span>' +
+      '<button class="btn bo bsm" onclick="event.stopPropagation();llOpenProd('+a.id+')">'+(isAR?'عرض النشاط':"Voir l'activité")+'</button>' +
+      '</div>' +
+      '</div></div>';
   }).join('');
 }
 window.llRenderProfApp = llRenderProfApp; /* appelée depuis les attributs onchange des filtres (portée globale) */
@@ -1202,7 +1333,7 @@ window.llOpenProd = function(actId) {
   document.getElementById('llActList').style.display = 'none';
   document.getElementById('llEmptyCard').style.display = 'none';
   document.getElementById('llProdView').style.display = 'block';
-  document.getElementById('llProdTitle').textContent = lg.flag + ' ' + act.theme;
+  document.getElementById('llProdTitle').innerHTML = llLangChip(lg) + ' ' + act.theme;
   var html = '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.4rem;">'+(isAR?lg.ar:lg.fr)+' · '+(cls?cls.nm:'')+'</div><div style="font-size:.85rem;">'+act.consigne+'</div>';
   if (act.audioModeleKey) {
     var src = llAudioGet(uid, act.audioModeleKey);
