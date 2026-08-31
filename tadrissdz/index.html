@@ -280,7 +280,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .cb-text.hi{color:rgba(255,255,255,.95);font-weight:600;}
 
 /* PLANS */
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
+.plans-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:2.5rem;max-width:760px;margin-left:auto;margin-right:auto;}
+@media (max-width:700px){.plans-grid{grid-template-columns:1fr;}}
 .plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
 .plan::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--t),var(--t2));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
 .plan:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,107,63,.16);border-color:var(--t);}
@@ -768,28 +769,6 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </ul>
         <button class="plan-cta-btn primary" id="planCta2" onclick="toggleView()">Commencer Pro</button>
       </div>
-      <div class="plan">
-        <div class="plan-header">
-          <div class="plan-eyebrow" id="planEye3">Établissement</div>
-          <div class="plan-name">Institution</div>
-          <div class="plan-desc" id="planDesc3">Pour lycées, CEM et écoles : tous les profs, tout inclus.</div>
-        </div>
-        <div class="plan-price">
-          <div class="price-num"><span class="price-cur">DA</span>12 000</div>
-          <div class="price-per" id="planPer3">par mois · jusqu'à 30 professeurs</div>
-        </div>
-        <ul class="plan-feats" id="planFeats3">
-          <li>Toutes les matières · tous niveaux</li>
-          <li>IA généreuse — 40 générations/mois par prof</li>
-          <li>Élèves illimités · cloud sécurisé</li>
-          <li>Progression annuelle générée par IA</li>
-          <li>Gestion emplois du temps</li>
-          <li>Fiches pédagogiques conformes MEN</li>
-          <li>Support dédié + formation sur site</li>
-          <li>Facturation par bon de commande</li>
-        </ul>
-        <button class="plan-cta-btn outline" id="planCta3">Contacter l'équipe</button>
-      </div>
     </div>
     <div style="margin-top:2rem;">
       <div style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;" id="payKicker">Méthodes de paiement acceptées</div>
@@ -799,7 +778,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="pay-badge"><span>📱</span> BaridiMob / CCP</div>
         <div class="pay-badge"><span>🏦</span> Virement bancaire RIB</div>
       </div>
-      <p style="font-size:.75rem;color:var(--ink3);margin-top:.8rem;" id="paySub">Aucune carte internationale requise. Établissements : paiement par bon de commande ou mandat administratif.</p>
+      <p style="font-size:.75rem;color:var(--ink3);margin-top:.8rem;" id="paySub">Aucune carte internationale requise.</p>
     </div>
   </div>
 
@@ -3442,17 +3421,13 @@ function switchLang() {
   var prixSub = document.getElementById('prixSub'); if (prixSub) prixSub.textContent = isAR ? 'بدون التزام. يمكنك الإلغاء في أي وقت. تجربة مجانية لمدة 14 يومًا.' : 'Sans engagement. Résiliez à tout moment. Essai gratuit 14 jours.';
   var planEye1 = document.getElementById('planEye1'); if (planEye1) planEye1.textContent = isAR ? 'فردي' : 'Individuel';
   var planEye2 = document.getElementById('planEye2'); if (planEye2) planEye2.textContent = isAR ? 'فردي' : 'Individuel';
-  var planEye3 = document.getElementById('planEye3'); if (planEye3) planEye3.textContent = isAR ? 'مؤسسة' : 'Établissement';
   var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'ابدأ بالأدوات الأساسية لمادة واحدة.' : 'Débutez avec les outils essentiels pour 1 matière.';
   var planDesc2 = document.getElementById('planDesc2'); if (planDesc2) planDesc2.textContent = isAR ? 'كل ما يحتاجه المعلم المتميز.' : "L'essentiel complet pour un enseignant exigeant.";
-  var planDesc3 = document.getElementById('planDesc3'); if (planDesc3) planDesc3.textContent = isAR ? 'للثانويات والمتوسطات والمدارس: كل الأساتذة، كل شيء مشمول.' : 'Pour lycées, CEM et écoles : tous les profs, tout inclus.';
   var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
   var planPer2 = document.getElementById('planPer2'); if (planPer2) planPer2.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
-  var planPer3 = document.getElementById('planPer3'); if (planPer3) planPer3.textContent = isAR ? 'شهريًا · حتى 30 أستاذًا' : "par mois · jusqu'à 30 professeurs";
   var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ الأكثر طلبًا' : '⭐ Populaire';
   var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'ابدأ Starter' : 'Commencer Starter';
   var planCta2 = document.getElementById('planCta2'); if (planCta2) planCta2.textContent = isAR ? 'ابدأ Pro' : 'Commencer Pro';
-  var planCta3 = document.getElementById('planCta3'); if (planCta3) planCta3.textContent = isAR ? 'تواصل مع الفريق' : "Contacter l'équipe";
   var planFeatsPairs = {
     planFeats1: [
       ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
@@ -3472,16 +3447,6 @@ function switchLang() {
       ['Cours complets générés par IA','دروس كاملة منشأة بالذكاء الاصطناعي'],
       ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي'],
       ['Sujets type BEM / BAC','مواضيع على نمط BEM / BAC']
-    ],
-    planFeats3: [
-      ['Toutes les matières · tous niveaux','جميع المواد · جميع المستويات'],
-      ['IA généreuse — 40 générations/mois par prof','ذكاء اصطناعي سخي — 40 عملية إنشاء/شهريًا لكل أستاذ'],
-      ['Élèves illimités · cloud sécurisé','تلاميذ غير محدودين · تخزين سحابي آمن'],
-      ['Progression annuelle générée par IA','تدرج سنوي منشأ بالذكاء الاصطناعي'],
-      ['Gestion emplois du temps','إدارة جدول التوقيت'],
-      ['Fiches pédagogiques conformes MEN','أوراق تحضير مطابقة لبرنامج وزارة التربية'],
-      ['Support dédié + formation sur site','دعم مخصص + تكوين ميداني'],
-      ['Facturation par bon de commande','فوترة عبر أمر الشراء']
     ]
   };
   Object.keys(planFeatsPairs).forEach(function(listId) {
@@ -3490,7 +3455,7 @@ function switchLang() {
     items.forEach(function(li, i) { var pair = planFeatsPairs[listId][i]; if (pair) li.textContent = isAR ? pair[1] : pair[0]; });
   });
   var payKicker = document.getElementById('payKicker'); if (payKicker) payKicker.textContent = isAR ? 'طرق الدفع المقبولة' : 'Méthodes de paiement acceptées';
-  var paySub = document.getElementById('paySub'); if (paySub) paySub.textContent = isAR ? 'لا حاجة لبطاقة دولية. المؤسسات: الدفع عبر أمر الشراء أو الحوالة الإدارية.' : 'Aucune carte internationale requise. Établissements : paiement par bon de commande ou mandat administratif.';
+  var paySub = document.getElementById('paySub'); if (paySub) paySub.textContent = isAR ? 'لا حاجة لبطاقة دولية.' : 'Aucune carte internationale requise.';
   var payBadgePairs = [['Carte CIB (SATIM)','بطاقة CIB (SATIM)'],['Dahabia (Algérie Poste)','ذهبية (بريد الجزائر)'],['BaridiMob / CCP','BaridiMob / CCP'],['Virement bancaire RIB','تحويل بنكي RIB']];
   var payRow = document.getElementById('payRow');
   if (payRow) {
@@ -7887,7 +7852,7 @@ window.pullFromCloud = pullFromCloud;
    document Firestore (jamais celui d'un autre) — protection simple, suffisante pour
    un usage interne. La vraie protection ultime reste le plafond de dépense fixé
    sur le compte Anthropic. */
-var QUOTAS_PAR_PLAN = { starter: 40, pro: 100, institution: 40 };
+var QUOTAS_PAR_PLAN = { starter: 40, pro: 100 };
 
 function moisActuelCle() {
   var d = new Date();
@@ -7945,7 +7910,7 @@ function authApplyProfile(p, uid) {
   window._matiereRequests = [];
   window._historiquePaiements = p.historiquePaiements || [];
   window._prochainPaiement = p.prochainPaiement || null;
-  window._planProf = p.plan || 'pro'; /* Starter/Pro/Institution — défaut "pro" pour les comptes déjà validés avant l'ajout des quotas */
+  window._planProf = p.plan || 'pro'; /* Starter/Pro — défaut "pro" pour les comptes déjà validés avant l'ajout des quotas */
   if (typeof window.sv === 'function') window.sv();
   var sbNm = document.getElementById('sbNm'); if (sbNm) sbNm.textContent = 'Prof. ' + window.D.s.pre + ' ' + window.D.s.nom;
   var sbMat = document.getElementById('sbMat'); if (sbMat) sbMat.textContent = window.D.s.mat;
@@ -8050,7 +8015,7 @@ window.rAboMatieres = function() {
   /* Quota IA réel du mois en cours */
   if (authCurrentUid && typeof getDoc === 'function') {
     var planKey = (window._planProf || 'pro').toLowerCase();
-    var quotaTotal = { starter: 40, pro: 100, institution: 40 }[planKey] || 100;
+    var quotaTotal = { starter: 40, pro: 100 }[planKey] || 100;
     var moisCle = (typeof moisActuelCle === 'function') ? moisActuelCle() : null;
     if (moisCle) {
       getDoc(doc(dbFs, 'profs', authCurrentUid, 'usage', moisCle)).then(function(snap) {
