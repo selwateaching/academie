@@ -4919,7 +4919,10 @@ function rLaboLanguesPromo() {
 function openLaboLangues() {
   var url = 'labolangues.html';
   if (window.authCurrentUid) url += '?uid=' + encodeURIComponent(window.authCurrentUid);
-  window.open(url, '_blank');
+  /* Navigation dans le même onglet (pas de nouvel onglet) : deux onglets ouverts en même
+     temps peuvent se disputer l'accès à la session Firebase partagée (IndexedDB), ce qui
+     provoquait de fausses déconnexions. Un lien "← Retour à Tadriss" permet de revenir. */
+  window.location.href = url;
 }
 
 /* ===== ÉLÈVES ===== */
