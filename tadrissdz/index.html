@@ -493,15 +493,16 @@ tr:hover td{background:var(--tp);}
 .pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);}
 .pp-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;}
 /* Fiche pédagogique Primaire — style test : cursif, pastel, icônes, peu chargé */
-.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFCF6;}
+.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}
+.pp-primaire .pp-step{background:#FFFFFF;border:1px solid var(--br);border-left-width:4px;}
 .pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}
 .pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}
 .pp-primaire-icon svg{width:100%;height:100%;display:block;}
 .pp-primaire-title{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;color:#5B4B8A;line-height:1.1;}
 .pp-primaire-sub{font-size:.82rem;color:#9086A8;margin-top:.1rem;}
 .pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}
-.pp-primaire .pp-section{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:700;background:#DCF2E6;color:#2E7D5B;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}
-.pp-primaire .pp-section.pp-sub{background:#E4E9FB;color:#3E4FA0;}
+.pp-primaire .pp-section{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:700;background:#D9E8FA;color:#2C5AA0;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}
+.pp-primaire .pp-section.pp-sub{background:#FDEBD3;color:#B36B00;}
 .pp-step-body{flex:1;font-size:.82rem;line-height:1.6;}
 .pp-step-title{font-weight:800;margin-bottom:.25rem;}
 .pp-tbl{width:100%;border-collapse:collapse;margin-top:.3rem;}
@@ -4491,7 +4492,8 @@ function printCleanPage(title, contentHTML) {
     '.pp-tbl th{background:var(--tp);color:var(--t);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--t);}' +
     '.pp-tbl td{padding:6px 8px;font-size:11px;line-height:1.5;border:1px solid var(--br);vertical-align:top;}' +
     '.pp-tbl tr:nth-child(even) td{background:var(--bg);}' +
-    '.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFCF6;}' +
+    '.pp-primaire{border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}' +
+    '.pp-primaire .pp-step{background:#FFFFFF;border:1px solid var(--br);border-left-width:4px;}' +
     '.pp-primaire-banner{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem;}' +
     '.pp-primaire-icon{width:50px;height:50px;flex-shrink:0;}' +
     '.pp-primaire-icon svg{width:100%;height:100%;display:block;}' +
@@ -6653,7 +6655,7 @@ function tpToggleView() {
 function ficheIconPrimaire(matiere) {
   var m = (matiere || '').toLowerCase();
   if (m.indexOf('oral') >= 0) {
-    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCEEDC"/><path d="M24 20c-6 3-9 9-9 15c0 9 8 17 17 17s17-8 17-17c0-3-1-6-2-8" fill="none" stroke="#6FAF8E" stroke-width="3.2" stroke-linecap="round"/><path d="M28 26c3-2 6-2 8 1" fill="none" stroke="#6FAF8E" stroke-width="2.6" stroke-linecap="round"/></svg>';
+    return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCEBF7"/><path d="M24 20c-6 3-9 9-9 15c0 9 8 17 17 17s17-8 17-17c0-3-1-6-2-8" fill="none" stroke="#5E9FCB" stroke-width="3.2" stroke-linecap="round"/><path d="M28 26c3-2 6-2 8 1" fill="none" stroke="#5E9FCB" stroke-width="2.6" stroke-linecap="round"/></svg>';
   }
   if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) {
     return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#DCE6FA"/><rect x="16" y="34" width="14" height="14" rx="4" fill="#8FAEE0"/><rect x="34" y="34" width="14" height="14" rx="4" fill="#B7CBEF"/><rect x="25" y="18" width="14" height="14" rx="4" fill="#B7CBEF"/></svg>';
