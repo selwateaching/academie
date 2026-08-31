@@ -8171,15 +8171,32 @@ async function handleAuthUser(user) {
   if (!user) {
     if (_hadValidUser) {
       /* On a déjà eu une session valide dans cet onglet : un "non connecté" juste après
-         peut être une fausse alerte du SDK Firebase (accès concurrent à la session
-         partagée quand un second onglet — ex: Labo Langues — s'ouvre en même temps ;
-         cf. les avertissements "heartbeats undefined" dans la console), pas une vraie
-         déconnexion. On revérifie l'état réel après un court délai avant de conclure. */
-      alog('user=null mais session déjà valide avant → attente 1.5s puis re-vérification');
-      setTimeout(function() {
-        if (auth.currentUser) { alog('re-vérification : auth.currentUser existe → session confirmée OK'); handleAuthUser(auth.currentUser); }
-        else { alog('re-vérification : auth.currentUser toujours null → déconnexion confirmée'); _hadValidUser = false; handleAuthUser(null); }
-      }, 1500);
+         peut être une fausse alerte du SDK Firebase (le journal ?authdebug=1 a confirmé
+         que ça arrive précisément quand l'onglet passe en arrière-plan — les navigateurs
+         ralentissent fortement les scripts des onglets cachés, ce qui peut faire échouer
+         la résolution interne de session de Firebase). On ne juge donc jamais pendant que
+         l'onglet est caché : on attend qu'il redevienne visible (où les scripts tournent
+         normalement) avant de revérifier l'état réel. */
+      function recheck() {
+        setTimeout(function() {
+          if (auth.currentUser) { alog('re-vérification : auth.currentUser existe → session confirmée OK'); handleAuthUser(auth.currentUser); }
+          else { alog('re-vérification : auth.currentUser toujours null → déconnexion confirmée'); _hadValidUser = false; handleAuthUser(null); }
+        }, 500);
+      }
+      if (document.visibilityState === 'hidden') {
+        alog('user=null pendant que l\'onglet est en arrière-plan → attente du retour au premier plan avant de conclure');
+        var onVisible = function() {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            alog('onglet redevenu visible → re-vérification');
+            recheck();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      } else {
+        alog('user=null mais session déjà valide avant → re-vérification');
+        recheck();
+      }
       return;
     }
     alog('Pas de session (premier chargement ou déconnexion confirmée) → ' + (window._loginRequested ? 'affichage écran de connexion' : 'page d\'accueil'));
