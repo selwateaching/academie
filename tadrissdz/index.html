@@ -620,6 +620,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="site-section" style="background:var(--w);">
     <div class="section-kicker" id="probKicker">Le problème que nous résolvons</div>
     <h2 class="section-h2" id="probH2">Vous préparez vos cours le week-end.<br><span>Et si ce n'était plus nécessaire ?</span></h2>
+    <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;margin:.6rem 0 1.6rem;" id="probAccroche"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulbProb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulbProb)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> L'IA au service de l'enseignant — un assistant redoutable</div>
     <div class="prob-grid">
       <div class="prob-side">
         <div class="prob-item">
@@ -661,9 +662,17 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <span class="cb-label cb-before">AVANT</span>
           <span class="cb-text" id="probCb3">Informer un parent d'absence : appel téléphonique</span>
         </div>
-        <div class="cb-row" style="border:none;margin:0;padding:0;margin-top:1rem;">
+        <div class="cb-row">
           <span class="cb-label cb-after">APRÈS</span>
           <span class="cb-text hi" id="probCb3After">Notification automatique au parent ✓</span>
+        </div>
+        <div class="cb-row">
+          <span class="cb-label cb-before">AVANT</span>
+          <span class="cb-text" id="probCb4">Chercher des fiches et sujets sur Facebook, WhatsApp</span>
+        </div>
+        <div class="cb-row" style="border:none;margin:0;padding:0;margin-top:1rem;">
+          <span class="cb-label cb-after">APRÈS</span>
+          <span class="cb-text hi" id="probCb4After">Générer une fiche conforme au programme MEN en 30 sec ✓</span>
         </div>
       </div>
     </div>
@@ -2948,6 +2957,9 @@ var LANG_JS = {
     prob_cb2_after: 'Calcul automatique : instantané ✓',
     prob_cb3: 'Informer un parent d\'absence : appel téléphonique',
     prob_cb3_after: 'Notification automatique au parent ✓',
+    prob_cb4: 'Chercher des fiches et sujets sur Facebook, WhatsApp',
+    prob_cb4_after: 'Générer une fiche conforme au programme MEN en 30 sec ✓',
+    prob_accroche: 'L\'IA au service de l\'enseignant — un assistant redoutable',
     prob_avant: 'AVANT',
     prob_apres: 'APRÈS',
   },
@@ -3241,6 +3253,9 @@ var LANG_JS = {
     prob_cb2_after: 'حساب تلقائي: فوري ✓',
     prob_cb3: 'إخبار ولي الأمر بالغياب: مكالمة هاتفية',
     prob_cb3_after: 'إشعار تلقائي لولي الأمر ✓',
+    prob_cb4: 'البحث عن أوراق وفروض على فيسبوك وواتساب',
+    prob_cb4_after: 'إنشاء ورقة مطابقة لمنهاج وزارة التربية في 30 ثانية ✓',
+    prob_accroche: 'الذكاء الاصطناعي في خدمة الأستاذ — مساعد لا يُستهان به',
     prob_avant: 'قبل',
     prob_apres: 'بعد',
   }
@@ -3378,8 +3393,11 @@ function switchLang() {
   document.getElementById('probCb2After') && (document.getElementById('probCb2After').textContent = T('prob_cb2_after'));
   document.getElementById('probCb3') && (document.getElementById('probCb3').textContent = T('prob_cb3'));
   document.getElementById('probCb3After') && (document.getElementById('probCb3After').textContent = T('prob_cb3_after'));
+  document.getElementById('probCb4') && (document.getElementById('probCb4').textContent = T('prob_cb4'));
+  document.getElementById('probCb4After') && (document.getElementById('probCb4After').textContent = T('prob_cb4_after'));
   document.querySelectorAll('.cb-before').forEach(function(el) { el.textContent = T('prob_avant'); });
   document.querySelectorAll('.cb-after').forEach(function(el) { el.textContent = T('prob_apres'); });
+  var probAccroche = document.getElementById('probAccroche'); if (probAccroche) probAccroche.innerHTML = GEN_ICON + ' ' + T('prob_accroche');
 
   /* Labo Langues (carte promo du tableau de bord) */
   if (typeof rLaboLanguesPromo === 'function') rLaboLanguesPromo();
