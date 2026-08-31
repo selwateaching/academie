@@ -4802,7 +4802,12 @@ function gsOpen(cat, id) {
   else if (cat==='acquisComp') { go('acquis'); var c=D.acquisComp.find(function(x){return x.id===id;}); if (c) { setTimeout(function(){ var f=document.getElementById('acqFltDom'); if (f) { f.value=c.domaine; rAcquis(); } }, 80); } }
 }
 document.addEventListener('keydown', function(e) {
-  if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k') { e.preventDefault(); openSearchModal(); }
+  if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k') {
+    var ae = document.activeElement;
+    var enSaisie = ae && (ae.tagName==='INPUT' || ae.tagName==='TEXTAREA' || ae.tagName==='SELECT' || ae.isContentEditable);
+    if (enSaisie && ae.id !== 'srchI') return; /* ne pas interrompre la saisie d'un formulaire (ex: fiche pédagogique) */
+    e.preventDefault(); openSearchModal();
+  }
   else if (e.key==='Escape') { var m=document.getElementById('searchModal'); if (m && m.classList.contains('open')) closeSearchModal(); }
 });
 
