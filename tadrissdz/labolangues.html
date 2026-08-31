@@ -63,8 +63,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
 .ll-chooser-card .s{font-size:.78rem;color:var(--ink3);margin-bottom:1.1rem;min-height:2.1em;}
 .ll-chooser-cta{width:100%;background:#2563EB;color:#fff;}
 .ll-chooser-cta:hover{background:#1D4ED8;}
-.ll-chooser-illus{position:absolute;left:calc(100% + 2rem);top:50%;transform:translateY(-50%);width:150px;opacity:.92;}
-@media (max-width:1180px){.ll-chooser-illus{display:none;}}
+.ll-chooser-illus{position:absolute;left:calc(100% + 2rem);top:50%;transform:translateY(-50%);width:230px;opacity:.95;}
+@media (max-width:1260px){.ll-chooser-illus{display:none;}}
 .ll-demo-card{border:1.5px dashed var(--t);background:var(--tp);transition:box-shadow .25s, transform .2s;animation:llGlow 3s ease-in-out infinite;}
 .ll-demo-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,107,63,.14);}
 @keyframes llGlow{0%,100%{box-shadow:0 0 0 rgba(0,107,63,0);}50%{box-shadow:0 0 0 6px rgba(0,107,63,.06);}}
@@ -826,7 +826,7 @@ function llInitIcons() {
   set('llChooserMicIc', LL_CHOOSER_ART.mic);
   set('llChooserProfIc', '<img src="/labo-prof.png" alt="Professeur" style="width:100%;height:100%;object-fit:contain;">');
   set('llChooserEleveIc', '<img src="/labo-eleve.png" alt="Élève" style="width:100%;height:100%;object-fit:contain;">');
-  set('llChooserIllus', LL_CHOOSER_ART.network);
+  set('llChooserIllus', '<img src="/labo-globe.png" alt="" style="width:100%;height:auto;display:block;">');
 }
 llInitIcons();
 llApplyLang();
