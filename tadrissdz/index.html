@@ -5347,9 +5347,9 @@ function biblioLoad(cb) {
   if (BIBLIO_DATA) { cb(BIBLIO_DATA); return; }
   if (!RESSOURCES_CSV_URL) { cb([]); return; }
   fetch(RESSOURCES_CSV_URL).then(function(r) { return r.text(); }).then(function(text) {
-    var rows = biblioParseCSV(text).map(function(o, i) {
+    var rows = biblioParseCSV(text).map(function(o) {
+      var statutRaw = (o.statut || o.status || '').trim().toLowerCase();
       return {
-        id: i,
         titre: o.titre || o['title'] || '(sans titre)',
         matiere: o.matière || o.matiere || '',
         niveaux: (o.niveaux || o.niveau || '').split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean),
@@ -5357,8 +5357,9 @@ function biblioLoad(cb) {
         type: o.type || '',
         motsCles: o['mots-clés'] || o['mots-cles'] || o.motscles || '',
         lien: o['lien drive'] || o.lien || o.link || '',
+        actif: !statutRaw || statutRaw === 'actif' || statutRaw === 'active',
       };
-    });
+    }).filter(function(r) { return r.actif; }).map(function(r, i) { r.id = i; return r; });
     BIBLIO_DATA = rows;
     cb(rows);
   }).catch(function() { cb(null); });
@@ -5422,14 +5423,21 @@ function biblioRenderResults() {
         + '<button class="btn bo bsm" onclick="go(\'abonnement\')">🔒 Débloquer avec Pro</button>'
         + '</div></div>';
     }
-    var links = biblioDriveLinks(r.lien);
+    var isFolder = r.lien && biblioIsFolder(r.lien);
+    var actionsHtml;
+    if (!r.lien) {
+      actionsHtml = '<span style="color:var(--ink3);font-size:.78rem">Lien manquant</span>';
+    } else if (isFolder) {
+      actionsHtml = '<a class="btn bt bsm" href="'+r.lien+'" target="_blank" rel="noopener">📁 Ouvrir le dossier</a>';
+    } else {
+      var links = biblioDriveLinks(r.lien);
+      actionsHtml = '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">👁 Voir</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>';
+    }
     return '<div class="card"><div class="cb">'
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
-      + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
+      + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+(isFolder?' <span title="Dossier avec plusieurs fichiers" style="font-size:.8rem">📁</span>':'')+'</div>'
       + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
-      + '<div style="display:flex;gap:.5rem">'
-      + (r.lien ? '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">👁 Voir</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>' : '<span style="color:var(--ink3);font-size:.78rem">Lien manquant</span>')
-      + '</div></div></div>';
+      + '<div style="display:flex;gap:.5rem">' + actionsHtml + '</div></div></div>';
   }).join('') + '</div>';
 }
 
