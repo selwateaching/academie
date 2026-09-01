@@ -5360,18 +5360,10 @@ function biblioLoad(cb) {
     cb(rows);
   }).catch(function() { cb(null); });
 }
+var BIBLIO_PREVIEW_LIMIT = 3;
+function biblioIsPro() { return (window._planProf || '').toLowerCase() === 'pro'; }
 function rBibliotheque() {
   var box = document.getElementById('biblioBox');
-  var plan = (window._planProf || '').toLowerCase();
-  if (plan !== 'pro') {
-    box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)">'
-      + '<div style="font-size:2.5rem">🔒</div>'
-      + '<div style="margin-top:.9rem;font-weight:700;color:var(--ink)">La Bibliothèque pédagogique fait partie du forfait Pro.</div>'
-      + '<p style="max-width:420px;margin:.6rem auto 0">Passez au forfait Pro pour accéder aux fiches prêtes à l\'emploi, classées par matière et niveau.</p>'
-      + '<button class="btn bt" style="margin-top:1rem" onclick="go(\'abonnement\')">Voir les forfaits</button>'
-      + '</div></div>';
-    return;
-  }
   box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--ink3)">Chargement…</div></div>';
   biblioLoad(function(data) {
     if (data === null) { box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--r)">Impossible de charger la bibliothèque pour le moment.</div></div>'; return; }
@@ -5387,7 +5379,11 @@ function biblioRenderShell() {
   var box = document.getElementById('biblioBox');
   var niveaux = Array.from(new Set(BIBLIO_DATA.reduce(function(a,r) { return a.concat(r.niveaux); }, []))).sort();
   var types = Array.from(new Set(BIBLIO_DATA.map(function(r) { return r.type; }).filter(Boolean))).sort();
-  box.innerHTML = '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center">'
+  box.innerHTML = (biblioIsPro() ? '' : '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
+      + '<div style="flex:1;min-width:220px"><b>Aperçu de la Bibliothèque pédagogique</b><div style="font-size:.8rem;color:var(--ink3)">Votre forfait donne accès à '+BIBLIO_PREVIEW_LIMIT+' fiches. Passez au forfait Pro pour un accès illimité.</div></div>'
+      + '<button class="btn bt bsm" onclick="go(\'abonnement\')">Voir les forfaits</button>'
+      + '</div></div>')
+    + '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center">'
     + '<input class="fi" style="flex:1;min-width:220px" id="biblioQ" placeholder="🔎 Rechercher une ressource (titre, thème, mot-clé)…" oninput="biblioSetFilter(\'q\', this.value)">'
     + '<select class="fs" style="width:auto" id="biblioMat" onchange="biblioSetFilter(\'matiere\', this.value)"><option value="">Toutes les matières</option>' + BIBLIO_MATIERES.map(function(m) { return '<option value="'+tiaEsc(m)+'">'+tiaEsc(m)+'</option>'; }).join('') + '</select>'
     + '<select class="fs" style="width:auto" id="biblioNiv" onchange="biblioSetFilter(\'niveau\', this.value)"><option value="">Tous les niveaux</option>' + niveaux.map(function(n) { return '<option value="'+tiaEsc(n)+'">'+tiaEsc(n)+'</option>'; }).join('') + '</select>'
@@ -5412,7 +5408,17 @@ function biblioRenderResults() {
     results.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--ink3)">Aucune ressource ne correspond à ces critères.</div></div>';
     return;
   }
+  var isPro = biblioIsPro();
   results.innerHTML = '<div class="g3">' + filtered.map(function(r) {
+    var unlocked = isPro || r.id < BIBLIO_PREVIEW_LIMIT;
+    if (!unlocked) {
+      return '<div class="card" style="opacity:.6"><div class="cb">'
+        + (r.type ? '<div style="font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
+        + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
+        + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
+        + '<button class="btn bo bsm" onclick="go(\'abonnement\')">🔒 Débloquer avec Pro</button>'
+        + '</div></div>';
+    }
     var links = biblioDriveLinks(r.lien);
     return '<div class="card"><div class="cb">'
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
