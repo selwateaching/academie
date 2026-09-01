@@ -54,6 +54,11 @@ tr:last-child td{border-bottom:none;}
       <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
         <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
       </div>
+      <div style="padding:.7rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>
+        <span style="font-size:.78rem;color:var(--ink3);" id="aComptesSelCount">0 sélectionné(s)</span>
+        <button class="btn bt" id="aComptesEmailBtn" disabled onclick="window.aEmailGroup()">✉️ Envoyer un email au groupe</button>
+      </div>
       <div id="aComptesBody"></div>
     </div>
     <div class="card">
@@ -171,14 +176,18 @@ function renderTable(rows, cols) {
 }
 
 var PLAN_LABELS = { decouverte: 'Découverte', starter: 'Starter', pro: 'Pro' };
+var COMPTE_SEL = {};
+var LAST_COMPTES_ROWS = [];
 window.aRenderComptes = function() {
   var q = (document.getElementById('aComptesSearch').value || '').trim().toLowerCase();
   var rows = ALL_PROFS.filter(function(p) {
     if (!q) return true;
     return (profLabel(p) || '').toLowerCase().indexOf(q) >= 0;
   });
+  LAST_COMPTES_ROWS = rows;
   document.getElementById('aComptesCount').textContent = ALL_PROFS.length;
   document.getElementById('aComptesBody').innerHTML = rows.length ? renderTable(rows, [
+    { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
     { label: 'Prof', render: profLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
     { label: 'Forfait actuel', render: function(p) { return PLAN_LABELS[p.plan] || 'Pro (par défaut)'; } },
@@ -189,6 +198,29 @@ window.aRenderComptes = function() {
           + '</select>';
       } }
   ]) : '<div class="empty">Aucun compte trouvé</div>';
+  var allChecked = rows.length > 0 && rows.every(function(p) { return COMPTE_SEL[p.id]; });
+  document.getElementById('aComptesSelectAll').checked = allChecked;
+  window.aUpdateSelCount();
+};
+window.aToggleCompteSel = function(profId, checked) {
+  if (checked) COMPTE_SEL[profId] = true; else delete COMPTE_SEL[profId];
+  window.aUpdateSelCount();
+  document.getElementById('aComptesSelectAll').checked = LAST_COMPTES_ROWS.length > 0 && LAST_COMPTES_ROWS.every(function(p) { return COMPTE_SEL[p.id]; });
+};
+window.aToggleSelectAll = function(checked) {
+  LAST_COMPTES_ROWS.forEach(function(p) { if (checked) COMPTE_SEL[p.id] = true; else delete COMPTE_SEL[p.id]; });
+  window.aRenderComptes();
+};
+window.aUpdateSelCount = function() {
+  var n = Object.keys(COMPTE_SEL).length;
+  document.getElementById('aComptesSelCount').textContent = n + ' sélectionné(s)';
+  document.getElementById('aComptesEmailBtn').disabled = n === 0;
+};
+window.aEmailGroup = function() {
+  var emails = ALL_PROFS.filter(function(p) { return COMPTE_SEL[p.id] && p.email; }).map(function(p) { return p.email; });
+  if (!emails.length) return;
+  var url = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(emails.join(','));
+  window.open(url, '_blank');
 };
 window.aSetPlan = async function(profId, plan) {
   await setDoc(doc(dbFs, 'profs', profId), { plan: plan }, { merge: true });
