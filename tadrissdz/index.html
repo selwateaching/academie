@@ -5401,7 +5401,7 @@ function biblioRenderResults() {
   var q = f.q.trim().toLowerCase();
   var filtered = BIBLIO_DATA.filter(function(r) {
     if (f.matiere && r.matiere !== f.matiere) return false;
-    if (f.niveau && r.niveaux.indexOf(f.niveau) < 0) return false;
+    if (f.niveau && r.niveaux.length && r.niveaux.indexOf(f.niveau) < 0) return false;
     if (f.type && r.type !== f.type) return false;
     if (q && (r.titre + ' ' + r.theme + ' ' + r.motsCles).toLowerCase().indexOf(q) < 0) return false;
     return true;
@@ -5419,7 +5419,7 @@ function biblioRenderResults() {
       return '<div class="card" style="opacity:.6"><div class="cb">'
         + (r.type ? '<div style="font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
         + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
-        + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
+        + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+' · '+(r.niveaux.length?tiaEsc(r.niveaux.join(', ')):'Tous niveaux')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
         + '<button class="btn bo bsm" onclick="go(\'abonnement\')">🔒 Débloquer avec Pro</button>'
         + '</div></div>';
     }
@@ -5436,7 +5436,7 @@ function biblioRenderResults() {
     return '<div class="card"><div class="cb">'
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
       + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+(isFolder?' <span title="Dossier avec plusieurs fichiers" style="font-size:.8rem">📁</span>':'')+'</div>'
-      + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
+      + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+' · '+(r.niveaux.length?tiaEsc(r.niveaux.join(', ')):'Tous niveaux')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
       + '<div style="display:flex;gap:.5rem">' + actionsHtml + '</div></div></div>';
   }).join('') + '</div>';
 }
