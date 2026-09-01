@@ -5332,6 +5332,9 @@ function biblioParseCSV(text) {
     return o;
   });
 }
+function biblioIsFolder(rawLink) {
+  return /\/drive\/folders\//.test(rawLink) || /\/folderview/.test(rawLink);
+}
 function biblioDriveLinks(rawLink) {
   var m = rawLink.match(/\/file\/d\/([^/]+)/) || rawLink.match(/[?&]id=([^&]+)/);
   if (m) {
