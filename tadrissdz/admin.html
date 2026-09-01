@@ -50,6 +50,13 @@ tr:last-child td{border-bottom:none;}
 
   <div id="aDash" style="display:none;">
     <div class="card">
+      <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
+      <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
+        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
+      </div>
+      <div id="aComptesBody"></div>
+    </div>
+    <div class="card">
       <div class="ch"><div class="ct">🎙️ Demandes d'activation — Labo Langues</div><span class="badge" id="aLaboCount">0</span></div>
       <div id="aLaboBody"></div>
     </div>
@@ -113,6 +120,8 @@ function profLabel(p) {
   return (p.prenom || '') + ' ' + (p.nom || '') + ' — ' + (p.email || '') + (p.etablissement ? (' · ' + p.etablissement) : '');
 }
 
+var ALL_PROFS = [];
+
 async function loadRequests() {
   var allProfs = [];
   try {
@@ -122,6 +131,9 @@ async function loadRequests() {
     document.getElementById('aLaboBody').innerHTML = '<div class="empty">Erreur de lecture : ' + (e && e.message ? e.message : e) + '<br><small>Vérifie les règles de sécurité Firestore (lecture de la collection "profs" pour les admins).</small></div>';
     return;
   }
+
+  ALL_PROFS = allProfs;
+  window.aRenderComptes();
 
   var labo = allProfs.filter(function(p) { return p.laboLanguesDemandee && !p.laboLanguesActif; });
   var matChange = allProfs.filter(function(p) { return p.matiereDemandee; });
@@ -158,6 +170,32 @@ function renderTable(rows, cols) {
   return '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
 }
 
+var PLAN_LABELS = { decouverte: 'Découverte', starter: 'Starter', pro: 'Pro' };
+window.aRenderComptes = function() {
+  var q = (document.getElementById('aComptesSearch').value || '').trim().toLowerCase();
+  var rows = ALL_PROFS.filter(function(p) {
+    if (!q) return true;
+    return (profLabel(p) || '').toLowerCase().indexOf(q) >= 0;
+  });
+  document.getElementById('aComptesCount').textContent = ALL_PROFS.length;
+  document.getElementById('aComptesBody').innerHTML = rows.length ? renderTable(rows, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Matière', render: function(p) { return p.matiere || ''; } },
+    { label: 'Forfait actuel', render: function(p) { return PLAN_LABELS[p.plan] || 'Pro (par défaut)'; } },
+    { label: 'Changer le forfait', render: function(p) {
+        var cur = p.plan || 'pro';
+        return '<select onchange="window.aSetPlan(\'' + p.id + '\', this.value)" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
+          + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '"' + (cur===k?' selected':'') + '>' + PLAN_LABELS[k] + '</option>'; }).join('')
+          + '</select>';
+      } }
+  ]) : '<div class="empty">Aucun compte trouvé</div>';
+};
+window.aSetPlan = async function(profId, plan) {
+  await setDoc(doc(dbFs, 'profs', profId), { plan: plan }, { merge: true });
+  var p = ALL_PROFS.find(function(x) { return x.id === profId; });
+  if (p) p.plan = plan;
+  window.aRenderComptes();
+};
 window.aActivateLabo = async function(profId) {
   await setDoc(doc(dbFs, 'profs', profId), { laboLanguesActif: true, laboLanguesDemandee: false }, { merge: true });
   loadRequests();
