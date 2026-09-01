@@ -391,6 +391,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .cb{padding:1.3rem;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
 .stat{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);padding:1.2rem;position:relative;overflow:hidden;transition:transform .18s;}
 .stat:hover{transform:translateY(-2px);}
 .stat::before{content:'';position:absolute;top:0;right:0;width:70px;height:70px;border-radius:50%;opacity:.08;transform:translate(20px,-20px);}
@@ -1135,6 +1136,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     </div>
     <div class="si" onclick="go('programme')"><span class="sic"><img src="data:image/jpeg;base64,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" alt="Programme national"></span><span>Programme national</span></div>
     <div class="si" onclick="go('dossiers')"><span class="sic">📁</span><span>Ressources</span></div>
+    <div class="si" onclick="go('bibliotheque')"><span class="sic">📚</span><span>Bibliothèque pédagogique</span></div>
     <div class="si" onclick="go('cahier')"><span class="sic"><img src="data:image/jpeg;base64,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" alt="Cahier journal"></span><span>Cahier journal</span></div>
       </div>
     </div>
@@ -1320,6 +1322,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="card"><div class="ch"><div class="ct">🔴 Priorités de la classe (compétences les moins acquises)</div></div><div class="cb" id="peClassePrio"></div></div>
   </div>
   <div id="peDetailView" style="display:none"></div>
+</div>
+
+<!-- ===== BIBLIOTHEQUE PEDAGOGIQUE ===== -->
+<div class="pg" id="pg-bibliotheque">
+  <div class="sh">
+    <div><div class="sht">Bibliothèque pédagogique</div><div style="font-size:.72rem;color:var(--ink3)">Fiches prêtes à l'emploi, classées par matière et niveau</div></div>
+  </div>
+  <div id="biblioBox"></div>
 </div>
 
 <!-- ===== DOSSIERS ===== -->
@@ -4694,13 +4704,13 @@ ld();
 
 /* ===== NAV ===== */
 var CUR = 'dash';
-var TITLES_FR = { dash:'Tableau de bord', eleves:'Mes élèves', notes:'Notes et moyennes', bulletin:'Bulletins officiels', acquis:'Carnet de réussites', dossiers:'Dossiers cloud', appel:"Feuille d'appel", calendrier:'Calendrier pédagogique', proga:'Progression annuelle', cahier:'Cahier journal', edt:'Emploi du temps', programme:'Programme national MEN', quiz:'Quiz IA', cours_ia:'Cours IA', mails:'Courrier', equipe:'Équipe pédagogique', abonnement:'Mon abonnement', eleve_acces:'Espace élève — Accès', guide:"Guide d'utilisation", params:'Paramètres', recommandations:'Recommandations', progression_eleves:'Progression des élèves' };
-var TITLES_AR = { dash:'لوحة القيادة', eleves:'تلاميذي', notes:'النقاط والمعدلات', bulletin:'الكشوف الرسمية', acquis:'دفتر النجاحات', dossiers:'ملفات السحابة', appel:'ورقة النداء', calendrier:'الروزنامة التربوية', proga:'التدرج السنوي', cahier:'دفتر النصوص', edt:'جدول التوقيت', programme:'البرنامج الوطني للتربية', quiz:'اختبار الذكاء الاصطناعي', cours_ia:'دروس الذكاء الاصطناعي', mails:'البريد', equipe:'الفريق التربوي', abonnement:'اشتراكي', eleve_acces:'فضاء التلميذ — الوصول', guide:'دليل الاستخدام', params:'الإعدادات', recommandations:'التوصيات', progression_eleves:'تقدّم التلاميذ' };
+var TITLES_FR = { dash:'Tableau de bord', eleves:'Mes élèves', notes:'Notes et moyennes', bulletin:'Bulletins officiels', acquis:'Carnet de réussites', dossiers:'Dossiers cloud', appel:"Feuille d'appel", calendrier:'Calendrier pédagogique', proga:'Progression annuelle', cahier:'Cahier journal', edt:'Emploi du temps', programme:'Programme national MEN', quiz:'Quiz IA', cours_ia:'Cours IA', mails:'Courrier', equipe:'Équipe pédagogique', abonnement:'Mon abonnement', eleve_acces:'Espace élève — Accès', guide:"Guide d'utilisation", params:'Paramètres', recommandations:'Recommandations', progression_eleves:'Progression des élèves', bibliotheque:'Bibliothèque pédagogique' };
+var TITLES_AR = { dash:'لوحة القيادة', eleves:'تلاميذي', notes:'النقاط والمعدلات', bulletin:'الكشوف الرسمية', acquis:'دفتر النجاحات', dossiers:'ملفات السحابة', appel:'ورقة النداء', calendrier:'الروزنامة التربوية', proga:'التدرج السنوي', cahier:'دفتر النصوص', edt:'جدول التوقيت', programme:'البرنامج الوطني للتربية', quiz:'اختبار الذكاء الاصطناعي', cours_ia:'دروس الذكاء الاصطناعي', mails:'البريد', equipe:'الفريق التربوي', abonnement:'اشتراكي', eleve_acces:'فضاء التلميذ — الوصول', guide:'دليل الاستخدام', params:'الإعدادات', recommandations:'التوصيات', progression_eleves:'تقدّم التلاميذ', bibliotheque:'المكتبة التربوية' };
 var TITLES = TITLES_FR;
 var ACTS_FR = { eleves:'+ Élève', notes:'+ Évaluation', dossiers:'+ Dossier', calendrier:'+ Événement', cahier:'+ Séance', mails:'+ Message', equipe:'+ Collègue', acquis:'+ Réussite' };
 var ACTS_AR = { eleves:'+ تلميذ', notes:'+ تقييم', dossiers:'+ مجلد', calendrier:'+ حدث', cahier:'+ حصة', mails:'+ رسالة', equipe:'+ زميل', acquis:'+ نجاح' };
 var ACTS = ACTS_FR;
-var NO_BTN = ['params','abonnement','programme','bulletin','appel','eleve_acces','edt','proga','guide','recommandations','progression_eleves'];
+var NO_BTN = ['params','abonnement','programme','bulletin','appel','eleve_acces','edt','proga','guide','recommandations','progression_eleves','bibliotheque'];
 
 function go(pg) {
   document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
@@ -4722,6 +4732,7 @@ function go(pg) {
   else if (pg === 'proga') rProga();
   else if (pg === 'recommandations') rRecommandations();
   else if (pg === 'progression_eleves') rProgressionEleves();
+  else if (pg === 'bibliotheque') rBibliotheque();
   else if (pg === 'cahier') rCahier();
   else if (pg === 'edt') rEdt();
   else if (pg === 'programme') rProg();
@@ -5280,6 +5291,137 @@ function peShowDetail(eid) {
   }
   html += '</div></div>';
   box.innerHTML = html;
+}
+
+/* ===== BIBLIOTHEQUE PEDAGOGIQUE (catalogue partage, lu depuis un Google Sheet publie en CSV) ===== */
+/* Remplacer cette URL par le lien "Publier sur le Web -> CSV" du Google Sheet officiel Tadriss. */
+var RESSOURCES_CSV_URL = '';
+var BIBLIO_MATIERES = ['Mathématiques','Langue arabe','Langue française','Anglais','Espagnol','Histoire-Géographie','Sciences de la nature (SVT)','Informatique/TIC','Éducation islamique','Musique','Autre'];
+var BIBLIO_DATA = null;
+var BIBLIO_FILTERS = { q:'', matiere:'', niveau:'', type:'' };
+
+function biblioParseCSV(text) {
+  var rows = [];
+  var row = [];
+  var field = '';
+  var inQuotes = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i+1] === '"') { field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text[i+1] === '\n') i++;
+        row.push(field); field = '';
+        if (row.length > 1 || row[0] !== '') rows.push(row);
+        row = [];
+      } else field += c;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  if (!rows.length) return [];
+  var headers = rows[0].map(function(h) { return h.trim().toLowerCase(); });
+  return rows.slice(1).filter(function(r) { return r.some(function(v) { return v && v.trim(); }); }).map(function(r) {
+    var o = {};
+    headers.forEach(function(h, i) { o[h] = (r[i] || '').trim(); });
+    return o;
+  });
+}
+function biblioDriveLinks(rawLink) {
+  var m = rawLink.match(/\/file\/d\/([^/]+)/) || rawLink.match(/[?&]id=([^&]+)/);
+  if (m) {
+    var id = m[1];
+    return { voir: 'https://drive.google.com/file/d/' + id + '/view', telecharger: 'https://drive.google.com/uc?export=download&id=' + id };
+  }
+  return { voir: rawLink, telecharger: rawLink };
+}
+function biblioLoad(cb) {
+  if (BIBLIO_DATA) { cb(BIBLIO_DATA); return; }
+  if (!RESSOURCES_CSV_URL) { cb([]); return; }
+  fetch(RESSOURCES_CSV_URL).then(function(r) { return r.text(); }).then(function(text) {
+    var rows = biblioParseCSV(text).map(function(o, i) {
+      return {
+        id: i,
+        titre: o.titre || o['title'] || '(sans titre)',
+        matiere: o.matière || o.matiere || '',
+        niveaux: (o.niveaux || o.niveau || '').split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean),
+        theme: o.thème || o.theme || '',
+        type: o.type || '',
+        motsCles: o['mots-clés'] || o['mots-cles'] || o.motscles || '',
+        lien: o['lien drive'] || o.lien || o.link || '',
+      };
+    });
+    BIBLIO_DATA = rows;
+    cb(rows);
+  }).catch(function() { cb(null); });
+}
+function rBibliotheque() {
+  var box = document.getElementById('biblioBox');
+  var plan = (window._planProf || '').toLowerCase();
+  if (plan !== 'pro') {
+    box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)">'
+      + '<div style="font-size:2.5rem">🔒</div>'
+      + '<div style="margin-top:.9rem;font-weight:700;color:var(--ink)">La Bibliothèque pédagogique fait partie du forfait Pro.</div>'
+      + '<p style="max-width:420px;margin:.6rem auto 0">Passez au forfait Pro pour accéder aux fiches prêtes à l\'emploi, classées par matière et niveau.</p>'
+      + '<button class="btn bt" style="margin-top:1rem" onclick="go(\'abonnement\')">Voir les forfaits</button>'
+      + '</div></div>';
+    return;
+  }
+  box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--ink3)">Chargement…</div></div>';
+  biblioLoad(function(data) {
+    if (data === null) { box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--r)">Impossible de charger la bibliothèque pour le moment.</div></div>'; return; }
+    if (!data.length) {
+      box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2.5rem">📚</div><div style="margin-top:.9rem">La bibliothèque est vide pour le moment. Revenez bientôt !</div></div></div>';
+      return;
+    }
+    biblioRenderShell();
+    biblioRenderResults();
+  });
+}
+function biblioRenderShell() {
+  var box = document.getElementById('biblioBox');
+  var niveaux = Array.from(new Set(BIBLIO_DATA.reduce(function(a,r) { return a.concat(r.niveaux); }, []))).sort();
+  var types = Array.from(new Set(BIBLIO_DATA.map(function(r) { return r.type; }).filter(Boolean))).sort();
+  box.innerHTML = '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center">'
+    + '<input class="fi" style="flex:1;min-width:220px" id="biblioQ" placeholder="🔎 Rechercher une ressource (titre, thème, mot-clé)…" oninput="biblioSetFilter(\'q\', this.value)">'
+    + '<select class="fs" style="width:auto" id="biblioMat" onchange="biblioSetFilter(\'matiere\', this.value)"><option value="">Toutes les matières</option>' + BIBLIO_MATIERES.map(function(m) { return '<option value="'+tiaEsc(m)+'">'+tiaEsc(m)+'</option>'; }).join('') + '</select>'
+    + '<select class="fs" style="width:auto" id="biblioNiv" onchange="biblioSetFilter(\'niveau\', this.value)"><option value="">Tous les niveaux</option>' + niveaux.map(function(n) { return '<option value="'+tiaEsc(n)+'">'+tiaEsc(n)+'</option>'; }).join('') + '</select>'
+    + (types.length ? '<select class="fs" style="width:auto" id="biblioType" onchange="biblioSetFilter(\'type\', this.value)"><option value="">Tous les types</option>' + types.map(function(t) { return '<option value="'+tiaEsc(t)+'">'+tiaEsc(t)+'</option>'; }).join('') + '</select>' : '')
+    + '</div></div>'
+    + '<div id="biblioResults"></div>';
+}
+function biblioSetFilter(k, v) { BIBLIO_FILTERS[k] = v; biblioRenderResults(); }
+function biblioRenderResults() {
+  var f = BIBLIO_FILTERS;
+  var q = f.q.trim().toLowerCase();
+  var filtered = BIBLIO_DATA.filter(function(r) {
+    if (f.matiere && r.matiere !== f.matiere) return false;
+    if (f.niveau && r.niveaux.indexOf(f.niveau) < 0) return false;
+    if (f.type && r.type !== f.type) return false;
+    if (q && (r.titre + ' ' + r.theme + ' ' + r.motsCles).toLowerCase().indexOf(q) < 0) return false;
+    return true;
+  });
+  var results = document.getElementById('biblioResults');
+  if (!results) return;
+  if (!filtered.length) {
+    results.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--ink3)">Aucune ressource ne correspond à ces critères.</div></div>';
+    return;
+  }
+  results.innerHTML = '<div class="g3">' + filtered.map(function(r) {
+    var links = biblioDriveLinks(r.lien);
+    return '<div class="card"><div class="cb">'
+      + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
+      + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
+      + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.8rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
+      + '<div style="display:flex;gap:.5rem">'
+      + (r.lien ? '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">👁 Voir</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>' : '<span style="color:var(--ink3);font-size:.78rem">Lien manquant</span>')
+      + '</div></div></div>';
+  }).join('') + '</div>';
 }
 
 /* ===== DASHBOARD ===== */
