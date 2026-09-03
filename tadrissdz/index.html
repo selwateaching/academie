@@ -386,6 +386,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .pg{display:none;padding:1.6rem 1.75rem;animation:fu .22s ease;}.pg.on{display:block;}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);}
+.biblio-card{transition:transform .15s ease,box-shadow .15s ease;cursor:pointer;overflow:hidden;}
+.biblio-card:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(0,0,0,.12);}
+.biblio-card img{transition:transform .25s ease;}
+.biblio-card:hover img{transform:scale(1.05);}
 .ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
 .ct{font-family:'Inter',sans-serif;font-size:.92rem;font-weight:700;}
 .cb{padding:1.3rem;}
@@ -5423,7 +5427,7 @@ function biblioRenderResults() {
     var thumbUrl = (r.lien && !isFolderThumb) ? biblioThumbUrl(r.lien) : '';
     var thumbHtml = thumbUrl ? '<img src="'+thumbUrl+'" alt="" loading="lazy" style="width:100%;height:120px;object-fit:cover;border-radius:.6rem;margin-bottom:.6rem;background:#f1f3f5;display:block" onerror="this.style.display=\'none\'">' : '';
     if (!unlocked) {
-      return '<div class="card" style="opacity:.6"><div class="cb">'
+      return '<div class="card biblio-card" style="opacity:.6"><div class="cb">'
         + thumbHtml
         + (r.type ? '<div style="font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
         + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
@@ -5441,7 +5445,7 @@ function biblioRenderResults() {
       var links = biblioDriveLinks(r.lien);
       actionsHtml = '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">👁 Voir</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>';
     }
-    return '<div class="card"><div class="cb">'
+    return '<div class="card biblio-card"><div class="cb">'
       + thumbHtml
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
       + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+(isFolder?' <span title="Dossier avec plusieurs fichiers" style="font-size:.8rem">📁</span>':'')+'</div>'
