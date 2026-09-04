@@ -1168,6 +1168,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     </div>
   </nav>
   <div class="sb-bot">
+    <div class="si" id="siAdmin" style="display:none;" onclick="location.href='admin.html'"><span class="sic">🛠️</span><span>Administration</span></div>
     <div class="sbc" onclick="OM('mClasse')">
       <div class="sbcl">Classe active</div>
       <div class="sbcn" id="clsAct">3AM B</div>
@@ -8894,6 +8895,12 @@ async function handleAuthUser(user) {
       app.style.display = 'flex';
       authApplyProfile(p, user.uid);
       window._joursAvantExpiration = joursRestants;
+      /* Lien "Administration" dans le menu, visible uniquement pour les comptes admin
+         (présence d'un document admins/{uid}) — vérification silencieuse, non bloquante. */
+      getDoc(doc(dbFs, 'admins', user.uid)).then(function(adminSnap) {
+        var siAdmin = document.getElementById('siAdmin');
+        if (siAdmin) siAdmin.style.display = adminSnap.exists() ? '' : 'none';
+      }).catch(function() {});
       if (typeof window.showPaymentWarningBanner === 'function') window.showPaymentWarningBanner(joursRestants);
     } else if (p.status === 'suspended') {
       app.style.display = 'none';
