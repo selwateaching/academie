@@ -1001,6 +1001,11 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 
       <!-- LOGIN -->
       <div id="authViewLogin">
+        <div style="display:flex;gap:6px;margin-bottom:1.3rem;" id="authRoleTabs">
+          <button type="button" onclick="authSelectRole('prof')" id="roleTabProf" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--t);background:var(--t);color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">👨‍🏫 Enseignant</button>
+          <button type="button" onclick="authSelectRole('eleve')" id="roleTabEleve" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🎓 Élève</button>
+          <button type="button" onclick="authSelectRole('admin')" id="roleTabAdmin" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🛠️ Admin</button>
+        </div>
         <form id="authLoginForm" onsubmit="event.preventDefault(); authLoginProf();" autocomplete="on">
           <div class="fg" style="text-align:left;"><label class="fl">Email</label><input class="fi" id="authEmail" type="email" name="email" autocomplete="username" placeholder="prof@email.com"></div>
           <div class="fg" style="text-align:left;">
@@ -1013,11 +1018,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <div class="sp-err" id="authErr"></div>
           <button type="submit" class="sp-btn" id="authBtnLogin">Se connecter →</button>
         </form>
-        <button onclick="authShowView('register')" style="background:none;border:none;color:var(--t2);font-size:.78rem;cursor:pointer;margin-top:1rem;text-decoration:underline;">Pas encore de compte ? S'inscrire</button>
-        <div style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--br);">
-          <button onclick="goToStudentFromGate()" style="width:100%;background:var(--tp);border:1.5px solid rgba(0,107,63,.3);color:var(--t);font-size:.85rem;font-weight:700;cursor:pointer;padding:11px;border-radius:10px;font-family:'Inter',sans-serif;">🎓 Je suis élève — Accéder avec mon code</button>
-          <button onclick="window.location.href='admin.html'" style="width:100%;background:none;border:none;color:var(--ink3);font-size:.76rem;cursor:pointer;padding:9px;margin-top:.4rem;">🛠️ Administration</button>
-        </div>
+        <button onclick="authShowView('register')" id="authRegisterLink" style="background:none;border:none;color:var(--t2);font-size:.78rem;cursor:pointer;margin-top:1rem;text-decoration:underline;">Pas encore de compte ? S'inscrire</button>
       </div>
 
       <!-- REGISTER -->
@@ -8341,6 +8342,25 @@ function authTranslateError(e) {
   return 'Erreur : ' + (e && e.message ? e.message : 'inconnue');
 }
 
+var _loginRole = 'prof';
+window.authSelectRole = function(role) {
+  if (role === 'eleve') { goToStudentFromGate(); return; }
+  _loginRole = role;
+  var tabs = { prof: document.getElementById('roleTabProf'), eleve: document.getElementById('roleTabEleve'), admin: document.getElementById('roleTabAdmin') };
+  Object.keys(tabs).forEach(function(k) {
+    var btn = tabs[k]; if (!btn) return;
+    var isActive = (k === role);
+    btn.style.background = isActive ? 'var(--t)' : 'transparent';
+    btn.style.color = isActive ? '#fff' : 'var(--ink2)';
+    btn.style.borderColor = isActive ? 'var(--t)' : 'var(--br)';
+  });
+  var sub = document.getElementById('authSub');
+  if (sub) sub.textContent = role === 'admin' ? 'Espace administrateur · Connexion' : 'Espace enseignant · Connexion';
+  var regLink = document.getElementById('authRegisterLink');
+  if (regLink) regLink.style.display = role === 'admin' ? 'none' : 'inline-block';
+  var errEl0 = document.getElementById('authErr'); if (errEl0) errEl0.textContent = '';
+};
+
 window.authLoginProf = async function() {
   var email = document.getElementById('authEmail').value.trim();
   var pass = document.getElementById('authPass').value;
@@ -8857,6 +8877,28 @@ async function handleAuthUser(user) {
     return;
   }
   _hadValidUser = true;
+  if (_loginRole === 'admin') {
+    /* Onglet "Admin" du login : on ne cherche pas de profil prof, seulement un
+       document admins/{uid}. Redirige directement vers l'espace admin, sans
+       repasser par un aller-retour de page comme avant. */
+    try {
+      var adminCheckSnap = await getDoc(doc(dbFs, 'admins', user.uid));
+      if (adminCheckSnap.exists()) {
+        window.location.href = 'admin.html';
+      } else {
+        await signOut(auth);
+        _loginRole = 'prof';
+        app.style.display = 'none';
+        gate.style.display = 'flex'; authShowView('login');
+        var adminErrEl = document.getElementById('authErr');
+        if (adminErrEl) adminErrEl.textContent = 'Ce compte n\'est pas administrateur.';
+      }
+    } catch (e) {
+      var adminErrEl2 = document.getElementById('authErr');
+      if (adminErrEl2) adminErrEl2.textContent = 'Erreur : ' + (e && e.message ? e.message : e);
+    }
+    return;
+  }
   var wasAlreadyInApp = app.style.display === 'flex';
   try {
     var snap = await getDocRetry(doc(dbFs, 'profs', user.uid), 5, 1500);
