@@ -50,6 +50,10 @@ tr:last-child td{border-bottom:none;}
 
   <div id="aDash" style="display:none;">
     <div class="card">
+      <div class="ch"><div class="ct">🆕 Nouvelles inscriptions — en attente de validation</div><span class="badge" id="aPendingCount">0</span></div>
+      <div id="aPendingBody"></div>
+    </div>
+    <div class="card">
       <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
       <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
         <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
@@ -140,6 +144,24 @@ async function loadRequests() {
   ALL_PROFS = allProfs;
   window.aRenderComptes();
 
+  var pending = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
+  document.getElementById('aPendingCount').textContent = pending.length;
+  document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Matière', render: function(p) { return p.matiere || ''; } },
+    { label: 'Établissement', render: function(p) { return p.etablissement || ''; } },
+    { label: 'Forfait à valider', render: function(p) {
+        var selId = 'planSel_' + p.id;
+        return '<select id="' + selId + '" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
+          + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '">' + PLAN_LABELS[k] + '</option>'; }).join('')
+          + '</select>';
+      } },
+    { label: 'Action', render: function(p) {
+        var selId = 'planSel_' + p.id;
+        return '<button class="btn bt" onclick="window.aValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">✅ Valider</button>';
+      } }
+  ]) : '<div class="empty">Aucune inscription en attente ✓</div>';
+
   var labo = allProfs.filter(function(p) { return p.laboLanguesDemandee && !p.laboLanguesActif; });
   var matChange = allProfs.filter(function(p) { return p.matiereDemandee; });
   var matAddon = allProfs.filter(function(p) { return p.matiereAddonDemandee; });
@@ -180,12 +202,15 @@ var COMPTE_SEL = {};
 var LAST_COMPTES_ROWS = [];
 window.aRenderComptes = function() {
   var q = (document.getElementById('aComptesSearch').value || '').trim().toLowerCase();
-  var rows = ALL_PROFS.filter(function(p) {
+  /* Les inscriptions non validées ont leur propre file "Nouvelles inscriptions" plus haut —
+     elles n'ont pas leur place ici tant qu'elles n'ont pas de forfait attribué. */
+  var validated = ALL_PROFS.filter(function(p) { return p.status === 'validated' || p.status === 'suspended'; });
+  var rows = validated.filter(function(p) {
     if (!q) return true;
     return (profLabel(p) || '').toLowerCase().indexOf(q) >= 0;
   });
   LAST_COMPTES_ROWS = rows;
-  document.getElementById('aComptesCount').textContent = ALL_PROFS.length;
+  document.getElementById('aComptesCount').textContent = validated.length;
   document.getElementById('aComptesBody').innerHTML = rows.length ? renderTable(rows, [
     { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
     { label: 'Prof', render: profLabel },
@@ -227,6 +252,13 @@ window.aSetPlan = async function(profId, plan) {
   var p = ALL_PROFS.find(function(x) { return x.id === profId; });
   if (p) p.plan = plan;
   window.aRenderComptes();
+};
+window.aValidateProf = async function(profId, plan) {
+  /* Validation manuelle après confirmation du paiement (CIB, Dahabia, BaridiMob, virement) —
+     démarre un mois d'accès à compter d'aujourd'hui, quel que soit le forfait choisi. */
+  var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
+  await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', plan: plan, prochainPaiement: prochainPaiement }, { merge: true });
+  loadRequests();
 };
 window.aActivateLabo = async function(profId) {
   await setDoc(doc(dbFs, 'profs', profId), { laboLanguesActif: true, laboLanguesDemandee: false }, { merge: true });
