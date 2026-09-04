@@ -281,8 +281,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .cb-text.hi{color:rgba(255,255,255,.95);font-weight:600;}
 
 /* PLANS */
-.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
-@media (max-width:900px){.plans-grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto;}}
+.plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem;margin-top:2.5rem;}
+@media (max-width:1180px){.plans-grid{grid-template-columns:repeat(2,1fr);max-width:700px;margin-left:auto;margin-right:auto;}}
+@media (max-width:640px){.plans-grid{grid-template-columns:1fr;max-width:420px;}}
 .plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
 .plan::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--t),var(--t2));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
 .plan:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,107,63,.16);border-color:var(--t);}
@@ -612,7 +613,6 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <a href="#feats" data-i18n="nav_feats">Fonctionnalités</a>
       <a href="labolangues.html" data-i18n="nav_labolangues">Labo Langues</a>
       <a href="#prix" data-i18n="nav_prix">Tarifs</a>
-      <a href="#avis" data-i18n="nav_avis">Avis</a>
       <a href="#apropos" data-i18n="nav_apropos">Qui suis-je</a>
       <a href="#" class="nav-cta" data-i18n="nav_cta" onclick="toggleView();return false;">Ouvrir l'App</a>
     </div>
@@ -823,6 +823,25 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </ul>
         <button class="plan-cta-btn primary" id="planCta2" onclick="toggleView()">Commencer Pro</button>
       </div>
+      <div class="plan">
+        <div class="plan-header">
+          <div class="plan-eyebrow" id="planEye3">Établissement</div>
+          <div class="plan-name">Établissement</div>
+          <div class="plan-desc" id="planDesc3">Pour équiper toute une équipe pédagogique — primaire, moyen ou secondaire.</div>
+        </div>
+        <div class="plan-price">
+          <div class="price-num" style="font-size:1.4rem;" id="planPriceEtab">Sur devis</div>
+          <div class="price-per" id="planPer3">selon le nombre d'enseignants</div>
+        </div>
+        <ul class="plan-feats" id="planFeats3">
+          <li>Toutes les matières de l'établissement</li>
+          <li>Un compte par enseignant, gestion centralisée</li>
+          <li>Absences, bulletins et communication parents à l'échelle de l'école</li>
+          <li>Accompagnement au déploiement</li>
+          <li>Interlocuteur dédié</li>
+        </ul>
+        <a class="plan-cta-btn outline" id="planCta3" style="text-align:center;text-decoration:none;display:block;" href="mailto:selwateaching@gmail.com?subject=Tadriss%20DZ%20%E2%80%94%20Offre%20%C3%A9tablissement">Nous contacter</a>
+      </div>
     </div>
     <div style="margin-top:2rem;">
       <div style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;" id="payKicker">Méthodes de paiement acceptées</div>
@@ -833,38 +852,6 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="pay-badge"><span>🏦</span> Virement bancaire RIB</div>
       </div>
       <p style="font-size:.75rem;color:var(--ink3);margin-top:.8rem;" id="paySub">Aucune carte internationale requise.</p>
-    </div>
-  </div>
-
-  <!-- Témoignages -->
-  <div class="site-section" id="avis">
-    <div class="section-kicker" id="avisKicker">Témoignages</div>
-    <h2 class="section-h2" id="avisH2">Ce que disent les<br><span id="avisH2Span">enseignants algériens</span></h2>
-    <div class="testi-grid">
-      <div class="testi">
-        <div class="testi-quote">"</div>
-        <div class="testi-text" id="testi1Text">J'enseigne les mathématiques en 3ème année secondaire à Alger. L'IA génère mes séries d'exercices type BAC en 5 minutes. Mes élèves ont de meilleures moyennes depuis que j'utilise Tadriss DZ.</div>
-        <div class="testi-author">
-          <div class="testi-av" style="background:var(--t);">KA</div>
-          <div><div class="testi-name">Prof. Karim A.</div><div class="testi-role" id="testi1Role">Mathématiques · Lycée Alger</div></div>
-        </div>
-      </div>
-      <div class="testi">
-        <div class="testi-quote">"</div>
-        <div class="testi-text" id="testi2Text">Le cahier de textes numérique a tout changé. L'inspecteur consulte mes progressions en ligne. Les parents reçoivent les devoirs directement. Je n'imprime plus rien.</div>
-        <div class="testi-author">
-          <div class="testi-av" style="background:var(--b);">SB</div>
-          <div><div class="testi-name">Prof. Sihem B.</div><div class="testi-role" id="testi2Role">Français · CEM Constantine</div></div>
-        </div>
-      </div>
-      <div class="testi">
-        <div class="testi-quote">"</div>
-        <div class="testi-text" id="testi3Text">Nous avons déployé Tadriss DZ avec 45 professeurs. La gestion des absences est instantanée, les parents sont informés automatiquement. La direction est soulagée.</div>
-        <div class="testi-author">
-          <div class="testi-av" style="background:var(--r);">MR</div>
-          <div><div class="testi-name">M. Medjkane R.</div><div class="testi-role" id="testi3Role">Directeur · Lycée Oran</div></div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -3556,16 +3543,21 @@ function switchLang() {
   var planEye0 = document.getElementById('planEye0'); if (planEye0) planEye0.textContent = isAR ? 'اكتشاف' : 'Découverte';
   var planEye1 = document.getElementById('planEye1'); if (planEye1) planEye1.textContent = isAR ? 'فردي' : 'Individuel';
   var planEye2 = document.getElementById('planEye2'); if (planEye2) planEye2.textContent = isAR ? 'فردي' : 'Individuel';
+  var planEye3 = document.getElementById('planEye3'); if (planEye3) planEye3.textContent = isAR ? 'مؤسسة' : 'Établissement';
   var planDesc0 = document.getElementById('planDesc0'); if (planDesc0) planDesc0.textContent = isAR ? 'القليل من كل شيء، لمدة شهر، لتكوين فكرة.' : 'Un peu de tout, pendant 1 mois, pour se faire une idée.';
   var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'ابدأ بالأدوات الأساسية لمادة واحدة.' : 'Débutez avec les outils essentiels pour 1 matière.';
   var planDesc2 = document.getElementById('planDesc2'); if (planDesc2) planDesc2.textContent = isAR ? 'كل ما يحتاجه المعلم المتميز.' : "L'essentiel complet pour un enseignant exigeant.";
+  var planDesc3 = document.getElementById('planDesc3'); if (planDesc3) planDesc3.textContent = isAR ? 'لتجهيز فريق تربوي كامل — ابتدائي، متوسط أو ثانوي.' : 'Pour équiper toute une équipe pédagogique — primaire, moyen ou secondaire.';
   var planPer0 = document.getElementById('planPer0'); if (planPer0) planPer0.textContent = isAR ? 'لمدة شهر · مادة واحدة مشمولة' : 'pendant 1 mois · 1 matière incluse';
   var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
   var planPer2 = document.getElementById('planPer2'); if (planPer2) planPer2.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
+  var planPer3 = document.getElementById('planPer3'); if (planPer3) planPer3.textContent = isAR ? 'حسب عدد الأساتذة' : 'selon le nombre d\'enseignants';
+  var planPriceEtab = document.getElementById('planPriceEtab'); if (planPriceEtab) planPriceEtab.textContent = isAR ? 'على أساس عرض سعر' : 'Sur devis';
   var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ الأكثر طلبًا' : '⭐ Populaire';
   var planCta0 = document.getElementById('planCta0'); if (planCta0) planCta0.textContent = isAR ? 'ابدأ مجانًا' : 'Commencer gratuitement';
   var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'ابدأ Starter' : 'Commencer Starter';
   var planCta2 = document.getElementById('planCta2'); if (planCta2) planCta2.textContent = isAR ? 'ابدأ Pro' : 'Commencer Pro';
+  var planCta3 = document.getElementById('planCta3'); if (planCta3) planCta3.textContent = isAR ? 'اتصل بنا' : 'Nous contacter';
   var planFeatsPairs = {
     planFeats0: [
       ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
@@ -3598,6 +3590,13 @@ function switchLang() {
       ['Cours complets générés par IA','دروس كاملة منشأة بالذكاء الاصطناعي'],
       ['Sujets type Brevet (BEM) / BAC','مواضيع على نمط شهادة التعليم المتوسط / البكالوريا'],
       ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي']
+    ],
+    planFeats3: [
+      ['Toutes les matières de l\'établissement','جميع مواد المؤسسة'],
+      ['Un compte par enseignant, gestion centralisée','حساب لكل أستاذ، تسيير مركزي'],
+      ['Absences, bulletins et communication parents à l\'échelle de l\'école','الغيابات، الكشوف والتواصل مع الأولياء على مستوى المدرسة'],
+      ['Accompagnement au déploiement','مرافقة عند النشر'],
+      ['Interlocuteur dédié','محاور مخصص']
     ]
   };
   Object.keys(planFeatsPairs).forEach(function(listId) {
@@ -3619,16 +3618,6 @@ function switchLang() {
     });
   }
 
-  /* Landing page — Avis / Témoignages */
-  var avisKicker = document.getElementById('avisKicker'); if (avisKicker) avisKicker.textContent = isAR ? 'آراء' : 'Témoignages';
-  var avisH2 = document.getElementById('avisH2');
-  if (avisH2) { var avisH2SpanEl = document.getElementById('avisH2Span'); avisH2.childNodes[0].nodeValue = isAR ? 'ماذا يقول' : 'Ce que disent les'; if (avisH2SpanEl) avisH2SpanEl.textContent = isAR ? 'الأساتذة الجزائريون' : 'enseignants algériens'; }
-  var testi1Text = document.getElementById('testi1Text'); if (testi1Text) testi1Text.textContent = isAR ? 'أُدرّس الرياضيات في السنة الثالثة ثانوي بالجزائر العاصمة. الذكاء الاصطناعي ينشئ سلاسل تمارين على نمط البكالوريا في 5 دقائق. معدلات تلاميذي تحسّنت منذ أن استخدمت Tadriss DZ.' : "J'enseigne les mathématiques en 3ème année secondaire à Alger. L'IA génère mes séries d'exercices type BAC en 5 minutes. Mes élèves ont de meilleures moyennes depuis que j'utilise Tadriss DZ.";
-  var testi1Role = document.getElementById('testi1Role'); if (testi1Role) testi1Role.textContent = isAR ? 'الرياضيات · ثانوية الجزائر العاصمة' : 'Mathématiques · Lycée Alger';
-  var testi2Text = document.getElementById('testi2Text'); if (testi2Text) testi2Text.textContent = isAR ? 'دفتر النصوص الرقمي غيّر كل شيء. المفتش يطّلع على تدرجاتي عبر الإنترنت. الأولياء يستلمون الواجبات مباشرة. لم أعد أطبع أي شيء.' : "Le cahier de textes numérique a tout changé. L'inspecteur consulte mes progressions en ligne. Les parents reçoivent les devoirs directement. Je n'imprime plus rien.";
-  var testi2Role = document.getElementById('testi2Role'); if (testi2Role) testi2Role.textContent = isAR ? 'الفرنسية · متوسطة قسنطينة' : 'Français · CEM Constantine';
-  var testi3Text = document.getElementById('testi3Text'); if (testi3Text) testi3Text.textContent = isAR ? 'اعتمدنا Tadriss DZ مع 45 أستاذًا. تسيير الغيابات أصبح فوريًا، والأولياء يُعلَمون تلقائيًا. الإدارة مرتاحة تمامًا.' : "Nous avons déployé Tadriss DZ avec 45 professeurs. La gestion des absences est instantanée, les parents sont informés automatiquement. La direction est soulagée.";
-  var testi3Role = document.getElementById('testi3Role'); if (testi3Role) testi3Role.textContent = isAR ? 'مدير · ثانوية وهران' : 'Directeur · Lycée Oran';
 
   /* Landing page — CTA final + pied de page */
   var ctaFinalTitle = document.getElementById('ctaFinalTitle'); if (ctaFinalTitle) ctaFinalTitle.innerHTML = isAR ? 'انضم إلى الثورة<br>الرقمية للتعليم الجزائري.' : 'Rejoignez la révolution<br>numérique de l\'éducation algérienne.';
