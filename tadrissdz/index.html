@@ -7612,6 +7612,7 @@ function tiaRenderWelcome(box) {
       '<button class="tia-qb" onclick="tiaQuick(\'activite\')">📝 Créer une activité</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'cahier\')">🗓️ Créer mon cahier journal</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'differ\')">🎯 Différencier une activité</button>' +
+      '<button class="tia-qb" onclick="tiaQuick(\'fichesIllustrees\')">🎨 Fiches illustrées (Assistant pédagogique)</button>' +
       laboBtn +
     '</div>';
 }
@@ -7666,6 +7667,9 @@ function tiaQuick(kind) {
     tiaPush('bot', 'Collez l\'activité ou la consigne à différencier, et précisez le profil des élèves concernés (difficulté, avancé...).');
   } else if (kind === 'labolangues') {
     tiaPush('bot', '🎙️ Labo Langues est un module complémentaire pour faire pratiquer l\'oral à vos élèves : enregistrement, correction avec grille de critères, suivi de la progression. C\'est un module payant en plus de Tadriss, activé manuellement après votre demande. Pour le découvrir : retournez au tableau de bord, carte « Labo Langues » → « Découvrir ».');
+  } else if (kind === 'fichesIllustrees') {
+    tiaPush('bot', '🎨 L\'Assistant pédagogique génère des fiches illustrées prêtes à imprimer (préparation de séance, évaluation, exercices, fiche de lecture) en français, arabe ou anglais, pour toutes les matières. Ouverture dans un nouvel onglet…');
+    window.open('https://tadriss-fiches.onrender.com/', '_blank');
   }
 }
 function tiaDetectMode(text) {
