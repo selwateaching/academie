@@ -1016,6 +1016,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <button onclick="authShowView('register')" style="background:none;border:none;color:var(--t2);font-size:.78rem;cursor:pointer;margin-top:1rem;text-decoration:underline;">Pas encore de compte ? S'inscrire</button>
         <div style="margin-top:1.4rem;padding-top:1.2rem;border-top:1px solid var(--br);">
           <button onclick="goToStudentFromGate()" style="width:100%;background:var(--tp);border:1.5px solid rgba(0,107,63,.3);color:var(--t);font-size:.85rem;font-weight:700;cursor:pointer;padding:11px;border-radius:10px;font-family:'Inter',sans-serif;">🎓 Je suis élève — Accéder avec mon code</button>
+          <button onclick="window.location.href='admin.html'" style="width:100%;background:none;border:none;color:var(--ink3);font-size:.76rem;cursor:pointer;padding:9px;margin-top:.4rem;">🛠️ Administration</button>
         </div>
       </div>
 
@@ -1051,6 +1052,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div style="font-size:2.5rem;margin-bottom:.6rem;">💳</div>
         <p id="authExpiredLead" style="font-size:.85rem;color:var(--r);margin-bottom:.6rem;">Ton abonnement Tadriss DZ est arrivé à expiration.</p>
         <p id="authExpiredDetail" style="font-size:.78rem;color:var(--ink2);margin-bottom:1.2rem;">Merci de renouveler ton paiement (CIB, Dahabia, BaridiMob ou virement RIB) auprès de l'administrateur de ton établissement pour retrouver l'accès.</p>
+        <button class="sp-btn" id="authExpiredSubscribeBtn" style="display:none;background:var(--t);color:#fff;margin-bottom:.6rem;" onclick="window.location.href='index.html#prix'">S'abonner à un forfait →</button>
         <button class="sp-btn" id="authExpiredLogoutBtn" onclick="authLogoutProf()">Se déconnecter</button>
       </div>
 
@@ -3508,7 +3510,7 @@ function switchLang() {
   var authWaitingLogoutBtn = document.getElementById('authWaitingLogoutBtn'); if (authWaitingLogoutBtn) authWaitingLogoutBtn.textContent = T('deconnexion_lbl');
   var authSuspendedText = document.getElementById('authSuspendedText'); if (authSuspendedText) authSuspendedText.textContent = T('auth_suspended_text');
   var authSuspendedLogoutBtn = document.getElementById('authSuspendedLogoutBtn'); if (authSuspendedLogoutBtn) authSuspendedLogoutBtn.textContent = T('deconnexion_lbl');
-  var authExpiredLead = document.getElementById('authExpiredLead'); if (authExpiredLead) authExpiredLead.textContent = T('auth_expired_lead');
+  var authExpiredLead = document.getElementById('authExpiredLead'); if (authExpiredLead && !authExpiredLead.dataset.dynamic) authExpiredLead.textContent = T('auth_expired_lead');
   var authExpiredDetailEl = document.getElementById('authExpiredDetail'); if (authExpiredDetailEl && !authExpiredDetailEl.dataset.dynamic) authExpiredDetailEl.textContent = T('auth_expired_detail_static');
   var authExpiredLogoutBtn = document.getElementById('authExpiredLogoutBtn'); if (authExpiredLogoutBtn) authExpiredLogoutBtn.textContent = T('deconnexion_lbl');
   var authSecureHint = document.getElementById('authSecureHint'); if (authSecureHint) authSecureHint.textContent = T('auth_secure_hint');
@@ -8875,14 +8877,28 @@ async function handleAuthUser(user) {
         joursRestants = Math.ceil((new Date(p.prochainPaiement) - new Date()) / 86400000);
       }
       if (joursRestants !== null && joursRestants < 0) {
-        /* Abonnement expiré : accès bloqué */
+        /* Abonnement expiré : accès bloqué. Message différent selon qu'il s'agit de la
+           fin du mois d'essai gratuit (Découverte, jamais payé) ou d'un vrai renouvellement
+           (Starter/Pro, déjà payant) — dans le premier cas on adresse vers les tarifs plutôt
+           que de parler de "renouveler un paiement" qui n'a jamais eu lieu. */
         app.style.display = 'none';
+        var isDecouverte = p.plan === 'decouverte' || !p.plan;
+        var leadEl = document.getElementById('authExpiredLead');
         var detailEl = document.getElementById('authExpiredDetail');
-        if (detailEl) {
-          detailEl.dataset.dynamic = '1';
-          detailEl.textContent = (CURRENT_LANG==='ar'
-            ? ('انتهت صلاحية اشتراكك منذ ' + Math.abs(joursRestants) + ' يوم/أيام. ' + T('auth_expired_detail_static'))
-            : ('Ton abonnement a expiré il y a ' + Math.abs(joursRestants) + ' jour(s). ' + T('auth_expired_detail_static')));
+        var subscribeBtn = document.getElementById('authExpiredSubscribeBtn');
+        if (isDecouverte) {
+          if (leadEl) { leadEl.dataset.dynamic = '1'; leadEl.textContent = CURRENT_LANG==='ar' ? 'انتهى شهرك التجريبي المجاني.' : 'Ton mois d\'essai gratuit est terminé.'; }
+          if (detailEl) { detailEl.dataset.dynamic = '1'; detailEl.textContent = CURRENT_LANG==='ar' ? 'اختر باقة للاستمرار في استخدام Tadriss.' : 'Choisis un forfait pour continuer à utiliser Tadriss.'; }
+          if (subscribeBtn) subscribeBtn.style.display = 'block';
+        } else {
+          if (leadEl) { delete leadEl.dataset.dynamic; leadEl.textContent = T('auth_expired_lead'); }
+          if (detailEl) {
+            detailEl.dataset.dynamic = '1';
+            detailEl.textContent = (CURRENT_LANG==='ar'
+              ? ('انتهت صلاحية اشتراكك منذ ' + Math.abs(joursRestants) + ' يوم/أيام. ' + T('auth_expired_detail_static'))
+              : ('Ton abonnement a expiré il y a ' + Math.abs(joursRestants) + ' jour(s). ' + T('auth_expired_detail_static')));
+          }
+          if (subscribeBtn) subscribeBtn.style.display = 'none';
         }
         if (window._loginRequested) { gate.style.display = 'flex'; authShowView('expired'); }
         else { gate.style.display = 'none'; }

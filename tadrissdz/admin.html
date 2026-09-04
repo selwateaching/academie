@@ -129,6 +129,18 @@ function profLabel(p) {
   return (p.prenom || '') + ' ' + (p.nom || '') + ' — ' + (p.email || '') + (p.etablissement ? (' · ' + p.etablissement) : '');
 }
 
+function createdAtMs(p) {
+  if (!p.createdAt) return 0;
+  if (typeof p.createdAt.toDate === 'function') return p.createdAt.toDate().getTime();
+  var d = new Date(p.createdAt);
+  return isNaN(d.getTime()) ? 0 : d.getTime();
+}
+function formatCreatedAt(p) {
+  var ms = createdAtMs(p);
+  if (!ms) return '—';
+  return new Date(ms).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
 var ALL_PROFS = [];
 
 async function loadRequests() {
@@ -145,11 +157,13 @@ async function loadRequests() {
   window.aRenderComptes();
 
   var pending = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
+  pending.sort(function(a, b) { return createdAtMs(a) - createdAtMs(b); });
   document.getElementById('aPendingCount').textContent = pending.length;
   document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
     { label: 'Prof', render: profLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
     { label: 'Établissement', render: function(p) { return p.etablissement || ''; } },
+    { label: 'Date d\'inscription', render: formatCreatedAt },
     { label: 'Forfait à valider', render: function(p) {
         var selId = 'planSel_' + p.id;
         return '<select id="' + selId + '" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
@@ -215,6 +229,7 @@ window.aRenderComptes = function() {
     { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
     { label: 'Prof', render: profLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
+    { label: 'Date d\'inscription', render: formatCreatedAt },
     { label: 'Forfait actuel', render: function(p) { return PLAN_LABELS[p.plan] || 'Pro (par défaut)'; } },
     { label: 'Changer le forfait', render: function(p) {
         var cur = p.plan || 'pro';
