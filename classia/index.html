@@ -8975,9 +8975,15 @@ async function handleAuthUser(user) {
       }
       /* Compte validé et abonnement actif : accès direct à l'app (session mémorisée), sans repasser par la page d'accueil */
       var site = document.getElementById('site');
-      if (site) { site.classList.add('hidden'); site.style.display = 'none'; }
+      if (site) {
+        site.classList.add('hidden');
+        site.style.display = 'none';
+        void site.offsetHeight; /* force un recalcul de mise en page pour éviter un résidu visuel non repeint sur certains navigateurs */
+      }
       gate.style.display = 'none';
       app.style.display = 'flex';
+      void app.offsetHeight;
+      window.scrollTo(0, 0);
       authApplyProfile(p, user.uid);
       window._joursAvantExpiration = joursRestants;
       /* Lien "Administration" dans le menu, visible uniquement pour les comptes admin
