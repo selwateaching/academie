@@ -369,7 +369,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
             <option value="fr">🇫🇷 Français</option>
             <option value="en">🇬🇧 Anglais</option>
             <option value="es">🇪🇸 Espagnol</option>
-            <option value="ar">🇩🇿 Arabe</option>
+            <option value="ar">🇸🇦 Arabe</option>
           </select>
         </div>
         <div class="fg"><label class="fl" id="llFlClasse">Classe</label><select class="fs" id="llClasse" onchange="llOnClasseChange()"></select></div>
@@ -433,7 +433,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
             <option value="fr">🇫🇷 Français</option>
             <option value="en">🇬🇧 Anglais</option>
             <option value="es">🇪🇸 Espagnol</option>
-            <option value="ar">🇩🇿 Arabe</option>
+            <option value="ar">🇸🇦 Arabe</option>
           </select>
         </div>
         <div class="fg"><label class="fl" id="llTplFlType">Type d'activité</label><select class="fs" id="llTplType"></select></div>
@@ -513,6 +513,7 @@ import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.
    Aucune donnée de ClassIA n'est modifiée depuis ce fichier : le module est
    techniquement séparé, il ne fait que LIRE le trousseau (classes/élèves) déjà
    présent en local, et gère ses propres activités/productions à part. */
+/* TODO(ClassIA) : remplacer par la config d'un NOUVEAU projet Firebase dédié à ClassIA — ne pas garder tadriss-dz-c5884 (projet partagé avec tadriss.fr / Algérie) en production. */
 const firebaseConfig = {
   apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
   authDomain: "tadriss-dz-c5884.firebaseapp.com",
@@ -642,19 +643,19 @@ function llApplyLang() {
 window.llToggleLang = function() { LL_CUR = LL_CUR === 'fr' ? 'ar' : 'fr'; llApplyLang(); };
 
 /* Diagnostic visible à l'écran (sans avoir besoin d'ouvrir les outils développeur) :
-   liste, pour chaque compte présent sur cet appareil, ses classes/élèves (localStorage TADRISS_DZ_*)
+   liste, pour chaque compte présent sur cet appareil, ses classes/élèves (localStorage CLASSIA_FR_*)
    et ses activités Labo Langues (localStorage LABOLANGUES_*), pour repérer une incohérence de compte. */
 window.llShowDiag = function() {
   var lines = [];
   var cu = LL_STATE.firebaseUser;
   lines.push('COMPTE ACTUELLEMENT CONNECTÉ ICI : ' + (cu ? ((cu.email || '(sans email)') + ' — uid ' + cu.uid) : '(aucun, non connecté)'));
   lines.push('');
-  var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('TADRISS_DZ_') === 0; });
+  var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('CLASSIA_FR_') === 0; });
   if (!rosterKeys.length) lines.push('Aucun compte ClassIA trouvé sur cet appareil/navigateur.');
   rosterKeys.forEach(function(k) {
     try {
       var d = JSON.parse(localStorage.getItem(k));
-      var uid = k.replace('TADRISS_DZ_', '');
+      var uid = k.replace('CLASSIA_FR_', '');
       lines.push('COMPTE (uid ' + uid + ')' + (cu && cu.uid === uid ? '  ← compte connecté ici' : ''));
       lines.push('  Classes : ' + (d.cls || []).map(function(c) { return c.id + ':' + c.nm; }).join(', ') || '(aucune)');
       lines.push('  Élèves  : ' + (d.el || []).map(function(e) { return e.pr + ' ' + e.no + ' [classe ' + e.cid + ', code ' + (e.code || llGenCode(e.id)) + ']'; }).join(', ') || '(aucun)');
@@ -836,7 +837,7 @@ var LL_LANGUES = [
   { id:'fr', fr:'Français', ar:'الفرنسية', flag:'🇫🇷' },
   { id:'en', fr:'Anglais',  ar:'الإنجليزية', flag:'🇬🇧' },
   { id:'es', fr:'Espagnol', ar:'الإسبانية', flag:'🇪🇸' },
-  { id:'ar', fr:'Arabe',    ar:'العربية',   flag:'🇩🇿' }
+  { id:'ar', fr:'Arabe',    ar:'العربية',   flag:'🇸🇦' }
 ];
 /* ===== Types d'activité orale ===== */
 var LL_TYPES = [
@@ -1060,7 +1061,7 @@ function llProfLangueIds(p) {
 
 /* ===== Lecture (seule) du trousseau ClassIA + stockage propre au Labo Langues ===== */
 function llReadRoster(uid) {
-  try { return JSON.parse(localStorage.getItem('TADRISS_DZ_' + uid) || '{}'); } catch(e) { return {}; }
+  try { return JSON.parse(localStorage.getItem('CLASSIA_FR_' + uid) || '{}'); } catch(e) { return {}; }
 }
 function llKey(uid) { return 'LABOLANGUES_' + uid; }
 function llAudioKey(uid) { return 'LABOLANGUES_' + uid + '_audio'; }
@@ -1616,13 +1617,13 @@ window.llNoterSub = function(actId, eleveId) {
 };
 
 /* Fait apparaître automatiquement la note d'une production orale dans "Notes et moyennes"
-   de ClassIA (localStorage TADRISS_DZ_{uid}), comme une évaluation normale — une seule
+   de ClassIA (localStorage CLASSIA_FR_{uid}), comme une évaluation normale — une seule
    évaluation par activité Labo Langues (identifiée par _laboActId), mise à jour à chaque
    notation plutôt que dupliquée. Écriture directe en localStorage : le prochain sv() lancé
    depuis ClassIA (à sa prochaine modification) la fera remonter dans la sauvegarde cloud
    comme le reste, sans qu'on ait besoin d'y toucher depuis ce fichier séparé. */
 function llSyncNoteToTadriss(uid, act, eleveId, note) {
-  var key = 'TADRISS_DZ_' + uid;
+  var key = 'CLASSIA_FR_' + uid;
   var td;
   try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
   if (!Array.isArray(td.ev)) td.ev = [];
@@ -1652,7 +1653,7 @@ window.llDeleteSub = function(actId, eleveId) {
 /* Retire la note d'un élève de l'évaluation ClassIA synchronisée pour cette activité
    (utilisé quand le prof supprime une production individuelle notée). */
 function llRemoveTadrissEvalNote(uid, actId, eleveId) {
-  var key = 'TADRISS_DZ_' + uid;
+  var key = 'CLASSIA_FR_' + uid;
   var td;
   try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
   if (!Array.isArray(td.ev)) return;
@@ -1662,7 +1663,7 @@ function llRemoveTadrissEvalNote(uid, actId, eleveId) {
 /* Retire entièrement l'évaluation ClassIA synchronisée pour une activité
    (utilisé quand le prof supprime l'activité entière). */
 function llRemoveTadrissEval(uid, actId) {
-  var key = 'TADRISS_DZ_' + uid;
+  var key = 'CLASSIA_FR_' + uid;
   var td;
   try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
   if (!Array.isArray(td.ev)) return;
@@ -1674,7 +1675,7 @@ function llRemoveTadrissEval(uid, actId) {
    pour qu'elle apparaisse dans "Mes devoirs à venir" côté élève avant même d'être notée.
    Si la date limite est retirée, l'événement synchronisé est supprimé (rien à afficher). */
 function llSyncDevoirToTadriss(uid, act) {
-  var key = 'TADRISS_DZ_' + uid;
+  var key = 'CLASSIA_FR_' + uid;
   var td;
   try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
   if (!Array.isArray(td.evt)) td.evt = [];
@@ -1692,7 +1693,7 @@ function llSyncDevoirToTadriss(uid, act) {
 }
 /* Retire l'événement "Devoir" synchronisé (utilisé quand le prof supprime l'activité entière). */
 function llRemoveTadrissDevoir(uid, actId) {
-  var key = 'TADRISS_DZ_' + uid;
+  var key = 'CLASSIA_FR_' + uid;
   var td;
   try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
   if (!Array.isArray(td.evt)) return;
@@ -1713,8 +1714,8 @@ window.llEleveLoginSubmit = function() {
   var errEl = document.getElementById('llEleveErr');
   errEl.textContent = '';
   if (code.length < 4) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صالح.' : 'Code invalide.'; return; }
-  var keys = Object.keys(localStorage).filter(function(k){ return k.indexOf('TADRISS_DZ_') === 0; });
-  var uids = keys.map(function(k){ return k.replace('TADRISS_DZ_', ''); });
+  var keys = Object.keys(localStorage).filter(function(k){ return k.indexOf('CLASSIA_FR_') === 0; });
+  var uids = keys.map(function(k){ return k.replace('CLASSIA_FR_', ''); });
   /* Plusieurs comptes profs jamais personnalisés partagent les mêmes données de démonstration
      (mêmes élèves, mêmes codes) : on cherche en priorité parmi les comptes qui ont déjà créé au
      moins une activité Labo Langues (LABOLANGUES_{uid} existe), pour éviter de tomber sur un

@@ -85,6 +85,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/fireba
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+/* TODO(ClassIA) : remplacer par la config d'un NOUVEAU projet Firebase dédié à ClassIA — ne pas garder tadriss-dz-c5884 (projet partagé avec tadriss.fr / Algérie) en production. */
 const firebaseConfig = {
   apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
   authDomain: "tadriss-dz-c5884.firebaseapp.com",
@@ -269,7 +270,7 @@ window.aSetPlan = async function(profId, plan) {
   window.aRenderComptes();
 };
 window.aValidateProf = async function(profId, plan) {
-  /* Validation manuelle après confirmation du paiement (CIB, Dahabia, BaridiMob, virement) —
+  /* Validation manuelle après confirmation du paiement (carte bancaire, prélèvement SEPA, virement) —
      démarre un mois d'accès à compter d'aujourd'hui, quel que soit le forfait choisi. */
   var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
   await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', plan: plan, prochainPaiement: prochainPaiement }, { merge: true });
