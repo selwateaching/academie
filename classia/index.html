@@ -281,9 +281,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .cb-text.hi{color:rgba(255,255,255,.95);font-weight:600;}
 
 /* PLANS */
-.plans-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem;margin-top:2.5rem;}
-@media (max-width:1180px){.plans-grid{grid-template-columns:repeat(2,1fr);max-width:700px;margin-left:auto;margin-right:auto;}}
-@media (max-width:640px){.plans-grid{grid-template-columns:1fr;max-width:420px;}}
+.plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;max-width:960px;margin-left:auto;margin-right:auto;}
+@media (max-width:900px){.plans-grid{grid-template-columns:1fr;max-width:420px;}}
 .plan{border:2px solid var(--br);border-radius:16px;background:var(--w);overflow:hidden;position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease;}
 .plan::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--t),var(--t2));transform:scaleX(0);transform-origin:left;transition:transform .3s ease;}
 .plan:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(52,84,209,.16);border-color:var(--t);}
@@ -762,10 +761,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div class="plan-price">
           <div class="price-num"><span class="price-cur">€</span>0</div>
-          <div class="price-per" id="planPer0">pendant 1 mois · 1 matière incluse</div>
+          <div class="price-per" id="planPer0">pendant 1 mois · toutes les matières</div>
         </div>
         <ul class="plan-feats" id="planFeats0">
-          <li>1 matière (programme officiel)</li>
+          <li>Toutes les matières (programme officiel)</li>
           <li>Un aperçu de toutes les fonctionnalités</li>
           <li>Cahier journal</li>
           <li>Fiches pédagogiques (aperçu)</li>
@@ -774,54 +773,30 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </ul>
         <button class="plan-cta-btn outline" id="planCta0" onclick="toggleView()">Commencer gratuitement</button>
       </div>
-      <div class="plan">
+      <div class="plan featured">
+        <div class="plan-badge" id="planBadge">⭐ Accès complet</div>
         <div class="plan-header">
           <div class="plan-eyebrow" id="planEye1">Individuel</div>
-          <div class="plan-name">Starter</div>
-          <div class="plan-desc" id="planDesc1">Débutez avec les outils essentiels pour 1 matière.</div>
+          <div class="plan-name">ClassIA</div>
+          <div class="plan-desc" id="planDesc1">Un seul forfait, accès illimité à tout ClassIA.</div>
         </div>
         <div class="plan-price">
-          <div class="price-num"><span class="price-cur">€</span>9</div>
-          <div class="price-per" id="planPer1">par mois · 1 matière incluse</div>
+          <div class="price-num"><span class="price-cur">€</span>19,99</div>
+          <div class="price-per" id="planPer1">par mois · toutes les matières incluses</div>
         </div>
         <ul class="plan-feats" id="planFeats1">
-          <li>1 matière (programme officiel)</li>
-          <li>Génération de cours et quiz par IA — 40/mois</li>
-          <li>Cahier journal</li>
-          <li>Fiches pédagogiques de base</li>
-          <li>Classes et élèves illimités</li>
-          <li>Cloud privé sécurisé</li>
-          <li>Notes, absences, bulletins PDF</li>
-          <li>Messagerie parents/élèves</li>
-          <li class="no">Sujets type Brevet / BAC</li>
-          <li class="no">Exercices avec corrigés automatiques</li>
-        </ul>
-        <button class="plan-cta-btn outline" id="planCta1" onclick="toggleView()">Commencer Starter</button>
-      </div>
-      <div class="plan featured">
-        <div class="plan-badge" id="planBadge">⭐ Populaire</div>
-        <div class="plan-header">
-          <div class="plan-eyebrow" id="planEye2">Individuel</div>
-          <div class="plan-name">Pro</div>
-          <div class="plan-desc" id="planDesc2">L'essentiel complet pour un enseignant exigeant.</div>
-        </div>
-        <div class="plan-price">
-          <div class="price-num"><span class="price-cur">€</span>19</div>
-          <div class="price-per" id="planPer2">par mois · 1 matière incluse</div>
-        </div>
-        <ul class="plan-feats" id="planFeats2">
-          <li>1 matière (programme complet)</li>
-          <li>Génération de cours et quiz par IA avancée — 100/mois</li>
+          <li>Toutes les matières incluses</li>
+          <li>Génération de cours et quiz par IA illimitée</li>
           <li>Cahier journal complet</li>
           <li>Fiches pédagogiques avancées</li>
           <li>Classes et élèves illimités</li>
           <li>Cloud privé sécurisé</li>
+          <li>Notes, absences, bulletins PDF</li>
           <li>Messagerie parents/élèves illimitée</li>
-          <li>Cours complets générés par IA</li>
           <li>Sujets type Brevet / Bac</li>
           <li>Exercices avec corrigés automatiques</li>
         </ul>
-        <button class="plan-cta-btn primary" id="planCta2" onclick="toggleView()">Commencer Pro</button>
+        <a class="plan-cta-btn primary" id="planCta1" style="text-align:center;text-decoration:none;display:block;" href="https://buy.stripe.com/7sYbJ2e5v5LQcWw9xtaR209" target="_blank" rel="noopener">S'abonner à ClassIA</a>
       </div>
       <div class="plan">
         <div class="plan-header">
@@ -895,7 +870,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <!-- CTA Final -->
   <div class="site-cta-final">
     <h2 class="cta-final-title" id="ctaFinalTitle">Rejoignez la révolution<br>numérique de l'éducation en France.</h2>
-    <p class="cta-final-sub" id="ctaFinalSub">1 mois d'essai gratuit avec le forfait Découverte. Aucune carte requise. Paiement par virement bancaire.</p>
+    <p class="cta-final-sub" id="ctaFinalSub">1 mois d'essai gratuit avec le forfait Découverte. Aucune carte requise. Puis un seul forfait à 19,99€/mois pour un accès complet.</p>
     <div class="hero-btns">
       <button class="hb hb-main" id="ctaFinalBtn" onclick="toggleView()">Ouvrir l'application gratuitement</button>
     </div>
@@ -1663,13 +1638,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="ch"><div class="ct">Méthodes de paiement</div></div>
         <div class="cb">
           <div style="display:flex;flex-direction:column;gap:.6rem;">
+            <a href="https://buy.stripe.com/7sYbJ2e5v5LQcWw9xtaR209" target="_blank" rel="noopener" class="btn bt" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1rem;font-size:.88rem;">🔒 Payer en ligne — 19,99 €/mois</a>
             <div style="display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp)">
               <span style="font-size:1.2rem;">📮</span>
               <div style="flex:1"><div style="font-weight:600;font-size:.85rem;">Paiement manuel</div><div style="font-size:.7rem;color:var(--ink3);">Pointé par l'administrateur après réception</div></div>
               <span class="badge bt2">Actif</span>
             </div>
             <div style="background:var(--ap);border-radius:9px;padding:.8rem 1rem;font-size:.78rem;color:var(--ink2);">
-              💡 <strong>Paiements acceptés :</strong> Carte bancaire (Stripe), prélèvement SEPA, virement bancaire. Envoie ton paiement à l'administrateur de ton établissement, qui le confirmera dans l'app.
+              💡 <strong>Paiements acceptés :</strong> Carte bancaire (Stripe), prélèvement SEPA, virement bancaire. Après paiement en ligne via Stripe, préviens l'administrateur de ton établissement (avec ta référence de paiement) pour qu'il confirme ton accès dans l'app.
             </div>
           </div>
         </div>
@@ -3020,11 +2996,15 @@ var LANG_JS = {
     abo_primaire_note: 'Un enseignant du Primaire enseigne toutes les matières à sa classe : elles sont donc toutes incluses d\'office, sans supplément.',
     abo_matiere_principale: 'Matière principale',
     abo_matiere_additionnelle: 'Matière additionnelle',
-    abo_badge_base: 'Base 19 €',
-    abo_badge_plus: '+5 €/mois',
-    abo_note_supplement: 'Une matière additionnelle coûte 5 €/mois sur le même compte (Paramètres → « + Ajouter une matière supplémentaire »). Pour un autre cycle d\'enseignement (ex: Primaire en plus du Collège), crée un compte séparé.',
-    abo_plan_primaire_name: 'Pro · Toutes matières (Primaire)',
-    abo_plan_name_prefix: 'Pro · ',
+    abo_toutes_matieres_badge: 'Forfait ClassIA — toutes les matières incluses',
+    abo_toutes_matieres_note: 'Le forfait ClassIA donne accès à toutes les matières, sans supplément ni add-on à payer.',
+    abo_badge_base: 'Inclus',
+    abo_badge_plus: 'Inclus',
+    abo_note_supplement: 'Toutes les matières sont incluses dans le forfait ClassIA, sans coût supplémentaire.',
+    abo_plan_primaire_name: 'ClassIA · Accès complet',
+    abo_plan_name_prefix: 'ClassIA · Accès complet',
+    abo_plan_decouverte_name: 'Découverte · Essai gratuit',
+    abo_quota_illimite: 'Illimité',
     abo_par_mois: ' € / mois',
     abo_renouvellement: ' · Renouvellement le ',
     aucun_paiement_lbl: 'Aucun paiement enregistré pour le moment',
@@ -3316,12 +3296,16 @@ var LANG_JS = {
     abo_primaire_note: 'يُدرّس أستاذ الابتدائي جميع المواد لقسمه: لذلك فهي مشمولة تلقائياً بدون أي إضافة.',
     abo_matiere_principale: 'المادة الرئيسية',
     abo_matiere_additionnelle: 'مادة إضافية',
-    abo_badge_base: 'الأساسي 1999 دج',
-    abo_badge_plus: '+400 دج/شهر',
-    abo_note_supplement: 'تكلف كل مادة إضافية 400 دج/شهر على نفس الحساب (الإعدادات ← « + إضافة مادة إضافية »). لطور تعليمي آخر (مثلاً الابتدائي بالإضافة إلى المتوسط)، أنشئ حساباً منفصلاً.',
-    abo_plan_primaire_name: 'Pro · جميع المواد (الابتدائي)',
-    abo_plan_name_prefix: 'Pro · ',
-    abo_par_mois: ' دج / شهر',
+    abo_toutes_matieres_badge: 'باقة ClassIA — جميع المواد مشمولة',
+    abo_toutes_matieres_note: 'تمنحك باقة ClassIA الوصول إلى جميع المواد، بدون أي تكلفة إضافية.',
+    abo_badge_base: 'مشمول',
+    abo_badge_plus: 'مشمول',
+    abo_note_supplement: 'جميع المواد مشمولة في باقة ClassIA، بدون أي تكلفة إضافية.',
+    abo_plan_primaire_name: 'ClassIA · وصول كامل',
+    abo_plan_name_prefix: 'ClassIA · وصول كامل',
+    abo_plan_decouverte_name: 'اكتشاف · تجربة مجانية',
+    abo_quota_illimite: 'غير محدود',
+    abo_par_mois: ' € / شهريًا',
     abo_renouvellement: ' · التجديد في ',
     aucun_paiement_lbl: 'لا يوجد أي دفع مسجَّل حالياً',
     abo_expire_badge: '⚠ منتهي',
@@ -3549,25 +3533,21 @@ function switchLang() {
   var prixSub = document.getElementById('prixSub'); if (prixSub) prixSub.textContent = isAR ? 'بدون التزام. يمكنك الإلغاء في أي وقت.' : 'Sans engagement. Résiliez à tout moment.';
   var planEye0 = document.getElementById('planEye0'); if (planEye0) planEye0.textContent = isAR ? 'اكتشاف' : 'Découverte';
   var planEye1 = document.getElementById('planEye1'); if (planEye1) planEye1.textContent = isAR ? 'فردي' : 'Individuel';
-  var planEye2 = document.getElementById('planEye2'); if (planEye2) planEye2.textContent = isAR ? 'فردي' : 'Individuel';
   var planEye3 = document.getElementById('planEye3'); if (planEye3) planEye3.textContent = isAR ? 'مؤسسة' : 'Établissement';
   var planDesc0 = document.getElementById('planDesc0'); if (planDesc0) planDesc0.textContent = isAR ? 'القليل من كل شيء، لمدة شهر، لتكوين فكرة.' : 'Un peu de tout, pendant 1 mois, pour se faire une idée.';
-  var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'ابدأ بالأدوات الأساسية لمادة واحدة.' : 'Débutez avec les outils essentiels pour 1 matière.';
-  var planDesc2 = document.getElementById('planDesc2'); if (planDesc2) planDesc2.textContent = isAR ? 'كل ما يحتاجه المعلم المتميز.' : "L'essentiel complet pour un enseignant exigeant.";
+  var planDesc1 = document.getElementById('planDesc1'); if (planDesc1) planDesc1.textContent = isAR ? 'باقة واحدة، وصول غير محدود لكل ClassIA.' : 'Un seul forfait, accès illimité à tout ClassIA.';
   var planDesc3 = document.getElementById('planDesc3'); if (planDesc3) planDesc3.textContent = isAR ? 'لتجهيز فريق تربوي كامل — ابتدائي، متوسط أو ثانوي.' : 'Pour équiper toute une équipe pédagogique — primaire, collège ou lycée.';
-  var planPer0 = document.getElementById('planPer0'); if (planPer0) planPer0.textContent = isAR ? 'لمدة شهر · مادة واحدة مشمولة' : 'pendant 1 mois · 1 matière incluse';
-  var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
-  var planPer2 = document.getElementById('planPer2'); if (planPer2) planPer2.textContent = isAR ? 'شهريًا · مادة واحدة مشمولة' : 'par mois · 1 matière incluse';
+  var planPer0 = document.getElementById('planPer0'); if (planPer0) planPer0.textContent = isAR ? 'لمدة شهر · كل المواد مشمولة' : 'pendant 1 mois · toutes les matières';
+  var planPer1 = document.getElementById('planPer1'); if (planPer1) planPer1.textContent = isAR ? 'شهريًا · كل المواد مشمولة' : 'par mois · toutes les matières incluses';
   var planPer3 = document.getElementById('planPer3'); if (planPer3) planPer3.textContent = isAR ? 'حسب عدد الأساتذة' : 'selon le nombre d\'enseignants';
   var planPriceEtab = document.getElementById('planPriceEtab'); if (planPriceEtab) planPriceEtab.textContent = isAR ? 'على أساس عرض سعر' : 'Sur devis';
-  var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ الأكثر طلبًا' : '⭐ Populaire';
+  var planBadge = document.getElementById('planBadge'); if (planBadge) planBadge.textContent = isAR ? '⭐ وصول كامل' : '⭐ Accès complet';
   var planCta0 = document.getElementById('planCta0'); if (planCta0) planCta0.textContent = isAR ? 'ابدأ مجانًا' : 'Commencer gratuitement';
-  var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'ابدأ Starter' : 'Commencer Starter';
-  var planCta2 = document.getElementById('planCta2'); if (planCta2) planCta2.textContent = isAR ? 'ابدأ Pro' : 'Commencer Pro';
+  var planCta1 = document.getElementById('planCta1'); if (planCta1) planCta1.textContent = isAR ? 'اشترك في ClassIA' : 'S\'abonner à ClassIA';
   var planCta3 = document.getElementById('planCta3'); if (planCta3) planCta3.textContent = isAR ? 'اتصل بنا' : 'Nous contacter';
   var planFeatsPairs = {
     planFeats0: [
-      ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
+      ['Toutes les matières (programme officiel)','جميع المواد (البرنامج الرسمي)'],
       ['Un aperçu de toutes les fonctionnalités','لمحة عن جميع الميزات'],
       ['Cahier journal','دفتر النصوص'],
       ['Fiches pédagogiques (aperçu)','أوراق تحضير (لمحة)'],
@@ -3575,26 +3555,14 @@ function switchLang() {
       ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين']
     ],
     planFeats1: [
-      ['1 matière (programme officiel)','مادة واحدة (البرنامج الرسمي)'],
-      ['Génération de cours et quiz par IA — 40/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 40/شهريًا'],
-      ['Cahier journal','دفتر النصوص'],
-      ['Fiches pédagogiques de base','أوراق تحضير أساسية'],
-      ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
-      ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
-      ['Notes, absences, bulletins PDF','النقاط، الغيابات، كشوف PDF'],
-      ['Messagerie parents/élèves','مراسلة الأولياء/التلاميذ'],
-      ['Sujets type Brevet / BAC','مواضيع على نمط شهادة التعليم المتوسط / البكالوريا'],
-      ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي']
-    ],
-    planFeats2: [
-      ['1 matière (programme complet)','مادة واحدة (البرنامج الكامل)'],
-      ['Génération de cours et quiz par IA avancée — 100/mois','إنشاء دروس واختبارات بذكاء اصطناعي متقدم — 100/شهريًا'],
+      ['Toutes les matières incluses','جميع المواد مشمولة'],
+      ['Génération de cours et quiz par IA illimitée','إنشاء دروس واختبارات بالذكاء الاصطناعي بلا حدود'],
       ['Cahier journal complet','دفتر النصوص الكامل'],
       ['Fiches pédagogiques avancées','أوراق تحضير متقدمة'],
       ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين'],
       ['Cloud privé sécurisé','تخزين سحابي خاص وآمن'],
+      ['Notes, absences, bulletins PDF','النقاط، الغيابات، كشوف PDF'],
       ['Messagerie parents/élèves illimitée','مراسلة غير محدودة مع الأولياء/التلاميذ'],
-      ['Cours complets générés par IA','دروس كاملة منشأة بالذكاء الاصطناعي'],
       ['Sujets type Brevet / Bac','مواضيع نمط البروفيه والبكالوريا'],
       ['Exercices avec corrigés automatiques','تمارين مع تصحيح تلقائي']
     ],
@@ -3628,7 +3596,7 @@ function switchLang() {
 
   /* Landing page — CTA final + pied de page */
   var ctaFinalTitle = document.getElementById('ctaFinalTitle'); if (ctaFinalTitle) ctaFinalTitle.innerHTML = isAR ? 'انضم إلى الثورة<br>الرقمية للتعليم في فرنسا.' : 'Rejoignez la révolution<br>numérique de l\'éducation en France.';
-  var ctaFinalSub = document.getElementById('ctaFinalSub'); if (ctaFinalSub) ctaFinalSub.textContent = isAR ? 'شهر تجريبي مجاني مع باقة الاكتشاف. بدون بطاقة. الدفع عبر تحويل بنكي.' : '1 mois d\'essai gratuit avec le forfait Découverte. Aucune carte requise. Paiement par virement bancaire.';
+  var ctaFinalSub = document.getElementById('ctaFinalSub'); if (ctaFinalSub) ctaFinalSub.textContent = isAR ? 'شهر تجريبي مجاني مع باقة الاكتشاف. بدون بطاقة. ثم باقة واحدة بـ 19.99€/شهريًا للوصول الكامل.' : '1 mois d\'essai gratuit avec le forfait Découverte. Aucune carte requise. Puis un seul forfait à 19,99€/mois pour un accès complet.';
   var ctaFinalBtn = document.getElementById('ctaFinalBtn'); if (ctaFinalBtn) ctaFinalBtn.textContent = isAR ? 'افتح التطبيق مجانًا' : "Ouvrir l'application gratuitement";
   var footRGPD = document.getElementById('footRGPD'); if (footRGPD) footRGPD.textContent = isAR ? 'الخصوصية' : 'Confidentialité';
   var footCGV = document.getElementById('footCGV'); if (footCGV) footCGV.textContent = isAR ? 'شروط البيع' : 'Conditions de vente';
@@ -8598,12 +8566,12 @@ function authApplyProfile(p, uid) {
   window.D.s.et = p.etablissement || window.D.s.et;
   window.D.s.cycle = p.cycle || window.D.s.cycle;
   window.D.s.type = p.type || window.D.s.type;
-  window._matiereLocked = true; /* verrouillage : toute matière validée par l'admin ne se change plus depuis Paramètres */
+  window._matiereLocked = false; /* forfait unique ClassIA : accès à toutes les matières, aucun verrouillage */
   window._matiereDemandee = p.matiereDemandee || null; /* demande de changement en attente, n'affecte pas l'accès en cours */
   window._matiereAddonDemandee = p.matiereAddonDemandee || null; /* demande d'ajout de matière (add-on payant) en attente */
   /* Primaire : toutes les matières incluses d'office. Moyen/Lycée : matière(s) validée(s) par l'admin
      (matieresActives), avec repli sur la matière principale seule si aucun add-on n'a encore été validé. */
-  window._matieresActives = isPrimaire() ? PRIMAIRE_MATIERES.slice() : (Array.isArray(p.matieresActives) && p.matieresActives.length ? p.matieresActives : [window.D.s.mat]);
+  window._matieresActives = isPrimaire() ? PRIMAIRE_MATIERES.slice() : BIBLIO_MATIERES.filter(function(m){ return m !== 'Autre'; });
   window._matiereRequests = [];
   window._historiquePaiements = p.historiquePaiements || [];
   window._prochainPaiement = p.prochainPaiement || null;
@@ -8665,29 +8633,21 @@ window.rAboMatieres = function() {
   var mat = window.D.s.mat;
   var primaire = typeof isPrimaire === 'function' && isPrimaire();
   var actives = window._matieresActives || [mat];
+  var estDecouverte = (window._planProf || '').toLowerCase() === 'decouverte';
   var html = '';
-  if (primaire) {
-    html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + actives.join(' · ') + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + T('abo_primaire_badge') + '</div></div></div>';
-    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">' + T('abo_primaire_note') + '</div>';
-  } else {
-    actives.forEach(function(m, i) {
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem">';
-      html += '<div style="display:flex;align-items:center;gap:.8rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + m + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + (i===0?T('abo_matiere_principale'):T('abo_matiere_additionnelle')) + '</div></div></div>';
-      html += '<span class="badge bt2">' + (i===0?T('abo_badge_base'):T('abo_badge_plus')) + '</span>';
-      html += '</div>';
-    });
-    html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">' + T('abo_note_supplement') + '</div>';
-  }
+  html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border:1px solid var(--t);border-radius:9px;background:var(--tp);margin-bottom:.5rem"><span style="font-size:1.3rem">📘</span><div><div style="font-weight:700;font-size:.87rem;">' + actives.join(' · ') + '</div><div style="font-size:.68rem;color:var(--t);font-family:\'Syne\',sans-serif;">' + T('abo_toutes_matieres_badge') + '</div></div></div>';
+  html += '<div style="padding:.7rem 1rem;border-radius:9px;background:var(--bg);margin-bottom:.5rem;font-size:.78rem;color:var(--ink3);">' + T('abo_toutes_matieres_note') + '</div>';
   box.innerHTML = html;
 
-  /* Bandeau "Plan actuel" */
-  var montantMensuel = primaire ? 1999 : (1999 + Math.max(0, actives.length - 1) * 400);
+  /* Bandeau "Plan actuel" — forfait unique ClassIA (accès complet) */
+  var montantMensuel = estDecouverte ? 0 : 19.99;
   var planNameEl = document.getElementById('aboPlanName');
-  if (planNameEl) planNameEl.textContent = primaire ? T('abo_plan_primaire_name') : T('abo_plan_name_prefix') + actives.join(' + ');
+  if (planNameEl) planNameEl.textContent = estDecouverte ? T('abo_plan_decouverte_name') : T('abo_plan_name_prefix');
   var planDetailEl = document.getElementById('aboPlanDetail');
   var prochain = window._prochainPaiement;
   if (planDetailEl) {
-    planDetailEl.textContent = montantMensuel + T('abo_par_mois') + (prochain ? T('abo_renouvellement') + new Date(prochain).toLocaleDateString('fr-FR') : ' · ' + T('aucun_paiement_lbl'));
+    var montantAff = estDecouverte ? '0' : montantMensuel.toFixed(2).replace('.', ',');
+    planDetailEl.textContent = montantAff + T('abo_par_mois') + (prochain ? T('abo_renouvellement') + new Date(prochain).toLocaleDateString('fr-FR') : ' · ' + T('aucun_paiement_lbl'));
   }
   var statusEl = document.getElementById('aboStatusBadge');
   if (statusEl) {
@@ -8709,23 +8669,29 @@ window.rAboMatieres = function() {
     }
   }
 
-  /* Quota IA réel du mois en cours */
+  /* Quota IA réel du mois en cours — illimité pour le forfait ClassIA payant, 10/mois pour la Découverte gratuite */
   if (authCurrentUid && typeof getDoc === 'function') {
-    var planKey = (window._planProf || 'pro').toLowerCase();
-    var quotaTotal = { starter: 40, pro: 100 }[planKey] || 100;
-    var moisCle = (typeof moisActuelCle === 'function') ? moisActuelCle() : null;
-    if (moisCle) {
-      getDoc(doc(dbFs, 'profs', authCurrentUid, 'usage', moisCle)).then(function(snap) {
-        var utilise = (snap.exists() && snap.data().count) ? snap.data().count : 0;
-        var restant = Math.max(0, quotaTotal - utilise);
-        var pct = Math.min(100, Math.round((utilise / quotaTotal) * 100));
-        var elUtilise = document.getElementById('aboQuotaUtilise'); if (elUtilise) elUtilise.textContent = utilise;
-        var elTotal = document.getElementById('aboQuotaTotal'); if (elTotal) elTotal.textContent = quotaTotal;
-        var elBar = document.getElementById('aboQuotaBar'); if (elBar) elBar.style.width = pct + '%';
-        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = restant + T('abo_quota_restant_suffix');
-      }).catch(function() {
-        var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = T('abo_quota_indispo');
-      });
+    if (!estDecouverte) {
+      var elUtiliseUnlim = document.getElementById('aboQuotaUtilise'); if (elUtiliseUnlim) elUtiliseUnlim.textContent = '∞';
+      var elTotalUnlim = document.getElementById('aboQuotaTotal'); if (elTotalUnlim) elTotalUnlim.textContent = T('abo_quota_illimite');
+      var elBarUnlim = document.getElementById('aboQuotaBar'); if (elBarUnlim) elBarUnlim.style.width = '100%';
+      var elRestantUnlim = document.getElementById('aboQuotaRestant'); if (elRestantUnlim) elRestantUnlim.textContent = T('abo_quota_illimite');
+    } else {
+      var quotaTotal = 10;
+      var moisCle = (typeof moisActuelCle === 'function') ? moisActuelCle() : null;
+      if (moisCle) {
+        getDoc(doc(dbFs, 'profs', authCurrentUid, 'usage', moisCle)).then(function(snap) {
+          var utilise = (snap.exists() && snap.data().count) ? snap.data().count : 0;
+          var restant = Math.max(0, quotaTotal - utilise);
+          var pct = Math.min(100, Math.round((utilise / quotaTotal) * 100));
+          var elUtilise = document.getElementById('aboQuotaUtilise'); if (elUtilise) elUtilise.textContent = utilise;
+          var elTotal = document.getElementById('aboQuotaTotal'); if (elTotal) elTotal.textContent = quotaTotal;
+          var elBar = document.getElementById('aboQuotaBar'); if (elBar) elBar.style.width = pct + '%';
+          var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = restant + T('abo_quota_restant_suffix');
+        }).catch(function() {
+          var elRestant = document.getElementById('aboQuotaRestant'); if (elRestant) elRestant.textContent = T('abo_quota_indispo');
+        });
+      }
     }
   }
 
