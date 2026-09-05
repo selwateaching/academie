@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="fr" id="llRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labo Langues — ClassIA</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDA2QjNGIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMDBBMDYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4OTFCMiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNnKSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI3MCIgZm9udC1zaXplPSI1NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+Ome+4jzwvdGV4dD4KPC9zdmc+Cg==">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Identité visuelle ClassIA (mêmes tokens que index.html) ===== */
+:root{
+  --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
+  --t:#3454D1;--t2:#5C74E8;--tp:#EAF0FE;--tp2:rgba(52,84,209,0.1);
+  --r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;
+  --b:#0EA5B7;--bp:#E8FAFB;--p:#8B5CF6;--pp:#F5F3FF;
+  --g:#22C55E;--gp:#F0FDF4;--br:#E3E4E8;--rd:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+[lang="ar"] *{font-family:'Amiri',serif!important;font-size:19px;line-height:1.8;}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--t);border-radius:2px}
+
+.btn{padding:8px 16px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
+.bo{background:transparent;border:1.5px solid var(--br);color:var(--ink2);}.bo:hover{border-color:var(--t);color:var(--t);}
+.bsm{padding:5px 11px;font-size:.72rem;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);}
+.ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem;}
+.ct{font-family:'Inter',sans-serif;font-size:.92rem;font-weight:700;}
+.cb{padding:1.3rem;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+@media (max-width:760px){.g2{grid-template-columns:1fr;}.g4{grid-template-columns:1fr 1fr;}}
+.fg{margin-bottom:.9rem;}
+.fl{display:block;font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t);margin-bottom:4px;}
+.fi,.fs,.fta{width:100%;background:var(--bg);border:1.5px solid var(--br);border-radius:7px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:.84rem;color:var(--ink);outline:none;transition:border-color .18s;}
+.fi:focus,.fs:focus,.fta:focus{border-color:var(--t);background:#fff;}
+.fta{min-height:80px;resize:vertical;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+@media (max-width:600px){.fg2{grid-template-columns:1fr;}}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:.65rem;font-weight:600;}
+.bg2{background:var(--gp);color:var(--g);}.ba2{background:var(--ap);color:var(--a);}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:1rem;}
+.overlay.open{display:flex;}
+.modal{background:var(--w);border-radius:14px;width:560px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);}
+.mh{padding:1.2rem 1.3rem;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--w);}
+.mt2{font-family:'Inter',sans-serif;font-size:1.02rem;font-weight:700;}
+.mx{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink3);padding:4px 8px;border-radius:5px;}
+.mb{padding:1.3rem;}
+.mf{padding:.9rem 1.3rem;border-top:1px solid var(--br);display:flex;justify-content:flex-end;gap:.7rem;background:var(--w);}
+
+#llTopbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.4rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+#llTopbar .brand{font-family:'Inter',sans-serif;font-weight:800;font-size:1.02rem;display:flex;align-items:center;gap:.5rem;}
+#llTopbar a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
+#llTopbar a.back:hover{color:var(--t);}
+#llContainer{max-width:920px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
+.ll-chooser-card{flex:1;min-width:230px;background:var(--w);border:1.5px solid var(--br);border-radius:14px;padding:1.8rem 1.4rem;text-align:center;transition:all .18s;}
+.ll-chooser-card:hover{box-shadow:0 10px 28px rgba(0,0,0,.08);transform:translateY(-2px);}
+.ll-chooser-ic{width:150px;height:117px;margin:0 auto .9rem;}
+.ll-chooser-card .t{font-weight:800;font-size:1rem;margin-bottom:.3rem;}
+.ll-chooser-card .s{font-size:.78rem;color:var(--ink3);margin-bottom:1.1rem;min-height:2.1em;}
+.ll-chooser-cta{width:100%;background:#2563EB;color:#fff;}
+.ll-chooser-cta:hover{background:#1D4ED8;}
+.ll-chooser-illus{position:absolute;left:calc(100% + 2rem);top:50%;transform:translateY(-50%);width:230px;opacity:.95;}
+@media (max-width:1260px){.ll-chooser-illus{display:none;}}
+.ll-demo-card{border:1.5px dashed var(--t);background:var(--tp);transition:box-shadow .25s, transform .2s;animation:llGlow 3s ease-in-out infinite;}
+.ll-demo-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(52,84,209,.14);}
+@keyframes llGlow{0%,100%{box-shadow:0 0 0 rgba(52,84,209,0);}50%{box-shadow:0 0 0 6px rgba(52,84,209,.06);}}
+.ll-act-card{cursor:pointer;transition:transform .18s, box-shadow .18s;}
+.ll-act-card:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.09);}
+.ll-mic-wrap{width:90px;height:90px;border-radius:50%;background:var(--tp);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:2.2rem;}
+@keyframes llFadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.ll-fade-in{animation:llFadeUp .4s ease both;}
+.ll-fade-in.ll-d2{animation-delay:.08s;}
+.ll-activate-btn{position:relative;transition:transform .15s, box-shadow .2s;}
+.ll-activate-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 22px rgba(52,84,209,.25);}
+.ll-activate-btn:active:not(:disabled){transform:translateY(0);}
+.ll-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:llSpin .7s linear infinite;vertical-align:-2px;margin-inline-end:.4rem;}
+@keyframes llSpin{to{transform:rotate(360deg);}}
+#llActivateMsg{animation:llFadeUp .3s ease both;}
+[lang="ar"] .fg2, [lang="ar"] .g2, [lang="ar"] .g4 { direction:rtl; }
+
+/* ===== Identité propre au Labo Langues (Phase 1 de la refonte) ===== */
+.ll-hero{background:linear-gradient(135deg,var(--t) 0%,var(--t2) 55%,#0891B2 100%);border-radius:16px;padding:1.6rem 1.7rem;color:#fff;margin-bottom:1.3rem;position:relative;overflow:hidden;}
+.ll-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.08);}
+.ll-hero::before{content:'';position:absolute;right:60px;bottom:-60px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);}
+.ll-hero h1{font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;position:relative;z-index:1;}
+.ll-hero .sub{font-size:.85rem;opacity:.92;margin-top:.3rem;position:relative;z-index:1;}
+.ll-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.3rem;}
+@media (max-width:700px){.ll-stats{grid-template-columns:1fr 1fr;}}
+.ll-stat{background:var(--w);border-radius:12px;border:1px solid var(--br);padding:1rem 1.1rem;position:relative;overflow:hidden;transition:transform .18s;}
+.ll-stat:hover{transform:translateY(-2px);}
+.ll-stat .ic{font-size:1.3rem;margin-bottom:.4rem;}
+.ll-stat .v{font-family:'Inter',sans-serif;font-size:1.55rem;font-weight:800;line-height:1;color:var(--ink);}
+.ll-stat .l{font-size:.68rem;color:var(--ink3);margin-top:.35rem;}
+.ll-stat.warn .v{color:var(--a);}
+.ll-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.85rem;flex-shrink:0;}
+.ll-tograde-row{display:flex;align-items:center;gap:.8rem;padding:.85rem 1.1rem;border-bottom:1px solid var(--br);transition:background .15s;}
+.ll-tograde-row:hover{background:var(--bg);}
+.ll-tograde-row:last-child{border-bottom:none;}
+.ll-type-badge{display:inline-flex;align-items:center;gap:4px;font-size:.66rem;font-weight:700;color:var(--t);background:var(--tp);padding:2px 8px;border-radius:20px;}
+.ll-status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-inline-end:5px;}
+.ll-status-dot.none{background:var(--ink3);}
+.ll-status-dot.progress{background:var(--a);}
+.ll-status-dot.done{background:var(--g);}
+.ll-filters{display:flex;gap:.7rem;flex-wrap:wrap;margin-bottom:1rem;}
+.ll-filters select{width:auto;min-width:140px;}
+.ll-crit-row{display:grid;grid-template-columns:110px 1fr 34px;align-items:center;gap:.7rem;margin-bottom:.5rem;font-size:.8rem;}
+.ll-crit-row input[type="range"]{width:100%;accent-color:var(--t);}
+.ll-crit-total{background:var(--tp);border-radius:9px;padding:.7rem 1rem;text-align:center;font-weight:800;color:var(--t);font-size:1.1rem;margin:.6rem 0;}
+#llWaveformCanvas{width:100%;height:64px;border-radius:9px;background:var(--bg);display:block;}
+.ll-empty-illus{display:flex;justify-content:center;gap:.6rem;margin-bottom:.9rem;}
+.ll-empty-illus img{width:56px;height:56px;object-fit:contain;}
+
+/* ===== Refonte visuelle Phase 2 : identité "audio/écoute", en-tête compact, cartes riches ===== */
+.ll-ico{width:1em;height:1em;display:inline-block;vertical-align:-.14em;flex-shrink:0;}
+.ll-hero2{background:linear-gradient(135deg,var(--t) 0%,var(--t2) 55%,#0891B2 100%);border-radius:14px;padding:1.05rem 1.3rem;color:#fff;margin-bottom:1.1rem;position:relative;overflow:hidden;display:flex;align-items:center;gap:.8rem;}
+.ll-hero2::after{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.08);}
+.ll-hero2-ic{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;}
+.ll-hero2-ic .ll-ico{width:1.25em;height:1.25em;}
+.ll-hero2 h1{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:800;position:relative;z-index:1;line-height:1.25;}
+.ll-hero2 .sub{font-size:.76rem;opacity:.9;margin-top:.15rem;position:relative;z-index:1;}
+.ll-sec-title{display:flex;align-items:center;gap:.5rem;font-family:'Inter',sans-serif;font-size:.98rem;font-weight:800;color:var(--ink);margin-bottom:.7rem;}
+.ll-sec-title .ll-ico{color:var(--t);width:1.15em;height:1.15em;}
+.ll-secondary-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.1rem;}
+.ll-secondary-actions .btn{display:inline-flex;align-items:center;gap:.4rem;}
+.ll-lang-chip{display:inline-flex;align-items:center;gap:.35rem;font-size:.66rem;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:6px;}
+.ll-lang-chip.lang-fr{background:var(--bp);color:var(--b);}
+.ll-lang-chip.lang-en{background:var(--gp);color:var(--g);}
+.ll-lang-chip.lang-es{background:var(--ap);color:var(--a);}
+.ll-lang-chip.lang-ar{background:var(--pp);color:var(--p);}
+.ll-filters{background:var(--w);border:1px solid var(--br);border-radius:12px;padding:.7rem .8rem;}
+.ll-filter-wrap{position:relative;display:inline-flex;align-items:center;}
+.ll-filter-wrap .ll-ico{position:absolute;left:10px;color:var(--ink3);pointer-events:none;}
+.ll-filter-wrap select{padding-inline-start:2rem;border-radius:20px;font-weight:600;cursor:pointer;}
+[lang="ar"] .ll-filter-wrap .ll-ico{left:auto;right:10px;}
+[lang="ar"] .ll-filter-wrap select{padding-inline-start:12px;padding-inline-end:2rem;}
+.ll-act-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;}
+.ll-act-card2{cursor:pointer;transition:transform .18s, box-shadow .18s;display:flex;flex-direction:column;}
+.ll-act-card2:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(0,0,0,.09);}
+.ll-act-card2 .cb{padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.55rem;flex:1;}
+.ll-act-card2-top{display:flex;justify-content:space-between;align-items:center;}
+.ll-act-card2-title{font-weight:700;font-size:.95rem;line-height:1.3;}
+.ll-act-card2-meta{font-size:.72rem;color:var(--ink3);display:flex;flex-wrap:wrap;gap:.3rem .5rem;align-items:center;}
+.ll-act-card2-meta .sep{opacity:.5;}
+.ll-act-card2-foot{margin-top:auto;padding-top:.55rem;border-top:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;gap:.5rem;}
+.ll-act-card2-stat{font-size:.72rem;color:var(--ink2);display:flex;align-items:center;gap:.3rem;}
+.ll-tograde-row2{display:flex;align-items:center;gap:.85rem;padding:.8rem 1.1rem;border-bottom:1px solid var(--br);flex-wrap:wrap;}
+.ll-tograde-row2:last-child{border-bottom:none;}
+.ll-tograde-row2:hover{background:var(--bg);}
+.ll-tograde-info{flex:1;min-width:180px;}
+.ll-tograde-name{font-weight:700;font-size:.84rem;}
+.ll-tograde-meta{font-size:.7rem;color:var(--ink3);margin-top:.15rem;display:flex;flex-wrap:wrap;gap:.3rem .45rem;align-items:center;}
+.ll-tograde-actions{display:flex;gap:.5rem;flex-shrink:0;}
+.ll-inline-player{width:100%;margin-top:.5rem;flex-basis:100%;}
+@media (max-width:520px){
+  .ll-hero2{padding:.9rem 1.05rem;}
+  .ll-hero2 h1{font-size:.95rem;}
+  .ll-act-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="llTopbar">
+  <div class="brand">🎙️ <span id="llBrandTxt">Labo Langues</span></div>
+  <div style="display:flex;align-items:center;gap:1rem;">
+    <button class="btn bo bsm" onclick="llToggleLang()" id="llLangBtn">العربية</button>
+    <a class="back" href="index.html" id="llBackLink">← Retour à ClassIA</a>
+  </div>
+</div>
+
+<div id="llDiagPanel" style="display:none;background:#1B1C20;color:#0f0;font-family:monospace;font-size:.78rem;padding:1rem 1.4rem;white-space:pre-wrap;line-height:1.6;max-height:50vh;overflow-y:auto;">
+  <div style="display:flex;justify-content:space-between;color:#fff;margin-bottom:.6rem;"><strong>🔍 Diagnostic</strong><button onclick="document.getElementById('llDiagPanel').style.display='none'" style="background:none;border:1px solid #666;color:#fff;border-radius:5px;cursor:pointer;">Fermer</button></div>
+  <div id="llDiagContent"></div>
+</div>
+
+<div id="llContainer">
+
+  <div id="llLoading" style="text-align:center;padding:4rem 1rem;color:var(--ink3);">
+    <div style="font-size:2rem;margin-bottom:.6rem;">🎙️</div>
+    <div id="llLoadingTxt">Chargement…</div>
+  </div>
+
+  <!-- CHOISIR PROF / ÉLÈVE -->
+  <div id="llChooser" style="display:none;">
+    <div style="text-align:center;margin-bottom:2.2rem;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:.55rem;margin-bottom:.5rem;">
+        <span id="llChooserMicIc"></span>
+        <h1 style="font-family:'Inter',sans-serif;font-size:1.55rem;font-weight:800;" id="llChooserTitle">Labo Langues</h1>
+      </div>
+      <div style="color:var(--ink3);font-size:.88rem;" id="llChooserSub">Enregistrez, envoyez et évaluez vos productions orales.</div>
+    </div>
+    <div style="position:relative;max-width:600px;margin:0 auto;">
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;">
+        <div class="ll-chooser-card">
+          <div class="ll-chooser-ic" id="llChooserProfIc"></div>
+          <div class="t" id="llChooserProfT">Professeur</div>
+          <div class="s" id="llChooserProfS">Créer des activités, corriger et noter</div>
+          <button class="btn ll-chooser-cta" onclick="llGoProf()" id="llChooserProfBtn">Créer des activités</button>
+        </div>
+        <div class="ll-chooser-card">
+          <div class="ll-chooser-ic" id="llChooserEleveIc"></div>
+          <div class="t" id="llChooserEleveT">Élève</div>
+          <div class="s" id="llChooserEleveS">Entrer mon code d'accès</div>
+          <button class="btn ll-chooser-cta" onclick="llGoEleve()" id="llChooserEleveBtn">Entrer mon code</button>
+        </div>
+      </div>
+      <div class="ll-chooser-illus" id="llChooserIllus"></div>
+    </div>
+  </div>
+
+  <!-- PAS CONNECTÉ (prof) -->
+  <div id="llNeedLogin" style="display:none;text-align:center;padding:3rem 1rem;">
+    <div style="font-size:2rem;margin-bottom:.8rem;">🔒</div>
+    <div style="font-weight:700;margin-bottom:.5rem;" id="llNeedLoginTxt">Connecte-toi d'abord sur ClassIA.</div>
+    <a class="btn bt" href="index.html" id="llNeedLoginBtn" style="display:inline-block;margin-top:.8rem;">Aller sur ClassIA</a>
+  </div>
+
+  <!-- MATIÈRE NON LANGUE -->
+  <div id="llNotLangue" style="display:none;text-align:center;padding:3rem 1rem;">
+    <div style="font-size:2rem;margin-bottom:.8rem;">🎙️</div>
+    <div style="font-weight:700;margin-bottom:.5rem;" id="llNotLangueTxt">Le Labo Langues est réservé aux professeurs de Français, Anglais, Espagnol et Arabe.</div>
+  </div>
+
+  <!-- DÉCOUVERTE / DEMO (module non activé) -->
+  <div id="llDiscovery" style="display:none;">
+    <h1 class="ll-fade-in" style="font-family:'Inter',sans-serif;font-size:1.25rem;font-weight:800;margin-bottom:.3rem;" id="llDiscTitle">🎙️ Découvrez le Labo Langues</h1>
+    <div class="ll-fade-in" style="color:var(--ink3);font-size:.85rem;margin-bottom:1.4rem;" id="llDiscSub">Un module complémentaire pour faire pratiquer l'oral à vos élèves de langue.</div>
+
+    <div class="card ll-demo-card ll-fade-in ll-d2" style="margin-bottom:1.4rem;">
+      <div class="ch"><div class="ct" id="llDemoCt">🎧 Exemple de production corrigée</div><span class="badge ba2" id="llDemoBadge">Exemple</span></div>
+      <div class="cb">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:.7rem;">🎙️ <span id="llDemoActTitle">Activité : Introduce yourself</span></div>
+        <div style="display:flex;align-items:center;gap:.8rem;padding:.8rem;background:var(--bg);border-radius:9px;">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">S</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.85rem;">Sara — <span id="llDemoTimer">1:24</span></div>
+            <button onclick="llDemoPlayToggle()" id="llDemoPlayBtn" style="background:none;border:none;padding:0;cursor:pointer;font-size:.72rem;color:var(--t);font-weight:700;font-family:'Inter',sans-serif;">▶️ Écouter (exemple)</button>
+            <div style="height:4px;background:var(--br);border-radius:2px;margin-top:5px;overflow:hidden;">
+              <div id="llDemoProgress" style="height:100%;width:0%;background:var(--t);transition:width .1s linear;"></div>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-weight:800;color:var(--t);">⭐ 17/20</div>
+          </div>
+        </div>
+        <div style="margin-top:.7rem;font-size:.8rem;color:var(--ink2);">💬 <span id="llDemoComment">Très bonne prononciation, continue à travailler l'intonation des questions.</span></div>
+      </div>
+    </div>
+
+    <div class="card ll-fade-in ll-d2">
+      <div class="cb" style="text-align:center;">
+        <div style="font-weight:700;margin-bottom:.5rem;" id="llActivateTitle">Envie d'activer le Labo Langues pour tes classes ?</div>
+        <div style="font-size:.78rem;color:var(--ink3);margin-bottom:1rem;" id="llActivateSub">Module complémentaire facturé en plus de ton abonnement ClassIA.</div>
+        <button class="btn bt ll-activate-btn" onclick="llDemanderActivation()" id="llActivateBtn">Demander l'activation</button>
+        <div id="llActivateMsg" style="margin-top:.8rem;font-size:.8rem;color:var(--t);display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESPACE PROFESSEUR -->
+  <div id="llProfApp" style="display:none;">
+    <div id="llProfDashboard">
+      <div class="ll-hero2">
+        <div class="ll-hero2-ic" id="llHeroIcWrap"></div>
+        <div>
+          <h1 id="llProfTitle">Labo Langues</h1>
+          <div class="sub" id="llProfHeroSub">Faites pratiquer l'oral à vos élèves.</div>
+        </div>
+      </div>
+      <div class="ll-stats">
+        <div class="ll-stat warn"><div class="ic" id="llStatToGradeIc"></div><div class="v" id="llStatToGrade">0</div><div class="l" id="llStatToGradeL">Productions à corriger</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatActsIc"></div><div class="v" id="llStatActs">0</div><div class="l" id="llStatActsL">Activités</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatElevesIc"></div><div class="v" id="llStatEleves">0</div><div class="l" id="llStatElevesL">Élèves participants</div></div>
+        <div class="ll-stat"><div class="ic" id="llStatMoyenneIc"></div><div class="v" id="llStatMoyenne">—</div><div class="l" id="llStatMoyenneL">Moyenne orale</div></div>
+      </div>
+      <div id="llStorageWarning" style="display:none;background:var(--rp);border:1px solid rgba(200,16,46,.3);border-radius:9px;padding:.8rem 1rem;margin-bottom:1.2rem;font-size:.8rem;color:var(--ink);"></div>
+      <div class="card" id="llToGradeCard" style="margin-bottom:1.3rem;display:none;">
+        <div class="ch"><div class="ct" id="llToGradeCt" style="display:flex;align-items:center;gap:.4rem;"></div></div>
+        <div id="llToGradeList"></div>
+      </div>
+    </div>
+
+    <div class="ll-secondary-actions">
+      <button class="btn bo" onclick="llOpenProgression()" id="llProgressionBtn"></button>
+      <button class="btn bo" onclick="llOpenLibrary()" id="llLibraryBtn"></button>
+    </div>
+    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:1rem;">
+      <div class="ll-sec-title" id="llActsSectionTitle" style="margin-bottom:0;"></div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <button class="btn bt" onclick="llOpenActModal()" id="llNewActBtn">+ Créer une activité orale</button>
+      </div>
+    </div>
+    <div class="ll-filters" id="llFilters">
+      <div class="ll-filter-wrap"><span id="llFilterLangueIc"></span><select class="fs" id="llFilterLangue" onchange="llRenderProfApp()"><option value="">Toutes langues</option></select></div>
+      <div class="ll-filter-wrap"><span id="llFilterClasseIc"></span><select class="fs" id="llFilterClasse" onchange="llRenderProfApp()"><option value="">Toutes classes</option></select></div>
+      <div class="ll-filter-wrap"><span id="llFilterStatutIc"></span><select class="fs" id="llFilterStatut" onchange="llRenderProfApp()">
+        <option value="">Tous statuts</option>
+        <option value="none" id="llFilterStatutNone">Aucune réponse</option>
+        <option value="progress" id="llFilterStatutProgress">En cours</option>
+        <option value="done" id="llFilterStatutDone">Terminée</option>
+      </select></div>
+    </div>
+    <div class="ll-act-grid" id="llActList" style="margin-bottom:1.2rem;"></div>
+    <div class="card" id="llEmptyCard" style="display:none;">
+      <div class="cb" style="text-align:center;padding:2.4rem 1rem;color:var(--ink3);">
+        <div class="ll-empty-illus" id="llEmptyIllus"></div>
+        <div id="llEmptyTxt">Aucune activité orale pour le moment.</div>
+      </div>
+    </div>
+
+    <div id="llProdView" style="display:none;">
+      <div class="ch" style="background:none;border:none;padding:0 0 1rem;">
+        <div style="display:flex;align-items:center;gap:.7rem;"><button class="btn bo bsm" onclick="llCloseProd()" id="llProdBackBtn"></button><div class="ct" id="llProdTitle" style="font-size:1rem;"></div></div>
+        <div style="display:flex;gap:.6rem;">
+          <button class="btn bo bsm" onclick="llEditCurrentAct()" id="llEditActBtn"></button>
+          <button class="btn bo bsm" onclick="llDeleteAct()" id="llDeleteActBtn"></button>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:1rem;"><div class="cb" id="llProdConsigne"></div></div>
+      <div class="card"><div class="ch"><div class="ct" id="llProdCt" style="display:flex;align-items:center;gap:.4rem;"></div></div><div class="cb" style="padding:0;" id="llProdList"></div></div>
+    </div>
+  </div>
+
+  <!-- ÉLÈVE : SAISIE CODE -->
+  <div id="llEleveLogin" style="display:none;text-align:center;padding:2.4rem 1rem;">
+    <div style="font-size:2rem;margin-bottom:.8rem;">🎓</div>
+    <div style="font-weight:700;margin-bottom:1rem;" id="llEleveLoginTxt">Entre ton code d'accès ClassIA</div>
+    <input class="fi" id="llEleveCode" style="max-width:220px;margin:0 auto;text-align:center;font-size:1.1rem;letter-spacing:.15em;" maxlength="6" placeholder="••••••">
+    <div id="llEleveErr" style="color:var(--r);font-size:.78rem;margin-top:.6rem;"></div>
+    <button class="btn bt" onclick="llEleveLoginSubmit()" style="margin-top:1rem;" id="llEleveLoginBtn">Valider</button>
+  </div>
+
+  <!-- ÉLÈVE : LISTE ACTIVITÉS -->
+  <div id="llEleveApp" style="display:none;">
+    <div class="ll-hero">
+      <h1 id="llEleveAppTitle">🎙️ Ma pratique orale</h1>
+      <div class="sub" id="llEleveHeroSub">Écoute, enregistre-toi, progresse.</div>
+    </div>
+    <div class="ch" style="background:none;border:none;padding:0;margin-bottom:.7rem;">
+      <div style="display:flex;flex-direction:column;justify-content:center;">
+        <span id="llEleveNameTxt" style="font-weight:700;font-size:.9rem;"></span>
+        <span id="llEleveClasseTxt" style="font-size:.68rem;color:var(--ink3);"></span>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.2rem;">
+      <div class="ch"><div class="ct" id="llTodoCt">🔥 À faire</div></div>
+      <div class="cb" style="padding:0;" id="llEleveTodoList"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct" id="llResultsCt">⭐ Mes résultats</div></div>
+      <div class="cb" style="padding:0;" id="llEleveDoneList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODALE : Créer une activité -->
+<div class="overlay" id="llModalAct">
+  <div class="modal">
+    <div class="mh"><div class="mt2" id="llModalActTitle">Créer une activité orale</div><button class="mx" onclick="llCloseModal('llModalAct')">✕</button></div>
+    <div class="mb">
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llFlLangue">Langue</label>
+          <select class="fs" id="llLangue">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 Anglais</option>
+            <option value="es">🇪🇸 Espagnol</option>
+            <option value="ar">🇩🇿 Arabe</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llFlClasse">Classe</label><select class="fs" id="llClasse" onchange="llOnClasseChange()"></select></div>
+      </div>
+      <div class="fg"><label class="fl" id="llFlType">Type d'activité</label><select class="fs" id="llTypeActivite"></select></div>
+      <div class="fg"><label class="fl" id="llFlDest">Destinataires</label>
+        <select class="fs" id="llAssigneMode" onchange="llOnAssigneModeChange()">
+          <option value="tous" id="llOptTous">Toute la classe</option>
+          <option value="specifique" id="llOptSpec">Élèves spécifiques</option>
+        </select>
+        <div id="llElevesBox" style="display:none;max-height:150px;overflow-y:auto;margin-top:.5rem;border:1px solid var(--br);border-radius:8px;padding:.6rem;"></div>
+      </div>
+      <div class="fg"><label class="fl" id="llFlTheme">Thème</label><input class="fi" id="llTheme" placeholder="Ex: Se présenter"></div>
+      <div class="fg"><label class="fl" id="llFlConsigne">Consigne</label><textarea class="fta" id="llConsigne" placeholder="Ex: Présente-toi en 1 à 2 minutes..."></textarea></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llFlDuree">Durée maximale</label>
+          <select class="fs" id="llDureeMax">
+            <option value="30">30 secondes</option>
+            <option value="60" selected>1 minute</option>
+            <option value="120">2 minutes</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llFlBareme">Barème</label>
+          <select class="fs" id="llBareme"><option value="20" selected>/20</option><option value="10">/10</option></select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl" id="llFlDate">Date limite</label><input type="date" class="fi" id="llDateLimite"></div>
+      <div class="fg"><label style="display:flex;align-items:center;gap:.5rem;font-size:.82rem;"><input type="checkbox" id="llPlusieursTentatives" checked> <span id="llFlTentatives">Autoriser plusieurs envois (l'élève peut recommencer)</span></label></div>
+      <div class="fg"><label class="fl" id="llFlAudioModele">Audio modèle (optionnel)</label>
+        <input type="file" accept="audio/*" class="fi" id="llAudioModeleInput" style="padding:6px;">
+      </div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalAct')" id="llCancelBtn">Annuler</button><button class="btn bt" onclick="llSaveAct()" id="llSaveBtn">Créer</button></div>
+  </div>
+</div>
+
+<!-- BIBLIOTHÈQUE DE MODÈLES -->
+<div class="overlay" id="llModalLibrary">
+  <div class="modal" style="width:640px;">
+    <div class="mh"><div class="mt2" id="llLibTitle">📋 Bibliothèque de modèles</div><button class="mx" onclick="llCloseModal('llModalLibrary')">✕</button></div>
+    <div class="mb">
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibBuiltinTitle">Modèles ClassIA</div>
+      <div id="llLibBuiltinList" style="margin-bottom:1.2rem;"></div>
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibCustomTitle">Mes modèles</div>
+      <div id="llLibCustomList"></div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalLibrary')" id="llLibCloseBtn">Fermer</button></div>
+  </div>
+</div>
+
+<!-- MODIFIER UN MODÈLE PERSONNEL -->
+<div class="overlay" id="llModalTemplateEdit">
+  <div class="modal">
+    <div class="mh"><div class="mt2" id="llTplEditTitle">Modifier le modèle</div><button class="mx" onclick="llCloseModal('llModalTemplateEdit')">✕</button></div>
+    <div class="mb">
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llTplFlLangue">Langue</label>
+          <select class="fs" id="llTplLangue">
+            <option value="fr">🇫🇷 Français</option>
+            <option value="en">🇬🇧 Anglais</option>
+            <option value="es">🇪🇸 Espagnol</option>
+            <option value="ar">🇩🇿 Arabe</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llTplFlType">Type d'activité</label><select class="fs" id="llTplType"></select></div>
+      </div>
+      <div class="fg"><label class="fl" id="llTplFlTheme">Thème</label><input class="fi" id="llTplTheme"></div>
+      <div class="fg"><label class="fl" id="llTplFlConsigne">Consigne</label><textarea class="fta" id="llTplConsigne"></textarea></div>
+      <div class="fg2">
+        <div class="fg"><label class="fl" id="llTplFlDuree">Durée maximale</label>
+          <select class="fs" id="llTplDureeMax">
+            <option value="30">30 secondes</option>
+            <option value="60">1 minute</option>
+            <option value="120">2 minutes</option>
+            <option value="180">3 minutes</option>
+            <option value="300">5 minutes</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="llTplFlBareme">Barème</label>
+          <select class="fs" id="llTplBareme"><option value="20">/20</option><option value="10">/10</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalTemplateEdit')" id="llTplCancelBtn">Annuler</button><button class="btn bt" onclick="llSaveTemplateEdit()" id="llTplSaveBtn">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- PROGRESSION D'UN ÉLÈVE -->
+<div class="overlay" id="llModalProgression">
+  <div class="modal" style="width:600px;">
+    <div class="mh"><div class="mt2" id="llProgTitle">📈 Progression orale</div><button class="mx" onclick="llCloseModal('llModalProgression')">✕</button></div>
+    <div class="mb">
+      <div class="fg"><label class="fl" id="llProgFlEleve">Élève</label><select class="fs" id="llProgEleveSelect" onchange="llRenderProgression()"></select></div>
+      <div id="llProgContent"></div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalProgression')" id="llProgCloseBtn">Fermer</button></div>
+  </div>
+</div>
+
+<!-- STUDIO D'ENREGISTREMENT (élève) -->
+<div class="overlay" id="llStudio">
+  <div class="modal" style="width:420px;text-align:center;">
+    <div class="mb">
+      <div style="font-weight:800;font-size:.85rem;letter-spacing:.05em;color:var(--t);margin-bottom:.3rem;" id="llStudioTitle">🎙️ STUDIO AUDIO</div>
+      <div style="font-size:.78rem;color:var(--ink3);margin-bottom:.2rem;" id="llStudioLangue"></div>
+      <div style="font-weight:700;font-size:1.05rem;margin-bottom:1.1rem;" id="llStudioTheme"></div>
+      <div class="ll-mic-wrap" id="llMicWrap">🎙️</div>
+      <canvas id="llWaveformCanvas" width="360" height="64" style="display:none;margin-bottom:.8rem;"></canvas>
+      <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:1.1rem;" id="llStudioTimer">00:00 / 02:00</div>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <button class="btn bt" id="llStudioStartBtn" onclick="llStudioStart()" style="width:100%;background:#E63946;">🔴 Démarrer</button>
+        <div style="text-align:center;font-size:.74rem;color:var(--ink3);" id="llStudioOr">— ou —</div>
+        <label class="btn bo" style="width:100%;cursor:pointer;" id="llStudioImportLbl"><span id="llStudioImportLblTxt">📁 Importer un fichier audio</span>
+          <input type="file" accept="audio/*" id="llStudioImportInput" style="display:none;" onchange="llStudioImport(this)">
+        </label>
+        <div id="llStudioPauseRow" style="display:none;gap:.6rem;">
+          <button class="btn bo" id="llStudioPauseBtn" onclick="llStudioPause()" style="flex:1;">⏸ Pause</button>
+          <button class="btn bo" id="llStudioStopBtn" onclick="llStudioStop()" style="flex:1;">⏹ Arrêter</button>
+        </div>
+        <div id="llStudioPreviewRow" style="display:none;flex-direction:column;gap:.6rem;">
+          <audio id="llStudioPreview" controls style="width:100%;"></audio>
+          <button class="btn bo" onclick="llStudioRedo()" id="llStudioRedoBtn">🔄 Recommencer</button>
+          <button class="btn bt" onclick="llStudioSend()" id="llStudioSendBtn">📤 Envoyer au professeur</button>
+        </div>
+      </div>
+      <div id="llStudioErr" style="color:#E63946;font-size:.78rem;margin-top:.8rem;display:none;"></div>
+      <button class="btn bo bsm" onclick="llCloseModal('llStudio')" style="margin-top:1.2rem;width:100%;" id="llStudioCloseBtn">✕ Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+/* Même projet Firebase que ClassIA (comptes prof déjà existants, accès/facturation
+   gérés via un simple champ laboLanguesActif sur le document profs/{uid}).
+   Aucune donnée de ClassIA n'est modifiée depuis ce fichier : le module est
+   techniquement séparé, il ne fait que LIRE le trousseau (classes/élèves) déjà
+   présent en local, et gère ses propres activités/productions à part. */
+const firebaseConfig = {
+  apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
+  authDomain: "tadriss-dz-c5884.firebaseapp.com",
+  projectId: "tadriss-dz-c5884",
+  storageBucket: "tadriss-dz-c5884.firebasestorage.app",
+  messagingSenderId: "647327995081",
+  appId: "1:647327995081:web:75e128a1748cfa4f126918"
+};
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const dbFs = getFirestore(fbApp);
+/* Même mode de persistance que ClassIA (index.html), explicitement — les deux pages
+   partagent la même session Firebase Auth stockée pour ce domaine ; laisser l'une des
+   deux sur le mode par défaut du SDK au lieu de le fixer explicitement pouvait créer une
+   incohérence entre les deux onglets ouverts en même temps. */
+setPersistence(auth, browserLocalPersistence).catch(function(){});
+
+/* Les enregistrements audio (base64) peuvent faire grossir le stockage du navigateur
+   pour ce domaine ; sous pression mémoire, le navigateur peut évincer tout le stockage
+   d'une origine (y compris la session Firebase Auth partagée avec ClassIA), ce qui se
+   manifeste comme une déconnexion inattendue. On demande un stockage "persistant" pour
+   réduire ce risque — sans effet visible si déjà accordé ou non supporté. */
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
+
+/* ===== Bilingue (indépendant de ClassIA, propre à ce fichier) ===== */
+var LL_LANG_KEYS = {
+  llBrandTxt:['Labo Langues','مخبر اللغات'],
+  llLangBtn:['العربية','Français'],
+  llBackLink:['← Retour à ClassIA','← العودة إلى ClassIA'],
+  llLoadingTxt:['Chargement…','جارٍ التحميل…'],
+  llChooserTitle:['Labo Langues','مخبر اللغات'],
+  llChooserSub:["Enregistrez, envoyez et évaluez vos productions orales.",'سجّل، أرسل وقيّم إنتاجاتك الشفهية.'],
+  llChooserProfT:['Professeur','أستاذ(ة)'],
+  llChooserProfS:['Créer des activités, corriger et noter','إنشاء الأنشطة، التصحيح والتنقيط'],
+  llChooserProfBtn:['Créer des activités','إنشاء الأنشطة'],
+  llChooserEleveT:['Élève','تلميذ(ة)'],
+  llChooserEleveS:["Entrer mon code d'accès",'إدخال رمز الوصول'],
+  llChooserEleveBtn:['Entrer mon code','إدخال الرمز'],
+  llNeedLoginTxt:["Connecte-toi d'abord sur ClassIA.",'سجّل الدخول أولاً على ClassIA.'],
+  llNeedLoginBtn:['Aller sur ClassIA','الذهاب إلى ClassIA'],
+  llNotLangueTxt:['Le Labo Langues est réservé aux professeurs de Français, Anglais, Espagnol et Arabe.','مخبر اللغات مخصص فقط لأساتذة الفرنسية والإنجليزية والإسبانية والعربية.'],
+  llDiscTitle:['🎙️ Découvrez le Labo Langues','🎙️ اكتشف مخبر اللغات'],
+  llDiscSub:["Un module complémentaire pour faire pratiquer l'oral à vos élèves de langue.",'وحدة إضافية لتدريب تلاميذك على التعبير الشفهي.'],
+  llDemoCt:['🎧 Exemple de production corrigée','🎧 مثال عن إنتاج مصحح'],
+  llDemoBadge:['Exemple','مثال'],
+  llDemoActTitle:['Activité : Introduce yourself','النشاط: Introduce yourself'],
+  llDemoPlayBtn:['▶️ Écouter (exemple)','▶️ استماع (مثال)'],
+  llDemoComment:["Très bonne prononciation, continue à travailler l'intonation des questions.",'نطق جيد جداً، واصل العمل على تنغيم الأسئلة.'],
+  llActivateTitle:['Envie d\'activer le Labo Langues pour tes classes ?','هل ترغب في تفعيل مخبر اللغات لأقسامك؟'],
+  llActivateSub:["Module complémentaire facturé en plus de ton abonnement ClassIA.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في ClassIA.'],
+  llActivateBtn:["Demander l'activation",'طلب التفعيل'],
+  llProfTitle:['Labo Langues','مخبر اللغات'],
+  llProfHeroSub:['Faites pratiquer l\'oral à vos élèves.','درّب تلاميذك على التعبير الشفهي.'],
+  llStatToGradeL:['Productions à corriger','إنتاجات للتصحيح'],
+  llStatActsL:['Activités','أنشطة'],
+  llStatElevesL:['Élèves participants','تلاميذ مشاركون'],
+  llStatMoyenneL:['Moyenne orale','المعدل الشفهي'],
+  llToGradeCtTxt:['À corriger','للتصحيح'],
+  llActsSectionTitleTxt:['Mes activités orales','أنشطتي الشفهية'],
+  llFlType:["Type d'activité",'نوع النشاط'],
+  llFilterStatutNone:['Aucune réponse','لا استجابة'],
+  llFilterStatutProgress:['En cours','قيد الإنجاز'],
+  llFilterStatutDone:['Terminée','مكتملة'],
+  llEleveHeroSub:["Écoute, enregistre-toi, progresse.",'استمع، سجّل صوتك، وتقدّم.'],
+  llTodoCt:['🔥 À faire','🔥 للإنجاز'],
+  llResultsCt:['⭐ Mes résultats','⭐ نتائجي'],
+  llProgressionBtnTxt:['Progression','التقدّم'],
+  llLibraryBtnTxt:['Bibliothèque de modèles','مكتبة النماذج'],
+  llProdBackBtnTxt:['Retour','رجوع'],
+  llLibTitle:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
+  llLibBuiltinTitle:['Modèles ClassIA','نماذج ClassIA'],
+  llLibCustomTitle:['Mes modèles','نماذجي'],
+  llLibCloseBtn:['Fermer','إغلاق'],
+  llTplEditTitle:['Modifier le modèle','تعديل النموذج'],
+  llTplFlLangue:['Langue','اللغة'],
+  llTplFlType:["Type d'activité",'نوع النشاط'],
+  llTplFlTheme:['Thème','الموضوع'],
+  llTplFlConsigne:['Consigne','التعليمة'],
+  llTplFlDuree:['Durée maximale','المدة القصوى'],
+  llTplFlBareme:['Barème','السلّم'],
+  llTplCancelBtn:['Annuler','إلغاء'],
+  llTplSaveBtn:['Enregistrer','حفظ'],
+  llProgTitle:['📈 Progression orale','📈 التقدّم الشفهي'],
+  llProgFlEleve:['Élève','التلميذ'],
+  llProgCloseBtn:['Fermer','إغلاق'],
+  llNewActBtn:['+ Créer une activité orale','+ إنشاء نشاط شفهي'],
+  llEmptyTxt:['Aucune activité orale pour le moment.','لا يوجد أي نشاط شفهي حالياً.'],
+  llProdCtTxt:['Productions des élèves','إنتاجات التلاميذ'],
+  llEditActBtnTxt:['Modifier','تعديل'],
+  llDeleteActBtnTxt:["Supprimer l'activité",'حذف النشاط'],
+  llEleveLoginTxt:["Entre ton code d'accès ClassIA",'أدخل رمز الوصول الخاص بك'],
+  llEleveLoginBtn:['Valider','تأكيد'],
+  llEleveAppTitle:['🎙️ Mes activités orales','🎙️ أنشطتي الشفهية'],
+  llModalActTitle:['Créer une activité orale','إنشاء نشاط شفهي'],
+  llFlLangue:['Langue','اللغة'],
+  llFlClasse:['Classe','القسم'],
+  llFlDest:['Destinataires','المستفيدون'],
+  llOptTous:['Toute la classe','كل القسم'],
+  llOptSpec:['Élèves spécifiques','تلاميذ محددون'],
+  llFlTheme:['Thème','الموضوع'],
+  llFlConsigne:['Consigne','التعليمة'],
+  llFlDuree:['Durée maximale','المدة القصوى'],
+  llFlBareme:['Barème','السلّم'],
+  llFlDate:['Date limite','الأجل الأقصى'],
+  llFlTentatives:["Autoriser plusieurs envois (l'élève peut recommencer)",'السماح بعدة محاولات (يمكن للتلميذ إعادة المحاولة)'],
+  llFlAudioModele:['Audio modèle (optionnel)','صوت نموذجي (اختياري)'],
+  llCancelBtn:['Annuler','إلغاء'],
+  llSaveBtn:['Créer','إنشاء'],
+  llStudioTitle:['🎙️ STUDIO AUDIO','🎙️ استوديو الصوت'],
+  llStudioOr:['— ou —','— أو —'],
+  llStudioImportLblTxt:['📁 Importer un fichier audio','📁 استيراد ملف صوتي'],
+  llStudioRedoBtn:['🔄 Recommencer','🔄 إعادة المحاولة'],
+  llStudioSendBtn:['📤 Envoyer au professeur','📤 إرسال إلى الأستاذ'],
+  llStudioCloseBtn:['✕ Fermer','✕ إغلاق']
+};
+var LL_CUR = 'fr';
+function llApplyLang() {
+  var isAR = LL_CUR === 'ar';
+  document.getElementById('llRoot').setAttribute('lang', LL_CUR);
+  document.getElementById('llRoot').setAttribute('dir', isAR ? 'rtl' : 'ltr');
+  Object.keys(LL_LANG_KEYS).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = LL_LANG_KEYS[id][isAR ? 1 : 0];
+  });
+  document.querySelectorAll('#llLangue, #llLangue option').length; /* noop guard */
+}
+window.llToggleLang = function() { LL_CUR = LL_CUR === 'fr' ? 'ar' : 'fr'; llApplyLang(); };
+
+/* Diagnostic visible à l'écran (sans avoir besoin d'ouvrir les outils développeur) :
+   liste, pour chaque compte présent sur cet appareil, ses classes/élèves (localStorage TADRISS_DZ_*)
+   et ses activités Labo Langues (localStorage LABOLANGUES_*), pour repérer une incohérence de compte. */
+window.llShowDiag = function() {
+  var lines = [];
+  var cu = LL_STATE.firebaseUser;
+  lines.push('COMPTE ACTUELLEMENT CONNECTÉ ICI : ' + (cu ? ((cu.email || '(sans email)') + ' — uid ' + cu.uid) : '(aucun, non connecté)'));
+  lines.push('');
+  var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('TADRISS_DZ_') === 0; });
+  if (!rosterKeys.length) lines.push('Aucun compte ClassIA trouvé sur cet appareil/navigateur.');
+  rosterKeys.forEach(function(k) {
+    try {
+      var d = JSON.parse(localStorage.getItem(k));
+      var uid = k.replace('TADRISS_DZ_', '');
+      lines.push('COMPTE (uid ' + uid + ')' + (cu && cu.uid === uid ? '  ← compte connecté ici' : ''));
+      lines.push('  Classes : ' + (d.cls || []).map(function(c) { return c.id + ':' + c.nm; }).join(', ') || '(aucune)');
+      lines.push('  Élèves  : ' + (d.el || []).map(function(e) { return e.pr + ' ' + e.no + ' [classe ' + e.cid + ', code ' + (e.code || llGenCode(e.id)) + ']'; }).join(', ') || '(aucun)');
+      lines.push('  Évaluations (Notes et moyennes) : ' + (d.ev || []).map(function(v) { return v.int + (v._laboActId ? ' [🎙️ synchro Labo Langues]' : ''); }).join(', ') || '(aucune)');
+    } catch (e) { lines.push('COMPTE ' + k + ' : erreur de lecture'); }
+  });
+  lines.push('');
+  var actKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('LABOLANGUES_') === 0 && k.indexOf('_audio') < 0; });
+  if (!actKeys.length) lines.push('Aucune activité Labo Langues trouvée sur cet appareil/navigateur.');
+  actKeys.forEach(function(k) {
+    try {
+      var d = JSON.parse(localStorage.getItem(k));
+      var uid = k.replace('LABOLANGUES_', '');
+      lines.push('ACTIVITÉS du compte (uid ' + uid + ')' + (cu && cu.uid === uid ? '  ← compte connecté ici' : ''));
+      (d.acts || []).forEach(function(a) {
+        var subs = (d.subs || []).filter(function(s) { return s.actId === a.id; });
+        var subsTxt = subs.map(function(s) { return 'élève ' + s.eleveId + ' → note ' + (s.note != null ? s.note : 'non notée'); }).join(', ') || 'aucun envoi';
+        lines.push('  ' + a.theme + ' [classe ' + a.classeId + '] : ' + subsTxt);
+      });
+      if (!(d.acts || []).length) lines.push('  (aucune activité créée)');
+    } catch (e) { lines.push('ACTIVITÉS ' + k + ' : erreur de lecture'); }
+  });
+  document.getElementById('llDiagContent').textContent = lines.join('\n');
+  document.getElementById('llDiagPanel').style.display = 'block';
+};
+
+/* Icônes réutilisées telles quelles depuis la barre latérale de ClassIA (index.html),
+   pour une identité visuelle cohérente entre les deux applications (mêmes icônes 3D
+   colorées que le reste du site, au lieu d'icônes SVG inventées séparément). */
+var LL_TADRISS_ICONS = {
+  eleves: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQYFBAcGBgYIBwcICxILCwoKCxYPEA0SGhYbGhkWGRgcICgiHB4mHhgZIzAkJiorLS4tGyIyNTEsNSgsLSz/2wBDAQcICAsJCxULCxUsHRkdLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCz/wAARCABuAG4DASIAAhEBAxEB/8QAHAAAAgIDAQEAAAAAAAAAAAAABQcEBgADCAIB/8QAPxAAAQMDAgMFBQUFBwUAAAAAAQIDBAAFEQYhEjFBBxMiUWEUMnGBkSNCUqGxFWJygsEIFkNjkqLRMzRTsuH/xAAaAQACAwEBAAAAAAAAAAAAAAADBQACBAEG/8QAIxEAAgICAgMAAwEBAAAAAAAAAQIAAwQREjETIUEFFFEyI//aAAwDAQACEQMRAD8A6JrKyhc/UVvgLKFuFxadiEdD5ZoiqWOgINmC+yYUrKq69fWpC+BWAr8JdQD9M1va1ra1qAcDrQPUgKH5VYVOehKeZB2ZYarF71mxbXlMMJDq0HBVnbPoKsC5Larc5KYWlxvulOJUk5B2JpB3aTKcYeDWVSXvs28nGVK2Az86Pj1K22foTVUob3LXK7X3mXi21H74jnwN5A+ea3W3taXPPgSyo4yUKTwqx586odt0bOdfai3K4CK2poPqZjoJWoE4wVkYBztigdxtD1svjNwt6Ci1ocWgIIUlTeDwFJ4t1AqOc9aBXk0vZwIGofwt2ROktO6li6hYc7od2+zjvGyc7HkR6UZpOdl0xZ1iGwSEux1gj4YP9KbcufHgpBfcCSeQHM1fJRaXIHUy2gIZIrKrcvXVohEB51KM8uJaQT8udZG11aZieJhYdSOZQ4lWKxeVP7AeRe9yyVlRYFzi3JtSozoUU+8k7FPyqXRAQRsS4IPsQffJa4FimSWzhbbRKT5HkKSmpLsqJa3HklSllSW043O5xt604NX5/ujcCOjefzFJ111bToWEpXjmFDIpljoWpfj3F97AXoG6lXeavb0Zfc2CQnGxU4AAD1J61v0/cJ0K4vW2ehbKkNpWlKjyz5elXV+7QzGcIa+xlEqfCid9sHG/l5VT5s9u4XHMRARHaSEI23IGw38qW/j2ta/Wuu44/I11Lj7331G32f3Ey7HdoJXxBoFSB5BSTt9c0pdVOuKsUgx0qWsAe5niTv7wx1HOmP2RhapN2JG3C0P1qJqPs/ukC8rl2yP7bBWouJbQRxtn8JB5jPlTjaLa6E63M2C3/IAys6Rnagu2jit+BI4Iig136kkl0Y2JTkH58iap+t7jfDqWPbZUV+O3GKCEn/FJAOVY2G3TpTPSq+xUAptlzYXgAlLKgTvmgVxseorwlbUaxXBxxw8XG40Ugq8ypW1Yq/x9SWeTlGrXMycCYW7KCF6zaGc8EdxR/If1o/qS6qkXCYQrZKylI9Bt+uam9muhJWmW3p1zW2qfJSEBts5DKOZGepJxnptVYvAPts5Kurzg/wBxrH+TsDtsdRLnNvX8i9RFud6CpvfMJS+tQR3pVxEA+YHKoyVzrDdo8nvWlJU8llfdEjn0wRyoq9K/ZbYbXwoDeQhZTsAeY9Kr7r5uksJbALYVxKUBjKvOlwsY+vkZlMf9fkD8ji0jeVJ1RBCFHhfJZWPMEEj8wKbNIbRJWdU2hB5+0D/1UafNacX/ADFGL/kyLcYSLjbJMNZwl9tTefLI50lnob9ruaot1jqbU3zyCEr9Qeop5VDkzYOC0/wPY2KeDjA/pWs5BqQrvW4S3F8+tdiKSVfG0x2W2nG0pjqKmgAPATzxVKlONiYEwo6lrcPuNJKio/AU/FSNMhfCqDD4icYLSM1LjTbMwoBhpmLnqGggfUVkx7hS4YPKnAtYaY+hAXZnYJVl0+6/PaLMucsOKaVzbSBgA+vXFENWa0tekoSly1l2UpsrajN7qX5Z/CM7ZNWHI4cgjBrmrW7s299sV4swWviekIaJO/dMpbTuPTH5mtllvIl2mqqvQCLDlw7QNWTh7Qi5CE2d0tRkABPzIJNfbH2y3y1y0t3jhusXPiPClDyR5gjAPwP1FB52ipKOMWS9IeaTsWXvEUn+If1FU2baroyqQHPZ3VRwStLTwUoY9OdAW5G+zQ1Dr2J1xabrDvdrj3K3vB+LITxIUP0I6EciKVHaW1M05MlT0RXHYklXGlxCCoIJ5g45ede/7Os12VpS7tFxS2GpoLYJ2SVIBUB9AfnTbkPsx2iqQtKEHbxdfTHWrsgfW5jtrDjRnOmnr9CXGuqJIZX7TF8KXU8WVg7Hf40M1TeIKtRpTAQhtiOw00kNAYzw5VsPUmugJNw0yFlT0GMtX4lRk/1rxHu+mkL4o8KO2fNthGfyowrPLfGWJU18JQ+ymyTrlcmL5KiuxosZKu77xBT3qyMZTnmACd/X0pxVFhXCJPSTGeSvh95PJSfiOlSqEECehKVoEGhB95kqi2txaCQpRCAR0ycUle0LVztsfZt7T6muNPG4UnBCc4Cfng7jypv6pVw2Un/MR+tJXXFgRPusK8JDi/ZsJdbTuFAHIJHpk8qT5LqMoB+tRzj1lqTx73KO/OeUEuogSeI+JKi0rJPU56bdaPaH1xMbvDdqkuLdjv8Ahb4ySptWPXoajz8IiLaS64tD6shYScIB6fL8606csaXNRt3ZQKW2QOHbAcWBjixRMixGrIYQleOyOCpnRWjJa5lteacJPs7nCM/hIyBS8vFidtfaDPvc9hwPSE90mQU+BwZ2weWeEAY54FXPs7f449xP+Ykf7aK6pesb9qchXufHitujKS44EqSeikjnnNXpU2Y6+/cz2OKbzseopw4m3mSUuFYfWVoAAyhOB4fXfP1qvyOEPvSVv94h0DhQUgBAxvv60Q1TCl6enLiSWVSI4/6MlTeEuDGcjyPp6VK0Za7U9JbumqZabfEadCY7EgcDb5xsSryz064oSVuW1Nr2oqcvks3Ypp252CHcS9FeiQX1BTaHk8JcVk+IA78sDPwqdqq/OG9ymuIhuN4Ofpk/rTDivsy2EOsPIdaWMpW2oKSR6EUmNbu+zXS9uZzwLWcfyivQYagE796EQXt5DsfZXIkmdqiU6pl9tKGydnD4D5IA6n16UHkXKbp+5BXduxloOFNqGAodR5H5VO0bd4LllS002429DcLimwd1E9T5io+qLnDFukOvpW49MUlKWVKwPD1AxkbDc0mN7+Xe49FCCrWvUvli1GW7rBlNLwFOJSoZ95KiAQfrn5U5a5n0q+XmbeoZGXWhj+cCul+lPcrR4sPonnkGiRB98gruFnfjtY70gKRn8Q3FKuVLSw/7O8ktvb8SFjBT8RTdkO8CQkHBVtQK522DcAPbILEkp5FxsKI+B5ikmThrewf6Izxso0gr8igulm0u9OjOrdmMo7smRHaA4HFjlg58IPWo1untKeERSEtrA+zCORA6YpkP6VsXFk2dk+ni/wCak2602y2u95BtEWM6fvoaHF/q50N8I2DRh0zAh2Jt0jGfs9hW4+gtvSF96Uq5pGMAH1xVX1ghh24S3X1cbzi2tz0G2w9BV1kvK7lAVtxKpU6tuJc1K42Dt3qfyTTGrHCqij+iI8y02WbMsWpNUG4abixj3YkNuArCkghfCMpUCdhuNxQXWl5ZvbkNDPCY8coKl8PD3q8jJA6AUIcmEJ3OfjQydOJR543p3ZiIoJAlWsYjUa3ZvckxBIgpX9i88SgZ2SrA5fGhevbQ+1epD5bU5DuH3+iVEYIPlyzQfSM5TLTryPebfCx+VNR93vWs4CkrGcEZBBpVWTWgK/RO0Hkuj8iksOktN25MxrD7k1TIDcwqOxBzjA5DpUe86UsEq3xg446biV8Sn0k+BJHu7896YT9rtveKV7ChCjzLeUZ+laBZ7Y45xLtyHT5uZWPoaUfq373sRl5zx4yo6G0y9O1DEiMtKMOE4HHnx7uEnIGepJxt8afJqowS7FCSwju0p5JSMDHwqysS0vNJWCMEZpszs4HL5MoXUHXdxxptt5Gfs15PwxivcaWxJSOIhtfkeXyog8ylxJBAINBJFpcZUVRiOH/xq5fI9KpOwophIGeAH5VqLaOiR9KFJmSIhw4l1n15p+oqSzdg599p3486mpNyJe2JKwyqOypxKM8QTzFKG+W+c1qV6RLhvst7lCloOFZ65+VPH29vHiY/0qrwubEUnC2148jg0au3gQSOoFqgzcpz7JdaH+IkfOg8lwLPC2ePPRO/6V0e5+yFnxxUn4tJrwP2O3umJg/utpFbjnbGtSeKKDREC7mI8F26SEuEcCijAVtz3pz25hw29hLycOJbSlXxAqMq7RGRhuMpXlkgVHe1K4hP2bDaPVRJpeTsaAlkrCdQ4ILauaQflXx2PFjIKni22PNW1VJ/VUtwlIlBP7rY3rQhFwuC8pZdVn77pIH571XjCbhO53tvhUzEScHYr6n0FF7WFiKkKzkJAqDa9NqQtLshXeLHLbAT8BVmYipaRjFcJk3N9YUhXMV9qDfHnY2nbi+ysoeajOLQofdIScGqzkkqjIXzFQ37PFdHjYQfXFU3s01lcLl2YybjeVmXOtPGl50bd/hsOA/HCsfKhOj+0KfE7MrvqXUbjtwXGnFCUNAAhKuEoSM42HEP/td3Oy9r07H3KO8b/hWRUdWnFE+GS+P580Ltfahb5+j71f3IElpNmdLL7KVJUVK29w7ZG45gUT0breNrBVwbZhuxXbetCHAtQUk8SQoFJHoeoqbknn+7Tyj/AN2/+X/FehptY96U+fmP+Kq/al2jwdNXSLZpKbklKG0T5KoakoLrPFwhsKJyMqwTjGQMZ3o03eXT2j3ZLjzyre1YY0tLGdgVOPcRA/EQkD5VOU7qTTpZpZ8bz5P8eK9o0hBzlbPeH98k1RNHdqcJFluwU3c5bcGKq6smStCliOpWzXEOqemc7daYsjUjES722AphxRnx3JKVAjCEoSCR6nepucm2Pp+JHx3bKEfBIFTkQ2m+Sapuke1W3avvCoDFulRiY65La1qScoSrhOQORyPX4140t2rQdUajj2pq2yI5ltOPMOKWlWUoVg8Q+6fLBNc3JqXwJCeQr7WVlScn/9k=",
+  proga: "data:image/jpeg;base64,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",
+  notes: "data:image/jpeg;base64,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",
+  bulletin: "data:image/jpeg;base64,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",
+  cahier: "data:image/jpeg;base64,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",
+  dossiers: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQYFBAcGBgYIBwcICxILCwoKCxYPEA0SGhYbGhkWGRgcICgiHB4mHhgZIzAkJiorLS4tGyIyNTEsNSgsLSz/2wBDAQcICAsJCxULCxUsHRkdLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCz/wAARCABuAG4DASIAAhEBAxEB/8QAHAAAAQUBAQEAAAAAAAAAAAAABgACAwQFAQcI/8QAPhAAAgEDAgQBCQcCAwkAAAAAAQIDAAQRBSEGEjFRQQcTFCJhcYGRoSMyQlKxwdEWYhUz4SZDRFNjcoKS8P/EABkBAAMBAQEAAAAAAAAAAAAAAAECAwAEBf/EACARAAICAwEAAgMAAAAAAAAAAAABAhEDEiExE0EyUWH/2gAMAwEAAhEDEQA/APomlSpUwoqVKkSFBJOAOpNAwqVU5dSRTiKN5faNh86jXU2PNmAKAPvc2wpqYuyL0kqQoXkYKo8Saptqik4iheQdzsKF7vjFXuzDY2730qnBdcBF/wDL+Kcmua0dzBAB252qqxMjLNFBSl9I3WDb2NUyXcTHDEof7v5odt+IzzBby3Mf93UfMfvV25YvbmaFg8ZGTjwpXChozvw26VDFlr5tJxFcMWgJxn8n+lE4IYAqQQdwR40jVFE7FXK7SpQnKVKmTTx28RklYKo8awR5IAJJwBuaC+JOM006VII42nnlP2cKncjuT4CrWqcV2KP5qa9SBD+DmAJ9/jQSgj1Pi25vlbzkKoFjbGB7cV048f3I5cuSlwILXiDXmIkkigCNuFDNnHvpuuanfatZpaQRtb+cOJn2+744I79KfHL6kQGTgH96hkvre0UmeVYwRgZPWq0rujk+SXhf0fTY4oktYIwDjrjYDua2NS0dX05fRDi4h9YZ/wB53BoestbRZEFpeIed1DKMHIziiG81P0TT57pQHaJC4UnAOBU5bJlscYyi9jJtZo51YkDmAIKnwNOt7ttPl9UkxN1XwFYlpqzapqDXiwLbK6kMivzBj36VozSdz4CqSgQjPV8KvEI9HKzxf5MvT+09q2+BdZN7aS2ErZktsMmfyH+DWFqJM2g3UJO8W4+FVeBWntdbW7eKT0cxsjMF74xUpLh2wlfT1SuVHDcRXC80Thh49x8KkrnOg5QpxxfvaWRK7iOJpMdz4UV0OcX2AubRJmXmjAMUuPBW8fn+tPjpSViz8PGtAU3EMmoXTecuJTlmbc9elFVrcqsuFOMA/pQ61hNoMslnOCI880UmNmGam9MAumAbIIOMe7316TV+HmtfsJWuJHhiEd1BE3LkBmIbf4YrPuNOuZTzBRPnxRwxoK1WcycQW2TkNZqu++3O2auwSLEoCGSI945Cv71wym0zsjijQSW+myxypI0EkbKwIJUjBBrXvb29fT54fP8AMJEKnmAzuKGLXVL8DMV9cAL+bDftn61JPxNqVnEXne3ukB3Ux8pP1begsnQKCukzti15YQ7XQCrndwMUv6yX0+O3YpMGOC67AfzQpx3qU0WtNBGVSMquIxkKDjc8o6+6hexupP8AElaSQsMjBHQ+7w+WffXRGVvpKWJHvEWpiCWV0hE0bEEqdvD3Yrd0vXrG9zCIxbyqPuYxj4dvdXm2nasUt51YnZkx4+FarXaG3guE9SUEkP7RTSx2ShlceBhfas9jccyP5uROh7/yKKdH1WLWNNS6iwN+V1znlYdRXm2sz+m8Nw6ghAZSA2Ox/g1peSy9kefUbUnKYSUD27j9hXLOPDuhKz0XFNdEkjaN1DIwwQehFOrlQKgpqXCkjKyW6xXVsd/MTdV9xodk4JtA/wBro95BnqYWLD6Zr075V0PgiqrLJE3jiz5i4ihht+KxB5sNFFD5tfOZBUc7dceNL7AYCxyoB+SU7/OncaOJfKLf8yFt2UYYjGZG7VS9CUDCXE8Z8cgP+oFZjovwmReYxXc6bjZ1Vh+3602/luWsXM80LgHsVP6kd6hiiulUiK6hZfHnTB/U1DqYvDZN5xIsDfKtg48TggUjTsSP5tjeMCJtclJXnAwfpQwGIvI8963dbnZtYlPXYVLw6EveILW0a2hma4bzSCUDlDHoT299dcJJE5Jl6CVeSZ0kB3TAB67Vfe8KWUJ5yd227UaR8AyqPtuHgw/PBNkfrVq04IEc6vb6HL5xTs0zbKe+/wDrVfmiQ+FmVNIbTgyC1m9WWUjKnw3LGjLyaaNJYaZPqM6FGvCBGCN+QdD8ST8KsafwLAblbvWGW6kX7kA/yk9/5j9KLRgDAAAFceSd+HXCLS6crhIUZJwBSJwKpXMhlYgfdU4qJUdNqKJkRqXPfoKqS3N3Kw5G5QfFdvrXY4Q0oDdKUxYczAbKdhjYe3FOkJKXaR878Wr/ALc37O75y2SrDJ+0PcGq8YLAkXhwPB4wfqD+1bXF2g6gOJr26dJIkkLKCbfziupYsGBB2O9D8kd0ZZGL2zu7Z5Axj+hAAp2gJlxJZ40YK0D59pX9qgvmuZouQ2TKCR9pGysPjvnx7Uo0ulGHspN9+ZOVh9N6mublBbBftFdWXPOhH4h+1K1/ARS2bMzU4sX7u7BRhdyfZU3C7D+sdPDIVWOZck9flXNZx6SV5+Ujlz/6j/7wrR4W0W7m1aC+820cMbBuZ/xYGwUeAqqQPs9ttbgi1xDMM8+djynpV2LWL2ANzSFuXHquM0JRPKIeXGxbIrb0ppLktbSgshXIJ6qaVxTA5SgrCC24ht5SBOvmj3G4rVV1dAyMGU7gjcGgQxuJCvY4rSsryewjOPWRvwk7Z71Nqi670JZc4NYRvWtNSmjkBKSHmA+HUUQleYVQv9Nju4+V13G4I2I91KYbE8c4zC4Y9uhp7AhssCrd6xWsbyzb1V8+g8Rs3+tSxawYvUkd4z+WQfzRA0mXpbaKXqB8NvpVG44esLpSJrWCUH/mRA1aTU0kH3YpB/acfpTvTIfGFl9zUbF1a8Bu44A0WYnltI4T/wBJyn6VmzeTK1Yk2+pXUB8MsHH13+tGhvbYeEg+VMbULQdTL8hR2NqwCtfJTZW92bm5uzdy5yC4AA9yiiS24ahjAUEbdhWo+qWa/hlb5VXk1uFfuW7N/wBzUdmzatEkWiW6MCxGO3Wr0VrHChWCPlJ6setYM/Ec6D1I4oh3O9Zsuu3dyeUTySZ/DGP4odZtU/QiuTaWQLTSKD+Ubk0PX+ptdyBIY2CLuFHU+01230zUL1smLzKn8T7t8qIdO4djtoztzM3VjuTQ4hgmrlNlYrC5BwQpI+VeSaDqHFT+SmPjaPiW4nvIhPLLZ3SI1vKqTOvLsOZfVXqD1pA0euGNW6ioJbKKQYKg++gzi3yrWHCc1nDJptzcyXNmb88rqoWMYyM+Lb9Nh7al4k8p1jw/pek3noFxcDVYGuYk5lTlRU5jzHffHb51jUb82gWkpyYVB7jb9Krtw5GPuSzp7pDWDfeVbT7XQNA1OLTrmX/Hkd7eN2VOQKvM3Od/DpgH4U+34xg13UeC7q0k1C1i1lLmVYPU5HCKu0vU7Z25SPHNGzUar8OyfhvLgfEH9RULcNzH/jZ/kv8AFZWmeVrTNT44/puPTrtHN5LYrOxXBkjUsxIzsuBsc59lV7Pyz6Rd67remjTL1G0W3ubid8oQ4hk5CFGd8nffFbY1G3/S7t966uD8QP2qROE4s+vJM/vkNN4K48tuMru8tYrKW0mtYopjzMGVlkBK77b7bjHxNUePfKhY8B6jBZT6fcXkslu90xRlVVjU4OM9W9mw9tbZmo2YuFbBDn0dSe7b/rWhDpNvEAFRVHYDFC1lxNLe+UGGZJZ10ubh4X4tjjZi/XHTmxt1qHgzyt6bxpxANKttNurZ5IGuInkZSCqtynmx0Oe2aFmoOkto06KKlAA6bUKW3HlrccI6Rr4spli1S5itUi5hzIXcqCT2GKxOI/LJp3Dev3+my6Tc3AsJEglkV1GXZOcco7Y8SQc+HjRNR//Z",
+};
+
+/* ===== Icônes SVG (remplacent progressivement les emojis — rendu identique sur toutes
+   les machines, contrairement aux drapeaux emoji qui s'affichaient en texte "GB" etc.) ===== */
+var LL_ICO = {
+  mic: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+  headset: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 15v3a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h3z"/><path d="M3 15v3a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3z"/></svg>',
+  clipboard: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>',
+  users: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  star: '<svg class="ll-ico" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+  calendar: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+  play: '<svg class="ll-ico" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+  edit: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+  chart: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+  folder: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  filter: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>',
+  send: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+  check: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+  clock: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  trash: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  arrowLeft: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>',
+  globe: '<svg class="ll-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+};
+/* Illustration de l'écran d'accueil (choix Professeur/Élève) : silhouette + badge micro/crayon,
+   dans le même esprit que la maquette fournie (traits fins, bleu, sobre). */
+var LL_CHOOSER_ART = {
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+  prof: '<svg viewBox="0 0 100 78" width="150" height="117">' +
+    '<path d="M25.5 19c-2-9 3-15 12.5-15s14.5 6 12.5 15" fill="none" stroke="#1E3A5F" stroke-width="1.9" stroke-linecap="round"/>' +
+    '<circle cx="38" cy="24" r="13" fill="none" stroke="#1E3A5F" stroke-width="2.3"/>' +
+    '<circle cx="32.5" cy="24.5" r="4.3" fill="none" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '<circle cx="43.5" cy="24.5" r="4.3" fill="none" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '<line x1="36.8" y1="24.5" x2="39.2" y2="24.5" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '<line x1="28.2" y1="24" x2="24.5" y2="22.8" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '<line x1="47.8" y1="24" x2="51.5" y2="22.8" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '<path d="M38 33.2c-1.2-2-3.7-2.8-5.8-1.7c-2 1.1-2.7 3.5-1.5 5.2c1 1.4 2.9 1.9 4.5 1.2c1.3-.6 2.2-1.8 2.8-2.8c.6 1 1.5 2.2 2.8 2.8c1.6.7 3.5.2 4.5-1.2c1.2-1.7.5-4.1-1.5-5.2c-2.1-1.1-4.6-.3-5.8 1.7z" fill="#1E3A5F"/>' +
+    '<path d="M12 76c0-16 11-24 26-24s26 8 26 24" fill="none" stroke="#1E3A5F" stroke-width="2.3" stroke-linecap="round"/>' +
+    '<path d="M29 54l9 8l9-8" fill="none" stroke="#1E3A5F" stroke-width="1.7"/>' +
+    '<polygon points="36,54.8 38,58.2 40,54.8 38,58.8" fill="#15803D"/>' +
+    '<polygon points="36,58.5 40,58.5 41.5,76 34.5,76" fill="#15803D"/>' +
+    '<g transform="translate(16,64)">' +
+      '<path d="M-11 5l11-3.3v-15l-11 3.3z" fill="#fff" stroke="#1E3A5F" stroke-width="1.6"/>' +
+      '<path d="M11 5l-11-3.3v-15l11 3.3z" fill="#fff" stroke="#1E3A5F" stroke-width="1.6"/>' +
+      '<rect x="-1.6" y="-11.5" width="3.2" height="11.5" fill="#15803D"/>' +
+      '<text x="1.5" y="-2.5" font-size="5.5" font-weight="700" fill="#1E3A5F" font-family="Arial,sans-serif">A+M</text>' +
+    '</g>' +
+    '<g transform="translate(80,52)">' +
+      '<rect x="-8" y="-20" width="16" height="22" rx="8" fill="none" stroke="#1E3A5F" stroke-width="2"/>' +
+      '<line x1="-5" y1="-14.5" x2="5" y2="-14.5" stroke="#1E3A5F" stroke-width="1.3"/>' +
+      '<line x1="-5" y1="-10.5" x2="5" y2="-10.5" stroke="#1E3A5F" stroke-width="1.3"/>' +
+      '<line x1="-5" y1="-6.5" x2="5" y2="-6.5" stroke="#1E3A5F" stroke-width="1.3"/>' +
+      '<path d="M-8.5 -1a8.5 8.5 0 0 0 17 0" fill="none" stroke="#1E3A5F" stroke-width="1.7" stroke-linecap="round"/>' +
+      '<line x1="0" y1="7.5" x2="0" y2="12" stroke="#1E3A5F" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<ellipse cx="0" cy="13" rx="7" ry="2" fill="none" stroke="#1E3A5F" stroke-width="1.6"/>' +
+    '</g></svg>',
+  eleve: '<svg viewBox="0 0 100 78" width="150" height="117">' +
+    '<circle cx="36" cy="22" r="13" fill="none" stroke="#1E3A5F" stroke-width="2.3"/>' +
+    '<path d="M23 14c2.6-5 8.7-7 13.6-4.9c3.6-2.2 9.2-1.1 10.3 3.3c2.2 1.1 2.5 4.7 1.1 7" fill="none" stroke="#1E3A5F" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<circle cx="31.5" cy="23.5" r="1.5" fill="#1E3A5F"/><circle cx="41.5" cy="23.5" r="1.5" fill="#1E3A5F"/>' +
+    '<path d="M33 30.5c1.6 1.2 3.3 1.2 5 0" fill="none" stroke="#1E3A5F" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M11 76c0-16 11-24 25-24s25 8 25 24" fill="none" stroke="#1E3A5F" stroke-width="2.3" stroke-linecap="round"/>' +
+    '<g transform="translate(36,60)">' +
+      '<rect x="-21" y="0" width="42" height="30" rx="4" fill="none" stroke="#1E3A5F" stroke-width="2"/>' +
+      '<circle cx="-24" cy="16" r="5.2" fill="none" stroke="#1E3A5F" stroke-width="1.7"/>' +
+      '<line x1="-15" y1="7" x2="-5" y2="7" stroke="#EA580C" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<line x1="-15" y1="11.5" x2="-8" y2="11.5" stroke="#EA580C" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<path d="M-8 24c2.4-7 8-11 15-12c5-.7 9 1 13-2.5" fill="none" stroke="#1E3A5F" stroke-width="1.2"/>' +
+      '<g transform="translate(14,4)">' +
+        '<path d="M-5.5 -4.5h11a4.5 4.5 0 0 1 0 9h-8l-3 3z" fill="#EA580C"/>' +
+      '</g>' +
+      '<g transform="translate(6,26)"><rect x="-6" y="-4.5" width="12" height="9" rx="4.5" fill="none" stroke="#1E3A5F" stroke-width="1.5"/></g>' +
+    '</g>' +
+    '<g transform="translate(80,50) rotate(8)">' +
+      '<rect x="-4.5" y="-6" width="9" height="28" rx="1.8" fill="#F97316" stroke="#1E3A5F" stroke-width="1.6"/>' +
+      '<polygon points="-4.5,-6 4.5,-6 0,-16" fill="#FDBA74" stroke="#1E3A5F" stroke-width="1.4" stroke-linejoin="round"/>' +
+      '<polygon points="-2,-13.5 2,-13.5 0,-18" fill="#1E293B"/>' +
+    '</g></svg>',
+  network: '<svg viewBox="0 0 160 160" width="150" height="150">' +
+    '<defs><marker id="llArrowHead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#60A5FA"/></marker></defs>' +
+    '<circle cx="80" cy="82" r="46" fill="none" stroke="#93C5FD" stroke-width="2"/>' +
+    '<ellipse cx="80" cy="82" rx="46" ry="18" fill="none" stroke="#93C5FD" stroke-width="1.4"/>' +
+    '<ellipse cx="80" cy="82" rx="18" ry="46" fill="none" stroke="#93C5FD" stroke-width="1.4"/>' +
+    '<line x1="34" y1="82" x2="126" y2="82" stroke="#93C5FD" stroke-width="1.4"/>' +
+    '<path d="M38 42a54 54 0 0 1 58-10" fill="none" stroke="#60A5FA" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round" marker-end="url(#llArrowHead)"/>' +
+    '<path d="M122 122a54 54 0 0 1-58 10" fill="none" stroke="#60A5FA" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round" marker-end="url(#llArrowHead)"/>' +
+    '<rect x="106" y="18" width="38" height="25" rx="7" fill="#DBEAFE" stroke="#93C5FD"/>' +
+    '<circle cx="115" cy="30.5" r="1.7" fill="#60A5FA"/><circle cx="122" cy="30.5" r="1.7" fill="#60A5FA"/><circle cx="129" cy="30.5" r="1.7" fill="#60A5FA"/>' +
+    '<rect x="2" y="98" width="38" height="25" rx="7" fill="#DBEAFE" stroke="#93C5FD"/>' +
+    '<circle cx="11" cy="110.5" r="1.7" fill="#60A5FA"/><circle cx="18" cy="110.5" r="1.7" fill="#60A5FA"/><circle cx="25" cy="110.5" r="1.7" fill="#60A5FA"/>' +
+    '<rect x="116" y="130" width="32" height="22" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>' +
+    '<circle cx="124" cy="141" r="1.5" fill="#60A5FA"/><circle cx="130" cy="141" r="1.5" fill="#60A5FA"/><circle cx="136" cy="141" r="1.5" fill="#60A5FA"/>' +
+    '<circle cx="134" cy="130" r="5" fill="#BFDBFE"/>' +
+    '<circle cx="12" cy="34" r="5" fill="#BFDBFE"/>' +
+    '</svg>'
+};
+/* Puce de langue (code en toutes lettres FR/EN/ES/AR — plus fiable que le drapeau emoji,
+   qui peut s'afficher en texte brut "GB" sur certaines configurations Windows/Edge). */
+function llLangChip(lg) {
+  return '<span class="ll-lang-chip lang-'+lg.id+'">'+LL_ICO.globe+' '+lg.id.toUpperCase()+'</span>';
+}
+/* Date au format JJ/MM/AAAA uniforme partout (au lieu d'appels ad-hoc à toLocaleDateString). */
+function llFormatDate(isoOrDate) {
+  var d = (isoOrDate instanceof Date) ? isoOrDate : new Date(isoOrDate);
+  if (isNaN(d.getTime())) return '—';
+  var jj = String(d.getDate()).padStart(2,'0'), mm = String(d.getMonth()+1).padStart(2,'0');
+  return jj+'/'+mm+'/'+d.getFullYear();
+}
+/* Injecte les icônes SVG dans les emplacements dédiés du tableau de bord prof, avec un
+   span-enfant pour le texte bilingue (jamais écrasé par llApplyLang, qui ne touche que
+   ce span, contrairement à un textContent direct sur le conteneur qui effacerait l'icône). */
+function llImg(key, size) {
+  return '<img src="' + LL_TADRISS_ICONS[key] + '" style="width:' + size + 'px;height:' + size + 'px;object-fit:contain;vertical-align:middle;">';
+}
+function llInitIcons() {
+  var set = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  set('llHeroIcWrap', LL_ICO.mic);
+  set('llStatToGradeIc', llImg('notes', 32));
+  set('llStatActsIc', llImg('cahier', 32));
+  set('llStatElevesIc', llImg('eleves', 32));
+  set('llStatMoyenneIc', llImg('bulletin', 32));
+  set('llToGradeCt', llImg('notes', 24) + ' <span id="llToGradeCtTxt"></span>');
+  set('llActsSectionTitle', llImg('cahier', 24) + ' <span id="llActsSectionTitleTxt"></span>');
+  set('llProgressionBtn', llImg('proga', 22) + ' <span id="llProgressionBtnTxt"></span>');
+  set('llLibraryBtn', llImg('dossiers', 22) + ' <span id="llLibraryBtnTxt"></span>');
+  set('llProdBackBtn', LL_ICO.arrowLeft + ' <span id="llProdBackBtnTxt"></span>');
+  set('llEditActBtn', LL_ICO.edit + ' <span id="llEditActBtnTxt"></span>');
+  set('llDeleteActBtn', LL_ICO.trash + ' <span id="llDeleteActBtnTxt"></span>');
+  set('llProdCt', llImg('notes', 24) + ' <span id="llProdCtTxt"></span>');
+  set('llFilterLangueIc', LL_ICO.globe);
+  set('llFilterClasseIc', LL_ICO.users);
+  set('llFilterStatutIc', LL_ICO.filter);
+  set('llEmptyIllus', llImg('cahier', 56) + llImg('eleves', 56) + llImg('notes', 56));
+  set('llChooserMicIc', LL_CHOOSER_ART.mic);
+  set('llChooserProfIc', '<img src="/labo-prof.png" alt="Professeur" style="width:100%;height:100%;object-fit:contain;">');
+  set('llChooserEleveIc', '<img src="/labo-eleve.png" alt="Élève" style="width:100%;height:100%;object-fit:contain;">');
+  set('llChooserIllus', '<img src="/labo-globe.png" alt="" style="width:100%;height:auto;display:block;">');
+}
+llInitIcons();
+llApplyLang();
+
+/* ===== Constantes langues ===== */
+var LL_LANGUES = [
+  { id:'fr', fr:'Français', ar:'الفرنسية', flag:'🇫🇷' },
+  { id:'en', fr:'Anglais',  ar:'الإنجليزية', flag:'🇬🇧' },
+  { id:'es', fr:'Espagnol', ar:'الإسبانية', flag:'🇪🇸' },
+  { id:'ar', fr:'Arabe',    ar:'العربية',   flag:'🇩🇿' }
+];
+/* ===== Types d'activité orale ===== */
+var LL_TYPES = [
+  { id:'libre',          fr:'Expression libre',         ar:'تعبير حر',        ic:'🎙️' },
+  { id:'lecture',        fr:'Lecture à voix haute',      ar:'قراءة بصوت عال',  ic:'📖' },
+  { id:'ecoute_repete',  fr:'Écouter et répéter',        ar:'استمع وكرر',      ic:'🔊' },
+  { id:'question',       fr:'Répondre à une question',   ar:'أجب عن سؤال',    ic:'💬' },
+  { id:'dialogue',       fr:'Dialogue',                  ar:'حوار',           ic:'🗣️' },
+  { id:'jeu_role',       fr:'Jeu de rôle',                ar:'لعب أدوار',       ic:'🎭' },
+  { id:'comprehension',  fr:'Compréhension orale',        ar:'فهم شفهي',        ic:'🎧' }
+];
+function llTypeById(id) { return LL_TYPES.find(function(t){ return t.id === id; }) || LL_TYPES[0]; }
+
+/* ===== Bibliothèque de modèles (Phase 2) ===== */
+var LL_BUILTIN_TEMPLATES = [
+  { id:'b_en_intro', langueId:'en', typeActivite:'libre', theme:'Introduce yourself', consigne:'Present yourself in 1 to 2 minutes: your name, your age, your city, your hobbies and your family.', dureeMaxSec:120, bareme:20 },
+  { id:'b_en_family', langueId:'en', typeActivite:'question', theme:'My family', consigne:'Describe your family: how many people, their names, their jobs or studies.', dureeMaxSec:90, bareme:20 },
+  { id:'b_en_hobbies', langueId:'en', typeActivite:'dialogue', theme:'My hobbies', consigne:'Talk about your favourite hobbies and explain why you enjoy them.', dureeMaxSec:90, bareme:20 },
+  { id:'b_es_presentarse', langueId:'es', typeActivite:'libre', theme:'Presentarse', consigne:'Preséntate en 1 a 2 minutos: tu nombre, tu edad, tu ciudad y tus pasatiempos.', dureeMaxSec:120, bareme:20 },
+  { id:'b_es_familia', langueId:'es', typeActivite:'question', theme:'Mi familia', consigne:'Describe a tu familia: cuántas personas, sus nombres, sus profesiones o estudios.', dureeMaxSec:90, bareme:20 },
+  { id:'b_fr_presenter', langueId:'fr', typeActivite:'libre', theme:'Se présenter', consigne:"Présente-toi en 1 à 2 minutes : ton nom, ton âge, ta ville, tes loisirs et ta famille.", dureeMaxSec:120, bareme:20 },
+  { id:'b_fr_chemin', langueId:'fr', typeActivite:'dialogue', theme:'Demander son chemin', consigne:"Imagine un dialogue où tu demandes ton chemin à un passant pour aller à la poste.", dureeMaxSec:90, bareme:20 },
+  { id:'b_ar_intro', langueId:'ar', typeActivite:'libre', theme:'تقديم النفس', consigne:'قدّم نفسك في دقيقة إلى دقيقتين: اسمك، سنّك، مدينتك، هواياتك وعائلتك.', dureeMaxSec:120, bareme:20 },
+  { id:'b_ar_famille', langueId:'ar', typeActivite:'question', theme:'عائلتي', consigne:'صف عائلتك: عدد أفرادها، أسماءهم، مهنهم أو دراستهم.', dureeMaxSec:90, bareme:20 }
+];
+function llTemplateLabel(t, isAR) {
+  var lg = LL_LANGUES.find(function(l){ return l.id === t.langueId; }) || LL_LANGUES[0];
+  var ty = llTypeById(t.typeActivite);
+  return { lg: lg, ty: ty };
+}
+function llRenderTemplateRow(t, isCustom, isAR) {
+  var info = llTemplateLabel(t, isAR);
+  var actions = '<button class="btn bt bsm" onclick="llUseTemplate(\''+t.id+'\')">▶ '+(isAR?'استخدام':'Utiliser')+'</button>' +
+    '<button class="btn bo bsm" onclick="llDuplicateTemplate(\''+t.id+'\')">📋 '+(isAR?'نسخ':'Dupliquer')+'</button>';
+  if (isCustom) actions += '<button class="btn bo bsm" onclick="llEditTemplate(\''+t.id+'\')">✏️ '+(isAR?'تعديل':'Modifier')+'</button>' +
+    '<button class="btn bo bsm" onclick="llDeleteTemplate(\''+t.id+'\')">🗑️</button>';
+  return '<div style="display:flex;align-items:center;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--br);flex-wrap:wrap;">' +
+    '<div style="flex:1;min-width:160px;"><div style="font-weight:700;font-size:.85rem;">'+info.lg.flag+' '+t.theme+'</div>' +
+    '<div style="font-size:.7rem;color:var(--ink3);">'+info.ty.ic+' '+(isAR?info.ty.ar:info.ty.fr)+'</div></div>' +
+    '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">'+actions+'</div></div>';
+}
+/* Regroupe une liste de modèles par langue (un en-tête par langue), en ne gardant que
+   les langues effectivement enseignées par le prof connecté. */
+function llGroupTemplatesByLangue(list, isCustom, isAR, allowedIds) {
+  var filtered = list.filter(function(t){ return allowedIds.indexOf(t.langueId) >= 0; });
+  if (!filtered.length) return '';
+  var groups = {};
+  filtered.forEach(function(t){ (groups[t.langueId] = groups[t.langueId] || []).push(t); });
+  return LL_LANGUES.filter(function(l){ return groups[l.id]; }).map(function(l){
+    return '<div style="margin-bottom:.4rem;">' +
+      '<div style="font-weight:700;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:.7rem 0 .1rem;">'+l.flag+' '+(isAR?l.ar:l.fr)+'</div>' +
+      groups[l.id].map(function(t){ return llRenderTemplateRow(t, isCustom, isAR); }).join('') +
+      '</div>';
+  }).join('');
+}
+window.llOpenLibrary = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var data = llReadData(uid);
+  var custom = data.templates || [];
+  var allowedIds = llProfLangueIds(LL_STATE.profDoc);
+  document.getElementById('llLibBuiltinList').innerHTML = llGroupTemplatesByLangue(LL_BUILTIN_TEMPLATES, false, isAR, allowedIds) ||
+    ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج متاح لمادتك/مادتك.':'Aucun modèle disponible pour votre/vos matière(s).')+'</div>');
+  document.getElementById('llLibCustomList').innerHTML = llGroupTemplatesByLangue(custom, true, isAR, allowedIds) ||
+    ('<div style="color:var(--ink3);font-size:.8rem;padding:.6rem 0;">'+(isAR?'لا يوجد نموذج شخصي بعد — استخدم "نسخ" على نموذج أعلاه لبدء واحد.':'Aucun modèle personnel pour le moment — utilise "Dupliquer" sur un modèle ci-dessus pour en créer un.')+'</div>');
+  document.getElementById('llModalLibrary').classList.add('open');
+};
+function llFindTemplate(id) {
+  var t = LL_BUILTIN_TEMPLATES.find(function(x){ return x.id === id; });
+  if (t) return { tpl: t, custom: false };
+  var data = llReadData(LL_STATE.profUid);
+  t = (data.templates||[]).find(function(x){ return x.id === id; });
+  return t ? { tpl: t, custom: true } : null;
+}
+window.llUseTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found) return;
+  llCloseModal('llModalLibrary');
+  llOpenActModal();
+  var t = found.tpl;
+  document.getElementById('llLangue').value = t.langueId;
+  document.getElementById('llTypeActivite').value = t.typeActivite;
+  document.getElementById('llTheme').value = t.theme;
+  document.getElementById('llConsigne').value = t.consigne;
+  document.getElementById('llDureeMax').value = t.dureeMaxSec;
+  document.getElementById('llBareme').value = t.bareme;
+};
+window.llDuplicateTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found) return;
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  data.templates = data.templates || [];
+  var copy = JSON.parse(JSON.stringify(found.tpl));
+  copy.id = 'c_' + Date.now();
+  data.templates.push(copy);
+  llSaveData(uid, data);
+  llOpenLibrary();
+};
+window.llDeleteTemplate = function(id) {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  if (!confirm(isAR ? 'حذف هذا النموذج؟' : 'Supprimer ce modèle ?')) return;
+  var data = llReadData(uid);
+  data.templates = (data.templates||[]).filter(function(t){ return t.id !== id; });
+  llSaveData(uid, data);
+  llOpenLibrary();
+};
+window.llEditTemplate = function(id) {
+  var found = llFindTemplate(id);
+  if (!found || !found.custom) return;
+  var isAR = LL_CUR === 'ar';
+  LL_STATE.editTplId = id;
+  document.getElementById('llTplType').innerHTML = LL_TYPES.map(function(t){ return '<option value="'+t.id+'">'+t.ic+' '+(isAR?t.ar:t.fr)+'</option>'; }).join('');
+  var t = found.tpl;
+  document.getElementById('llTplLangue').value = t.langueId;
+  document.getElementById('llTplType').value = t.typeActivite;
+  document.getElementById('llTplTheme').value = t.theme;
+  document.getElementById('llTplConsigne').value = t.consigne;
+  document.getElementById('llTplDureeMax').value = t.dureeMaxSec;
+  document.getElementById('llTplBareme').value = t.bareme;
+  llCloseModal('llModalLibrary');
+  document.getElementById('llModalTemplateEdit').classList.add('open');
+};
+window.llSaveTemplateEdit = function() {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var t = (data.templates||[]).find(function(x){ return x.id === LL_STATE.editTplId; });
+  if (!t) return;
+  t.langueId = document.getElementById('llTplLangue').value;
+  t.typeActivite = document.getElementById('llTplType').value;
+  t.theme = document.getElementById('llTplTheme').value.trim();
+  t.consigne = document.getElementById('llTplConsigne').value.trim();
+  t.dureeMaxSec = parseInt(document.getElementById('llTplDureeMax').value);
+  t.bareme = parseInt(document.getElementById('llTplBareme').value);
+  llSaveData(uid, data);
+  llCloseModal('llModalTemplateEdit');
+  llOpenLibrary();
+};
+
+/* ===== Progression d'un élève (Phase 2) ===== */
+window.llOpenProgression = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  var sel = document.getElementById('llProgEleveSelect');
+  sel.innerHTML = (roster.el||[]).map(function(e) {
+    var cls = (roster.cls||[]).find(function(c){ return c.id === e.cid; });
+    return '<option value="'+e.id+'">'+e.pr+' '+e.no+(cls?(' — '+cls.nm):'')+'</option>';
+  }).join('');
+  document.getElementById('llModalProgression').classList.add('open');
+  llRenderProgression();
+};
+window.llRenderProgression = function() {
+  var uid = LL_STATE.profUid;
+  var isAR = LL_CUR === 'ar';
+  var eid = parseInt(document.getElementById('llProgEleveSelect').value);
+  var data = llReadData(uid);
+  var subs = (data.subs||[]).filter(function(s){ return s.eleveId === eid && s.note != null; });
+  var box = document.getElementById('llProgContent');
+  if (!subs.length) { box.innerHTML = '<div style="text-align:center;padding:1.5rem;color:var(--ink3);">'+(isAR?'لا توجد نتائج بعد لهذا التلميذ.':'Aucun résultat pour le moment pour cet élève.')+'</div>'; return; }
+  var notesSur20 = subs.map(function(s) {
+    var a = (data.acts||[]).find(function(x){ return x.id === s.actId; });
+    var bareme = a ? a.bareme : 20;
+    return bareme ? (s.note/bareme)*20 : s.note;
+  });
+  var moyenne = notesSur20.reduce(function(a,b){return a+b;},0) / notesSur20.length;
+  var withCrit = subs.filter(function(s){ return s.criteres; });
+  var critAvg = {};
+  LL_CRITERES.forEach(function(c) {
+    var vals = withCrit.map(function(s){ return s.criteres[c.id]; }).filter(function(v){ return v != null; });
+    critAvg[c.id] = vals.length ? (vals.reduce(function(a,b){return a+b;},0)/vals.length) : null;
+  });
+  var html = '<div class="ll-stats" style="grid-template-columns:1fr 1fr 1fr;margin-top:1rem;">' +
+    '<div class="ll-stat"><div class="ic">📝</div><div class="v">'+subs.length+'</div><div class="l">'+(isAR?'أنشطة منجزة':'Activités réalisées')+'</div></div>' +
+    '<div class="ll-stat"><div class="ic">🔁</div><div class="v">'+subs.length+'</div><div class="l">'+(isAR?'عدد المحاولات':'Nombre de tentatives')+'</div></div>' +
+    '<div class="ll-stat"><div class="ic">⭐</div><div class="v">'+moyenne.toFixed(1)+'/20</div><div class="l">'+(isAR?'المعدل':'Moyenne')+'</div></div>' +
+    '</div>';
+  if (withCrit.length) {
+    html += '<div style="margin-top:1rem;">' + LL_CRITERES.map(function(c) {
+      var v = critAvg[c.id];
+      var pct = v != null ? Math.round((v/5)*100) : 0;
+      return '<div style="margin-bottom:.7rem;"><div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:3px;"><span>'+(isAR?c.ar:c.fr)+'</span><span style="font-weight:700;">'+(v!=null?v.toFixed(1):'—')+'/5</span></div>' +
+        '<div style="height:8px;background:var(--bg);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:var(--t);"></div></div></div>';
+    }).join('') + '</div>';
+  }
+  html += '<div style="margin-top:1rem;"><div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.5rem;">'+(isAR?'سجلّ النقاط':'Historique des notes')+'</div>' +
+    '<div style="display:flex;gap:.4rem;flex-wrap:wrap;">' + subs.slice().sort(function(a,b){ return new Date(a.envoyeLe)-new Date(b.envoyeLe); }).map(function(s) {
+      var col = s.note >= 14 ? 'var(--g)' : s.note >= 10 ? 'var(--a)' : 'var(--r)';
+      return '<span class="badge" style="background:'+col+';color:#fff;">'+s.note+'</span>';
+    }).join('') + '</div></div>';
+  box.innerHTML = html;
+};
+function llIsLangueMatiere(mat) {
+  var m = (mat||'').toLowerCase();
+  try { m = m.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
+  return m.indexOf('arabe')>=0 || m.indexOf('francais')>=0 || m.indexOf('anglais')>=0 || m.indexOf('espagnol')>=0 || m.indexOf('tamazight')>=0 || m.indexOf('langue')>=0;
+}
+function llGenCode(id) { return String(Math.floor(100000+Math.abs(Math.sin(id*9999))*900000)).slice(0,6); }
+function llMatiereToLangueId(mat) {
+  var m = (mat||'').toLowerCase();
+  try { m = m.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {}
+  if (m.indexOf('francais')>=0) return 'fr';
+  if (m.indexOf('anglais')>=0) return 'en';
+  if (m.indexOf('espagnol')>=0) return 'es';
+  if (m.indexOf('arabe')>=0) return 'ar';
+  return null;
+}
+/* Langues effectivement enseignées par le prof connecté (matière principale + matières
+   add-on éventuelles), pour ne montrer dans la bibliothèque que des modèles pertinents. */
+function llProfLangueIds(p) {
+  p = p || {};
+  var mats = [p.matiere].concat(Array.isArray(p.matieresActives) ? p.matieresActives : []);
+  var ids = [];
+  mats.forEach(function(m) {
+    var id = llMatiereToLangueId(m);
+    if (id && ids.indexOf(id) < 0) ids.push(id);
+  });
+  return ids.length ? ids : LL_LANGUES.map(function(l){ return l.id; });
+}
+
+/* ===== Lecture (seule) du trousseau ClassIA + stockage propre au Labo Langues ===== */
+function llReadRoster(uid) {
+  try { return JSON.parse(localStorage.getItem('TADRISS_DZ_' + uid) || '{}'); } catch(e) { return {}; }
+}
+function llKey(uid) { return 'LABOLANGUES_' + uid; }
+function llAudioKey(uid) { return 'LABOLANGUES_' + uid + '_audio'; }
+function llReadData(uid) { try { return JSON.parse(localStorage.getItem(llKey(uid)) || '{}'); } catch(e) { return {}; } }
+function llSaveData(uid, data) { try { localStorage.setItem(llKey(uid), JSON.stringify(data)); } catch(e) {} }
+function llAudioSave(uid, key, dataUrl) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); m[key] = dataUrl; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
+function llAudioGet(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); return m[key] || null; } catch(e) { return null; } }
+function llAudioDelete(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); delete m[key]; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
+function llFormatDuree(sec) { var m = Math.floor(sec/60), s = sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
+
+function llShow(id) {
+  ['llLoading','llChooser','llNeedLogin','llNotLangue','llDiscovery','llProfApp','llEleveLogin','llEleveApp'].forEach(function(x) {
+    var el = document.getElementById(x); if (el) el.style.display = (x===id) ? 'block' : 'none';
+  });
+}
+
+/* ===== État courant ===== */
+var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null };
+
+llShow('llLoading');
+onAuthStateChanged(auth, function(user) {
+  LL_STATE.firebaseUser = user || null;
+  llShow('llChooser');
+});
+/* Si l'auth ne répond pas très vite (hors-ligne, etc.), on affiche quand même le choix au bout de 2s */
+setTimeout(function() { if (document.getElementById('llLoading').style.display !== 'none') llShow('llChooser'); }, 2000);
+
+window.llGoProf = function() {
+  if (!LL_STATE.firebaseUser) { llShow('llNeedLogin'); return; }
+  var uid = LL_STATE.firebaseUser.uid;
+  LL_STATE.profUid = uid;
+  getDoc(doc(dbFs, 'profs', uid)).then(function(snap) {
+    var p = snap.exists() ? snap.data() : {};
+    LL_STATE.profDoc = p;
+    if (!llIsLangueMatiere(p.matiere)) { llShow('llNotLangue'); return; }
+    if (p.laboLanguesActif) { llShow('llProfApp'); llRenderProfApp(); }
+    else { llShow('llDiscovery'); llRenderDiscovery(p); }
+  }).catch(function() { llShow('llNeedLogin'); });
+};
+
+function llRenderDiscovery(p) {
+  var btn = document.getElementById('llActivateBtn');
+  var msg = document.getElementById('llActivateMsg');
+  if (p.laboLanguesDemandee) {
+    btn.style.display = 'none';
+    msg.style.display = 'block';
+    msg.textContent = LL_CUR==='ar' ? '⏳ طلبك قيد المعالجة، سيتم تفعيل الوصول قريباً.' : '⏳ Ta demande est en attente de validation, l\'accès sera activé prochainement.';
+  } else {
+    btn.style.display = 'inline-block';
+    msg.style.display = 'none';
+  }
+}
+/* Démo fictive : simule une lecture (barre de progression) pour rendre l'exemple interactif,
+   sans faire croire à un vrai enregistrement audio (aucun fichier n'existe réellement). */
+var LL_DEMO_DUR = 84; /* secondes, correspond à l'affichage "1:24" */
+var _llDemoPlaying = false, _llDemoTimer = null, _llDemoElapsed = 0;
+function llDemoFormatTime(sec) { var m = Math.floor(sec/60), s = Math.round(sec%60); return m+':'+(s<10?'0':'')+s; }
+window.llDemoPlayToggle = function() {
+  var btn = document.getElementById('llDemoPlayBtn');
+  var bar = document.getElementById('llDemoProgress');
+  var timer = document.getElementById('llDemoTimer');
+  var isAR = LL_CUR === 'ar';
+  if (_llDemoPlaying) {
+    _llDemoPlaying = false;
+    if (_llDemoTimer) { clearInterval(_llDemoTimer); _llDemoTimer = null; }
+    btn.textContent = isAR ? '▶️ استماع (مثال)' : '▶️ Écouter (exemple)';
+    return;
+  }
+  _llDemoPlaying = true;
+  _llDemoElapsed = 0;
+  btn.textContent = isAR ? '⏸ لحظة... (مثال)' : '⏸ Lecture en cours... (exemple)';
+  /* Aperçu accéléré (~4s réelles) plutôt qu'une vraie durée de 1:24 — c'est un exemple fictif, pas un fichier audio réel */
+  var pasParTick = LL_DEMO_DUR / 40;
+  _llDemoTimer = setInterval(function() {
+    _llDemoElapsed += pasParTick;
+    var pct = Math.min(100, (_llDemoElapsed / LL_DEMO_DUR) * 100);
+    bar.style.width = pct + '%';
+    timer.textContent = llDemoFormatTime(Math.max(0, LL_DEMO_DUR - _llDemoElapsed));
+    if (_llDemoElapsed >= LL_DEMO_DUR) {
+      clearInterval(_llDemoTimer); _llDemoTimer = null; _llDemoPlaying = false;
+      bar.style.width = '0%';
+      timer.textContent = llDemoFormatTime(LL_DEMO_DUR);
+      btn.textContent = isAR ? '▶️ استماع (مثال)' : '▶️ Écouter (exemple)';
+    }
+  }, 100);
+};
+
+window.llDemanderActivation = function() {
+  if (!LL_STATE.profUid) return;
+  var btn = document.getElementById('llActivateBtn');
+  var isAR = LL_CUR === 'ar';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="ll-spinner"></span>' + (isAR ? 'جارٍ الإرسال...' : 'Envoi...');
+  setDoc(doc(dbFs, 'profs', LL_STATE.profUid), { laboLanguesDemandee: true, laboLanguesDemandeeAt: serverTimestamp() }, { merge: true }).then(function() {
+    LL_STATE.profDoc.laboLanguesDemandee = true;
+    btn.disabled = false;
+    llRenderDiscovery(LL_STATE.profDoc);
+  }).catch(function() {
+    btn.disabled = false;
+    btn.textContent = isAR ? 'طلب التفعيل' : "Demander l'activation";
+  });
+};
+
+/* ===== ESPACE PROFESSEUR ===== */
+function llEligibles(uid, a) {
+  var roster = llReadRoster(uid);
+  var list = (roster.el||[]).filter(function(e){ return e.cid === a.classeId; });
+  if (a.assigneMode === 'specifique') list = list.filter(function(e){ return (a.assigneElevesIds||[]).indexOf(e.id) >= 0; });
+  return list;
+}
+var LL_AVATAR_COLORS = ['#3454D1','#0EA5B7','#8B5CF6','#D98C3D','#C8102E','#0891B2','#DB2777','#EA580C'];
+function llAvatarColor(name) {
+  var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return LL_AVATAR_COLORS[h % LL_AVATAR_COLORS.length];
+}
+function llActStatus(uid, a, data) {
+  var elig = llEligibles(uid, a);
+  var subs = (data.subs||[]).filter(function(s){ return s.actId === a.id; });
+  var notees = subs.filter(function(s){ return s.note != null; }).length;
+  var status = !subs.length ? 'none' : (elig.length && notees === elig.length ? 'done' : 'progress');
+  return { elig: elig, subs: subs, notees: notees, status: status };
+}
+/* Rafraîchit uniquement les indicateurs + la liste "à corriger" du tableau de bord,
+   sans changer l'écran actuellement affiché (utilisé après notation/suppression
+   pendant qu'on reste sur l'écran de correction). */
+function llRefreshStats(uid) {
+  var data = llReadData(uid);
+  var acts = data.acts || [];
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  var allSubs = data.subs || [];
+  var toGrade = allSubs.filter(function(s){ return s.note == null; });
+  var elevesActifsSet = {}; allSubs.forEach(function(s){ elevesActifsSet[s.eleveId] = true; });
+  var notesSur20 = allSubs.filter(function(s){ return s.note != null; }).map(function(s){
+    var a = acts.find(function(x){ return x.id === s.actId; });
+    var bareme = a ? a.bareme : 20;
+    return bareme ? (s.note / bareme) * 20 : s.note;
+  });
+  var moyenne = notesSur20.length ? (notesSur20.reduce(function(a,b){return a+b;},0) / notesSur20.length) : null;
+  document.getElementById('llStatToGrade').textContent = toGrade.length;
+  document.getElementById('llStatActs').textContent = acts.length;
+  document.getElementById('llStatEleves').textContent = Object.keys(elevesActifsSet).length;
+  document.getElementById('llStatMoyenne').textContent = moyenne != null ? (moyenne.toFixed(1) + '/20') : '—';
+
+  /* --- À corriger --- */
+  var toGradeCard = document.getElementById('llToGradeCard');
+  if (!toGrade.length) { toGradeCard.style.display = 'none'; }
+  else {
+    toGradeCard.style.display = 'block';
+    var rows = toGrade.slice().sort(function(x,y){ return new Date(y.envoyeLe) - new Date(x.envoyeLe); }).slice(0, 8).map(function(s) {
+      var a = acts.find(function(x){ return x.id === s.actId; }) || {};
+      var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
+      var el = (roster.el||[]).find(function(e){ return e.id === s.eleveId; });
+      var nom = el ? (el.pr + ' ' + el.no) : ('#' + s.eleveId);
+      var initiales = el ? (el.pr[0] + (el.no ? el.no[0] : '')) : '?';
+      var duree = s.dureeSec != null ? llFormatDuree(s.dureeSec) : (a.dureeMaxSec ? ('≤ ' + llFormatDuree(a.dureeMaxSec)) : '—');
+      return '<div class="ll-tograde-row2">' +
+        '<div class="ll-avatar" style="background:'+llAvatarColor(nom)+'">'+initiales+'</div>' +
+        '<div class="ll-tograde-info">' +
+        '<div class="ll-tograde-name">'+nom+'</div>' +
+        '<div class="ll-tograde-meta">'+llLangChip(lg)+'<span class="sep">·</span>'+a.theme+'<span class="sep">·</span>'+LL_ICO.clock+' '+duree+'<span class="sep">·</span>'+LL_ICO.calendar+' '+llFormatDate(s.envoyeLe)+'</div>' +
+        '</div>' +
+        '<div class="ll-tograde-actions">' +
+        '<button class="btn bo bsm" onclick="llToGradeListen(this,\''+uid+'\',\''+(s.audioKey||'')+'\')">'+LL_ICO.play+' '+(isAR?'استماع':'Écouter')+'</button>' +
+        '<button class="btn bt bsm" onclick="llOpenProd('+a.id+')">'+LL_ICO.edit+' '+(isAR?'تصحيح':'Corriger')+'</button>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+    document.getElementById('llToGradeList').innerHTML = rows;
+  }
+}
+/* Lecteur audio inline dans la liste "À corriger" : évite d'ouvrir la vue de correction
+   complète juste pour écouter une production avant de décider de la corriger. */
+window.llToGradeListen = function(btn, uid, audioKey) {
+  var isAR = LL_CUR === 'ar';
+  var row = btn.closest('.ll-tograde-row2');
+  var existing = row.querySelector('.ll-inline-player');
+  if (existing) { existing.remove(); btn.innerHTML = LL_ICO.play + ' ' + (isAR ? 'استماع' : 'Écouter'); return; }
+  var src = audioKey ? llAudioGet(uid, audioKey) : null;
+  var wrap = document.createElement('div');
+  wrap.className = 'll-inline-player';
+  wrap.innerHTML = src ? ('<audio controls autoplay style="width:100%;" src="' + src + '"></audio>') : ('<div style="font-size:.72rem;color:var(--ink3);">' + (isAR ? 'لا يوجد تسجيل' : 'Aucun enregistrement') + '</div>');
+  row.appendChild(wrap);
+  btn.innerHTML = LL_ICO.check + ' ' + (isAR ? 'إخفاء' : 'Masquer');
+};
+/* Somme la taille de toutes les clés localStorage de cette origine (ClassIA + Labo Langues
+   partagent le même domaine) : les enregistrements audio en base64 peuvent faire grossir
+   le stockage jusqu'à risquer une éviction par le navigateur (voir plus haut). */
+function llGetLocalStorageUsageMB() {
+  var total = 0;
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      total += k.length + (localStorage.getItem(k) || '').length;
+    }
+  } catch(e) {}
+  return total / (1024*1024);
+}
+function llCheckStorageUsage() {
+  var box = document.getElementById('llStorageWarning');
+  if (!box) return;
+  var mb = llGetLocalStorageUsageMB();
+  var isAR = LL_CUR === 'ar';
+  if (mb < 3.5) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = isAR
+    ? ('⚠️ مساحة التخزين في هذا المتصفح تقترب من الامتلاء (' + mb.toFixed(1) + ' ميغا). قد يسبب هذا انقطاع اتصال غير متوقع. صدّر (⬇️) ثم احذف (🗑) أقدم التسجيلات المصححة لتحرير مساحة.')
+    : ('⚠️ Le stockage de ce navigateur pour ClassIA/Labo Langues approche de sa limite (' + mb.toFixed(1) + ' Mo). Cela peut provoquer des déconnexions inattendues. Exportez (⬇️) puis supprimez (🗑) les enregistrements déjà corrigés les plus anciens pour libérer de la place.');
+}
+function llRenderProfApp() {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var acts = data.acts || [];
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  llRefreshStats(uid);
+  llCheckStorageUsage();
+
+  /* --- Filtres (options) --- */
+  var fLangueSel = document.getElementById('llFilterLangue');
+  var curLangueVal = fLangueSel.value;
+  fLangueSel.innerHTML = '<option value="">'+(isAR?'كل اللغات':'Toutes langues')+'</option>' + LL_LANGUES.map(function(l){ return '<option value="'+l.id+'">'+(isAR?l.ar:l.fr)+'</option>'; }).join('');
+  fLangueSel.value = curLangueVal;
+  var fClasseSel = document.getElementById('llFilterClasse');
+  var curClasseVal = fClasseSel.value;
+  fClasseSel.innerHTML = '<option value="">'+(isAR?'👥 كل الأقسام':'👥 Toutes classes')+'</option>' + (roster.cls||[]).map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  fClasseSel.value = curClasseVal;
+
+  var filtLangue = fLangueSel.value, filtClasse = fClasseSel.value, filtStatut = document.getElementById('llFilterStatut').value;
+  var box = document.getElementById('llActList');
+  var empty = document.getElementById('llEmptyCard');
+  document.getElementById('llProdView').style.display = 'none';
+  box.style.display = 'grid';
+  document.getElementById('llFilters').style.display = acts.length ? 'flex' : 'none';
+  if (!acts.length) { box.innerHTML = ''; empty.style.display = 'block'; return; }
+
+  var visibleActs = acts.filter(function(a) {
+    if (filtLangue && a.langueId !== filtLangue) return false;
+    if (filtClasse && String(a.classeId) !== filtClasse) return false;
+    if (filtStatut && llActStatus(uid, a, data).status !== filtStatut) return false;
+    return true;
+  });
+  if (!visibleActs.length) {
+    empty.style.display = 'block';
+    document.getElementById('llEmptyTxt').textContent = isAR ? 'لا يوجد نشاط يطابق هذا التصفية.' : 'Aucune activité ne correspond à ce filtre.';
+    box.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+  box.innerHTML = visibleActs.slice().reverse().map(function(a) {
+    var cls = (roster.cls||[]).find(function(c){ return c.id === a.classeId; });
+    var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
+    var ty = llTypeById(a.typeActivite);
+    var st = llActStatus(uid, a, data);
+    var statutLbl = st.status === 'done' ? (isAR?'مكتمل':'Terminée') : st.status === 'progress' ? (isAR?'قيد الإنجاز':'En cours') : (isAR?'لا رد':'Aucune réponse');
+    var dateLimiteTxt = a.dateLimite ? (LL_ICO.calendar + ' ' + llFormatDate(a.dateLimite)) : '';
+    return '<div class="card ll-act-card2" onclick="llOpenProd('+a.id+')"><div class="cb">' +
+      '<div class="ll-act-card2-top">' + llLangChip(lg) +
+      '<span style="font-size:.72rem;color:var(--ink3);display:flex;align-items:center;"><span class="ll-status-dot '+st.status+'"></span>'+statutLbl+'</span>' +
+      '</div>' +
+      '<div class="ll-act-card2-title">'+a.theme+'</div>' +
+      '<div class="ll-act-card2-meta">' +
+      '<span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+      '<span class="sep">·</span>'+LL_ICO.users+' '+(cls?cls.nm:'') +
+      (dateLimiteTxt ? ('<span class="sep">·</span>'+dateLimiteTxt) : '') +
+      '</div>' +
+      '<div class="ll-act-card2-foot">' +
+      '<span class="ll-act-card2-stat">'+LL_ICO.send+' '+st.subs.length+'/'+st.elig.length+(isAR?(' · مصحح '+st.notees):(' · corrigé '+st.notees))+'</span>' +
+      '<button class="btn bo bsm" onclick="event.stopPropagation();llOpenProd('+a.id+')">'+(isAR?'عرض النشاط':"Voir l'activité")+'</button>' +
+      '</div>' +
+      '</div></div>';
+  }).join('');
+}
+window.llRenderProfApp = llRenderProfApp; /* appelée depuis les attributs onchange des filtres (portée globale) */
+window.llEditCurrentAct = function() { llOpenActModal(LL_STATE.curAct); };
+window.llOpenActModal = function(editActId) {
+  var uid = LL_STATE.profUid;
+  var roster = llReadRoster(uid);
+  var isAR = LL_CUR === 'ar';
+  var act = null;
+  if (editActId) {
+    var data = llReadData(uid);
+    act = (data.acts||[]).find(function(a){ return a.id === editActId; });
+  }
+  LL_STATE.editActId = act ? editActId : null;
+  document.getElementById('llModalActTitle').textContent = act ? (isAR ? 'تعديل النشاط' : "Modifier l'activité") : (isAR ? 'إنشاء نشاط شفهي' : 'Créer une activité orale');
+  document.getElementById('llSaveBtn').textContent = act ? (isAR ? 'حفظ' : 'Enregistrer') : (isAR ? 'إنشاء' : 'Créer');
+  document.getElementById('llClasse').innerHTML = (roster.cls||[]).map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  document.getElementById('llTypeActivite').innerHTML = LL_TYPES.map(function(t){ return '<option value="'+t.id+'">'+t.ic+' '+(isAR?t.ar:t.fr)+'</option>'; }).join('');
+  document.getElementById('llTypeActivite').value = act ? (act.typeActivite || 'libre') : 'libre';
+  document.getElementById('llLangue').value = act ? act.langueId : 'fr';
+  document.getElementById('llClasse').value = act ? act.classeId : (roster.cls && roster.cls[0] ? roster.cls[0].id : '');
+  document.getElementById('llAssigneMode').value = act ? act.assigneMode : 'tous';
+  document.getElementById('llTheme').value = act ? act.theme : '';
+  document.getElementById('llConsigne').value = act ? act.consigne : '';
+  document.getElementById('llDureeMax').value = act ? act.dureeMaxSec : '60';
+  document.getElementById('llBareme').value = act ? act.bareme : '20';
+  document.getElementById('llDateLimite').value = act ? (act.dateLimite || '') : '';
+  document.getElementById('llPlusieursTentatives').checked = act ? !!act.plusieursTentatives : true;
+  document.getElementById('llAudioModeleInput').value = '';
+  llOnClasseChange();
+  if (act && act.assigneMode === 'specifique') {
+    (act.assigneElevesIds||[]).forEach(function(id) {
+      var cb = document.querySelector('.llElCb[value="'+id+'"]');
+      if (cb) cb.checked = true;
+    });
+  }
+  llOnAssigneModeChange();
+  document.getElementById('llModalAct').classList.add('open');
+};
+window.llCloseModal = function(id) { document.getElementById(id).classList.remove('open'); };
+window.llOnClasseChange = function() {
+  var uid = LL_STATE.profUid;
+  var roster = llReadRoster(uid);
+  var cid = parseInt(document.getElementById('llClasse').value);
+  var eleves = (roster.el||[]).filter(function(e){ return e.cid === cid; });
+  document.getElementById('llElevesBox').innerHTML = eleves.map(function(e) {
+    return '<label style="display:flex;align-items:center;gap:.5rem;padding:.3rem 0;font-size:.82rem;"><input type="checkbox" class="llElCb" value="'+e.id+'"> '+e.pr+' '+e.no+'</label>';
+  }).join('');
+};
+window.llOnAssigneModeChange = function() {
+  document.getElementById('llElevesBox').style.display = document.getElementById('llAssigneMode').value === 'specifique' ? 'block' : 'none';
+};
+window.llSaveAct = function() {
+  var uid = LL_STATE.profUid;
+  var classeId = parseInt(document.getElementById('llClasse').value);
+  var theme = document.getElementById('llTheme').value.trim();
+  var consigne = document.getElementById('llConsigne').value.trim();
+  if (!classeId || !theme || !consigne) { alert(LL_CUR==='ar' ? 'يرجى ملء القسم والموضوع والتعليمة.' : 'Merci de remplir la classe, le thème et la consigne.'); return; }
+  var mode = document.getElementById('llAssigneMode').value;
+  var elevesIds = [];
+  if (mode === 'specifique') document.querySelectorAll('.llElCb:checked').forEach(function(cb){ elevesIds.push(parseInt(cb.value)); });
+  var editId = LL_STATE.editActId;
+  var data = llReadData(uid);
+  data.acts = data.acts || [];
+  var existing = editId ? data.acts.find(function(a){ return a.id === editId; }) : null;
+  var act = existing || { id: Date.now(), audioModeleKey: null, createdAt: new Date().toISOString() };
+  act.langueId = document.getElementById('llLangue').value;
+  act.typeActivite = document.getElementById('llTypeActivite').value;
+  act.classeId = classeId;
+  act.assigneMode = mode;
+  act.assigneElevesIds = elevesIds;
+  act.theme = theme;
+  act.consigne = consigne;
+  act.dureeMaxSec = parseInt(document.getElementById('llDureeMax').value);
+  act.bareme = parseInt(document.getElementById('llBareme').value);
+  act.dateLimite = document.getElementById('llDateLimite').value;
+  act.plusieursTentatives = document.getElementById('llPlusieursTentatives').checked;
+  function finish() {
+    if (!existing) data.acts.push(act);
+    llSaveData(uid, data);
+    llSyncDevoirToTadriss(uid, act);
+    llCloseModal('llModalAct');
+    LL_STATE.editActId = null;
+    if (editId) llOpenProd(editId); else llRenderProfApp();
+  }
+  var fileInput = document.getElementById('llAudioModeleInput');
+  if (fileInput.files && fileInput.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      if (act.audioModeleKey) llAudioDelete(uid, act.audioModeleKey);
+      act.audioModeleKey = 'modele_' + act.id;
+      llAudioSave(uid, act.audioModeleKey, e.target.result);
+      finish();
+    };
+    reader.readAsDataURL(fileInput.files[0]);
+  } else finish();
+};
+window.llOpenProd = function(actId) {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  if (!act) return;
+  LL_STATE.curAct = actId;
+  var isAR = LL_CUR === 'ar';
+  var roster = llReadRoster(uid);
+  var cls = (roster.cls||[]).find(function(c){ return c.id === act.classeId; });
+  var lg = LL_LANGUES.find(function(l){ return l.id === act.langueId; }) || LL_LANGUES[0];
+  document.getElementById('llActList').style.display = 'none';
+  document.getElementById('llEmptyCard').style.display = 'none';
+  document.getElementById('llProdView').style.display = 'block';
+  document.getElementById('llProdTitle').innerHTML = llLangChip(lg) + ' ' + act.theme;
+  var html = '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.4rem;">'+(isAR?lg.ar:lg.fr)+' · '+(cls?cls.nm:'')+'</div><div style="font-size:.85rem;">'+act.consigne+'</div>';
+  if (act.audioModeleKey) {
+    var src = llAudioGet(uid, act.audioModeleKey);
+    if (src) html += '<audio controls style="width:100%;margin-top:.8rem;" src="'+src+'"></audio>';
+  }
+  document.getElementById('llProdConsigne').innerHTML = html;
+  llRenderProdList(uid, act);
+};
+window.llCloseProd = function() {
+  LL_STATE.curAct = null;
+  document.getElementById('llProdView').style.display = 'none';
+  document.getElementById('llActList').style.display = 'grid';
+  llRenderProfApp();
+};
+window.llDeleteAct = function() {
+  var uid = LL_STATE.profUid, id = LL_STATE.curAct;
+  if (!id) return;
+  if (!confirm(LL_CUR==='ar' ? 'حذف هذا النشاط وجميع إنتاجاته؟' : 'Supprimer cette activité et toutes ses productions ?')) return;
+  var data = llReadData(uid);
+  var act = (data.acts||[]).find(function(a){ return a.id === id; });
+  if (act && act.audioModeleKey) llAudioDelete(uid, act.audioModeleKey);
+  (data.subs||[]).filter(function(s){ return s.actId === id; }).forEach(function(s){ if (s.audioKey) llAudioDelete(uid, s.audioKey); });
+  data.subs = (data.subs||[]).filter(function(s){ return s.actId !== id; });
+  data.acts = (data.acts||[]).filter(function(a){ return a.id !== id; });
+  llSaveData(uid, data);
+  llRemoveTadrissEval(uid, id);
+  llRemoveTadrissDevoir(uid, id);
+  llCloseProd();
+};
+var LL_CRITERES = [
+  { id:'pron', fr:'Prononciation', ar:'النطق' },
+  { id:'fluidite', fr:'Fluidité', ar:'الطلاقة' },
+  { id:'vocab', fr:'Vocabulaire', ar:'المفردات' },
+  { id:'gram', fr:'Grammaire', ar:'القواعد' }
+];
+function llRenderProdList(uid, act) {
+  var data = llReadData(uid);
+  var isAR = LL_CUR === 'ar';
+  var eligibles = llEligibles(uid, act);
+  var box = document.getElementById('llProdList');
+  if (!eligibles.length) { box.innerHTML = '<div style="padding:1.5rem;text-align:center;color:var(--ink3);">'+(isAR?'لا يوجد تلاميذ':'Aucun élève')+'</div>'; return; }
+  var useGrid = act.bareme === 20; /* la grille à 4 critères /5 ne s'applique que sur un barème /20 */
+  box.innerHTML = eligibles.map(function(e) {
+    var nom = e.pr + ' ' + e.no;
+    var initiales = e.pr[0] + (e.no ? e.no[0] : '');
+    var sub = (data.subs||[]).find(function(s){ return s.actId === act.id && s.eleveId === e.id; });
+    var head = '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">' +
+      '<div class="ll-avatar" style="background:'+llAvatarColor(nom)+';width:32px;height:32px;font-size:.75rem;">'+initiales+'</div>' +
+      '<div style="flex:1;font-weight:700;font-size:.85rem;">'+nom+'</div>';
+    if (!sub) return head + '</div><div style="font-size:.78rem;color:var(--ink3);padding-inline-start:2.6rem;">⏳ '+(isAR?'في انتظار الإرسال':"En attente d'envoi")+'</div></div>';
+    head += '<button class="btn bo bsm" onclick="llDeleteSub('+act.id+','+e.id+')">🗑</button></div>';
+    var audioSrc = sub.audioKey ? llAudioGet(uid, sub.audioKey) : null;
+    var dureeTxt = sub.dureeSec != null ? llFormatDuree(sub.dureeSec) : '—';
+    var left = '<div>' +
+      '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.5rem;">✓ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+' · ⏱ '+dureeTxt+'</div>';
+    if (audioSrc) left += '<audio controls style="width:100%;margin-bottom:.5rem;" src="'+audioSrc+'"></audio><button class="btn bo bsm" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+(e.pr+'_'+e.no).replace(/'/g,"")+'\')">⬇️ '+(isAR?'تحميل':'Télécharger')+'</button>';
+    left += '</div>';
+    var vcSrc = sub.commentVocalKey ? llAudioGet(uid, sub.commentVocalKey) : null;
+    var vcHtml = '<div class="fg" id="llVcBox_'+e.id+'">' +
+      '<label class="fl" style="font-size:.68rem;">'+(isAR?'تعليق صوتي':'Commentaire vocal')+'</label>' +
+      '<button type="button" class="btn bo bsm" id="llVcBtn_'+e.id+'" onclick="llVoiceCommentToggle('+act.id+','+e.id+')">🎙️ '+(isAR?'تسجيل':'Enregistrer')+'</button>' +
+      '<audio id="llVcPlayer_'+e.id+'" controls style="display:'+(vcSrc?'block':'none')+';width:100%;margin-top:.4rem;"'+(vcSrc?(' src="'+vcSrc+'"'):'')+'></audio>' +
+      '</div>';
+    var right;
+    if (useGrid) {
+      var crit = sub.criteres || {};
+      right = '<div>' + LL_CRITERES.map(function(c) {
+        var v = crit[c.id] != null ? crit[c.id] : 3;
+        return '<div class="ll-crit-row"><span>'+(isAR?c.ar:c.fr)+'</span><input type="range" min="0" max="5" step="1" value="'+v+'" id="llCrit_'+c.id+'_'+e.id+'" oninput="llUpdateCritTotal('+act.id+','+e.id+')"><span id="llCritVal_'+c.id+'_'+e.id+'" style="text-align:center;font-weight:700;">'+v+'</span></div>';
+      }).join('') +
+        '<div class="ll-crit-total" id="llCritTotal_'+e.id+'">'+(isAR?'المجموع: ':'Total : ')+(sub.note!=null?sub.note:'—')+'/20</div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        vcHtml +
+        '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ التنقيط':'Enregistrer la note')+'</button>' +
+        '</div>';
+    } else {
+      right = '<div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'النقطة':'Note')+' /'+act.bareme+'</label><input type="number" min="0" max="'+act.bareme+'" class="fi" id="llNote_'+e.id+'" value="'+(sub.note!=null?sub.note:'')+'"></div>' +
+        '<div class="fg"><label class="fl" style="font-size:.68rem;">'+(isAR?'ملاحظة':'Commentaire')+'</label><input class="fi" id="llComment_'+e.id+'" value="'+(sub.commentaire?sub.commentaire.replace(/"/g,'&quot;'):'')+'"></div>' +
+        vcHtml +
+        '<button class="btn bt bsm" style="width:100%;" onclick="llNoterSub('+act.id+','+e.id+')">'+(isAR?'حفظ':'Enregistrer')+'</button>' +
+        '</div>';
+    }
+    var body = '<div class="g2" style="gap:1rem;padding-inline-start:2.6rem;">' + left + right + '</div>';
+    return head + body + '</div>';
+  }).join('');
+}
+window.llUpdateCritTotal = function(actId, eleveId) {
+  var total = 0;
+  LL_CRITERES.forEach(function(c) {
+    var input = document.getElementById('llCrit_'+c.id+'_'+eleveId);
+    var span = document.getElementById('llCritVal_'+c.id+'_'+eleveId);
+    if (input) { span.textContent = input.value; total += parseInt(input.value); }
+  });
+  var isAR = LL_CUR === 'ar';
+  var totalEl = document.getElementById('llCritTotal_'+eleveId);
+  if (totalEl) totalEl.textContent = (isAR?'المجموع: ':'Total : ') + total + '/20';
+};
+
+/* Commentaire vocal du professeur : même mécanisme d'enregistrement que le studio élève
+   (MediaRecorder), stocké séparément par production (commentvoc_{actId}_{eleveId}) dans
+   le même magasin audio isolé (jamais dans la sauvegarde cloud). */
+var LL_VC = { recording:false, recorder:null, chunks:[], actId:null, eleveId:null, stream:null };
+window.llVoiceCommentToggle = function(actId, eleveId) {
+  var btn = document.getElementById('llVcBtn_'+eleveId);
+  var isAR = LL_CUR === 'ar';
+  if (LL_VC.recording && LL_VC.eleveId === eleveId) {
+    LL_VC.recorder.stop();
+    return;
+  }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { alert(isAR?'تعذّر الوصول إلى الميكروفون.':'Impossible d\'accéder au microphone.'); return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    LL_VC.stream = stream; LL_VC.actId = actId; LL_VC.eleveId = eleveId; LL_VC.chunks = [];
+    var mime = '';
+    ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].some(function(m){ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) { mime = m; return true; } return false; });
+    LL_VC.recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    LL_VC.recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) LL_VC.chunks.push(e.data); };
+    LL_VC.recorder.onstop = function() {
+      LL_VC.stream.getTracks().forEach(function(t){ t.stop(); });
+      LL_VC.recording = false;
+      var blob = new Blob(LL_VC.chunks, { type: LL_VC.recorder.mimeType || 'audio/webm' });
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var uid = LL_STATE.profUid;
+        var data = llReadData(uid);
+        var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
+        if (!sub) return;
+        var key = 'commentvoc_' + actId + '_' + eleveId;
+        if (sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
+        llAudioSave(uid, key, e.target.result);
+        sub.commentVocalKey = key;
+        llSaveData(uid, data);
+        var player = document.getElementById('llVcPlayer_'+eleveId);
+        if (player) { player.src = e.target.result; player.style.display = 'block'; }
+      };
+      reader.readAsDataURL(blob);
+      btn.textContent = '🎙️ ' + (isAR?'إعادة التسجيل':'Réenregistrer');
+      btn.classList.remove('bt'); btn.classList.add('bo');
+    };
+    LL_VC.recorder.start();
+    LL_VC.recording = true;
+    btn.textContent = '⏹ ' + (isAR?'إيقاف':'Arrêter');
+    btn.classList.remove('bo'); btn.classList.add('bt');
+  }).catch(function() { alert(isAR?'تعذّر الوصول إلى الميكروفون.':'Impossible d\'accéder au microphone.'); });
+};
+window.llNoterSub = function(actId, eleveId) {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
+  if (!sub) return;
+  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  var gridInput = document.getElementById('llCrit_pron_'+eleveId);
+  if (gridInput) {
+    var crit = {}, total = 0;
+    LL_CRITERES.forEach(function(c) {
+      var v = parseInt(document.getElementById('llCrit_'+c.id+'_'+eleveId).value);
+      crit[c.id] = v; total += v;
+    });
+    sub.criteres = crit;
+    sub.note = total;
+  } else {
+    var n = document.getElementById('llNote_'+eleveId).value;
+    sub.note = n !== '' ? parseFloat(n) : null;
+  }
+  sub.commentaire = document.getElementById('llComment_'+eleveId).value.trim();
+  llSaveData(uid, data);
+  if (sub.note != null) llSyncNoteToTadriss(uid, act, eleveId, sub.note);
+  llRenderProdList(uid, act);
+  llRefreshStats(uid);
+};
+
+/* Fait apparaître automatiquement la note d'une production orale dans "Notes et moyennes"
+   de ClassIA (localStorage TADRISS_DZ_{uid}), comme une évaluation normale — une seule
+   évaluation par activité Labo Langues (identifiée par _laboActId), mise à jour à chaque
+   notation plutôt que dupliquée. Écriture directe en localStorage : le prochain sv() lancé
+   depuis ClassIA (à sa prochaine modification) la fera remonter dans la sauvegarde cloud
+   comme le reste, sans qu'on ait besoin d'y toucher depuis ce fichier séparé. */
+function llSyncNoteToTadriss(uid, act, eleveId, note) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) td.ev = [];
+  var ev = td.ev.find(function(e) { return e._laboActId === act.id; });
+  if (!ev) {
+    ev = { id: Date.now(), int: '🎙️ Oral — ' + act.theme, date: new Date().toISOString().slice(0, 10), type: 'Oral', coef: 1, notes: {}, _laboActId: act.id };
+    td.ev.push(ev);
+  } else {
+    ev.int = '🎙️ Oral — ' + act.theme; /* garde le titre synchro si l'activité a été renommée depuis */
+  }
+  ev.notes[eleveId] = note;
+  try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {}
+}
+window.llDeleteSub = function(actId, eleveId) {
+  var uid = LL_STATE.profUid;
+  var data = llReadData(uid);
+  var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eleveId; });
+  if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
+  if (sub && sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
+  data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eleveId); });
+  llSaveData(uid, data);
+  llRemoveTadrissEvalNote(uid, actId, eleveId);
+  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  llRenderProdList(uid, act);
+  llRefreshStats(uid);
+};
+/* Retire la note d'un élève de l'évaluation ClassIA synchronisée pour cette activité
+   (utilisé quand le prof supprime une production individuelle notée). */
+function llRemoveTadrissEvalNote(uid, actId, eleveId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) return;
+  var ev = td.ev.find(function(e) { return e._laboActId === actId; });
+  if (ev && ev.notes) { delete ev.notes[eleveId]; try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
+/* Retire entièrement l'évaluation ClassIA synchronisée pour une activité
+   (utilisé quand le prof supprime l'activité entière). */
+function llRemoveTadrissEval(uid, actId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.ev)) return;
+  var before = td.ev.length;
+  td.ev = td.ev.filter(function(e) { return e._laboActId !== actId; });
+  if (td.ev.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
+/* Crée/actualise un événement "Devoir" dans l'agenda ClassIA quand l'activité a une date limite,
+   pour qu'elle apparaisse dans "Mes devoirs à venir" côté élève avant même d'être notée.
+   Si la date limite est retirée, l'événement synchronisé est supprimé (rien à afficher). */
+function llSyncDevoirToTadriss(uid, act) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.evt)) td.evt = [];
+  var evt = td.evt.find(function(e) { return e._laboActId === act.id; });
+  if (!act.dateLimite) {
+    if (evt) td.evt = td.evt.filter(function(e) { return e._laboActId !== act.id; });
+  } else if (!evt) {
+    var id = td.evt.length ? Math.max.apply(null, td.evt.map(function(e){ return e.id; })) + 1 : 1;
+    td.evt.push({ id: id, title: '🎙️ Oral — ' + act.theme, date: act.dateLimite, type: 'Devoir', _laboActId: act.id });
+  } else {
+    evt.title = '🎙️ Oral — ' + act.theme;
+    evt.date = act.dateLimite;
+  }
+  try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {}
+}
+/* Retire l'événement "Devoir" synchronisé (utilisé quand le prof supprime l'activité entière). */
+function llRemoveTadrissDevoir(uid, actId) {
+  var key = 'TADRISS_DZ_' + uid;
+  var td;
+  try { td = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return; }
+  if (!Array.isArray(td.evt)) return;
+  var before = td.evt.length;
+  td.evt = td.evt.filter(function(e) { return e._laboActId !== actId; });
+  if (td.evt.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
+}
+window.llDownloadAudio = function(dataUrl, name) {
+  var a = document.createElement('a');
+  a.href = dataUrl; a.download = (name||'audio') + '.webm';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+};
+
+/* ===== ESPACE ÉLÈVE ===== */
+window.llGoEleve = function() { llShow('llEleveLogin'); };
+window.llEleveLoginSubmit = function() {
+  var code = document.getElementById('llEleveCode').value.trim();
+  var errEl = document.getElementById('llEleveErr');
+  errEl.textContent = '';
+  if (code.length < 4) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صالح.' : 'Code invalide.'; return; }
+  var keys = Object.keys(localStorage).filter(function(k){ return k.indexOf('TADRISS_DZ_') === 0; });
+  var uids = keys.map(function(k){ return k.replace('TADRISS_DZ_', ''); });
+  /* Plusieurs comptes profs jamais personnalisés partagent les mêmes données de démonstration
+     (mêmes élèves, mêmes codes) : on cherche en priorité parmi les comptes qui ont déjà créé au
+     moins une activité Labo Langues (LABOLANGUES_{uid} existe), pour éviter de tomber sur un
+     compte de démo sans rapport. On ne retombe sur les autres comptes qu'à défaut. */
+  uids.sort(function(a, b){
+    var aHas = localStorage.getItem('LABOLANGUES_' + a) ? 0 : 1;
+    var bHas = localStorage.getItem('LABOLANGUES_' + b) ? 0 : 1;
+    return aHas - bHas;
+  });
+  var found = null, foundUid = null;
+  for (var i = 0; i < uids.length; i++) {
+    var uid = uids[i];
+    var roster = llReadRoster(uid);
+    var match = (roster.el||[]).find(function(e){ return (e.code || llGenCode(e.id)) === code; });
+    if (match) { found = match; foundUid = uid; break; }
+  }
+  if (!found) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صحيح.' : 'Code incorrect.'; return; }
+  LL_STATE.eleve = found; LL_STATE.eleveUid = foundUid;
+  var cls = (roster.cls||[]).find(function(c){ return c.id === found.cid; });
+  document.getElementById('llEleveNameTxt').textContent = found.pr + ' ' + found.no;
+  document.getElementById('llEleveClasseTxt').textContent = cls ? cls.nm : '';
+  llShow('llEleveApp');
+  llRenderEleveApp();
+};
+function llRenderEleveApp() {
+  var uid = LL_STATE.eleveUid, eid = LL_STATE.eleve.id, cid = LL_STATE.eleve.cid;
+  var isAR = LL_CUR === 'ar';
+  var data = llReadData(uid);
+  var acts = (data.acts||[]).filter(function(a) {
+    if (a.classeId !== cid) return false;
+    if (a.assigneMode === 'specifique') return (a.assigneElevesIds||[]).indexOf(eid) >= 0;
+    return true;
+  });
+  var todoBox = document.getElementById('llEleveTodoList');
+  var doneBox = document.getElementById('llEleveDoneList');
+  var resultsCard = document.getElementById('llResultsCt').parentElement.parentElement;
+  if (!acts.length) {
+    todoBox.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--ink3);">'+(isAR?'لا يوجد أي نشاط شفهي حالياً ✓':'Aucune activité orale pour le moment ✓')+'</div>';
+    doneBox.innerHTML = '';
+    resultsCard.style.display = 'none';
+    return;
+  }
+  var todo = [], done = [];
+  acts.forEach(function(a) {
+    var lg = LL_LANGUES.find(function(l){ return l.id === a.langueId; }) || LL_LANGUES[0];
+    var ty = llTypeById(a.typeActivite);
+    var sub = (data.subs||[]).find(function(s){ return s.actId === a.id && s.eleveId === eid; });
+    (sub && sub.note != null ? done : todo).push({ a:a, lg:lg, ty:ty, sub:sub });
+  });
+
+  if (!todo.length) todoBox.innerHTML = '<div style="text-align:center;padding:1.6rem;color:var(--g);">✓ '+(isAR?'كل شيء منجز!':'Tout est fait !')+'</div>';
+  else todoBox.innerHTML = todo.map(function(x) {
+    var a = x.a, lg = x.lg, ty = x.ty, sub = x.sub;
+    var canRedo = !sub || a.plusieursTentatives;
+    var statut = !sub ? ('<span style="color:var(--a);">🔥 '+(isAR?'لم يُنجز بعد':'À faire')+'</span>')
+      : ('<span style="color:var(--t);">'+(isAR?'✓ تم الإرسال، بانتظار التصحيح':'✓ Envoyé, en attente de correction')+'</span>');
+    var btnLabel = !sub ? (isAR?'🎙️ بدء التسجيل':"🎙️ Commencer l'enregistrement") : (isAR?'🔄 إعادة المحاولة':'🔄 Recommencer');
+    return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;"><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span></div>' +
+      '<div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div>' +
+      '<div style="font-size:.78rem;color:var(--ink2);margin-bottom:.5rem;">'+a.consigne+'</div>' +
+      '<div style="font-size:.72rem;margin-bottom:.6rem;">'+statut+'</div>' +
+      '<div style="display:flex;gap:.6rem;">' +
+      (canRedo ? '<button class="btn bt bsm" onclick="llOpenStudio('+a.id+')">'+btnLabel+'</button>' : '') +
+      (sub ? '<button class="btn bo bsm" onclick="llEleveDeleteSub('+a.id+')">🗑 '+(isAR?'حذف إرسالي':'Supprimer mon envoi')+'</button>' : '') +
+      '</div>' +
+      '</div>';
+  }).join('');
+
+  resultsCard.style.display = done.length ? 'block' : 'none';
+  doneBox.innerHTML = done.map(function(x) {
+    var a = x.a, lg = x.lg, ty = x.ty, sub = x.sub;
+    var critHtml = '';
+    if (sub.criteres) {
+      critHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:.3rem .8rem;margin:.5rem 0;font-size:.75rem;">' + LL_CRITERES.map(function(c) {
+        return '<div>'+(isAR?c.ar:c.fr)+' : <strong>'+(sub.criteres[c.id]!=null?sub.criteres[c.id]:'—')+'/5</strong></div>';
+      }).join('') + '</div>';
+    }
+    var audioSrc = sub.audioKey ? llAudioGet(uid, sub.audioKey) : null;
+    var dureeTxt = sub.dureeSec != null ? llFormatDuree(sub.dureeSec) : '—';
+    var recHtml = '<div style="font-size:.72rem;color:var(--ink3);margin-top:.5rem;">🎙️ '+(isAR?'أُرسل في ':'Envoyé le ')+new Date(sub.envoyeLe).toLocaleDateString(isAR?'ar-DZ':'fr-FR')+' · ⏱ '+dureeTxt+'</div>';
+    if (audioSrc) recHtml += '<audio controls style="width:100%;margin-top:.4rem;" src="'+audioSrc+'"></audio>' +
+      '<div style="display:flex;gap:.5rem;margin-top:.4rem;">' +
+      '<button class="btn bo bsm" onclick="llDownloadAudio(\''+audioSrc.replace(/'/g,"\\'")+'\',\''+a.theme.replace(/[^a-zA-Z0-9]/g,'_')+'\')">⬇️ '+(isAR?'تحميل':'Exporter')+'</button>' +
+      '<button class="btn bo bsm" onclick="llEleveDeleteSub('+a.id+')">🗑 '+(isAR?'حذف':'Supprimer')+'</button>' +
+      '</div>';
+    return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;">' +
+      '<div><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span>' +
+      '<div style="font-weight:700;font-size:.9rem;margin-top:.4rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div></div>' +
+      '<div style="font-weight:800;color:var(--t);font-size:1.2rem;white-space:nowrap;">⭐ '+sub.note+'/'+a.bareme+'</div>' +
+      '</div>' +
+      critHtml +
+      (sub.commentaire ? ('<div style="font-size:.8rem;color:var(--ink2);margin-top:.4rem;">💬 '+sub.commentaire+'</div>') : '') +
+      (sub.commentVocalKey ? ('<audio controls style="width:100%;margin-top:.5rem;" src="'+llAudioGet(uid, sub.commentVocalKey)+'"></audio>') : '') +
+      recHtml +
+      '</div>';
+  }).join('');
+}
+
+window.llEleveDeleteSub = function(actId) {
+  var uid = LL_STATE.eleveUid, eid = LL_STATE.eleve.id;
+  var isAR = LL_CUR === 'ar';
+  if (!confirm(isAR ? 'حذف إرسالك لهذا النشاط؟' : 'Supprimer ton envoi pour cette activité ?')) return;
+  var data = llReadData(uid);
+  var sub = (data.subs||[]).find(function(s){ return s.actId === actId && s.eleveId === eid; });
+  if (sub && sub.audioKey) llAudioDelete(uid, sub.audioKey);
+  if (sub && sub.commentVocalKey) llAudioDelete(uid, sub.commentVocalKey);
+  data.subs = (data.subs||[]).filter(function(s){ return !(s.actId === actId && s.eleveId === eid); });
+  llSaveData(uid, data);
+  llRemoveTadrissEvalNote(uid, actId, eid);
+  llRenderEleveApp();
+};
+
+/* ===== STUDIO D'ENREGISTREMENT ===== */
+var LL_ST = { actId:null, maxSec:60, seconds:0, stream:null, recorder:null, chunks:[], dataUrl:null, timerId:null, rafId:null, audioCtx:null, dureeSec:null };
+window.llOpenStudio = function(actId) {
+  var uid = LL_STATE.eleveUid;
+  var data = llReadData(uid);
+  var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  if (!act) return;
+  var isAR = LL_CUR === 'ar';
+  var lg = LL_LANGUES.find(function(l){ return l.id === act.langueId; }) || LL_LANGUES[0];
+  LL_ST.actId = actId; LL_ST.maxSec = act.dureeMaxSec || 120; LL_ST.seconds = 0; LL_ST.chunks = []; LL_ST.dataUrl = null;
+  document.getElementById('llStudioLangue').textContent = lg.flag + ' ' + (isAR?lg.ar:lg.fr);
+  document.getElementById('llStudioTheme').textContent = act.theme;
+  document.getElementById('llStudioTimer').textContent = '00:00 / ' + llFormatDuree(LL_ST.maxSec);
+  document.getElementById('llStudioStartBtn').style.display = 'block';
+  document.getElementById('llStudioImportLbl').style.display = 'block';
+  document.getElementById('llStudioOr').style.display = 'block';
+  document.getElementById('llStudioPauseRow').style.display = 'none';
+  document.getElementById('llStudioPreviewRow').style.display = 'none';
+  document.getElementById('llStudioErr').style.display = 'none';
+  document.getElementById('llMicWrap').style.display = 'flex';
+  document.getElementById('llWaveformCanvas').style.display = 'none';
+  document.getElementById('llStudio').classList.add('open');
+};
+function llStudioCleanup() {
+  if (LL_ST.stream) { LL_ST.stream.getTracks().forEach(function(t){ t.stop(); }); LL_ST.stream = null; }
+  if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; }
+  if (LL_ST.rafId) { cancelAnimationFrame(LL_ST.rafId); LL_ST.rafId = null; }
+  if (LL_ST.audioCtx) { try { LL_ST.audioCtx.close(); } catch(e) {} LL_ST.audioCtx = null; }
+  var wrap = document.getElementById('llMicWrap'), canvas = document.getElementById('llWaveformCanvas');
+  if (wrap) wrap.style.display = 'flex';
+  if (canvas) canvas.style.display = 'none';
+}
+/* Dessine une forme d'onde en direct pendant l'enregistrement (Web Audio API AnalyserNode).
+   Purement visuel — n'affecte ni le format ni la qualité de l'enregistrement réel (MediaRecorder). */
+function llStudioStartWaveform(stream) {
+  try {
+    var canvas = document.getElementById('llWaveformCanvas');
+    var ctx = canvas.getContext('2d');
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    LL_ST.audioCtx = new AudioCtx();
+    var source = LL_ST.audioCtx.createMediaStreamSource(stream);
+    var analyser = LL_ST.audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+    var data = new Uint8Array(analyser.frequencyBinCount);
+    document.getElementById('llMicWrap').style.display = 'none';
+    canvas.style.display = 'block';
+    function draw() {
+      LL_ST.rafId = requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(data);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var barW = canvas.width / data.length;
+      for (var i = 0; i < data.length; i++) {
+        var h = (data[i] / 255) * canvas.height;
+        ctx.fillStyle = '#3454D1';
+        ctx.fillRect(i * barW, canvas.height - h, barW - 1, h);
+      }
+    }
+    draw();
+  } catch (e) { /* pas grave si non supporté : le studio reste utilisable sans forme d'onde */ }
+}
+function llStudioTick() {
+  LL_ST.seconds++;
+  document.getElementById('llStudioTimer').textContent = llFormatDuree(LL_ST.seconds) + ' / ' + llFormatDuree(LL_ST.maxSec);
+  if (LL_ST.seconds >= LL_ST.maxSec) llStudioStop();
+}
+window.llStudioStart = function() {
+  var errEl = document.getElementById('llStudioErr');
+  errEl.style.display = 'none';
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { errEl.textContent = LL_CUR==='ar' ? 'تعذّر الوصول إلى الميكروفون.' : 'Impossible d\'accéder au microphone.'; errEl.style.display = 'block'; return; }
+  navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+    LL_ST.stream = stream;
+    var mime = '';
+    ['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].some(function(m){ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) { mime = m; return true; } return false; });
+    LL_ST.recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    LL_ST.chunks = [];
+    LL_ST.recorder.ondataavailable = function(e) { if (e.data && e.data.size > 0) LL_ST.chunks.push(e.data); };
+    LL_ST.recorder.onstop = function() {
+      LL_ST.dureeSec = LL_ST.seconds;
+      var blob = new Blob(LL_ST.chunks, { type: LL_ST.recorder.mimeType || 'audio/webm' });
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        LL_ST.dataUrl = e.target.result;
+        document.getElementById('llStudioPreview').src = LL_ST.dataUrl;
+        document.getElementById('llStudioPauseRow').style.display = 'none';
+        document.getElementById('llStudioPreviewRow').style.display = 'flex';
+      };
+      reader.readAsDataURL(blob);
+      llStudioCleanup();
+    };
+    LL_ST.recorder.start();
+    LL_ST.seconds = 0;
+    document.getElementById('llStudioStartBtn').style.display = 'none';
+    document.getElementById('llStudioImportLbl').style.display = 'none';
+    document.getElementById('llStudioOr').style.display = 'none';
+    document.getElementById('llStudioPauseRow').style.display = 'flex';
+    LL_ST.timerId = setInterval(llStudioTick, 1000);
+    llStudioStartWaveform(stream);
+  }).catch(function() { errEl.textContent = LL_CUR==='ar' ? 'تعذّر الوصول إلى الميكروفون.' : 'Impossible d\'accéder au microphone.'; errEl.style.display = 'block'; });
+};
+window.llStudioPause = function() {
+  if (!LL_ST.recorder) return;
+  var btn = document.getElementById('llStudioPauseBtn');
+  var paused = btn.getAttribute('data-p') === '1';
+  if (!paused) { LL_ST.recorder.pause(); if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; } btn.textContent = LL_CUR==='ar'?'▶ متابعة':'▶ Reprendre'; btn.setAttribute('data-p','1'); }
+  else { LL_ST.recorder.resume(); LL_ST.timerId = setInterval(llStudioTick, 1000); btn.textContent = LL_CUR==='ar'?'⏸ إيقاف مؤقت':'⏸ Pause'; btn.setAttribute('data-p','0'); }
+};
+window.llStudioStop = function() { if (LL_ST.timerId) { clearInterval(LL_ST.timerId); LL_ST.timerId = null; } if (LL_ST.recorder && LL_ST.recorder.state !== 'inactive') LL_ST.recorder.stop(); };
+window.llStudioImport = function(input) {
+  if (!input.files || !input.files[0]) return;
+  LL_ST.dureeSec = null;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    LL_ST.dataUrl = e.target.result;
+    document.getElementById('llStudioPreview').src = LL_ST.dataUrl;
+    document.getElementById('llStudioStartBtn').style.display = 'none';
+    document.getElementById('llStudioImportLbl').style.display = 'none';
+    document.getElementById('llStudioOr').style.display = 'none';
+    document.getElementById('llStudioPreviewRow').style.display = 'flex';
+    var probe = new Audio(); probe.preload = 'metadata';
+    probe.onloadedmetadata = function() { if (isFinite(probe.duration)) LL_ST.dureeSec = Math.round(probe.duration); };
+    probe.src = LL_ST.dataUrl;
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+window.llStudioRedo = function() {
+  LL_ST.chunks = []; LL_ST.dataUrl = null; LL_ST.dureeSec = null;
+  document.getElementById('llStudioPreview').src = '';
+  document.getElementById('llStudioPreviewRow').style.display = 'none';
+  document.getElementById('llStudioStartBtn').style.display = 'block';
+  document.getElementById('llStudioImportLbl').style.display = 'block';
+  document.getElementById('llStudioOr').style.display = 'block';
+  document.getElementById('llStudioTimer').textContent = '00:00 / ' + llFormatDuree(LL_ST.maxSec);
+  document.getElementById('llMicWrap').style.display = 'flex';
+  document.getElementById('llWaveformCanvas').style.display = 'none';
+};
+window.llStudioSend = function() {
+  if (!LL_ST.dataUrl || !LL_STATE.eleve) return;
+  var uid = LL_STATE.eleveUid, eid = LL_STATE.eleve.id, actId = LL_ST.actId;
+  var key = 'sub_' + actId + '_' + eid + '_' + Date.now();
+  llAudioSave(uid, key, LL_ST.dataUrl);
+  var data = llReadData(uid);
+  data.subs = data.subs || [];
+  var dureeSec = LL_ST.dureeSec != null ? LL_ST.dureeSec : null;
+  var existing = data.subs.find(function(s){ return s.actId === actId && s.eleveId === eid; });
+  if (existing) {
+    if (existing.audioKey) llAudioDelete(uid, existing.audioKey);
+    if (existing.commentVocalKey) { llAudioDelete(uid, existing.commentVocalKey); existing.commentVocalKey = null; }
+    existing.audioKey = key; existing.envoyeLe = new Date().toISOString(); existing.note = null; existing.commentaire = ''; existing.dureeSec = dureeSec; existing.criteres = null;
+  }
+  else data.subs.push({ actId: actId, eleveId: eid, audioKey: key, envoyeLe: new Date().toISOString(), note: null, commentaire: '', dureeSec: dureeSec, criteres: null, commentVocalKey: null });
+  llSaveData(uid, data);
+  llCloseModal('llStudio');
+  llRenderEleveApp();
+};
+</script>
+</body>
+</html>
