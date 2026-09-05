@@ -4459,12 +4459,14 @@ function toggleView() {
   var icon = document.getElementById('toggleIcon');
   var label = document.getElementById('toggleLabel');
   if (siteVisible) {
+    site.style.display = '';
     site.classList.remove('hidden');
     icon.textContent = '📱';
     label.textContent = CURRENT_LANG === 'ar' ? "فتح التطبيق" : "Ouvrir l'App";
     btn.style.background = 'var(--t)';
   } else {
     site.classList.add('hidden');
+    setTimeout(function(){ if (site.classList.contains('hidden')) site.style.display = 'none'; }, 360);
     icon.textContent = '🌐';
     label.textContent = CURRENT_LANG === 'ar' ? 'عرض الموقع' : 'Voir le Site';
     btn.style.background = 'var(--ink)';
@@ -8973,7 +8975,7 @@ async function handleAuthUser(user) {
       }
       /* Compte validé et abonnement actif : accès direct à l'app (session mémorisée), sans repasser par la page d'accueil */
       var site = document.getElementById('site');
-      if (site) site.classList.add('hidden');
+      if (site) { site.classList.add('hidden'); site.style.display = 'none'; }
       gate.style.display = 'none';
       app.style.display = 'flex';
       authApplyProfile(p, user.uid);
