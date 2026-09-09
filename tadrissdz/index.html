@@ -1669,7 +1669,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
               <span class="badge bt2">Actif</span>
             </div>
             <div style="background:var(--ap);border-radius:9px;padding:.8rem 1rem;font-size:.78rem;color:var(--ink2);">
-              💡 <strong>Paiements acceptés :</strong> Carte CIB (SATIM), Dahabia, BaridiMob/CCP, virement bancaire RIB algérien. Envoie ton paiement à l'administrateur de ton établissement, qui le confirmera dans l'app.
+              💡 <strong>Paiements acceptés :</strong> Carte CIB (SATIM), Dahabia, BaridiMob/CCP, virement bancaire RIB algérien. Envoie ton paiement à l'administrateur de ton établissement, qui le confirmera dans l'app.<br><br>
+              ⚠️ <strong>Pour un virement bancaire</strong>, indique impérativement en communication : <strong>TADRISS + Ton prénom et nom</strong> (ex: « TADRISS Amine Belkacem »). Sans cette référence, ton virement peut être difficile à identifier et retarder l'activation de ton compte.
             </div>
           </div>
         </div>
@@ -8593,6 +8594,7 @@ function authApplyProfile(p, uid) {
   window._matieresActives = isPrimaire() ? PRIMAIRE_MATIERES.slice() : (Array.isArray(p.matieresActives) && p.matieresActives.length ? p.matieresActives : [window.D.s.mat]);
   window._matiereRequests = [];
   window._historiquePaiements = p.historiquePaiements || [];
+  window._paiementsMois = p.paiementsMois || {}; /* suivi mensuel des virements pointés par l'admin — {"2026-01":true,...} */
   window._prochainPaiement = p.prochainPaiement || null;
   window._planProf = p.plan || 'pro'; /* Starter/Pro — défaut "pro" pour les comptes déjà validés avant l'ajout des quotas */
   if (typeof window.sv === 'function') window.sv();
@@ -8683,15 +8685,25 @@ window.rAboMatieres = function() {
     else { statusEl.textContent = T('code_actif_badge'); statusEl.style.background=''; statusEl.style.borderColor=''; statusEl.style.color=''; }
   }
 
-  /* Historique de facturation réel */
+  /* Historique de facturation réel — construit à partir des mois pointés par l'admin
+     (paiementsMois, source de vérité), avec repli sur l'ancien tableau historiquePaiements
+     pour ne rien perdre des entrées créées avant l'ajout de ce suivi mensuel. */
   var histBox = document.getElementById('aboHistoriqueBox');
   if (histBox) {
-    var hist = (window._historiquePaiements || []).slice().reverse();
+    var moisPayes = Object.keys(window._paiementsMois || {}).filter(function(k) { return window._paiementsMois[k]; }).sort().reverse();
+    var histMois = moisPayes.map(function(k) {
+      var parts = k.split('-'); var mIdx = parseInt(parts[1], 10) - 1;
+      return { dateLabel: (MOIS[mIdx] || k) + ' ' + parts[0], montant: montantMensuel, methode: 'Virement', reference: 'Pointé par l\'administrateur' };
+    });
+    var histLegacy = (window._historiquePaiements || []).map(function(h) {
+      return { dateLabel: new Date(h.date).toLocaleDateString('fr-FR'), montant: h.montant, methode: h.methode, reference: h.reference };
+    });
+    var hist = histMois.concat(histLegacy);
     if (!hist.length) {
       histBox.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--ink3);padding:1rem;">' + T('aucun_paiement_lbl') + '</td></tr>';
     } else {
       histBox.innerHTML = hist.map(function(h) {
-        return '<tr><td>' + new Date(h.date).toLocaleDateString('fr-FR') + '</td><td><strong>' + h.montant + ' DA</strong></td><td>' + h.methode + '</td><td style="font-size:.75rem;color:var(--ink3);">' + (h.reference || '—') + '</td></tr>';
+        return '<tr><td>' + h.dateLabel + '</td><td><strong>' + h.montant + ' DA</strong></td><td>' + h.methode + '</td><td style="font-size:.75rem;color:var(--ink3);">' + (h.reference || '—') + '</td></tr>';
       }).join('');
     }
   }

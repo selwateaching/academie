@@ -30,6 +30,12 @@ tr:last-child td{border-bottom:none;}
 .bt:disabled{opacity:.5;cursor:not-allowed;}
 .empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
 #llLoading,#llNeedLogin,#llNotAdmin{text-align:center;padding:4rem 1rem;color:var(--ink3);}
+.pay-table{width:100%;border-collapse:collapse;min-width:760px;}
+.pay-table th,.pay-table td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--br);}
+.pay-table th{background:var(--bg);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);}
+.pay-table td:first-child,.pay-table th:first-child{text-align:left;position:sticky;left:0;background:var(--w);min-width:180px;font-size:.8rem;}
+.pay-table th:first-child{background:var(--bg);}
+.pay-table input[type="checkbox"]{width:17px;height:17px;cursor:pointer;accent-color:var(--t);}
 </style>
 </head>
 <body>
@@ -64,6 +70,16 @@ tr:last-child td{border-bottom:none;}
         <button class="btn bt" id="aComptesEmailBtn" disabled onclick="window.aEmailGroup()">✉️ Envoyer un email au groupe</button>
       </div>
       <div id="aComptesBody"></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">💰 Suivi des paiements — <span id="aPayYear"></span></div>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <button class="btn" style="padding:4px 9px;background:var(--bg);border:1px solid var(--br);" onclick="window.aPayYearShift(-1)">←</button>
+          <button class="btn" style="padding:4px 9px;background:var(--bg);border:1px solid var(--br);" onclick="window.aPayYearShift(1)">→</button>
+        </div>
+      </div>
+      <div style="padding:.7rem 1.3rem;font-size:.75rem;color:var(--ink3);border-bottom:1px solid var(--br);">Coche un mois dès que tu vois le virement (ou le paiement CIB/Dahabia/BaridiMob) correspondant arriver. Ça met à jour l'historique visible par l'enseignant dans "Mon abonnement".</div>
+      <div id="aPayBody" style="overflow-x:auto"></div>
     </div>
     <div class="card">
       <div class="ch"><div class="ct">🎙️ Demandes d'activation — Labo Langues</div><span class="badge" id="aLaboCount">0</span></div>
@@ -155,6 +171,7 @@ async function loadRequests() {
 
   ALL_PROFS = allProfs;
   window.aRenderComptes();
+  window.aRenderPaiements();
 
   var pending = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
   pending.sort(function(a, b) { return createdAtMs(a) - createdAtMs(b); });
@@ -290,6 +307,40 @@ window.aApplyMatiereAddon = async function(profId, nouvelleMatiere) {
   if (actives.indexOf(nouvelleMatiere) < 0) actives.push(nouvelleMatiere);
   await setDoc(doc(dbFs, 'profs', profId), { matieresActives: actives, matiereAddonDemandee: null }, { merge: true });
   loadRequests();
+};
+
+/* ===== Suivi mensuel des paiements (virement/CIB/Dahabia/BaridiMob pointés à la main) ===== */
+var MOIS_ABBR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+var MOIS_LONG = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var PAY_YEAR = new Date().getFullYear();
+window.aPayYearShift = function(delta) {
+  PAY_YEAR += delta;
+  window.aRenderPaiements();
+};
+window.aRenderPaiements = function() {
+  var yearEl = document.getElementById('aPayYear'); if (yearEl) yearEl.textContent = PAY_YEAR;
+  var body = document.getElementById('aPayBody'); if (!body) return;
+  var profs = ALL_PROFS.filter(function(p) { return p.status === 'validated' || p.status === 'suspended'; })
+    .sort(function(a, b) { return profLabel(a).localeCompare(profLabel(b)); });
+  if (!profs.length) { body.innerHTML = '<div class="empty">Aucun compte validé pour le moment</div>'; return; }
+  var head = '<tr><th>Prof</th>' + MOIS_ABBR.map(function(m) { return '<th>' + m + '</th>'; }).join('') + '</tr>';
+  var rows = profs.map(function(p) {
+    var paie = p.paiementsMois || {};
+    var cells = MOIS_ABBR.map(function(m, i) {
+      var key = PAY_YEAR + '-' + String(i + 1).padStart(2, '0');
+      var checked = !!paie[key];
+      return '<td title="' + MOIS_LONG[i] + ' ' + PAY_YEAR + '"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="window.aTogglePaiementMois(\'' + p.id + '\',\'' + key + '\',this.checked)"></td>';
+    }).join('');
+    return '<tr><td>' + profLabel(p) + '</td>' + cells + '</tr>';
+  }).join('');
+  body.innerHTML = '<table class="pay-table"><thead>' + head + '</thead><tbody>' + rows + '</tbody></table>';
+};
+window.aTogglePaiementMois = async function(profId, monthKey, checked) {
+  /* merge:true fusionne la map paiementsMois clé par clé, sans écraser les autres mois déjà cochés */
+  var champ = {}; champ[monthKey] = checked;
+  await setDoc(doc(dbFs, 'profs', profId), { paiementsMois: champ }, { merge: true });
+  var p = ALL_PROFS.find(function(x) { return x.id === profId; });
+  if (p) { p.paiementsMois = p.paiementsMois || {}; p.paiementsMois[monthKey] = checked; }
 };
 </script>
 </body>
