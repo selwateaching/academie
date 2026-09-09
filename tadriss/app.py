@@ -32,6 +32,7 @@ from models import (
     Eleve,
     Evaluation,
     Note,
+    Payment,
     Presence,
     User,
     UserState,
@@ -805,12 +806,34 @@ def generated_file(user_id, filename):
 # ---------------------------------------------------------------------------
 
 
+MONTH_LABELS_FR = [
+    "Jan", "Fév", "Mar", "Avr", "Mai", "Jun",
+    "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc",
+]
+
+
 @app.route("/admin")
 @login_required
 @admin_required
 def admin_panel():
     users = User.query.order_by(User.created_at.desc()).all()
-    return render_template("admin.html", users=users, now=datetime.utcnow())
+    try:
+        year = int(request.args.get("year", datetime.utcnow().year))
+    except (TypeError, ValueError):
+        year = datetime.utcnow().year
+    months = [f"{year}-{m:02d}" for m in range(1, 13)]
+    payments = Payment.query.filter(Payment.month.in_(months)).all()
+    paid_by_user = {}
+    for p in payments:
+        paid_by_user.setdefault(p.user_id, set()).add(p.month)
+    return render_template(
+        "admin.html",
+        users=users,
+        now=datetime.utcnow(),
+        pay_year=year,
+        pay_months=list(zip(months, MONTH_LABELS_FR)),
+        paid_by_user=paid_by_user,
+    )
 
 
 @app.route("/admin/mark_paid/<int:user_id>", methods=["POST"])
@@ -822,6 +845,20 @@ def admin_mark_paid(user_id):
     user.mark_paid(days=days)
     db.session.commit()
     return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/toggle_payment/<int:user_id>/<month>", methods=["POST"])
+@login_required
+@admin_required
+def admin_toggle_payment(user_id, month):
+    User.query.get_or_404(user_id)
+    existing = Payment.query.filter_by(user_id=user_id, month=month).first()
+    if existing:
+        db.session.delete(existing)
+    else:
+        db.session.add(Payment(user_id=user_id, month=month))
+    db.session.commit()
+    return redirect(url_for("admin_panel", year=int(month.split("-")[0])))
 
 
 @app.context_processor

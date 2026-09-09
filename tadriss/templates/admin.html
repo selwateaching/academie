@@ -45,6 +45,39 @@
       {% endfor %}
     </tbody>
   </table>
+
+  <div class="top-strip" style="margin-top:32px">
+    <h1 style="font-size:18px">💰 Suivi des paiements — {{ pay_year }}</h1>
+    <div style="display:flex;gap:8px">
+      <a class="btn" href="{{ url_for('admin_panel', year=pay_year - 1) }}">← {{ pay_year - 1 }}</a>
+      <a class="btn" href="{{ url_for('admin_panel', year=pay_year + 1) }}">{{ pay_year + 1 }} →</a>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--muted,#777);margin:-10px 0 14px;">Coche un mois dès que tu vois le virement correspondant arriver (référence : l'email de l'enseignant). Ce tableau est un suivi indépendant du bouton "Virement reçu" ci-dessus, qui reste le seul à prolonger réellement l'accès.</p>
+  <div style="overflow-x:auto">
+    <table class="admin" style="min-width:760px">
+      <thead>
+        <tr>
+          <th>Email</th>
+          {% for month, label in pay_months %}<th style="text-align:center">{{ label }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.email }}</td>
+          {% for month, label in pay_months %}
+          <td style="text-align:center">
+            <form method="post" action="{{ url_for('admin_toggle_payment', user_id=u.id, month=month) }}">
+              <input type="checkbox" onchange="this.form.submit()" {% if month in paid_by_user.get(u.id, []) %}checked{% endif %} title="{{ label }} {{ pay_year }}">
+            </form>
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 </body>
 </html>

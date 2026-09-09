@@ -31,6 +31,9 @@ class User(db.Model, UserMixin):
     state = db.relationship(
         "UserState", backref="user", uselist=False, cascade="all, delete-orphan"
     )
+    payments = db.relationship(
+        "Payment", backref="user", cascade="all, delete-orphan"
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -83,6 +86,18 @@ class UserState(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, unique=True)
     data = db.Column(db.Text, nullable=False, default="{}")
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Payment(db.Model):
+    """Suivi mensuel des virements pointés par l'admin (traçabilité, indépendant
+    du champ User.paid_until qui contrôle l'accès réel à l'application)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    month = db.Column(db.String(7), nullable=False)  # format "AAAA-MM"
+    paid_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (db.UniqueConstraint("user_id", "month", name="uq_payment_user_month"),)
 
 
 DEFAULT_STATE = {
