@@ -56,6 +56,14 @@ tr:last-child td{border-bottom:none;}
 
   <div id="aDash" style="display:none;">
     <div class="card">
+      <div style="padding:.9rem 1.3rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+        <label for="aAfterDate" style="font-size:.83rem;font-weight:600;">🕐 N'afficher que les inscriptions à partir de :</label>
+        <input type="datetime-local" id="aAfterDate" style="padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" onchange="window.aApplyAfterFilter()">
+        <button class="btn" style="background:var(--bg);border:1px solid var(--br);color:var(--ink2);" onclick="window.aResetAfterFilter()">Réinitialiser</button>
+        <span id="aAfterFilterInfo" style="font-size:.76rem;color:var(--t);font-weight:600;"></span>
+      </div>
+    </div>
+    <div class="card">
       <div class="ch"><div class="ct">🆕 Nouvelles inscriptions — en attente de validation</div><span class="badge" id="aPendingCount">0</span></div>
       <div id="aPendingBody"></div>
     </div>
@@ -159,10 +167,27 @@ function createdAtMs(p) {
 function formatCreatedAt(p) {
   var ms = createdAtMs(p);
   if (!ms) return '—';
-  return new Date(ms).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  var d = new Date(ms);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 var ALL_PROFS = [];
+var AFTER_DATE_MS = 0;
+window.aApplyAfterFilter = function() {
+  var v = document.getElementById('aAfterDate').value;
+  AFTER_DATE_MS = v ? new Date(v).getTime() : 0;
+  document.getElementById('aAfterFilterInfo').textContent = AFTER_DATE_MS ? 'Filtre actif — seules les inscriptions à partir de cette date/heure sont affichées ci-dessous.' : '';
+  window.aRenderPending();
+  window.aRenderComptes();
+};
+window.aResetAfterFilter = function() {
+  document.getElementById('aAfterDate').value = '';
+  AFTER_DATE_MS = 0;
+  document.getElementById('aAfterFilterInfo').textContent = '';
+  window.aRenderPending();
+  window.aRenderComptes();
+};
 
 async function loadRequests() {
   var allProfs = [];
@@ -174,33 +199,11 @@ async function loadRequests() {
     return;
   }
 
+  allProfs.sort(function(a, b) { return createdAtMs(b) - createdAtMs(a); }); /* plus récent en premier, pour repérer vite les nouvelles inscriptions */
   ALL_PROFS = allProfs;
+  window.aRenderPending();
   window.aRenderComptes();
   window.aRenderPaiements();
-
-  var pending = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
-  pending.sort(function(a, b) { return createdAtMs(a) - createdAtMs(b); });
-  document.getElementById('aPendingCount').textContent = pending.length;
-  document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
-    { label: 'Prof', render: profLabel },
-    { label: 'Email vérifié', render: emailVerifLabel },
-    { label: 'Matière', render: function(p) { return p.matiere || ''; } },
-    { label: 'Établissement', render: function(p) { return p.etablissement || ''; } },
-    { label: 'Date d\'inscription', render: formatCreatedAt },
-    { label: 'Forfait à valider', render: function(p) {
-        var selId = 'planSel_' + p.id;
-        return '<select id="' + selId + '" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
-          + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '">' + PLAN_LABELS[k] + '</option>'; }).join('')
-          + '</select>';
-      } },
-    { label: 'Action', render: function(p) {
-        var selId = 'planSel_' + p.id;
-        if (p.emailVerified === false) {
-          return '<button class="btn bt" disabled title="Email non vérifié — impossible de valider tant que le prof n\'a pas confirmé son adresse">✅ Valider</button><div style="font-size:.68rem;color:var(--r);margin-top:3px;">Email non vérifié</div>';
-        }
-        return '<button class="btn bt" onclick="window.aValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">✅ Valider</button>';
-      } }
-  ]) : '<div class="empty">Aucune inscription en attente ✓</div>';
 
   var labo = allProfs.filter(function(p) { return p.laboLanguesDemandee && !p.laboLanguesActif; });
   var matChange = allProfs.filter(function(p) { return p.matiereDemandee; });
@@ -231,6 +234,35 @@ async function loadRequests() {
   ]) : '<div class="empty">Aucune demande en attente ✓</div>';
 }
 
+window.aRenderPending = function() {
+  var pending = ALL_PROFS.filter(function(p) {
+    if (p.status === 'validated' || p.status === 'suspended') return false;
+    if (AFTER_DATE_MS && createdAtMs(p) < AFTER_DATE_MS) return false;
+    return true;
+  });
+  document.getElementById('aPendingCount').textContent = pending.length;
+  document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
+    { label: 'Prof', render: profLabel },
+    { label: 'Email vérifié', render: emailVerifLabel },
+    { label: 'Matière', render: function(p) { return p.matiere || ''; } },
+    { label: 'Établissement', render: function(p) { return p.etablissement || ''; } },
+    { label: 'Date d\'inscription', render: formatCreatedAt },
+    { label: 'Forfait à valider', render: function(p) {
+        var selId = 'planSel_' + p.id;
+        return '<select id="' + selId + '" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
+          + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '">' + PLAN_LABELS[k] + '</option>'; }).join('')
+          + '</select>';
+      } },
+    { label: 'Action', render: function(p) {
+        var selId = 'planSel_' + p.id;
+        if (p.emailVerified === false) {
+          return '<button class="btn bt" disabled title="Email non vérifié — impossible de valider tant que le prof n\'a pas confirmé son adresse">✅ Valider</button><div style="font-size:.68rem;color:var(--r);margin-top:3px;">Email non vérifié</div>';
+        }
+        return '<button class="btn bt" onclick="window.aValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">✅ Valider</button>';
+      } }
+  ]) : '<div class="empty">Aucune inscription en attente ✓</div>';
+};
+
 function emailVerifLabel(p) {
   if (p.emailVerified === true) return '<span class="badge" style="background:var(--tp);color:var(--t);">✅ Oui</span>';
   if (p.emailVerified === false) return '<span class="badge" style="background:var(--rp);color:var(--r);">❌ Non</span>';
@@ -256,6 +288,7 @@ window.aRenderComptes = function() {
     if (q && (profLabel(p) || '').toLowerCase().indexOf(q) < 0) return false;
     if (emailFilter === 'verifies' && p.emailVerified !== true) return false;
     if (emailFilter === 'non_verifies' && p.emailVerified !== false) return false;
+    if (AFTER_DATE_MS && createdAtMs(p) < AFTER_DATE_MS) return false;
     return true;
   });
   LAST_COMPTES_ROWS = rows;
