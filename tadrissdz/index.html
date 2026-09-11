@@ -1035,6 +1035,22 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
 
       <!-- WAITING -->
+      <!-- VERIFY EMAIL -->
+      <div id="authViewVerifyemail" style="display:none;text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:.6rem;">📧</div>
+        <p style="font-size:.9rem;font-weight:700;margin-bottom:.4rem;">Vérifie ton adresse email</p>
+        <p style="font-size:.85rem;color:var(--ink2);margin-bottom:1rem;">Nous avons envoyé un lien de vérification à :<br><strong id="authVerifyEmailAddr">—</strong><br>Clique sur ce lien, puis reviens ici et clique sur "J'ai vérifié".</p>
+        <button class="sp-btn" style="background:var(--t);color:#fff;margin-bottom:.6rem;" onclick="authCheckEmailVerified()">✓ J'ai vérifié, continuer</button>
+        <button class="sp-btn" id="authResendVerifyBtn" onclick="authResendVerification()">Renvoyer l'email</button>
+        <button onclick="authToggleChangeEmail()" style="background:none;border:none;color:var(--t2);font-size:.78rem;cursor:pointer;margin-top:.8rem;text-decoration:underline;display:block;width:100%;">Modifier mon adresse email</button>
+        <div id="authChangeEmailBox" style="display:none;margin-top:.8rem;text-align:left;">
+          <input type="email" id="authNewEmail" placeholder="nouvelle-adresse@exemple.com" style="width:100%;padding:.6rem .8rem;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;margin-bottom:.5rem;">
+          <button class="sp-btn" style="background:var(--t);color:#fff;" onclick="authChangeEmail()">Valider la nouvelle adresse</button>
+        </div>
+        <p id="authVerifyMsg" style="font-size:.76rem;color:var(--ink3);margin-top:.8rem;min-height:1em;"></p>
+        <button class="sp-btn" style="margin-top:.4rem;" onclick="authLogoutProf()">Se déconnecter</button>
+      </div>
+
       <div id="authViewWaiting" style="display:none;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:.6rem;">⏳</div>
         <p id="authWaitingText" style="font-size:.85rem;color:var(--ink2);margin-bottom:1.2rem;">Ton compte a bien été créé mais doit encore être validé par l'administrateur de ton établissement. Reviens un peu plus tard.</p>
@@ -8296,7 +8312,8 @@ function exportNotesPDF() {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  onAuthStateChanged, signOut, setPersistence, browserLocalPersistence
+  onAuthStateChanged, signOut, setPersistence, browserLocalPersistence,
+  sendEmailVerification, updateEmail
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
   getFirestore, doc, setDoc, getDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs
@@ -8323,7 +8340,7 @@ try { if (navigator.storage && navigator.storage.persist) navigator.storage.pers
 setPersistence(auth, browserLocalPersistence).catch(function(){});
 
 function authShowView(view) {
-  ['login','register','waiting','suspended','expired'].forEach(function(v) {
+  ['login','register','verifyemail','waiting','suspended','expired'].forEach(function(v) {
     var el = document.getElementById('authView' + v.charAt(0).toUpperCase() + v.slice(1));
     if (el) el.style.display = (v === view) ? 'block' : 'none';
   });
@@ -8400,15 +8417,89 @@ window.authRegisterProf = async function() {
       prenom: prenom, nom: nom, matiere: matiere, etablissement: etab, email: email,
       status: 'pending',
       matiereVerrouillee: false,
+      emailVerified: false, /* mis à jour automatiquement (à true) une fois le lien Firebase cliqué */
       referredBy: (refCode && refCode !== cred.user.uid) ? refCode : null,
       createdAt: serverTimestamp()
     });
     try { localStorage.removeItem('tadriss_pending_ref'); } catch (e) {}
-    authShowView('waiting');
+    try { await sendEmailVerification(cred.user); } catch (e) { /* le compte reste créé même si l'envoi échoue ; l'utilisateur peut renvoyer depuis l'écran suivant */ }
+    var addrEl = document.getElementById('authVerifyEmailAddr'); if (addrEl) addrEl.textContent = email;
+    authShowView('verifyemail');
   } catch (e) {
     errEl.textContent = authTranslateError(e);
   }
   btn.disabled = false; btn.textContent = 'Créer mon compte';
+};
+
+var _authResendCooldownUntil = 0;
+window.authResendVerification = async function() {
+  var btn = document.getElementById('authResendVerifyBtn');
+  var msgEl = document.getElementById('authVerifyMsg');
+  if (Date.now() < _authResendCooldownUntil) return;
+  if (!auth.currentUser) return;
+  btn.disabled = true;
+  try {
+    await sendEmailVerification(auth.currentUser);
+    if (msgEl) msgEl.textContent = 'Email renvoyé !';
+  } catch (e) {
+    if (msgEl) msgEl.textContent = authTranslateError(e);
+  }
+  _authResendCooldownUntil = Date.now() + 60000;
+  var secondes = 60;
+  var interval = setInterval(function() {
+    secondes--;
+    btn.textContent = 'Renvoyer l\'email (' + secondes + 's)';
+    if (secondes <= 0) {
+      clearInterval(interval);
+      btn.textContent = 'Renvoyer l\'email';
+      btn.disabled = false;
+    }
+  }, 1000);
+};
+
+window.authToggleChangeEmail = function() {
+  var box = document.getElementById('authChangeEmailBox');
+  if (box) box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+};
+
+window.authChangeEmail = async function() {
+  var newEmail = document.getElementById('authNewEmail').value.trim();
+  var msgEl = document.getElementById('authVerifyMsg');
+  if (!newEmail || newEmail.indexOf('@') < 0) { if (msgEl) msgEl.textContent = 'Adresse email invalide.'; return; }
+  if (!auth.currentUser) return;
+  if (msgEl) msgEl.textContent = 'Mise à jour...';
+  try {
+    await updateEmail(auth.currentUser, newEmail);
+    await setDoc(doc(dbFs, 'profs', auth.currentUser.uid), { email: newEmail, emailVerified: false }, { merge: true });
+    await sendEmailVerification(auth.currentUser);
+    var addrEl = document.getElementById('authVerifyEmailAddr'); if (addrEl) addrEl.textContent = newEmail;
+    document.getElementById('authChangeEmailBox').style.display = 'none';
+    document.getElementById('authNewEmail').value = '';
+    if (msgEl) msgEl.textContent = 'Nouvelle adresse enregistrée, email de vérification envoyé !';
+  } catch (e) {
+    if (msgEl) {
+      if (e && e.code && e.code.indexOf('requires-recent-login') >= 0) msgEl.textContent = 'Merci de te reconnecter puis de réessayer (sécurité Firebase).';
+      else msgEl.textContent = authTranslateError(e);
+    }
+  }
+};
+
+window.authCheckEmailVerified = async function() {
+  var msgEl = document.getElementById('authVerifyMsg');
+  if (!auth.currentUser) return;
+  if (msgEl) msgEl.textContent = 'Vérification...';
+  try {
+    await auth.currentUser.reload();
+    if (auth.currentUser.emailVerified) {
+      await setDoc(doc(dbFs, 'profs', auth.currentUser.uid), { emailVerified: true, emailVerifiedAt: serverTimestamp() }, { merge: true });
+      if (msgEl) msgEl.textContent = '';
+      handleAuthUser(auth.currentUser); /* poursuit le parcours normal (attente admin, etc.) */
+    } else {
+      if (msgEl) msgEl.textContent = 'Pas encore vérifié — clique bien sur le lien reçu par email, puis réessaie.';
+    }
+  } catch (e) {
+    if (msgEl) msgEl.textContent = authTranslateError(e);
+  }
 };
 
 window.authLogoutProf = async function() {
@@ -8927,6 +9018,22 @@ async function handleAuthUser(user) {
     }
     alog('Profil chargé, statut=' + snap.data().status + ' → app affichée');
     var p = snap.data();
+    /* Vérification d'email — s'applique uniquement aux comptes créés après l'ajout de cette
+       fonctionnalité (emailVerified explicitement à false). Les comptes créés avant (champ
+       absent) sont considérés comme acquis, pour ne jamais bloquer un accès déjà en place. */
+    if (p.emailVerified === false) {
+      try { await user.reload(); } catch (e) {}
+      if (user.emailVerified) {
+        await setDoc(doc(dbFs, 'profs', user.uid), { emailVerified: true, emailVerifiedAt: serverTimestamp() }, { merge: true });
+        p.emailVerified = true;
+      } else {
+        app.style.display = 'none';
+        var addrEl = document.getElementById('authVerifyEmailAddr'); if (addrEl) addrEl.textContent = p.email || user.email || '';
+        if (window._loginRequested) { gate.style.display = 'flex'; authShowView('verifyemail'); }
+        else { gate.style.display = 'none'; }
+        return;
+      }
+    }
     if (p.status === 'validated') {
       var joursRestants = null;
       if (p.prochainPaiement) {

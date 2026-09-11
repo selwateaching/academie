@@ -61,8 +61,13 @@ tr:last-child td{border-bottom:none;}
     </div>
     <div class="card">
       <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
-      <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
-        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
+      <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);display:flex;gap:.6rem;flex-wrap:wrap;">
+        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="flex:1;min-width:200px;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
+        <select id="aComptesEmailFilter" onchange="window.aRenderComptes()" style="padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;">
+          <option value="tous">Tous les emails</option>
+          <option value="verifies">Emails vérifiés</option>
+          <option value="non_verifies">Emails non vérifiés</option>
+        </select>
       </div>
       <div style="padding:.7rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>
@@ -178,6 +183,7 @@ async function loadRequests() {
   document.getElementById('aPendingCount').textContent = pending.length;
   document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
     { label: 'Prof', render: profLabel },
+    { label: 'Email vérifié', render: emailVerifLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
     { label: 'Établissement', render: function(p) { return p.etablissement || ''; } },
     { label: 'Date d\'inscription', render: formatCreatedAt },
@@ -222,6 +228,12 @@ async function loadRequests() {
   ]) : '<div class="empty">Aucune demande en attente ✓</div>';
 }
 
+function emailVerifLabel(p) {
+  if (p.emailVerified === true) return '<span class="badge" style="background:var(--tp);color:var(--t);">✅ Oui</span>';
+  if (p.emailVerified === false) return '<span class="badge" style="background:var(--rp);color:var(--r);">❌ Non</span>';
+  return '<span class="badge">— (compte antérieur)</span>';
+}
+
 function renderTable(rows, cols) {
   var head = '<tr>' + cols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('') + '</tr>';
   var body = rows.map(function(p) { return '<tr>' + cols.map(function(c) { return '<td>' + c.render(p) + '</td>'; }).join('') + '</tr>'; }).join('');
@@ -233,17 +245,21 @@ var COMPTE_SEL = {};
 var LAST_COMPTES_ROWS = [];
 window.aRenderComptes = function() {
   var q = (document.getElementById('aComptesSearch').value || '').trim().toLowerCase();
+  var emailFilter = document.getElementById('aComptesEmailFilter') ? document.getElementById('aComptesEmailFilter').value : 'tous';
   /* Les inscriptions non validées ont leur propre file "Nouvelles inscriptions" plus haut —
      elles n'ont pas leur place ici tant qu'elles n'ont pas de forfait attribué. */
   var validated = ALL_PROFS.filter(function(p) { return p.status === 'validated' || p.status === 'suspended'; });
   var rows = validated.filter(function(p) {
-    if (!q) return true;
-    return (profLabel(p) || '').toLowerCase().indexOf(q) >= 0;
+    if (q && (profLabel(p) || '').toLowerCase().indexOf(q) < 0) return false;
+    if (emailFilter === 'verifies' && p.emailVerified !== true) return false;
+    if (emailFilter === 'non_verifies' && p.emailVerified !== false) return false;
+    return true;
   });
   LAST_COMPTES_ROWS = rows;
   document.getElementById('aComptesCount').textContent = validated.length;
   document.getElementById('aComptesBody').innerHTML = rows.length ? renderTable(rows, [
     { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
+    { label: 'Email vérifié', render: emailVerifLabel },
     { label: 'Prof', render: profLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
     { label: 'Date d\'inscription', render: formatCreatedAt },
