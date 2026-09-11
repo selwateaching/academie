@@ -9021,8 +9021,10 @@ async function handleAuthUser(user) {
     /* Vérification d'email — s'applique uniquement aux comptes créés après l'ajout de cette
        fonctionnalité (emailVerified explicitement à false). Les comptes créés avant (champ
        absent) sont considérés comme acquis, pour ne jamais bloquer un accès déjà en place. */
+    alog('DEBUG emailVerified Firestore=' + JSON.stringify(p.emailVerified) + ' (type ' + typeof p.emailVerified + ') · Firebase user.emailVerified=' + user.emailVerified);
     if (p.emailVerified === false) {
       try { await user.reload(); } catch (e) {}
+      alog('DEBUG après reload() : user.emailVerified=' + user.emailVerified);
       if (user.emailVerified) {
         await setDoc(doc(dbFs, 'profs', user.uid), { emailVerified: true, emailVerifiedAt: serverTimestamp() }, { merge: true });
         p.emailVerified = true;
