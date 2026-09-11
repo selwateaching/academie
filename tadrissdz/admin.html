@@ -195,6 +195,9 @@ async function loadRequests() {
       } },
     { label: 'Action', render: function(p) {
         var selId = 'planSel_' + p.id;
+        if (p.emailVerified === false) {
+          return '<button class="btn bt" disabled title="Email non vérifié — impossible de valider tant que le prof n\'a pas confirmé son adresse">✅ Valider</button><div style="font-size:.68rem;color:var(--r);margin-top:3px;">Email non vérifié</div>';
+        }
         return '<button class="btn bt" onclick="window.aValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">✅ Valider</button>';
       } }
   ]) : '<div class="empty">Aucune inscription en attente ✓</div>';
@@ -303,7 +306,14 @@ window.aSetPlan = async function(profId, plan) {
 };
 window.aValidateProf = async function(profId, plan) {
   /* Validation manuelle après confirmation du paiement (CIB, Dahabia, BaridiMob, virement) —
-     démarre un mois d'accès à compter d'aujourd'hui, quel que soit le forfait choisi. */
+     démarre un mois d'accès à compter d'aujourd'hui, quel que soit le forfait choisi.
+     Garde-fou : un email non vérifié ne peut jamais être validé (même en appelant cette
+     fonction directement), le bouton étant déjà désactivé côté interface pour ce cas. */
+  var p = ALL_PROFS.find(function(x) { return x.id === profId; });
+  if (p && p.emailVerified === false) {
+    alert('Impossible de valider : cet enseignant n\'a pas encore confirmé son adresse email.');
+    return;
+  }
   var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
   await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', plan: plan, prochainPaiement: prochainPaiement }, { merge: true });
   loadRequests();
