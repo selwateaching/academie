@@ -112,7 +112,7 @@ tr:last-child td{border-bottom:none;}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
@@ -256,7 +256,9 @@ window.aRenderPending = function() {
     { label: 'Action', render: function(p) {
         var selId = 'planSel_' + p.id;
         if (p.emailVerified === false) {
-          return '<button class="btn bt" disabled title="Email non vérifié — impossible de valider tant que le prof n\'a pas confirmé son adresse">✅ Valider</button><div style="font-size:.68rem;color:var(--r);margin-top:3px;">Email non vérifié</div>';
+          return '<button class="btn bt" disabled title="Email non vérifié — impossible de valider tant que le prof n\'a pas confirmé son adresse">✅ Valider</button>'
+            + '<div style="font-size:.68rem;color:var(--r);margin-top:3px;">Email non vérifié</div>'
+            + '<button style="background:none;border:none;color:var(--r);font-size:.68rem;text-decoration:underline;cursor:pointer;padding:2px 0;margin-top:2px;" onclick="window.aForceValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">⚠️ Forcer quand même</button>';
         }
         return '<button class="btn bt" onclick="window.aValidateProf(\'' + p.id + '\', document.getElementById(\'' + selId + '\').value)">✅ Valider</button>';
       } }
@@ -264,7 +266,7 @@ window.aRenderPending = function() {
 };
 
 function emailVerifLabel(p) {
-  if (p.emailVerified === true) return '<span class="badge" style="background:var(--tp);color:var(--t);">✅ Oui</span>';
+  if (p.emailVerified === true) return '<span class="badge" style="background:var(--tp);color:var(--t);">✅ Oui' + (p.emailVerifiedForce ? ' (forcé)' : '') + '</span>';
   if (p.emailVerified === false) return '<span class="badge" style="background:var(--rp);color:var(--r);">❌ Non</span>';
   return '<span class="badge">— (compte antérieur)</span>';
 }
@@ -349,6 +351,31 @@ window.aValidateProf = async function(profId, plan) {
   }
   var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
   await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', plan: plan, prochainPaiement: prochainPaiement }, { merge: true });
+  loadRequests();
+};
+window.aForceValidateProf = async function(profId, plan) {
+  /* Override manuel : à utiliser seulement quand tu es sûre de l'identité du prof
+     (contact direct par téléphone/WhatsApp par ex.) malgré un email non vérifié
+     dans l'appli — ex. un prof qui ne reçoit jamais l'email de vérification. */
+  var p = ALL_PROFS.find(function(x) { return x.id === profId; });
+  var label = p ? profLabel(p) : profId;
+  var ok = confirm(
+    '⚠️ ATTENTION\n\n' + label + '\n\n' +
+    'Ce professeur n\'a PAS cliqué sur le lien de vérification envoyé par email.\n\n' +
+    'En forçant la validation, tu lui donnes quand même accès à l\'application. ' +
+    'Ne fais ça que si tu es sûre que c\'est bien lui/elle (contact direct, etc.).\n\n' +
+    'Confirmer la validation forcée ?'
+  );
+  if (!ok) return;
+  var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
+  await setDoc(doc(dbFs, 'profs', profId), {
+    status: 'validated',
+    plan: plan,
+    prochainPaiement: prochainPaiement,
+    emailVerified: true,
+    emailVerifiedAt: serverTimestamp(),
+    emailVerifiedForce: true
+  }, { merge: true });
   loadRequests();
 };
 window.aActivateLabo = async function(profId) {
