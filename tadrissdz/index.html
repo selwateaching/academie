@@ -1038,8 +1038,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <!-- VERIFY EMAIL -->
       <div id="authViewVerifyemail" style="display:none;text-align:center;">
         <div style="font-size:2.5rem;margin-bottom:.6rem;">📧</div>
-        <p style="font-size:.9rem;font-weight:700;margin-bottom:.4rem;">Vérifie ton adresse email</p>
-        <p style="font-size:.85rem;color:var(--ink2);margin-bottom:1rem;">Nous avons envoyé un lien de vérification à :<br><strong id="authVerifyEmailAddr">—</strong><br>Clique sur ce lien, puis reviens ici et clique sur "J'ai vérifié".</p>
+        <p style="font-size:.95rem;font-weight:800;margin-bottom:.7rem;">✅ Ton inscription est presque terminée !</p>
+        <div style="background:var(--tp,#E6F4EE);border-radius:10px;padding:.9rem 1rem;text-align:left;margin-bottom:1rem;">
+          <p style="font-size:.83rem;color:var(--ink2);margin-bottom:.5rem;"><strong>📩 1.</strong> Ouvre ta boîte e-mail :<br><strong id="authVerifyEmailAddr" style="word-break:break-all;">—</strong></p>
+          <p style="font-size:.83rem;color:var(--ink2);margin-bottom:.5rem;"><strong>👉 2.</strong> Tu as reçu un message de <strong>Tadriss</strong>.</p>
+          <p style="font-size:.83rem;color:var(--ink2);margin-bottom:.5rem;"><strong>🔵 3.</strong> Clique sur le bouton/lien dans cet e-mail pour <strong>activer ton compte</strong>.</p>
+          <p style="font-size:.8rem;color:var(--r);font-weight:700;">⚠️ Tu ne le trouves pas ? Regarde dans les dossiers Spam / Courrier indésirable.</p>
+        </div>
+        <p style="font-size:.85rem;color:var(--ink2);margin-bottom:1rem;">Après avoir cliqué sur le lien, reviens sur cette page et clique sur le bouton ci-dessous.</p>
         <button class="sp-btn" style="background:var(--t);color:#fff;margin-bottom:.6rem;" onclick="authCheckEmailVerified()">✓ J'ai vérifié, continuer</button>
         <button class="sp-btn" id="authResendVerifyBtn" onclick="authResendVerification()">Renvoyer l'email</button>
         <button onclick="authToggleChangeEmail()" style="background:none;border:none;color:var(--t2);font-size:.78rem;cursor:pointer;margin-top:.8rem;text-decoration:underline;display:block;width:100%;">Modifier mon adresse email</button>
