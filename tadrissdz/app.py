@@ -53,6 +53,11 @@ def labo_globe_png():
     return send_from_directory(os.path.dirname(__file__), "labo-globe.png")
 
 
+@app.get("/guides/<path:filename>")
+def guides(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "guides"), filename)
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
