@@ -5376,6 +5376,7 @@ function biblioLoad(cb) {
   fetch(RESSOURCES_CSV_URL).then(function(r) { return r.text(); }).then(function(text) {
     var rows = biblioParseCSV(text).map(function(o) {
       var statutRaw = (o.statut || o.status || '').trim().toLowerCase();
+      var enCours = statutRaw === 'en cours' || statutRaw === 'en_cours' || statutRaw === 'encours';
       return {
         titre: o.titre || o['title'] || '(sans titre)',
         matiere: o.matière || o.matiere || '',
@@ -5384,7 +5385,8 @@ function biblioLoad(cb) {
         type: o.type || '',
         motsCles: o['mots-clés'] || o['mots-cles'] || o.motscles || '',
         lien: o['lien drive'] || o.lien || o.link || '',
-        actif: !statutRaw || statutRaw === 'actif' || statutRaw === 'active',
+        enCours: enCours,
+        actif: enCours || !statutRaw || statutRaw === 'actif' || statutRaw === 'active',
       };
     }).filter(function(r) { return r.actif; }).map(function(r, i) { r.id = i; return r; });
     BIBLIO_DATA = rows;
@@ -5465,6 +5467,7 @@ function biblioRenderResults() {
       actionsHtml = '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">👁 Voir</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>';
     }
     return '<div class="card biblio-card"><div class="cb">'
+      + (r.enCours ? '<div style="font-size:.68rem;font-weight:700;color:#8A6D00;background:#FBF6E3;border-radius:6px;padding:.3rem .5rem;margin-bottom:.5rem;display:inline-block">🚧 En cours de réalisation</div>' : '')
       + thumbHtml
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
       + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+(isFolder?' <span title="Dossier avec plusieurs fichiers" style="font-size:.8rem">📁</span>':'')+'</div>'
