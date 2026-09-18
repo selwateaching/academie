@@ -5394,6 +5394,7 @@ function biblioLoad(cb) {
   }).catch(function() { cb(null); });
 }
 var BIBLIO_PREVIEW_LIMIT = 3;
+var BIBLIO_EN_COURS = true; /* page encore en cours d'alimentation — repasser à false une fois la bibliothèque complète */
 function biblioIsPro() { return (window._planProf || '').toLowerCase() === 'pro'; }
 function rBibliotheque() {
   var box = document.getElementById('biblioBox');
@@ -5412,7 +5413,11 @@ function biblioRenderShell() {
   var box = document.getElementById('biblioBox');
   var niveaux = Array.from(new Set(BIBLIO_DATA.reduce(function(a,r) { return a.concat(r.niveaux); }, []))).sort();
   var types = Array.from(new Set(BIBLIO_DATA.map(function(r) { return r.type; }).filter(Boolean))).sort();
-  box.innerHTML = (biblioIsPro() ? '' : '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
+  box.innerHTML = (BIBLIO_EN_COURS ? '<div class="card" style="margin-bottom:1.2rem;background:#FBF6E3"><div class="cb" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">'
+      + '<div style="font-size:1.4rem">🚧</div>'
+      + '<div style="flex:1;min-width:220px"><b>Bibliothèque en cours de réalisation</b><div style="font-size:.8rem;color:var(--ink3)">De nouvelles fiches sont ajoutées régulièrement — revenez de temps en temps !</div></div>'
+      + '</div></div>' : '')
+    + (biblioIsPro() ? '' : '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
       + '<div style="flex:1;min-width:220px"><b>Aperçu de la Bibliothèque pédagogique</b><div style="font-size:.8rem;color:var(--ink3)">Votre forfait donne accès à '+BIBLIO_PREVIEW_LIMIT+' fiches. Passez au forfait Pro pour un accès illimité.</div></div>'
       + '<button class="btn bt bsm" onclick="go(\'abonnement\')">Voir les forfaits</button>'
       + '</div></div>')
