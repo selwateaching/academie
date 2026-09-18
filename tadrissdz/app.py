@@ -38,6 +38,11 @@ def admin():
     return send_from_directory(os.path.dirname(__file__), "admin.html")
 
 
+@app.get("/inscription.html")
+def inscription():
+    return send_from_directory(os.path.dirname(__file__), "inscription.html")
+
+
 @app.get("/labo-prof.png")
 def labo_prof_png():
     return send_from_directory(os.path.dirname(__file__), "labo-prof.png")

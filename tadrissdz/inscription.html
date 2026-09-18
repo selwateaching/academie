@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription — Tadriss DZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;
+  --t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--br:#E2DDD5;--rd:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
+.wrap{max-width:640px;margin:0 auto;padding:2.4rem 1.2rem 4rem;}
+.brand{font-weight:800;font-size:1.3rem;text-align:center;margin-bottom:.3rem;}
+.brand span{color:var(--t);}
+.sub{text-align:center;color:var(--ink3);font-size:.85rem;margin-bottom:1.8rem;}
+.card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);padding:1.6rem 1.4rem;}
+.fl{display:block;font-size:.78rem;font-weight:700;color:var(--ink2);margin-bottom:.35rem;}
+.fi{width:100%;padding:.7rem .85rem;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.9rem;margin-bottom:1.1rem;}
+.fi:focus{outline:none;border-color:var(--t);}
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.3rem;}
+@media (max-width:480px){.plans{grid-template-columns:1fr;}}
+.plan-opt{border:2px solid var(--br);border-radius:10px;padding:1rem .9rem;cursor:pointer;text-align:center;transition:all .15s;}
+.plan-opt:hover{border-color:var(--t2);}
+.plan-opt.sel{border-color:var(--t);background:var(--tp);}
+.plan-opt .pname{font-weight:800;font-size:1.02rem;color:var(--ink);}
+.plan-opt .pprice{font-family:Georgia,serif;font-weight:800;font-size:1.5rem;color:var(--t);margin:.3rem 0;}
+.plan-opt .pprice small{font-size:.7rem;font-weight:600;color:var(--ink3);}
+.plan-opt .pdesc{font-size:.75rem;color:var(--ink3);}
+.btn{width:100%;padding:.85rem;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;background:var(--t);color:#fff;transition:background .15s;}
+.btn:hover{background:var(--t2);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.msg{font-size:.82rem;margin-top:.9rem;min-height:1.2em;text-align:center;}
+.msg.err{color:var(--r);}
+.msg.ok{color:var(--t);font-weight:700;}
+#doneBox{display:none;text-align:center;padding:2.5rem 1rem;}
+#doneBox .ic{font-size:2.8rem;margin-bottom:.8rem;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">Tadriss<span>DZ</span></div>
+  <div class="sub">Demande d'inscription à un forfait</div>
+
+  <div class="card" id="formCard">
+    <label class="fl">Choisis ton forfait</label>
+    <div class="plans">
+      <div class="plan-opt" id="optStarter" onclick="choisirForfait('starter')">
+        <div class="pname">Starter</div>
+        <div class="pprice">990 <small>DA/mois</small></div>
+        <div class="pdesc">1 matière, générations IA — 40/mois</div>
+      </div>
+      <div class="plan-opt" id="optPro" onclick="choisirForfait('pro')">
+        <div class="pname">Pro</div>
+        <div class="pprice">1 999 <small>DA/mois</small></div>
+        <div class="pdesc">1 matière complète, générations IA — 100/mois</div>
+      </div>
+    </div>
+
+    <label class="fl">Nom complet</label>
+    <input class="fi" id="fNom" placeholder="Ex : Nacira Selloua">
+
+    <label class="fl">Téléphone</label>
+    <input class="fi" id="fTel" type="tel" placeholder="Ex : 05 55 12 34 56">
+
+    <label class="fl">Email</label>
+    <input class="fi" id="fEmail" type="email" placeholder="Ex : toi@gmail.com">
+
+    <label class="fl">Établissement (facultatif)</label>
+    <input class="fi" id="fEtab" placeholder="Ex : Lycée Ibn Badis">
+
+    <button class="btn" id="btnSubmit" onclick="envoyerDemande()">Envoyer ma demande</button>
+    <div class="msg" id="formMsg"></div>
+  </div>
+
+  <div class="card" id="doneBox">
+    <div class="ic">✅</div>
+    <div style="font-weight:800;font-size:1.15rem;margin-bottom:.5rem;">Demande envoyée !</div>
+    <div style="color:var(--ink2);font-size:.9rem;">Nous te recontactons rapidement pour finaliser ton inscription au forfait choisi.</div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBTA10NBAKOX4sA6IjckLU_ShiHG_7B_uI",
+  authDomain: "tadriss-dz-c5884.firebaseapp.com",
+  projectId: "tadriss-dz-c5884",
+  storageBucket: "tadriss-dz-c5884.firebasestorage.app",
+  messagingSenderId: "647327995081",
+  appId: "1:647327995081:web:75e128a1748cfa4f126918"
+};
+const fbApp = initializeApp(firebaseConfig);
+const dbFs = getFirestore(fbApp);
+
+var forfaitChoisi = null;
+window.choisirForfait = function(f) {
+  forfaitChoisi = f;
+  document.getElementById('optStarter').classList.toggle('sel', f === 'starter');
+  document.getElementById('optPro').classList.toggle('sel', f === 'pro');
+};
+
+window.envoyerDemande = async function() {
+  var msgEl = document.getElementById('formMsg');
+  var nom = document.getElementById('fNom').value.trim();
+  var tel = document.getElementById('fTel').value.trim();
+  var email = document.getElementById('fEmail').value.trim();
+  var etab = document.getElementById('fEtab').value.trim();
+
+  if (!forfaitChoisi) { msgEl.className = 'msg err'; msgEl.textContent = 'Choisis un forfait avant de continuer.'; return; }
+  if (!nom) { msgEl.className = 'msg err'; msgEl.textContent = 'Le nom complet est obligatoire.'; return; }
+  if (!tel && !email) { msgEl.className = 'msg err'; msgEl.textContent = 'Indique au moins un téléphone ou un email pour te recontacter.'; return; }
+
+  var btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  msgEl.className = 'msg'; msgEl.textContent = 'Envoi en cours...';
+  try {
+    await addDoc(collection(dbFs, 'demandesForfait'), {
+      nom: nom,
+      telephone: tel,
+      email: email,
+      etablissement: etab,
+      forfait: forfaitChoisi,
+      statut: 'nouveau',
+      dateCreation: serverTimestamp()
+    });
+    document.getElementById('formCard').style.display = 'none';
+    document.getElementById('doneBox').style.display = 'block';
+  } catch (e) {
+    btn.disabled = false;
+    msgEl.className = 'msg err';
+    msgEl.textContent = "Erreur : impossible d'envoyer la demande pour le moment. Réessaie dans un instant.";
+  }
+};
+</script>
+</body>
+</html>

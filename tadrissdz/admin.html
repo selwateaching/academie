@@ -95,6 +95,10 @@ tr:last-child td{border-bottom:none;}
       <div id="aPayBody" style="overflow-x:auto"></div>
     </div>
     <div class="card">
+      <div class="ch"><div class="ct">📋 Demandes d'inscription (formulaire forfaits)</div><span class="badge" id="aLeadsCount">0</span></div>
+      <div id="aLeadsBody"></div>
+    </div>
+    <div class="card">
       <div class="ch"><div class="ct">🎙️ Demandes d'activation — Labo Langues</div><span class="badge" id="aLaboCount">0</span></div>
       <div id="aLaboBody"></div>
     </div>
@@ -152,6 +156,7 @@ onAuthStateChanged(auth, async function(user) {
   }
   aShow('aDash');
   loadRequests();
+  loadLeads();
 });
 
 function profLabel(p) {
@@ -233,6 +238,57 @@ async function loadRequests() {
     { label: 'Action', render: function(p) { return '<button class="btn bt" onclick="window.aApplyMatiereAddon(\'' + p.id + '\',\'' + (p.matiereAddonDemandee||'').replace(/'/g,"\\'") + '\')">Valider</button>'; } }
   ]) : '<div class="empty">Aucune demande en attente ✓</div>';
 }
+
+var ALL_LEADS = [];
+function leadCreatedMs(l) {
+  if (!l.dateCreation) return 0;
+  if (typeof l.dateCreation.toDate === 'function') return l.dateCreation.toDate().getTime();
+  return 0;
+}
+function formatLeadDate(l) {
+  var ms = leadCreatedMs(l);
+  if (!ms) return '—';
+  var d = new Date(ms);
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+async function loadLeads() {
+  var leads = [];
+  try {
+    var snap = await getDocs(collection(dbFs, 'demandesForfait'));
+    snap.forEach(function(d) { leads.push(Object.assign({ id: d.id }, d.data())); });
+  } catch (e) {
+    document.getElementById('aLeadsBody').innerHTML = '<div class="empty">Erreur de lecture : ' + (e && e.message ? e.message : e) + '</div>';
+    return;
+  }
+  leads.sort(function(a, b) { return leadCreatedMs(b) - leadCreatedMs(a); });
+  ALL_LEADS = leads;
+  window.aRenderLeads();
+}
+window.aRenderLeads = function() {
+  document.getElementById('aLeadsCount').textContent = ALL_LEADS.length;
+  document.getElementById('aLeadsBody').innerHTML = ALL_LEADS.length ? renderTable(ALL_LEADS, [
+    { label: 'Nom', render: function(l) { return l.nom || ''; } },
+    { label: 'Contact', render: function(l) {
+        var parts = [];
+        if (l.telephone) parts.push('<a href="tel:' + l.telephone + '">' + l.telephone + '</a>');
+        if (l.email) parts.push('<a href="mailto:' + l.email + '">' + l.email + '</a>');
+        return parts.join('<br>') || '—';
+      } },
+    { label: 'Établissement', render: function(l) { return l.etablissement || '—'; } },
+    { label: 'Forfait demandé', render: function(l) { return PLAN_LABELS[l.forfait] || l.forfait || ''; } },
+    { label: 'Date', render: formatLeadDate },
+    { label: 'Statut', render: function(l) {
+        var contacte = l.statut === 'contacte';
+        return '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.78rem;"><input type="checkbox" ' + (contacte ? 'checked' : '') + ' onchange="window.aToggleLeadContacte(\'' + l.id + '\', this.checked)"> Contacté</label>';
+      } }
+  ]) : '<div class="empty">Aucune demande pour l\'instant</div>';
+};
+window.aToggleLeadContacte = async function(leadId, checked) {
+  await setDoc(doc(dbFs, 'demandesForfait', leadId), { statut: checked ? 'contacte' : 'nouveau' }, { merge: true });
+  var l = ALL_LEADS.find(function(x) { return x.id === leadId; });
+  if (l) l.statut = checked ? 'contacte' : 'nouveau';
+};
 
 window.aRenderPending = function() {
   var pending = ALL_PROFS.filter(function(p) {
