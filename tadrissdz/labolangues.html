@@ -1080,13 +1080,29 @@ function llShow(id) {
 /* ===== État courant ===== */
 var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null };
 
+/* Arrivée depuis l'espace élève principal avec le code déjà connu (?code=123456) : on saute
+   directement l'écran de saisie pour ne jamais faire retaper le code à l'élève. */
+var _llCodeFromUrl = null;
+try { _llCodeFromUrl = new URLSearchParams(window.location.search).get('code'); } catch (e) {}
+
 llShow('llLoading');
 onAuthStateChanged(auth, function(user) {
   LL_STATE.firebaseUser = user || null;
+  if (_llCodeFromUrl) { llGoEleveAuto(_llCodeFromUrl); return; }
   llShow('llChooser');
 });
 /* Si l'auth ne répond pas très vite (hors-ligne, etc.), on affiche quand même le choix au bout de 2s */
-setTimeout(function() { if (document.getElementById('llLoading').style.display !== 'none') llShow('llChooser'); }, 2000);
+setTimeout(function() {
+  if (document.getElementById('llLoading').style.display !== 'none') {
+    if (_llCodeFromUrl) { llGoEleveAuto(_llCodeFromUrl); } else { llShow('llChooser'); }
+  }
+}, 2000);
+function llGoEleveAuto(code) {
+  llShow('llEleveLogin');
+  var input = document.getElementById('llEleveCode');
+  if (input) input.value = code;
+  window.llEleveLoginSubmit();
+}
 
 window.llGoProf = function() {
   if (!LL_STATE.firebaseUser) { llShow('llNeedLogin'); return; }
@@ -1708,7 +1724,7 @@ window.llDownloadAudio = function(dataUrl, name) {
 
 /* ===== ESPACE ÉLÈVE ===== */
 window.llGoEleve = function() { llShow('llEleveLogin'); };
-window.llEleveLoginSubmit = function() {
+window.llEleveLoginSubmit = async function() {
   var code = document.getElementById('llEleveCode').value.trim();
   var errEl = document.getElementById('llEleveErr');
   errEl.textContent = '';
@@ -1724,18 +1740,49 @@ window.llEleveLoginSubmit = function() {
     var bHas = localStorage.getItem('LABOLANGUES_' + b) ? 0 : 1;
     return aHas - bHas;
   });
-  var found = null, foundUid = null;
+  var found = null, foundUid = null, cls = null;
   for (var i = 0; i < uids.length; i++) {
     var uid = uids[i];
     var roster = llReadRoster(uid);
     var match = (roster.el||[]).find(function(e){ return (e.code || llGenCode(e.id)) === code; });
-    if (match) { found = match; foundUid = uid; break; }
+    if (match) { found = match; foundUid = uid; cls = (roster.cls||[]).find(function(c){ return c.id === match.cid; }); break; }
+  }
+  if (!found) {
+    /* Repli distant : cet appareil (ex. le téléphone de l'élève) n'a jamais vu ce prof se
+       connecter, donc localStorage est vide ici. On identifie quand même l'élève via le même
+       document public "eleveAcces" utilisé par l'espace élève principal (même code Tadriss). */
+    errEl.textContent = LL_CUR==='ar' ? 'جارٍ التحقق...' : 'Vérification...';
+    try {
+      var snap = await getDoc(doc(dbFs, 'eleveAcces', code));
+      if (snap.exists()) {
+        var payload = snap.data();
+        found = (payload.el || [])[0] || null;
+        foundUid = payload.profUid;
+        cls = (payload.cls || [])[0] || null;
+      }
+    } catch (e) {}
   }
   if (!found) { errEl.textContent = LL_CUR==='ar' ? 'رمز غير صحيح.' : 'Code incorrect.'; return; }
   LL_STATE.eleve = found; LL_STATE.eleveUid = foundUid;
-  var cls = (roster.cls||[]).find(function(c){ return c.id === found.cid; });
   document.getElementById('llEleveNameTxt').textContent = found.pr + ' ' + found.no;
   document.getElementById('llEleveClasseTxt').textContent = cls ? cls.nm : '';
+  var localRoster = llReadRoster(foundUid);
+  var localData = llReadData(foundUid);
+  if (!(localRoster.el && localRoster.el.length) && !(localData.acts && localData.acts.length)) {
+    /* L'identité est confirmée, mais les activités elles-mêmes (créées par le prof) ne sont
+       aujourd'hui disponibles que sur l'appareil du prof — vraie limite technique actuelle,
+       plutôt qu'un faux résultat vide silencieux qui ressemblerait à un bug. */
+    errEl.textContent = '';
+    document.getElementById('llEleveTodoList').innerHTML =
+      '<div style="text-align:center;padding:2rem;color:var(--ink3);">' +
+      (LL_CUR==='ar'
+        ? 'تم التعرف عليك، لكن أنشطة اللغة لا تزال متاحة فقط من جهاز أستاذ(ة)ك في الوقت الحالي.'
+        : "Tu es bien identifié(e), mais tes activités ne sont pour l'instant consultables que depuis l'appareil de ton professeur — une amélioration est en cours pour que ça marche aussi depuis ton téléphone.") +
+      '</div>';
+    document.getElementById('llEleveDoneList').innerHTML = '';
+    llShow('llEleveApp');
+    return;
+  }
   llShow('llEleveApp');
   llRenderEleveApp();
 };

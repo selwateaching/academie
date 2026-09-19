@@ -7945,16 +7945,37 @@ function closeStudentPortal() {
   /* sinon : un prof était déjà connecté, on retourne simplement à son tableau de bord (déjà visible derrière) */
 }
 
-function spLogin() {
+async function spLogin() {
   var code = document.getElementById('spCodeInput').value.trim();
   if (code.length < 4) { document.getElementById('spErr').textContent = T('code_invalide'); return; }
-  // Search all students for matching code
+  // Search all students for matching code (parcours local : le prof qui teste depuis son propre appareil)
   var found = null;
   D.el.forEach(function(e) {
     var ec = e.code || genCode(e.id);
     if (!e.code) e.code = ec;
     if (ec === code) found = e;
   });
+  if (!found) {
+    /* Repli distant : cet appareil n'a jamais vu ce prof se connecter (cas normal d'un élève sur
+       son propre téléphone). On va chercher directement le document public de cet élève. */
+    document.getElementById('spErr').textContent = CURRENT_LANG === 'ar' ? 'جارٍ التحقق...' : 'Vérification...';
+    try {
+      var snap = await window._fbGetDoc(window._fbDoc(window._fbDbFs, 'eleveAcces', code));
+      if (snap.exists()) {
+        var payload = snap.data();
+        D.s = Object.assign({}, D.s, payload.s);
+        D.cls = payload.cls || [];
+        D.el = payload.el || [];
+        D.ev = payload.ev || [];
+        D.ap = payload.ap || {};
+        D.cj = payload.cj || [];
+        D.evt = payload.evt || [];
+        D.fo = payload.fo || [];
+        window._spDistant = true; /* données venues de Firestore : ne jamais les re-sauvegarder localement ni les renvoyer au cloud */
+        found = D.el[0];
+      }
+    } catch (e) {}
+  }
   if (!found) {
     document.getElementById('spErr').textContent = '❌ ' + T('code_incorrect_msg');
     document.getElementById('spCodeInput').select();
@@ -7997,6 +8018,11 @@ function spGoToCodeList() {
   go('eleve_acces');
 }
 
+function spOpenLaboLangues() {
+  if (!spCurrentEleve) return;
+  var code = spCurrentEleve.code || genCode(spCurrentEleve.id);
+  window.open('labolangues.html?code=' + encodeURIComponent(code), '_blank');
+}
 function spTab(tab) {
   document.querySelectorAll('.sp-tab').forEach(function(t){ t.classList.remove('on'); });
   document.querySelectorAll('.sp-section').forEach(function(s){ s.classList.remove('on'); });
@@ -8271,6 +8297,7 @@ function exportNotesPDF() {
           <div class="sp-tab" onclick="spTab('ressources')">📁 Ressources</div>
           <div class="sp-tab" onclick="spTab('bulletin')">📋 Bulletin</div>
           <div class="sp-tab" onclick="spTab('agenda')">📅 Agenda</div>
+          <div class="sp-tab" onclick="spOpenLaboLangues()" style="margin-left:auto;">🎙️ Labo Langues</div>
         </div>
 
         <!-- NOTES -->
@@ -8364,6 +8391,10 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const dbFs = getFirestore(fbApp);
+/* Exposition explicite vers window : ce module ES ne fuite pas ses variables au script
+   classique qui gère l'espace élève (spLogin) — il en a besoin pour le repli Firestore
+   quand un élève se connecte depuis un appareil où aucun prof ne s'est jamais connecté. */
+window._fbDoc = doc; window._fbGetDoc = getDoc; window._fbSetDoc = setDoc; window._fbDbFs = dbFs;
 /* Le stockage local (classes, notes, cours, historique IA...) peut devenir volumineux ;
    sous pression mémoire, le navigateur peut évincer tout le stockage de ce domaine (y
    compris la session Firebase Auth), ce qui ressemble à une déconnexion inattendue.
@@ -8586,6 +8617,105 @@ function buildCloudPayload() {
   };
 }
 
+/* ===== Accès élève distant (multi-appareils) =====
+   Chaque élève a un document public "eleveAcces/{code}", lisible par n'importe qui connaissant
+   le code (c'est le principe même du code d'accès), mais qui ne contient QUE les données de CET
+   élève — jamais celles de ses camarades ni le cahier journal privé du prof pour d'autres classes.
+   Ça permet à un élève de se connecter depuis son propre téléphone, même si aucun prof ne s'est
+   jamais connecté sur cet appareil (ce qui était impossible avant : l'app ne cherchait que dans
+   la mémoire locale du navigateur). */
+function buildEleveAccesPayload(e, uid) {
+  var D = window.D;
+  var eid = e.id, cid = e.cid;
+  var evScope = (D.ev || []).filter(function(v) { return v.notes && v.notes[eid] !== undefined; }).map(function(v) {
+    var vv = Object.assign({}, v);
+    vv.notes = {}; vv.notes[eid] = v.notes[eid];
+    return vv;
+  });
+  var apScope = {};
+  Object.keys(D.ap || {}).forEach(function(date) {
+    var st = (D.ap || {})[date] || {};
+    if (st[eid] !== undefined) { apScope[date] = {}; apScope[date][eid] = st[eid]; }
+  });
+  var foScope = (D.fo || []).filter(function(f) {
+    if (!f.fi || !f.fi.length) return false;
+    var mode = f.partageMode || (f.partageEleves ? 'tous' : 'aucun');
+    if (mode === 'tous') return true;
+    if (mode === 'specifique') return (f.partageElevesIds || []).indexOf(eid) >= 0;
+    return false;
+  }).map(function(f) {
+    return {
+      id: f.id, nm: f.nm, col: f.col, ico: f.ico,
+      fi: (f.fi || []).map(function(fn) {
+        if (typeof fn === 'object') return { nm: fn.nm, url: fn.url || '', type: fn.type || 'local', note: fn.data ? '(fichier local uniquement, non disponible depuis un autre appareil)' : '' };
+        return fn;
+      })
+    };
+  });
+  var eCopy = Object.assign({}, e); delete eCopy.photo;
+  return {
+    profUid: uid,
+    s: { et: (D.s || {}).et || '', mat: (D.s || {}).mat || '', an: (D.s || {}).an || '' },
+    cls: (D.cls || []).filter(function(c) { return c.id === cid; }),
+    el: [eCopy],
+    ev: evScope,
+    ap: apScope,
+    cj: (D.cj || []).filter(function(s) { return s.cid === cid; }),
+    evt: D.evt || [],
+    fo: foScope,
+    updatedAt: Date.now()
+  };
+}
+var _eleveAccesSyncing = false;
+async function syncEleveAcces() {
+  if (!authCurrentUid || _eleveAccesSyncing) return;
+  var D = window.D;
+  if (!D) return;
+  _eleveAccesSyncing = true;
+  var uid = authCurrentUid;
+  var codeChanged = false;
+  try {
+    for (var i = 0; i < (D.el || []).length; i++) {
+      var e = D.el[i];
+      if (!e || e.id === undefined) continue;
+      var code = e.code || genCode(e.id);
+      var tries = 0;
+      while (tries < 5) {
+        try {
+          var ref = doc(dbFs, 'eleveAcces', code);
+          var snap = await getDoc(ref);
+          if (snap.exists() && snap.data().profUid && snap.data().profUid !== uid) {
+            /* Collision : ce code est déjà pris par l'élève d'un autre établissement (l'ancien
+               système générait les codes à partir du simple numéro d'ordre de l'élève, donc
+               deux "premiers élèves" de deux profs différents pouvaient obtenir le même code).
+               On en attribue un nouveau, unique, plutôt que d'écraser les données de l'autre. */
+            code = String(Math.floor(100000 + Math.random() * 900000));
+            tries++;
+            continue;
+          }
+          await setDoc(ref, buildEleveAccesPayload(e, uid));
+          if (e.code !== code) { e.code = code; codeChanged = true; }
+          break;
+        } catch (err) {
+          console.warn('Sync eleveAcces échouée pour', e && (e.pr + ' ' + e.no), err && err.message);
+          break;
+        }
+      }
+    }
+  } finally {
+    _eleveAccesSyncing = false;
+  }
+  if (codeChanged) {
+    try {
+      var raw = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}');
+      raw.el = D.el;
+      localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(raw));
+    } catch (e) {}
+    if (typeof window.rEleveAcces === 'function') window.rEleveAcces();
+    if (typeof window.N === 'function') window.N(window.CURRENT_LANG === 'ar' ? 'رموز بعض التلاميذ حُدّثت لتفادي تعارض مع مؤسسة أخرى — أعد مشاركتها.' : 'Le code de certains élèves a été mis à jour pour éviter un conflit avec un autre établissement — repartage-le.', 'info');
+  }
+}
+
 function scheduleCloudSync() {
   if (!authCurrentUid) return; /* pas connecté, rien à synchroniser */
   _cloudSyncPending = true;
@@ -8616,6 +8746,7 @@ async function pushToCloud() {
   } catch (e) {
     console.warn('Sauvegarde cloud échouée (sera retentée à la prochaine modification) :', e && e.message);
   }
+  try { await syncEleveAcces(); } catch (e) { console.warn('Sync eleveAcces échouée :', e && e.message); }
   _cloudSyncInFlight = false;
   if (_cloudSyncPending) setTimeout(pushToCloud, 2000);
 }
