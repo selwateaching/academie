@@ -7000,9 +7000,9 @@ function rCrsIA(){
     var targetNiv = nivMatch ? nivMatch[1].toUpperCase() : null;
     if (!targetNiv) {
       var cyc = (D.s.cycle||'').toLowerCase();
-      if (cyc.indexOf('primaire')>=0) targetNiv = '3AP';
-      else if (cyc.indexOf('secondaire')>=0 || cyc.indexOf('lycée')>=0 || cyc.indexOf('lycee')>=0) targetNiv = '1AS';
-      else if (cyc.indexOf('moyen')>=0) targetNiv = '1AM';
+      if (cyc.indexOf('primaire')>=0 || cyc.indexOf('ابتدائي')>=0) targetNiv = '3AP';
+      else if (cyc.indexOf('secondaire')>=0 || cyc.indexOf('lycée')>=0 || cyc.indexOf('lycee')>=0 || cyc.indexOf('ثانوي')>=0) targetNiv = '1AS';
+      else if (cyc.indexOf('moyen')>=0 || cyc.indexOf('متوسط')>=0) targetNiv = '1AM';
     }
     if (targetNiv && Array.prototype.some.call(crsNSel.options, function(o){ return o.value === targetNiv; })) {
       crsNSel.value = targetNiv;
