@@ -4023,10 +4023,12 @@ function switchLang() {
         '2AS': isAR?'السنة الثانية ثانوي (2ث)':'2ème année Secondaire (2AS)',
         '3AS': isAR?'السنة النهائية (3ث)':'Terminale (3AS)'
       };
+      var pnPrevVal = progNiv.value;
       for (var pnI = 0; pnI < progNiv.options.length; pnI++) {
         var pnLbl = PROG_NIV_LABELS[progNiv.options[pnI].value];
         if (pnLbl) progNiv.options[pnI].text = pnLbl;
       }
+      if (pnPrevVal) progNiv.value = pnPrevVal;
     }
   }
 
