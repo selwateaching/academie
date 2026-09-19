@@ -679,7 +679,6 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
       </div>
     </div>
-  </div>
 
   <!-- Stats -->
   <div class="site-stats">
@@ -9254,9 +9253,16 @@ async function handleAuthUser(user) {
       /* Compte validé et abonnement actif : accès direct à l'app (session mémorisée), sans repasser par la page d'accueil */
       var site = document.getElementById('site');
       if (site) {
+        /* Coupe la transition CSS avant de masquer : sans ça, certains navigateurs
+           (notamment Chrome) laissent un résidu visuel de la dernière image peinte
+           quand display:none est appliqué en même temps qu'une transition d'opacité
+           tout juste déclenchée -- la page publique reste visible par-dessus l'app. */
+        site.style.transition = 'none';
         site.classList.add('hidden');
+        site.style.visibility = 'hidden';
         site.style.display = 'none';
         void site.offsetHeight; /* force un recalcul de mise en page pour éviter un résidu visuel non repeint sur certains navigateurs */
+        setTimeout(function(){ site.style.transition = ''; }, 0); /* réactive la transition pour un futur retour via "Voir le Site" */
       }
       gate.style.display = 'none';
       app.style.display = 'flex';
