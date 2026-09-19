@@ -4008,14 +4008,25 @@ function switchLang() {
     var shProg = pgProg.querySelector('.sht'); if (shProg) shProg.textContent = isAR ? 'البرنامج الوطني الرسمي' : 'Programme national officiel';
     var subProg = pgProg.querySelector('.sh > div > div:last-child'); if (subProg && subProg !== shProg) subProg.textContent = isAR ? 'وزارة التربية الوطنية · الجزائر' : "Ministère de l'Éducation Nationale · Algérie";
     var progNiv = document.getElementById('progNiveau');
-    if (progNiv && progNiv.options.length >= 7) {
-      progNiv.options[0].text = isAR?'السنة الأولى متوسط (1م)':'1ère année Moyen (1AM)';
-      progNiv.options[1].text = isAR?'السنة الثانية متوسط (2م)':'2ème année Moyen (2AM)';
-      progNiv.options[2].text = isAR?'السنة الثالثة متوسط (3م)':'3ème année Moyen (3AM)';
-      progNiv.options[3].text = isAR?'السنة الرابعة متوسط (4م)':'4ème année Moyen (4AM)';
-      progNiv.options[4].text = isAR?'السنة الأولى ثانوي (1ث)':'1ère année Secondaire (1AS)';
-      progNiv.options[5].text = isAR?'السنة الثانية ثانوي (2ث)':'2ème année Secondaire (2AS)';
-      progNiv.options[6].text = isAR?'السنة النهائية (3ث)':'Terminale (3AS)';
+    if (progNiv) {
+      var PROG_NIV_LABELS = {
+        '1AP': isAR?'السنة الأولى ابتدائي (1ا)':'1ère année Primaire (1AP)',
+        '2AP': isAR?'السنة الثانية ابتدائي (2ا)':'2ème année Primaire (2AP)',
+        '3AP': isAR?'السنة الثالثة ابتدائي (3ا)':'3ème année Primaire (3AP)',
+        '4AP': isAR?'السنة الرابعة ابتدائي (4ا)':'4ème année Primaire (4AP)',
+        '5AP': isAR?'السنة الخامسة ابتدائي (5ا)':'5ème année Primaire (5AP)',
+        '1AM': isAR?'السنة الأولى متوسط (1م)':'1ère année Moyen (1AM)',
+        '2AM': isAR?'السنة الثانية متوسط (2م)':'2ème année Moyen (2AM)',
+        '3AM': isAR?'السنة الثالثة متوسط (3م)':'3ème année Moyen (3AM)',
+        '4AM': isAR?'السنة الرابعة متوسط (4م)':'4ème année Moyen (4AM)',
+        '1AS': isAR?'السنة الأولى ثانوي (1ث)':'1ère année Secondaire (1AS)',
+        '2AS': isAR?'السنة الثانية ثانوي (2ث)':'2ème année Secondaire (2AS)',
+        '3AS': isAR?'السنة النهائية (3ث)':'Terminale (3AS)'
+      };
+      for (var pnI = 0; pnI < progNiv.options.length; pnI++) {
+        var pnLbl = PROG_NIV_LABELS[progNiv.options[pnI].value];
+        if (pnLbl) progNiv.options[pnI].text = pnLbl;
+      }
     }
   }
 
