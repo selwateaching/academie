@@ -86,7 +86,11 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .tia-card-btn{margin-top:.6rem;width:100%;background:var(--t);color:#fff;border:none;border-radius:8px;padding:.55rem;font-weight:700;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;}
 .tia-card-btn:hover{background:var(--t2);}
 .tia-card-btn:disabled{opacity:.55;cursor:not-allowed;}
-.tia-typing{align-self:flex-start;font-size:.78rem;color:var(--ink3);padding:.3rem .5rem;}
+.tia-typing{align-self:flex-start;background:var(--w);border:1px solid var(--br);border-radius:12px;border-bottom-left-radius:4px;padding:.65rem .9rem;display:flex;align-items:center;gap:5px;}
+.tia-typing span{width:7px;height:7px;border-radius:50%;background:var(--t);opacity:.5;animation:tiaBounce 1.1s infinite ease-in-out;}
+.tia-typing span:nth-child(2){animation-delay:.15s;}
+.tia-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes tiaBounce{0%,60%,100%{transform:translateY(0);opacity:.5;}30%{transform:translateY(-4px);opacity:1;}}
 .tia-ft{border-top:1px solid var(--br);padding:.7rem;display:flex;gap:.5rem;align-items:flex-end;background:var(--w);flex-shrink:0;}
 .tia-in{flex:1;border:1.5px solid var(--br);border-radius:10px;padding:.55rem .7rem;font-size:.82rem;font-family:'Inter',sans-serif;resize:none;max-height:90px;outline:none;background:var(--bg);color:var(--ink);}
 .tia-in:focus{border-color:var(--t);}
@@ -7770,7 +7774,7 @@ function tiaPushCard(seance) {
 }
 function tiaShowTyping() {
   var box = document.getElementById('tiaBody'); if (!box) return;
-  var d = document.createElement('div'); d.className = 'tia-typing'; d.id = 'tiaTypingNode'; d.textContent = 'Tadriss IA réfléchit…';
+  var d = document.createElement('div'); d.className = 'tia-typing'; d.id = 'tiaTypingNode'; d.innerHTML = '<span></span><span></span><span></span>'; d.title = 'Tadriss IA réfléchit…';
   box.appendChild(d); box.scrollTop = box.scrollHeight;
 }
 function tiaKeydown(e) {
