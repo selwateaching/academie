@@ -4763,6 +4763,15 @@ var CURRENT_STORAGE_KEY = 'TADRISS_DZ'; /* clé par défaut avant identification
 function ld() { try { var x = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}'); ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis'].forEach(function(k) { if (x[k]!==undefined) D[k] = x[k]; }); } catch(e) {} }
 function sv() { try { var o = {}; ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis'].forEach(function(k) { o[k] = D[k]; }); localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(o)); } catch(e) {} if (typeof window.scheduleCloudSync === 'function') window.scheduleCloudSync(); }
 function resetToDefaults() { var fresh = JSON.parse(JSON.stringify(D_DEFAULTS)); Object.keys(fresh).forEach(function(k){ D[k] = fresh[k]; }); }
+/* Un autre onglet (ex: Labo Langues, ouvert séparément pour corriger une production orale)
+   peut écrire directement dans ce même stockage local. Sans ceci, l'onglet Tadriss déjà
+   ouvert reste figé sur son état en mémoire tant qu'on ne le recharge pas manuellement. */
+window.addEventListener('storage', function(e) {
+  if (e.key === CURRENT_STORAGE_KEY && e.newValue) {
+    ld();
+    if (typeof window.go === 'function' && window.CUR) window.go(window.CUR);
+  }
+});
 window.resetToDefaults = resetToDefaults;
 ld();
 
