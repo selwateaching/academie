@@ -32,10 +32,10 @@ for i, text in enumerate(texts):
         [
             "espeak-ng",
             "-v", "en-us",
-            "-s", "125",   # vitesse (mots/minute) — nettement plus lent, articulé pour des enfants
-            "-p", "48",    # hauteur proche du défaut — plus naturelle, moins criarde
+            "-s", "100",   # vitesse (mots/minute) — rythme d'initiation, bien plus lent que la parole naturelle (~160)
+            "-p", "45",    # hauteur naturelle et posée
             "-a", "100",   # amplitude par défaut — évite toute distorsion
-            "-g", "12",    # petite pause entre les mots, pour une diction plus claire
+            "-g", "15",    # pause nette entre les mots, pour une diction pédagogique bien articulée
             "-w", str(tmp_wav),
             text,
         ],
@@ -55,6 +55,14 @@ for i, text in enumerate(texts):
     if TARGET_RATE and rate != TARGET_RATE:
         frames, _ = audioop.ratecv(frames, width, 1, rate, TARGET_RATE, None)
         rate = TARGET_RATE
+
+    # 8 bits plutôt que 16 : réduit la taille de moitié sans toucher à la
+    # fréquence d'échantillonnage (donc sans repliement de spectre), juste un
+    # léger bruit de quantification, inaudible pour de la voix parlée.
+    if width == 2:
+        frames = audioop.lin2lin(frames, 2, 1)
+        frames = audioop.bias(frames, 1, 128)  # PCM 8 bits WAV = non signé
+        width = 1
 
     out_buf = Path(f"/tmp/_speakia_tts_out.wav")
     with wave.open(str(out_buf), "wb") as wf:
