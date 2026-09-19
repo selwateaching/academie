@@ -1081,20 +1081,29 @@ function llShow(id) {
 var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null };
 
 /* Arrivée depuis l'espace élève principal avec le code déjà connu (?code=123456) : on saute
-   directement l'écran de saisie pour ne jamais faire retaper le code à l'élève. */
-var _llCodeFromUrl = null;
-try { _llCodeFromUrl = new URLSearchParams(window.location.search).get('code'); } catch (e) {}
+   directement l'écran de saisie pour ne jamais faire retaper le code à l'élève.
+   Arrivée depuis le menu du prof, déjà connecté (?uid=xxx) : on saute directement à son espace
+   prof, sans lui montrer le choix "Prof / Élève" qui n'a de sens que pour un visiteur anonyme. */
+var _llCodeFromUrl = null, _llUidFromUrl = null;
+try {
+  var _llParams = new URLSearchParams(window.location.search);
+  _llCodeFromUrl = _llParams.get('code');
+  _llUidFromUrl = _llParams.get('uid');
+} catch (e) {}
 
 llShow('llLoading');
 onAuthStateChanged(auth, function(user) {
   LL_STATE.firebaseUser = user || null;
   if (_llCodeFromUrl) { llGoEleveAuto(_llCodeFromUrl); return; }
+  if (_llUidFromUrl && user && user.uid === _llUidFromUrl) { window.llGoProf(); return; }
   llShow('llChooser');
 });
 /* Si l'auth ne répond pas très vite (hors-ligne, etc.), on affiche quand même le choix au bout de 2s */
 setTimeout(function() {
   if (document.getElementById('llLoading').style.display !== 'none') {
-    if (_llCodeFromUrl) { llGoEleveAuto(_llCodeFromUrl); } else { llShow('llChooser'); }
+    if (_llCodeFromUrl) { llGoEleveAuto(_llCodeFromUrl); }
+    else if (_llUidFromUrl && LL_STATE.firebaseUser && LL_STATE.firebaseUser.uid === _llUidFromUrl) { window.llGoProf(); }
+    else { llShow('llChooser'); }
   }
 }, 2000);
 function llGoEleveAuto(code) {
