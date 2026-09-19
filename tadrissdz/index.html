@@ -6959,6 +6959,21 @@ function onCrsTypeChange() {
 }
 function rCrsIA(){
   renderSC();document.getElementById('btnSCrs').style.display='none';
+  var crsNSel = document.getElementById('crsN');
+  if (crsNSel) {
+    var acCls = gAC();
+    var nivMatch = acCls && acCls.nm ? acCls.nm.match(/(\d(?:AP|AM|AS))/i) : null;
+    var targetNiv = nivMatch ? nivMatch[1].toUpperCase() : null;
+    if (!targetNiv) {
+      var cyc = (D.s.cycle||'').toLowerCase();
+      if (cyc.indexOf('primaire')>=0) targetNiv = '3AP';
+      else if (cyc.indexOf('secondaire')>=0 || cyc.indexOf('lycée')>=0 || cyc.indexOf('lycee')>=0) targetNiv = '1AS';
+      else if (cyc.indexOf('moyen')>=0) targetNiv = '1AM';
+    }
+    if (targetNiv && Array.prototype.some.call(crsNSel.options, function(o){ return o.value === targetNiv; })) {
+      crsNSel.value = targetNiv;
+    }
+  }
   var th=document.getElementById('crsT'); if(th&&!th.value) th.placeholder='Ex: Chapitre du programme '+D.s.mat+' — '+D.s.cycle;
   var crsLangSel=document.getElementById('crsLang'); if (crsLangSel) crsLangSel.value = defaultLangPourMatiere(D.s.mat);
   var actives = window._matieresActives || [D.s.mat];
