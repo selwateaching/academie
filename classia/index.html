@@ -382,6 +382,21 @@ body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--ink);over
 .ss.ss-tog .si-chevron{margin-left:0;font-size:.72rem;color:rgba(255,255,255,.4);}
 .si.ss-top{font-weight:700;font-size:.86rem;color:rgba(255,255,255,.85);}
 .ss-body.collapsed{display:none;}
+
+/* Couleurs par catégorie (menu repliable) */
+.ss-cat[data-cat="classe"]{--catc:#4F8EF7;--catcbg:rgba(79,142,247,.16);}
+.ss-cat[data-cat="enseignement"]{--catc:#8B5CF6;--catcbg:rgba(139,92,246,.16);}
+.ss-cat[data-cat="evaluer"]{--catc:#F5A623;--catcbg:rgba(245,166,35,.16);}
+.ss-cat[data-cat="ressources_ia"]{--catc:#EC4899;--catcbg:rgba(236,72,153,.16);}
+.ss-cat[data-cat="suivi"]{--catc:#10B981;--catcbg:rgba(16,185,129,.16);}
+.ss-cat[data-cat="organisation"]{--catc:#14B8A6;--catcbg:rgba(20,184,166,.16);}
+.ss-cat[data-cat="compte"]{--catc:#94A3B8;--catcbg:rgba(148,163,184,.16);}
+.ss-cat>.ss.ss-tog{border-left:3px solid var(--catc,transparent);padding-left:1.15rem;}
+.ss-cat>.ss.ss-tog .ss-lbl{color:var(--catc,rgba(255,255,255,.8));transition:color .15s;}
+.ss-cat>.ss.ss-tog:hover .ss-lbl{color:#fff;}
+.ss-cat>.ss.ss-tog .si-chevron{color:var(--catc,rgba(255,255,255,.4));}
+.ss-cat .si.on{background:var(--catcbg,rgba(52,84,209,.15));color:var(--catc,var(--t));border-left-color:var(--catc,var(--t));}
+.ss-cat .si:hover{background:var(--catcbg,rgba(255,255,255,.05));}
 .sic{font-size:.95rem;width:20px;height:20px;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
 .sic img{width:20px;height:20px;object-fit:cover;border-radius:4px;}
 .sb-bot{padding:.85rem 1.3rem;border-top:1px solid rgba(255,255,255,.08);}
