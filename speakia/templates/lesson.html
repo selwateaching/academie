@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}SpeakIA — {{ lesson.title_fr }}{% endblock %}
+{% block body %}
+<div class="sp-screen sp-lesson-screen" id="sp-lesson-root" style="--lvl-color:{{ level.color }}">
+  <header class="sp-lesson-topbar">
+    <a class="sp-lesson-quit" href="{{ url_for('world', student_id=student.id) }}" aria-label="Quitter la leçon">✕</a>
+    <div class="sp-progressbar"><div class="sp-progressbar-fill" id="sp-progress-fill"></div></div>
+    <span class="sp-lesson-hearts" id="sp-hearts">⭐ <span id="sp-score-live">0</span></span>
+  </header>
+
+  <main class="sp-lesson-stage" id="sp-lesson-stage">
+    <div class="sp-neo-box">
+      <img class="sp-neo-avatar" src="https://classia.fr/cdn/shop/files/classia-neo-salut.png?v=1783488761&width=300" alt="Néo">
+      <div class="sp-neo-bubble" id="sp-neo-bubble">…</div>
+    </div>
+    <div class="sp-exercise-area" id="sp-exercise-area"></div>
+    <div class="sp-lesson-footer">
+      <button type="button" class="sp-btn sp-btn-primary sp-continue-btn" id="sp-continue-btn" disabled>Continuer</button>
+    </div>
+  </main>
+
+  <div class="sp-lesson-complete" id="sp-lesson-complete" hidden>
+    <div class="sp-complete-card">
+      <img class="sp-complete-neo" src="https://classia.fr/cdn/shop/files/classia-neo-reflexion.png?v=1783488761&width=300" alt="Néo">
+      <h2 id="sp-complete-title">Bravo !</h2>
+      <div class="sp-complete-stars" id="sp-complete-stars">★★★</div>
+      <p id="sp-complete-sub"></p>
+      <div class="sp-complete-actions">
+        <a class="sp-btn sp-btn-ghost" href="{{ url_for('world', student_id=student.id) }}">Retour à la carte</a>
+        <button type="button" class="sp-btn sp-btn-primary" id="sp-retry-btn">Recommencer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script id="sp-lesson-data" type="application/json">{{ lesson | tojson }}</script>
+{% endblock %}
+{% block scripts %}
+<script>
+window.SPEAKIA_CONFIG = {
+  studentId: {{ student.id }},
+  lessonId: {{ lesson.id | tojson }},
+  maxStars: {{ max_stars }},
+  completeUrl: {{ url_for('complete_lesson', student_id=student.id, lesson_id=lesson.id) | tojson }},
+  worldUrl: {{ url_for('world', student_id=student.id) | tojson }}
+};
+</script>
+<script src="{{ url_for('static', filename='js/lesson-engine.js') }}"></script>
+{% endblock %}

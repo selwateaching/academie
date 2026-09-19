@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}SpeakIA — Qui joue aujourd'hui ?{% endblock %}
+{% block body %}
+<div class="sp-screen sp-home">
+  <div class="sp-home-wrap">
+    <a class="sp-wordmark" href="/">Speak<span>IA</span></a>
+    <h1 class="sp-home-title">Qui joue aujourd'hui&nbsp;? 🎉</h1>
+    <p class="sp-home-sub">Choisis ton profil ou crée-en un nouveau pour commencer à apprendre l'anglais en jouant avec Néo.</p>
+
+    {% if students %}
+    <div class="sp-profiles">
+      {% for s in students %}
+      <a class="sp-profile-card" href="{{ url_for('world', student_id=s.id) }}">
+        <span class="sp-profile-avatar">{{ s.avatar }}</span>
+        <span class="sp-profile-name">{{ s.name }}</span>
+        <span class="sp-profile-stars">⭐ {{ s.total_stars }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <button type="button" class="sp-btn sp-btn-primary sp-new-btn" id="sp-open-new">+ Nouveau profil</button>
+
+    <div class="sp-new-form" id="sp-new-form" hidden>
+      <form method="post" action="{{ url_for('create_profile') }}">
+        <label class="sp-field-label" for="sp-name">Prénom de l'enfant</label>
+        <input class="sp-input" id="sp-name" name="name" type="text" maxlength="60" placeholder="Ex. : Yasmine" required autocomplete="off">
+
+        <p class="sp-field-label">Choisis ton avatar</p>
+        <div class="sp-avatars">
+          {% for a in avatars %}
+          <label class="sp-avatar-choice">
+            <input type="radio" name="avatar" value="{{ a }}" {% if loop.first %}checked{% endif %}>
+            <span>{{ a }}</span>
+          </label>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="sp-btn sp-btn-primary sp-form-submit">Créer le profil et commencer</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('sp-open-new').addEventListener('click', function(){
+  document.getElementById('sp-new-form').hidden = false;
+  this.hidden = true;
+  document.getElementById('sp-name').focus();
+});
+</script>
+{% endblock %}

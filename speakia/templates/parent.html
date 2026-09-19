@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}SpeakIA — Espace parent de {{ student.name }}{% endblock %}
+{% block body %}
+<div class="sp-screen sp-parent">
+  <header class="sp-topbar">
+    <a class="sp-wordmark" href="{{ url_for('home') }}">Speak<span>IA</span></a>
+    <a class="sp-pill sp-pill-link" href="{{ url_for('world', student_id=student.id) }}">← Retour à la carte de {{ student.name }}</a>
+  </header>
+
+  <div class="sp-parent-wrap">
+    <h1>Suivi de {{ student.avatar }} {{ student.name }}</h1>
+    <div class="sp-parent-stats">
+      <div class="sp-stat-card"><span class="sp-stat-num">{{ lessons_completed }}/{{ total_lessons }}</span><span class="sp-stat-label">Leçons terminées</span></div>
+      <div class="sp-stat-card"><span class="sp-stat-num">{{ student.total_stars }}</span><span class="sp-stat-label">Étoiles gagnées</span></div>
+      <div class="sp-stat-card"><span class="sp-stat-num">{{ student.streak }}</span><span class="sp-stat-label">Jours de suite 🔥</span></div>
+    </div>
+
+    <table class="sp-parent-table">
+      <thead>
+        <tr><th>Niveau</th><th>Leçon</th><th>Étoiles</th><th>Meilleur score</th><th>Essais</th><th>Dernière séance</th></tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>{{ r.level }}</td>
+          <td>{{ r.icon }} {{ r.title_fr }}</td>
+          <td>{% for i in range(3) %}<span class="{{ 'on' if i < r.stars else '' }}">★</span>{% endfor %}</td>
+          <td>{{ r.best_score_pct }}%</td>
+          <td>{{ r.attempts }}</td>
+          <td>{{ r.completed_at.strftime('%d/%m/%Y %H:%M') if r.completed_at else '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="sp-parent-note">Aucune note ni classement : ce tableau montre seulement l'activité et les progrès de votre enfant.</p>
+  </div>
+</div>
+{% endblock %}

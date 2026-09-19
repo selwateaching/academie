@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}SpeakIA — La carte de {{ student.name }}{% endblock %}
+{% block body %}
+<div class="sp-screen sp-world">
+  <header class="sp-topbar">
+    <a class="sp-wordmark" href="{{ url_for('home') }}">Speak<span>IA</span></a>
+    <div class="sp-topbar-right">
+      <span class="sp-pill">🔥 {{ student.streak }} jour{{ 's' if student.streak != 1 else '' }}</span>
+      <span class="sp-pill">⭐ {{ student.total_stars }}</span>
+      <a class="sp-pill sp-pill-link" href="{{ url_for('parent', student_id=student.id) }}">👪 Espace parent</a>
+      <span class="sp-current-avatar">{{ student.avatar }} {{ student.name }}</span>
+    </div>
+  </header>
+
+  <div class="sp-world-wrap">
+    <h1 class="sp-world-title">Choisis une aventure, {{ student.name }} !</h1>
+
+    {% for lv in levels_view %}
+    <section class="sp-level {{ 'sp-level-locked' if not lv.unlocked else '' }}" style="--lvl-color:{{ lv.level.color }}">
+      <div class="sp-level-head">
+        <span class="sp-level-icon">{{ lv.level.icon }}</span>
+        <div>
+          <h2>{{ lv.level.title_ar }} · {{ lv.level.title_fr }}</h2>
+          <p>{{ lv.level.subtitle_fr }}</p>
+        </div>
+        {% if not lv.unlocked %}<span class="sp-lock">🔒</span>{% endif %}
+      </div>
+
+      <div class="sp-lesson-row">
+        {% for item in lv.lessons %}
+        {% if lv.unlocked %}
+        <a class="sp-lesson-card" href="{{ url_for('lesson', student_id=student.id, lesson_id=item.lesson.id) }}">
+        {% else %}
+        <div class="sp-lesson-card sp-lesson-card-locked">
+        {% endif %}
+          <span class="sp-lesson-icon">{{ item.lesson.icon }}</span>
+          <span class="sp-lesson-title-ar" lang="ar" dir="rtl">{{ item.lesson.title_ar }}</span>
+          <span class="sp-lesson-title-fr">{{ item.lesson.title_fr }}</span>
+          <span class="sp-lesson-stars">
+            {% for i in range(3) %}<span class="{{ 'on' if i < item.stars else '' }}">★</span>{% endfor %}
+          </span>
+        {% if lv.unlocked %}
+        </a>
+        {% else %}
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
