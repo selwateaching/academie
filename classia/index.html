@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Dancing+Script&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 
 <style>
@@ -603,6 +604,44 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 .abo-status{display:inline-flex;align-items:center;gap:.4rem;background:rgba(52,84,209,.3);border:1px solid rgba(52,84,209,.5);color:#9DB4F2;font-size:.72rem;font-family:'Poppins',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
 .quota-bar{height:10px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden;margin:.5rem 0;}
 .quota-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--t),var(--t2));}
+/* Fiches ELEVE (evaluation/exercices/lecture) -- apercu inline avant impression */
+.sheet.eleve{background:#fffef9;color:#2f2b45;font-family:"Patrick Hand","Segoe Print","Comic Sans MS",cursive;font-size:15px;line-height:1.5;padding:14px;position:relative;overflow:hidden;}
+.sheet.eleve .doodle{display:block;width:100%;height:auto;overflow:visible;}
+.el-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding-bottom:8px;border-bottom:2px dashed #8b5cf6;}
+.el-badge{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid #e6e3f2;border-radius:14px;padding:6px 8px;width:74px;}
+.el-badge-ico{width:30px;}.el-badge b{font-size:11px;color:#1e2a52;}
+.el-title{text-align:center;}.el-title h1{margin:0;font-family:"Caveat",cursive;font-size:30px;color:#1e2a52;line-height:1.05;}
+.el-title p{margin:2px 0 0;font-size:16px;color:#ec4899;}
+.el-hero{width:60px;}.el-star{position:absolute;width:20px;}.el-star.s1{top:2mm;left:40%;}.el-star.s2{top:6mm;right:26mm;width:16px;}
+.alphabet{width:100%;border-collapse:collapse;margin:8px 0;table-layout:fixed;}
+.alphabet td{border:1px solid #d8d2ec;text-align:center;padding:2px 0;font-size:12px;line-height:1.2;}
+.alphabet .maj td{font-family:"Fraunces",serif;color:#1e2a52;}.alphabet .min td{font-family:"Fraunces",serif;}
+.alphabet .cur td{font-family:"Dancing Script",cursive;font-size:15px;color:#5b45d6;}
+.el-identity{display:flex;flex-wrap:wrap;gap:8px 14px;margin:10px 0;}
+.el-identity .fld{flex:1 1 30%;display:flex;align-items:baseline;gap:6px;border:1.5px dashed #8b5cf6;border-radius:10px;padding:5px 10px;font-size:14px;}
+.el-identity .fld i{flex:1;border-bottom:1.5px dotted #9a90c0;min-height:1.1em;}
+.el-identity .fld.note{flex:0 0 auto;background:#fff8e6;border-color:#f59e0b;}
+.el-identity .fld.note .doo{width:16px;}.el-identity .fld.note i{flex:0 0 34px;text-align:center;}
+.el-ribbon{display:flex;align-items:center;gap:10px;justify-content:center;margin:12px 0;padding:7px 18px;border:2px dashed #0ea5e9;border-radius:999px;background:#f0f9ff;font-family:"Caveat",cursive;font-size:20px;color:#0369a1;text-align:center;}
+.el-ribbon span{width:26px;flex:none;}
+.el-list{list-style:none;margin:0;padding:0;}
+.el-item{display:grid;grid-template-columns:26px auto 1fr;gap:10px;align-items:start;margin-bottom:12px;padding-bottom:10px;border-bottom:1.5px dotted #ded7f0;}
+.el-item:last-child{border-bottom:0;}
+.el-num{width:24px;height:24px;border:2px solid #ec4899;border-radius:50%;display:grid;place-items:center;color:#ec4899;font-size:13px;}
+.el-pic{width:52px;flex:none;}.el-sentence,.el-q{margin:0 0 4px;font-size:15px;}.el-q{color:#1e2a52;}
+.write-lines{border:1px solid #cdd9f0;border-radius:6px;background-image:repeating-linear-gradient(to bottom,transparent 0 calc(8.5mm - 1.4px),#9db9e8 calc(8.5mm - 1.4px) 8.5mm);}
+.answer-cases{height:10mm;border:1px solid #cdd9f0;border-radius:6px;background-image:repeating-linear-gradient(to right,transparent 0 9mm,#cdd9f0 9mm calc(9mm + 1px));}
+.ex-block{border:2px dashed #cdc2ec;border-radius:14px;padding:10px 14px 12px;margin:12px 0;}
+.ex-block h3{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-family:"Patrick Hand",cursive;font-size:16px;color:#1e2a52;}
+.ex-ico{width:30px;flex:none;}.ex-consigne{margin:0 0 6px;font-style:italic;color:#56608a;font-size:14px;}
+.ex-contenu{margin:0 0 8px;font-size:14.5px;line-height:1.6;}.el-bareme{margin-top:10px;text-align:right;font-size:13px;color:#56608a;}
+.lec-texte{border:2px dashed #8b5cf6;border-radius:16px;padding:12px 16px;margin:12px 0;background:#fffdf7;}
+.lec-texte h2{margin:0 0 6px;font-family:"Caveat",cursive;font-size:24px;color:#ec4899;}
+.lec-texte p{margin:0 0 8px;font-size:15px;line-height:1.7;}.lec-pic{float:right;width:84px;margin:0 0 6px 12px;}
+.lec-mots{font-size:13px;border-top:1.5px dotted #ded7f0;padding-top:6px;color:#56608a;clear:both;}
+.lec-mots i{color:#5b45d6;font-style:normal;}.lec-mots span{display:inline-block;margin-right:4px;}
+.el-foot{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:7px 16px;border:2px dashed #ec4899;border-radius:999px;font-family:"Caveat",cursive;font-size:19px;color:#1e2a52;text-align:center;}
+.el-foot span{width:26px;flex:none;}
 </style>
 </head>
 <body>
@@ -1162,11 +1201,13 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <div class="si sub" onclick="goCoursType('bac',this)"><span class="sic">🎓</span><span id="navSub_bac">Sujet type Bac</span></div>
       <div class="si sub" onclick="goCoursType('intro',this)"><span class="sic">💡</span><span id="navSub_intro">Introduction au chapitre</span></div>
       <div class="si sub" onclick="goCoursType('synthese',this)"><span class="sic">🧾</span><span id="navSub_synthese">Synthèse / Résumé</span></div>
+      <div class="si sub" onclick="goCoursType('eval_ecriture',this)"><span class="sic">🖊️</span><span id="navSub_eval_ecriture">Évaluation / écriture (élève)</span></div>
+      <div class="si sub" onclick="goCoursType('fiche_exercices',this)"><span class="sic">📐</span><span id="navSub_fiche_exercices">Fiche d'exercices (élève)</span></div>
+      <div class="si sub" onclick="goCoursType('fiche_lecture',this)"><span class="sic">📖</span><span id="navSub_fiche_lecture">Fiche de lecture (élève)</span></div>
     </div>
     <div class="si" onclick="go('quiz')"><span class="sic"><img src="data:image/jpeg;base64,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" alt="Quiz IA"></span><span>Quiz IA</span></div>
     <div class="si" onclick="go('dossiers')"><span class="sic">📁</span><span>Ressources</span></div>
     <div class="si" onclick="go('bibliotheque')"><span class="sic">📚</span><span>Bibliothèque pédagogique</span></div>
-    <div class="si" onclick="window.open('https://tadriss-fiches.onrender.com/','_blank')"><span class="sic">🧑‍🏫</span><span>Assistant pédagogique</span></div>
       </div>
     </div>
     <div class="ss-cat" data-cat="suivi">
@@ -1554,7 +1595,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type Brevet</option><option value="bac">Sujet type Bac</option></select></div>
+          <div class="fg"><label class="fl">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type Brevet</option><option value="bac">Sujet type Bac</option><option value="eval_ecriture">🖊️ Évaluation / écriture (élève)</option><option value="fiche_exercices">📐 Fiche d'exercices (élève)</option><option value="fiche_lecture">📖 Fiche de lecture (élève)</option></select></div>
           <div class="fg"><label class="fl">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -4034,7 +4075,7 @@ function switchLang() {
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
   var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط Brevet',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type Brevet',bac:'Sujet type Bac',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type Brevet',bac:'Sujet type Bac',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',eval_ecriture:'Évaluation / écriture (élève)',fiche_exercices:"Fiche d'exercices (élève)",fiche_lecture:'Fiche de lecture (élève)'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4927,6 +4968,216 @@ function printFicheIllustree(title, contentHTML) {
   w.document.close();
   w.focus();
   setTimeout(function () { w.print(); }, 350);
+}
+
+/* ============================================================
+   Fiches ÉLÈVE (évaluation / exercices / lecture) — porté depuis
+   tadriss-fiches-ai (public/render-eleve.js), en générateurs purs
+   de HTML (pas de manipulation DOM), réutilisant le kit de doodles.
+   ============================================================ */
+function feEsc(s) { return tiaEsc(s == null ? '' : String(s)); }
+function feWriteLines(n) {
+  var c = Math.max(1, Math.min(6, parseInt(n, 10) || 2));
+  return '<div class="write-lines" style="height:' + (c * 8.5) + 'mm"></div>';
+}
+function feAnswerSpace(spec) {
+  if (!spec || spec === 'aucun') return '';
+  if (spec === 'cases') return '<div class="answer-cases"></div>';
+  var m = String(spec).match(/(\d+)/);
+  return feWriteLines(m ? m[1] : 3);
+}
+function feAlphabetStrip() {
+  var A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  function row(cls, fn) { return '<tr class="' + cls + '">' + A.map(function(l){ return '<td>' + fn(l) + '</td>'; }).join('') + '</tr>'; }
+  return '<table class="alphabet">' + row('maj', function(l){return l;}) + row('min', function(l){return l.toLowerCase();}) + row('cur', function(l){return l.toLowerCase();}) + '</table>';
+}
+function feHeader(ill, d, subtitle, sideDoodle) {
+  var pic = ill.doodleFor(sideDoodle || 'ecole');
+  return '<header class="el-header">' +
+    '<div class="el-badge"><span class="el-badge-ico">' + ill.doodle('book') + '</span><b>ClasseIA</b></div>' +
+    '<div class="el-title"><h1>' + feEsc(d.titre || '') + '</h1>' + (subtitle ? '<p>' + feEsc(subtitle) + '</p>' : '') + '</div>' +
+    '<span class="el-hero">' + pic + '</span>' +
+    '<span class="el-star s1">' + ill.doodle('star') + '</span>' +
+    '<span class="el-star s2">' + ill.doodle('sparkle') + '</span>' +
+    '</header>';
+}
+function feIdentity(noteSur) {
+  return '<div class="el-identity">' +
+    '<span class="fld"><b>Nom :</b> <i></i></span>' +
+    '<span class="fld"><b>Prénom :</b> <i></i></span>' +
+    '<span class="fld note"><span class="doo">' + window.TADRISS_ILLUS.doodle('star') + '</span><b>Note :</b> <i></i> / ' + feEsc(noteSur || '10') + '</span>' +
+    '</div>';
+}
+function feRibbon(ill, text, doodle) {
+  return '<div class="el-ribbon"><span>' + ill.doodle(doodle || 'pencil') + '</span>' + feEsc(text) + '</div>';
+}
+function feFooter(ill, text) {
+  return '<div class="el-foot"><span>' + ill.doodle('heart') + '</span> ' + feEsc(text || 'Bravo, continue comme ça !') + ' <span>' + ill.doodle('star') + '</span></div>';
+}
+function feParaToHtml(s) { return feEsc(s || '').replace(/\n/g, '<br>'); }
+
+function renderFicheEvaluationHTML(d) {
+  var ill = window.TADRISS_ILLUS;
+  var td = ill.themeDoodles(d, 4);
+  var items = (d.exercices || []).map(function(ex, i) {
+    return '<li class="el-item"><span class="el-num">' + (i + 1) + '</span>' +
+      '<span class="el-pic">' + ill.doodleFor(ex.illustration || td[i % td.length]) + '</span>' +
+      '<div class="el-body"><p class="el-sentence">' + feEsc(ex.enonce || '') + '</p>' + feWriteLines(ex.lignes || 2) + '</div></li>';
+  }).join('');
+  return feHeader(ill, d, d.domaine, td[0]) +
+    (d.afficher_alphabet ? feAlphabetStrip() : '') +
+    feIdentity(d.note_sur) +
+    feRibbon(ill, d.consigne || 'Je lis puis je recopie.', 'ecrit') +
+    '<ol class="el-list">' + items + '</ol>' +
+    feFooter(ill, d.encouragement);
+}
+function renderFicheExercicesHTML(d) {
+  var ill = window.TADRISS_ILLUS;
+  var td = ill.themeDoodles(d, 4);
+  var blocks = (d.exercices || []).map(function(ex, i) {
+    return '<section class="ex-block"><h3><span class="ex-ico">' + ill.doodleFor(ex.illustration || td[i % td.length]) + '</span>' + feEsc(ex.titre || ('Exercice ' + (i + 1))) + '</h3>' +
+      (ex.consigne ? '<p class="ex-consigne">' + feEsc(ex.consigne) + '</p>' : '') +
+      (ex.contenu ? '<div class="ex-contenu">' + feParaToHtml(ex.contenu) + '</div>' : '') +
+      feAnswerSpace(ex.espace_reponse) + '</section>';
+  }).join('');
+  return feHeader(ill, d, d.competence, td[0]) +
+    feIdentity('10') +
+    (d.consigne_generale ? feRibbon(ill, d.consigne_generale, 'bulb') : '') +
+    blocks +
+    (d.bareme ? '<div class="el-bareme"><b>Barème :</b> ' + feEsc(d.bareme) + '</div>' : '') +
+    feFooter(ill, 'Relis-toi avant de rendre ta copie !');
+}
+function renderFicheLectureHTML(d) {
+  var ill = window.TADRISS_ILLUS;
+  var td = ill.themeDoodles(d, 4);
+  var mots = (d.mots_expliques || []).length
+    ? '<div class="lec-mots"><b>Je comprends :</b> ' + (d.mots_expliques || []).map(function(m){ return '<span><i>' + feEsc(m.mot) + '</i> : ' + feEsc(m.explication) + '</span>'; }).join(' · ') + '</div>'
+    : '';
+  var questions = (d.questions || []).map(function(q, i) {
+    return '<li class="el-item"><span class="el-num">' + (i + 1) + '</span><div class="el-body"><p class="el-q">' + feEsc(q.question || '') + '</p>' + feWriteLines(q.lignes || 2) + '</div></li>';
+  }).join('');
+  return feHeader(ill, d, 'Lecture et compréhension', d.illustration || td[0]) +
+    feIdentity('10') +
+    '<section class="lec-texte"><span class="lec-pic">' + ill.doodleFor(d.illustration || td[0]) + '</span><h2>' + feEsc(d.titre_texte || 'Le texte') + '</h2><p>' + feParaToHtml(d.texte) + '</p>' + mots + '</section>' +
+    feRibbon(ill, d.consigne || 'Je lis le texte puis je réponds aux questions.', 'speech') +
+    '<ol class="el-list">' + questions + '</ol>' +
+    feFooter(ill, 'Réponds par une phrase complète.');
+}
+var FE_RENDERERS = { eval_ecriture: renderFicheEvaluationHTML, fiche_exercices: renderFicheExercicesHTML, fiche_lecture: renderFicheLectureHTML };
+
+function printFicheEleve(ty, d) {
+  var w = window.open('', '_blank');
+  if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
+  var ill = window.TADRISS_ILLUS;
+  var bodyHTML = (FE_RENDERERS[ty] || renderFicheExercicesHTML)(d);
+  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + feEsc(d.titre || 'ClasseIA') + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Patrick+Hand&family=Dancing+Script&display=swap" rel="stylesheet">' +
+    '<style>' +
+    '@page{size:A4;margin:10mm;}' +
+    '*{box-sizing:border-box;}' +
+    'body{margin:0;background:#fffef9;color:#2f2b45;font-family:"Patrick Hand","Segoe Print","Comic Sans MS",cursive;font-size:15px;line-height:1.5;}' +
+    '.sheet.eleve{background:#fffef9;padding:10mm;position:relative;}' +
+    '.sheet.eleve::before{content:"";position:absolute;inset:5mm;border:3px solid #5b45d6;border-radius:20px;pointer-events:none;}' +
+    '.sheet.eleve > *{position:relative;margin-left:4mm;margin-right:4mm;}' +
+    '.doodle{display:block;width:100%;height:auto;overflow:visible;}' +
+    '.el-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;margin-top:4mm;padding-bottom:8px;border-bottom:2px dashed #8b5cf6;}' +
+    '.el-badge{display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid #e6e3f2;border-radius:14px;padding:6px 8px;width:74px;}' +
+    '.el-badge-ico{width:30px;}.el-badge b{font-size:11px;color:#1e2a52;}' +
+    '.el-title{text-align:center;}.el-title h1{margin:0;font-family:"Caveat",cursive;font-size:30px;color:#1e2a52;line-height:1.05;}' +
+    '.el-title p{margin:2px 0 0;font-size:16px;color:#ec4899;}' +
+    '.el-hero{width:60px;}.el-star{position:absolute;width:20px;}.el-star.s1{top:2mm;left:40%;}.el-star.s2{top:6mm;right:26mm;width:16px;}' +
+    '.alphabet{width:100%;border-collapse:collapse;margin:8px 0;table-layout:fixed;}' +
+    '.alphabet td{border:1px solid #d8d2ec;text-align:center;padding:2px 0;font-size:12px;line-height:1.2;}' +
+    '.alphabet .maj td{font-family:"Fraunces",serif;color:#1e2a52;}.alphabet .min td{font-family:"Fraunces",serif;}' +
+    '.alphabet .cur td{font-family:"Dancing Script",cursive;font-size:15px;color:#5b45d6;}' +
+    '.el-identity{display:flex;flex-wrap:wrap;gap:8px 14px;margin:10px 0;}' +
+    '.el-identity .fld{flex:1 1 30%;display:flex;align-items:baseline;gap:6px;border:1.5px dashed #8b5cf6;border-radius:10px;padding:5px 10px;font-size:14px;}' +
+    '.el-identity .fld i{flex:1;border-bottom:1.5px dotted #9a90c0;min-height:1.1em;}' +
+    '.el-identity .fld.note{flex:0 0 auto;background:#fff8e6;border-color:#f59e0b;}' +
+    '.el-identity .fld.note .doo{width:16px;}.el-identity .fld.note i{flex:0 0 34px;text-align:center;}' +
+    '.el-ribbon{display:flex;align-items:center;gap:10px;justify-content:center;margin:12px 0;padding:7px 18px;border:2px dashed #0ea5e9;border-radius:999px;background:#f0f9ff;font-family:"Caveat",cursive;font-size:20px;color:#0369a1;text-align:center;}' +
+    '.el-ribbon span{width:26px;flex:none;}' +
+    '.el-list{list-style:none;margin:0;padding:0;}' +
+    '.el-item{display:grid;grid-template-columns:26px auto 1fr;gap:10px;align-items:start;margin-bottom:12px;padding-bottom:10px;border-bottom:1.5px dotted #ded7f0;}' +
+    '.el-item:last-child{border-bottom:0;}' +
+    '.el-num{width:24px;height:24px;border:2px solid #ec4899;border-radius:50%;display:grid;place-items:center;color:#ec4899;font-size:13px;}' +
+    '.el-pic{width:52px;flex:none;}.el-sentence,.el-q{margin:0 0 4px;font-size:15px;}.el-q{color:#1e2a52;}' +
+    '.write-lines{border:1px solid #cdd9f0;border-radius:6px;background-image:repeating-linear-gradient(to bottom,transparent 0 calc(8.5mm - 1.4px),#9db9e8 calc(8.5mm - 1.4px) 8.5mm);}' +
+    '.answer-cases{height:10mm;border:1px solid #cdd9f0;border-radius:6px;background-image:repeating-linear-gradient(to right,transparent 0 9mm,#cdd9f0 9mm calc(9mm + 1px));}' +
+    '.ex-block{border:2px dashed #cdc2ec;border-radius:14px;padding:10px 14px 12px;margin:12px 0;}' +
+    '.ex-block h3{display:flex;align-items:center;gap:8px;margin:0 0 4px;font-family:"Patrick Hand",cursive;font-size:16px;color:#1e2a52;}' +
+    '.ex-ico{width:30px;flex:none;}.ex-consigne{margin:0 0 6px;font-style:italic;color:#56608a;font-size:14px;}' +
+    '.ex-contenu{margin:0 0 8px;font-size:14.5px;line-height:1.6;}.el-bareme{margin-top:10px;text-align:right;font-size:13px;color:#56608a;}' +
+    '.lec-texte{border:2px dashed #8b5cf6;border-radius:16px;padding:12px 16px;margin:12px 0;background:#fffdf7;}' +
+    '.lec-texte h2{margin:0 0 6px;font-family:"Caveat",cursive;font-size:24px;color:#ec4899;}' +
+    '.lec-texte p{margin:0 0 8px;font-size:15px;line-height:1.7;}.lec-pic{float:right;width:84px;margin:0 0 6px 12px;}' +
+    '.lec-mots{font-size:13px;border-top:1.5px dotted #ded7f0;padding-top:6px;color:#56608a;clear:both;}' +
+    '.lec-mots i{color:#5b45d6;font-style:normal;}.lec-mots span{display:inline-block;margin-right:4px;}' +
+    '.el-foot{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px;padding:7px 16px;border:2px dashed #ec4899;border-radius:999px;font-family:"Caveat",cursive;font-size:19px;color:#1e2a52;text-align:center;}' +
+    '.el-foot span{width:26px;flex:none;}' +
+    '@media print{.sheet.eleve{padding:8mm;}}' +
+    '</style></head><body>' +
+    ill.roughDefs +
+    '<div class="sheet eleve">' + bodyHTML + '</div>' +
+    '</body></html>';
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function () { w.print(); }, 350);
+}
+
+/* Génération des fiches élève (évaluation/écriture, exercices, lecture) : demande à
+   Claude un JSON strict respectant le schéma attendu par le rendu sketchnote élève,
+   sans passer par le pipeline HTML-libre habituel de Cours IA. */
+async function genFicheEleve(ty, titre, nv, mat, lang, btn) {
+  var langLine = lang === 'ar'
+    ? 'Réponds exclusivement en arabe standard moderne clair. Les CLÉS du JSON restent en français (fixes) ; seul le CONTENU (valeurs texte) est en arabe.'
+    : 'Réponds exclusivement en français clair, adapté au niveau indiqué.';
+  var contextLine = 'Contexte : école française (Éducation nationale), niveau ' + (nv || '') + ', matière ' + (mat || '') + '. ' +
+    'Adapte-toi entièrement à la matière donnée. N\'invente pas de référence officielle précise. ' + langLine;
+  var schemaHint, systemLine, maxTok;
+  if (ty === 'eval_ecriture') {
+    schemaHint = '{"titre":"...","niveau":"...","matiere":"...","domaine":"ex. Lecture / Écriture","consigne":"ex. Je lis puis je recopie en cursive.","note_sur":"10","afficher_alphabet":false,"exercices":[{"enonce":"...","illustration":"une clé parmi: ecole,amitie,famille,corps,sante,alimentation,animaux,nature,eau,saisons,jardin,ville,transports,metiers,sport,vetements,fete,environnement,conte,lecture,ecrit,oral,dialogue,langue,nombres,formes,mesure,geo,histoire,musique,theatre,space,volcan,dino,meteo,mer,idee,objectif,maitre,default","lignes":"2"}],"encouragement":"..."}';
+    systemLine = 'Tu génères une FICHE ÉLÈVE d\'évaluation / d\'entraînement à l\'écriture ("je lis puis je recopie", "je complète", "je copie"), dans la matière et la langue demandées. Chaque "enonce" est UNE phrase simple, correcte, adaptée au niveau, avec un thème concret illustrable. Choisis "illustration" en accord avec la phrase. Donne 6 items par défaut (jusqu\'à 15 si demandé). "afficher_alphabet" = true UNIQUEMENT pour les petits niveaux (CP-CE1) et UNIQUEMENT si la matière est une matière de langue.';
+    maxTok = 2200;
+  } else if (ty === 'fiche_exercices') {
+    schemaHint = '{"titre":"...","niveau":"...","matiere":"...","competence":"...","consigne_generale":"...","exercices":[{"titre":"ex. Exercice 1 — Vocabulaire","consigne":"...","contenu":"items numérotés, phrases à trous, listes, QCM... avec retours à la ligne \\n","illustration":"clé (voir liste ci-dessous)","espace_reponse":"lignes:2 à lignes:6, ou cases, ou aucun"}],"bareme":"ex. /10 : Ex1 /3, Ex2 /4, Ex3 /3"}';
+    systemLine = 'Tu génères une FICHE D\'EXERCICES pour l\'élève, dans N\'IMPORTE QUELLE MATIÈRE (langue, mathématiques, sciences, histoire-géo, etc.). 4 à 6 exercices progressifs par défaut (jusqu\'à 15 si demandé). Consignes courtes à l\'impératif ("Complète…", "Relie…", "Calcule…"). Dans "contenu", écris de VRAIS items numérotés prêts à photocopier, avec des retours à la ligne (\\n). Clés d\'illustration possibles : ecole,amitie,famille,corps,sante,alimentation,animaux,nature,eau,saisons,jardin,ville,transports,metiers,sport,vetements,fete,environnement,conte,lecture,ecrit,oral,dialogue,langue,nombres,formes,mesure,geo,histoire,musique,theatre,space,volcan,dino,meteo,mer,idee,objectif,maitre,default.';
+    maxTok = 2600;
+  } else {
+    schemaHint = '{"titre":"...","niveau":"...","matiere":"...","titre_texte":"...","texte":"texte support de 50 à 120 mots selon le niveau","illustration":"clé (voir liste ci-dessous)","mots_expliques":[{"mot":"...","explication":"..."}],"questions":[{"question":"...","lignes":"2"}],"consigne":"..."}';
+    systemLine = 'Tu génères une FICHE DE LECTURE pour l\'élève : un court TEXTE support original (niveau adapté), puis 4 à 8 questions de compréhension (jusqu\'à 15 si demandé), de la plus simple à la plus fine. Le texte est simple, imagé, sans violence — narratif ou documentaire selon la matière. "mots_expliques" : 2 à 4 mots difficiles avec une explication courte. Clés d\'illustration possibles : ecole,amitie,famille,corps,sante,alimentation,animaux,nature,eau,saisons,jardin,ville,transports,metiers,sport,vetements,fete,environnement,conte,lecture,ecrit,oral,dialogue,langue,nombres,formes,mesure,geo,histoire,musique,theatre,space,volcan,dino,meteo,mer,idee,objectif,maitre,default.';
+    maxTok = 2200;
+  }
+  var prompt = systemLine + '\n' + contextLine + '\nDemande de l\'enseignant : "' + titre + '"\n\n' +
+    'Réponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de balises ```):\n' + schemaHint;
+  try {
+    var r = await fetch('/.netlify/functions/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: prompt, max_tokens: maxTok, model: 'claude-sonnet-5' }) });
+    if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE');
+    var data = await r.json();
+    if (btn) { btn.innerHTML = T('gen_cours'); btn.disabled = false; }
+    if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ') + (data.error.message || data.error.type || 'inconnue'), 'err'); return; }
+    var text = extractClaudeText(data);
+    if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي.':'Réponse vide de l\'IA.', 'err'); return; }
+    var clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    var parsed;
+    try { parsed = JSON.parse(clean); }
+    catch (eParse) { N(CURRENT_LANG==='ar'?'خطأ في تنسيق استجابة الذكاء الاصطناعي. أعد المحاولة.':'Erreur de format dans la réponse IA. Réessaie.', 'err'); return; }
+    var bodyHTML = (FE_RENDERERS[ty] || renderFicheExercicesHTML)(parsed);
+    document.getElementById('crsDisT').textContent = parsed.titre || titre;
+    document.getElementById('crsDis').innerHTML = '<div class="sheet eleve" style="border:1px solid var(--br);border-radius:12px;">' + bodyHTML + '</div>';
+    document.getElementById('btnSCrs').style.display = 'inline-flex';
+    document.getElementById('btnTcRegen').style.display = 'none';
+    document.getElementById('btnTcSimplify').style.display = 'none';
+    document.getElementById('btnTcIllus').style.display = 'none';
+    document.getElementById('btnTcPrint').onclick = function () { printFicheEleve(ty, parsed); };
+    curCrs = { titre: parsed.titre || titre, niveau: nv, type: ty, contenu: bodyHTML, savedAt: new Date().toLocaleDateString('fr-FR'), id: Date.now() };
+    N(CURRENT_LANG==='ar'?'تم إنشاء الورقة !':'Fiche générée !', 'ok');
+  } catch (err) {
+    if (btn) { btn.innerHTML = T('gen_cours'); btn.disabled = false; }
+    N(messageErreurGeneration(err), 'err');
+  }
 }
 
 /* ===== DATA (contexte français) ===== */
@@ -7248,6 +7499,11 @@ async function genCours(extraInstruction) {
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true;
+  if (ty === 'eval_ecriture' || ty === 'fiche_exercices' || ty === 'fiche_lecture') {
+    var btnPrintReset = document.getElementById('btnTcPrint');
+    if (btnPrintReset) btnPrintReset.onclick = function () { printCleanPage(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML); };
+    return genFicheEleve(ty, titre, nv, mat, lang, btn);
+  }
   /* "Régénérer" et "Simplifier" appellent aussi genCours(), mais restaient visuellement figés
      pendant la génération (seul btnGCrs, hors écran à ce moment, montrait un état de chargement) */
   var btnRegenLoad = document.getElementById('btnTcRegen');
@@ -7441,7 +7697,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type Brevet',bac:'Sujet type Bac'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type Brevet',bac:'Sujet type Bac',eval_ecriture:'Évaluation / écriture (élève)',fiche_exercices:"Fiche d'exercices (élève)",fiche_lecture:'Fiche de lecture (élève)'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
@@ -7910,7 +8166,7 @@ function tiaRenderWelcome(box) {
       '<button class="tia-qb" onclick="tiaQuick(\'activite\')">📝 Créer une activité</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'cahier\')">🗓️ Créer mon cahier journal</button>' +
       '<button class="tia-qb" onclick="tiaQuick(\'differ\')">🎯 Différencier une activité</button>' +
-      '<button class="tia-qb" onclick="tiaQuick(\'fichesIllustrees\')">🎨 Fiches illustrées (Assistant pédagogique)</button>' +
+      '<button class="tia-qb" onclick="tiaQuick(\'fichesIllustrees\')">🎨 Fiches élève illustrées</button>' +
       laboBtn +
     '</div>';
 }
@@ -7966,8 +8222,7 @@ function tiaQuick(kind) {
   } else if (kind === 'labolangues') {
     tiaPush('bot', '🎙️ Labo Langues est un module complémentaire pour faire pratiquer l\'oral à vos élèves : enregistrement, correction avec grille de critères, suivi de la progression. C\'est un module payant en plus de ClasseIA, activé manuellement après votre demande. Pour le découvrir : retournez au tableau de bord, carte « Labo Langues » → « Découvrir ».');
   } else if (kind === 'fichesIllustrees') {
-    tiaPush('bot', '🎨 L\'Assistant pédagogique génère des fiches illustrées prêtes à imprimer (préparation de séance, évaluation, exercices, fiche de lecture) en français, arabe ou anglais, pour toutes les matières. Ouverture dans un nouvel onglet…');
-    window.open('https://tadriss-fiches.onrender.com/', '_blank');
+    tiaPush('bot', '🎨 Pour générer une fiche élève illustrée (évaluation/écriture, exercices ou lecture), prêtes à imprimer, façon dessinée à la main : va dans « Ressources & IA » → « Cours & Fiches IA » → choisis un des 3 types « (élève) » en bas de la liste → renseigne le sujet et le niveau → « ✨ Générer le cours ». Tout reste dans ClasseIA, avec sauvegarde dans ta Bibliothèque.');
   }
 }
 function tiaDetectMode(text) {
