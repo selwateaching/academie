@@ -1542,3 +1542,50 @@ def lesson_max_stars(lesson):
         if step["type"] in ("mcq", "listen", "fill", "recap"):
             total += len(step["items"])
     return total
+
+
+def audio_texts():
+    """Tous les textes anglais qu'il faut pouvoir prononcer (mots de
+    vocabulaire, consignes d'écoute, phrases à répéter), sans doublons,
+    dans un ordre stable."""
+    texts = set()
+    for lesson in all_lessons():
+        for step in lesson["steps"]:
+            if step["type"] == "vocab":
+                for item in step["items"]:
+                    texts.add(item["en"])
+            elif step["type"] == "listen":
+                for item in step["items"]:
+                    texts.add(item["audio_en"])
+            elif step["type"] == "speak":
+                for item in step["items"]:
+                    texts.add(item["phrase_en"])
+    return sorted(texts)
+
+
+def slugify(text):
+    """Convertit un texte anglais en nom de fichier stable et lisible,
+    ex. 'Point to the cat.' -> 'point_to_the_cat'."""
+    import re
+
+    text = text.lower().strip()
+    text = re.sub(r"[^a-z0-9\s]", "", text)
+    text = re.sub(r"\s+", "_", text).strip("_")
+    return text or "clip"
+
+
+def audio_slug_map():
+    """{ texte anglais: nom de fichier (sans extension) }, avec suffixe
+    numérique en cas de collision improbable entre deux textes différents."""
+    slugs = {}
+    seen = set()
+    for text in audio_texts():
+        base = slugify(text)
+        slug = base
+        n = 2
+        while slug in seen:
+            slug = f"{base}_{n}"
+            n += 1
+        seen.add(slug)
+        slugs[text] = slug
+    return slugs

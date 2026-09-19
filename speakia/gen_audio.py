@@ -1,33 +1,47 @@
 """
-Génère un clip audio (voix anglaise, espeak-ng) pour chaque texte utilisé
-dans les leçons, puis produit un fichier JSON { texte: "data:audio/wav;base64,..." }
-prêt à être embarqué dans la démo HTML autonome (pas d'accès réseau requis
-côté navigateur, pas de dépendance à la synthèse vocale du navigateur).
+Construit la banque audio de SpeakIA : un clip par mot de vocabulaire,
+consigne d'écoute et phrase à répéter, sous la forme d'un JSON
+{ texte anglais: "data:audio/...;base64,..." } prêt à être embarqué dans
+la démo HTML (aucun accès réseau requis côté navigateur, aucune dépendance
+à la synthèse vocale du navigateur).
+
+Pour chaque texte, un vrai fichier audio (voix humaine) déposé dans
+UPLOADS_DIR est TOUJOURS préféré à la voix synthétique. Voir
+static/audio/README.md pour les noms de fichiers attendus. Les textes sans
+fichier fourni utilisent automatiquement la voix de secours (espeak-ng),
+donc un dépôt partiel de fichiers fonctionne déjà.
+
+Usage :
+    python3 gen_audio.py [dossier_de_sortie]
 """
 import audioop
 import base64
 import json
+import mimetypes
 import subprocess
 import sys
 import wave
 from pathlib import Path
 
-TEXTS_FILE = sys.argv[1] if len(sys.argv) > 1 else "/tmp/speakia_audio_texts.json"
-OUT_FILE = sys.argv[2] if len(sys.argv) > 2 else "/tmp/speakia_audio_map.json"
+sys.path.insert(0, str(Path(__file__).parent))
+from content import audio_slug_map  # noqa: E402
 
-# Pas de sous-échantillonnage : un ratecv naïf (sans filtre passe-bas) crée du
-# repliement de spectre (aliasing) qui rend la voix confuse. On garde la
-# fréquence native d'espeak-ng (22050 Hz) — le budget de taille le permet
-# largement (~5-6 Mo au total pour ~80 clips, bien sous la limite de 16 Mo).
-TARGET_RATE = None
+BASE_DIR = Path(__file__).parent
+UPLOADS_DIR = BASE_DIR / "static" / "audio"
+OUT_FILE = Path(sys.argv[1]) if len(sys.argv) > 1 else BASE_DIR / "audio_map.json"
 
-with open(TEXTS_FILE, encoding="utf-8") as f:
-    texts = json.load(f)
+UPLOAD_EXTENSIONS = [".mp3", ".wav", ".ogg", ".m4a"]
 
-audio_map = {}
-tmp_wav = Path("/tmp/_speakia_tts.wav")
 
-for i, text in enumerate(texts):
+def find_uploaded_file(slug):
+    for ext in UPLOAD_EXTENSIONS:
+        candidate = UPLOADS_DIR / f"{slug}{ext}"
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def synthesize(text, tmp_wav):
     subprocess.run(
         [
             "espeak-ng",
@@ -52,10 +66,6 @@ for i, text in enumerate(texts):
     if channels == 2:
         frames = audioop.tomono(frames, width, 0.5, 0.5)
 
-    if TARGET_RATE and rate != TARGET_RATE:
-        frames, _ = audioop.ratecv(frames, width, 1, rate, TARGET_RATE, None)
-        rate = TARGET_RATE
-
     # 8 bits plutôt que 16 : réduit la taille de moitié sans toucher à la
     # fréquence d'échantillonnage (donc sans repliement de spectre), juste un
     # léger bruit de quantification, inaudible pour de la voix parlée.
@@ -64,22 +74,49 @@ for i, text in enumerate(texts):
         frames = audioop.bias(frames, 1, 128)  # PCM 8 bits WAV = non signé
         width = 1
 
-    out_buf = Path(f"/tmp/_speakia_tts_out.wav")
+    out_buf = tmp_wav.with_suffix(".out.wav")
     with wave.open(str(out_buf), "wb") as wf:
         wf.setnchannels(1)
         wf.setsampwidth(width)
         wf.setframerate(rate)
         wf.writeframes(frames)
 
-    raw = out_buf.read_bytes()
-    b64 = base64.b64encode(raw).decode("ascii")
-    audio_map[text] = "data:audio/wav;base64," + b64
+    return out_buf.read_bytes(), "audio/wav"
 
-    if (i + 1) % 10 == 0 or i == len(texts) - 1:
-        print(f"{i + 1}/{len(texts)} generated", file=sys.stderr)
 
-with open(OUT_FILE, "w", encoding="utf-8") as f:
-    json.dump(audio_map, f)
+def main():
+    slugs = audio_slug_map()
+    audio_map = {}
+    tmp_wav = Path("/tmp/_speakia_tts.wav")
 
-total_bytes = sum(len(v) for v in audio_map.values())
-print(f"Wrote {len(audio_map)} clips, ~{total_bytes / 1024:.0f} KB of base64 to {OUT_FILE}")
+    n_uploaded = 0
+    n_synth = 0
+
+    for i, (text, slug) in enumerate(slugs.items()):
+        uploaded = find_uploaded_file(slug)
+        if uploaded:
+            raw = uploaded.read_bytes()
+            mime = mimetypes.guess_type(uploaded.name)[0] or "audio/mpeg"
+            n_uploaded += 1
+        else:
+            raw, mime = synthesize(text, tmp_wav)
+            n_synth += 1
+
+        b64 = base64.b64encode(raw).decode("ascii")
+        audio_map[text] = f"data:{mime};base64,{b64}"
+
+        if (i + 1) % 20 == 0 or i == len(slugs) - 1:
+            print(f"{i + 1}/{len(slugs)} generated", file=sys.stderr)
+
+    with open(OUT_FILE, "w", encoding="utf-8") as f:
+        json.dump(audio_map, f)
+
+    total_kb = sum(len(v) for v in audio_map.values()) / 1024
+    print(
+        f"Wrote {len(audio_map)} clips ({n_uploaded} real recordings, "
+        f"{n_synth} synthesized) — ~{total_kb:.0f} KB of base64 to {OUT_FILE}"
+    )
+
+
+if __name__ == "__main__":
+    main()
