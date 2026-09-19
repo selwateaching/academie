@@ -4767,8 +4767,8 @@ var CUR = 'dash';
 var TITLES_FR = { dash:'Tableau de bord', eleves:'Mes élèves', notes:'Notes et moyennes', bulletin:'Bulletins officiels', acquis:'Carnet de réussites', dossiers:'Dossiers cloud', appel:"Feuille d'appel", calendrier:'Calendrier pédagogique', proga:'Progression annuelle', cahier:'Cahier journal', edt:'Emploi du temps', programme:'Programme national MEN', quiz:'Quiz IA', cours_ia:'Cours IA', mails:'Courrier', equipe:'Équipe pédagogique', abonnement:'Mon abonnement', eleve_acces:'Espace élève — Accès', guide:"Guide d'utilisation", params:'Paramètres', recommandations:'Recommandations', progression_eleves:'Progression des élèves', bibliotheque:'Bibliothèque pédagogique' };
 var TITLES_AR = { dash:'لوحة القيادة', eleves:'تلاميذي', notes:'النقاط والمعدلات', bulletin:'الكشوف الرسمية', acquis:'دفتر النجاحات', dossiers:'ملفات السحابة', appel:'ورقة النداء', calendrier:'الروزنامة التربوية', proga:'التدرج السنوي', cahier:'دفتر النصوص', edt:'جدول التوقيت', programme:'البرنامج الوطني للتربية', quiz:'اختبار الذكاء الاصطناعي', cours_ia:'دروس الذكاء الاصطناعي', mails:'البريد', equipe:'الفريق التربوي', abonnement:'اشتراكي', eleve_acces:'فضاء التلميذ — الوصول', guide:'دليل الاستخدام', params:'الإعدادات', recommandations:'التوصيات', progression_eleves:'تقدّم التلاميذ', bibliotheque:'المكتبة التربوية' };
 var TITLES = TITLES_FR;
-var ACTS_FR = { eleves:'+ Élève', notes:'+ Évaluation', dossiers:'+ Dossier', calendrier:'+ Événement', cahier:'+ Séance', mails:'+ Message', equipe:'+ Collègue', acquis:'+ Réussite' };
-var ACTS_AR = { eleves:'+ تلميذ', notes:'+ تقييم', dossiers:'+ مجلد', calendrier:'+ حدث', cahier:'+ حصة', mails:'+ رسالة', equipe:'+ زميل', acquis:'+ نجاح' };
+var ACTS_FR = { dash:'+ Élève', eleves:'+ Élève', notes:'+ Évaluation', dossiers:'+ Dossier', calendrier:'+ Événement', cahier:'+ Séance', mails:'+ Message', equipe:'+ Collègue', acquis:'+ Réussite' };
+var ACTS_AR = { dash:'+ تلميذ', eleves:'+ تلميذ', notes:'+ تقييم', dossiers:'+ مجلد', calendrier:'+ حدث', cahier:'+ حصة', mails:'+ رسالة', equipe:'+ زميل', acquis:'+ نجاح' };
 var ACTS = ACTS_FR;
 var NO_BTN = ['params','abonnement','programme','bulletin','appel','eleve_acces','edt','proga','guide','recommandations','progression_eleves','bibliotheque'];
 
@@ -4873,7 +4873,7 @@ function goCoursType(ty, el) {
   var sel = document.getElementById('crsType');
   if (sel) { sel.value = ty; onCrsTypeChange(); }
 }
-function tbA() { var m = { eleves:'mEleve', notes:'mNote', dossiers:'mFolder', calendrier:'mEvent', cahier:'mSeance', mails:'mMail', equipe:'mProf', acquis:'mAcquis' }; if (m[CUR]) OM(m[CUR]); else if (CUR === 'params') saveP(); }
+function tbA() { var m = { dash:'mEleve', eleves:'mEleve', notes:'mNote', dossiers:'mFolder', calendrier:'mEvent', cahier:'mSeance', mails:'mMail', equipe:'mProf', acquis:'mAcquis' }; if (m[CUR]) OM(m[CUR]); else if (CUR === 'params') saveP(); }
 /* ===== RECHERCHE GLOBALE ===== */
 var GS_STATE = { q:'', cat:'all', results:[] };
 function gsNorm(s) { return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
