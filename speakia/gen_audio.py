@@ -15,7 +15,11 @@ from pathlib import Path
 TEXTS_FILE = sys.argv[1] if len(sys.argv) > 1 else "/tmp/speakia_audio_texts.json"
 OUT_FILE = sys.argv[2] if len(sys.argv) > 2 else "/tmp/speakia_audio_map.json"
 
-TARGET_RATE = 8000  # Hz — suffisant pour la voix, garde les fichiers légers.
+# Pas de sous-échantillonnage : un ratecv naïf (sans filtre passe-bas) crée du
+# repliement de spectre (aliasing) qui rend la voix confuse. On garde la
+# fréquence native d'espeak-ng (22050 Hz) — le budget de taille le permet
+# largement (~5-6 Mo au total pour ~80 clips, bien sous la limite de 16 Mo).
+TARGET_RATE = None
 
 with open(TEXTS_FILE, encoding="utf-8") as f:
     texts = json.load(f)
@@ -28,9 +32,10 @@ for i, text in enumerate(texts):
         [
             "espeak-ng",
             "-v", "en-us",
-            "-s", "150",   # vitesse (mots/minute) — un peu plus lent pour des enfants
-            "-p", "55",    # hauteur légèrement plus haute, plus amicale
-            "-a", "180",   # amplitude
+            "-s", "125",   # vitesse (mots/minute) — nettement plus lent, articulé pour des enfants
+            "-p", "48",    # hauteur proche du défaut — plus naturelle, moins criarde
+            "-a", "100",   # amplitude par défaut — évite toute distorsion
+            "-g", "12",    # petite pause entre les mots, pour une diction plus claire
             "-w", str(tmp_wav),
             text,
         ],
@@ -47,7 +52,7 @@ for i, text in enumerate(texts):
     if channels == 2:
         frames = audioop.tomono(frames, width, 0.5, 0.5)
 
-    if rate != TARGET_RATE:
+    if TARGET_RATE and rate != TARGET_RATE:
         frames, _ = audioop.ratecv(frames, width, 1, rate, TARGET_RATE, None)
         rate = TARGET_RATE
 
