@@ -1937,7 +1937,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
       <div class="fg"><label class="fl">Observations (PAP, PAI, santé, besoins spéciaux...)</label><textarea class="fta" id="eOb" style="min-height:55px"></textarea></div>
     </div>
-    <div class="mf"><button class="btn bo" onclick="CM('mEleve')">Annuler</button><button class="btn bt" onclick="saveEl()">Enregistrer</button></div>
+    <div class="mf"><button class="btn bxs" id="mElDelBtn" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);display:none" onclick="delEl(D._eId)">🗑 Supprimer</button><button class="btn bo" onclick="CM('mEleve')">Annuler</button><button class="btn bt" onclick="saveEl()">Enregistrer</button></div>
   </div>
 </div>
 
@@ -4527,7 +4527,7 @@ function OM(id) {
   var e = document.getElementById(id); if (!e) return;
   e.classList.add('open');
   if (id === 'mClasse') rClsList();
-  if (id === 'mEleve') { fillClsSel(); resetElPhotoUI(); }
+  if (id === 'mEleve') { fillClsSel(); resetElPhotoUI(); var mElDelBtn0 = document.getElementById('mElDelBtn'); if (mElDelBtn0) mElDelBtn0.style.display = D._eId ? '' : 'none'; }
   if (id === 'mNote') {
     var evEdit = D._evId ? D.ev.find(function(x){ return x.id===D._evId; }) : null;
     document.getElementById('mNoteT').textContent = evEdit ? 'Modifier l\'évaluation' : 'Nouvelle évaluation';
@@ -5726,6 +5726,7 @@ function fillEl(id) {
   document.getElementById('r2N').value = e.r2n||''; document.getElementById('r2M').value = e.r2m||''; document.getElementById('r2T').value = e.r2t||'';
   document.getElementById('eOb').value = e.ob||'';
   resetElPhotoUI(e.photo);
+  var mElDelBtn = document.getElementById('mElDelBtn'); if (mElDelBtn) mElDelBtn.style.display = '';
 }
 function saveEl() {
   var pr = document.getElementById('ePr').value.trim(), no = document.getElementById('eNo').value.trim();
@@ -5746,6 +5747,26 @@ function saveEl() {
   sv(); CM('mEleve'); rEl();
   N(pr+' '+no+' enregistré !','ok');
   document.getElementById('mElT').textContent = 'Fiche élève';
+}
+
+function delEl(id) {
+  var e = D.el.find(function(x) { return x.id === id; });
+  if (!e) return;
+  var msg = CURRENT_LANG === 'ar'
+    ? 'حذف التلميذ "' + e.pr + ' ' + e.no + '" نهائيًا ؟ سيتم حذف نقاطه وحضوره أيضًا. لا يمكن التراجع.'
+    : 'Supprimer définitivement "' + e.pr + ' ' + e.no + '" ? Ses notes et présences liées seront aussi supprimées. Cette action est irréversible.';
+  if (!confirm(msg)) return;
+  D.el = D.el.filter(function(x) { return x.id !== id; });
+  (D.ev || []).forEach(function(v) { if (v.notes) delete v.notes[id]; });
+  Object.keys(D.ap || {}).forEach(function(date) { if (D.ap[date]) delete D.ap[date][id]; });
+  (D.fo || []).forEach(function(f) { if (f.partageElevesIds) f.partageElevesIds = f.partageElevesIds.filter(function(eid) { return eid !== id; }); });
+  sv(); CM('mEleve'); rEl();
+  N((CURRENT_LANG === 'ar' ? 'تم حذف ' : '') + e.pr + ' ' + e.no + (CURRENT_LANG === 'ar' ? '.' : ' supprimé(e).'), 'ok');
+  try {
+    if (window._fbDeleteDoc && window._fbDoc && window._fbDbFs) {
+      window._fbDeleteDoc(window._fbDoc(window._fbDbFs, 'eleveAcces', genCode(id))).catch(function() {});
+    }
+  } catch (err) {}
 }
 
 /* ===== NOTES ===== */
@@ -8431,7 +8452,7 @@ import {
   sendEmailVerification, updateEmail
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs
+  getFirestore, doc, setDoc, getDoc, deleteDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -8449,7 +8470,7 @@ const dbFs = getFirestore(fbApp);
 /* Exposition explicite vers window : ce module ES ne fuite pas ses variables au script
    classique qui gère l'espace élève (spLogin) — il en a besoin pour le repli Firestore
    quand un élève se connecte depuis un appareil où aucun prof ne s'est jamais connecté. */
-window._fbDoc = doc; window._fbGetDoc = getDoc; window._fbSetDoc = setDoc; window._fbDbFs = dbFs;
+window._fbDoc = doc; window._fbGetDoc = getDoc; window._fbSetDoc = setDoc; window._fbDeleteDoc = deleteDoc; window._fbDbFs = dbFs;
 /* Le stockage local (classes, notes, cours, historique IA...) peut devenir volumineux ;
    sous pression mémoire, le navigateur peut évincer tout le stockage de ce domaine (y
    compris la session Firebase Auth), ce qui ressemble à une déconnexion inattendue.
