@@ -1076,7 +1076,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div style="display:flex;gap:6px;margin-bottom:1.3rem;" id="authRoleTabs">
           <button type="button" onclick="authSelectRole('prof')" id="roleTabProf" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--t);background:var(--t);color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">👨‍🏫 Enseignant</button>
           <button type="button" onclick="authSelectRole('eleve')" id="roleTabEleve" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">🎓 Élève</button>
-          <button type="button" onclick="authSelectRole('admin')" id="roleTabAdmin" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">🛠️ Admin</button>
+          <button type="button" onclick="authSelectRole('admin')" id="roleTabAdmin" style="display:none;flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">🛠️ Admin</button>
         </div>
         <form id="authLoginForm" onsubmit="event.preventDefault(); authLoginProf();" autocomplete="on">
           <div class="fg" style="text-align:left;"><label class="fl">Email</label><input class="fi" id="authEmail" type="email" name="email" autocomplete="username" placeholder="prof@email.com"></div>
