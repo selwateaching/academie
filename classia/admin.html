@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Administration — ClasseIA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
   --t:#5B45D6;--t2:#7C6AEA;--tp:#EFEAFE;--r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;--br:#E3E4E8;--rd:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--ink);}
 .topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.4rem;height:58px;display:flex;align-items:center;justify-content:space-between;}
 .brand{font-weight:800;font-size:1.02rem;}
 a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
@@ -25,7 +25,7 @@ table{width:100%;border-collapse:collapse;}
 th{background:var(--bg);padding:9px 12px;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);}
 td{padding:10px 12px;font-size:.83rem;border-bottom:1px solid var(--br);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
-.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
 .bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
 .bt:disabled{opacity:.5;cursor:not-allowed;}
 .empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
@@ -56,7 +56,7 @@ tr:last-child td{border-bottom:none;}
     <div class="card">
       <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
       <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
-        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
+        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Poppins',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
       </div>
       <div style="padding:.7rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>

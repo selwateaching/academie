@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClasseIA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
@@ -19,13 +19,13 @@
   --g:#22C55E;--gp:#F0FDF4;--br:#E3E4E8;--rd:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden;}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--t);border-radius:2px}
 /* ===== LANG SWITCHER ===== */
 #langBtn{
   position:fixed;bottom:70px;right:22px;z-index:99999;
   background:var(--w);color:var(--ink);border:1.5px solid var(--br);border-radius:50px;
-  padding:9px 16px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;
+  padding:9px 16px;font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:700;
   cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.12);display:flex;align-items:center;gap:7px;
   transition:all .22s;letter-spacing:.02em;
 }
@@ -42,7 +42,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 #toggleBtn{
   position:fixed;bottom:22px;right:22px;z-index:99999;
   background:var(--ink);color:#fff;border:none;border-radius:50px;
-  padding:11px 20px;font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;
+  padding:11px 20px;font-family:'Poppins',sans-serif;font-size:.82rem;font-weight:700;
   cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px;
   transition:all .22s;
 }
@@ -69,7 +69,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 }
 #tiaPanel.open{display:flex;}
 .tia-hd{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.tia-hd-t{font-family:'Inter',sans-serif;font-weight:800;font-size:1rem;}
+.tia-hd-t{font-family:'Poppins',sans-serif;font-weight:800;font-size:1rem;}
 .tia-hd-s{font-size:.7rem;color:rgba(255,255,255,.8);margin-top:2px;}
 .tia-x{background:rgba(255,255,255,.15);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:.9rem;flex-shrink:0;}
 .tia-x:hover{background:rgba(255,255,255,.28);}
@@ -78,17 +78,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .tia-msg.bot{background:var(--w);border:1px solid var(--br);align-self:flex-start;border-bottom-left-radius:4px;color:var(--ink);}
 .tia-msg.user{background:var(--t);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
 .tia-quick{display:flex;flex-direction:column;gap:.45rem;}
-.tia-qb{text-align:left;background:var(--w);border:1.5px solid var(--br);border-radius:10px;padding:.55rem .8rem;font-size:.8rem;font-family:'Inter',sans-serif;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s;}
+.tia-qb{text-align:left;background:var(--w);border:1.5px solid var(--br);border-radius:10px;padding:.55rem .8rem;font-size:.8rem;font-family:'Poppins',sans-serif;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s;}
 .tia-qb:hover{border-color:var(--t);background:var(--tp);color:var(--t);}
 .tia-card{background:var(--w);border:1.5px solid var(--t);border-radius:12px;padding:.8rem .9rem;font-size:.8rem;align-self:flex-start;max-width:92%;}
 .tia-card-t{font-weight:800;color:var(--t);margin-bottom:.4rem;font-size:.85rem;}
 .tia-card-row{color:var(--ink2);margin:.15rem 0;line-height:1.5;}
-.tia-card-btn{margin-top:.6rem;width:100%;background:var(--t);color:#fff;border:none;border-radius:8px;padding:.55rem;font-weight:700;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.tia-card-btn{margin-top:.6rem;width:100%;background:var(--t);color:#fff;border:none;border-radius:8px;padding:.55rem;font-weight:700;font-size:.78rem;cursor:pointer;font-family:'Poppins',sans-serif;}
 .tia-card-btn:hover{background:var(--t2);}
 .tia-card-btn:disabled{opacity:.55;cursor:not-allowed;}
 .tia-typing{align-self:flex-start;font-size:.78rem;color:var(--ink3);padding:.3rem .5rem;}
 .tia-ft{border-top:1px solid var(--br);padding:.7rem;display:flex;gap:.5rem;align-items:flex-end;background:var(--w);flex-shrink:0;}
-.tia-in{flex:1;border:1.5px solid var(--br);border-radius:10px;padding:.55rem .7rem;font-size:.82rem;font-family:'Inter',sans-serif;resize:none;max-height:90px;outline:none;background:var(--bg);color:var(--ink);}
+.tia-in{flex:1;border:1.5px solid var(--br);border-radius:10px;padding:.55rem .7rem;font-size:.82rem;font-family:'Poppins',sans-serif;resize:none;max-height:90px;outline:none;background:var(--bg);color:var(--ink);}
 .tia-in:focus{border-color:var(--t);}
 .tia-send{background:var(--t);color:#fff;border:none;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1rem;flex-shrink:0;}
 .tia-send:hover{background:var(--t2);}
@@ -114,12 +114,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
   width:100%;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.25);
   text-align:center;
 }
-.sp-logo{font-family:'Inter',sans-serif;font-size:1.4rem;font-weight:800;color:var(--ink);margin-bottom:.3rem;}
+.sp-logo{font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:800;color:var(--ink);margin-bottom:.3rem;}
 .sp-logo span{color:var(--t);}
 .sp-sub{font-size:.8rem;color:var(--ink3);margin-bottom:2rem;}
 .sp-label{display:block;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t);text-align:left;margin-bottom:5px;}
 .sp-code-input{
-  width:100%;text-align:center;font-size:2rem;font-weight:800;font-family:'Inter',sans-serif;
+  width:100%;text-align:center;font-size:2rem;font-weight:800;font-family:'Poppins',sans-serif;
   letter-spacing:.3em;border:2px solid var(--br);border-radius:10px;padding:14px;
   background:var(--bg);color:var(--ink);outline:none;transition:border-color .2s;
 }
@@ -127,7 +127,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .sp-err{color:var(--r);font-size:.8rem;margin-top:.6rem;min-height:1.2em;}
 .sp-btn{
   width:100%;margin-top:1.2rem;padding:13px;background:var(--t);color:#fff;
-  border:none;border-radius:10px;font-family:'Inter',sans-serif;font-weight:700;
+  border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-weight:700;
   font-size:.95rem;cursor:pointer;transition:background .18s;
 }
 .sp-btn:hover{background:var(--t2);}
@@ -140,13 +140,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:10;
 }
-.sp-topbar-logo{font-family:'Inter',sans-serif;font-size:1rem;font-weight:800;}
+.sp-topbar-logo{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:800;}
 .sp-topbar-logo span{color:var(--t);}
 .sp-student-name{font-size:.85rem;font-weight:600;color:rgba(255,255,255,.8);}
 .sp-logout{
   background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
   color:#fff;border-radius:7px;padding:6px 14px;font-size:.78rem;font-weight:600;
-  cursor:pointer;font-family:'Inter',sans-serif;transition:all .18s;
+  cursor:pointer;font-family:'Poppins',sans-serif;transition:all .18s;
 }
 .sp-logout:hover{background:var(--r);border-color:var(--r);}
 .sp-content{padding:1.5rem;}
@@ -156,7 +156,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .sp-tab:hover:not(.on){background:var(--tp);color:var(--t);}
 .sp-section{display:none;}.sp-section.on{display:block;}
 .sp-stat{background:var(--w);border-radius:12px;border:1px solid var(--br);padding:1.2rem;text-align:center;}
-.sp-stat-val{font-family:'Inter',sans-serif;font-size:2rem;font-weight:800;color:var(--t);}
+.sp-stat-val{font-family:'Poppins',sans-serif;font-size:2rem;font-weight:800;color:var(--t);}
 .sp-stat-lbl{font-size:.72rem;color:var(--ink3);margin-top:3px;}
 
 
@@ -175,7 +175,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
   border-bottom:1px solid #E3E4E8;
   padding:0 5%;height:64px;display:flex;align-items:center;justify-content:space-between;
 }
-.site-logo{font-family:'Inter',sans-serif;font-size:1.2rem;font-weight:800;}
+.site-logo{font-family:'Poppins',sans-serif;font-size:1.2rem;font-weight:800;}
 .site-logo span{color:var(--t);}
 .site-nav-links{display:flex;align-items:center;gap:2rem;}
 .site-nav-links a{font-size:.85rem;color:var(--ink2);text-decoration:none;font-weight:500;}
@@ -220,12 +220,12 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .hero-kicker{
   display:inline-flex;align-items:center;gap:.5rem;
   background:rgba(52,84,209,.18);border:1px solid rgba(52,84,209,.4);
-  color:#9DB4F2;font-size:.72rem;font-family:'Inter',sans-serif;font-weight:700;
+  color:#9DB4F2;font-size:.72rem;font-family:'Poppins',sans-serif;font-weight:700;
   letter-spacing:.15em;text-transform:uppercase;padding:5px 16px;border-radius:20px;
   margin-bottom:2rem;position:relative;z-index:1;
 }
 .hero-title{
-  font-family:'Inter',serif;font-size:clamp(2.2rem,4vw,3.4rem);
+  font-family:'Poppins',serif;font-size:clamp(2.2rem,4vw,3.4rem);
   font-weight:900;line-height:1.1;margin-bottom:1.4rem;position:relative;z-index:1;
 }
 .hero-title .gold{color:var(--a);}
@@ -240,7 +240,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
   .hero-btns{justify-content:center;}
 }
 .hb{padding:13px 30px;border-radius:9px;font-weight:700;font-size:.9rem;cursor:pointer;
-  font-family:'Inter',sans-serif;border:2px solid transparent;transition:all .2s;}
+  font-family:'Poppins',sans-serif;border:2px solid transparent;transition:all .2s;}
 .hb-main{background:var(--t);color:#fff;}
 .hb-main:hover{background:var(--t2);}
 .hb-out{background:transparent;border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.8);}
@@ -251,14 +251,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
   background:var(--t);padding:2rem 5%;
   display:grid;grid-template-columns:repeat(4,1fr);text-align:center;gap:1rem;
 }
-.ss-num{font-family:'Inter',serif;font-size:2rem;font-weight:900;color:#fff;}
+.ss-num{font-family:'Poppins',serif;font-size:2rem;font-weight:900;color:#fff;}
 .ss-label{font-size:.75rem;color:rgba(255,255,255,.65);margin-top:3px;}
 
 /* SECTIONS SITE */
 .site-section{padding:5rem 5%;}
 .site-section.alt{background:var(--w);}
-.section-kicker{font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);margin-bottom:.7rem;}
-.section-h2{font-family:'Inter',serif;font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;line-height:1.2;margin-bottom:1.5rem;}
+.section-kicker{font-family:'Poppins',sans-serif;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--t2);margin-bottom:.7rem;}
+.section-h2{font-family:'Poppins',serif;font-size:clamp(1.8rem,3vw,2.5rem);font-weight:700;line-height:1.2;margin-bottom:1.5rem;}
 .section-h2 span{color:var(--t);}
 
 /* ABOUT / QUI SUIS-JE */
@@ -280,7 +280,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .feat-cat-ic{width:52px;height:52px;border-radius:13px;background:var(--tp);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1.1rem;transition:transform .25s ease;}
 .feat-cat-ic img{width:28px;height:28px;object-fit:cover;border-radius:8px;}
 .feat-cat-card:hover .feat-cat-ic{transform:scale(1.08) rotate(-3deg);}
-.feat-cat-tt{font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;letter-spacing:-.01em;}
+.feat-cat-tt{font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700;margin-bottom:1rem;letter-spacing:-.01em;}
 .feat-cat-list{list-style:none;display:flex;flex-direction:column;gap:.55rem;}
 .feat-cat-list li{font-size:.85rem;color:var(--ink2);display:flex;align-items:baseline;gap:.6rem;}
 .feat-cat-list li::before{content:'✓';color:var(--t);font-weight:700;flex-shrink:0;}
@@ -295,7 +295,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .compare-box{background:var(--ink);border-radius:14px;padding:2rem;}
 .cb-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08);}
 .cb-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.cb-label{font-size:.68rem;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:.1em;width:48px;flex-shrink:0;}
+.cb-label{font-size:.68rem;font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:.1em;width:48px;flex-shrink:0;}
 .cb-before{color:var(--r);}
 .cb-after{color:#9DB4F2;}
 .cb-text{font-size:.82rem;color:rgba(255,255,255,.75);}
@@ -311,21 +311,21 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .plan.featured{border-color:var(--t);box-shadow:0 12px 40px rgba(52,84,209,.15);}
 .plan.featured::before{transform:scaleX(1);}
 .plan.featured:hover{transform:translateY(-6px);box-shadow:0 22px 50px rgba(52,84,209,.24);}
-.plan-badge{position:absolute;top:1rem;right:1rem;background:var(--t);color:#fff;font-size:.62rem;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
+.plan-badge{position:absolute;top:1rem;right:1rem;background:var(--t);color:#fff;font-size:.62rem;font-family:'Poppins',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;}
 .plan-header{padding:1.8rem 1.8rem 1.4rem;border-bottom:1px solid var(--br);}
-.plan-eyebrow{font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t2);margin-bottom:.4rem;}
-.plan-name{font-family:'Inter',serif;font-size:1.4rem;font-weight:700;margin-bottom:.2rem;}
+.plan-eyebrow{font-family:'Poppins',sans-serif;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t2);margin-bottom:.4rem;}
+.plan-name{font-family:'Poppins',serif;font-size:1.4rem;font-weight:700;margin-bottom:.2rem;}
 .plan-desc{font-size:.78rem;color:var(--ink3);}
 .plan-price{padding:1.3rem 1.8rem;border-bottom:1px solid var(--br);}
-.price-num{font-family:'Inter',serif;font-size:2.8rem;font-weight:900;line-height:1;}
+.price-num{font-family:'Poppins',serif;font-size:2.8rem;font-weight:900;line-height:1;}
 .price-cur{font-size:1rem;vertical-align:super;color:var(--t);margin-right:2px;}
-.price-per{font-size:.72rem;color:var(--ink3);margin-top:.2rem;font-family:'Inter',sans-serif;}
+.price-per{font-size:.72rem;color:var(--ink3);margin-top:.2rem;font-family:'Poppins',sans-serif;}
 .plan-feats{padding:1.4rem 1.8rem;list-style:none;display:flex;flex-direction:column;gap:.5rem;}
 .plan-feats li{font-size:.82rem;color:var(--ink2);display:flex;align-items:baseline;gap:.6rem;}
 .plan-feats li::before{content:'✓';color:var(--t);font-weight:700;flex-shrink:0;}
 .plan-feats li.no{color:var(--ink3);}
 .plan-feats li.no::before{content:'✕';color:var(--br);}
-.plan-cta-btn{display:block;width:calc(100% - 3.6rem);margin:0 1.8rem 1.8rem;padding:12px;border-radius:9px;font-family:'Inter',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;text-align:center;border:2px solid var(--t);transition:all .18s;}
+.plan-cta-btn{display:block;width:calc(100% - 3.6rem);margin:0 1.8rem 1.8rem;padding:12px;border-radius:9px;font-family:'Poppins',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;text-align:center;border:2px solid var(--t);transition:all .18s;}
 .plan-cta-btn:hover{transform:translateY(-2px);}
 .plan-cta-btn.primary{background:var(--t);color:#fff;}
 .plan-cta-btn.primary:hover{background:var(--t2);box-shadow:0 8px 20px rgba(52,84,209,.3);}
@@ -340,28 +340,28 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 /* TESTIMONIALS */
 .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2rem;}
 .testi{background:var(--w);border:1px solid var(--br);border-radius:14px;padding:1.5rem;}
-.testi-quote{font-family:'Inter',serif;font-size:3.5rem;color:var(--tp);line-height:.6;margin-bottom:.5rem;}
+.testi-quote{font-family:'Poppins',serif;font-size:3.5rem;color:var(--tp);line-height:.6;margin-bottom:.5rem;}
 .testi-text{font-size:.85rem;color:var(--ink2);line-height:1.65;font-style:italic;margin-bottom:1.2rem;}
 .testi-author{display:flex;align-items:center;gap:.8rem;}
 .testi-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0;}
 .testi-name{font-size:.83rem;font-weight:700;}
-.testi-role{font-size:.68rem;color:var(--ink3);font-family:'Inter',sans-serif;letter-spacing:.05em;}
+.testi-role{font-size:.68rem;color:var(--ink3);font-family:'Poppins',sans-serif;letter-spacing:.05em;}
 
 /* CTA FINAL */
 .site-cta-final{background:var(--ink);color:#fff;padding:6rem 5%;text-align:center;}
-.cta-final-title{font-family:'Inter',serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:1.2rem;line-height:1.15;}
+.cta-final-title{font-family:'Poppins',serif;font-size:clamp(2rem,4vw,3rem);font-weight:900;margin-bottom:1.2rem;line-height:1.15;}
 .cta-final-sub{font-size:1rem;color:rgba(255,255,255,.55);margin-bottom:2.5rem;}
 
 /* SITE FOOTER */
 .site-footer{background:#0D0D14;color:rgba(255,255,255,.4);padding:2.5rem 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-size:.78rem;}
-.footer-logo{font-family:'Inter',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
+.footer-logo{font-family:'Poppins',sans-serif;font-weight:800;font-size:1rem;color:#fff;}
 .footer-logo span{color:var(--a);}
 
 /* ===== APP ===== */
 #app{min-height:100vh;display:flex;}
 .sb{width:230px;background:var(--ink);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;}
 .sb-logo{padding:1.4rem 1.3rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);}
-.slt{font-family:'Inter',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;}.slt span{color:var(--t);}
+.slt{font-family:'Poppins',sans-serif;font-size:1.35rem;font-weight:800;color:#fff;}.slt span{color:var(--t);}
 .sls{font-size:.6rem;color:rgba(255,255,255,.28);letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
 .sb-prof{padding:.85rem 1.3rem;display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,.08);}
 .sav{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--t),var(--t2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;color:#fff;flex-shrink:0;}
@@ -396,9 +396,9 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 /* APP MAIN */
 .main{margin-left:230px;flex:1;}
 .topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.75rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.05);}
-.tbt{font-family:'Inter',sans-serif;font-size:1.1rem;font-weight:700;}
+.tbt{font-family:'Poppins',sans-serif;font-size:1.1rem;font-weight:700;}
 .tbr{display:flex;align-items:center;gap:.7rem;}
-.btn{padding:8px 16px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .18s;}
 .bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
 .bo{background:transparent;border:1.5px solid var(--br);color:var(--ink2);}.bo:hover{border-color:var(--t);color:var(--t);}
 .br2{background:var(--r);color:#fff;}
@@ -412,7 +412,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .biblio-card img{transition:transform .25s ease;}
 .biblio-card:hover img{transform:scale(1.05);}
 .ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
-.ct{font-family:'Inter',sans-serif;font-size:.92rem;font-weight:700;}
+.ct{font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:700;}
 .cb{padding:1.3rem;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
@@ -421,14 +421,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);overfl
 .stat:hover{transform:translateY(-2px);}
 .stat::before{content:'';position:absolute;top:0;right:0;width:70px;height:70px;border-radius:50%;opacity:.08;transform:translate(20px,-20px);}
 .stt::before{background:var(--t)}.str::before{background:var(--r)}.sta::before{background:var(--a)}.stp::before{background:var(--p)}
-.sv{font-family:'Inter',sans-serif;font-size:1.9rem;font-weight:800;line-height:1;margin:.5rem 0 .3rem;}
+.sv{font-family:'Poppins',sans-serif;font-size:1.9rem;font-weight:800;line-height:1;margin:.5rem 0 .3rem;}
 .stt .sv{color:var(--t)}.str .sv{color:var(--r)}.sta .sv{color:var(--a)}.stp .sv{color:var(--p)}
 .sl{font-size:.7rem;color:var(--ink3);}
 .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
-.sht{font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;}
+.sht{font-family:'Poppins',sans-serif;font-size:.95rem;font-weight:700;}
 .fg{margin-bottom:.9rem;}
 .fl{display:block;font-size:.66rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--t);margin-bottom:4px;}
-.fi,.fs,.fta{width:100%;background:var(--bg);border:1.5px solid var(--br);border-radius:7px;padding:9px 12px;font-family:'Inter',sans-serif;font-size:.84rem;color:var(--ink);outline:none;transition:border-color .18s;}
+.fi,.fs,.fta{width:100%;background:var(--bg);border:1.5px solid var(--br);border-radius:7px;padding:9px 12px;font-family:'Poppins',sans-serif;font-size:.84rem;color:var(--ink);outline:none;transition:border-color .18s;}
 .fi:focus,.fs:focus,.fta:focus{border-color:var(--t);background:#fff;}
 .fs{-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%239090A0' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;cursor:pointer;}
 .fta{min-height:80px;resize:vertical;}
@@ -449,19 +449,19 @@ tr:hover td{background:var(--tp);}
 .ftop{height:75px;display:flex;align-items:center;justify-content:center;position:relative;}
 .ftab{position:absolute;top:-7px;left:14px;width:44px;height:11px;border-radius:4px 4px 0 0;opacity:.7;}
 .fbot{background:var(--w);padding:.85rem 1rem;}
-.fnm{font-family:'Inter',sans-serif;font-size:.8rem;font-weight:700;}
+.fnm{font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:700;}
 .fct{font-size:.68rem;color:var(--ink3);margin-top:2px;}
 .fac{display:flex;gap:5px;margin-top:7px;}
 .egrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
 .ecard{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);padding:1rem;cursor:pointer;transition:all .18s;text-align:center;}
 .ecard:hover{border-color:var(--t);box-shadow:0 4px 16px rgba(52,84,209,.12);}
 .eav{width:46px;height:46px;border-radius:50%;margin:0 auto .55rem;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:700;color:#fff;}
-.en{font-family:'Inter',sans-serif;font-size:.8rem;font-weight:700;}
-.em{font-family:'Inter',sans-serif;font-size:1.35rem;font-weight:800;margin:3px 0;}
+.en{font-family:'Poppins',sans-serif;font-size:.8rem;font-weight:700;}
+.em{font-family:'Poppins',sans-serif;font-size:1.35rem;font-weight:800;margin:3px 0;}
 .es{font-size:.67rem;color:var(--ink3);}
 .tromb-card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);padding:1.2rem 1rem;text-align:center;}
 .tromb-av{width:74px;height:74px;border-radius:50%;margin:0 auto .7rem;display:flex;align-items:center;justify-content:center;font-size:1.7rem;font-weight:800;color:#fff;box-shadow:0 4px 10px rgba(0,0,0,.12);overflow:hidden;}
-.tromb-nm{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;}
+.tromb-nm{font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:700;}
 .tromb-cl{font-size:.68rem;color:var(--ink3);margin-top:2px;}
 .tromb-cam{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;box-shadow:0 2px 6px rgba(0,0,0,.2);}
 .tromb-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08);}
@@ -469,7 +469,7 @@ tr:hover td{background:var(--tp);}
 .overlay.open{display:flex!important;}
 .modal{background:var(--w);border-radius:14px;width:600px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);}
 .mh{padding:1.3rem 1.4rem;border-bottom:1px solid var(--br);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--w);z-index:1;}
-.mt2{font-family:'Inter',sans-serif;font-size:1.05rem;font-weight:700;}
+.mt2{font-family:'Poppins',sans-serif;font-size:1.05rem;font-weight:700;}
 .mx{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink3);padding:4px 8px;border-radius:5px;}
 .mx:hover{color:var(--r);background:var(--rp);}
 .mb{padding:1.4rem;}
@@ -478,7 +478,7 @@ tr:hover td{background:var(--tp);}
 .search-panel{background:var(--w);border-radius:14px;width:100%;max-width:920px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.22);}
 .gs-head{padding:1rem 1.3rem .9rem;border-bottom:1px solid var(--br);}
 .gs-head-row{display:flex;align-items:center;gap:.7rem;}
-.gs-head-row input{flex:1;border:none;outline:none;font-size:1.02rem;background:transparent;color:var(--ink);font-family:'Inter',sans-serif;}
+.gs-head-row input{flex:1;border:none;outline:none;font-size:1.02rem;background:transparent;color:var(--ink);font-family:'Poppins',sans-serif;}
 .gs-close{background:none;border:none;font-size:1.05rem;cursor:pointer;color:var(--ink3);padding:4px 8px;border-radius:5px;}
 .gs-close:hover{color:var(--r);background:var(--rp);}
 .gs-chips{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.8rem;}
@@ -591,7 +591,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 .acq-tbl th.acq-elcol{background:var(--bg);}
 .acq-tbl .acq-progcol{position:sticky;right:0;background:var(--w);z-index:2;min-width:120px;}
 .acq-tbl th.acq-progcol{background:var(--bg);}
-.prog-mat-h{padding:1rem 1.3rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;background:var(--bg);font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem;}
+.prog-mat-h{padding:1rem 1.3rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;background:var(--bg);font-family:'Poppins',sans-serif;font-weight:700;font-size:.9rem;}
 .prog-mat-h:hover{background:var(--tp);}
 .prog-mat-body{padding:1rem 1.3rem;border-top:1px solid var(--br);display:none;}
 .prog-mat-body.open{display:block;}
@@ -599,8 +599,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 .prog-chap:hover{border-color:var(--t);background:var(--tp);}
 /* Abonnement page */
 .abo-hero{background:linear-gradient(135deg,var(--ink),#1a2f1a);border-radius:14px;padding:2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.abo-plan-name{font-family:'Inter',serif;font-size:2rem;font-weight:900;color:var(--a);}
-.abo-status{display:inline-flex;align-items:center;gap:.4rem;background:rgba(52,84,209,.3);border:1px solid rgba(52,84,209,.5);color:#9DB4F2;font-size:.72rem;font-family:'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
+.abo-plan-name{font-family:'Poppins',serif;font-size:2rem;font-weight:900;color:var(--a);}
+.abo-status{display:inline-flex;align-items:center;gap:.4rem;background:rgba(52,84,209,.3);border:1px solid rgba(52,84,209,.5);color:#9DB4F2;font-size:.72rem;font-family:'Poppins',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
 .quota-bar{height:10px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden;margin:.5rem 0;}
 .quota-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--t),var(--t2));}
 </style>
@@ -693,7 +693,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="site-section" style="background:var(--w);">
     <div class="section-kicker" id="probKicker">Le problème que nous résolvons</div>
     <h2 class="section-h2" id="probH2">Vous préparez vos cours le week-end.<br><span>Et si ce n'était plus nécessaire ?</span></h2>
-    <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;margin:.6rem 0 1.6rem;" id="probAccroche"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulbProb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D98C3D"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulbProb)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#7C6AEA" stroke-width="4" stroke-linecap="round"/></svg> L'IA au service de l'enseignant — un assistant redoutable</div>
+    <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:1rem;margin:.6rem 0 1.6rem;" id="probAccroche"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulbProb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D98C3D"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulbProb)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#7C6AEA" stroke-width="4" stroke-linecap="round"/></svg> L'IA au service de l'enseignant — un assistant redoutable</div>
     <div class="prob-grid">
       <div class="prob-side">
         <div class="prob-item">
@@ -714,7 +714,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
       </div>
       <div class="compare-box">
-        <div id="probCompareKicker" style="font-family:'Inter',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:1.2rem;">Avant / Après ClasseIA</div>
+        <div id="probCompareKicker" style="font-family:'Poppins',sans-serif;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--a);margin-bottom:1.2rem;">Avant / Après ClasseIA</div>
         <div class="cb-row">
           <span class="cb-label cb-before">AVANT</span>
           <span class="cb-text" id="probCb1">Préparer un cours : 90 minutes</span>
@@ -863,7 +863,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
     </div>
     <div style="margin-top:2rem;">
-      <div style="font-family:'Inter',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;" id="payKicker">Méthodes de paiement acceptées</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem;" id="payKicker">Méthodes de paiement acceptées</div>
       <div class="pay-row" id="payRow">
         <div class="pay-badge"><span>💳</span> Carte bancaire (Visa/Mastercard)</div>
         <div class="pay-badge"><span>🔒</span> Paiement sécurisé Stripe</div>
@@ -925,8 +925,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="footer-logo">Classe<span>IA</span></div>
     <div><a href="mailto:selwateaching@gmail.com" style="color:rgba(255,255,255,.5);text-decoration:none;">selwateaching@gmail.com</a> · www.classia.fr</div>
     <div style="display:flex;gap:1.2rem;align-items:center;">
-      <button id="footRGPD" onclick="OM('mRGPD')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Confidentialité</button>
-      <button id="footCGV" onclick="OM('mCGV')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Conditions de vente</button>
+      <button id="footRGPD" onclick="OM('mRGPD')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Poppins',sans-serif;padding:0;">Confidentialité</button>
+      <button id="footCGV" onclick="OM('mCGV')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Poppins',sans-serif;padding:0;">Conditions de vente</button>
       <span id="footCopyright">🇫🇷 République française · © 2026</span>
     </div>
   </div>
@@ -941,28 +941,28 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         ⚠ Ce document est un modèle rédigé à titre indicatif, destiné à servir de base de travail. Il ne constitue pas un conseil juridique et n'a pas été validé par un professionnel du droit français. Avant toute utilisation commerciale réelle, faites-le relire et adapter par un avocat ou un conseil juridique inscrit en France, notamment sur les délais légaux, la fiscalité applicable et la conformité au droit français de la consommation et du commerce électronique.
       </p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 1 — Objet</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 1 — Objet</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Les présentes conditions régissent la vente d'abonnements à l'application ClasseIA, cartable numérique destiné aux enseignants et établissements scolaires français (ci-après « le Service »), édité par Selloua Nacira — Formatrice indépendante, SIRET n° 517 571 170 00029, ci-après « l'Éditeur ».</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 2 — Devis</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 2 — Devis</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Tout devis établi par l'Éditeur est valable <strong>30 (trente) jours</strong> à compter de sa date d'émission. Passé ce délai, l'Éditeur se réserve le droit de le réviser. Le devis n'engage l'Éditeur qu'après acceptation écrite (signature ou confirmation par email) du Client.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 3 — Période d'essai gratuite</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 3 — Période d'essai gratuite</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Tout nouvel utilisateur bénéficie d'une période d'essai gratuite de <strong>14 (quatorze) jours</strong> à compter de la validation de son compte par l'administrateur, lui permettant de tester librement les fonctionnalités du Service, sans obligation de paiement ni de communication de coordonnées bancaires.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 4 — Droit de rétractation</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 4 — Droit de rétractation</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Le Client dispose d'un délai de <strong>14 (quatorze) jours</strong> à compter de la souscription à un abonnement payant pour exercer son droit de rétractation, sans avoir à justifier de motifs ni à payer de pénalités, en adressant une notification écrite à l'Éditeur. Toute somme déjà versée sera intégralement remboursée dans un délai raisonnable suivant la réception de la demande.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 5 — Modalités de paiement</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 5 — Modalités de paiement</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Le paiement de l'abonnement s'effectue exclusivement par <strong>virement bancaire</strong>, à échéance en <strong>début de chaque mois</strong>, pour le mois échu ou à échoir selon les modalités convenues avec l'Éditeur. Les coordonnées bancaires (RIB) de l'Éditeur seront communiquées par email au Client à l'issue de la période d'essai gratuite de 14 jours, avant le premier prélèvement. D'autres moyens de paiement (carte bancaire via Stripe, prélèvement SEPA) peuvent être proposés selon disponibilité.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 6 — Durée et résiliation</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 6 — Durée et résiliation</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">L'abonnement est conclu sans engagement de durée minimale et peut être résilié à tout moment par le Client, sans préavis ni pénalité, avec effet à la fin de la période déjà payée.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 7 — Responsabilité et sauvegarde des données</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 7 — Responsabilité et sauvegarde des données</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">L'Éditeur s'engage à mettre en œuvre les moyens raisonnables pour assurer la disponibilité du Service, sans garantie de continuité absolue. L'Éditeur ne saurait être tenu responsable des interruptions ou dysfonctionnements imputables à des tiers (hébergeurs, fournisseurs d'accès, services d'intelligence artificielle tiers). Les données pédagogiques du Client (élèves, notes, cahier journal, progression annuelle) font l'objet d'une sauvegarde automatique sur un serveur distant. Toutefois, les fichiers importés par le Client dans l'espace « Dossiers cloud » (documents, images) ne bénéficient à ce jour d'aucune sauvegarde distante et demeurent stockés localement sur l'appareil du Client ; il appartient au Client d'en conserver une copie par ses propres moyens. L'Éditeur ne saurait être tenu responsable de la perte de ces fichiers.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 8 — Droit applicable</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">Article 8 — Droit applicable</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Les présentes conditions sont soumises au droit français. Tout litige relève de la compétence des tribunaux français du ressort du siège de l'Éditeur, à défaut de règlement amiable.</p>
     </div>
     <div class="mf"><button class="btn bt" onclick="CM('mCGV')">Fermer</button></div>
@@ -978,10 +978,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         ⚠ Ce document est un modèle rédigé à titre indicatif. Il s'inspire des principes du RGPD (Règlement (UE) 2016/679), applicable en France. Faites valider ce document par un juriste avant tout usage commercial réel.
       </p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">1. Responsable du traitement</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">1. Responsable du traitement</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Selloua Nacira — Formatrice indépendante, SIRET n° 517 571 170 00029, éditeur de l'application ClasseIA, est responsable du traitement des données décrites ci-dessous.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">2. Données collectées</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">2. Données collectées</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Le Service traite les catégories de données suivantes :</p>
       <ul style="font-size:.85rem;color:var(--ink2);line-height:1.8;padding-left:1.4rem;">
         <li><strong>Comptes enseignants :</strong> prénom, nom, email, matière, établissement — hébergés via Google Firebase (Authentication et Firestore).</li>
@@ -989,19 +989,19 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <li><strong>Données de facturation :</strong> historique des paiements pointés manuellement par l'administrateur (montant, méthode, référence de virement).</li>
       </ul>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">3. Finalités du traitement</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">3. Finalités du traitement</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Les données sont traitées aux fins de gestion pédagogique (suivi des élèves, notes, absences), d'authentification et de gestion des comptes, ainsi que de facturation de l'abonnement au Service.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">4. Durée de conservation</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">4. Durée de conservation</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Les données sont conservées pendant toute la durée d'utilisation du Service par l'enseignant, et supprimées sur demande ou après une période d'inactivité prolongée, sous réserve des obligations légales de conservation applicables en France.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">5. Sous-traitants et hébergement</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">5. Sous-traitants et hébergement</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Les comptes et l'authentification sont hébergés par Google Firebase. Lorsque l'enseignant utilise les fonctionnalités d'intelligence artificielle (Quiz IA, Cours IA, Progression IA), les données saisies pour cette génération sont transmises à Anthropic via la clé API de ClasseIA, incluse dans l'abonnement — l'enseignant n'a aucune clé à saisir ni à gérer, dans les conditions d'utilisation d'Anthropic.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">6. Vos droits</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">6. Vos droits</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">Conformément à la réglementation applicable, toute personne concernée dispose d'un droit d'accès, de rectification, d'effacement et d'opposition sur ses données personnelles. Ces droits peuvent être exercés en écrivant à l'adresse de contact indiquée en pied de page.</p>
 
-      <h3 style="font-family:'Inter',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">7. Sécurité</h3>
+      <h3 style="font-family:'Poppins',sans-serif;font-size:1rem;margin:1.4rem 0 .6rem;">7. Sécurité</h3>
       <p style="font-size:.85rem;color:var(--ink2);line-height:1.7;">L'accès aux comptes est protégé par authentification (email/mot de passe), et des règles de sécurité serveur (Firestore Security Rules) empêchent tout accès non autorisé aux données d'un autre compte. Aucune donnée bancaire n'est stockée dans l'application — les paiements se font par virement, pointés manuellement.</p>
     </div>
     <div class="mf"><button class="btn bt" onclick="CM('mRGPD')">Fermer</button></div>
@@ -1021,9 +1021,9 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <!-- LOGIN -->
       <div id="authViewLogin">
         <div style="display:flex;gap:6px;margin-bottom:1.3rem;" id="authRoleTabs">
-          <button type="button" onclick="authSelectRole('prof')" id="roleTabProf" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--t);background:var(--t);color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">👨‍🏫 Enseignant</button>
-          <button type="button" onclick="authSelectRole('eleve')" id="roleTabEleve" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🎓 Élève</button>
-          <button type="button" onclick="authSelectRole('admin')" id="roleTabAdmin" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">🛠️ Admin</button>
+          <button type="button" onclick="authSelectRole('prof')" id="roleTabProf" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--t);background:var(--t);color:#fff;font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">👨‍🏫 Enseignant</button>
+          <button type="button" onclick="authSelectRole('eleve')" id="roleTabEleve" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">🎓 Élève</button>
+          <button type="button" onclick="authSelectRole('admin')" id="roleTabAdmin" style="flex:1;padding:9px 4px;border-radius:8px;border:1.5px solid var(--br);background:transparent;color:var(--ink2);font-size:.74rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">🛠️ Admin</button>
         </div>
         <form id="authLoginForm" onsubmit="event.preventDefault(); authLoginProf();" autocomplete="on">
           <div class="fg" style="text-align:left;"><label class="fl">Email</label><input class="fi" id="authEmail" type="email" name="email" autocomplete="username" placeholder="prof@email.com"></div>
@@ -1383,10 +1383,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="card"><div class="cb" id="apList" style="padding:.8rem"></div></div>
     <div>
       <div class="card" style="margin-bottom:1rem"><div class="ch"><div class="ct">Résumé</div></div><div class="cb"><div class="g2" style="text-align:center">
-        <div style="background:var(--gp);border-radius:8px;padding:.9rem"><div style="font-family:'Inter',sans-serif;font-size:1.7rem;font-weight:800;color:var(--g)" id="cntP">0</div><div style="font-size:.7rem;color:var(--ink3)">Présents</div></div>
-        <div style="background:var(--rp);border-radius:8px;padding:.9rem"><div style="font-family:'Inter',sans-serif;font-size:1.7rem;font-weight:800;color:var(--r)" id="cntA">0</div><div style="font-size:.7rem;color:var(--ink3)">Absents</div></div>
-        <div style="background:var(--ap);border-radius:8px;padding:.9rem"><div style="font-family:'Inter',sans-serif;font-size:1.7rem;font-weight:800;color:var(--a)" id="cntR">0</div><div style="font-size:.7rem;color:var(--ink3)">Retards</div></div>
-        <div style="background:var(--bp);border-radius:8px;padding:.9rem"><div style="font-family:'Inter',sans-serif;font-size:1.7rem;font-weight:800;color:var(--b)" id="cntT">0</div><div style="font-size:.7rem;color:var(--ink3)">Total</div></div>
+        <div style="background:var(--gp);border-radius:8px;padding:.9rem"><div style="font-family:'Poppins',sans-serif;font-size:1.7rem;font-weight:800;color:var(--g)" id="cntP">0</div><div style="font-size:.7rem;color:var(--ink3)">Présents</div></div>
+        <div style="background:var(--rp);border-radius:8px;padding:.9rem"><div style="font-family:'Poppins',sans-serif;font-size:1.7rem;font-weight:800;color:var(--r)" id="cntA">0</div><div style="font-size:.7rem;color:var(--ink3)">Absents</div></div>
+        <div style="background:var(--ap);border-radius:8px;padding:.9rem"><div style="font-family:'Poppins',sans-serif;font-size:1.7rem;font-weight:800;color:var(--a)" id="cntR">0</div><div style="font-size:.7rem;color:var(--ink3)">Retards</div></div>
+        <div style="background:var(--bp);border-radius:8px;padding:.9rem"><div style="font-family:'Poppins',sans-serif;font-size:1.7rem;font-weight:800;color:var(--b)" id="cntT">0</div><div style="font-size:.7rem;color:var(--ink3)">Total</div></div>
       </div></div></div>
       <div class="card"><div class="ch"><div class="ct">Journal absences — justification</div></div><div style="overflow-x:auto"><table><thead><tr><th>Élève</th><th>Type</th><th>Justifié</th><th>Motif</th><th>Commentaire</th></tr></thead><tbody id="absL"></tbody></table></div></div>
     </div>
@@ -1399,7 +1399,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div><div class="sht">Calendrier pédagogique</div></div>
     <div style="display:flex;align-items:center;gap:.7rem">
       <button class="btn bo bsm" onclick="calP()">←</button>
-      <span style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem" id="calL">Mars 2026</span>
+      <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:.9rem" id="calL">Mars 2026</span>
       <button class="btn bo bsm" onclick="calN()">→</button>
       <button class="btn bt" onclick="OM('mEvent')">+ Événement</button>
     </div>
@@ -1438,7 +1438,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div><div class="sht">Cahier journal</div><div style="font-size:.72rem;color:var(--ink3)">Plan de leçon, progression et suivi jour par jour</div></div>
     <div style="display:flex;align-items:center;gap:.7rem">
       <button class="btn bo bsm" onclick="cjWeekP()">←</button>
-      <span style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem" id="cjWeekL">Semaine du ...</span>
+      <span style="font-family:'Poppins',sans-serif;font-weight:700;font-size:.9rem" id="cjWeekL">Semaine du ...</span>
       <button class="btn bo bsm" onclick="cjWeekN()">→</button>
       <button class="btn bo bsm" onclick="cjPrint()">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="seanceDepuisProga()">🗺️ Depuis la progression</button>
@@ -1663,14 +1663,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div>
       <div class="abo-hero">
         <div>
-          <div style="font-size:.68rem;font-family:'Inter',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.5rem;">Plan actuel</div>
+          <div style="font-size:.68rem;font-family:'Poppins',sans-serif;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:.5rem;">Plan actuel</div>
           <div class="abo-plan-name" id="aboPlanName">Pro · —</div>
           <div style="font-size:.85rem;color:rgba(255,255,255,.6);margin:.4rem 0 1rem;" id="aboPlanDetail">Chargement...</div>
           <div class="abo-status" id="aboStatusBadge">✓ Actif</div>
         </div>
         <div style="text-align:right">
-          <div style="font-family:'Inter',sans-serif;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem;">Quota IA ce mois</div>
-          <div style="font-family:'Inter',sans-serif;font-size:1.8rem;font-weight:900;color:#fff;"><span id="aboQuotaUtilise">–</span><span style="font-size:1rem;color:rgba(255,255,255,.45);">/<span id="aboQuotaTotal">–</span></span></div>
+          <div style="font-family:'Poppins',sans-serif;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem;">Quota IA ce mois</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:1.8rem;font-weight:900;color:#fff;"><span id="aboQuotaUtilise">–</span><span style="font-size:1rem;color:rgba(255,255,255,.45);">/<span id="aboQuotaTotal">–</span></span></div>
           <div class="quota-bar" style="width:160px;margin-left:auto;"><div class="quota-fill" id="aboQuotaBar" style="width:0%"></div></div>
           <div style="font-size:.68rem;color:rgba(255,255,255,.35);" id="aboQuotaRestant">Chargement...</div>
         </div>
@@ -1732,8 +1732,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="g2">
     <div class="card"><div class="ch"><div class="ct">Mon profil</div></div><div class="cb">
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem;padding:.9rem;background:var(--tp);border-radius:9px">
-        <div id="pAv" style="width:52px;height:52px;border-radius:50%;background:var(--t);display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;flex-shrink:0">B</div>
-        <div><div id="pNS" style="font-family:'Inter',sans-serif;font-size:1rem;font-weight:700">Prof. Benali Amir</div><div id="pMS" style="font-size:.75rem;color:var(--t)">Mathématiques · 3e</div></div>
+        <div id="pAv" style="width:52px;height:52px;border-radius:50%;background:var(--t);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;flex-shrink:0">B</div>
+        <div><div id="pNS" style="font-family:'Poppins',sans-serif;font-size:1rem;font-weight:700">Prof. Benali Amir</div><div id="pMS" style="font-size:.75rem;color:var(--t)">Mathématiques · 3e</div></div>
       </div>
       <div class="fg2"><div class="fg"><label class="fl">Prénom</label><input class="fi" id="pPre" placeholder="Prénom"></div><div class="fg"><label class="fl">Nom</label><input class="fi" id="pNom" placeholder="Nom"></div></div>
       <div class="fg"><label class="fl">Matière principale</label>
@@ -1843,7 +1843,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div style="font-size:.82rem;color:var(--ink2);margin-bottom:1rem;">Le prof ouvre l'espace élève (bouton "Tester"), donne le code à l'élève, et l'élève saisit son code pour accéder à son espace privé.</div>
         <div style="background:var(--bg);border:2px dashed var(--t);border-radius:10px;padding:1.2rem;text-align:center;cursor:pointer;" onclick="openStudentPortal()">
           <div style="font-size:2rem;margin-bottom:.4rem;">🎓</div>
-          <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem;color:var(--t);">Ouvrir l'espace élève</div>
+          <div style="font-family:'Poppins',sans-serif;font-weight:700;font-size:.9rem;color:var(--t);">Ouvrir l'espace élève</div>
           <div style="font-size:.72rem;color:var(--ink3);margin-top:3px;">Cliquez pour tester comme un élève</div>
         </div>
         <div style="display:flex;gap:.6rem;margin-top:.8rem;">
@@ -1923,12 +1923,12 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl">Commune</label><input class="fi" id="eVi" placeholder="Commune"></div>
       </div>
       <div class="blk" style="background:var(--tp);border-left:3px solid var(--t)">
-        <div style="font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;color:var(--t);margin-bottom:.7rem">Représentant légal 1</div>
+        <div style="font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:700;color:var(--t);margin-bottom:.7rem">Représentant légal 1</div>
         <div class="fg2"><div class="fg"><label class="fl">Nom complet</label><input class="fi" id="r1N" placeholder="Nom Prénom"></div><div class="fg"><label class="fl">Lien</label><select class="fs" id="r1L"><option>Père</option><option>Mère</option><option>Tuteur légal</option><option>Grand-parent</option><option>Autre</option></select></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="r1M" placeholder="parent@mail.com"></div><div class="fg"><label class="fl">Téléphone</label><input class="fi" id="r1T" placeholder="06 XX XX XX XX"></div></div>
       </div>
       <div class="blk" style="background:var(--bp);border-left:3px solid var(--b)">
-        <div style="font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;color:var(--b);margin-bottom:.7rem">Représentant légal 2 (optionnel)</div>
+        <div style="font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:700;color:var(--b);margin-bottom:.7rem">Représentant légal 2 (optionnel)</div>
         <div class="fg2"><div class="fg"><label class="fl">Nom complet</label><input class="fi" id="r2N" placeholder="Nom Prénom"></div><div class="fg"><label class="fl">Lien</label><select class="fs" id="r2L"><option>Père</option><option>Mère</option><option>Tuteur légal</option><option>Grand-parent</option><option>Autre</option></select></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="r2M" placeholder=""></div><div class="fg"><label class="fl">Téléphone</label><input class="fi" id="r2T" placeholder=""></div></div>
       </div>
@@ -3415,7 +3415,7 @@ function switchLang() {
   root.setAttribute('dir', isAR ? 'rtl' : 'ltr');
 
   /* Font family on body */
-  document.body.style.fontFamily = isAR ? "'Amiri',sans-serif" : "'Inter',sans-serif";
+  document.body.style.fontFamily = isAR ? "'Amiri',sans-serif" : "'Poppins',sans-serif";
 
   /* Lang button label */
   document.getElementById('langLabel').textContent = LANG[CURRENT_LANG].langLabel;
@@ -8496,7 +8496,7 @@ function exportNotesPDF() {
   <!-- STUDENT DASHBOARD -->
   <div id="spDash" style="display:none;flex-direction:column;height:100vh;">
     <div class="sp-topbar">
-      <div class="sp-topbar-logo">Classe<span>IA</span> <span style="font-size:.7rem;color:rgba(255,255,255,.4);font-family:'Inter',sans-serif;font-weight:400;">· Espace élève</span></div>
+      <div class="sp-topbar-logo">Classe<span>IA</span> <span style="font-size:.7rem;color:rgba(255,255,255,.4);font-family:'Poppins',sans-serif;font-weight:400;">· Espace élève</span></div>
       <div style="display:flex;align-items:center;gap:1rem;">
         <div>
           <div class="sp-student-name" id="spStudentName">Élève</div>
