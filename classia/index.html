@@ -1581,6 +1581,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <button class="btn bo bsm" id="btnTcRegen" style="display:none" onclick="genCours()" title="Régénérer avec les mêmes paramètres">🔄 Régénérer</button>
           <button class="btn bo bsm" id="btnTcSimplify" style="display:none" onclick="tcSimplify()" title="Refaire une version plus simple">✏️ Simplifier</button>
           <button class="btn bo bsm" id="btnTcPrint" onclick="printCleanPage(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)">Imprimer</button>
+          <button class="btn bo bsm" id="btnTcIllus" style="display:none" onclick="printFicheIllustree(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)" title="Mise en page illustrée, façon fiche dessinée à la main">🎨 Version illustrée</button>
           <button class="btn bt bsm" id="btnSCrs" style="display:none" onclick="saveCours()">Sauvegarder</button>
           <button class="btn bo bsm" id="btnTcClose" onclick="closeCrsResult()" title="Fermer">✕ Fermer</button>
         </div>
@@ -4658,6 +4659,270 @@ function printCleanPage(title, contentHTML) {
   setTimeout(function () { w.print(); }, 350);
 }
 
+/* ============================================================
+   Kit de « doodles » dessinés à la main, pour la mise en page
+   illustrée façon sketchnote des fiches pédagogiques.
+   Porté depuis tadriss-fiches-ai (public/illustrations.js),
+   sans dépendance ni appel réseau.
+   ============================================================ */
+(function () {
+  const INK = "#2b2340";
+  const ROUGH_DEFS =
+    `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+       <filter id="tdz-rough" x="-20%" y="-20%" width="140%" height="140%">
+         <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="7" result="n"/>
+         <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/>
+       </filter>
+     </svg>`;
+  const D = (paths, vb = "0 0 48 48") =>
+    `<svg class="doodle" viewBox="${vb}" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+       <g stroke="${INK}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#tdz-rough)">${paths}</g>
+     </svg>`;
+  const DOODLES = {
+    book: D(`<path d="M24 12c-4-3-10-4-16-3v27c6-1 12 0 16 3 4-3 10-4 16-3V9c-6-1-12 0-16 3Z" fill="#fff"/><path d="M24 12v27"/><path d="M11 16c3-.6 7-.4 10 1M11 22c3-.6 7-.4 10 1M27 17c3-1.4 7-1.6 10-1M27 23c3-1.4 7-1.6 10-1"/>`),
+    books: D(`<path d="M6 30c5-1 10-1 14 1 4-2 9-2 14-1v10c-5-1-10-1-14 1-4-2-9-2-14-1Z" fill="#fff"/><path d="M20 31v10"/><path d="M10 16h18l6 6v10" fill="#ffe6c2"/><path d="M10 16v16"/>`),
+    star: D(`<path d="M24 5l5.5 12L42 18.5l-9 8.5 2.4 12.4L24 32.8 12.6 39.4 15 27 6 18.5 18.5 17Z" fill="#ffd66b"/>`),
+    sparkle: D(`<path d="M24 6c1.4 9 3.5 11.4 12 13-8.5 1.6-10.6 4-12 13-1.4-9-3.5-11.4-12-13 8.5-1.6 10.6-4 12-13Z" fill="#c9b6ff"/>`),
+    pencil: D(`<path d="M11 34 30 15l7 7-19 19-9 2Z" fill="#ffd66b"/><path d="M28 17l7 7"/><path d="M11 34l3.5 3.5"/><path d="M36 10c2-2 5 1 3 3M41 16c2-2 5 1 3 3M32 7c1-1 3 0 2 2" stroke="#ec8fb0"/>`),
+    clock: D(`<circle cx="24" cy="25" r="15" fill="#fff"/><path d="M24 25V14M24 25l8 6"/><path d="M24 6v3M24 41v3M6 25h3M39 25h3"/>`),
+    bulb: D(`<path d="M24 9a12 12 0 0 1 7.5 21c-1 1-1.5 2.2-1.6 3.5H18.1c-.1-1.3-.6-2.5-1.6-3.5A12 12 0 0 1 24 9Z" fill="#ffe08a"/><path d="M18 37h12M20 41h8"/><path d="M24 5V2M39 13l2-3M9 13l-2-3"/>`),
+    target: D(`<circle cx="22" cy="26" r="14" fill="#fff"/><circle cx="22" cy="26" r="8"/><circle cx="22" cy="26" r="2.6" fill="#ec6b8f" stroke="none"/><path d="M32 16l9-9M41 7l-6 .6M41 7l-.6 6"/>`),
+    gears: D(`<circle cx="20" cy="21" r="8" fill="#fff"/><circle cx="20" cy="21" r="3"/><path d="M20 9V5M20 37v-4M8 21H4M36 21h-4M11 12l-3-3M32 33l3 3M11 30l-3 3M32 9l3-3"/><circle cx="35" cy="35" r="5" fill="#fff"/>`),
+    clipboard: D(`<rect x="12" y="10" width="24" height="31" rx="3" fill="#fff"/><rect x="18" y="6" width="12" height="7" rx="2.5" fill="#c9b6ff"/><path d="M17 21h14M17 27h14M17 33h9"/>`),
+    speech: D(`<path d="M9 11h30a4 4 0 0 1 4 4v15a4 4 0 0 1-4 4H22l-9 8v-8h-4a4 4 0 0 1-4-4V15a4 4 0 0 1 4-4Z" fill="#bfe3ff"/><circle cx="18" cy="22.5" r="1.7" fill="${INK}" stroke="none"/><circle cx="24" cy="22.5" r="1.7" fill="${INK}" stroke="none"/><circle cx="30" cy="22.5" r="1.7" fill="${INK}" stroke="none"/>`),
+    chat2: D(`<path d="M6 9h22a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H15l-6 5v-5H6a4 4 0 0 1-4-4V13a4 4 0 0 1 4-4Z" fill="#ffd1e0"/><path d="M42 21h-9a4 4 0 0 0-4 4v9a4 4 0 0 0 4 4v5l6-5h3a4 4 0 0 0 4-4v-9a4 4 0 0 0-4-4Z" fill="#bfe3ff"/>`),
+    mic: D(`<rect x="18" y="6" width="12" height="21" rx="6" fill="#dcdce6"/><path d="M12 23a12 12 0 0 0 24 0"/><path d="M24 35v7M17 42h14"/>`),
+    clap: D(`<rect x="7" y="20" width="34" height="21" rx="2" fill="${INK}"/><path d="M7 20 10 11l31 4-1.5 6.5" fill="${INK}"/><path d="M15 12.5 12.5 20M23 13.5 20.5 21M31 14.5 28.5 22" stroke="#fff"/>`),
+    curtain: D(`<path d="M7 8h34"/><path d="M11 8c0 15-3 23 2.5 31 4.5-3.5 4.5-11 4.5-23M37 8c0 15 3 23-2.5 31-4.5-3.5-4.5-11-4.5-23" fill="#ef9aa9"/><path d="M19 8c1 13 0 21-2.5 29M29 8c-1 13 0 21 2.5 29"/>`),
+    globe: D(`<circle cx="24" cy="22" r="14" fill="#bfe3ff"/><path d="M10 22h28M24 8v28M14 13c6 5 14 5 20 0M14 31c6-5 14-5 20 0"/><path d="M24 36v6M16 42h16"/>`),
+    compass: D(`<circle cx="24" cy="24" r="15" fill="#fff"/><path d="M24 12l4.5 9.5L38 26l-9.5 4.5L24 40l-4.5-9.5L10 26l9.5-4.5Z" fill="#ec8fb0"/>`),
+    beaker: D(`<path d="M19 7h10v13l9 18a4 4 0 0 1-3.6 6H13.6A4 4 0 0 1 10 38l9-18Z" fill="#fff"/><path d="M13 31h22M16 7h16"/><circle cx="21" cy="35" r="1.6" fill="#8fd6b0" stroke="none"/><circle cx="28" cy="38" r="1.6" fill="#8fd6b0" stroke="none"/>`),
+    leaf: D(`<path d="M24 41C10 31 12 12 24 7c12 5 14 24 0 34Z" fill="#a7e0c0"/><path d="M24 11v26M24 20l-6-4M24 28l6-4"/>`),
+    flower: D(`<g fill="#ec9ab0"><circle cx="24" cy="9" r="6"/><circle cx="24" cy="27" r="6"/><circle cx="15" cy="18" r="6"/><circle cx="33" cy="18" r="6"/></g><circle cx="24" cy="18" r="5" fill="#ffd66b"/><path d="M24 33v9" stroke="#8fd6b0"/>`),
+    cat: D(`<path d="M12 15l2-8 8 6M36 15l-2-8-8 6"/><circle cx="24" cy="24" r="13" fill="#ffd8a8"/><circle cx="19" cy="22" r="1.7" fill="${INK}" stroke="none"/><circle cx="29" cy="22" r="1.7" fill="${INK}" stroke="none"/><path d="M24 26v2M20 29c2.4 1.6 5.6 1.6 8 0M24 27l-6-2M24 27l6-2"/>`),
+    paw: D(`<circle cx="24" cy="31" r="8" fill="#ffd8a8"/><circle cx="13" cy="21" r="3.6" fill="#ffd8a8"/><circle cx="35" cy="21" r="3.6" fill="#ffd8a8"/><circle cx="18" cy="13" r="3.2" fill="#ffd8a8"/><circle cx="30" cy="13" r="3.2" fill="#ffd8a8"/>`),
+    house: D(`<path d="M9 24 24 11l15 13"/><path d="M13 22v17h22V22" fill="#ffe1a8"/><rect x="21" y="29" width="7" height="10" fill="#b98a4a"/>`),
+    sun: D(`<circle cx="24" cy="24" r="9" fill="#ffd66b"/><path d="M24 8V4M24 44v-4M8 24H4M44 24h-4M12 12l-3-3M39 39l3 3M12 36l-3 3M39 9l3-3"/>`),
+    cloud: D(`<path d="M14 33a7 7 0 0 1 0-14 9.5 9.5 0 0 1 18-3 6.5 6.5 0 0 1 2 17Z" fill="#e6ecff"/><path d="M16 37l-2 5M24 37l-2 5M32 37l-2 5" stroke="#8fbfe0"/>`),
+    drop: D(`<path d="M24 7c8 12 12 18 12 24a12 12 0 0 1-24 0c0-6 4-12 12-24Z" fill="#bfe3ff"/><path d="M17 31a7 7 0 0 0 7 7" stroke="#fff"/>`),
+    note: D(`<path d="M18 34V11l16-4v23"/><ellipse cx="14" cy="34" rx="5.5" ry="4.5" fill="#c9b6ff"/><ellipse cx="30" cy="30" rx="5.5" ry="4.5" fill="#c9b6ff"/>`),
+    ruler: D(`<rect x="6" y="18" width="36" height="12" rx="2" fill="#ffe08a"/><path d="M12 18v5M18 18v7M24 18v5M30 18v7M36 18v5"/>`),
+    shapes: D(`<rect x="6" y="24" width="13" height="13" fill="#c9b6ff"/><circle cx="34" cy="17" r="7" fill="#ec9ab0"/><path d="M20 11l7 13H13Z" fill="#8fd6b0"/>`),
+    numbers: D(`<text x="24" y="31" text-anchor="middle" font-family="Caveat,cursive" font-size="24" fill="${INK}" stroke="none">1 2 3</text>`),
+    heart: D(`<path d="M24 39S9 29 9 18.5A8.5 8.5 0 0 1 24 13a8.5 8.5 0 0 1 15 5.5C39 29 24 39 24 39Z" fill="#f4a6bb"/>`),
+    plane: D(`<path d="M5 24 43 7 34 42l-9-8-6 7-2-11Z" fill="#bfe3ff"/><path d="M17 30 43 7"/>`),
+    apple: D(`<path d="M24 15c-3-4-11-4-13 3-3 9 3 23 13 23s16-14 13-23c-2-7-10-7-13-3Z" fill="#ef9aa9"/><path d="M24 15c0-4 2-7 6-8M24 15v-5" stroke="#8fd6b0"/>`),
+    bag: D(`<path d="M11 18h26v23H11Z" fill="#c9b6ff"/><path d="M18 18a6 6 0 0 1 12 0M11 28h26"/>`),
+    trophy: D(`<path d="M16 9h16v9a8 8 0 0 1-16 0Z" fill="#ffd66b"/><path d="M16 11h-6a5 5 0 0 0 6 6M32 11h6a5 5 0 0 1-6 6M22 26h4v6h-4ZM15 34h18"/>`),
+    flag: D(`<path d="M14 7v35"/><path d="M14 9h22l-6 7 6 7H14Z" fill="#ef9aa9"/>`),
+    space: D(`<circle cx="22" cy="22" r="10" fill="#c9b6ff"/><ellipse cx="22" cy="22" rx="18" ry="6" transform="rotate(-20 22 22)"/><path d="M36 34l4 4M38 10l1.5 3 3 1.5-3 1.5L38 20l-1.5-3-3-1.5 3-1.5Z" fill="#ffd66b"/>`),
+    volcan: D(`<path d="M8 40 20 16h8l12 24Z" fill="#c9a0d8"/><path d="M20 16c0-4 8-4 8 0"/><path d="M24 14c-2-5 1-8 0-11M20 12c-3-3-1-6-3-8M28 12c3-3 1-6 3-8" stroke="#ef7a7a"/><path d="M8 40h32" /><path d="M18 30c3 2 9 2 12 0" stroke="#ef7a7a"/>`),
+    dino: D(`<path d="M8 34c0-10 6-16 14-16 3-8 10-8 12-2 6 0 8 6 4 10 2 6-2 12-10 12H14l-2 4-3-4Z" fill="#a7e0c0"/><circle cx="30" cy="24" r="1.5" fill="${INK}" stroke="none"/><path d="M18 20l3-4 3 4 3-4 3 4"/>`),
+    rainbow: D(`<path d="M8 36a16 16 0 0 1 32 0" stroke="#ef7a7a"/><path d="M13 36a11 11 0 0 1 22 0" stroke="#f5b642"/><path d="M18 36a6 6 0 0 1 12 0" stroke="#5aa0d8"/><circle cx="10" cy="38" r="3" fill="#e6ecff"/><circle cx="38" cy="38" r="3" fill="#e6ecff"/>`)
+  };
+  const THEME_DOODLES = {
+    ecole: ["bag", "book", "apple"], amitie: ["chat2", "heart", "star"],
+    famille: ["house", "heart", "sun"], corps: ["heart", "bulb", "star"],
+    sante: ["apple", "heart", "drop"], alimentation: ["apple", "flower", "star"],
+    animaux: ["cat", "paw", "leaf"], nature: ["leaf", "flower", "sun"],
+    eau: ["drop", "cloud", "beaker"], saisons: ["sun", "cloud", "leaf"],
+    jardin: ["flower", "leaf", "sun"], ville: ["house", "flag", "star"],
+    transports: ["plane", "flag", "star"], metiers: ["gears", "clipboard", "bulb"],
+    sport: ["trophy", "star", "heart"], vetements: ["star", "heart", "sparkle"],
+    fete: ["star", "note", "sparkle"], environnement: ["globe", "leaf", "drop"],
+    conte: ["book", "star", "sparkle"], lecture: ["book", "books", "speech"],
+    ecrit: ["pencil", "clipboard", "book"], oral: ["mic", "chat2", "speech"],
+    dialogue: ["chat2", "speech", "mic"], langue: ["pencil", "book", "star"],
+    nombres: ["numbers", "ruler", "star"], formes: ["shapes", "ruler", "compass"],
+    mesure: ["ruler", "clock", "compass"], geo: ["globe", "compass", "flag"],
+    histoire: ["book", "clock", "flag"], musique: ["note", "mic", "star"],
+    theatre: ["curtain", "clap", "mic"], space: ["space", "star", "sparkle"],
+    volcan: ["volcan", "leaf", "star"], dino: ["dino", "leaf", "star"],
+    meteo: ["cloud", "sun", "rainbow"], mer: ["drop", "plane", "sun"],
+    idee: ["bulb", "sparkle", "star"], objectif: ["target", "trophy", "star"],
+    maitre: ["clipboard", "book", "star"], default: ["book", "star", "bulb"]
+  };
+  const KW = [
+    ["theatre", /théâtre|theatre|comédien|comedien|scène|scene|pièce de théâtre|acteur|actrice|rôle|role/],
+    ["dialogue", /dialogue|conversation|saynète|saynete|jeu de rôle|échange|echange/],
+    ["oral", /\boral\b|écoute|ecoute|expression orale|comptine|prise de parole/],
+    ["ecrit", /production écrite|rédaction|redaction|écrire|dictée|dictee/],
+    ["lecture", /lecture|lire|compréhension de l'écrit|texte|poème|poeme|album|documentaire/],
+    ["conte", /conte|légende|legende|fable|il était une fois|imaginaire|merveilleux|château|chateau/],
+    ["langue", /grammaire|conjugaison|vocabulaire|orthographe|types de phrases|verbe|\bnom\b|adjectif|pronom|déterminant|determinant/],
+    ["animaux", /animal|animaux|chat|chien|oiseau|ferme|insecte|poisson/],
+    ["nature", /nature|plante|arbre|forêt|foret|fleur|feuille|paysage/],
+    ["eau", /\beau\b|glace|vapeur|pluie|cycle de l'eau|océan|ocean|goutte/],
+    ["saisons", /saison|printemps|été|automne|hiver|météo|meteo|neige/],
+    ["jardin", /jardin|planter|arroser|semer|potager/],
+    ["alimentation", /aliment|nourriture|fruit|légume|legume|repas|marché|marche/],
+    ["sante", /santé|sante|hygiène|hygiene|maladie|dent|microbe/],
+    ["corps", /corps|squelette|cinq sens|visage/],
+    ["famille", /famille|maison|parent|papa|maman|frère|frere|sœur|soeur/],
+    ["amitie", /ami|amitié|amitie|entraide|partage|vivre ensemble|solidar|politesse|respect/],
+    ["ecole", /école|ecole|classe|rentrée|rentree|cartable|élève|eleve/],
+    ["ville", /ville|quartier|\brue\b|village|immeuble/],
+    ["transports", /transport|voiture|\bbus\b|train|vélo|velo|avion|bateau/],
+    ["metiers", /métier|metier|profession|boulanger|pompier|artisan|ouvrier/],
+    ["sport", /sport|\bjeu\b|ballon|course|gymnastique|match/],
+    ["vetements", /vêtement|vetement|habit|chemise|robe|chaussure/],
+    ["fete", /fête|fete|anniversaire|tradition|cadeau|spectacle/],
+    ["environnement", /environnement|propreté|proprete|\btri\b|déchet|dechet|recyclage|pollution|planète|planete/],
+    ["nombres", /nombre|chiffre|calcul|addition|soustraction|multiplication|division|compter|numération|numeration/],
+    ["formes", /\bforme|géométr|geometr|\bfigure|carré|carre|cercle|triangle|rectangle|solide/],
+    ["mesure", /mesure|longueur|règle|regle|centimètre|centimetre|mètre|metre|masse|poids|heure|horloge/],
+    ["geo", /géographie|geographie|carte|\bplan\b|\bmonde\b|continent|\bpays\b|boussole|région|region/],
+    ["histoire", /histoire|\bpassé\b|autrefois|patrimoine|monument|ancien|civilisation|musée|musee|préhistoire|prehistoire|antiquité|antiquite/],
+    ["musique", /musique|\bchant\b|instrument|rythme|chorale/],
+    ["space", /espace|planète|planete|système solaire|systeme solaire|étoile|etoile|lune|soleil et|astronaute|univers|galaxie/],
+    ["volcan", /volcan|éruption|eruption|lave|séisme|seisme|tremblement de terre/],
+    ["dino", /dinosaure|dino|préhistorique|prehistorique|fossile/],
+    ["meteo", /météo|meteo|temps qu'il fait|arc-en-ciel|orage|tempête|tempete/],
+    ["mer", /\bmer\b|plage|océan|ocean|marin|sous-marin|poisson|vague|côte|littoral/]
+  ];
+  function themeKeys(f) {
+    f = f || {};
+    const hay = [f._src, f.titre, f.module, f.competence, f.matiere, f.grammaire,
+      f.support, f.devoir,
+      (Array.isArray(f.vocabulaire) ? f.vocabulaire.join(" ") : ""),
+      (Array.isArray(f.objectifs) ? f.objectifs.join(" ") : "")]
+      .join(" ").toLowerCase();
+    const keys = (Array.isArray(f.illustrations) ? f.illustrations : [])
+      .filter((k) => THEME_DOODLES[k]);
+    const scored = [];
+    for (const [key, re] of KW) {
+      const g = hay.match(new RegExp(re.source, "gi"));
+      if (g && !keys.includes(key)) scored.push([key, g.length]);
+    }
+    scored.sort((a, b) => b[1] - a[1]);
+    for (const [key] of scored) if (!keys.includes(key)) keys.push(key);
+    const m = (f.matiere || "").toLowerCase();
+    if (/math/.test(m)) keys.push("nombres", "formes");
+    else if (/scien|svt|physi|chimi/.test(m)) keys.push("nature", "eau");
+    else if (/hist|géo|geo/.test(m)) keys.push("geo", "histoire");
+    keys.push("idee", "objectif", "default");
+    return keys.filter((k, i) => keys.indexOf(k) === i);
+  }
+  const doodle = (name) => DOODLES[name] || DOODLES.star;
+  function doodleFor(key) {
+    if (DOODLES[key]) return DOODLES[key];
+    const set = THEME_DOODLES[key];
+    if (set && DOODLES[set[0]]) return DOODLES[set[0]];
+    return DOODLES.star;
+  }
+  function railItems(f) {
+    const keys = themeKeys(f);
+    const names = [];
+    for (const k of keys) {
+      for (const d of THEME_DOODLES[k] || []) if (!names.includes(d)) names.push(d);
+      if (names.length >= 5) break;
+    }
+    while (names.length < 5) names.push(["star", "sparkle", "book", "bulb"][names.length % 4]);
+    const labels = ["Comprendre", "S'exprimer", "Réagir"];
+    return [
+      { type: "doodle", name: "book" },
+      { type: "pill", text: labels[0], color: "#8b5cf6" },
+      { type: "doodle", name: names[0] },
+      { type: "pill", text: labels[1], color: "#0ea5e9" },
+      { type: "doodle", name: names[1] },
+      { type: "doodle", name: "sparkle" },
+      { type: "pill", text: labels[2], color: "#ec4899" },
+      { type: "doodle", name: names[2] },
+      { type: "doodle", name: names[3] },
+      { type: "doodle", name: "star" }
+    ];
+  }
+  function renderRail(f) {
+    const items = railItems(f)
+      .map((it) =>
+        it.type === "pill"
+          ? `<span class="rail-pill" style="border-color:${it.color};color:${it.color}">${it.text}</span>`
+          : `<span class="rail-doodle">${doodle(it.name)}</span>`
+      )
+      .join("");
+    return `<div class="doodle-rail" aria-hidden="true">${items}</div>`;
+  }
+  window.TADRISS_ILLUS = {
+    roughDefs: ROUGH_DEFS, doodles: DOODLES, doodle, doodleFor, themeKeys,
+    themeDoodles: (f, n = 3) => {
+      const out = [];
+      for (const k of themeKeys(f))
+        for (const d of THEME_DOODLES[k] || []) {
+          if (!out.includes(d)) out.push(d);
+          if (out.length >= n) return out;
+        }
+      while (out.length < n) out.push("star");
+      return out;
+    },
+    renderRail
+  };
+})();
+
+/* Nouvelle mise en page illustree "sketchnote", pour la Fiche pedagogique
+   generee par Cours IA -- reutilise le contenu deja genere (contentHTML),
+   sans toucher au prompt ni a la generation. */
+function printFicheIllustree(title, contentHTML) {
+  var w = window.open('', '_blank');
+  if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
+  var ill = window.TADRISS_ILLUS;
+  var ctx = { titre: title, matiere: (D.s && D.s.mat) || '' };
+  var td = ill ? ill.themeDoodles(ctx, 4) : ['star','star','star','star'];
+  var rail = ill ? ill.renderRail(ctx) : '';
+  var headDoodleLeft = ill ? ill.doodle('book') : '';
+  var headDoodleRight = ill ? ill.doodle(td[0]) : '';
+  var sparkle = ill ? ill.doodle('sparkle') : '';
+  var footDoodle1 = ill ? ill.doodle('books') : '';
+  var footDoodle2 = ill ? ill.doodle('star') : '';
+  var roughDefs = ill ? ill.roughDefs : '';
+  var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>' + (title||'ClasseIA') + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Patrick+Hand&display=swap" rel="stylesheet">' +
+    '<style>' +
+    '@page{size:A4;margin:12mm;}' +
+    '*{box-sizing:border-box;}' +
+    'body{margin:0;background:#fffdf7;color:#3a3550;font-family:"Patrick Hand","Segoe Print","Comic Sans MS",cursive;font-size:14px;line-height:1.5;}' +
+    '.sheet{background:radial-gradient(circle at 20% 12%,#fff6ec 0,transparent 45%),radial-gradient(circle at 88% 78%,#f3f0ff 0,transparent 42%),#fffdf7;padding:12mm 12mm 14mm 84px;position:relative;min-height:100vh;}' +
+    '.sheet p{font-size:13.5px;margin:4px 0;}' +
+    '.sheet b{color:#1e2a52;}' +
+    '.sheet ul,.sheet ol{margin:4px 0 8px;padding-left:20px;}' +
+    '.sheet li{margin-bottom:3px;font-size:13.5px;line-height:1.45;}' +
+    '.doodle{display:block;width:100%;height:auto;overflow:visible;}' +
+    '.doodle-rail{position:absolute;left:4px;top:12mm;bottom:12mm;width:70px;display:flex;flex-direction:column;align-items:center;justify-content:space-around;gap:2px;padding:4px 0;border-right:2px dashed #d9cff2;}' +
+    '.rail-doodle{width:40px;flex:none;}' +
+    '.rail-doodle:nth-child(3n){transform:rotate(-8deg);}' +
+    '.rail-doodle:nth-child(4n){transform:rotate(7deg);}' +
+    '.rail-pill{font-family:"Patrick Hand",cursive;font-size:11px;line-height:1;border:2px solid;border-radius:999px;padding:3px 7px;background:#fff;white-space:nowrap;transform:rotate(-3deg);}' +
+    '.rail-pill:nth-of-type(even){transform:rotate(3deg);}' +
+    '.fiche-header{display:flex;align-items:center;justify-content:center;gap:14px;padding-bottom:12px;margin-bottom:14px;border-bottom:2px dashed #d9cff2;position:relative;}' +
+    '.fiche-head-main{text-align:center;position:relative;}' +
+    '.fiche-title{font-family:"Caveat","Patrick Hand",cursive;color:#1e2a52;font-size:34px;font-weight:700;margin:0;line-height:1.05;text-decoration:underline wavy #ec4899;text-decoration-thickness:2px;text-underline-offset:7px;}' +
+    '.hd-doodle{flex:none;width:46px;}' +
+    '.hd-doodle.big{width:64px;}' +
+    '.hd-doodle.left{transform:rotate(-6deg);}' +
+    '.hd-doodle.right{transform:rotate(6deg);}' +
+    '.hd-spark{position:absolute;right:-26px;top:-10px;width:22px;display:block;}' +
+    '.footer-slogan{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:20px;padding-top:12px;border-top:2px dashed #d9cff2;font-family:"Caveat",cursive;font-size:18px;color:#5b45d6;text-align:center;}' +
+    '.footer-slogan span{width:26px;display:inline-block;}' +
+    '@media print{.doodle-rail{width:50px;}.sheet{padding:10mm 8mm 12mm 60px;}}' +
+    '</style></head><body>' +
+    roughDefs +
+    '<div class="sheet">' +
+      rail +
+      '<header class="fiche-header">' +
+        '<span class="hd-doodle left">'+headDoodleLeft+'</span>' +
+        '<div class="fiche-head-main"><h1 class="fiche-title">'+ (title||'') +'</h1><span class="hd-spark">'+sparkle+'</span></div>' +
+        '<span class="hd-doodle right big">'+headDoodleRight+'</span>' +
+      '</header>' +
+      contentHTML +
+      '<div class="footer-slogan"><span>'+footDoodle1+'</span> ClasseIA — préparer, enseigner, inspirer <span>'+footDoodle2+'</span></div>' +
+    '</div>' +
+    '</body></html>';
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(function () { w.print(); }, 350);
+}
+
 /* ===== DATA (contexte français) ===== */
 var D = {
   s: { pre:'Camille', nom:'Martin', mat:'Mathématiques', em:'', et:'Collège Jean Moulin', vi:'', an:'2025-2026', key:'', wil:'Paris', cycle:'Collège (6e – 3e)', type:'Collège' },
@@ -7119,6 +7384,7 @@ async function genCours(extraInstruction) {
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';
     document.getElementById('btnTcSimplify').style.display='inline-flex';
+    document.getElementById('btnTcIllus').style.display = (ty === 'fiche_peda') ? 'inline-flex' : 'none';
     if (ty === 'fiche_peda') {
       addFichePedaToJournal(titre, mat, nv, dur);
       N(CURRENT_LANG==='ar'?'تم إنشاء ورقة التحضير وإضافتها إلى دفتر النصوص (اليوم) !':'Fiche pédagogique générée et ajoutée au Cahier journal (aujourd\'hui) !','ok');
@@ -7178,6 +7444,7 @@ function closeCrsResult(){
   document.getElementById('btnSCrs').style.display='none';
   document.getElementById('btnTcRegen').style.display='none';
   document.getElementById('btnTcSimplify').style.display='none';
+  document.getElementById('btnTcIllus').style.display='none';
 }
 /* Restructure le HTML généré par l'IA (Cours IA) en bannière + étapes numérotées, sans toucher au
    prompt : repère les marqueurs fixes du squelette ("Déroulement de la séance", moments surlignés
