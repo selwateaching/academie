@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Labo Langues — ClassIA</title>
+<title>Labo Langues — ClasseIA</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMDA2QjNGIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iNTUlIiBzdG9wLWNvbG9yPSIjMDBBMDYwIi8+CiAgICAgIDxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4OTFCMiIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNnKSIvPgogIDx0ZXh0IHg9IjUwIiB5PSI3MCIgZm9udC1zaXplPSI1NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+8J+Ome+4jzwvdGV4dD4KPC9zdmc+Cg==">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
-/* ===== Identité visuelle ClassIA (mêmes tokens que index.html) ===== */
+/* ===== Identité visuelle ClasseIA (mêmes tokens que index.html) ===== */
 :root{
   --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
   --t:#3454D1;--t2:#5C74E8;--tp:#EAF0FE;--tp2:rgba(52,84,209,0.1);
@@ -168,7 +168,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <div class="brand">🎙️ <span id="llBrandTxt">Labo Langues</span></div>
   <div style="display:flex;align-items:center;gap:1rem;">
     <button class="btn bo bsm" onclick="llToggleLang()" id="llLangBtn">العربية</button>
-    <a class="back" href="index.html" id="llBackLink">← Retour à ClassIA</a>
+    <a class="back" href="index.html" id="llBackLink">← Retour à ClasseIA</a>
   </div>
 </div>
 
@@ -215,8 +215,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <!-- PAS CONNECTÉ (prof) -->
   <div id="llNeedLogin" style="display:none;text-align:center;padding:3rem 1rem;">
     <div style="font-size:2rem;margin-bottom:.8rem;">🔒</div>
-    <div style="font-weight:700;margin-bottom:.5rem;" id="llNeedLoginTxt">Connecte-toi d'abord sur ClassIA.</div>
-    <a class="btn bt" href="index.html" id="llNeedLoginBtn" style="display:inline-block;margin-top:.8rem;">Aller sur ClassIA</a>
+    <div style="font-weight:700;margin-bottom:.5rem;" id="llNeedLoginTxt">Connecte-toi d'abord sur ClasseIA.</div>
+    <a class="btn bt" href="index.html" id="llNeedLoginBtn" style="display:inline-block;margin-top:.8rem;">Aller sur ClasseIA</a>
   </div>
 
   <!-- MATIÈRE NON LANGUE -->
@@ -254,7 +254,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
     <div class="card ll-fade-in ll-d2">
       <div class="cb" style="text-align:center;">
         <div style="font-weight:700;margin-bottom:.5rem;" id="llActivateTitle">Envie d'activer le Labo Langues pour tes classes ?</div>
-        <div style="font-size:.78rem;color:var(--ink3);margin-bottom:1rem;" id="llActivateSub">Module complémentaire facturé en plus de ton abonnement ClassIA.</div>
+        <div style="font-size:.78rem;color:var(--ink3);margin-bottom:1rem;" id="llActivateSub">Module complémentaire facturé en plus de ton abonnement ClasseIA.</div>
         <button class="btn bt ll-activate-btn" onclick="llDemanderActivation()" id="llActivateBtn">Demander l'activation</button>
         <div id="llActivateMsg" style="margin-top:.8rem;font-size:.8rem;color:var(--t);display:none;"></div>
       </div>
@@ -328,7 +328,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <!-- ÉLÈVE : SAISIE CODE -->
   <div id="llEleveLogin" style="display:none;text-align:center;padding:2.4rem 1rem;">
     <div style="font-size:2rem;margin-bottom:.8rem;">🎓</div>
-    <div style="font-weight:700;margin-bottom:1rem;" id="llEleveLoginTxt">Entre ton code d'accès ClassIA</div>
+    <div style="font-weight:700;margin-bottom:1rem;" id="llEleveLoginTxt">Entre ton code d'accès ClasseIA</div>
     <input class="fi" id="llEleveCode" style="max-width:220px;margin:0 auto;text-align:center;font-size:1.1rem;letter-spacing:.15em;" maxlength="6" placeholder="••••••">
     <div id="llEleveErr" style="color:var(--r);font-size:.78rem;margin-top:.6rem;"></div>
     <button class="btn bt" onclick="llEleveLoginSubmit()" style="margin-top:1rem;" id="llEleveLoginBtn">Valider</button>
@@ -413,7 +413,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
   <div class="modal" style="width:640px;">
     <div class="mh"><div class="mt2" id="llLibTitle">📋 Bibliothèque de modèles</div><button class="mx" onclick="llCloseModal('llModalLibrary')">✕</button></div>
     <div class="mb">
-      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibBuiltinTitle">Modèles ClassIA</div>
+      <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibBuiltinTitle">Modèles ClasseIA</div>
       <div id="llLibBuiltinList" style="margin-bottom:1.2rem;"></div>
       <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t);margin-bottom:.6rem;" id="llLibCustomTitle">Mes modèles</div>
       <div id="llLibCustomList"></div>
@@ -508,9 +508,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/fireba
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-/* Même projet Firebase que ClassIA (comptes prof déjà existants, accès/facturation
+/* Même projet Firebase que ClasseIA (comptes prof déjà existants, accès/facturation
    gérés via un simple champ laboLanguesActif sur le document profs/{uid}).
-   Aucune donnée de ClassIA n'est modifiée depuis ce fichier : le module est
+   Aucune donnée de ClasseIA n'est modifiée depuis ce fichier : le module est
    techniquement séparé, il ne fait que LIRE le trousseau (classes/élèves) déjà
    présent en local, et gère ses propres activités/productions à part. */
 const firebaseConfig = {
@@ -525,7 +525,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const dbFs = getFirestore(fbApp);
-/* Même mode de persistance que ClassIA (index.html), explicitement — les deux pages
+/* Même mode de persistance que ClasseIA (index.html), explicitement — les deux pages
    partagent la même session Firebase Auth stockée pour ce domaine ; laisser l'une des
    deux sur le mode par défaut du SDK au lieu de le fixer explicitement pouvait créer une
    incohérence entre les deux onglets ouverts en même temps. */
@@ -533,16 +533,16 @@ setPersistence(auth, browserLocalPersistence).catch(function(){});
 
 /* Les enregistrements audio (base64) peuvent faire grossir le stockage du navigateur
    pour ce domaine ; sous pression mémoire, le navigateur peut évincer tout le stockage
-   d'une origine (y compris la session Firebase Auth partagée avec ClassIA), ce qui se
+   d'une origine (y compris la session Firebase Auth partagée avec ClasseIA), ce qui se
    manifeste comme une déconnexion inattendue. On demande un stockage "persistant" pour
    réduire ce risque — sans effet visible si déjà accordé ou non supporté. */
 try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e) {}
 
-/* ===== Bilingue (indépendant de ClassIA, propre à ce fichier) ===== */
+/* ===== Bilingue (indépendant de ClasseIA, propre à ce fichier) ===== */
 var LL_LANG_KEYS = {
   llBrandTxt:['Labo Langues','مخبر اللغات'],
   llLangBtn:['العربية','Français'],
-  llBackLink:['← Retour à ClassIA','← العودة إلى ClassIA'],
+  llBackLink:['← Retour à ClasseIA','← العودة إلى ClasseIA'],
   llLoadingTxt:['Chargement…','جارٍ التحميل…'],
   llChooserTitle:['Labo Langues','مخبر اللغات'],
   llChooserSub:["Enregistrez, envoyez et évaluez vos productions orales.",'سجّل، أرسل وقيّم إنتاجاتك الشفهية.'],
@@ -552,8 +552,8 @@ var LL_LANG_KEYS = {
   llChooserEleveT:['Élève','تلميذ(ة)'],
   llChooserEleveS:["Entrer mon code d'accès",'إدخال رمز الوصول'],
   llChooserEleveBtn:['Entrer mon code','إدخال الرمز'],
-  llNeedLoginTxt:["Connecte-toi d'abord sur ClassIA.",'سجّل الدخول أولاً على ClassIA.'],
-  llNeedLoginBtn:['Aller sur ClassIA','الذهاب إلى ClassIA'],
+  llNeedLoginTxt:["Connecte-toi d'abord sur ClasseIA.",'سجّل الدخول أولاً على ClasseIA.'],
+  llNeedLoginBtn:['Aller sur ClasseIA','الذهاب إلى ClasseIA'],
   llNotLangueTxt:['Le Labo Langues est réservé aux professeurs de Français, Anglais, Espagnol et Arabe.','مخبر اللغات مخصص فقط لأساتذة الفرنسية والإنجليزية والإسبانية والعربية.'],
   llDiscTitle:['🎙️ Découvrez le Labo Langues','🎙️ اكتشف مخبر اللغات'],
   llDiscSub:["Un module complémentaire pour faire pratiquer l'oral à vos élèves de langue.",'وحدة إضافية لتدريب تلاميذك على التعبير الشفهي.'],
@@ -563,7 +563,7 @@ var LL_LANG_KEYS = {
   llDemoPlayBtn:['▶️ Écouter (exemple)','▶️ استماع (مثال)'],
   llDemoComment:["Très bonne prononciation, continue à travailler l'intonation des questions.",'نطق جيد جداً، واصل العمل على تنغيم الأسئلة.'],
   llActivateTitle:['Envie d\'activer le Labo Langues pour tes classes ?','هل ترغب في تفعيل مخبر اللغات لأقسامك؟'],
-  llActivateSub:["Module complémentaire facturé en plus de ton abonnement ClassIA.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في ClassIA.'],
+  llActivateSub:["Module complémentaire facturé en plus de ton abonnement ClasseIA.",'وحدة إضافية تُفوتر بشكل منفصل عن اشتراكك في ClasseIA.'],
   llActivateBtn:["Demander l'activation",'طلب التفعيل'],
   llProfTitle:['Labo Langues','مخبر اللغات'],
   llProfHeroSub:['Faites pratiquer l\'oral à vos élèves.','درّب تلاميذك على التعبير الشفهي.'],
@@ -584,7 +584,7 @@ var LL_LANG_KEYS = {
   llLibraryBtnTxt:['Bibliothèque de modèles','مكتبة النماذج'],
   llProdBackBtnTxt:['Retour','رجوع'],
   llLibTitle:['📋 Bibliothèque de modèles','📋 مكتبة النماذج'],
-  llLibBuiltinTitle:['Modèles ClassIA','نماذج ClassIA'],
+  llLibBuiltinTitle:['Modèles ClasseIA','نماذج ClasseIA'],
   llLibCustomTitle:['Mes modèles','نماذجي'],
   llLibCloseBtn:['Fermer','إغلاق'],
   llTplEditTitle:['Modifier le modèle','تعديل النموذج'],
@@ -604,7 +604,7 @@ var LL_LANG_KEYS = {
   llProdCtTxt:['Productions des élèves','إنتاجات التلاميذ'],
   llEditActBtnTxt:['Modifier','تعديل'],
   llDeleteActBtnTxt:["Supprimer l'activité",'حذف النشاط'],
-  llEleveLoginTxt:["Entre ton code d'accès ClassIA",'أدخل رمز الوصول الخاص بك'],
+  llEleveLoginTxt:["Entre ton code d'accès ClasseIA",'أدخل رمز الوصول الخاص بك'],
   llEleveLoginBtn:['Valider','تأكيد'],
   llEleveAppTitle:['🎙️ Mes activités orales','🎙️ أنشطتي الشفهية'],
   llModalActTitle:['Créer une activité orale','إنشاء نشاط شفهي'],
@@ -651,7 +651,7 @@ window.llShowDiag = function() {
   lines.push('COMPTE ACTUELLEMENT CONNECTÉ ICI : ' + (cu ? ((cu.email || '(sans email)') + ' — uid ' + cu.uid) : '(aucun, non connecté)'));
   lines.push('');
   var rosterKeys = Object.keys(localStorage).filter(function(k) { return k.indexOf('CLASSIA_FR_') === 0; });
-  if (!rosterKeys.length) lines.push('Aucun compte ClassIA trouvé sur cet appareil/navigateur.');
+  if (!rosterKeys.length) lines.push('Aucun compte ClasseIA trouvé sur cet appareil/navigateur.');
   rosterKeys.forEach(function(k) {
     try {
       var d = JSON.parse(localStorage.getItem(k));
@@ -682,7 +682,7 @@ window.llShowDiag = function() {
   document.getElementById('llDiagPanel').style.display = 'block';
 };
 
-/* Icônes réutilisées telles quelles depuis la barre latérale de ClassIA (index.html),
+/* Icônes réutilisées telles quelles depuis la barre latérale de ClasseIA (index.html),
    pour une identité visuelle cohérente entre les deux applications (mêmes icônes 3D
    colorées que le reste du site, au lieu d'icônes SVG inventées séparément). */
 var LL_TADRISS_ICONS = {
@@ -1059,7 +1059,7 @@ function llProfLangueIds(p) {
   return ids.length ? ids : LL_LANGUES.map(function(l){ return l.id; });
 }
 
-/* ===== Lecture (seule) du trousseau ClassIA + stockage propre au Labo Langues ===== */
+/* ===== Lecture (seule) du trousseau ClasseIA + stockage propre au Labo Langues ===== */
 function llReadRoster(uid) {
   try { return JSON.parse(localStorage.getItem('CLASSIA_FR_' + uid) || '{}'); } catch(e) { return {}; }
 }
@@ -1247,7 +1247,7 @@ window.llToGradeListen = function(btn, uid, audioKey) {
   row.appendChild(wrap);
   btn.innerHTML = LL_ICO.check + ' ' + (isAR ? 'إخفاء' : 'Masquer');
 };
-/* Somme la taille de toutes les clés localStorage de cette origine (ClassIA + Labo Langues
+/* Somme la taille de toutes les clés localStorage de cette origine (ClasseIA + Labo Langues
    partagent le même domaine) : les enregistrements audio en base64 peuvent faire grossir
    le stockage jusqu'à risquer une éviction par le navigateur (voir plus haut). */
 function llGetLocalStorageUsageMB() {
@@ -1269,7 +1269,7 @@ function llCheckStorageUsage() {
   box.style.display = 'block';
   box.innerHTML = isAR
     ? ('⚠️ مساحة التخزين في هذا المتصفح تقترب من الامتلاء (' + mb.toFixed(1) + ' ميغا). قد يسبب هذا انقطاع اتصال غير متوقع. صدّر (⬇️) ثم احذف (🗑) أقدم التسجيلات المصححة لتحرير مساحة.')
-    : ('⚠️ Le stockage de ce navigateur pour ClassIA/Labo Langues approche de sa limite (' + mb.toFixed(1) + ' Mo). Cela peut provoquer des déconnexions inattendues. Exportez (⬇️) puis supprimez (🗑) les enregistrements déjà corrigés les plus anciens pour libérer de la place.');
+    : ('⚠️ Le stockage de ce navigateur pour ClasseIA/Labo Langues approche de sa limite (' + mb.toFixed(1) + ' Mo). Cela peut provoquer des déconnexions inattendues. Exportez (⬇️) puis supprimez (🗑) les enregistrements déjà corrigés les plus anciens pour libérer de la place.');
 }
 function llRenderProfApp() {
   var uid = LL_STATE.profUid;
@@ -1617,10 +1617,10 @@ window.llNoterSub = function(actId, eleveId) {
 };
 
 /* Fait apparaître automatiquement la note d'une production orale dans "Notes et moyennes"
-   de ClassIA (localStorage CLASSIA_FR_{uid}), comme une évaluation normale — une seule
+   de ClasseIA (localStorage CLASSIA_FR_{uid}), comme une évaluation normale — une seule
    évaluation par activité Labo Langues (identifiée par _laboActId), mise à jour à chaque
    notation plutôt que dupliquée. Écriture directe en localStorage : le prochain sv() lancé
-   depuis ClassIA (à sa prochaine modification) la fera remonter dans la sauvegarde cloud
+   depuis ClasseIA (à sa prochaine modification) la fera remonter dans la sauvegarde cloud
    comme le reste, sans qu'on ait besoin d'y toucher depuis ce fichier séparé. */
 function llSyncNoteToTadriss(uid, act, eleveId, note) {
   var key = 'CLASSIA_FR_' + uid;
@@ -1650,7 +1650,7 @@ window.llDeleteSub = function(actId, eleveId) {
   llRenderProdList(uid, act);
   llRefreshStats(uid);
 };
-/* Retire la note d'un élève de l'évaluation ClassIA synchronisée pour cette activité
+/* Retire la note d'un élève de l'évaluation ClasseIA synchronisée pour cette activité
    (utilisé quand le prof supprime une production individuelle notée). */
 function llRemoveTadrissEvalNote(uid, actId, eleveId) {
   var key = 'CLASSIA_FR_' + uid;
@@ -1660,7 +1660,7 @@ function llRemoveTadrissEvalNote(uid, actId, eleveId) {
   var ev = td.ev.find(function(e) { return e._laboActId === actId; });
   if (ev && ev.notes) { delete ev.notes[eleveId]; try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
 }
-/* Retire entièrement l'évaluation ClassIA synchronisée pour une activité
+/* Retire entièrement l'évaluation ClasseIA synchronisée pour une activité
    (utilisé quand le prof supprime l'activité entière). */
 function llRemoveTadrissEval(uid, actId) {
   var key = 'CLASSIA_FR_' + uid;
@@ -1671,7 +1671,7 @@ function llRemoveTadrissEval(uid, actId) {
   td.ev = td.ev.filter(function(e) { return e._laboActId !== actId; });
   if (td.ev.length !== before) { try { localStorage.setItem(key, JSON.stringify(td)); } catch (e) {} }
 }
-/* Crée/actualise un événement "Devoir" dans l'agenda ClassIA quand l'activité a une date limite,
+/* Crée/actualise un événement "Devoir" dans l'agenda ClasseIA quand l'activité a une date limite,
    pour qu'elle apparaisse dans "Mes devoirs à venir" côté élève avant même d'être notée.
    Si la date limite est retirée, l'événement synchronisé est supprimé (rien à afficher). */
 function llSyncDevoirToTadriss(uid, act) {
