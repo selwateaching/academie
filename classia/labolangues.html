@@ -11,7 +11,7 @@
 /* ===== Identité visuelle ClasseIA (mêmes tokens que index.html) ===== */
 :root{
   --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
-  --t:#3454D1;--t2:#5C74E8;--tp:#EAF0FE;--tp2:rgba(52,84,209,0.1);
+  --t:#5B45D6;--t2:#7C6AEA;--tp:#EFEAFE;--tp2:rgba(91,69,214,0.1);
   --r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;
   --b:#0EA5B7;--bp:#E8FAFB;--p:#8B5CF6;--pp:#F5F3FF;
   --g:#22C55E;--gp:#F0FDF4;--br:#E3E4E8;--rd:12px;
@@ -1172,7 +1172,7 @@ function llEligibles(uid, a) {
   if (a.assigneMode === 'specifique') list = list.filter(function(e){ return (a.assigneElevesIds||[]).indexOf(e.id) >= 0; });
   return list;
 }
-var LL_AVATAR_COLORS = ['#3454D1','#0EA5B7','#8B5CF6','#D98C3D','#C8102E','#0891B2','#DB2777','#EA580C'];
+var LL_AVATAR_COLORS = ['#5B45D6','#0EA5B7','#8B5CF6','#D98C3D','#C8102E','#0891B2','#DB2777','#EA580C'];
 function llAvatarColor(name) {
   var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
   return LL_AVATAR_COLORS[h % LL_AVATAR_COLORS.length];
@@ -1884,7 +1884,7 @@ function llStudioStartWaveform(stream) {
       var barW = canvas.width / data.length;
       for (var i = 0; i < data.length; i++) {
         var h = (data[i] / 255) * canvas.height;
-        ctx.fillStyle = '#3454D1';
+        ctx.fillStyle = '#5B45D6';
         ctx.fillRect(i * barW, canvas.height - h, barW - 1, h);
       }
     }
