@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
-  --t:#FF6B35;--t2:#FF8F5E;--tp:#FFEDE5;--r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;--br:#E3E4E8;--rd:12px;
+  --t:#FF6B35;--t2:#FF8F5E;--tp:#FFEDE5;--r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;--g:#22C55E;--gp:#F0FDF4;--br:#E3E4E8;--rd:12px;
 }
 html{font-size:17.5px;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -28,6 +28,7 @@ td{padding:10px 12px;font-size:.92rem;border-bottom:1px solid var(--br);vertical
 tr:last-child td{border-bottom:none;}
 .btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .15s;}
 .bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
+.bo{background:transparent;border:1.5px solid var(--br);color:var(--ink2);}.bo:hover{border-color:var(--t);color:var(--t);}
 .bt:disabled{opacity:.5;cursor:not-allowed;}
 .empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
 #llLoading,#llNeedLogin,#llNotAdmin{text-align:center;padding:4rem 1rem;color:var(--ink3);}
@@ -216,6 +217,24 @@ function renderTable(rows, cols) {
 var PLAN_LABELS = { decouverte: 'Découverte', starter: 'Starter', pro: 'Pro' };
 var COMPTE_SEL = {};
 var LAST_COMPTES_ROWS = [];
+
+/* Échéance de paiement : dérivée de prochainPaiement (aucun webhook Stripe ne met ce
+   champ à jour automatiquement — le paiement est confirmé par toi après réception,
+   via le bouton "Paiement reçu" ci-dessous). */
+function echeanceInfo(p) {
+  if (!p.prochainPaiement) return { text: '—', color: 'var(--ink3)' };
+  var ms = new Date(p.prochainPaiement).getTime();
+  if (isNaN(ms)) return { text: '—', color: 'var(--ink3)' };
+  var jours = Math.ceil((ms - Date.now()) / 86400000);
+  var dateStr = new Date(ms).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (jours < 0) return { text: dateStr + ' — expiré depuis ' + Math.abs(jours) + ' j', color: 'var(--r)' };
+  if (jours <= 5) return { text: dateStr + ' — dans ' + jours + ' j', color: 'var(--a)' };
+  return { text: dateStr + ' — dans ' + jours + ' j', color: 'var(--g)' };
+}
+function statutBadge(p) {
+  if (p.status === 'suspended') return '<span class="badge" style="background:var(--rp);color:var(--r);">Suspendu</span>';
+  return '<span class="badge" style="background:var(--gp);color:var(--g);">Actif</span>';
+}
 window.aRenderComptes = function() {
   var q = (document.getElementById('aComptesSearch').value || '').trim().toLowerCase();
   /* Les inscriptions non validées ont leur propre file "Nouvelles inscriptions" plus haut —
@@ -231,13 +250,24 @@ window.aRenderComptes = function() {
     { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
     { label: 'Prof', render: profLabel },
     { label: 'Matière', render: function(p) { return p.matiere || ''; } },
-    { label: 'Date d\'inscription', render: formatCreatedAt },
+    { label: 'Statut', render: statutBadge },
+    { label: 'Échéance', render: function(p) {
+        var e = echeanceInfo(p);
+        return '<span style="color:' + e.color + ';font-weight:600;white-space:nowrap;">' + e.text + '</span>';
+      } },
     { label: 'Forfait actuel', render: function(p) { return PLAN_LABELS[p.plan] || 'Pro (par défaut)'; } },
     { label: 'Changer le forfait', render: function(p) {
         var cur = p.plan || 'pro';
         return '<select onchange="window.aSetPlan(\'' + p.id + '\', this.value)" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
           + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '"' + (cur===k?' selected':'') + '>' + PLAN_LABELS[k] + '</option>'; }).join('')
           + '</select>';
+      } },
+    { label: 'Action', render: function(p) {
+        var renewBtn = '<button class="btn bt" style="white-space:nowrap;" onclick="window.aRenewProf(\'' + p.id + '\')">💳 Paiement reçu (+1 mois)</button>';
+        var suspendBtn = p.status === 'suspended'
+          ? '<button class="btn bo" style="white-space:nowrap;" onclick="window.aToggleSuspend(\'' + p.id + '\', false)">Réactiver</button>'
+          : '<button class="btn bo" style="white-space:nowrap;" onclick="window.aToggleSuspend(\'' + p.id + '\', true)">Suspendre</button>';
+        return '<div style="display:flex;flex-direction:column;gap:5px;">' + renewBtn + suspendBtn + '</div>';
       } }
   ]) : '<div class="empty">Aucun compte trouvé</div>';
   var allChecked = rows.length > 0 && rows.every(function(p) { return COMPTE_SEL[p.id]; });
@@ -275,6 +305,25 @@ window.aValidateProf = async function(profId, plan) {
      démarre un mois d'accès à compter d'aujourd'hui, quel que soit le forfait choisi. */
   var prochainPaiement = new Date(Date.now() + 30 * 86400000).toISOString();
   await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', plan: plan, prochainPaiement: prochainPaiement }, { merge: true });
+  loadRequests();
+};
+window.aRenewProf = async function(profId) {
+  /* Confirme un paiement reçu (Stripe carte bancaire, virement, etc.) et prolonge
+     l'accès d'un mois. Si le compte a encore des jours valides devant lui (renouvellement
+     anticipé), on prolonge à partir de la date d'échéance actuelle plutôt que d'aujourd'hui,
+     pour ne jamais faire perdre de jours déjà payés. Réactive aussi un compte suspendu. */
+  var p = ALL_PROFS.find(function(x) { return x.id === profId; });
+  var base = Date.now();
+  if (p && p.prochainPaiement) {
+    var cur = new Date(p.prochainPaiement).getTime();
+    if (!isNaN(cur) && cur > base) base = cur;
+  }
+  var prochainPaiement = new Date(base + 30 * 86400000).toISOString();
+  await setDoc(doc(dbFs, 'profs', profId), { status: 'validated', prochainPaiement: prochainPaiement }, { merge: true });
+  loadRequests();
+};
+window.aToggleSuspend = async function(profId, suspend) {
+  await setDoc(doc(dbFs, 'profs', profId), { status: suspend ? 'suspended' : 'validated' }, { merge: true });
   loadRequests();
 };
 window.aActivateLabo = async function(profId) {
