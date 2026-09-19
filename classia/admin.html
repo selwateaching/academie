@@ -4,28 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Administration — ClasseIA</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F4F4F2;--w:#FFF;--ink:#1B1C20;--ink2:#52545C;--ink3:#93949C;
   --t:#FF6B35;--t2:#FF8F5E;--tp:#FFEDE5;--r:#C8102E;--rp:#FDEEF1;--a:#D98C3D;--ap:#FBF3E9;--br:#E3E4E8;--rd:12px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--ink);}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;letter-spacing:normal;}
 .topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.4rem;height:58px;display:flex;align-items:center;justify-content:space-between;}
-.brand{font-weight:800;font-size:1.02rem;}
+.brand{font-family:'Inter',sans-serif;font-weight:600;font-size:1.3rem;}
 a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
 a.back:hover{color:var(--t);}
 .wrap{max-width:1000px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
 .card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:1.4rem;}
 .ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
-.ct{font-weight:700;font-size:.92rem;}
+.ct{font-family:'Inter',sans-serif;font-weight:600;font-size:1.35rem;}
 .badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;background:var(--ap);color:var(--a);}
 table{width:100%;border-collapse:collapse;}
 th{background:var(--bg);padding:9px 12px;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);}
 td{padding:10px 12px;font-size:.83rem;border-bottom:1px solid var(--br);vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
-.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Poppins',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .15s;}
 .bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
 .bt:disabled{opacity:.5;cursor:not-allowed;}
 .empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
@@ -56,7 +56,7 @@ tr:last-child td{border-bottom:none;}
     <div class="card">
       <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
       <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);">
-        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Poppins',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
+        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="width:100%;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
       </div>
       <div style="padding:.7rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>
