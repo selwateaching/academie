@@ -9374,6 +9374,9 @@ function authApplyProfile(p, uid) {
   window._historiquePaiements = p.historiquePaiements || [];
   window._prochainPaiement = p.prochainPaiement || null;
   window._planProf = p.plan || 'pro'; /* Starter/Pro — défaut "pro" pour les comptes déjà validés avant l'ajout des quotas */
+  /* Horodatage de dernière connexion, pour le suivi côté Administration — écriture
+     silencieuse, ne doit jamais bloquer la connexion en cas d'échec réseau. */
+  try { setDoc(doc(dbFs, 'profs', uid), { derniereConnexion: new Date().toISOString() }, { merge: true }); } catch (e) {}
   if (typeof window.sv === 'function') window.sv();
   var sbNm = document.getElementById('sbNm'); if (sbNm) sbNm.textContent = 'Prof. ' + window.D.s.pre + ' ' + window.D.s.nom;
   var sbMat = document.getElementById('sbMat'); if (sbMat) sbMat.textContent = window.D.s.mat;

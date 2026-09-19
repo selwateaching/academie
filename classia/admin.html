@@ -17,7 +17,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);line-h
 .brand{font-family:'Inter',sans-serif;font-weight:600;font-size:1.3rem;}
 a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
 a.back:hover{color:var(--t);}
-.wrap{max-width:1000px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
+.wrap{max-width:1400px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
 .card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:1.4rem;}
 .ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
 .ct{font-family:'Inter',sans-serif;font-weight:600;font-size:1.35rem;}
@@ -31,6 +31,14 @@ tr:last-child td{border-bottom:none;}
 .bo{background:transparent;border:1.5px solid var(--br);color:var(--ink2);}.bo:hover{border-color:var(--t);color:var(--t);}
 .bt:disabled{opacity:.5;cursor:not-allowed;}
 .empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
+#aComptesBody{overflow-x:auto;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem;}
+.stat-tile{background:var(--bg);border-radius:10px;padding:1rem 1.1rem;}
+.stat-tile .v{font-family:'Inter',sans-serif;font-size:1.6rem;font-weight:700;line-height:1.2;}
+.stat-tile .l{font-size:.78rem;color:var(--ink3);margin-top:2px;}
+.stat-plans{display:flex;gap:.8rem;flex-wrap:wrap;padding-top:.2rem;border-top:1px solid var(--br);margin-top:.2rem;padding-top:1rem;}
+.stat-plan-chip{background:var(--bg);border-radius:20px;padding:6px 14px;font-size:.83rem;font-weight:600;}
+@media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
 #llLoading,#llNeedLogin,#llNotAdmin{text-align:center;padding:4rem 1rem;color:var(--ink3);}
 </style>
 </head>
@@ -51,6 +59,10 @@ tr:last-child td{border-bottom:none;}
   </div>
 
   <div id="aDash" style="display:none;">
+    <div class="card">
+      <div class="ch"><div class="ct">📊 Vue d'ensemble</div></div>
+      <div id="aStatsBody" style="padding:1.3rem;"></div>
+    </div>
     <div class="card">
       <div class="ch"><div class="ct">🆕 Nouvelles inscriptions — en attente de validation</div><span class="badge" id="aPendingCount">0</span></div>
       <div id="aPendingBody"></div>
@@ -156,7 +168,18 @@ async function loadRequests() {
     return;
   }
 
+  /* Usage IA du mois en cours, par prof (même logique de quota que côté enseignant) —
+     une lecture par prof, en parallèle ; erreur silencieuse par compte (n'empêche jamais
+     l'affichage du reste du tableau de bord). */
+  await Promise.all(allProfs.map(async function(p) {
+    try {
+      var usageSnap = await getDoc(doc(dbFs, 'profs', p.id, 'usage', moisActuelCle()));
+      p._usageCount = usageSnap.exists() ? (usageSnap.data().count || 0) : 0;
+    } catch (e) { p._usageCount = null; }
+  }));
+
   ALL_PROFS = allProfs;
+  renderStats(allProfs);
   window.aRenderComptes();
 
   var pending = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
@@ -211,12 +234,67 @@ async function loadRequests() {
 function renderTable(rows, cols) {
   var head = '<tr>' + cols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('') + '</tr>';
   var body = rows.map(function(p) { return '<tr>' + cols.map(function(c) { return '<td>' + c.render(p) + '</td>'; }).join('') + '</tr>'; }).join('');
-  return '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+  return '<div style="overflow-x:auto;"><table>' + '<thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>';
 }
 
 var PLAN_LABELS = { decouverte: 'Découverte', starter: 'Starter', pro: 'Pro' };
 var COMPTE_SEL = {};
 var LAST_COMPTES_ROWS = [];
+
+/* Quotas IA mensuels — mêmes valeurs que côté enseignant (index.html) */
+var QUOTAS_PAR_PLAN = { starter: 40, pro: 100 };
+function quotaForPlan(plan) {
+  var k = (plan || 'pro').toLowerCase();
+  return QUOTAS_PAR_PLAN[k] !== undefined ? QUOTAS_PAR_PLAN[k] : QUOTAS_PAR_PLAN.pro;
+}
+function moisActuelCle() {
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function usageInfo(p) {
+  if (p._usageCount === null || p._usageCount === undefined) return { text: '—', color: 'var(--ink3)' };
+  var quota = quotaForPlan(p.plan);
+  var ratio = quota > 0 ? p._usageCount / quota : 0;
+  var color = ratio >= 1 ? 'var(--r)' : (ratio >= .8 ? 'var(--a)' : 'var(--g)');
+  return { text: p._usageCount + ' / ' + quota, color: color };
+}
+function derniereActiviteText(p) {
+  if (!p.derniereConnexion) return '—';
+  var ms = new Date(p.derniereConnexion).getTime();
+  if (isNaN(ms)) return '—';
+  var jours = Math.floor((Date.now() - ms) / 86400000);
+  var dateStr = new Date(ms).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  if (jours <= 0) return "Aujourd'hui";
+  if (jours === 1) return 'Hier';
+  return dateStr + ' (il y a ' + jours + ' j)';
+}
+
+/* Prix de référence : ClasseIA ne commercialise qu'un seul forfait payant à 19,99€/mois
+   (Starter et Pro partagent ce même tarif) — Découverte est l'essai gratuit, jamais facturé. */
+var PRIX_MENSUEL = 19.99;
+function renderStats(allProfs) {
+  var actifs = allProfs.filter(function(p) { return p.status === 'validated'; });
+  var suspendus = allProfs.filter(function(p) { return p.status === 'suspended'; });
+  var enAttente = allProfs.filter(function(p) { return p.status !== 'validated' && p.status !== 'suspended'; });
+  var parPlan = { decouverte: 0, starter: 0, pro: 0 };
+  actifs.forEach(function(p) { var k = (p.plan || 'pro'); if (parPlan[k] === undefined) k = 'pro'; parPlan[k]++; });
+  var payants = actifs.length - parPlan.decouverte;
+  var revenu = payants * PRIX_MENSUEL;
+  var revenuStr = revenu.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+  document.getElementById('aStatsBody').innerHTML =
+    '<div class="stat-grid">'
+    + '<div class="stat-tile"><div class="v">' + actifs.length + '</div><div class="l">Comptes actifs</div></div>'
+    + '<div class="stat-tile"><div class="v" style="color:var(--r);">' + suspendus.length + '</div><div class="l">Suspendus</div></div>'
+    + '<div class="stat-tile"><div class="v" style="color:var(--a);">' + enAttente.length + '</div><div class="l">En attente de validation</div></div>'
+    + '<div class="stat-tile"><div class="v" style="color:var(--g);">' + revenuStr + '</div><div class="l">Revenu mensuel estimé (' + payants + ' compte(s) payant(s) × ' + PRIX_MENSUEL.toString().replace('.', ',') + '€)</div></div>'
+    + '</div>'
+    + '<div class="stat-plans">'
+    + '<span class="stat-plan-chip">Découverte : ' + parPlan.decouverte + '</span>'
+    + '<span class="stat-plan-chip">Starter : ' + parPlan.starter + '</span>'
+    + '<span class="stat-plan-chip">Pro : ' + parPlan.pro + '</span>'
+    + '</div>';
+}
 
 /* Échéance de paiement : dérivée de prochainPaiement (aucun webhook Stripe ne met ce
    champ à jour automatiquement — le paiement est confirmé par toi après réception,
@@ -255,6 +333,11 @@ window.aRenderComptes = function() {
         var e = echeanceInfo(p);
         return '<span style="color:' + e.color + ';font-weight:600;white-space:nowrap;">' + e.text + '</span>';
       } },
+    { label: 'Usage IA (mois)', render: function(p) {
+        var u = usageInfo(p);
+        return '<span style="color:' + u.color + ';font-weight:600;white-space:nowrap;">' + u.text + '</span>';
+      } },
+    { label: 'Dernière activité', render: function(p) { return '<span style="white-space:nowrap;">' + derniereActiviteText(p) + '</span>'; } },
     { label: 'Forfait actuel', render: function(p) { return PLAN_LABELS[p.plan] || 'Pro (par défaut)'; } },
     { label: 'Changer le forfait', render: function(p) {
         var cur = p.plan || 'pro';
