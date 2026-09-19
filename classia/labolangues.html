@@ -1080,13 +1080,24 @@ function llShow(id) {
 /* ===== État courant ===== */
 var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null };
 
+/* Plus d'écran de choix Professeur/Élève : ce lien (menu "Labo Langues") n'est ouvert
+   que par le professeur connecté → entrée directe dans son espace. L'accès élève (code
+   d'accès) se fait désormais depuis l'espace élève (paramètre ?eleve=1), jamais depuis
+   cette page d'accueil. */
+var LL_URL_ELEVE = new URLSearchParams(window.location.search).get('eleve') === '1';
 llShow('llLoading');
 onAuthStateChanged(auth, function(user) {
   LL_STATE.firebaseUser = user || null;
-  llShow('llChooser');
+  if (LL_URL_ELEVE) { llShow('llEleveLogin'); }
+  else if (user) { window.llGoProf(); }
+  else { llShow('llNeedLogin'); }
 });
-/* Si l'auth ne répond pas très vite (hors-ligne, etc.), on affiche quand même le choix au bout de 2s */
-setTimeout(function() { if (document.getElementById('llLoading').style.display !== 'none') llShow('llChooser'); }, 2000);
+/* Si l'auth ne répond pas très vite (hors-ligne, etc.) */
+setTimeout(function() {
+  if (document.getElementById('llLoading').style.display !== 'none') {
+    llShow(LL_URL_ELEVE ? 'llEleveLogin' : 'llNeedLogin');
+  }
+}, 2000);
 
 window.llGoProf = function() {
   if (!LL_STATE.firebaseUser) { llShow('llNeedLogin'); return; }

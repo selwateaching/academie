@@ -6246,6 +6246,8 @@ function rDash() {
 function rLaboLanguesPromo() {
   var navItem = document.getElementById('siLaboLangues');
   if (navItem) navItem.style.display = isLangueMatiere(D.s.mat) ? 'flex' : 'none';
+  var spTabLabo = document.getElementById('spTabLabo');
+  if (spTabLabo) spTabLabo.style.display = (isLangueMatiere(D.s.mat) && window._laboLanguesActif) ? '' : 'none';
   var card = document.getElementById('laboLanguesPromoCard');
   if (!card) return;
   if (!isLangueMatiere(D.s.mat)) { card.style.display = 'none'; return; }
@@ -8995,6 +8997,7 @@ function exportNotesPDF() {
           <div class="sp-tab" onclick="spTab('ressources')">📁 Ressources</div>
           <div class="sp-tab" onclick="spTab('bulletin')">📋 Bulletin</div>
           <div class="sp-tab" onclick="spTab('agenda')">📅 Agenda</div>
+          <div class="sp-tab" id="spTabLabo" style="display:none;" onclick="window.open('labolangues.html?eleve=1','_blank')">🎙️ Labo Langues</div>
         </div>
 
         <!-- NOTES -->
