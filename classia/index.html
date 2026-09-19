@@ -4460,10 +4460,14 @@ window._loginRequested = false;
 function toggleView() {
   siteVisible = !siteVisible;
   var site = document.getElementById('site');
+  var appEl = document.getElementById('app');
   var btn = document.getElementById('toggleBtn');
   var icon = document.getElementById('toggleIcon');
   var label = document.getElementById('toggleLabel');
   if (siteVisible) {
+    /* On affiche la page publique : si un compte est déjà connecté et que le tableau de bord
+       est visible en arrière-plan, on le masque pour éviter un affichage superposé. */
+    if (appEl) appEl.style.display = 'none';
     site.style.display = '';
     site.classList.remove('hidden');
     icon.textContent = '📱';
@@ -4475,10 +4479,13 @@ function toggleView() {
     icon.textContent = '🌐';
     label.textContent = CURRENT_LANG === 'ar' ? 'عرض الموقع' : 'Voir le Site';
     btn.style.background = 'var(--ink)';
-    /* On tente d'accéder à l'app : si un compte est déjà connecté et validé, il apparaît directement ;
-       sinon, on affiche maintenant l'écran de connexion. */
-    window._loginRequested = true;
-    if (typeof window.revealAppOrGate === 'function') window.revealAppOrGate();
+    /* Si un compte est déjà connecté (uid Firebase présent), on réaffiche directement le
+       tableau de bord sans repasser par l'écran de connexion ; sinon on affiche cet écran. */
+    if (appEl && window.authCurrentUid) { appEl.style.display = 'flex'; }
+    else {
+      window._loginRequested = true;
+      if (typeof window.revealAppOrGate === 'function') window.revealAppOrGate();
+    }
   }
 }
 
