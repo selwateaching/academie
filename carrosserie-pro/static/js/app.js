@@ -156,7 +156,22 @@ function initSidebarToggle() {
   const toggleBtn = document.getElementById("sidebar-toggle");
   const sidebar = document.querySelector(".sidebar");
   if (!toggleBtn || !sidebar) return;
-  toggleBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "sidebar-backdrop";
+  document.body.appendChild(backdrop);
+
+  function close() {
+    sidebar.classList.remove("open");
+    backdrop.classList.remove("show");
+  }
+
+  toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+    backdrop.classList.toggle("show");
+  });
+  backdrop.addEventListener("click", close);
+  sidebar.querySelectorAll("a").forEach((link) => link.addEventListener("click", close));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
