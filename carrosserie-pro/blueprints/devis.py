@@ -1,6 +1,7 @@
+import secrets
 from datetime import datetime
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_file, abort
 from flask_login import login_required
 
 from extensions import db
@@ -178,6 +179,47 @@ def change_statut(devis_id):
         db.session.commit()
         flash("Statut du devis mis à jour.", "success")
     return redirect(url_for("devis.view_devis", devis_id=devis.id))
+
+
+@devis_bp.route("/<int:devis_id>/lien-signature", methods=["POST"])
+@login_required
+def creer_lien_signature(devis_id):
+    devis = Devis.query.get_or_404(devis_id)
+    if not devis.signature_token:
+        devis.signature_token = secrets.token_urlsafe(24)
+        historique.log("devis", devis.id, "Lien de signature créé", "")
+        db.session.commit()
+        flash("Lien de signature généré.", "success")
+    return redirect(url_for("devis.view_devis", devis_id=devis.id))
+
+
+@devis_bp.route("/signer/<token>", methods=["GET", "POST"])
+def signer_devis(token):
+    devis = Devis.query.filter_by(signature_token=token).first()
+    if not devis:
+        abort(404)
+    entreprise = Entreprise.current()
+
+    if request.method == "POST":
+        if devis.est_signe:
+            flash("Ce devis a déjà été signé.", "warning")
+            return redirect(url_for("devis.signer_devis", token=token))
+        signature_data = request.form.get("signature_data", "").strip()
+        nom = request.form.get("signature_nom", "").strip()
+        if not signature_data or not nom:
+            flash("Veuillez indiquer votre nom et apposer votre signature.", "danger")
+            return render_template("devis/signer.html", devis=devis, entreprise=entreprise)
+        devis.signature_data = signature_data
+        devis.signature_nom = nom
+        devis.signature_date = datetime.utcnow()
+        devis.signature_ip = request.remote_addr or ""
+        devis.statut = "accepte"
+        historique.log("devis", devis.id, "Signature électronique", f"Signé par {nom}")
+        db.session.commit()
+        flash("Merci, le devis a été signé avec succès.", "success")
+        return redirect(url_for("devis.signer_devis", token=token))
+
+    return render_template("devis/signer.html", devis=devis, entreprise=entreprise)
 
 
 @devis_bp.route("/<int:devis_id>/pdf")

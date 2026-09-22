@@ -11,7 +11,7 @@
     <select name="client_id" class="form-select" required {{ "disabled" if vehicule and vehicule.id }}>
       <option value="">— Sélectionner —</option>
       {% for c in clients %}
-      <option value="{{ c.id }}" {{ "selected" if vehicule and vehicule.client_id == c.id }}>{{ c.nom_affichage }}</option>
+      <option value="{{ c.id }}" {{ "selected" if (vehicule and vehicule.client_id == c.id) or (selected_client_id and selected_client_id == c.id) }}>{{ c.nom_affichage }}</option>
       {% endfor %}
     </select>
     {% if vehicule and vehicule.id %}

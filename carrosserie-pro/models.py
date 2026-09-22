@@ -342,6 +342,17 @@ class CatalogueItem(db.Model):
         return dict(TYPES_LIGNE).get(self.type_ligne, self.type_ligne)
 
 
+class ModeleCourrier(db.Model):
+    __tablename__ = "modeles_courrier"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    objet = db.Column(db.String(255), default="")
+    corps = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Lignes communes (utilisées par Devis et Facture)
 # ──────────────────────────────────────────────────────────────────────────
@@ -414,6 +425,13 @@ class Devis(db.Model):
     notes = db.Column(db.Text, default="")
     conditions = db.Column(db.Text, default="")
 
+    # Signature électronique
+    signature_token = db.Column(db.String(64), unique=True, nullable=True)
+    signature_data = db.Column(db.Text, nullable=True)  # image PNG encodée en base64 (data URL)
+    signature_nom = db.Column(db.String(255), default="")
+    signature_date = db.Column(db.DateTime, nullable=True)
+    signature_ip = db.Column(db.String(64), default="")
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -442,6 +460,10 @@ class Devis(db.Model):
         from datetime import timedelta
 
         return self.date_emission + timedelta(days=self.validite_jours or 30)
+
+    @property
+    def est_signe(self):
+        return bool(self.signature_data)
 
 
 class DevisLigne(db.Model, LigneMixin):

@@ -66,8 +66,7 @@ def new_vehicule():
         flash("Véhicule ajouté.", "success")
         return redirect(url_for("clients.view_client", client_id=vehicule.client_id))
     clients = Client.query.order_by(Client.nom).all()
-    vehicule = Vehicule(client_id=client_id)
-    return render_template("vehicules/form.html", vehicule=vehicule, clients=clients)
+    return render_template("vehicules/form.html", vehicule=None, clients=clients, selected_client_id=client_id)
 
 
 @vehicules_bp.route("/<int:vehicule_id>")

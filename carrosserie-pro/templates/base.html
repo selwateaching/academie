@@ -44,6 +44,9 @@
       <a href="{{ url_for('experts.list_experts') }}" class="nav-link {{ 'active' if request.blueprint == 'experts' }}">
         <i class="bi bi-person-badge"></i> Experts
       </a>
+      <a href="{{ url_for('courriers.list_courriers') }}" class="nav-link {{ 'active' if request.blueprint == 'courriers' }}">
+        <i class="bi bi-envelope"></i> Courriers
+      </a>
       <div class="sidebar-section">Configuration</div>
       <a href="{{ url_for('catalogue.list_catalogue') }}" class="nav-link {{ 'active' if request.blueprint == 'catalogue' }}">
         <i class="bi bi-list-ul"></i> Catalogue

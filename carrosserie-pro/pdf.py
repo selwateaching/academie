@@ -3,6 +3,7 @@ conforme aux mentions légales françaises usuelles pour un carrossier
 (SIRET, TVA intracommunautaire, numérotation séquentielle, pénalités de
 retard, indemnité forfaitaire de recouvrement, informations d'assurance)."""
 
+import base64
 import io
 
 from reportlab.lib import colors
@@ -10,6 +11,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_RIGHT, TA_LEFT
+from reportlab.lib.utils import ImageReader
 from reportlab.platypus import (
     SimpleDocTemplate,
     Table,
@@ -17,6 +19,7 @@ from reportlab.platypus import (
     Paragraph,
     Spacer,
     HRFlowable,
+    Image,
 )
 
 PRIMARY = colors.HexColor("#1f3a5f")
@@ -405,18 +408,33 @@ def generate_pdf(kind, document, entreprise):
 
     if kind == "devis":
         elements.append(Spacer(1, 24))
-        signature = Table(
-            [[
-                Paragraph("Bon pour accord — date et signature du client précédées de la mention manuscrite « Bon pour accord »", STYLE_LABEL),
-                "",
-            ]],
-            colWidths=[100 * mm, 60 * mm],
-        )
-        elements.append(signature)
-        elements.append(Spacer(1, 20))
-        box = Table([[""]], colWidths=[70 * mm], rowHeights=[25 * mm])
-        box.setStyle(TableStyle([("BOX", (0, 0), (-1, -1), 0.6, BORDER_GREY)]))
-        elements.append(box)
+        if getattr(document, "signature_data", None):
+            elements.append(Paragraph(
+                f"<b>Bon pour accord</b> — signé électroniquement le "
+                f"{document.signature_date.strftime('%d/%m/%Y à %H:%M')} par {document.signature_nom}",
+                STYLE_LABEL,
+            ))
+            elements.append(Spacer(1, 6))
+            header, b64data = document.signature_data.split(",", 1)
+            img_bytes = base64.b64decode(b64data)
+            img_reader = ImageReader(io.BytesIO(img_bytes))
+            iw, ih = img_reader.getSize()
+            display_w = 60 * mm
+            display_h = display_w * ih / iw
+            elements.append(Image(io.BytesIO(img_bytes), width=display_w, height=display_h))
+        else:
+            signature = Table(
+                [[
+                    Paragraph("Bon pour accord — date et signature du client précédées de la mention manuscrite « Bon pour accord »", STYLE_LABEL),
+                    "",
+                ]],
+                colWidths=[100 * mm, 60 * mm],
+            )
+            elements.append(signature)
+            elements.append(Spacer(1, 20))
+            box = Table([[""]], colWidths=[70 * mm], rowHeights=[25 * mm])
+            box.setStyle(TableStyle([("BOX", (0, 0), (-1, -1), 0.6, BORDER_GREY)]))
+            elements.append(box)
 
     elements.append(Spacer(1, 18))
     elements.append(HRFlowable(width="100%", thickness=0.6, color=BORDER_GREY))

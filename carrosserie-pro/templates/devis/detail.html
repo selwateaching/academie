@@ -49,6 +49,27 @@
       <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Supprimer</button>
     </form>
     {% endif %}
+
+    <div class="section-card">
+      <h6><i class="bi bi-pen"></i> Signature électronique</h6>
+      {% if devis.est_signe %}
+        <p class="mb-2 small text-success"><i class="bi bi-check-circle-fill"></i> Signé le {{ devis.signature_date.strftime('%d/%m/%Y à %H:%M') }} par <strong>{{ devis.signature_nom }}</strong></p>
+        <img src="{{ devis.signature_data }}" alt="Signature" style="max-width: 100%; border: 1px solid #d7dce2; border-radius: 8px; background:#fff;">
+      {% elif devis.signature_token %}
+        <p class="mb-2 small text-muted">Lien de signature à transmettre au client :</p>
+        <div class="input-group input-group-sm">
+          <input type="text" class="form-control" readonly value="{{ url_for('devis.signer_devis', token=devis.signature_token, _external=True) }}" id="lien-signature">
+          <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('lien-signature').value)"><i class="bi bi-clipboard"></i></button>
+        </div>
+        <a href="{{ url_for('devis.signer_devis', token=devis.signature_token) }}" target="_blank" class="small d-inline-block mt-2">Ouvrir la page de signature <i class="bi bi-box-arrow-up-right"></i></a>
+      {% else %}
+        <p class="mb-2 small text-muted">Aucun lien de signature généré pour ce devis.</p>
+        <form method="post" action="{{ url_for('devis.creer_lien_signature', devis_id=devis.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-outline-primary"><i class="bi bi-link-45deg"></i> Générer un lien de signature</button>
+        </form>
+      {% endif %}
+    </div>
   </div>
 
   <div class="col-lg-8">
