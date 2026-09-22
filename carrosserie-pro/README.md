@@ -141,6 +141,37 @@ l'émission d'un avoir, conformément aux exigences françaises de facturation
 
 ---
 
+## Déploiement sur Render (mise en ligne)
+
+Ce dépôt inclut un fichier `render.yaml` à sa racine (Blueprint Render) qui
+configure automatiquement le service.
+
+1. Créez un compte sur [render.com](https://render.com) et connectez votre
+   compte GitHub.
+2. Dans le tableau de bord Render : **New +** → **Blueprint**, puis
+   sélectionnez ce dépôt (`selwateaching/academie`) et la branche à déployer.
+3. Render détecte `render.yaml` et propose de créer le service
+   `carrosserie-pro`. Renseignez les variables demandées (`ADMIN_EMAIL`,
+   `ADMIN_PASSWORD`) puis validez.
+4. Au premier déploiement, Render exécute `pip install -r requirements.txt`
+   puis démarre l'application avec `gunicorn`. Une fois le déploiement
+   terminé, l'URL fournie par Render (`https://carrosserie-pro-xxxx.onrender.com`)
+   ouvre l'application.
+
+**⚠️ Important — persistance des données :** le plan gratuit utilise un
+disque éphémère avec SQLite : les données sont perdues à chaque nouveau
+déploiement ou redémarrage du service. Pour un usage réel en production,
+créez une base PostgreSQL (sur Render ou ailleurs) et définissez la variable
+d'environnement `DATABASE_URL` du service avec son URL de connexion — le
+code la prend en charge sans aucune modification.
+
+Pour déployer manuellement (sans Blueprint) sur Render ou un service
+équivalent (Railway, Fly.io...) : répertoire racine `carrosserie-pro/`,
+commande de build `pip install -r requirements.txt`, commande de démarrage
+`gunicorn app:app`.
+
+---
+
 ## Base de données
 
 SQLite par défaut (`carrosserie.db`), configurable via la variable

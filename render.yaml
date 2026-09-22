@@ -1,0 +1,31 @@
+# Déploiement Render pour Carrosserie Pro.
+# Dans le tableau de bord Render : New + → Blueprint → sélectionner ce dépôt
+# et la branche souhaitée. Render détecte ce fichier automatiquement.
+#
+# ⚠️ Stockage : ce service utilise SQLite sur disque éphémère (gratuit),
+# les données sont donc réinitialisées à chaque déploiement/redémarrage.
+# Pour une utilisation en production, définissez la variable d'environnement
+# DATABASE_URL vers une base PostgreSQL managée (Render, ou autre) — le code
+# la prend en charge nativement, aucune modification nécessaire.
+
+services:
+  - type: web
+    name: carrosserie-pro
+    runtime: python
+    rootDir: carrosserie-pro
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrateur
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.9
