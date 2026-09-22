@@ -264,3 +264,34 @@ body {
 @media (min-width: 901px) {
   .sidebar-backdrop { display: none !important; }
 }
+
+/* ── Planning atelier (Kanban) ──────────────────────────── */
+.kanban-board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; align-items: flex-start; }
+.kanban-column {
+  flex: 0 0 270px;
+  background: #f4f6fa;
+  border: 1px solid var(--cp-border);
+  border-radius: var(--cp-radius);
+  padding: 12px;
+  min-height: 120px;
+  transition: background-color .12s ease;
+}
+.kanban-column.drag-over { background: #e2ebfb; }
+.kanban-column-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
+.kanban-column-count { font-size: .75rem; font-weight: 700; color: var(--cp-muted-2); background: #fff; border-radius: 20px; padding: 1px 9px; }
+.kanban-card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: var(--cp-radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: grab;
+  box-shadow: var(--cp-shadow-sm);
+  font-size: .84rem;
+}
+.kanban-card:active { cursor: grabbing; }
+.kanban-card.dragging { opacity: .4; }
+.kanban-card-ref { font-weight: 700; color: var(--cp-primary); }
+.kanban-card-meta { color: var(--cp-muted-2); font-size: .78rem; margin-top: 2px; }
+.kanban-card-retard { color: #c62a1c; font-weight: 700; font-size: .74rem; margin-top: 4px; }
+.kanban-empty { color: var(--cp-muted-2); font-size: .8rem; text-align: center; padding: 14px 4px; }

@@ -155,6 +155,7 @@ def create_app():
     from blueprints.devis import devis_bp
     from blueprints.factures import factures_bp
     from blueprints.courriers import courriers_bp
+    from blueprints.planning import planning_bp
     from blueprints.settings import settings_bp
 
     app.register_blueprint(auth_bp)
@@ -167,6 +168,7 @@ def create_app():
     app.register_blueprint(devis_bp)
     app.register_blueprint(factures_bp)
     app.register_blueprint(courriers_bp)
+    app.register_blueprint(planning_bp)
     app.register_blueprint(settings_bp)
 
     @login_manager.user_loader
