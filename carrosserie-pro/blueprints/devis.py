@@ -6,6 +6,7 @@ from flask_login import login_required
 from extensions import db
 from models import Devis, DevisLigne, Dossier, Counter, Entreprise, Facture, FactureLigne, STATUTS_DEVIS, CatalogueItem, TYPES_LIGNE
 from pdf import generate_pdf
+import historique
 
 devis_bp = Blueprint("devis", __name__, url_prefix="/devis")
 
@@ -101,6 +102,9 @@ def new_devis():
             devis.lignes.append(DevisLigne(**l))
 
         db.session.add(devis)
+        db.session.flush()
+        historique.log("devis", devis.id, "Création", f"Devis {devis.numero} créé")
+        historique.log("dossier", dossier.id, "Devis créé", f"Devis {devis.numero}")
         db.session.commit()
         flash(f"Devis {devis.numero} créé.", "success")
         return redirect(url_for("devis.view_devis", devis_id=devis.id))
@@ -116,7 +120,7 @@ def new_devis():
 @login_required
 def view_devis(devis_id):
     devis = Devis.query.get_or_404(devis_id)
-    return render_template("devis/detail.html", devis=devis)
+    return render_template("devis/detail.html", devis=devis, historique=historique.for_entity("devis", devis_id))
 
 
 @devis_bp.route("/<int:devis_id>/modifier", methods=["GET", "POST"])
@@ -140,6 +144,7 @@ def edit_devis(devis_id):
         for l in _build_lignes_from_form(request.form):
             devis.lignes.append(DevisLigne(**l))
 
+        historique.log("devis", devis.id, "Modification", f"Devis {devis.numero} mis à jour")
         db.session.commit()
         flash("Devis mis à jour.", "success")
         return redirect(url_for("devis.view_devis", devis_id=devis.id))
@@ -157,7 +162,9 @@ def change_statut(devis_id):
     devis = Devis.query.get_or_404(devis_id)
     statut = request.form.get("statut")
     if statut in dict(STATUTS_DEVIS):
+        ancien_libelle = devis.statut_libelle
         devis.statut = statut
+        historique.log("devis", devis.id, "Changement de statut", f"{ancien_libelle} → {devis.statut_libelle}")
         db.session.commit()
         flash("Statut du devis mis à jour.", "success")
     return redirect(url_for("devis.view_devis", devis_id=devis.id))
@@ -228,6 +235,10 @@ def transformer_facture(devis_id):
     dossier.statut = "facture"
 
     db.session.add(facture)
+    db.session.flush()
+    historique.log("devis", devis.id, "Transformé en facture", f"Facture {facture.numero}")
+    historique.log("facture", facture.id, "Création", f"Facture {facture.numero} générée depuis le devis {devis.numero}")
+    historique.log("dossier", dossier.id, "Facture créée", f"Facture {facture.numero}")
     db.session.commit()
     flash(f"Facture {facture.numero} générée à partir du devis {devis.numero}.", "success")
     return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -241,6 +252,7 @@ def delete_devis(devis_id):
     if devis.statut == "facture":
         flash("Impossible de supprimer un devis déjà facturé.", "danger")
         return redirect(url_for("devis.view_devis", devis_id=devis.id))
+    historique.log("dossier", dossier_id, "Devis supprimé", f"Devis {devis.numero}")
     db.session.delete(devis)
     db.session.commit()
     flash("Devis supprimé.", "info")

@@ -3,6 +3,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import CatalogueItem, TYPES_LIGNE
+import historique
 
 catalogue_bp = Blueprint("catalogue", __name__, url_prefix="/catalogue")
 
@@ -40,6 +41,8 @@ def new_item():
             flash("La désignation est obligatoire.", "danger")
             return render_template("catalogue/form.html", item=item, types_ligne=TYPES_LIGNE)
         db.session.add(item)
+        db.session.flush()
+        historique.log("catalogue", item.id, "Création", f"Article créé : {item.designation}")
         db.session.commit()
         flash("Article ajouté au catalogue.", "success")
         return redirect(url_for("catalogue.list_catalogue"))
@@ -52,16 +55,20 @@ def edit_item(item_id):
     item = CatalogueItem.query.get_or_404(item_id)
     if request.method == "POST":
         _fill(item, request.form)
+        historique.log("catalogue", item.id, "Modification", "Article du catalogue mis à jour")
         db.session.commit()
         flash("Article mis à jour.", "success")
         return redirect(url_for("catalogue.list_catalogue"))
-    return render_template("catalogue/form.html", item=item, types_ligne=TYPES_LIGNE)
+    return render_template(
+        "catalogue/form.html", item=item, types_ligne=TYPES_LIGNE, historique=historique.for_entity("catalogue", item_id)
+    )
 
 
 @catalogue_bp.route("/<int:item_id>/supprimer", methods=["POST"])
 @login_required
 def delete_item(item_id):
     item = CatalogueItem.query.get_or_404(item_id)
+    historique.log("catalogue", item.id, "Suppression", f"Article supprimé : {item.designation}")
     db.session.delete(item)
     db.session.commit()
     flash("Article supprimé.", "info")

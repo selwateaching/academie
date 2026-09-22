@@ -13,6 +13,7 @@ from models import (
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
 )
+import historique
 
 dossiers_bp = Blueprint("dossiers", __name__, url_prefix="/dossiers")
 
@@ -111,6 +112,8 @@ def new_dossier():
         dossier.reference = Counter.next_number("dossier", "OR")
         _fill_dossier_from_form(dossier, request.form)
         db.session.add(dossier)
+        db.session.flush()
+        historique.log("dossier", dossier.id, "Création", f"Dossier {dossier.reference} créé")
         db.session.commit()
         flash(f"Dossier {dossier.reference} créé.", "success")
         return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
@@ -131,7 +134,9 @@ def new_dossier():
 @login_required
 def view_dossier(dossier_id):
     dossier = Dossier.query.get_or_404(dossier_id)
-    return render_template("dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER)
+    return render_template(
+        "dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER, historique=historique.for_entity("dossier", dossier_id)
+    )
 
 
 @dossiers_bp.route("/<int:dossier_id>/modifier", methods=["GET", "POST"])
@@ -140,6 +145,7 @@ def edit_dossier(dossier_id):
     dossier = Dossier.query.get_or_404(dossier_id)
     if request.method == "POST":
         _fill_dossier_from_form(dossier, request.form)
+        historique.log("dossier", dossier.id, "Modification", "Informations du dossier mises à jour")
         db.session.commit()
         flash("Dossier mis à jour.", "success")
         return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
@@ -161,7 +167,9 @@ def change_statut(dossier_id):
     dossier = Dossier.query.get_or_404(dossier_id)
     statut = request.form.get("statut")
     if statut in dict(STATUTS_DOSSIER):
+        ancien_libelle = dossier.statut_libelle
         dossier.statut = statut
+        historique.log("dossier", dossier.id, "Changement de statut", f"{ancien_libelle} → {dossier.statut_libelle}")
         db.session.commit()
         flash("Statut du dossier mis à jour.", "success")
     return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
@@ -174,6 +182,7 @@ def delete_dossier(dossier_id):
     if dossier.factures:
         flash("Impossible de supprimer un dossier facturé. Utilisez plutôt un avoir.", "danger")
         return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+    historique.log("dossier", dossier.id, "Suppression", f"Dossier {dossier.reference} supprimé")
     db.session.delete(dossier)
     db.session.commit()
     flash("Dossier supprimé.", "info")

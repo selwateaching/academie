@@ -4,6 +4,7 @@ from sqlalchemy import or_
 
 from extensions import db
 from models import Client
+import historique
 
 clients_bp = Blueprint("clients", __name__, url_prefix="/clients")
 
@@ -53,6 +54,8 @@ def new_client():
             flash("Le nom du client est obligatoire.", "danger")
             return render_template("clients/form.html", client=client)
         db.session.add(client)
+        db.session.flush()
+        historique.log("client", client.id, "Création", f"Fiche client créée : {client.nom_affichage}")
         db.session.commit()
         flash("Client créé avec succès.", "success")
         return redirect(url_for("clients.view_client", client_id=client.id))
@@ -63,7 +66,7 @@ def new_client():
 @login_required
 def view_client(client_id):
     client = Client.query.get_or_404(client_id)
-    return render_template("clients/detail.html", client=client)
+    return render_template("clients/detail.html", client=client, historique=historique.for_entity("client", client_id))
 
 
 @clients_bp.route("/<int:client_id>/modifier", methods=["GET", "POST"])
@@ -72,6 +75,7 @@ def edit_client(client_id):
     client = Client.query.get_or_404(client_id)
     if request.method == "POST":
         _fill_client_from_form(client, request.form)
+        historique.log("client", client.id, "Modification", "Coordonnées ou informations client mises à jour")
         db.session.commit()
         flash("Client mis à jour.", "success")
         return redirect(url_for("clients.view_client", client_id=client.id))
@@ -85,6 +89,7 @@ def delete_client(client_id):
     if client.dossiers:
         flash("Impossible de supprimer ce client : des dossiers y sont rattachés.", "danger")
         return redirect(url_for("clients.view_client", client_id=client.id))
+    historique.log("client", client.id, "Suppression", f"Fiche client supprimée : {client.nom_affichage}")
     db.session.delete(client)
     db.session.commit()
     flash("Client supprimé.", "info")

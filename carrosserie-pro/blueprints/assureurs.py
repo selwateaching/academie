@@ -3,6 +3,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import Assureur
+import historique
 
 assureurs_bp = Blueprint("assureurs", __name__, url_prefix="/assureurs")
 
@@ -36,6 +37,8 @@ def new_assureur():
             flash("Le nom de la compagnie est obligatoire.", "danger")
             return render_template("assureurs/form.html", assureur=assureur)
         db.session.add(assureur)
+        db.session.flush()
+        historique.log("assureur", assureur.id, "Création", f"Compagnie ajoutée : {assureur.nom}")
         db.session.commit()
         flash("Compagnie d'assurance ajoutée.", "success")
         return redirect(url_for("assureurs.list_assureurs"))
@@ -48,10 +51,13 @@ def edit_assureur(assureur_id):
     assureur = Assureur.query.get_or_404(assureur_id)
     if request.method == "POST":
         _fill(assureur, request.form)
+        historique.log("assureur", assureur.id, "Modification", "Informations de la compagnie mises à jour")
         db.session.commit()
         flash("Compagnie mise à jour.", "success")
         return redirect(url_for("assureurs.list_assureurs"))
-    return render_template("assureurs/form.html", assureur=assureur)
+    return render_template(
+        "assureurs/form.html", assureur=assureur, historique=historique.for_entity("assureur", assureur_id)
+    )
 
 
 @assureurs_bp.route("/<int:assureur_id>/supprimer", methods=["POST"])
@@ -61,6 +67,7 @@ def delete_assureur(assureur_id):
     if assureur.dossiers:
         flash("Impossible de supprimer : des dossiers référencent cette compagnie.", "danger")
         return redirect(url_for("assureurs.list_assureurs"))
+    historique.log("assureur", assureur.id, "Suppression", f"Compagnie supprimée : {assureur.nom}")
     db.session.delete(assureur)
     db.session.commit()
     flash("Compagnie supprimée.", "info")

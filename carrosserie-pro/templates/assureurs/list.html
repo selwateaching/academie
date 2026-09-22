@@ -18,6 +18,10 @@
         <td>{% if a.reseau_agree %}<span class="badge-statut st-accepte">Agréé</span>{% else %}—{% endif %}</td>
         <td class="text-end">
           <a href="{{ url_for('assureurs.edit_assureur', assureur_id=a.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          <form method="post" action="{{ url_for('assureurs.delete_assureur', assureur_id=a.id) }}" data-confirm="Supprimer la compagnie {{ a.nom }} ?" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
         </td>
       </tr>
       {% endfor %}

@@ -18,6 +18,7 @@ from models import (
     TYPES_LIGNE,
 )
 from pdf import generate_pdf
+import historique
 
 factures_bp = Blueprint("factures", __name__, url_prefix="/factures")
 
@@ -119,6 +120,9 @@ def new_facture():
         dossier.statut = "facture"
 
         db.session.add(facture)
+        db.session.flush()
+        historique.log("facture", facture.id, "Création", f"Facture {facture.numero} créée directement")
+        historique.log("dossier", dossier.id, "Facture créée", f"Facture {facture.numero}")
         db.session.commit()
         flash(f"Facture {facture.numero} créée.", "success")
         return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -139,7 +143,12 @@ def new_facture():
 @login_required
 def view_facture(facture_id):
     facture = Facture.query.get_or_404(facture_id)
-    return render_template("factures/detail.html", facture=facture, modes_paiement=MODES_PAIEMENT)
+    return render_template(
+        "factures/detail.html",
+        facture=facture,
+        modes_paiement=MODES_PAIEMENT,
+        historique=historique.for_entity("facture", facture_id),
+    )
 
 
 @factures_bp.route("/<int:facture_id>/modifier", methods=["GET", "POST"])
@@ -169,6 +178,7 @@ def edit_facture(facture_id):
         for l in _build_lignes_from_form(request.form):
             facture.lignes.append(FactureLigne(**l))
 
+        historique.log("facture", facture.id, "Modification", f"Facture {facture.numero} mise à jour")
         db.session.commit()
         flash("Facture mise à jour.", "success")
         return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -191,7 +201,9 @@ def change_statut(facture_id):
     facture = Facture.query.get_or_404(facture_id)
     statut = request.form.get("statut")
     if statut in dict(STATUTS_FACTURE):
+        ancien_libelle = facture.statut_libelle
         facture.statut = statut
+        historique.log("facture", facture.id, "Changement de statut", f"{ancien_libelle} → {facture.statut_libelle}")
         db.session.commit()
         flash("Statut de la facture mis à jour.", "success")
     return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -227,6 +239,10 @@ def add_paiement(facture_id):
     else:
         facture.statut = "partiellement_payee"
 
+    historique.log(
+        "facture", facture.id, "Règlement enregistré",
+        f"{montant:.2f} € ({paiement.mode_libelle}, {paiement.origine})",
+    )
     db.session.commit()
     flash("Règlement enregistré.", "success")
     return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -237,11 +253,13 @@ def add_paiement(facture_id):
 def delete_paiement(paiement_id):
     paiement = Paiement.query.get_or_404(paiement_id)
     facture = paiement.facture
+    montant = paiement.montant
     db.session.delete(paiement)
     db.session.flush()
     facture.statut = "payee" if facture.reste_a_payer <= 0.01 and facture.total_paye > 0 else (
         "partiellement_payee" if facture.total_paye > 0 else "emise"
     )
+    historique.log("facture", facture.id, "Règlement supprimé", f"{montant:.2f} €")
     db.session.commit()
     flash("Règlement supprimé.", "info")
     return redirect(url_for("factures.view_facture", facture_id=facture.id))
@@ -285,6 +303,10 @@ def creer_avoir(facture_id):
     facture.statut = "annulee"
 
     db.session.add(avoir)
+    db.session.flush()
+    historique.log("facture", facture.id, "Avoir émis", f"Avoir {avoir.numero}")
+    historique.log("facture", avoir.id, "Création (avoir)", f"Avoir sur la facture {facture.numero}")
+    historique.log("dossier", facture.dossier_id, "Avoir émis", f"Avoir {avoir.numero} sur facture {facture.numero}")
     db.session.commit()
     flash(f"Avoir {avoir.numero} émis pour la facture {facture.numero}.", "success")
     return redirect(url_for("factures.view_facture", facture_id=avoir.id))

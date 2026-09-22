@@ -563,3 +563,24 @@ class Paiement(db.Model):
     @property
     def mode_libelle(self):
         return dict(MODES_PAIEMENT).get(self.mode, self.mode)
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Historique (journal d'audit) — tracé générique par type d'entité + id,
+# sans clé étrangère stricte pour rester valide même après suppression de
+# l'enregistrement concerné.
+# ──────────────────────────────────────────────────────────────────────────
+class Historique(db.Model):
+    __tablename__ = "historique"
+
+    id = db.Column(db.Integer, primary_key=True)
+    entity_type = db.Column(db.String(30), nullable=False)
+    entity_id = db.Column(db.Integer, nullable=False)
+    user_name = db.Column(db.String(255), default="")
+    action = db.Column(db.String(255), nullable=False)
+    details = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.Index("ix_historique_entity", "entity_type", "entity_id"),
+    )

@@ -17,8 +17,35 @@ from models import (
     Dossier,
     Devis,
     Facture,
+    Assureur,
     STATUTS_DOSSIER,
 )
+
+# Grandes compagnies d'assurance françaises pré-remplies au premier lancement
+# (nom uniquement — coordonnées à compléter par l'atelier selon ses propres
+# contacts, pour éviter d'afficher des informations inventées).
+COMPAGNIES_ASSURANCE_PAR_DEFAUT = [
+    "AXA France",
+    "Allianz France",
+    "MAAF Assurances",
+    "MAIF",
+    "MACIF",
+    "Groupama",
+    "GMF",
+    "MATMUT",
+    "Generali France",
+    "MMA",
+    "Direct Assurance",
+    "Pacifica (Crédit Agricole Assurances)",
+    "Sogessur (Société Générale Assurances)",
+    "La Banque Postale Assurances IARD",
+    "April",
+    "Thelem Assurances",
+    "SMACL Assurances",
+    "Abeille Assurances (ex-Aviva)",
+    "Euro Assurance",
+    "L'olivier Assurance",
+]
 
 
 def create_app():
@@ -94,6 +121,11 @@ def _bootstrap():
     admin.role = "admin"
     admin.active = True
     admin.set_password(admin_password)
+
+    if Assureur.query.count() == 0:
+        for nom in COMPAGNIES_ASSURANCE_PAR_DEFAUT:
+            db.session.add(Assureur(nom=nom))
+
     db.session.commit()
 
 

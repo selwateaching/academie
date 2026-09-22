@@ -5,6 +5,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import Vehicule, Client
+import historique
 
 vehicules_bp = Blueprint("vehicules", __name__, url_prefix="/vehicules")
 
@@ -59,6 +60,8 @@ def new_vehicule():
             clients = Client.query.order_by(Client.nom).all()
             return render_template("vehicules/form.html", vehicule=vehicule, clients=clients)
         db.session.add(vehicule)
+        db.session.flush()
+        historique.log("vehicule", vehicule.id, "Création", f"Véhicule ajouté : {vehicule.designation}")
         db.session.commit()
         flash("Véhicule ajouté.", "success")
         return redirect(url_for("clients.view_client", client_id=vehicule.client_id))
@@ -71,7 +74,9 @@ def new_vehicule():
 @login_required
 def view_vehicule(vehicule_id):
     vehicule = Vehicule.query.get_or_404(vehicule_id)
-    return render_template("vehicules/detail.html", vehicule=vehicule)
+    return render_template(
+        "vehicules/detail.html", vehicule=vehicule, historique=historique.for_entity("vehicule", vehicule_id)
+    )
 
 
 @vehicules_bp.route("/<int:vehicule_id>/modifier", methods=["GET", "POST"])
@@ -80,6 +85,7 @@ def edit_vehicule(vehicule_id):
     vehicule = Vehicule.query.get_or_404(vehicule_id)
     if request.method == "POST":
         _fill_vehicule_from_form(vehicule, request.form)
+        historique.log("vehicule", vehicule.id, "Modification", "Informations du véhicule mises à jour")
         db.session.commit()
         flash("Véhicule mis à jour.", "success")
         return redirect(url_for("vehicules.view_vehicule", vehicule_id=vehicule.id))
@@ -95,6 +101,7 @@ def delete_vehicule(vehicule_id):
     if vehicule.dossiers:
         flash("Impossible de supprimer ce véhicule : des dossiers y sont rattachés.", "danger")
         return redirect(url_for("vehicules.view_vehicule", vehicule_id=vehicule.id))
+    historique.log("vehicule", vehicule.id, "Suppression", f"Véhicule supprimé : {vehicule.designation}")
     db.session.delete(vehicule)
     db.session.commit()
     flash("Véhicule supprimé.", "info")
