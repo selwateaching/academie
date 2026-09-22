@@ -5,6 +5,7 @@ from flask_login import login_required
 
 from extensions import db
 from models import Devis, DevisLigne, Dossier, Counter, Entreprise, Facture, FactureLigne, STATUTS_DEVIS, CatalogueItem, TYPES_LIGNE
+from blueprints.dossiers import search_dossiers
 from pdf import generate_pdf
 import historique
 
@@ -85,11 +86,20 @@ def new_devis():
     dossier = Dossier.query.get(dossier_id) if dossier_id else None
     entreprise = Entreprise.current()
 
-    if request.method == "POST":
-        if not dossier:
+    if not dossier:
+        if request.method == "POST":
             flash("Dossier introuvable.", "danger")
             return redirect(url_for("dossiers.list_dossiers"))
+        q = request.args.get("q", "").strip()
+        return render_template(
+            "_choisir_dossier.html",
+            dossiers=search_dossiers(q),
+            q=q,
+            titre="Nouveau devis — choisir un dossier",
+            cible_endpoint="devis.new_devis",
+        )
 
+    if request.method == "POST":
         devis = Devis(dossier_id=dossier.id, statut="brouillon")
         devis.numero = Counter.next_number("devis", "DEV")
         devis.date_emission = _parse_date(request.form.get("date_emission")) or datetime.utcnow().date()

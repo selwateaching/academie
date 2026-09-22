@@ -140,6 +140,24 @@ class Assureur(db.Model):
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# Experts (cabinets d'expertise automobile) — référentiel réutilisable pour
+# pré-remplir rapidement les informations expert d'un dossier.
+# ──────────────────────────────────────────────────────────────────────────
+class Expert(db.Model):
+    __tablename__ = "experts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    cabinet = db.Column(db.String(255), default="")
+    telephone = db.Column(db.String(30), default="")
+    email = db.Column(db.String(255), default="")
+    notes = db.Column(db.Text, default="")
+
+    def __repr__(self):
+        return self.nom
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # Clients
 # ──────────────────────────────────────────────────────────────────────────
 class Client(db.Model):

@@ -2,6 +2,7 @@ from datetime import datetime, date
 
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
+from sqlalchemy import or_
 
 from extensions import db
 from models import (
@@ -9,6 +10,7 @@ from models import (
     Client,
     Vehicule,
     Assureur,
+    Expert,
     Counter,
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
@@ -16,6 +18,25 @@ from models import (
 import historique
 
 dossiers_bp = Blueprint("dossiers", __name__, url_prefix="/dossiers")
+
+
+def search_dossiers(q):
+    """Utilisé par les pickers de dossier des modules Devis et Factures."""
+    query = Dossier.query.join(Client).join(Vehicule)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            or_(
+                Dossier.reference.ilike(like),
+                Client.nom.ilike(like),
+                Client.prenom.ilike(like),
+                Client.raison_sociale.ilike(like),
+                Vehicule.immatriculation.ilike(like),
+                Vehicule.marque.ilike(like),
+                Vehicule.modele.ilike(like),
+            )
+        )
+    return query.order_by(Dossier.created_at.desc()).limit(100).all()
 
 
 def _parse_date(value):
@@ -99,11 +120,13 @@ def new_dossier():
             flash("Merci de sélectionner un client et l'un de ses véhicules.", "danger")
             clients = Client.query.order_by(Client.nom).all()
             assureurs = Assureur.query.order_by(Assureur.nom).all()
+            experts = Expert.query.order_by(Expert.nom).all()
             return render_template(
                 "dossiers/form.html",
                 dossier=None,
                 clients=clients,
                 assureurs=assureurs,
+                experts=experts,
                 types_sinistre=TYPES_SINISTRE,
                 selected_client_id=client_id,
             )
@@ -120,11 +143,13 @@ def new_dossier():
 
     clients = Client.query.order_by(Client.nom).all()
     assureurs = Assureur.query.order_by(Assureur.nom).all()
+    experts = Expert.query.order_by(Expert.nom).all()
     return render_template(
         "dossiers/form.html",
         dossier=None,
         clients=clients,
         assureurs=assureurs,
+        experts=experts,
         types_sinistre=TYPES_SINISTRE,
         selected_client_id=client_id,
     )
@@ -151,11 +176,13 @@ def edit_dossier(dossier_id):
         return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
     clients = Client.query.order_by(Client.nom).all()
     assureurs = Assureur.query.order_by(Assureur.nom).all()
+    experts = Expert.query.order_by(Expert.nom).all()
     return render_template(
         "dossiers/form.html",
         dossier=dossier,
         clients=clients,
         assureurs=assureurs,
+        experts=experts,
         types_sinistre=TYPES_SINISTRE,
         selected_client_id=dossier.client_id,
     )

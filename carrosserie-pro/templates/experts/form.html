@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if expert else "Nouvel" }} expert — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier l'expert" if expert else "Nouvel expert" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 700px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nom de l'expert *</label>
+        <input type="text" name="nom" class="form-control" required value="{{ expert.nom if expert else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Cabinet d'expertise</label>
+        <input type="text" name="cabinet" class="form-control" value="{{ expert.cabinet if expert else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Téléphone</label>
+        <input type="text" name="telephone" class="form-control" value="{{ expert.telephone if expert else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="{{ expert.email if expert else '' }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes</label>
+        <textarea name="notes" class="form-control" rows="2">{{ expert.notes if expert else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="{{ url_for('experts.list_experts') }}" class="btn btn-outline-secondary">Annuler</a>
+    {% if expert %}
+    <form method="post" action="{{ url_for('experts.delete_expert', expert_id=expert.id) }}" data-confirm="Supprimer cet expert ?" class="ms-auto">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+  </div>
+</form>
+
+{% if expert %}
+{% include "_historique.html" %}
+{% endif %}
+{% endblock %}

@@ -97,21 +97,31 @@
 
       <div class="col-12"><hr class="my-1"></div>
 
+      <div class="col-12">
+        <label class="form-label">Choisir un expert enregistré</label>
+        <select id="expert-picker" class="form-select">
+          <option value="">— Sélectionner pour pré-remplir, ou saisir manuellement ci-dessous —</option>
+          {% for ex in experts %}
+          <option value="{{ ex.id }}" data-nom="{{ ex.nom }}" data-cabinet="{{ ex.cabinet }}" data-telephone="{{ ex.telephone }}" data-email="{{ ex.email }}">{{ ex.nom }}{{ " — " ~ ex.cabinet if ex.cabinet }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text"><a href="{{ url_for('experts.new_expert') }}" target="_blank">Ajouter un nouvel expert</a> (nouvel onglet).</div>
+      </div>
       <div class="col-md-6">
         <label class="form-label">Nom de l'expert</label>
-        <input type="text" name="expert_nom" class="form-control" value="{{ dossier.expert_nom if dossier else '' }}">
+        <input type="text" name="expert_nom" id="expert_nom" class="form-control" value="{{ dossier.expert_nom if dossier else '' }}">
       </div>
       <div class="col-md-6">
         <label class="form-label">Cabinet d'expertise</label>
-        <input type="text" name="expert_cabinet" class="form-control" value="{{ dossier.expert_cabinet if dossier else '' }}">
+        <input type="text" name="expert_cabinet" id="expert_cabinet" class="form-control" value="{{ dossier.expert_cabinet if dossier else '' }}">
       </div>
       <div class="col-md-4">
         <label class="form-label">Téléphone expert</label>
-        <input type="text" name="expert_telephone" class="form-control" value="{{ dossier.expert_telephone if dossier else '' }}">
+        <input type="text" name="expert_telephone" id="expert_telephone" class="form-control" value="{{ dossier.expert_telephone if dossier else '' }}">
       </div>
       <div class="col-md-4">
         <label class="form-label">Email expert</label>
-        <input type="email" name="expert_email" class="form-control" value="{{ dossier.expert_email if dossier else '' }}">
+        <input type="email" name="expert_email" id="expert_email" class="form-control" value="{{ dossier.expert_email if dossier else '' }}">
       </div>
       <div class="col-md-4">
         <label class="form-label">Date d'expertise</label>

@@ -18,6 +18,7 @@ from models import (
     TYPES_LIGNE,
 )
 from pdf import generate_pdf
+from blueprints.dossiers import search_dossiers
 import historique
 
 factures_bp = Blueprint("factures", __name__, url_prefix="/factures")
@@ -97,11 +98,20 @@ def new_facture():
     dossier = Dossier.query.get(dossier_id) if dossier_id else None
     entreprise = Entreprise.current()
 
-    if request.method == "POST":
-        if not dossier:
+    if not dossier:
+        if request.method == "POST":
             flash("Dossier introuvable.", "danger")
             return redirect(url_for("dossiers.list_dossiers"))
+        q = request.args.get("q", "").strip()
+        return render_template(
+            "_choisir_dossier.html",
+            dossiers=search_dossiers(q),
+            q=q,
+            titre="Nouvelle facture — choisir un dossier",
+            cible_endpoint="factures.new_facture",
+        )
 
+    if request.method == "POST":
         facture = Facture(dossier_id=dossier.id, statut="emise")
         facture.numero = Counter.next_number("facture", "FAC")
         facture.date_emission = _parse_date(request.form.get("date_emission")) or datetime.utcnow().date()

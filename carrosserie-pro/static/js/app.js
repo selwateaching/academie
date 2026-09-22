@@ -152,6 +152,19 @@ function initDestinataireToggle() {
   toggle();
 }
 
+function initExpertPicker() {
+  const picker = document.getElementById("expert-picker");
+  if (!picker) return;
+  picker.addEventListener("change", () => {
+    const opt = picker.selectedOptions[0];
+    if (!opt || !opt.dataset.nom) return;
+    document.getElementById("expert_nom").value = opt.dataset.nom || "";
+    document.getElementById("expert_cabinet").value = opt.dataset.cabinet || "";
+    document.getElementById("expert_telephone").value = opt.dataset.telephone || "";
+    document.getElementById("expert_email").value = opt.dataset.email || "";
+  });
+}
+
 function initSidebarToggle() {
   const toggleBtn = document.getElementById("sidebar-toggle");
   const sidebar = document.querySelector(".sidebar");
@@ -179,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initClientVehiculeFilter();
   initSinistreToggle();
   initDestinataireToggle();
+  initExpertPicker();
   initSidebarToggle();
 
   document.querySelectorAll("[data-confirm]").forEach((form) => {

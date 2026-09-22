@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Choisir un dossier — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ titre }}{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <p class="text-muted mb-3">Sélectionnez le dossier de réparation concerné. Le client, le véhicule et, le cas échéant, les informations d'assurance seront repris automatiquement.</p>
+  <form method="get" action="{{ request.path }}">
+    <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="Rechercher par référence, client ou immatriculation...">
+  </form>
+</div>
+
+{% if dossiers %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Référence</th><th>Client</th><th>Véhicule</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+      {% for d in dossiers %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for(cible_endpoint, dossier_id=d.id) }}'">
+        <td class="fw-semibold">{{ d.reference }}</td>
+        <td>{{ d.client.nom_affichage }}</td>
+        <td>{{ d.vehicule.designation }}</td>
+        <td><span class="badge-statut st-{{ d.statut }}">{{ d.statut_libelle }}</span></td>
+        <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="bi bi-folder2"></i>
+  Aucun dossier trouvé.
+  <div class="mt-3"><a href="{{ url_for('dossiers.new_dossier') }}" class="btn btn-accent btn-sm"><i class="bi bi-folder-plus"></i> Créer un dossier</a></div>
+</div>
+{% endif %}
+{% endblock %}
