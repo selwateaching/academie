@@ -74,17 +74,27 @@ def create_app():
 
 
 def _bootstrap():
-    """Crée l'entreprise par défaut et le compte administrateur au premier lancement."""
+    """Crée l'entreprise par défaut. Synchronise le compte administrateur avec
+    ADMIN_EMAIL/ADMIN_PASSWORD à CHAQUE démarrage (pas seulement au premier),
+    pour que changer ces variables d'environnement fonctionne toujours, même
+    si un compte existait déjà avec d'anciennes valeurs."""
     Entreprise.current()
 
-    if User.query.count() == 0:
-        admin_email = os.environ.get("ADMIN_EMAIL", "admin@macarrosserie.fr").strip().lower()
-        admin_password = os.environ.get("ADMIN_PASSWORD", "change-moi-1234").strip()
-        admin_name = os.environ.get("ADMIN_NAME", "Administrateur")
-        admin = User(email=admin_email, name=admin_name, role="admin")
-        admin.set_password(admin_password)
+    admin_email = os.environ.get("ADMIN_EMAIL", "admin@macarrosserie.fr").strip().lower()
+    admin_password = os.environ.get("ADMIN_PASSWORD", "change-moi-1234").strip()
+    admin_name = os.environ.get("ADMIN_NAME", "Administrateur").strip()
+
+    from sqlalchemy import func
+
+    admin = User.query.filter(func.lower(User.email) == admin_email).first()
+    if admin is None:
+        admin = User(email=admin_email, role="admin")
         db.session.add(admin)
-        db.session.commit()
+    admin.name = admin_name
+    admin.role = "admin"
+    admin.active = True
+    admin.set_password(admin_password)
+    db.session.commit()
 
 
 app = create_app()
