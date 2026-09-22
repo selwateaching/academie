@@ -51,6 +51,9 @@
       <a href="{{ url_for('techniciens.list_techniciens') }}" class="nav-link {{ 'active' if request.blueprint == 'techniciens' }}">
         <i class="bi bi-person-gear"></i> Techniciens
       </a>
+      <a href="{{ url_for('fournisseurs.list_fournisseurs') }}" class="nav-link {{ 'active' if request.blueprint == 'fournisseurs' }}">
+        <i class="bi bi-truck"></i> Fournisseurs
+      </a>
       <a href="{{ url_for('courriers.list_courriers') }}" class="nav-link {{ 'active' if request.blueprint == 'courriers' }}">
         <i class="bi bi-envelope"></i> Courriers
       </a>

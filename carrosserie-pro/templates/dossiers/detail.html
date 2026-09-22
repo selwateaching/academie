@@ -24,6 +24,14 @@
   </div>
 </div>
 
+{% set pieces_en_attente = dossier.commandes_pieces | selectattr('statut', 'in', ['a_commander', 'commandee']) | list %}
+{% if pieces_en_attente %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i>
+  {{ pieces_en_attente|length }} pièce(s) pas encore reçue(s) — cela peut retarder la réparation.
+</div>
+{% endif %}
+
 <div class="row g-3">
   <div class="col-lg-4">
     <div class="section-card">
@@ -127,6 +135,80 @@
       </table>
       {% else %}
       <div class="empty-state py-4"><i class="bi bi-receipt"></i>Aucune facture pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Commandes de pièces ({{ dossier.commandes_pieces|length }})</h6>
+      </div>
+      {% if dossier.commandes_pieces %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Désignation</th><th>Fournisseur</th><th>Qté</th><th>Prix HT</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for p in dossier.commandes_pieces %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ p.designation }}</div>
+              {% if p.reference %}<div class="text-muted small">Réf. {{ p.reference }}</div>{% endif %}
+            </td>
+            <td>{{ p.fournisseur.nom if p.fournisseur else "—" }}</td>
+            <td>{{ p.quantite|round(2) }}</td>
+            <td>{{ "%.2f"|format(p.total_ht) }} €</td>
+            <td>
+              <form method="post" action="{{ url_for('dossiers.change_statut_commande', dossier_id=dossier.id, commande_id=p.id) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="statut" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width:130px;">
+                  {% for code, label in statuts_commande %}
+                  <option value="{{ code }}" {{ "selected" if p.statut == code }}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_commande_piece', dossier_id=dossier.id, commande_id=p.id) }}" data-confirm="Supprimer cette pièce ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <form method="post" action="{{ url_for('dossiers.new_commande_piece', dossier_id=dossier.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Désignation *</label>
+          <input type="text" name="designation" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Référence</label>
+          <input type="text" name="reference" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Fournisseur</label>
+          <select name="fournisseur_id" class="form-select form-select-sm">
+            <option value="">—</option>
+            {% for f in fournisseurs %}
+            <option value="{{ f.id }}">{{ f.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small mb-1">Qté</label>
+          <input type="number" step="1" min="1" name="quantite" class="form-control form-control-sm" value="1">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Prix HT</label>
+          <input type="number" step="0.01" min="0" name="prix_unitaire_ht" class="form-control form-control-sm" value="0">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+      </form>
+      {% if not fournisseurs %}
+      <p class="text-muted small mb-0 mt-2">Astuce : <a href="{{ url_for('fournisseurs.new_fournisseur') }}" target="_blank">ajoutez vos fournisseurs</a> pour les associer aux commandes (nouvel onglet).</p>
       {% endif %}
     </div>
 

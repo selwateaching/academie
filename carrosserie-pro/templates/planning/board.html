@@ -23,6 +23,10 @@
         {% if d.date_sortie_prevue and d.date_sortie_prevue < today and col.code not in ("facture", "solde", "annule") %}
         <div class="kanban-card-retard"><i class="bi bi-exclamation-triangle-fill"></i> En retard</div>
         {% endif %}
+        {% set pieces_attente = d.commandes_pieces | selectattr('statut', 'in', ['a_commander', 'commandee']) | list %}
+        {% if pieces_attente %}
+        <div class="kanban-card-retard"><i class="bi bi-box-seam"></i> {{ pieces_attente|length }} pièce(s) en attente</div>
+        {% endif %}
       </a>
       {% else %}
       <div class="kanban-empty">Aucun dossier</div>

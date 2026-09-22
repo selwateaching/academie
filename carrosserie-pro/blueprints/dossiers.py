@@ -13,9 +13,12 @@ from models import (
     Expert,
     Technicien,
     PointageTemps,
+    Fournisseur,
+    CommandePiece,
     Counter,
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
+    STATUTS_COMMANDE,
 )
 import historique
 
@@ -167,8 +170,10 @@ def new_dossier():
 def view_dossier(dossier_id):
     dossier = Dossier.query.get_or_404(dossier_id)
     techniciens = Technicien.query.filter_by(actif=True).order_by(Technicien.nom).all()
+    fournisseurs = Fournisseur.query.order_by(Fournisseur.nom).all()
     return render_template(
         "dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER, techniciens=techniciens,
+        fournisseurs=fournisseurs, statuts_commande=STATUTS_COMMANDE,
         historique=historique.for_entity("dossier", dossier_id),
     )
 
@@ -269,4 +274,60 @@ def delete_pointage(dossier_id, pointage_id):
     db.session.delete(pointage)
     db.session.commit()
     flash("Pointage supprimé.", "info")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/pieces/nouvelle", methods=["POST"])
+@login_required
+def new_commande_piece(dossier_id):
+    dossier = Dossier.query.get_or_404(dossier_id)
+    designation = request.form.get("designation", "").strip()
+    if not designation:
+        flash("La désignation de la pièce est obligatoire.", "danger")
+        return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+    commande = CommandePiece(
+        dossier_id=dossier.id,
+        fournisseur_id=request.form.get("fournisseur_id", type=int) or None,
+        designation=designation,
+        reference=request.form.get("reference", "").strip(),
+        quantite=_parse_float(request.form.get("quantite"), 1.0) or 1.0,
+        prix_unitaire_ht=_parse_float(request.form.get("prix_unitaire_ht"), 0.0),
+        statut="a_commander",
+        date_reception_prevue=_parse_date(request.form.get("date_reception_prevue")),
+    )
+    db.session.add(commande)
+    db.session.flush()
+    historique.log("dossier", dossier.id, "Pièce ajoutée à la commande", designation)
+    db.session.commit()
+    flash("Pièce ajoutée.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/pieces/<int:commande_id>/statut", methods=["POST"])
+@login_required
+def change_statut_commande(dossier_id, commande_id):
+    commande = CommandePiece.query.filter_by(id=commande_id, dossier_id=dossier_id).first_or_404()
+    statut = request.form.get("statut")
+    if statut in dict(STATUTS_COMMANDE):
+        ancien_libelle = commande.statut_libelle
+        commande.statut = statut
+        if statut == "commandee" and not commande.date_commande:
+            commande.date_commande = date.today()
+        if statut == "recue" and not commande.date_reception_reelle:
+            commande.date_reception_reelle = date.today()
+        historique.log("dossier", dossier_id, "Statut pièce modifié", f"{commande.designation} : {ancien_libelle} → {commande.statut_libelle}")
+        db.session.commit()
+        flash("Statut de la pièce mis à jour.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/pieces/<int:commande_id>/supprimer", methods=["POST"])
+@login_required
+def delete_commande_piece(dossier_id, commande_id):
+    commande = CommandePiece.query.filter_by(id=commande_id, dossier_id=dossier_id).first_or_404()
+    historique.log("dossier", dossier_id, "Pièce supprimée", commande.designation)
+    db.session.delete(commande)
+    db.session.commit()
+    flash("Pièce supprimée.", "info")
     return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))

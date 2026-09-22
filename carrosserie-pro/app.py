@@ -151,6 +151,7 @@ def create_app():
     from blueprints.assureurs import assureurs_bp
     from blueprints.experts import experts_bp
     from blueprints.techniciens import techniciens_bp
+    from blueprints.fournisseurs import fournisseurs_bp
     from blueprints.catalogue import catalogue_bp
     from blueprints.dossiers import dossiers_bp
     from blueprints.devis import devis_bp
@@ -165,6 +166,7 @@ def create_app():
     app.register_blueprint(assureurs_bp)
     app.register_blueprint(experts_bp)
     app.register_blueprint(techniciens_bp)
+    app.register_blueprint(fournisseurs_bp)
     app.register_blueprint(catalogue_bp)
     app.register_blueprint(dossiers_bp)
     app.register_blueprint(devis_bp)

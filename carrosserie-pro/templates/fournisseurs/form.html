@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if fournisseur else "Nouveau" }} fournisseur — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le fournisseur" if fournisseur else "Nouveau fournisseur" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 700px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Nom du fournisseur *</label>
+        <input type="text" name="nom" class="form-control" required value="{{ fournisseur.nom if fournisseur else '' }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Adresse</label>
+        <input type="text" name="adresse" class="form-control" value="{{ fournisseur.adresse if fournisseur else '' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Code postal</label>
+        <input type="text" name="code_postal" class="form-control" value="{{ fournisseur.code_postal if fournisseur else '' }}">
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Ville</label>
+        <input type="text" name="ville" class="form-control" value="{{ fournisseur.ville if fournisseur else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Téléphone</label>
+        <input type="text" name="telephone" class="form-control" value="{{ fournisseur.telephone if fournisseur else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="{{ fournisseur.email if fournisseur else '' }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes</label>
+        <textarea name="notes" class="form-control" rows="2">{{ fournisseur.notes if fournisseur else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="{{ url_for('fournisseurs.list_fournisseurs') }}" class="btn btn-outline-secondary">Annuler</a>
+    {% if fournisseur %}
+    <form method="post" action="{{ url_for('fournisseurs.delete_fournisseur', fournisseur_id=fournisseur.id) }}" data-confirm="Supprimer ce fournisseur ?" class="ms-auto">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+  </div>
+</form>
+
+{% if fournisseur %}
+{% include "_historique.html" %}
+{% endif %}
+{% endblock %}

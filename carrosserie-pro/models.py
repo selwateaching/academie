@@ -186,6 +186,61 @@ class PointageTemps(db.Model):
     technicien = db.relationship("Technicien", backref=db.backref("pointages", cascade="all, delete-orphan"))
 
 
+class Fournisseur(db.Model):
+    __tablename__ = "fournisseurs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    adresse = db.Column(db.String(255), default="")
+    code_postal = db.Column(db.String(10), default="")
+    ville = db.Column(db.String(100), default="")
+    telephone = db.Column(db.String(30), default="")
+    email = db.Column(db.String(255), default="")
+    notes = db.Column(db.Text, default="")
+
+    def __repr__(self):
+        return self.nom
+
+
+STATUTS_COMMANDE = [
+    ("a_commander", "À commander"),
+    ("commandee", "Commandée"),
+    ("recue", "Reçue"),
+    ("annulee", "Annulée"),
+]
+
+
+class CommandePiece(db.Model):
+    __tablename__ = "commandes_pieces"
+
+    id = db.Column(db.Integer, primary_key=True)
+    dossier_id = db.Column(db.Integer, db.ForeignKey("dossiers.id"), nullable=False)
+    fournisseur_id = db.Column(db.Integer, db.ForeignKey("fournisseurs.id"), nullable=True)
+
+    designation = db.Column(db.String(255), nullable=False)
+    reference = db.Column(db.String(100), default="")
+    quantite = db.Column(db.Float, default=1.0)
+    prix_unitaire_ht = db.Column(db.Float, default=0.0)
+
+    statut = db.Column(db.String(20), default="a_commander")
+    date_commande = db.Column(db.Date, nullable=True)
+    date_reception_prevue = db.Column(db.Date, nullable=True)
+    date_reception_reelle = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    dossier = db.relationship("Dossier", backref=db.backref("commandes_pieces", cascade="all, delete-orphan", order_by="CommandePiece.created_at.desc()"))
+    fournisseur = db.relationship("Fournisseur", backref="commandes")
+
+    @property
+    def statut_libelle(self):
+        return dict(STATUTS_COMMANDE).get(self.statut, self.statut)
+
+    @property
+    def total_ht(self):
+        return (self.quantite or 0) * (self.prix_unitaire_ht or 0)
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Clients
 # ──────────────────────────────────────────────────────────────────────────
