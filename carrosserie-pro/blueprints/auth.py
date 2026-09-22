@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
+from sqlalchemy import func
 
 from models import User
 
@@ -14,7 +15,7 @@ def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter(func.lower(User.email) == email).first()
         if user and user.active and user.check_password(password):
             login_user(user)
             flash(f"Bienvenue, {user.name} !", "success")
