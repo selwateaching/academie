@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ dossier.reference }} — Carrosserie Pro{% endblock %}
+{% block page_title %}Dossier {{ dossier.reference }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('devis.new_devis', dossier_id=dossier.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-plus"></i> Nouveau devis</a>
+<a href="{{ url_for('factures.new_facture', dossier_id=dossier.id) }}" class="btn btn-accent btn-sm"><i class="bi bi-receipt"></i> Facturer directement</a>
+<a href="{{ url_for('dossiers.edit_dossier', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
+{% endblock %}
+{% block content %}
+
+<div class="section-card">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="badge-statut st-{{ dossier.statut }} fs-6">{{ dossier.statut_libelle }}</span>
+    <form method="post" action="{{ url_for('dossiers.change_statut', dossier_id=dossier.id) }}" class="d-flex gap-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <select name="statut" class="form-select form-select-sm">
+        {% for code, label in statuts %}
+        <option value="{{ code }}" {{ "selected" if dossier.statut == code }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary">Changer</button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Client</h6>
+      <p class="mb-1 fw-semibold"><a href="{{ url_for('clients.view_client', client_id=dossier.client_id) }}">{{ dossier.client.nom_affichage }}</a></p>
+      {% if dossier.client.telephone %}<p class="mb-1 small text-muted"><i class="bi bi-telephone"></i> {{ dossier.client.telephone }}</p>{% endif %}
+      {% if dossier.client.email %}<p class="mb-1 small text-muted"><i class="bi bi-envelope"></i> {{ dossier.client.email }}</p>{% endif %}
+    </div>
+
+    <div class="section-card">
+      <h6>Véhicule</h6>
+      <p class="mb-1 fw-semibold"><a href="{{ url_for('vehicules.view_vehicule', vehicule_id=dossier.vehicule_id) }}">{{ dossier.vehicule.marque }} {{ dossier.vehicule.modele }}</a></p>
+      <p class="mb-1 small text-muted">{{ dossier.vehicule.immatriculation }}</p>
+      {% if dossier.vehicule.vin %}<p class="mb-1 small text-muted">VIN {{ dossier.vehicule.vin }}</p>{% endif %}
+    </div>
+
+    {% if dossier.est_assurance %}
+    <div class="section-card">
+      <h6>Assurance / sinistre</h6>
+      <p class="mb-1"><strong>{{ dossier.type_sinistre_libelle }}</strong></p>
+      {% if dossier.assureur %}<p class="mb-1">{{ dossier.assureur.nom }}</p>{% endif %}
+      {% if dossier.numero_sinistre %}<p class="mb-1 small">N° sinistre : {{ dossier.numero_sinistre }}</p>{% endif %}
+      {% if dossier.numero_police %}<p class="mb-1 small">N° police : {{ dossier.numero_police }}</p>{% endif %}
+      {% if dossier.franchise_montant %}<p class="mb-1 small">Franchise : {{ "%.2f"|format(dossier.franchise_montant) }} €</p>{% endif %}
+      {% if dossier.cession_de_creance %}<p class="mb-1"><span class="badge-statut st-accepte">Cession de créance</span></p>{% endif %}
+      {% if dossier.expert_nom or dossier.expert_cabinet %}
+      <hr>
+      <p class="mb-1 small text-muted">Expert : {{ dossier.expert_nom }} {{ dossier.expert_cabinet }}</p>
+      {% if dossier.date_expertise %}<p class="mb-1 small text-muted">Expertise le {{ dossier.date_expertise.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+      <h6>Logistique</h6>
+      <p class="mb-1 small">Véhicule de prêt : {{ "Oui" if dossier.vehicule_pret else "Non" }}</p>
+      {% if dossier.date_entree_atelier %}<p class="mb-1 small">Entrée atelier : {{ dossier.date_entree_atelier.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.date_sortie_prevue %}<p class="mb-1 small">Sortie prévue : {{ dossier.date_sortie_prevue.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.date_sortie_reelle %}<p class="mb-1 small">Sortie réelle : {{ dossier.date_sortie_reelle.strftime('%d/%m/%Y') }}</p>{% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('dossiers.delete_dossier', dossier_id=dossier.id) }}" data-confirm="Supprimer ce dossier ?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Supprimer le dossier</button>
+    </form>
+  </div>
+
+  <div class="col-lg-8">
+    {% if dossier.description %}
+    <div class="section-card">
+      <h6>Description des dommages</h6>
+      <p class="mb-0">{{ dossier.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Devis ({{ dossier.devis|length }})</h6>
+        <a href="{{ url_for('devis.new_devis', dossier_id=dossier.id) }}" class="small">+ Nouveau devis</a>
+      </div>
+      {% if dossier.devis %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>N°</th><th>Date</th><th>Total TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for dv in dossier.devis|sort(attribute='created_at', reverse=True) %}
+          <tr style="cursor:pointer" onclick="location.href='{{ url_for('devis.view_devis', devis_id=dv.id) }}'">
+            <td class="fw-semibold">{{ dv.numero }}</td>
+            <td>{{ dv.date_emission.strftime('%d/%m/%Y') }}</td>
+            <td>{{ "%.2f"|format(dv.total_ttc) }} €</td>
+            <td><span class="badge-statut st-{{ dv.statut }}">{{ dv.statut_libelle }}</span></td>
+            <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-file-earmark"></i>Aucun devis pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Factures ({{ dossier.factures|length }})</h6>
+        <a href="{{ url_for('factures.new_facture', dossier_id=dossier.id) }}" class="small">+ Facturer directement</a>
+      </div>
+      {% if dossier.factures %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>N°</th><th>Date</th><th>Total TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for f in dossier.factures|sort(attribute='created_at', reverse=True) %}
+          <tr style="cursor:pointer" onclick="location.href='{{ url_for('factures.view_facture', facture_id=f.id) }}'">
+            <td class="fw-semibold">{{ f.numero }}{% if f.est_avoir %} <span class="text-danger">(avoir)</span>{% endif %}</td>
+            <td>{{ f.date_emission.strftime('%d/%m/%Y') }}</td>
+            <td>{{ "%.2f"|format(f.total_ttc) }} €</td>
+            <td><span class="badge-statut st-{{ f.statut }}">{{ f.statut_libelle }}</span></td>
+            <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-receipt"></i>Aucune facture pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    {% if dossier.notes %}
+    <div class="section-card">
+      <h6>Notes internes</h6>
+      <p class="mb-0 text-muted">{{ dossier.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

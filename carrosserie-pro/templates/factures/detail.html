@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}{{ facture.numero }} — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Avoir" if facture.est_avoir else "Facture" }} {{ facture.numero }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('factures.pdf_facture', facture_id=facture.id) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+{% if not facture.est_avoir and not facture.paiements %}
+<a href="{{ url_for('factures.edit_facture', facture_id=facture.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Modifier</a>
+{% endif %}
+{% if not facture.est_avoir and facture.statut != "annulee" %}
+<button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#avoirModal"><i class="bi bi-arrow-counterclockwise"></i> Émettre un avoir</button>
+{% endif %}
+{% endblock %}
+{% block content %}
+
+<div class="section-card">
+  <div class="row align-items-center">
+    <div class="col-md-3"><span class="badge-statut st-{{ facture.statut }} fs-6">{{ facture.statut_libelle }}</span></div>
+    <div class="col-md-9">
+      {% if not facture.est_avoir %}
+      <form method="post" action="{{ url_for('factures.change_statut', facture_id=facture.id) }}" class="d-flex gap-2 justify-content-md-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <select name="statut" class="form-select form-select-sm" style="max-width:220px;">
+          {% for code, label in statuts %}
+          <option value="{{ code }}" {{ "selected" if facture.statut == code }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-sm btn-outline-primary">Changer</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Dossier</h6>
+      <p class="mb-1"><a href="{{ url_for('dossiers.view_dossier', dossier_id=facture.dossier_id) }}">{{ facture.dossier.reference }}</a></p>
+      <p class="mb-1">{{ facture.dossier.client.nom_affichage }}</p>
+      <p class="mb-1 text-muted small">{{ facture.dossier.vehicule.designation }}</p>
+      {% if facture.devis %}<p class="mb-0 small"><a href="{{ url_for('devis.view_devis', devis_id=facture.devis_id) }}">Devis d'origine : {{ facture.devis.numero }}</a></p>{% endif %}
+      {% if facture.origine %}<p class="mb-0 small">Avoir sur facture <a href="{{ url_for('factures.view_facture', facture_id=facture.origine.id) }}">{{ facture.origine.numero }}</a></p>{% endif %}
+    </div>
+
+    <div class="section-card">
+      <h6>Facturation</h6>
+      <p class="mb-1 small">Destinataire : <strong>{{ facture.destinataire_libelle }}</strong></p>
+      {% if facture.destinataire_type != "client" %}
+      <p class="mb-1 small">Part assurance : {{ "%.2f"|format(facture.montant_part_assurance) }} €</p>
+      {% endif %}
+      {% if facture.destinataire_type != "assureur" %}
+      <p class="mb-1 small">Part client : {{ "%.2f"|format(facture.montant_part_client) }} €</p>
+      {% endif %}
+      <p class="mb-1 small">Émise le {{ facture.date_emission.strftime('%d/%m/%Y') }}</p>
+      {% if facture.date_echeance %}<p class="mb-1 small">Échéance le {{ facture.date_echeance.strftime('%d/%m/%Y') }}</p>{% endif %}
+    </div>
+
+    {% if not facture.est_avoir %}
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Règlements</h6>
+      </div>
+      {% if facture.paiements %}
+      {% for p in facture.paiements %}
+      <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+        <div>
+          <div class="small fw-semibold">{{ "%.2f"|format(p.montant) }} € — {{ p.mode_libelle }}</div>
+          <div class="text-muted" style="font-size:.75rem;">{{ p.date_paiement.strftime('%d/%m/%Y') }}{{ " — " ~ p.reference if p.reference }}</div>
+        </div>
+        <form method="post" action="{{ url_for('factures.delete_paiement', paiement_id=p.id) }}" data-confirm="Supprimer ce règlement ?">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm btn-link text-danger p-0"><i class="bi bi-x-lg"></i></button>
+        </form>
+      </div>
+      {% endfor %}
+      {% endif %}
+      <div class="d-flex justify-content-between mt-2">
+        <span class="text-muted small">Reste à payer</span>
+        <span class="fw-bold {{ 'text-danger' if facture.reste_a_payer > 0.01 }}">{{ "%.2f"|format(facture.reste_a_payer) }} €</span>
+      </div>
+      {% if facture.reste_a_payer > 0.01 %}
+      <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-2" data-bs-toggle="modal" data-bs-target="#paiementModal">
+        <i class="bi bi-plus-lg"></i> Enregistrer un règlement
+      </button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-8">
+    <div class="section-card">
+      <h6 class="mb-3">Lignes</h6>
+      <div class="table-responsive">
+        <table class="table table-cp mb-0">
+          <thead><tr><th>Réf.</th><th>Désignation</th><th>Qté</th><th>PU HT</th><th>Remise</th><th>TVA</th><th class="text-end">Total HT</th></tr></thead>
+          <tbody>
+            {% for l in facture.lignes %}
+            <tr>
+              <td>{{ l.reference or "—" }}</td>
+              <td>{{ l.designation }}</td>
+              <td>{{ l.quantite }} {{ l.unite }}</td>
+              <td>{{ "%.2f"|format(l.prix_unitaire_ht) }} €</td>
+              <td>{{ l.remise_pourcentage }} %</td>
+              <td>{{ l.taux_tva }} %</td>
+              <td class="text-end fw-semibold">{{ "%.2f"|format(l.total_ht) }} €</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row justify-content-end">
+      <div class="col-md-5">
+        {% set total_ht, total_tva, total_ttc, par_taux = facture.totaux %}
+        <div class="totaux-box">
+          <div class="d-flex justify-content-between mb-1"><span class="text-muted">Total HT</span><span class="fw-semibold">{{ "%.2f"|format(total_ht) }} €</span></div>
+          {% for taux, d in par_taux.items() %}
+          <div class="d-flex justify-content-between mb-1"><span class="text-muted">TVA ({{ taux }} %)</span><span>{{ "%.2f"|format(d.tva) }} €</span></div>
+          {% endfor %}
+          <hr class="my-2">
+          <div class="d-flex justify-content-between"><span class="fw-bold">Total TTC</span><span class="fw-bold fs-5">{{ "%.2f"|format(facture.total_ttc) }} €</span></div>
+        </div>
+      </div>
+    </div>
+
+    {% if facture.notes %}
+    <div class="section-card mt-3">
+      <h6>Remarques</h6>
+      <p class="mb-0">{{ facture.notes }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Modal paiement -->
+<div class="modal fade" id="paiementModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{{ url_for('factures.add_paiement', facture_id=facture.id) }}" class="modal-content">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-header">
+        <h5 class="modal-title">Enregistrer un règlement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Montant (€)</label>
+            <input type="number" step="0.01" name="montant" class="form-control" value="{{ "%.2f"|format(facture.reste_a_payer) }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Date</label>
+            <input type="date" name="date_paiement" class="form-control" value="{{ today.isoformat() }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Mode</label>
+            <select name="mode" class="form-select">
+              {% for code, label in modes_paiement %}
+              <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Origine</label>
+            <select name="origine" class="form-select">
+              <option value="client">Client</option>
+              <option value="assureur">Assurance</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Référence (n° chèque, virement...)</label>
+            <input type="text" name="reference" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal avoir -->
+<div class="modal fade" id="avoirModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{{ url_for('factures.creer_avoir', facture_id=facture.id) }}" class="modal-content">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-header">
+        <h5 class="modal-title">Émettre un avoir</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted small">Un avoir annule le montant de cette facture. Il reçoit son propre numéro légal et reprend les mêmes lignes en négatif.</p>
+        <label class="form-label">Motif</label>
+        <textarea name="motif" class="form-control" rows="2" placeholder="Erreur de facturation, geste commercial..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="submit" class="btn btn-danger">Émettre l'avoir</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

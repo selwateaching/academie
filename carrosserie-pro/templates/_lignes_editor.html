@@ -1,0 +1,93 @@
+{# Éditeur de lignes réutilisé par les formulaires Devis et Facture.
+   Attend en contexte : `lignes` (liste d'objets avec designation/reference/type_ligne/unite/
+   quantite/prix_unitaire_ht/remise_pourcentage/taux_tva), `catalogue_items`, `types_ligne`,
+   `entreprise` (pour le taux de TVA par défaut). #}
+
+{% macro ligne_row(l, index) %}
+<tr class="ligne-row">
+  <td>
+    <select class="form-select form-select-sm ligne-catalogue-select">
+      <option value="">— catalogue —</option>
+      {% for item in catalogue_items %}
+      <option value="{{ item.id }}"
+        data-designation="{{ item.designation }}"
+        data-reference="{{ item.reference }}"
+        data-type="{{ item.type_ligne }}"
+        data-unite="{{ item.unite }}"
+        data-prix="{{ item.prix_unitaire_ht }}"
+        data-tva="{{ item.taux_tva }}">{{ item.designation }}</option>
+      {% endfor %}
+    </select>
+  </td>
+  <td><input type="text" name="reference[]" class="form-control form-control-sm ligne-reference" value="{{ l.reference if l else '' }}"></td>
+  <td><input type="text" name="designation[]" class="form-control form-control-sm ligne-designation" value="{{ l.designation if l else '' }}" placeholder="Désignation"></td>
+  <td>
+    <select name="type_ligne[]" class="form-select form-select-sm ligne-type">
+      {% for code, label in types_ligne %}
+      <option value="{{ code }}" {{ "selected" if l and l.type_ligne == code }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </td>
+  <td><input type="text" name="unite[]" class="form-control form-control-sm ligne-unite" value="{{ l.unite if l else 'u' }}"></td>
+  <td><input type="number" step="0.01" name="quantite[]" class="form-control form-control-sm ligne-quantite" value="{{ l.quantite if l else 1 }}"></td>
+  <td><input type="number" step="0.01" name="prix_unitaire_ht[]" class="form-control form-control-sm ligne-prix" value="{{ l.prix_unitaire_ht if l else 0 }}"></td>
+  <td><input type="number" step="0.01" name="remise_pourcentage[]" class="form-control form-control-sm ligne-remise" value="{{ l.remise_pourcentage if l else 0 }}"></td>
+  <td><input type="number" step="0.1" name="taux_tva[]" class="form-control form-control-sm ligne-tva" value="{{ l.taux_tva if l else (entreprise.taux_tva_defaut if entreprise else 20) }}"></td>
+  <td class="ligne-total text-end fw-semibold">0,00 €</td>
+  <td><button type="button" class="btn btn-sm btn-outline-danger remove-ligne"><i class="bi bi-x-lg"></i></button></td>
+</tr>
+{% endmacro %}
+
+<div class="section-card">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0">Lignes du document</h6>
+    <button type="button" id="add-ligne-btn" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Ajouter une ligne</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table lignes-table mb-0">
+      <thead>
+        <tr>
+          <th style="width:16%">Catalogue</th>
+          <th style="width:10%">Réf.</th>
+          <th style="width:22%">Désignation</th>
+          <th style="width:9%">Type</th>
+          <th style="width:6%">Unité</th>
+          <th style="width:7%">Qté</th>
+          <th style="width:9%">PU HT</th>
+          <th style="width:7%">Remise %</th>
+          <th style="width:6%">TVA %</th>
+          <th style="width:9%">Total HT</th>
+          <th style="width:3%"></th>
+        </tr>
+      </thead>
+      <tbody id="lignes-body">
+        {% for l in lignes %}
+          {{ ligne_row(l, loop.index0) }}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<template id="ligne-template">{{ ligne_row(None, "__INDEX__") }}</template>
+
+<div class="row justify-content-end">
+  <div class="col-md-5">
+    <div class="totaux-box">
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-muted">Total HT</span>
+        <span id="recap-total-ht" class="fw-semibold">0,00 €</span>
+      </div>
+      <div class="d-flex justify-content-between mb-1">
+        <span class="text-muted">TVA</span>
+        <span id="recap-total-tva" class="fw-semibold">0,00 €</span>
+      </div>
+      <hr class="my-2">
+      <div class="d-flex justify-content-between">
+        <span class="fw-bold">Total TTC</span>
+        <span id="recap-total-ttc" class="fw-bold fs-5">0,00 €</span>
+      </div>
+    </div>
+  </div>
+</div>

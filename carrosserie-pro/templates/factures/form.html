@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if facture else "Nouvelle" }} facture — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier la facture " ~ facture.numero if facture else "Nouvelle facture" }}{% endblock %}
+{% block content %}
+<div class="section-card">
+  <div class="row g-2">
+    <div class="col-auto"><strong>Dossier :</strong> {{ dossier.reference }}</div>
+    <div class="col-auto text-muted">{{ dossier.client.nom_affichage }} — {{ dossier.vehicule.designation }}</div>
+  </div>
+</div>
+
+<form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="dossier_id" value="{{ dossier.id }}">
+
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Date d'émission</label>
+        <input type="date" name="date_emission" class="form-control" value="{{ (facture.date_emission if facture else today).isoformat() }}" {{ "readonly" if facture }}>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Délai de paiement (jours)</label>
+        <input type="number" name="delai_paiement_jours" class="form-control" value="{{ entreprise.delai_paiement_jours }}" {{ "disabled" if facture }}>
+      </div>
+      {% if facture %}
+      <div class="col-md-4">
+        <label class="form-label">Échéance</label>
+        <input type="date" name="date_echeance" class="form-control" value="{{ facture.date_echeance.isoformat() if facture.date_echeance else '' }}">
+      </div>
+      {% endif %}
+      <div class="col-md-6">
+        <label class="form-label">Destinataire du règlement</label>
+        <select name="destinataire_type" id="destinataire_type" class="form-select">
+          {% for code, label in destinataires %}
+          <option value="{{ code }}" {{ "selected" if (facture and facture.destinataire_type == code) or (not facture and not dossier.est_assurance and code == "client") or (not facture and dossier.est_assurance and code == "mixte") }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6" id="franchise-field">
+        <label class="form-label">Montant de la franchise (part client)</label>
+        <input type="number" step="0.01" name="montant_franchise_client" class="form-control" value="{{ facture.montant_franchise_client if facture else dossier.franchise_montant }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Mode de règlement prévu</label>
+        <select name="mode_reglement" class="form-select">
+          <option value="">—</option>
+          {% for code, label in [("virement","Virement bancaire"),("cb","Carte bancaire"),("cheque","Chèque"),("especes","Espèces"),("prelevement","Prélèvement assurance")] %}
+          <option value="{{ code }}" {{ "selected" if facture and facture.mode_reglement == code }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  {% set lignes = facture.lignes if facture else [] %}
+  {% include "_lignes_editor.html" %}
+
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Remarques (visibles sur la facture)</label>
+        <textarea name="notes" class="form-control" rows="3">{{ facture.notes if facture else '' }}</textarea>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Conditions particulières</label>
+        <textarea name="conditions" class="form-control" rows="3">{{ facture.conditions if facture else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ "Enregistrer" if facture else "Émettre la facture" }}</button>
+    <a href="{{ url_for('dossiers.view_dossier', dossier_id=dossier.id) }}" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+  {% if not facture %}
+  <p class="text-muted small mt-2"><i class="bi bi-info-circle"></i> Une fois émise, la facture reçoit un numéro légal définitif. Toute correction ultérieure se fait par avoir.</p>
+  {% endif %}
+</form>
+{% endblock %}

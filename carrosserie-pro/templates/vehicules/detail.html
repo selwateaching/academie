@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ vehicule.designation }} — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ vehicule.marque }} {{ vehicule.modele }} — {{ vehicule.immatriculation }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('dossiers.new_dossier', client_id=vehicule.client_id) }}" class="btn btn-accent btn-sm"><i class="bi bi-folder-plus"></i> Nouveau dossier</a>
+<a href="{{ url_for('vehicules.edit_vehicule', vehicule_id=vehicule.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
+{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Fiche véhicule</h6>
+      <p class="mb-1"><strong>Immatriculation :</strong> {{ vehicule.immatriculation }}</p>
+      {% if vehicule.vin %}<p class="mb-1"><strong>VIN :</strong> {{ vehicule.vin }}</p>{% endif %}
+      {% if vehicule.couleur %}<p class="mb-1"><strong>Couleur :</strong> {{ vehicule.couleur }}</p>{% endif %}
+      {% if vehicule.energie %}<p class="mb-1"><strong>Énergie :</strong> {{ vehicule.energie }}</p>{% endif %}
+      {% if vehicule.date_mise_circulation %}<p class="mb-1"><strong>Mise en circulation :</strong> {{ vehicule.date_mise_circulation.strftime('%d/%m/%Y') }}</p>{% endif %}
+      <p class="mb-1"><strong>Kilométrage :</strong> {{ "{:,}".format(vehicule.kilometrage).replace(",", " ") }} km</p>
+      <hr>
+      <p class="mb-0"><strong>Propriétaire :</strong> <a href="{{ url_for('clients.view_client', client_id=vehicule.client_id) }}">{{ vehicule.client.nom_affichage }}</a></p>
+      {% if vehicule.notes %}<hr><p class="text-muted small mb-0">{{ vehicule.notes }}</p>{% endif %}
+      <hr>
+      <form method="post" action="{{ url_for('vehicules.delete_vehicule', vehicule_id=vehicule.id) }}" data-confirm="Supprimer ce véhicule ?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Supprimer</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="section-card">
+      <h6 class="mb-3">Historique des dossiers ({{ vehicule.dossiers|length }})</h6>
+      {% if vehicule.dossiers %}
+      <div class="table-responsive">
+        <table class="table table-cp mb-0">
+          <thead><tr><th>Référence</th><th>Type</th><th>Ouverture</th><th>Statut</th></tr></thead>
+          <tbody>
+          {% for d in vehicule.dossiers|sort(attribute='created_at', reverse=True) %}
+            <tr style="cursor:pointer" onclick="location.href='{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}'">
+              <td class="fw-semibold">{{ d.reference }}</td>
+              <td>{{ d.type_sinistre_libelle }}</td>
+              <td>{{ d.date_ouverture.strftime('%d/%m/%Y') if d.date_ouverture }}</td>
+              <td><span class="badge-statut st-{{ d.statut }}">{{ d.statut_libelle }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-folder2"></i>Aucun dossier pour ce véhicule.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

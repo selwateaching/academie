@@ -1,0 +1,170 @@
+:root {
+  --cp-primary: #1f3a5f;
+  --cp-primary-light: #2f5583;
+  --cp-accent: #ef6c3c;
+  --cp-bg: #f4f6f9;
+  --cp-border: #e2e6ec;
+  --cp-text: #1e2430;
+  --cp-muted: #6b7688;
+  --cp-sidebar-w: 240px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+}
+
+/* ── Sidebar ─────────────────────────────────────────── */
+.sidebar {
+  width: var(--cp-sidebar-w);
+  min-height: 100vh;
+  background: var(--cp-primary);
+  position: sticky;
+  top: 0;
+  color: #dfe7f2;
+}
+
+.sidebar-brand {
+  padding: 22px 20px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-brand i { font-size: 1.4rem; color: var(--cp-accent); }
+
+.sidebar-nav { padding: 14px 10px; overflow-y: auto; }
+.sidebar-nav .nav-link {
+  color: #c6d3e6;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: .89rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+.sidebar-nav .nav-link i { font-size: 1rem; width: 18px; text-align: center; }
+.sidebar-nav .nav-link:hover { background: rgba(255,255,255,.08); color: #fff; }
+.sidebar-nav .nav-link.active { background: var(--cp-accent); color: #fff; }
+.sidebar-section {
+  color: rgba(255,255,255,.4);
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 16px 14px 6px;
+  font-weight: 700;
+}
+
+.sidebar-user {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--cp-accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .9rem;
+}
+
+/* ── Main ────────────────────────────────────────────── */
+.main-content { min-height: 100vh; }
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--cp-border);
+  padding: 18px 28px;
+}
+.page-title { font-size: 1.3rem; font-weight: 700; color: var(--cp-text); }
+.content-container { padding: 24px 28px 60px; max-width: 1320px; }
+
+/* ── Cards / stats ───────────────────────────────────── */
+.card {
+  border: 1px solid var(--cp-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(16,24,40,.03);
+}
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--cp-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.stat-card .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--cp-primary); }
+.stat-card .stat-label { color: var(--cp-muted); font-size: .8rem; font-weight: 500; }
+.stat-card i { font-size: 1.3rem; color: var(--cp-accent); }
+
+/* ── Tables ──────────────────────────────────────────── */
+.table-cp { background: #fff; border: 1px solid var(--cp-border); border-radius: 12px; overflow: hidden; }
+.table-cp thead th {
+  background: #f8f9fb;
+  font-size: .74rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--cp-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--cp-border);
+  padding: 10px 14px;
+}
+.table-cp tbody td { padding: 11px 14px; vertical-align: middle; font-size: .89rem; border-bottom: 1px solid #f0f2f5; }
+.table-cp tbody tr:last-child td { border-bottom: none; }
+.table-cp tbody tr:hover { background: #fafbfd; }
+
+/* ── Badges statut ───────────────────────────────────── */
+.badge-statut { font-weight: 600; font-size: .72rem; padding: 5px 10px; border-radius: 20px; }
+.st-nouveau, .st-brouillon, .st-emise { background: #e7ebf3; color: #45526b; }
+.st-devis_envoye, .st-envoye, .st-envoyee { background: #dbeafe; color: #1d4ed8; }
+.st-attente_accord_assurance { background: #fef3c7; color: #92400e; }
+.st-accepte { background: #dcfce7; color: #15803d; }
+.st-en_reparation { background: #ede9fe; color: #6d28d9; }
+.st-termine { background: #cffafe; color: #0e7490; }
+.st-facture { background: #e0e7ff; color: #4338ca; }
+.st-solde, .st-payee { background: #dcfce7; color: #15803d; }
+.st-annule, .st-annulee, .st-refuse { background: #fee2e2; color: #b91c1c; }
+.st-partiellement_payee { background: #fef3c7; color: #92400e; }
+.st-en_retard { background: #fee2e2; color: #b91c1c; }
+.st-expire { background: #f3f4f6; color: #6b7280; }
+
+/* ── Forms ───────────────────────────────────────────── */
+.form-label { font-size: .82rem; font-weight: 600; color: #384153; }
+.form-control, .form-select { border-color: var(--cp-border); font-size: .89rem; }
+.form-control:focus, .form-select:focus { border-color: var(--cp-primary-light); box-shadow: 0 0 0 .2rem rgba(47,85,131,.12); }
+.section-card { background: #fff; border: 1px solid var(--cp-border); border-radius: 12px; padding: 20px 22px; margin-bottom: 20px; }
+.section-card h6 { font-weight: 700; color: var(--cp-primary); font-size: .82rem; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 16px; }
+
+.btn-primary { background: var(--cp-primary); border-color: var(--cp-primary); }
+.btn-primary:hover { background: var(--cp-primary-light); border-color: var(--cp-primary-light); }
+.btn-accent { background: var(--cp-accent); border-color: var(--cp-accent); color: #fff; }
+.btn-accent:hover { background: #d95b2c; border-color: #d95b2c; color: #fff; }
+
+/* ── Lignes de devis/facture ─────────────────────────── */
+.lignes-table th { font-size: .72rem; text-transform: uppercase; color: var(--cp-muted); }
+.lignes-table input, .lignes-table select { font-size: .84rem; }
+.totaux-box { background: #f8f9fb; border: 1px solid var(--cp-border); border-radius: 10px; padding: 16px 20px; }
+
+/* ── Auth ────────────────────────────────────────────── */
+.auth-shell { background: linear-gradient(135deg, #1f3a5f 0%, #14283f 100%); min-height: 100vh; }
+.auth-card {
+  background: #fff; border-radius: 16px; padding: 40px 36px;
+  max-width: 400px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+.auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.auth-flash { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1080; width: 90%; max-width: 420px; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: var(--cp-muted); }
+.empty-state i { font-size: 2.4rem; color: #c4cbd6; margin-bottom: 12px; display: block; }
+
+@media (max-width: 900px) {
+  .sidebar { position: fixed; left: -240px; z-index: 1050; transition: left .2s; }
+  .sidebar.open { left: 0; }
+  .content-container { padding: 16px; }
+}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Compagnies d'assurance — Carrosserie Pro{% endblock %}
+{% block page_title %}Compagnies d'assurance{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('assureurs.new_assureur') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouvelle compagnie</a>
+{% endblock %}
+{% block content %}
+{% if assureurs %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Compagnie</th><th>Ville</th><th>Contact sinistres</th><th>Réseau agréé</th><th></th></tr></thead>
+    <tbody>
+      {% for a in assureurs %}
+      <tr>
+        <td class="fw-semibold">{{ a.nom }}</td>
+        <td>{{ a.ville or "—" }}</td>
+        <td>{{ a.email_gestion_sinistres or a.email or "—" }}</td>
+        <td>{% if a.reseau_agree %}<span class="badge-statut st-accepte">Agréé</span>{% else %}—{% endif %}</td>
+        <td class="text-end">
+          <a href="{{ url_for('assureurs.edit_assureur', assureur_id=a.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-building-check"></i>Aucune compagnie enregistrée.</div>
+{% endif %}
+{% endblock %}

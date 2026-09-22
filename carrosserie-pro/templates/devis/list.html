@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Devis — Carrosserie Pro{% endblock %}
+{% block page_title %}Devis{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('devis.list_devis') }}" class="btn btn-sm {{ 'btn-primary' if not statut_filtre else 'btn-outline-secondary' }}">Tous</a>
+    {% for code, label in statuts %}
+    <a href="{{ url_for('devis.list_devis', statut=code) }}" class="btn btn-sm {{ 'btn-primary' if statut_filtre == code else 'btn-outline-secondary' }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if devis_list %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Véhicule</th><th>Total TTC</th><th>Statut</th></tr></thead>
+    <tbody>
+      {% for dv in devis_list %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for('devis.view_devis', devis_id=dv.id) }}'">
+        <td class="fw-semibold">{{ dv.numero }}</td>
+        <td>{{ dv.date_emission.strftime('%d/%m/%Y') }}</td>
+        <td>{{ dv.dossier.client.nom_affichage }}</td>
+        <td>{{ dv.dossier.vehicule.designation }}</td>
+        <td>{{ "%.2f"|format(dv.total_ttc) }} €</td>
+        <td><span class="badge-statut st-{{ dv.statut }}">{{ dv.statut_libelle }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-file-earmark-text"></i>Aucun devis trouvé.</div>
+{% endif %}
+{% endblock %}
