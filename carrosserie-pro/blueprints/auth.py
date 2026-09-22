@@ -14,7 +14,7 @@ def login():
 
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
+        password = request.form.get("password", "").strip()
         user = User.query.filter(func.lower(User.email) == email).first()
         if user and user.active and user.check_password(password):
             login_user(user)

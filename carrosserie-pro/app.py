@@ -79,7 +79,7 @@ def _bootstrap():
 
     if User.query.count() == 0:
         admin_email = os.environ.get("ADMIN_EMAIL", "admin@macarrosserie.fr").strip().lower()
-        admin_password = os.environ.get("ADMIN_PASSWORD", "change-moi-1234")
+        admin_password = os.environ.get("ADMIN_PASSWORD", "change-moi-1234").strip()
         admin_name = os.environ.get("ADMIN_NAME", "Administrateur")
         admin = User(email=admin_email, name=admin_name, role="admin")
         admin.set_password(admin_password)
