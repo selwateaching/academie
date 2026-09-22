@@ -31,6 +31,9 @@ def _fill_vehicule_from_form(vehicule, form):
         vehicule.kilometrage = int(form.get("kilometrage") or 0)
     except ValueError:
         vehicule.kilometrage = 0
+    vehicule.code_teinte = form.get("code_teinte", "").strip()
+    vehicule.teinte_nom = form.get("teinte_nom", "").strip()
+    vehicule.type_finition = form.get("type_finition", "").strip()
     vehicule.notes = form.get("notes", "").strip()
 
 

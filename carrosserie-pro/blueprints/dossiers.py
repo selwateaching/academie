@@ -15,6 +15,7 @@ from models import (
     PointageTemps,
     Fournisseur,
     CommandePiece,
+    FicheTeinte,
     Counter,
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
@@ -330,4 +331,40 @@ def delete_commande_piece(dossier_id, commande_id):
     db.session.delete(commande)
     db.session.commit()
     flash("Pièce supprimée.", "info")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/teinte/nouvelle", methods=["POST"])
+@login_required
+def new_fiche_teinte(dossier_id):
+    dossier = Dossier.query.get_or_404(dossier_id)
+    formule = request.form.get("formule", "").strip()
+    if not formule:
+        flash("La formule de mélange est obligatoire.", "danger")
+        return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+    fiche = FicheTeinte(
+        dossier_id=dossier.id,
+        fabricant_peinture=request.form.get("fabricant_peinture", "").strip(),
+        formule=formule,
+        elements_peints=request.form.get("elements_peints", "").strip(),
+        quantite_g=_parse_float(request.form.get("quantite_g"), None),
+        notes=request.form.get("notes", "").strip(),
+    )
+    db.session.add(fiche)
+    db.session.flush()
+    historique.log("dossier", dossier.id, "Fiche teinte ajoutée", fiche.elements_peints or fiche.fabricant_peinture)
+    db.session.commit()
+    flash("Fiche teinte enregistrée.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/teinte/<int:fiche_id>/supprimer", methods=["POST"])
+@login_required
+def delete_fiche_teinte(dossier_id, fiche_id):
+    fiche = FicheTeinte.query.filter_by(id=fiche_id, dossier_id=dossier_id).first_or_404()
+    historique.log("dossier", dossier_id, "Fiche teinte supprimée", fiche.elements_peints or fiche.fabricant_peinture)
+    db.session.delete(fiche)
+    db.session.commit()
+    flash("Fiche teinte supprimée.", "info")
     return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))

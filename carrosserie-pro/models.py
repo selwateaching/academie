@@ -241,6 +241,27 @@ class CommandePiece(db.Model):
         return (self.quantite or 0) * (self.prix_unitaire_ht or 0)
 
 
+class FicheTeinte(db.Model):
+    """Fiche peinture d'une intervention : formule de mélange utilisée pour
+    cette réparation. Le code teinte constructeur du véhicule est stocké
+    sur Vehicule (référence stable) ; ici on consigne la formule et les
+    éléments effectivement peints pour cette intervention précise."""
+
+    __tablename__ = "fiches_teinte"
+
+    id = db.Column(db.Integer, primary_key=True)
+    dossier_id = db.Column(db.Integer, db.ForeignKey("dossiers.id"), nullable=False)
+
+    fabricant_peinture = db.Column(db.String(100), default="")  # Glasurit, Standox, PPG, Sikkens...
+    formule = db.Column(db.Text, default="")  # formule de mélange (issue du logiciel teinte)
+    elements_peints = db.Column(db.String(255), default="")  # ex: aile AVG, portière AVG
+    quantite_g = db.Column(db.Float, nullable=True)
+    notes = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    dossier = db.relationship("Dossier", backref=db.backref("fiches_teinte", cascade="all, delete-orphan", order_by="FicheTeinte.created_at.desc()"))
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Clients
 # ──────────────────────────────────────────────────────────────────────────
@@ -297,6 +318,12 @@ class Vehicule(db.Model):
     energie = db.Column(db.String(30), default="")  # essence, diesel, électrique, hybride...
     date_mise_circulation = db.Column(db.Date, nullable=True)
     kilometrage = db.Column(db.Integer, default=0)
+
+    # Peinture d'origine (constructeur) — sert de référence pour toute fiche teinte future
+    code_teinte = db.Column(db.String(50), default="")  # code peinture constructeur
+    teinte_nom = db.Column(db.String(100), default="")  # nom commercial de la couleur
+    type_finition = db.Column(db.String(30), default="")  # unie, métallisée, nacrée, mate
+
     notes = db.Column(db.Text, default="")
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

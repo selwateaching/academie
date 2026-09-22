@@ -16,6 +16,11 @@
       {% if vehicule.energie %}<p class="mb-1"><strong>Énergie :</strong> {{ vehicule.energie }}</p>{% endif %}
       {% if vehicule.date_mise_circulation %}<p class="mb-1"><strong>Mise en circulation :</strong> {{ vehicule.date_mise_circulation.strftime('%d/%m/%Y') }}</p>{% endif %}
       <p class="mb-1"><strong>Kilométrage :</strong> {{ "{:,}".format(vehicule.kilometrage).replace(",", " ") }} km</p>
+      {% if vehicule.code_teinte or vehicule.teinte_nom %}
+      <hr>
+      <p class="mb-1"><strong>Teinte d'origine :</strong> {{ vehicule.teinte_nom or "—" }}{% if vehicule.code_teinte %} ({{ vehicule.code_teinte }}){% endif %}</p>
+      {% if vehicule.type_finition %}<p class="mb-1 small text-muted">{{ vehicule.type_finition }}</p>{% endif %}
+      {% endif %}
       <hr>
       <p class="mb-0"><strong>Propriétaire :</strong> <a href="{{ url_for('clients.view_client', client_id=vehicule.client_id) }}">{{ vehicule.client.nom_affichage }}</a></p>
       {% if vehicule.notes %}<hr><p class="text-muted small mb-0">{{ vehicule.notes }}</p>{% endif %}

@@ -214,6 +214,65 @@
 
     <div class="section-card">
       <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Fiches peinture ({{ dossier.fiches_teinte|length }})</h6>
+      </div>
+      {% if dossier.vehicule.code_teinte or dossier.vehicule.teinte_nom %}
+      <p class="text-muted small mb-2">
+        Teinte d'origine du véhicule : <strong>{{ dossier.vehicule.teinte_nom or "—" }}</strong>
+        {% if dossier.vehicule.code_teinte %}(code {{ dossier.vehicule.code_teinte }}){% endif %}
+        {% if dossier.vehicule.type_finition %} — {{ dossier.vehicule.type_finition }}{% endif %}
+      </p>
+      {% else %}
+      <p class="text-muted small mb-2">Aucune teinte d'origine renseignée sur ce véhicule. <a href="{{ url_for('vehicules.edit_vehicule', vehicule_id=dossier.vehicule_id) }}" target="_blank">La renseigner</a> (nouvel onglet).</p>
+      {% endif %}
+      {% if dossier.fiches_teinte %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Éléments peints</th><th>Fabricant</th><th>Formule</th><th>Qté</th><th></th></tr></thead>
+        <tbody>
+        {% for ft in dossier.fiches_teinte %}
+          <tr>
+            <td>{{ ft.elements_peints or "—" }}</td>
+            <td>{{ ft.fabricant_peinture or "—" }}</td>
+            <td class="text-muted small" style="max-width: 220px; white-space: pre-wrap;">{{ ft.formule }}</td>
+            <td>{{ (ft.quantite_g ~ " g") if ft.quantite_g else "—" }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_fiche_teinte', dossier_id=dossier.id, fiche_id=ft.id) }}" data-confirm="Supprimer cette fiche teinte ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <form method="post" action="{{ url_for('dossiers.new_fiche_teinte', dossier_id=dossier.id) }}" class="row g-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Éléments peints</label>
+          <input type="text" name="elements_peints" class="form-control form-control-sm" placeholder="Aile avant gauche, portière...">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Fabricant</label>
+          <input type="text" name="fabricant_peinture" class="form-control form-control-sm" placeholder="Glasurit, Standox, PPG...">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Quantité (g)</label>
+          <input type="number" step="0.1" min="0" name="quantite_g" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">&nbsp;</label>
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1">Formule de mélange *</label>
+          <textarea name="formule" class="form-control form-control-sm" rows="2" placeholder="Formule issue du logiciel teinte du fabricant"></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
         <h6 class="mb-0">Pointages du temps ({{ "%.1f"|format(dossier.pointages|sum(attribute='duree_heures')) }} h)</h6>
       </div>
       {% if dossier.pointages %}

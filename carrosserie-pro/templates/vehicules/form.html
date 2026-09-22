@@ -66,6 +66,29 @@
     </div>
   </div>
 
+  <div class="section-card">
+    <h6>Peinture d'origine</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Code teinte constructeur</label>
+        <input type="text" name="code_teinte" class="form-control text-uppercase" value="{{ vehicule.code_teinte if vehicule else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nom de la couleur</label>
+        <input type="text" name="teinte_nom" class="form-control" value="{{ vehicule.teinte_nom if vehicule else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Type de finition</label>
+        <select name="type_finition" class="form-select">
+          <option value="">—</option>
+          {% for f in ["Unie", "Métallisée", "Nacrée", "Mate"] %}
+          <option value="{{ f }}" {{ "selected" if vehicule and vehicule.type_finition == f }}>{{ f }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
   <div class="d-flex gap-2">
     <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
     <a href="javascript:history.back()" class="btn btn-outline-secondary">Annuler</a>
