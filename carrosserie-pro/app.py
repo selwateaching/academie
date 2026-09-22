@@ -140,6 +140,7 @@ MODELES_COURRIER_PAR_DEFAUT = [
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    os.makedirs(app.config["UPLOAD_DIR"], exist_ok=True)
 
     db.init_app(app)
     login_manager.init_app(app)

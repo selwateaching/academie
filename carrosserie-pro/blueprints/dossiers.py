@@ -1,8 +1,11 @@
+import os
+import uuid
 from datetime import datetime, date
 
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, send_from_directory, current_app, abort
 from flask_login import login_required
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
 from extensions import db
 from models import (
@@ -16,12 +19,16 @@ from models import (
     Fournisseur,
     CommandePiece,
     FicheTeinte,
+    Photo,
     Counter,
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
     STATUTS_COMMANDE,
+    TYPES_PHOTO,
 )
 import historique
+
+EXTENSIONS_AUTORISEES = {"jpg", "jpeg", "png", "webp", "gif"}
 
 dossiers_bp = Blueprint("dossiers", __name__, url_prefix="/dossiers")
 
@@ -174,7 +181,7 @@ def view_dossier(dossier_id):
     fournisseurs = Fournisseur.query.order_by(Fournisseur.nom).all()
     return render_template(
         "dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER, techniciens=techniciens,
-        fournisseurs=fournisseurs, statuts_commande=STATUTS_COMMANDE,
+        fournisseurs=fournisseurs, statuts_commande=STATUTS_COMMANDE, types_photo=TYPES_PHOTO,
         historique=historique.for_entity("dossier", dossier_id),
     )
 
@@ -367,4 +374,62 @@ def delete_fiche_teinte(dossier_id, fiche_id):
     db.session.delete(fiche)
     db.session.commit()
     flash("Fiche teinte supprimée.", "info")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
+
+
+def _extension_autorisee(nom_fichier):
+    return "." in nom_fichier and nom_fichier.rsplit(".", 1)[1].lower() in EXTENSIONS_AUTORISEES
+
+
+@dossiers_bp.route("/<int:dossier_id>/photos/nouvelle", methods=["POST"])
+@login_required
+def new_photo(dossier_id):
+    dossier = Dossier.query.get_or_404(dossier_id)
+    fichier = request.files.get("photo")
+
+    if not fichier or not fichier.filename:
+        flash("Merci de sélectionner une photo.", "danger")
+        return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+    if not _extension_autorisee(fichier.filename):
+        flash("Format non supporté. Utilisez JPG, PNG, WEBP ou GIF.", "danger")
+        return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+    extension = fichier.filename.rsplit(".", 1)[1].lower()
+    nom_stocke = f"{uuid.uuid4().hex}.{extension}"
+    fichier.save(os.path.join(current_app.config["UPLOAD_DIR"], nom_stocke))
+
+    photo = Photo(
+        dossier_id=dossier.id,
+        filename=nom_stocke,
+        nom_original=secure_filename(fichier.filename),
+        type_photo=request.form.get("type_photo") if request.form.get("type_photo") in dict(TYPES_PHOTO) else "avant",
+        legende=request.form.get("legende", "").strip(),
+    )
+    db.session.add(photo)
+    db.session.flush()
+    historique.log("dossier", dossier.id, "Photo ajoutée", photo.type_photo_libelle)
+    db.session.commit()
+    flash("Photo ajoutée.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/photos/<int:photo_id>/fichier")
+@login_required
+def photo_fichier(dossier_id, photo_id):
+    photo = Photo.query.filter_by(id=photo_id, dossier_id=dossier_id).first_or_404()
+    return send_from_directory(current_app.config["UPLOAD_DIR"], photo.filename)
+
+
+@dossiers_bp.route("/<int:dossier_id>/photos/<int:photo_id>/supprimer", methods=["POST"])
+@login_required
+def delete_photo(dossier_id, photo_id):
+    photo = Photo.query.filter_by(id=photo_id, dossier_id=dossier_id).first_or_404()
+    chemin = os.path.join(current_app.config["UPLOAD_DIR"], photo.filename)
+    if os.path.exists(chemin):
+        os.remove(chemin)
+    historique.log("dossier", dossier_id, "Photo supprimée", photo.type_photo_libelle)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Photo supprimée.", "info")
     return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))

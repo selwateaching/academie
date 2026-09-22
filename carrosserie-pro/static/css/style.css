@@ -295,3 +295,9 @@ body {
 .kanban-card-meta { color: var(--cp-muted-2); font-size: .78rem; margin-top: 2px; }
 .kanban-card-retard { color: #c62a1c; font-weight: 700; font-size: .74rem; margin-top: 4px; }
 .kanban-empty { color: var(--cp-muted-2); font-size: .8rem; text-align: center; padding: 14px 4px; }
+
+/* ── Photos de dossier ──────────────────────────────────── */
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.photo-card { border: 1px solid var(--cp-border); border-radius: var(--cp-radius-sm); overflow: hidden; background: var(--cp-surface); }
+.photo-thumb { width: 100%; height: 120px; object-fit: cover; display: block; }
+.photo-card-body { padding: 8px 10px; }

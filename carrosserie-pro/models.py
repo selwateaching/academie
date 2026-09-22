@@ -262,6 +262,32 @@ class FicheTeinte(db.Model):
     dossier = db.relationship("Dossier", backref=db.backref("fiches_teinte", cascade="all, delete-orphan", order_by="FicheTeinte.created_at.desc()"))
 
 
+TYPES_PHOTO = [
+    ("avant", "Avant réparation"),
+    ("apres", "Après réparation"),
+    ("autre", "Autre"),
+]
+
+
+class Photo(db.Model):
+    __tablename__ = "photos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    dossier_id = db.Column(db.Integer, db.ForeignKey("dossiers.id"), nullable=False)
+
+    filename = db.Column(db.String(255), nullable=False)  # nom de fichier stocké sur disque
+    nom_original = db.Column(db.String(255), default="")
+    type_photo = db.Column(db.String(20), default="avant")
+    legende = db.Column(db.Text, default="")  # annotation / description de la photo
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    dossier = db.relationship("Dossier", backref=db.backref("photos", cascade="all, delete-orphan", order_by="Photo.created_at.desc()"))
+
+    @property
+    def type_photo_libelle(self):
+        return dict(TYPES_PHOTO).get(self.type_photo, self.type_photo)
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Clients
 # ──────────────────────────────────────────────────────────────────────────

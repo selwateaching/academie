@@ -15,3 +15,5 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
+    MAX_CONTENT_LENGTH = 15 * 1024 * 1024  # 15 Mo max par requête (upload photos)
+    UPLOAD_DIR = os.environ.get("UPLOAD_DIR", os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads", "photos"))
