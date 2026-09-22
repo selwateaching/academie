@@ -11,6 +11,8 @@ from models import (
     Vehicule,
     Assureur,
     Expert,
+    Technicien,
+    PointageTemps,
     Counter,
     STATUTS_DOSSIER,
     TYPES_SINISTRE,
@@ -91,6 +93,7 @@ def _fill_dossier_from_form(dossier, form):
     dossier.date_entree_atelier = _parse_date(form.get("date_entree_atelier"))
     dossier.date_sortie_prevue = _parse_date(form.get("date_sortie_prevue"))
     dossier.date_sortie_reelle = _parse_date(form.get("date_sortie_reelle"))
+    dossier.technicien_id = form.get("technicien_id", type=int) or None
     dossier.notes = form.get("notes", "").strip()
 
 
@@ -121,12 +124,14 @@ def new_dossier():
             clients = Client.query.order_by(Client.nom).all()
             assureurs = Assureur.query.order_by(Assureur.nom).all()
             experts = Expert.query.order_by(Expert.nom).all()
+            techniciens = Technicien.query.filter_by(actif=True).order_by(Technicien.nom).all()
             return render_template(
                 "dossiers/form.html",
                 dossier=None,
                 clients=clients,
                 assureurs=assureurs,
                 experts=experts,
+                techniciens=techniciens,
                 types_sinistre=TYPES_SINISTRE,
                 selected_client_id=client_id,
             )
@@ -144,12 +149,14 @@ def new_dossier():
     clients = Client.query.order_by(Client.nom).all()
     assureurs = Assureur.query.order_by(Assureur.nom).all()
     experts = Expert.query.order_by(Expert.nom).all()
+    techniciens = Technicien.query.filter_by(actif=True).order_by(Technicien.nom).all()
     return render_template(
         "dossiers/form.html",
         dossier=None,
         clients=clients,
         assureurs=assureurs,
         experts=experts,
+        techniciens=techniciens,
         types_sinistre=TYPES_SINISTRE,
         selected_client_id=client_id,
     )
@@ -159,8 +166,10 @@ def new_dossier():
 @login_required
 def view_dossier(dossier_id):
     dossier = Dossier.query.get_or_404(dossier_id)
+    techniciens = Technicien.query.filter_by(actif=True).order_by(Technicien.nom).all()
     return render_template(
-        "dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER, historique=historique.for_entity("dossier", dossier_id)
+        "dossiers/detail.html", dossier=dossier, statuts=STATUTS_DOSSIER, techniciens=techniciens,
+        historique=historique.for_entity("dossier", dossier_id),
     )
 
 
@@ -177,12 +186,14 @@ def edit_dossier(dossier_id):
     clients = Client.query.order_by(Client.nom).all()
     assureurs = Assureur.query.order_by(Assureur.nom).all()
     experts = Expert.query.order_by(Expert.nom).all()
+    techniciens = Technicien.query.filter_by(actif=True).order_by(Technicien.nom).all()
     return render_template(
         "dossiers/form.html",
         dossier=dossier,
         clients=clients,
         assureurs=assureurs,
         experts=experts,
+        techniciens=techniciens,
         types_sinistre=TYPES_SINISTRE,
         selected_client_id=dossier.client_id,
     )
@@ -221,3 +232,41 @@ def delete_dossier(dossier_id):
 def api_vehicules_client(client_id):
     vehicules = Vehicule.query.filter_by(client_id=client_id).all()
     return {"vehicules": [{"id": v.id, "designation": v.designation} for v in vehicules]}
+
+
+@dossiers_bp.route("/<int:dossier_id>/pointages/nouveau", methods=["POST"])
+@login_required
+def new_pointage(dossier_id):
+    dossier = Dossier.query.get_or_404(dossier_id)
+    technicien_id = request.form.get("technicien_id", type=int)
+    duree_heures = _parse_float(request.form.get("duree_heures"), 0.0)
+    technicien = Technicien.query.get(technicien_id) if technicien_id else None
+
+    if not technicien or duree_heures <= 0:
+        flash("Merci de sélectionner un technicien et une durée valide.", "danger")
+        return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+    pointage = PointageTemps(
+        dossier_id=dossier.id,
+        technicien_id=technicien.id,
+        date_intervention=_parse_date(request.form.get("date_intervention")) or date.today(),
+        duree_heures=duree_heures,
+        description=request.form.get("description", "").strip(),
+    )
+    db.session.add(pointage)
+    db.session.flush()
+    historique.log("dossier", dossier.id, "Pointage ajouté", f"{technicien.nom} — {duree_heures:g} h")
+    db.session.commit()
+    flash("Pointage enregistré.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier.id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/pointages/<int:pointage_id>/supprimer", methods=["POST"])
+@login_required
+def delete_pointage(dossier_id, pointage_id):
+    pointage = PointageTemps.query.filter_by(id=pointage_id, dossier_id=dossier_id).first_or_404()
+    historique.log("dossier", dossier_id, "Pointage supprimé", f"{pointage.technicien.nom} — {pointage.duree_heures:g} h")
+    db.session.delete(pointage)
+    db.session.commit()
+    flash("Pointage supprimé.", "info")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))

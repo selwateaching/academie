@@ -157,6 +157,35 @@ class Expert(db.Model):
         return self.nom
 
 
+class Technicien(db.Model):
+    __tablename__ = "techniciens"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(255), nullable=False)
+    specialite = db.Column(db.String(100), default="")  # carrosserie, peinture, mécanique...
+    telephone = db.Column(db.String(30), default="")
+    email = db.Column(db.String(255), default="")
+    actif = db.Column(db.Boolean, default=True)
+
+    def __repr__(self):
+        return self.nom
+
+
+class PointageTemps(db.Model):
+    __tablename__ = "pointages_temps"
+
+    id = db.Column(db.Integer, primary_key=True)
+    dossier_id = db.Column(db.Integer, db.ForeignKey("dossiers.id"), nullable=False)
+    technicien_id = db.Column(db.Integer, db.ForeignKey("techniciens.id"), nullable=False)
+    date_intervention = db.Column(db.Date, default=date.today)
+    duree_heures = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text, default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    dossier = db.relationship("Dossier", backref=db.backref("pointages", cascade="all, delete-orphan", order_by="PointageTemps.date_intervention.desc()"))
+    technicien = db.relationship("Technicien", backref=db.backref("pointages", cascade="all, delete-orphan"))
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Clients
 # ──────────────────────────────────────────────────────────────────────────
@@ -288,6 +317,7 @@ class Dossier(db.Model):
     date_entree_atelier = db.Column(db.Date, nullable=True)
     date_sortie_prevue = db.Column(db.Date, nullable=True)
     date_sortie_reelle = db.Column(db.Date, nullable=True)
+    technicien_id = db.Column(db.Integer, db.ForeignKey("techniciens.id"), nullable=True)
 
     notes = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -296,6 +326,7 @@ class Dossier(db.Model):
     client = db.relationship("Client", back_populates="dossiers")
     vehicule = db.relationship("Vehicule", back_populates="dossiers")
     assureur = db.relationship("Assureur", back_populates="dossiers")
+    technicien = db.relationship("Technicien", foreign_keys=[technicien_id], backref="dossiers_assignes")
     devis = db.relationship("Devis", back_populates="dossier", cascade="all, delete-orphan")
     factures = db.relationship("Facture", back_populates="dossier", cascade="all, delete-orphan")
 

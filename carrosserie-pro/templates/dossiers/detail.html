@@ -63,6 +63,7 @@
       {% if dossier.date_entree_atelier %}<p class="mb-1 small">Entrée atelier : {{ dossier.date_entree_atelier.strftime('%d/%m/%Y') }}</p>{% endif %}
       {% if dossier.date_sortie_prevue %}<p class="mb-1 small">Sortie prévue : {{ dossier.date_sortie_prevue.strftime('%d/%m/%Y') }}</p>{% endif %}
       {% if dossier.date_sortie_reelle %}<p class="mb-1 small">Sortie réelle : {{ dossier.date_sortie_reelle.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.technicien %}<p class="mb-1 small">Technicien assigné : <strong>{{ dossier.technicien.nom }}</strong></p>{% endif %}
     </div>
 
     <form method="post" action="{{ url_for('dossiers.delete_dossier', dossier_id=dossier.id) }}" data-confirm="Supprimer ce dossier ?">
@@ -126,6 +127,63 @@
       </table>
       {% else %}
       <div class="empty-state py-4"><i class="bi bi-receipt"></i>Aucune facture pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Pointages du temps ({{ "%.1f"|format(dossier.pointages|sum(attribute='duree_heures')) }} h)</h6>
+      </div>
+      {% if dossier.pointages %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Date</th><th>Technicien</th><th>Durée</th><th>Description</th><th></th></tr></thead>
+        <tbody>
+        {% for p in dossier.pointages %}
+          <tr>
+            <td>{{ p.date_intervention.strftime('%d/%m/%Y') }}</td>
+            <td>{{ p.technicien.nom }}</td>
+            <td>{{ "%.1f"|format(p.duree_heures) }} h</td>
+            <td class="text-muted small">{{ p.description or "—" }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_pointage', dossier_id=dossier.id, pointage_id=p.id) }}" data-confirm="Supprimer ce pointage ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if techniciens %}
+      <form method="post" action="{{ url_for('dossiers.new_pointage', dossier_id=dossier.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Technicien</label>
+          <select name="technicien_id" class="form-select form-select-sm" required>
+            {% for t in techniciens %}
+            <option value="{{ t.id }}">{{ t.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Date</label>
+          <input type="date" name="date_intervention" class="form-control form-control-sm" value="{{ today.isoformat() }}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Durée (h)</label>
+          <input type="number" step="0.25" min="0.25" name="duree_heures" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Description</label>
+          <input type="text" name="description" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+      </form>
+      {% else %}
+      <p class="text-muted small mb-0">Aucun technicien actif. <a href="{{ url_for('techniciens.new_technicien') }}">Ajoutez-en un</a> pour pouvoir pointer du temps.</p>
       {% endif %}
     </div>
 

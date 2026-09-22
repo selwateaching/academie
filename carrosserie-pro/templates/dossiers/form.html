@@ -155,6 +155,16 @@
         <label class="form-label">Sortie réelle</label>
         <input type="date" name="date_sortie_reelle" class="form-control" value="{{ dossier.date_sortie_reelle.isoformat() if dossier and dossier.date_sortie_reelle }}">
       </div>
+      <div class="col-md-6">
+        <label class="form-label">Technicien assigné</label>
+        <select name="technicien_id" class="form-select">
+          <option value="">—</option>
+          {% for t in techniciens %}
+          <option value="{{ t.id }}" {{ "selected" if dossier and dossier.technicien_id == t.id }}>{{ t.nom }}{{ " — " ~ t.specialite if t.specialite }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text"><a href="{{ url_for('techniciens.new_technicien') }}" target="_blank">Ajouter un technicien</a> (nouvel onglet).</div>
+      </div>
       <div class="col-12">
         <label class="form-label">Notes internes</label>
         <textarea name="notes" class="form-control" rows="2">{{ dossier.notes if dossier else '' }}</textarea>
