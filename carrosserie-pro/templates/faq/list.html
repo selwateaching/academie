@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Aide — Carrosserie Pro{% endblock %}
+{% block page_title %}Aide & FAQ{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('faq.new_faq') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouvelle question</a>
+{% endblock %}
+{% block content %}
+<p class="text-muted small mb-3">Cette base de connaissances alimente l'assistant d'aide (bouton <i class="bi bi-chat-dots"></i> en bas à droite de chaque page). Ajoutez vos propres questions/réponses pour qu'il réponde aussi sur vos habitudes internes.</p>
+
+{% if faqs %}
+{% set faqs_par_categorie = {} %}
+{% for f in faqs %}
+  {% if faqs_par_categorie.update({f.categorie: (faqs_par_categorie.get(f.categorie, []) + [f])}) %}{% endif %}
+{% endfor %}
+
+{% for code, label in categories %}
+  {% if faqs_par_categorie.get(code) %}
+  <div class="section-card mb-3">
+    <h6>{{ label }}</h6>
+    <table class="table table-cp mb-0">
+      <thead><tr><th>Question</th><th></th></tr></thead>
+      <tbody>
+        {% for f in faqs_par_categorie[code] %}
+        <tr>
+          <td>{{ f.question }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('faq.edit_faq', faq_id=f.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{{ url_for('faq.delete_faq', faq_id=f.id) }}" data-confirm="Supprimer cette question ?" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+{% endfor %}
+{% else %}
+<div class="empty-state"><i class="bi bi-question-circle"></i>Aucune question dans la base d'aide.</div>
+{% endif %}
+{% endblock %}

@@ -308,3 +308,64 @@ body {
 .photo-card { border: 1px solid var(--cp-border); border-radius: var(--cp-radius-sm); overflow: hidden; background: var(--cp-surface); }
 .photo-thumb { width: 100%; height: 120px; object-fit: cover; display: block; }
 .photo-card-body { padding: 8px 10px; }
+
+/* ── Assistant d'aide (chat flottant) ───────────────────── */
+#aide-bouton {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--cp-accent);
+  color: #fff;
+  font-size: 1.4rem;
+  box-shadow: 0 6px 18px rgba(238,108,60,.4);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+#aide-bouton:hover { transform: scale(1.06); }
+#aide-panneau {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  height: 460px;
+  max-height: calc(100vh - 48px);
+  background: var(--cp-surface);
+  border-radius: var(--cp-radius);
+  box-shadow: 0 12px 36px rgba(16,24,40,.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1060;
+}
+#aide-entete {
+  background: var(--cp-primary);
+  color: #fff;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+#aide-entete button { background: none; border: none; color: #fff; opacity: .85; font-size: 1rem; }
+#aide-entete button:hover { opacity: 1; }
+#aide-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #f7f8fb; }
+.aide-msg { max-width: 85%; padding: 9px 12px; border-radius: 12px; font-size: .85rem; line-height: 1.4; white-space: pre-wrap; }
+.aide-msg-bot { background: #fff; border: 1px solid var(--cp-border); align-self: flex-start; border-bottom-left-radius: 3px; }
+.aide-msg-user { background: var(--cp-primary); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+.aide-msg-categorie { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--cp-accent); margin-bottom: 4px; }
+#aide-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--cp-border); background: var(--cp-surface); }
+#aide-form input { flex: 1; border: 1px solid var(--cp-border); border-radius: 20px; padding: 8px 14px; font-size: .85rem; outline: none; }
+#aide-form input:focus { border-color: var(--cp-primary-light); }
+#aide-form button { width: 38px; height: 38px; border-radius: 50%; border: none; background: var(--cp-accent); color: #fff; flex-shrink: 0; }
+@media (max-width: 480px) {
+  #aide-panneau { right: 12px; left: 12px; width: auto; bottom: 12px; }
+  #aide-bouton { right: 16px; bottom: 16px; }
+}

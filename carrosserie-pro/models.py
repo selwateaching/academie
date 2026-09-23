@@ -492,6 +492,41 @@ class ModeleCourrier(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
+CATEGORIES_FAQ = [
+    ("prise_en_main", "Prise en main"),
+    ("clients_vehicules", "Clients & véhicules"),
+    ("dossiers", "Dossiers"),
+    ("planning", "Planning atelier"),
+    ("devis_factures", "Devis & factures"),
+    ("signature", "Signature électronique"),
+    ("courriers", "Courriers"),
+    ("atelier", "Techniciens, pièces & peinture"),
+    ("photos", "Photos"),
+    ("dashboard", "Tableau de bord"),
+    ("autre", "Autre"),
+]
+
+
+class FAQ(db.Model):
+    """Base de connaissances de l'assistant d'aide intégré (chat flottant).
+    La recherche se fait par correspondance de mots-clés simple, sans
+    dépendance externe (pas d'IA/API tierce)."""
+
+    __tablename__ = "faq"
+
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), nullable=False)
+    reponse = db.Column(db.Text, nullable=False)
+    mots_cles = db.Column(db.String(500), default="")  # mots supplémentaires pour la recherche
+    categorie = db.Column(db.String(30), default="autre")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def categorie_libelle(self):
+        return dict(CATEGORIES_FAQ).get(self.categorie, self.categorie)
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Lignes communes (utilisées par Devis et Facture)
 # ──────────────────────────────────────────────────────────────────────────

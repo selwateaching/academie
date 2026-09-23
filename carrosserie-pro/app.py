@@ -20,6 +20,7 @@ from models import (
     Assureur,
     CatalogueItem,
     ModeleCourrier,
+    FAQ,
     STATUTS_DOSSIER,
 )
 
@@ -136,6 +137,147 @@ MODELES_COURRIER_PAR_DEFAUT = [
     ),
 ]
 
+# Base de connaissances de l'assistant d'aide, pré-remplie au premier
+# lancement. Modifiable et complétable depuis l'écran Aide & FAQ.
+FAQ_PAR_DEFAUT = [
+    (
+        "prise_en_main",
+        "Dans quel ordre faut-il créer les choses ?",
+        "L'ordre logique est : Client → Véhicule (rattaché à ce client) → Dossier "
+        "(rattaché au client et à son véhicule). Une fois le dossier créé, tout le "
+        "reste (devis, factures, photos, pointages, pièces, fiches peinture, "
+        "planning) se fait depuis la fiche du dossier.",
+        "ordre etapes debuter demarrer commencer",
+    ),
+    (
+        "dossiers",
+        "Comment créer un dossier ?",
+        "Menu « Dossiers » → « Nouveau dossier ». Choisissez le client, puis son "
+        "véhicule (le menu véhicule ne se remplit qu'après avoir choisi le client, "
+        "patientez une seconde), renseignez le type de sinistre/intervention et "
+        "une description, puis « Enregistrer ». Le dossier apparaît immédiatement "
+        "dans le Planning atelier, même sans devis.",
+        "creer dossier nouveau",
+    ),
+    (
+        "dossiers",
+        "Pourquoi mon dossier ne se crée pas ?",
+        "La cause la plus fréquente : le véhicule sélectionné n'appartient pas au "
+        "client choisi, ou le menu « Véhicule » n'a pas eu le temps de se charger "
+        "après avoir choisi le client (il affiche alors « Sélectionnez d'abord un "
+        "client »). Attendez que le nom du véhicule apparaisse dans ce menu avant "
+        "de cliquer sur Enregistrer. Si un message orange/rouge apparaît en haut "
+        "de la page après avoir cliqué sur Enregistrer, lisez-le : il indique "
+        "précisément ce qui manque.",
+        "probleme bug erreur ne fonctionne pas rien",
+    ),
+    (
+        "planning",
+        "Comment fonctionne le Planning atelier ?",
+        "Le planning n'est pas quelque chose qu'on crée séparément : c'est une "
+        "vue automatique de tous les dossiers, organisés en colonnes selon leur "
+        "statut (Nouveau, Devis envoyé, Attente accord assurance, Accepté, En "
+        "réparation, Terminé, Facturé, Soldé, Annulé). Dès qu'un dossier est créé, "
+        "il apparaît dans la colonne « Nouveau ». Pour faire avancer un dossier, "
+        "cliquez sur sa carte et faites-la glisser (maintenez le clic ou le doigt "
+        "enfoncé et déplacez) vers la colonne suivante — le statut se met à jour "
+        "automatiquement. Un simple clic sans glisser ouvre la fiche du dossier.",
+        "kanban glisser deposer deplacer statut colonne carte",
+    ),
+    (
+        "devis_factures",
+        "Le devis est-il adressé au client ou à l'expert ?",
+        "Le devis (PDF) est toujours établi au nom du client, propriétaire du "
+        "véhicule. Pour le transmettre à l'expert ou à l'assureur pour validation, "
+        "utilisez le bouton « Envoyer à l'expert » sur la fiche devis, ou le "
+        "sélecteur « Destinataire » (Client / Expert / Assureur) dans le module "
+        "Courriers — l'email correspondant doit être renseigné sur le dossier.",
+        "expert assureur destinataire envoyer qui",
+    ),
+    (
+        "devis_factures",
+        "Comment transformer un devis en facture ?",
+        "Depuis la fiche du devis, cliquez sur « Transformer en facture ». La "
+        "facture reprend automatiquement toutes les lignes du devis, et répartit "
+        "le montant entre client et assureur si une franchise est renseignée sur "
+        "le dossier.",
+        "facturer generer facture",
+    ),
+    (
+        "signature",
+        "Comment faire signer un devis électroniquement ?",
+        "Sur la fiche du devis, cliquez sur « Générer un lien de signature ». "
+        "Copiez le lien et envoyez-le au client (par email, SMS...). Il pourra "
+        "consulter le devis et signer avec le doigt ou la souris, sans avoir "
+        "besoin de compte. Une fois signé, le devis passe automatiquement au "
+        "statut « Accepté » et la signature apparaît sur la fiche devis et le PDF.",
+        "signer electronique lien",
+    ),
+    (
+        "courriers",
+        "Comment envoyer un courrier (email) depuis un dossier ?",
+        "Depuis la fiche du dossier, cliquez sur « Courrier ». Choisissez le "
+        "destinataire (Client/Expert/Assureur), éventuellement un modèle de "
+        "lettre prêt à l'emploi, puis « Envoyer par email ». Si l'envoi direct "
+        "n'est pas configuré sur le serveur, utilisez « Ouvrir dans ma messagerie » "
+        "ou « Copier le texte ».",
+        "email lettre modele envoyer",
+    ),
+    (
+        "atelier",
+        "Comment assigner un technicien et pointer son temps ?",
+        "Ajoutez d'abord vos techniciens dans le menu « Techniciens ». Sur la "
+        "fiche d'un dossier, choisissez le technicien assigné (dans le formulaire "
+        "du dossier), puis utilisez la section « Pointages du temps » de la fiche "
+        "dossier pour enregistrer les heures passées par intervention.",
+        "technicien pointage heures temps assigner",
+    ),
+    (
+        "atelier",
+        "Comment suivre les commandes de pièces ?",
+        "Ajoutez vos fournisseurs dans le menu « Fournisseurs ». Sur la fiche "
+        "d'un dossier, section « Commandes de pièces », ajoutez chaque pièce "
+        "nécessaire avec son fournisseur et son prix. Changez son statut (à "
+        "commander / commandée / reçue) au fur et à mesure — une alerte apparaît "
+        "sur le dossier et sur sa carte du planning tant que des pièces manquent.",
+        "piece fournisseur commande stock",
+    ),
+    (
+        "atelier",
+        "Comment enregistrer une fiche peinture ?",
+        "Renseignez d'abord la teinte d'origine du véhicule (code constructeur, "
+        "nom de couleur) sur sa fiche véhicule. Puis, sur la fiche du dossier, "
+        "section « Fiches peinture », ajoutez la formule de mélange utilisée pour "
+        "cette réparation (fabricant, éléments peints, quantité).",
+        "peinture teinte formule couleur",
+    ),
+    (
+        "photos",
+        "Comment ajouter des photos à un dossier ?",
+        "Sur la fiche du dossier, section « Photos », choisissez un fichier "
+        "(JPG, PNG, WEBP ou GIF, 15 Mo max), indiquez si c'est une photo « avant » "
+        "ou « après » réparation, ajoutez une légende décrivant la zone/le "
+        "dommage, puis « Ajouter ».",
+        "photo image upload avant apres",
+    ),
+    (
+        "dashboard",
+        "Que signifient les couleurs du tableau de bord ?",
+        "Vert = bon signe (CA positif, délai court, taux d'acceptation élevé). "
+        "Orange = à surveiller. Rouge = alerte (factures impayées, dossiers en "
+        "retard, taux d'acceptation faible). Les chiffres se mettent à jour en "
+        "temps réel selon vos dossiers, devis et factures.",
+        "couleur kpi indicateur statistique",
+    ),
+    (
+        "clients_vehicules",
+        "Comment ajouter un client professionnel avec SIRET ?",
+        "Menu « Clients » → « Nouveau client », choisissez le type « Professionnel » "
+        "pour faire apparaître les champs Raison sociale et SIRET.",
+        "professionnel entreprise siret",
+    ),
+]
+
 
 def create_app():
     app = Flask(__name__)
@@ -159,6 +301,7 @@ def create_app():
     from blueprints.factures import factures_bp
     from blueprints.courriers import courriers_bp
     from blueprints.planning import planning_bp
+    from blueprints.faq import faq_bp
     from blueprints.settings import settings_bp
 
     app.register_blueprint(auth_bp)
@@ -174,6 +317,7 @@ def create_app():
     app.register_blueprint(factures_bp)
     app.register_blueprint(courriers_bp)
     app.register_blueprint(planning_bp)
+    app.register_blueprint(faq_bp)
     app.register_blueprint(settings_bp)
 
     @login_manager.user_loader
@@ -229,6 +373,10 @@ def _bootstrap():
     if ModeleCourrier.query.count() == 0:
         for nom, objet, corps in MODELES_COURRIER_PAR_DEFAUT:
             db.session.add(ModeleCourrier(nom=nom, objet=objet, corps=corps))
+
+    if FAQ.query.count() == 0:
+        for categorie, question, reponse, mots_cles in FAQ_PAR_DEFAUT:
+            db.session.add(FAQ(categorie=categorie, question=question, reponse=reponse, mots_cles=mots_cles))
 
     if CatalogueItem.query.count() == 0:
         for ref, designation, type_ligne, unite, prix, tva in CATALOGUE_PAR_DEFAUT:
