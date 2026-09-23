@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 
 from extensions import db
-from models import Vehicule, Client
+from models import Vehicule, Client, COULEURS_VEHICULE, FINITIONS_VEHICULE
 import historique
 
 vehicules_bp = Blueprint("vehicules", __name__, url_prefix="/vehicules")
@@ -61,7 +61,10 @@ def new_vehicule():
         if not vehicule.client_id or not vehicule.immatriculation:
             flash("Le client et l'immatriculation sont obligatoires.", "danger")
             clients = Client.query.order_by(Client.nom).all()
-            return render_template("vehicules/form.html", vehicule=vehicule, clients=clients)
+            return render_template(
+                "vehicules/form.html", vehicule=vehicule, clients=clients,
+                couleurs=COULEURS_VEHICULE, finitions=FINITIONS_VEHICULE,
+            )
         db.session.add(vehicule)
         db.session.flush()
         historique.log("vehicule", vehicule.id, "Création", f"Véhicule ajouté : {vehicule.designation}")
@@ -69,7 +72,10 @@ def new_vehicule():
         flash("Véhicule ajouté.", "success")
         return redirect(url_for("clients.view_client", client_id=vehicule.client_id))
     clients = Client.query.order_by(Client.nom).all()
-    return render_template("vehicules/form.html", vehicule=None, clients=clients, selected_client_id=client_id)
+    return render_template(
+        "vehicules/form.html", vehicule=None, clients=clients, selected_client_id=client_id,
+        couleurs=COULEURS_VEHICULE, finitions=FINITIONS_VEHICULE,
+    )
 
 
 @vehicules_bp.route("/<int:vehicule_id>")
@@ -92,7 +98,10 @@ def edit_vehicule(vehicule_id):
         flash("Véhicule mis à jour.", "success")
         return redirect(url_for("vehicules.view_vehicule", vehicule_id=vehicule.id))
     clients = Client.query.order_by(Client.nom).all()
-    return render_template("vehicules/form.html", vehicule=vehicule, clients=clients)
+    return render_template(
+        "vehicules/form.html", vehicule=vehicule, clients=clients,
+        couleurs=COULEURS_VEHICULE, finitions=FINITIONS_VEHICULE,
+    )
 
 
 @vehicules_bp.route("/<int:vehicule_id>/supprimer", methods=["POST"])

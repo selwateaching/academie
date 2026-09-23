@@ -330,6 +330,18 @@ class Client(db.Model):
 # ──────────────────────────────────────────────────────────────────────────
 # Véhicules
 # ──────────────────────────────────────────────────────────────────────────
+COULEURS_VEHICULE = [
+    "Blanc", "Noir", "Gris", "Argent", "Rouge", "Bleu", "Vert", "Jaune",
+    "Orange", "Marron", "Beige", "Violet", "Rose", "Doré", "Bronze",
+    "Cuivre", "Autre",
+]
+
+FINITIONS_VEHICULE = [
+    "Unie", "Métallisée", "Nacrée", "Mate", "Brillante", "Satinée",
+    "Bi-ton", "Personnalisée",
+]
+
+
 class Vehicule(db.Model):
     __tablename__ = "vehicules"
 

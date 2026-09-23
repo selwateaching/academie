@@ -40,7 +40,12 @@
       </div>
       <div class="col-md-3">
         <label class="form-label">Couleur</label>
-        <input type="text" name="couleur" class="form-control" value="{{ vehicule.couleur if vehicule else '' }}">
+        <select name="couleur" class="form-select">
+          <option value="">—</option>
+          {% for c in couleurs %}
+          <option value="{{ c }}" {{ "selected" if vehicule and vehicule.couleur == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="col-md-3">
         <label class="form-label">Énergie</label>
@@ -78,10 +83,10 @@
         <input type="text" name="teinte_nom" class="form-control" value="{{ vehicule.teinte_nom if vehicule else '' }}">
       </div>
       <div class="col-md-4">
-        <label class="form-label">Type de finition</label>
+        <label class="form-label">Finition</label>
         <select name="type_finition" class="form-select">
           <option value="">—</option>
-          {% for f in ["Unie", "Métallisée", "Nacrée", "Mate"] %}
+          {% for f in finitions %}
           <option value="{{ f }}" {{ "selected" if vehicule and vehicule.type_finition == f }}>{{ f }}</option>
           {% endfor %}
         </select>
