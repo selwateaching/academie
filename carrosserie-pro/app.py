@@ -258,6 +258,20 @@ FAQ_PAR_DEFAUT = [
     ),
     (
         "atelier",
+        "Comment relier une commande passée sur le site d'un fournisseur ?",
+        "Sur la fiche du dossier, section « Commandes de pièces », chaque pièce a "
+        "un champ « N° ou lien de la commande » : collez-y le numéro de commande "
+        "ou le lien de confirmation du site du fournisseur, puis cliquez sur ✓ "
+        "pour l'enregistrer. Si c'est un lien, un bouton permet de l'ouvrir "
+        "directement ; cette référence est aussi visible depuis la fiche du "
+        "fournisseur. Il ne s'agit pas d'une synchronisation automatique — sans "
+        "accès API fourni par le site, il n'existe aucun moyen fiable de "
+        "récupérer les commandes toutes seules ; ce champ sert à garder le lien "
+        "manuellement, en quelques secondes.",
+        "site web fournisseur commander synchronisation lien numero api",
+    ),
+    (
+        "atelier",
         "Comment enregistrer une fiche peinture ?",
         "Renseignez d'abord la teinte d'origine du véhicule (code constructeur, "
         "nom de couleur) sur sa fiche véhicule. Puis, sur la fiche du dossier, "
