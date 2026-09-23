@@ -222,6 +222,23 @@ def signer_devis(token):
     return render_template("devis/signer.html", devis=devis, entreprise=entreprise)
 
 
+@devis_bp.route("/signer/<token>/pdf")
+def pdf_devis_public(token):
+    """PDF accessible sans connexion via le lien de signature — pour que le
+    client ou l'expert puisse le consulter sans compte sur le logiciel."""
+    devis = Devis.query.filter_by(signature_token=token).first()
+    if not devis:
+        abort(404)
+    entreprise = Entreprise.current()
+    buffer = generate_pdf("devis", devis, entreprise)
+    return send_file(
+        buffer,
+        mimetype="application/pdf",
+        as_attachment=False,
+        download_name=f"{devis.numero}.pdf",
+    )
+
+
 @devis_bp.route("/<int:devis_id>/pdf")
 @login_required
 def pdf_devis(devis_id):

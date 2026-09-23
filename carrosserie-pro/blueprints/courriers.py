@@ -1,3 +1,5 @@
+import secrets
+
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 
@@ -94,9 +96,19 @@ def rediger(dossier_id):
     modele_id = request.args.get("modele_id", type=int)
     devis_id = request.args.get("devis_id", type=int)
     facture_id = request.args.get("facture_id", type=int)
+    destinataire_type = request.args.get("destinataire", "client")
 
     devis = Devis.query.get(devis_id) if devis_id else None
     facture = Facture.query.get(facture_id) if facture_id else None
+
+    # Un devis envoyé à l'expert (ou au client) doit être consultable sans
+    # connexion : on génère le lien de signature/consultation publique s'il
+    # n'existe pas encore, pour que le lien inséré dans le courrier fonctionne.
+    if devis and not devis.signature_token:
+        devis.signature_token = secrets.token_urlsafe(24)
+        historique.log("devis", devis.id, "Lien de signature créé", "via rédaction d'un courrier")
+        db.session.commit()
+
     contexte = build_context(dossier, entreprise, devis=devis, facture=facture)
 
     objet, corps = "", ""
@@ -106,6 +118,21 @@ def rediger(dossier_id):
         if modele_actif:
             objet = fusionner(modele_actif.objet, contexte)
             corps = fusionner(modele_actif.corps, contexte)
+    elif destinataire_type == "expert" and devis:
+        objet = f"Devis {devis.numero} pour validation — dossier {dossier.reference}"
+        corps = (
+            f"{dossier.expert_nom},\n\n"
+            f"Merci de bien vouloir examiner le devis {devis.numero} d'un montant de {contexte['devis_total_ttc']} "
+            f"concernant le véhicule {contexte['vehicule_designation']} (dossier {dossier.reference}"
+            + (f", sinistre n° {dossier.numero_sinistre}" if dossier.numero_sinistre else "")
+            + ").\n\nVous pouvez le consulter ici : " + contexte["devis_lien_pdf"]
+            + f"\n\nCordialement,\n{entreprise.nom}\n{entreprise.telephone}"
+        )
+
+    if destinataire_type == "expert" and dossier.expert_email:
+        destinataire = dossier.expert_email
+    else:
+        destinataire = dossier.client.email or ""
 
     return render_template(
         "courriers/rediger.html",
@@ -116,7 +143,7 @@ def rediger(dossier_id):
         facture=facture,
         objet=objet,
         corps=corps,
-        destinataire=dossier.client.email or "",
+        destinataire=destinataire,
         smtp_configure=smtp_configure(),
     )
 

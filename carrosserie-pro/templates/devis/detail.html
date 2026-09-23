@@ -3,6 +3,10 @@
 {% block page_title %}Devis {{ devis.numero }}{% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('devis.pdf_devis', devis_id=devis.id) }}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
+<a href="{{ url_for('courriers.rediger', dossier_id=devis.dossier_id, devis_id=devis.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-envelope"></i> Envoyer au client</a>
+{% if devis.dossier.expert_email %}
+<a href="{{ url_for('courriers.rediger', dossier_id=devis.dossier_id, devis_id=devis.id, destinataire='expert') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person-badge"></i> Envoyer à l'expert</a>
+{% endif %}
 {% if devis.statut != "facture" %}
 <a href="{{ url_for('devis.edit_devis', devis_id=devis.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i> Modifier</a>
 <form method="post" action="{{ url_for('devis.transformer_facture', devis_id=devis.id) }}" data-confirm="Générer la facture à partir de ce devis ?" class="d-inline">
@@ -37,6 +41,9 @@
       <p class="mb-1"><a href="{{ url_for('dossiers.view_dossier', dossier_id=devis.dossier_id) }}">{{ devis.dossier.reference }}</a></p>
       <p class="mb-1">{{ devis.dossier.client.nom_affichage }}</p>
       <p class="mb-1 text-muted small">{{ devis.dossier.vehicule.designation }}</p>
+      {% if devis.dossier.est_assurance and not devis.dossier.expert_email %}
+      <p class="mb-0 text-muted small mt-2">Pas d'email expert renseigné — <a href="{{ url_for('dossiers.edit_dossier', dossier_id=devis.dossier_id) }}">l'ajouter</a> pour pouvoir lui envoyer ce devis directement.</p>
+      {% endif %}
     </div>
     <div class="section-card">
       <h6>Dates</h6>

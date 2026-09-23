@@ -39,7 +39,7 @@
         <span class="fw-bold fs-5">{{ "%.2f"|format(devis.total_ttc) }} €</span>
       </div>
       <div class="mt-2">
-        <a href="{{ url_for('devis.pdf_devis', devis_id=devis.id) }}" target="_blank" class="small"><i class="bi bi-file-earmark-pdf"></i> Voir le devis complet (PDF)</a>
+        <a href="{{ url_for('devis.pdf_devis_public', token=devis.signature_token) }}" target="_blank" class="small"><i class="bi bi-file-earmark-pdf"></i> Voir le devis complet (PDF)</a>
       </div>
     </div>
 

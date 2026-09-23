@@ -4,6 +4,8 @@ dossier (client, véhicule, assurance, devis/facture éventuels)."""
 
 from datetime import date
 
+from flask import url_for
+
 
 def variables_disponibles():
     """Liste (clé, description) affichée à l'utilisateur comme aide-mémoire."""
@@ -28,9 +30,11 @@ def variables_disponibles():
         ("expert_cabinet", "Cabinet d'expertise"),
         ("devis_numero", "Numéro du devis"),
         ("devis_total_ttc", "Montant TTC du devis"),
+        ("devis_lien_pdf", "Lien vers le PDF du devis"),
         ("facture_numero", "Numéro de la facture"),
         ("facture_total_ttc", "Montant TTC de la facture"),
         ("facture_reste_a_payer", "Reste dû sur la facture"),
+        ("facture_lien_pdf", "Lien vers le PDF de la facture"),
         ("date_jour", "Date du jour"),
     ]
 
@@ -60,9 +64,14 @@ def build_context(dossier, entreprise, devis=None, facture=None):
         "expert_cabinet": dossier.expert_cabinet or "",
         "devis_numero": devis.numero if devis else "",
         "devis_total_ttc": f"{devis.total_ttc:.2f} €" if devis else "",
+        "devis_lien_pdf": (
+            url_for("devis.pdf_devis_public", token=devis.signature_token, _external=True)
+            if devis and devis.signature_token else ""
+        ),
         "facture_numero": facture.numero if facture else "",
         "facture_total_ttc": f"{facture.total_ttc:.2f} €" if facture else "",
         "facture_reste_a_payer": f"{facture.reste_a_payer:.2f} €" if facture else "",
+        "facture_lien_pdf": url_for("factures.pdf_facture", facture_id=facture.id, _external=True) if facture else "",
         "date_jour": date.today().strftime("%d/%m/%Y"),
     }
     return ctx
