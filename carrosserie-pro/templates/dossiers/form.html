@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if dossier else "Nouveau" }} dossier — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le dossier " ~ dossier.reference if dossier else "Nouveau dossier de réparation" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 860px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="section-card">
+    <h6>Client &amp; véhicule</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Client *</label>
+        <select name="client_id" id="client_id" class="form-select" required {{ "disabled" if dossier }}>
+          <option value="">— Sélectionner un client —</option>
+          {% for c in clients %}
+          <option value="{{ c.id }}" {{ "selected" if selected_client_id == c.id }}>{{ c.nom_affichage }}</option>
+          {% endfor %}
+        </select>
+        {% if not dossier %}
+        <div class="form-text">Client introuvable ? <a href="{{ url_for('clients.new_client') }}" target="_blank">Créer un client</a> (nouvel onglet).</div>
+        {% endif %}
+        {% if dossier %}<input type="hidden" name="client_id" value="{{ dossier.client_id }}">{% endif %}
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Véhicule *</label>
+        <select name="vehicule_id" id="vehicule_id" class="form-select" required data-selected="{{ dossier.vehicule_id if dossier }}" {{ "disabled" if dossier }}>
+          {% if selected_client_id %}
+            {% for v in (clients | selectattr('id', 'equalto', selected_client_id) | first).vehicules %}
+            <option value="{{ v.id }}" {{ "selected" if dossier and dossier.vehicule_id == v.id }}>{{ v.designation }}</option>
+            {% endfor %}
+          {% else %}
+            <option value="">— Sélectionnez d'abord un client —</option>
+          {% endif %}
+        </select>
+        {% if dossier %}<input type="hidden" name="vehicule_id" value="{{ dossier.vehicule_id }}">{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h6>Nature de l'intervention</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Type de sinistre *</label>
+        <select name="type_sinistre" id="type_sinistre" class="form-select">
+          {% for code, label in types_sinistre %}
+          <option value="{{ code }}" {{ "selected" if dossier and dossier.type_sinistre == code }}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Date du sinistre / événement</label>
+        <input type="date" name="date_sinistre" class="form-control" value="{{ dossier.date_sinistre.isoformat() if dossier and dossier.date_sinistre }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Description des dommages</label>
+        <textarea name="description" class="form-control" rows="3">{{ dossier.description if dossier else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card" id="assurance-fields">
+    <h6>Assurance &amp; sinistre</h6>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Compagnie d'assurance</label>
+        <select name="assureur_id" class="form-select">
+          <option value="">—</option>
+          {% for a in assureurs %}
+          <option value="{{ a.id }}" {{ "selected" if dossier and dossier.assureur_id == a.id }}>{{ a.nom }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text"><a href="{{ url_for('assureurs.new_assureur') }}" target="_blank">Ajouter une compagnie</a> (nouvel onglet).</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Assuré (si différent du client)</label>
+        <input type="text" name="nom_assure" class="form-control" value="{{ dossier.nom_assure if dossier else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">N° de sinistre</label>
+        <input type="text" name="numero_sinistre" class="form-control" value="{{ dossier.numero_sinistre if dossier else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">N° de police</label>
+        <input type="text" name="numero_police" class="form-control" value="{{ dossier.numero_police if dossier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Montant de la franchise (€)</label>
+        <input type="number" step="0.01" name="franchise_montant" class="form-control" value="{{ dossier.franchise_montant if dossier else 0 }}">
+      </div>
+      <div class="col-md-8 d-flex align-items-end">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="cession_de_creance" id="cession_de_creance" {{ "checked" if dossier and dossier.cession_de_creance }}>
+          <label class="form-check-label" for="cession_de_creance">Cession de créance signée (l'assureur règle directement le garage)</label>
+        </div>
+      </div>
+
+      <div class="col-12"><hr class="my-1"></div>
+
+      <div class="col-12">
+        <label class="form-label">Choisir un expert enregistré</label>
+        <select id="expert-picker" class="form-select">
+          <option value="">— Sélectionner pour pré-remplir, ou saisir manuellement ci-dessous —</option>
+          {% for ex in experts %}
+          <option value="{{ ex.id }}" data-nom="{{ ex.nom }}" data-cabinet="{{ ex.cabinet }}" data-telephone="{{ ex.telephone }}" data-email="{{ ex.email }}">{{ ex.nom }}{{ " — " ~ ex.cabinet if ex.cabinet }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text"><a href="{{ url_for('experts.new_expert') }}" target="_blank">Ajouter un nouvel expert</a> (nouvel onglet).</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Nom de l'expert</label>
+        <input type="text" name="expert_nom" id="expert_nom" class="form-control" value="{{ dossier.expert_nom if dossier else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Cabinet d'expertise</label>
+        <input type="text" name="expert_cabinet" id="expert_cabinet" class="form-control" value="{{ dossier.expert_cabinet if dossier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Téléphone expert</label>
+        <input type="text" name="expert_telephone" id="expert_telephone" class="form-control" value="{{ dossier.expert_telephone if dossier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Email expert</label>
+        <input type="email" name="expert_email" id="expert_email" class="form-control" value="{{ dossier.expert_email if dossier else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Date d'expertise</label>
+        <input type="date" name="date_expertise" class="form-control" value="{{ dossier.date_expertise.isoformat() if dossier and dossier.date_expertise }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Référence du rapport d'expertise</label>
+        <input type="text" name="rapport_expertise_reference" class="form-control" value="{{ dossier.rapport_expertise_reference if dossier else '' }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h6>Logistique atelier</h6>
+    <div class="row g-3">
+      <div class="col-md-3 d-flex align-items-end">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="vehicule_pret" id="vehicule_pret" {{ "checked" if dossier and dossier.vehicule_pret }}>
+          <label class="form-check-label" for="vehicule_pret">Véhicule de prêt fourni</label>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Entrée atelier</label>
+        <input type="date" name="date_entree_atelier" class="form-control" value="{{ dossier.date_entree_atelier.isoformat() if dossier and dossier.date_entree_atelier }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Sortie prévue</label>
+        <input type="date" name="date_sortie_prevue" class="form-control" value="{{ dossier.date_sortie_prevue.isoformat() if dossier and dossier.date_sortie_prevue }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Sortie réelle</label>
+        <input type="date" name="date_sortie_reelle" class="form-control" value="{{ dossier.date_sortie_reelle.isoformat() if dossier and dossier.date_sortie_reelle }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Technicien assigné</label>
+        <select name="technicien_id" class="form-select">
+          <option value="">—</option>
+          {% for t in techniciens %}
+          <option value="{{ t.id }}" {{ "selected" if dossier and dossier.technicien_id == t.id }}>{{ t.nom }}{{ " — " ~ t.specialite if t.specialite }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text"><a href="{{ url_for('techniciens.new_technicien') }}" target="_blank">Ajouter un technicien</a> (nouvel onglet).</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes internes</label>
+        <textarea name="notes" class="form-control" rows="2">{{ dossier.notes if dossier else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="{{ url_for('dossiers.list_dossiers') if not dossier else url_for('dossiers.view_dossier', dossier_id=dossier.id) }}" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+</form>
+{% endblock %}

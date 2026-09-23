@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Planning atelier — Carrosserie Pro{% endblock %}
+{% block page_title %}Planning atelier{% endblock %}
+{% block content %}
+<div class="planning-tabs mb-3">
+  <a href="{{ url_for('planning.board') }}" class="planning-tab active">Tableau (statuts)</a>
+  <a href="{{ url_for('planning.calendrier') }}" class="planning-tab">Calendrier (carrossiers)</a>
+</div>
+<p class="text-muted small mb-3">Glissez-déposez une carte pour changer le statut d'un dossier. Les changements sont enregistrés immédiatement et tracés dans l'historique.</p>
+
+<div class="kanban-board">
+  {% for col in colonnes %}
+  <div class="kanban-column" data-statut="{{ col.code }}">
+    <div class="kanban-column-header">
+      <span class="badge-statut st-{{ col.code }}">{{ col.label }}</span>
+      <span class="kanban-column-count">{{ col.dossiers|length }}</span>
+    </div>
+    <div class="kanban-column-body">
+      {% for d in col.dossiers %}
+      <a href="{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}" class="kanban-card" draggable="false" data-dossier-id="{{ d.id }}" style="display:block; text-decoration:none; color:inherit;">
+        <div class="kanban-card-ref">{{ d.reference }}</div>
+        <div class="kanban-card-meta">{{ d.client.nom_affichage }}</div>
+        <div class="kanban-card-meta">{{ d.vehicule.designation }}</div>
+        {% if d.date_sortie_prevue %}
+        <div class="kanban-card-meta">Sortie prévue : {{ d.date_sortie_prevue.strftime('%d/%m/%Y') }}</div>
+        {% endif %}
+        {% if d.date_sortie_prevue and d.date_sortie_prevue < today and col.code not in ("facture", "solde", "annule") %}
+        <div class="kanban-card-retard"><i class="bi bi-exclamation-triangle-fill"></i> En retard</div>
+        {% endif %}
+        {% set pieces_attente = d.commandes_pieces | selectattr('statut', 'in', ['a_commander', 'commandee']) | list %}
+        {% if pieces_attente %}
+        <div class="kanban-card-retard"><i class="bi bi-box-seam"></i> {{ pieces_attente|length }} pièce(s) en attente</div>
+        {% endif %}
+      </a>
+      {% else %}
+      <div class="kanban-empty">Aucun dossier</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/planning.js') }}"></script>
+{% endblock %}

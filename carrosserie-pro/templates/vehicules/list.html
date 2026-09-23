@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Véhicules — Carrosserie Pro{% endblock %}
+{% block page_title %}Véhicules{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('vehicules.new_vehicule') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouveau véhicule</a>
+{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <form method="get" class="d-flex gap-2">
+    <input type="text" name="q" class="form-control" placeholder="Immatriculation, marque, modèle, VIN..." value="{{ q }}">
+    <button class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+  </form>
+</div>
+
+{% if vehicules %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Immatriculation</th><th>Marque / modèle</th><th>Client</th><th>Km</th><th></th></tr></thead>
+    <tbody>
+      {% for v in vehicules %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for('vehicules.view_vehicule', vehicule_id=v.id) }}'">
+        <td class="fw-semibold">{{ v.immatriculation }}</td>
+        <td>{{ v.marque }} {{ v.modele }}</td>
+        <td>{{ v.client.nom_affichage }}</td>
+        <td>{{ "{:,}".format(v.kilometrage).replace(",", " ") if v.kilometrage else "—" }}</td>
+        <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-car-front"></i>Aucun véhicule trouvé.</div>
+{% endif %}
+{% endblock %}

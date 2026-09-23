@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Carrosserie Pro{% endblock %}</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link href="{{ url_for('static', filename='vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/icons/bootstrap-icons.min.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{{ 'app-shell' if current_user.is_authenticated else 'auth-shell' }}">
+{% if current_user.is_authenticated %}
+<div class="d-flex">
+  <nav class="sidebar d-flex flex-column">
+    <div class="sidebar-brand">
+      <i class="bi bi-shield-shaded"></i>
+      <span>Carrosserie<strong>Pro</strong></span>
+    </div>
+    <div class="sidebar-nav flex-grow-1">
+      <a href="{{ url_for('main.dashboard') }}" class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}">
+        <i class="bi bi-speedometer2"></i> Tableau de bord
+      </a>
+      <div class="sidebar-section">Parcours client</div>
+      <a href="{{ url_for('clients.list_clients') }}" class="nav-link {{ 'active' if request.blueprint == 'clients' }}">
+        <i class="bi bi-people"></i> Clients
+      </a>
+      <a href="{{ url_for('vehicules.list_vehicules') }}" class="nav-link {{ 'active' if request.blueprint == 'vehicules' }}">
+        <i class="bi bi-car-front"></i> Véhicules
+      </a>
+      <a href="{{ url_for('dossiers.list_dossiers') }}" class="nav-link {{ 'active' if request.blueprint == 'dossiers' }}">
+        <i class="bi bi-folder2-open"></i> Dossiers
+      </a>
+      <a href="{{ url_for('planning.board') }}" class="nav-link {{ 'active' if request.blueprint == 'planning' }}">
+        <i class="bi bi-kanban"></i> Planning atelier
+      </a>
+      <a href="{{ url_for('devis.list_devis') }}" class="nav-link {{ 'active' if request.blueprint == 'devis' }}">
+        <i class="bi bi-file-earmark-text"></i> Devis
+      </a>
+      <a href="{{ url_for('factures.list_factures') }}" class="nav-link {{ 'active' if request.blueprint == 'factures' }}">
+        <i class="bi bi-receipt"></i> Factures
+      </a>
+      <a href="{{ url_for('assureurs.list_assureurs') }}" class="nav-link {{ 'active' if request.blueprint == 'assureurs' }}">
+        <i class="bi bi-building-check"></i> Assurances
+      </a>
+      <a href="{{ url_for('experts.list_experts') }}" class="nav-link {{ 'active' if request.blueprint == 'experts' }}">
+        <i class="bi bi-person-badge"></i> Experts
+      </a>
+      <a href="{{ url_for('techniciens.list_techniciens') }}" class="nav-link {{ 'active' if request.blueprint == 'techniciens' }}">
+        <i class="bi bi-person-gear"></i> Techniciens
+      </a>
+      <a href="{{ url_for('fournisseurs.list_fournisseurs') }}" class="nav-link {{ 'active' if request.blueprint == 'fournisseurs' }}">
+        <i class="bi bi-truck"></i> Fournisseurs
+      </a>
+      <a href="{{ url_for('courriers.list_courriers') }}" class="nav-link {{ 'active' if request.blueprint == 'courriers' }}">
+        <i class="bi bi-envelope"></i> Courriers
+      </a>
+      <div class="sidebar-section">Configuration</div>
+      <a href="{{ url_for('catalogue.list_catalogue') }}" class="nav-link {{ 'active' if request.blueprint == 'catalogue' }}">
+        <i class="bi bi-list-ul"></i> Catalogue
+      </a>
+      <a href="{{ url_for('faq.list_faq') }}" class="nav-link {{ 'active' if request.blueprint == 'faq' }}">
+        <i class="bi bi-question-circle"></i> Aide
+      </a>
+      <a href="{{ url_for('settings.entreprise_settings') }}" class="nav-link {{ 'active' if request.blueprint == 'settings' }}">
+        <i class="bi bi-gear"></i> Paramètres
+      </a>
+    </div>
+    <div class="sidebar-user">
+      <div class="avatar">{{ current_user.name[:1] }}</div>
+      <div class="flex-grow-1">
+        <div class="fw-semibold small">{{ current_user.name }}</div>
+        <div class="text-muted" style="font-size: .75rem;">{{ current_user.role }}</div>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="text-muted" title="Déconnexion"><i class="bi bi-box-arrow-right"></i></a>
+    </div>
+  </nav>
+
+  <main class="main-content flex-grow-1">
+    <div class="topbar d-flex align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <button id="sidebar-toggle" class="btn btn-outline-secondary btn-sm d-md-none" type="button" aria-label="Menu">
+          <i class="bi bi-list"></i>
+        </button>
+        <h1 class="page-title mb-0">{% block page_title %}{% endblock %}</h1>
+      </div>
+      <div class="page-actions">{% block page_actions %}{% endblock %}</div>
+    </div>
+
+    <div class="content-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'danger' if category == 'danger' else category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<button id="aide-bouton" type="button" aria-label="Assistant d'aide">
+  <i class="bi bi-chat-dots-fill"></i>
+</button>
+<div id="aide-panneau" class="d-none">
+  <div id="aide-entete">
+    <div>
+      <div class="fw-bold">Assistant Carrosserie Pro</div>
+      <div class="small" style="opacity:.85;">Posez une question sur l'utilisation</div>
+    </div>
+    <button type="button" id="aide-fermer" aria-label="Fermer"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div id="aide-messages">
+    <div class="aide-msg aide-msg-bot">
+      Bonjour ! Je peux vous expliquer comment utiliser le logiciel (créer un dossier, le planning, la signature, les courriers...). Posez votre question ci-dessous.
+    </div>
+  </div>
+  <form id="aide-form">
+    <input type="text" id="aide-input" placeholder="Ex : comment créer un dossier ?" autocomplete="off">
+    <button type="submit" aria-label="Envoyer"><i class="bi bi-send"></i></button>
+  </form>
+</div>
+
+{% else %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="auth-flash">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'danger' else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% if current_user.is_authenticated %}
+<script src="{{ url_for('static', filename='js/aide_widget.js') }}"></script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Factures — Carrosserie Pro{% endblock %}
+{% block page_title %}Factures{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('factures.new_facture') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouvelle facture</a>
+{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('factures.list_factures') }}" class="btn btn-sm {{ 'btn-primary' if not statut_filtre else 'btn-outline-secondary' }}">Toutes</a>
+    {% for code, label in statuts %}
+    <a href="{{ url_for('factures.list_factures', statut=code) }}" class="btn btn-sm {{ 'btn-primary' if statut_filtre == code else 'btn-outline-secondary' }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if factures %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Destinataire</th><th>Total TTC</th><th>Reste dû</th><th>Statut</th></tr></thead>
+    <tbody>
+      {% for f in factures %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for('factures.view_facture', facture_id=f.id) }}'">
+        <td class="fw-semibold">{{ f.numero }}</td>
+        <td>{{ f.date_emission.strftime('%d/%m/%Y') }}</td>
+        <td>{{ f.dossier.client.nom_affichage }}</td>
+        <td>{{ f.destinataire_libelle.split(' (')[0] }}</td>
+        <td>{{ "%.2f"|format(f.total_ttc) }} €</td>
+        <td class="{{ 'text-danger fw-semibold' if f.reste_a_payer > 0.01 }}">{{ "%.2f"|format(f.reste_a_payer) }} €</td>
+        <td><span class="badge-statut st-{{ f.statut }}">{{ f.statut_libelle }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-receipt"></i>Aucune facture trouvée.</div>
+{% endif %}
+{% endblock %}

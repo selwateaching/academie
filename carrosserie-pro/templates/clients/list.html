@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Clients — Carrosserie Pro{% endblock %}
+{% block page_title %}Clients{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('clients.new_client') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouveau client</a>
+{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <form method="get" class="d-flex gap-2">
+    <input type="text" name="q" class="form-control" placeholder="Rechercher un client (nom, téléphone, email...)" value="{{ q }}">
+    <button class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+  </form>
+</div>
+
+{% if clients %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Client</th><th>Type</th><th>Téléphone</th><th>Email</th><th>Véhicules</th><th></th></tr></thead>
+    <tbody>
+      {% for c in clients %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for('clients.view_client', client_id=c.id) }}'">
+        <td class="fw-semibold">{{ c.nom_affichage }}</td>
+        <td>{{ "Professionnel" if c.type_client == "professionnel" else "Particulier" }}</td>
+        <td>{{ c.telephone or "—" }}</td>
+        <td>{{ c.email or "—" }}</td>
+        <td>{{ c.vehicules|length }}</td>
+        <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-people"></i>Aucun client trouvé.</div>
+{% endif %}
+{% endblock %}

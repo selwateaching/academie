@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Dossiers — Carrosserie Pro{% endblock %}
+{% block page_title %}Dossiers de réparation{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('dossiers.new_dossier') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouveau dossier</a>
+{% endblock %}
+{% block content %}
+<div class="section-card mb-3">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{{ url_for('dossiers.list_dossiers') }}" class="btn btn-sm {{ 'btn-primary' if not statut_filtre else 'btn-outline-secondary' }}">Tous</a>
+    {% for code, label in statuts %}
+    <a href="{{ url_for('dossiers.list_dossiers', statut=code) }}" class="btn btn-sm {{ 'btn-primary' if statut_filtre == code else 'btn-outline-secondary' }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+{% if dossiers %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Référence</th><th>Client</th><th>Véhicule</th><th>Type</th><th>Ouverture</th><th>Statut</th></tr></thead>
+    <tbody>
+      {% for d in dossiers %}
+      <tr style="cursor:pointer" onclick="location.href='{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}'">
+        <td class="fw-semibold">{{ d.reference }}</td>
+        <td>{{ d.client.nom_affichage }}</td>
+        <td>{{ d.vehicule.designation }}</td>
+        <td>{{ d.type_sinistre_libelle }}</td>
+        <td>{{ d.date_ouverture.strftime('%d/%m/%Y') if d.date_ouverture }}</td>
+        <td><span class="badge-statut st-{{ d.statut }}">{{ d.statut_libelle }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-folder2"></i>Aucun dossier trouvé.</div>
+{% endif %}
+{% endblock %}

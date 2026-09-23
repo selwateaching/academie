@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Experts — Carrosserie Pro{% endblock %}
+{% block page_title %}Experts{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('experts.new_expert') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouvel expert</a>
+{% endblock %}
+{% block content %}
+{% if experts %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Nom</th><th>Cabinet</th><th>Téléphone</th><th>Email</th><th></th></tr></thead>
+    <tbody>
+      {% for e in experts %}
+      <tr>
+        <td class="fw-semibold">{{ e.nom }}</td>
+        <td>{{ e.cabinet or "—" }}</td>
+        <td>{{ e.telephone or "—" }}</td>
+        <td>{{ e.email or "—" }}</td>
+        <td class="text-end">
+          <a href="{{ url_for('experts.edit_expert', expert_id=e.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+          <form method="post" action="{{ url_for('experts.delete_expert', expert_id=e.id) }}" data-confirm="Supprimer l'expert {{ e.nom }} ?" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-person-badge"></i>Aucun expert enregistré. Ajoutez les experts avec lesquels vous travaillez régulièrement pour les retrouver rapidement dans vos dossiers.</div>
+{% endif %}
+{% endblock %}

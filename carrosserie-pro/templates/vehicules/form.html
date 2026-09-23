@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if vehicule and vehicule.id else "Nouveau" }} véhicule — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le véhicule" if vehicule and vehicule.id else "Nouveau véhicule" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 780px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="section-card">
+    <h6>Propriétaire</h6>
+    <label class="form-label">Client *</label>
+    <select name="client_id" class="form-select" required {{ "disabled" if vehicule and vehicule.id }}>
+      <option value="">— Sélectionner —</option>
+      {% for c in clients %}
+      <option value="{{ c.id }}" {{ "selected" if (vehicule and vehicule.client_id == c.id) or (selected_client_id and selected_client_id == c.id) }}>{{ c.nom_affichage }}</option>
+      {% endfor %}
+    </select>
+    {% if vehicule and vehicule.id %}
+    <input type="hidden" name="client_id" value="{{ vehicule.client_id }}">
+    {% endif %}
+  </div>
+
+  <div class="section-card">
+    <h6>Identification du véhicule</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Immatriculation *</label>
+        <input type="text" name="immatriculation" class="form-control text-uppercase" required value="{{ vehicule.immatriculation if vehicule else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Marque</label>
+        <input type="text" name="marque" class="form-control" value="{{ vehicule.marque if vehicule else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Modèle</label>
+        <input type="text" name="modele" class="form-control" value="{{ vehicule.modele if vehicule else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">N° de série (VIN)</label>
+        <input type="text" name="vin" class="form-control text-uppercase" value="{{ vehicule.vin if vehicule else '' }}">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Couleur</label>
+        <select name="couleur" class="form-select">
+          <option value="">—</option>
+          {% for c in couleurs %}
+          <option value="{{ c }}" {{ "selected" if vehicule and vehicule.couleur == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Énergie</label>
+        <select name="energie" class="form-select">
+          <option value="">—</option>
+          {% for e in ["Essence", "Diesel", "Électrique", "Hybride", "GPL"] %}
+          <option value="{{ e }}" {{ "selected" if vehicule and vehicule.energie == e }}>{{ e }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Date de mise en circulation</label>
+        <input type="date" name="date_mise_circulation" class="form-control" value="{{ vehicule.date_mise_circulation.isoformat() if vehicule and vehicule.date_mise_circulation }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Kilométrage</label>
+        <input type="number" name="kilometrage" class="form-control" value="{{ vehicule.kilometrage if vehicule else 0 }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes</label>
+        <textarea name="notes" class="form-control" rows="2">{{ vehicule.notes if vehicule else '' }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <h6>Peinture d'origine</h6>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Code teinte constructeur</label>
+        <input type="text" name="code_teinte" class="form-control text-uppercase" value="{{ vehicule.code_teinte if vehicule else '' }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Nom de la couleur</label>
+        <select name="teinte_nom" class="form-select">
+          <option value="">—</option>
+          {% for c in couleurs %}
+          <option value="{{ c }}" {{ "selected" if vehicule and vehicule.teinte_nom == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Finition</label>
+        <select name="type_finition" class="form-select">
+          <option value="">—</option>
+          {% for f in finitions %}
+          <option value="{{ f }}" {{ "selected" if vehicule and vehicule.type_finition == f }}>{{ f }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+</form>
+{% endblock %}

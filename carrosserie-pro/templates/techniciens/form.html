@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if technicien else "Nouveau" }} technicien — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le technicien" if technicien else "Nouveau technicien" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 700px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nom *</label>
+        <input type="text" name="nom" class="form-control" required value="{{ technicien.nom if technicien else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Spécialité</label>
+        <input type="text" name="specialite" class="form-control" placeholder="Carrosserie, peinture, mécanique..." value="{{ technicien.specialite if technicien else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Téléphone</label>
+        <input type="text" name="telephone" class="form-control" value="{{ technicien.telephone if technicien else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="{{ technicien.email if technicien else '' }}">
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="actif" id="actif" {{ "checked" if not technicien or technicien.actif }}>
+          <label class="form-check-label" for="actif">Technicien actif (assignable à un dossier)</label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="{{ url_for('techniciens.list_techniciens') }}" class="btn btn-outline-secondary">Annuler</a>
+    {% if technicien %}
+    <form method="post" action="{{ url_for('techniciens.delete_technicien', technicien_id=technicien.id) }}" data-confirm="Supprimer ce technicien ?" class="ms-auto">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+    </form>
+    {% endif %}
+  </div>
+</form>
+
+{% if technicien %}
+{% include "_historique.html" %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% block title %}{{ dossier.reference }} — Carrosserie Pro{% endblock %}
+{% block page_title %}Dossier {{ dossier.reference }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('devis.new_devis', dossier_id=dossier.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-plus"></i> Nouveau devis</a>
+<a href="{{ url_for('factures.new_facture', dossier_id=dossier.id) }}" class="btn btn-accent btn-sm"><i class="bi bi-receipt"></i> Facturer directement</a>
+<a href="{{ url_for('courriers.rediger', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-envelope"></i> Courrier</a>
+<a href="{{ url_for('planning.new_creneau', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-calendar-plus"></i> Planifier</a>
+<a href="{{ url_for('dossiers.edit_dossier', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
+{% endblock %}
+{% block content %}
+
+<div class="section-card">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="badge-statut st-{{ dossier.statut }} fs-6">{{ dossier.statut_libelle }}</span>
+    <form method="post" action="{{ url_for('dossiers.change_statut', dossier_id=dossier.id) }}" class="d-flex gap-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <select name="statut" class="form-select form-select-sm">
+        {% for code, label in statuts %}
+        <option value="{{ code }}" {{ "selected" if dossier.statut == code }}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary">Changer</button>
+    </form>
+  </div>
+</div>
+
+{% set pieces_en_attente = dossier.commandes_pieces | selectattr('statut', 'in', ['a_commander', 'commandee']) | list %}
+{% if pieces_en_attente %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i>
+  {{ pieces_en_attente|length }} pièce(s) pas encore reçue(s) — cela peut retarder la réparation.
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Client</h6>
+      <p class="mb-1 fw-semibold"><a href="{{ url_for('clients.view_client', client_id=dossier.client_id) }}">{{ dossier.client.nom_affichage }}</a></p>
+      {% if dossier.client.telephone %}<p class="mb-1 small text-muted"><i class="bi bi-telephone"></i> {{ dossier.client.telephone }}</p>{% endif %}
+      {% if dossier.client.email %}<p class="mb-1 small text-muted"><i class="bi bi-envelope"></i> {{ dossier.client.email }}</p>{% endif %}
+    </div>
+
+    <div class="section-card">
+      <h6>Véhicule</h6>
+      <p class="mb-1 fw-semibold"><a href="{{ url_for('vehicules.view_vehicule', vehicule_id=dossier.vehicule_id) }}">{{ dossier.vehicule.marque }} {{ dossier.vehicule.modele }}</a></p>
+      <p class="mb-1 small text-muted">{{ dossier.vehicule.immatriculation }}</p>
+      {% if dossier.vehicule.vin %}<p class="mb-1 small text-muted">VIN {{ dossier.vehicule.vin }}</p>{% endif %}
+    </div>
+
+    {% if dossier.est_assurance %}
+    <div class="section-card">
+      <h6>Assurance / sinistre</h6>
+      <p class="mb-1"><strong>{{ dossier.type_sinistre_libelle }}</strong></p>
+      {% if dossier.assureur %}<p class="mb-1">{{ dossier.assureur.nom }}</p>{% endif %}
+      {% if dossier.numero_sinistre %}<p class="mb-1 small">N° sinistre : {{ dossier.numero_sinistre }}</p>{% endif %}
+      {% if dossier.numero_police %}<p class="mb-1 small">N° police : {{ dossier.numero_police }}</p>{% endif %}
+      {% if dossier.franchise_montant %}<p class="mb-1 small">Franchise : {{ "%.2f"|format(dossier.franchise_montant) }} €</p>{% endif %}
+      {% if dossier.cession_de_creance %}<p class="mb-1"><span class="badge-statut st-accepte">Cession de créance</span></p>{% endif %}
+      {% if dossier.expert_nom or dossier.expert_cabinet %}
+      <hr>
+      <p class="mb-1 small text-muted">Expert : {{ dossier.expert_nom }} {{ dossier.expert_cabinet }}</p>
+      {% if dossier.date_expertise %}<p class="mb-1 small text-muted">Expertise le {{ dossier.date_expertise.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+      <h6>Logistique</h6>
+      <p class="mb-1 small">Véhicule de prêt : {{ "Oui" if dossier.vehicule_pret else "Non" }}</p>
+      {% if dossier.date_entree_atelier %}<p class="mb-1 small">Entrée atelier : {{ dossier.date_entree_atelier.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.date_sortie_prevue %}<p class="mb-1 small">Sortie prévue : {{ dossier.date_sortie_prevue.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.date_sortie_reelle %}<p class="mb-1 small">Sortie réelle : {{ dossier.date_sortie_reelle.strftime('%d/%m/%Y') }}</p>{% endif %}
+      {% if dossier.technicien %}<p class="mb-1 small">Technicien assigné : <strong>{{ dossier.technicien.nom }}</strong></p>{% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('dossiers.delete_dossier', dossier_id=dossier.id) }}" data-confirm="Supprimer ce dossier ?">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Supprimer le dossier</button>
+    </form>
+  </div>
+
+  <div class="col-lg-8">
+    {% if dossier.description %}
+    <div class="section-card">
+      <h6>Description des dommages</h6>
+      <p class="mb-0">{{ dossier.description }}</p>
+    </div>
+    {% endif %}
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Devis ({{ dossier.devis|length }})</h6>
+        <a href="{{ url_for('devis.new_devis', dossier_id=dossier.id) }}" class="small">+ Nouveau devis</a>
+      </div>
+      {% if dossier.devis %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>N°</th><th>Date</th><th>Total TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for dv in dossier.devis|sort(attribute='created_at', reverse=True) %}
+          <tr style="cursor:pointer" onclick="location.href='{{ url_for('devis.view_devis', devis_id=dv.id) }}'">
+            <td class="fw-semibold">{{ dv.numero }}</td>
+            <td>{{ dv.date_emission.strftime('%d/%m/%Y') }}</td>
+            <td>{{ "%.2f"|format(dv.total_ttc) }} €</td>
+            <td><span class="badge-statut st-{{ dv.statut }}">{{ dv.statut_libelle }}</span></td>
+            <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-file-earmark"></i>Aucun devis pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Factures ({{ dossier.factures|length }})</h6>
+        <a href="{{ url_for('factures.new_facture', dossier_id=dossier.id) }}" class="small">+ Facturer directement</a>
+      </div>
+      {% if dossier.factures %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>N°</th><th>Date</th><th>Total TTC</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for f in dossier.factures|sort(attribute='created_at', reverse=True) %}
+          <tr style="cursor:pointer" onclick="location.href='{{ url_for('factures.view_facture', facture_id=f.id) }}'">
+            <td class="fw-semibold">{{ f.numero }}{% if f.est_avoir %} <span class="text-danger">(avoir)</span>{% endif %}</td>
+            <td>{{ f.date_emission.strftime('%d/%m/%Y') }}</td>
+            <td>{{ "%.2f"|format(f.total_ttc) }} €</td>
+            <td><span class="badge-statut st-{{ f.statut }}">{{ f.statut_libelle }}</span></td>
+            <td class="text-end"><i class="bi bi-chevron-right text-muted"></i></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-receipt"></i>Aucune facture pour ce dossier.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Commandes de pièces ({{ dossier.commandes_pieces|length }})</h6>
+      </div>
+      {% if dossier.commandes_pieces %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Désignation</th><th>Fournisseur</th><th>Qté</th><th>Prix HT</th><th>Réf. commande site</th><th>Statut</th><th></th></tr></thead>
+        <tbody>
+        {% for p in dossier.commandes_pieces %}
+          <tr>
+            <td>
+              <div class="fw-semibold">{{ p.designation }}</div>
+              {% if p.reference %}<div class="text-muted small">Réf. {{ p.reference }}</div>{% endif %}
+            </td>
+            <td>{{ p.fournisseur.nom if p.fournisseur else "—" }}</td>
+            <td>{{ p.quantite|round(2) }}</td>
+            <td>{{ "%.2f"|format(p.total_ht) }} €</td>
+            <td>
+              <form method="post" action="{{ url_for('dossiers.update_reference_commande', dossier_id=dossier.id, commande_id=p.id) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="reference_commande_site" class="form-control form-control-sm" style="min-width:150px;" placeholder="N° ou lien de commande" value="{{ p.reference_commande_site }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Enregistrer"><i class="bi bi-check-lg"></i></button>
+                {% if p.reference_commande_site_url %}
+                <a href="{{ p.reference_commande_site_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="Ouvrir le lien"><i class="bi bi-box-arrow-up-right"></i></a>
+                {% endif %}
+              </form>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('dossiers.change_statut_commande', dossier_id=dossier.id, commande_id=p.id) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <select name="statut" class="form-select form-select-sm" onchange="this.form.submit()" style="min-width:130px;">
+                  {% for code, label in statuts_commande %}
+                  <option value="{{ code }}" {{ "selected" if p.statut == code }}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_commande_piece', dossier_id=dossier.id, commande_id=p.id) }}" data-confirm="Supprimer cette pièce ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <form method="post" action="{{ url_for('dossiers.new_commande_piece', dossier_id=dossier.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Désignation *</label>
+          <input type="text" name="designation" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Référence</label>
+          <input type="text" name="reference" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Fournisseur</label>
+          <select name="fournisseur_id" class="form-select form-select-sm">
+            <option value="">—</option>
+            {% for f in fournisseurs %}
+            <option value="{{ f.id }}">{{ f.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-1">
+          <label class="form-label small mb-1">Qté</label>
+          <input type="number" step="1" min="1" name="quantite" class="form-control form-control-sm" value="1">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Prix HT</label>
+          <input type="number" step="0.01" min="0" name="prix_unitaire_ht" class="form-control form-control-sm" value="0">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1">N° ou lien de la commande passée sur le site fournisseur</label>
+          <input type="text" name="reference_commande_site" class="form-control form-control-sm" placeholder="Ex : n° de commande, ou lien de la confirmation">
+        </div>
+      </form>
+      {% if not fournisseurs %}
+      <p class="text-muted small mb-0 mt-2">Astuce : <a href="{{ url_for('fournisseurs.new_fournisseur') }}" target="_blank">ajoutez vos fournisseurs</a> pour les associer aux commandes (nouvel onglet).</p>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Photos ({{ dossier.photos|length }})</h6>
+      </div>
+      {% if dossier.photos %}
+      <div class="photo-grid mb-3">
+        {% for photo in dossier.photos %}
+        <div class="photo-card">
+          <a href="{{ url_for('dossiers.photo_fichier', dossier_id=dossier.id, photo_id=photo.id) }}" target="_blank">
+            <img src="{{ url_for('dossiers.photo_fichier', dossier_id=dossier.id, photo_id=photo.id) }}" alt="{{ photo.legende or photo.type_photo_libelle }}" class="photo-thumb">
+          </a>
+          <div class="photo-card-body">
+            <span class="badge-statut st-{{ 'accepte' if photo.type_photo == 'apres' else 'nouveau' }}">{{ photo.type_photo_libelle }}</span>
+            {% if photo.legende %}<p class="mb-0 small text-muted mt-1">{{ photo.legende }}</p>{% endif %}
+            <form method="post" action="{{ url_for('dossiers.delete_photo', dossier_id=dossier.id, photo_id=photo.id) }}" data-confirm="Supprimer cette photo ?" class="mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form method="post" action="{{ url_for('dossiers.new_photo', dossier_id=dossier.id) }}" enctype="multipart/form-data" class="row g-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Photo *</label>
+          <input type="file" name="photo" class="form-control form-control-sm" accept="image/*" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Type</label>
+          <select name="type_photo" class="form-select form-select-sm">
+            {% for code, label in types_photo %}
+            <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Légende</label>
+          <input type="text" name="legende" class="form-control form-control-sm" placeholder="Zone / dommage concerné">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">&nbsp;</label>
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-upload"></i> Ajouter</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Fiches peinture ({{ dossier.fiches_teinte|length }})</h6>
+      </div>
+      {% if dossier.vehicule.code_teinte or dossier.vehicule.teinte_nom %}
+      <p class="text-muted small mb-2">
+        Teinte d'origine du véhicule : <strong>{{ dossier.vehicule.teinte_nom or "—" }}</strong>
+        {% if dossier.vehicule.code_teinte %}(code {{ dossier.vehicule.code_teinte }}){% endif %}
+        {% if dossier.vehicule.type_finition %} — {{ dossier.vehicule.type_finition }}{% endif %}
+      </p>
+      {% else %}
+      <p class="text-muted small mb-2">Aucune teinte d'origine renseignée sur ce véhicule. <a href="{{ url_for('vehicules.edit_vehicule', vehicule_id=dossier.vehicule_id) }}" target="_blank">La renseigner</a> (nouvel onglet).</p>
+      {% endif %}
+      {% if dossier.fiches_teinte %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Éléments peints</th><th>Fabricant</th><th>Formule</th><th>Qté</th><th></th></tr></thead>
+        <tbody>
+        {% for ft in dossier.fiches_teinte %}
+          <tr>
+            <td>{{ ft.elements_peints or "—" }}</td>
+            <td>{{ ft.fabricant_peinture or "—" }}</td>
+            <td class="text-muted small" style="max-width: 220px; white-space: pre-wrap;">{{ ft.formule }}</td>
+            <td>{{ (ft.quantite_g ~ " g") if ft.quantite_g else "—" }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_fiche_teinte', dossier_id=dossier.id, fiche_id=ft.id) }}" data-confirm="Supprimer cette fiche teinte ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <form method="post" action="{{ url_for('dossiers.new_fiche_teinte', dossier_id=dossier.id) }}" class="row g-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Éléments peints</label>
+          <input type="text" name="elements_peints" class="form-control form-control-sm" placeholder="Aile avant gauche, portière...">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Fabricant</label>
+          <input type="text" name="fabricant_peinture" class="form-control form-control-sm" placeholder="Glasurit, Standox, PPG...">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Quantité (g)</label>
+          <input type="number" step="0.1" min="0" name="quantite_g" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">&nbsp;</label>
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1">Formule de mélange *</label>
+          <textarea name="formule" class="form-control form-control-sm" rows="2" placeholder="Formule issue du logiciel teinte du fabricant"></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Créneaux planifiés ({{ dossier.creneaux|length }})</h6>
+        <a href="{{ url_for('planning.new_creneau', dossier_id=dossier.id) }}" class="small">+ Planifier</a>
+      </div>
+      {% if dossier.creneaux %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>Date</th><th>Horaire</th><th>Carrossier</th><th>Notes</th><th></th></tr></thead>
+        <tbody>
+        {% for c in dossier.creneaux %}
+          <tr>
+            <td>{{ c.date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ c.horaire }}</td>
+            <td>{{ c.technicien.nom if c.technicien else "—" }}</td>
+            <td class="text-muted small">{{ c.notes or "—" }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('planning.edit_creneau', creneau_id=c.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="{{ url_for('planning.delete_creneau', creneau_id=c.id) }}" data-confirm="Supprimer ce créneau ?" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="retour" value="dossier">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-3"><i class="bi bi-calendar3"></i>Aucun créneau planifié.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Pointages du temps ({{ "%.1f"|format(dossier.pointages|sum(attribute='duree_heures')) }} h)</h6>
+      </div>
+      {% if dossier.pointages %}
+      <table class="table table-cp mb-3">
+        <thead><tr><th>Date</th><th>Technicien</th><th>Durée</th><th>Description</th><th></th></tr></thead>
+        <tbody>
+        {% for p in dossier.pointages %}
+          <tr>
+            <td>{{ p.date_intervention.strftime('%d/%m/%Y') }}</td>
+            <td>{{ p.technicien.nom }}</td>
+            <td>{{ "%.1f"|format(p.duree_heures) }} h</td>
+            <td class="text-muted small">{{ p.description or "—" }}</td>
+            <td class="text-end">
+              <form method="post" action="{{ url_for('dossiers.delete_pointage', dossier_id=dossier.id, pointage_id=p.id) }}" data-confirm="Supprimer ce pointage ?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if techniciens %}
+      <form method="post" action="{{ url_for('dossiers.new_pointage', dossier_id=dossier.id) }}" class="row g-2 align-items-end">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Technicien</label>
+          <select name="technicien_id" class="form-select form-select-sm" required>
+            {% for t in techniciens %}
+            <option value="{{ t.id }}">{{ t.nom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Date</label>
+          <input type="date" name="date_intervention" class="form-control form-control-sm" value="{{ today.isoformat() }}">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label small mb-1">Durée (h)</label>
+          <input type="number" step="0.25" min="0.25" name="duree_heures" class="form-control form-control-sm" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small mb-1">Description</label>
+          <input type="text" name="description" class="form-control form-control-sm">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+      </form>
+      {% else %}
+      <p class="text-muted small mb-0">Aucun technicien actif. <a href="{{ url_for('techniciens.new_technicien') }}">Ajoutez-en un</a> pour pouvoir pointer du temps.</p>
+      {% endif %}
+    </div>
+
+    {% if dossier.notes %}
+    <div class="section-card">
+      <h6>Notes internes</h6>
+      <p class="mb-0 text-muted">{{ dossier.notes }}</p>
+    </div>
+    {% endif %}
+
+    {% include "_historique.html" %}
+  </div>
+</div>
+{% endblock %}

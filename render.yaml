@@ -1,0 +1,50 @@
+# Déploiement Render pour Carrosserie Pro.
+# Dans le tableau de bord Render : New + → Blueprint → sélectionner ce dépôt
+# et la branche souhaitée. Render détecte ce fichier automatiquement.
+#
+# Base de données : une base PostgreSQL managée est provisionnée
+# automatiquement (plan gratuit) et sa variable DATABASE_URL est injectée
+# dans le service web — les données (clients, dossiers, devis, factures...)
+# sont donc conservées entre les déploiements et les redémarrages, contrairement
+# à SQLite sur disque éphémère (qui réinitialisait tout à chaque déploiement).
+#
+# ⚠️ Les photos uploadées (module Photos) restent sur le disque éphémère du
+# service web et seront perdues à chaque déploiement/redémarrage, même avec
+# PostgreSQL. Pour les conserver durablement, il faudrait un disque persistant
+# Render (plan payant) ou un stockage externe (S3 compatible).
+#
+# Si ce service existe déjà (créé avant l'ajout de cette base), rendez-vous
+# dans l'onglet "Blueprints" du tableau de bord Render et lancez une
+# synchronisation manuelle pour que la base soit créée et reliée au service.
+
+databases:
+  - name: carrosserie-pro-db
+    plan: free
+    databaseName: carrosserie_pro
+    user: carrosserie_pro
+
+services:
+  - type: web
+    name: carrosserie-pro
+    runtime: python
+    rootDir: carrosserie-pro
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: carrosserie-pro-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrateur
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.9

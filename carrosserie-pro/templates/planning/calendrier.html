@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Calendrier atelier — Carrosserie Pro{% endblock %}
+{% block page_title %}Planning atelier{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('planning.new_creneau') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Planifier un créneau</a>
+{% endblock %}
+{% block content %}
+<div class="planning-tabs mb-3">
+  <a href="{{ url_for('planning.board') }}" class="planning-tab">Tableau (statuts)</a>
+  <a href="{{ url_for('planning.calendrier') }}" class="planning-tab active">Calendrier (carrossiers)</a>
+</div>
+
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+  <div class="d-flex align-items-center gap-2">
+    <a href="{{ url_for('planning.calendrier', semaine=semaine_precedente) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-left"></i></a>
+    <span class="fw-semibold">Semaine du {{ jours[0].strftime('%d/%m/%Y') }} au {{ jours[-1].strftime('%d/%m/%Y') }}</span>
+    <a href="{{ url_for('planning.calendrier', semaine=semaine_suivante) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chevron-right"></i></a>
+  </div>
+  <a href="{{ url_for('planning.calendrier') }}" class="btn btn-outline-primary btn-sm">Aujourd'hui</a>
+</div>
+
+{% if not techniciens %}
+<div class="empty-state py-5">
+  <i class="bi bi-person-gear"></i>
+  Aucun carrossier actif. <a href="{{ url_for('techniciens.new_technicien') }}">Ajoutez-en un</a> pour assigner des créneaux.
+</div>
+{% endif %}
+
+<div class="table-responsive">
+  <table class="table-cp planning-calendrier">
+    <thead>
+      <tr>
+        <th class="planning-col-tech">Carrossier</th>
+        {% for j in jours %}
+        <th class="{{ 'planning-col-today' if j == aujourdhui }}">{{ ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"][loop.index0] }}<br><span class="small text-muted fw-normal">{{ j.strftime('%d/%m') }}</span></th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in techniciens %}
+      <tr>
+        <td class="planning-col-tech">
+          <div class="fw-semibold">{{ t.nom }}</div>
+          {% if t.specialite %}<div class="small text-muted">{{ t.specialite }}</div>{% endif %}
+        </td>
+        {% for j in jours %}
+        <td class="{{ 'planning-col-today' if j == aujourdhui }}">
+          {% for c in grille[t.id][j] %}
+          <a href="{{ url_for('planning.edit_creneau', creneau_id=c.id) }}" class="planning-creneau">
+            <div class="planning-creneau-heure">{{ c.horaire }}</div>
+            <div class="planning-creneau-ref">{{ c.dossier.reference }}</div>
+            <div class="planning-creneau-client">{{ c.dossier.client.nom_affichage }}</div>
+          </a>
+          {% endfor %}
+          <a href="{{ url_for('planning.new_creneau', technicien_id=t.id, date=j.isoformat()) }}" class="planning-add-creneau" title="Planifier un créneau"><i class="bi bi-plus-lg"></i></a>
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      {% if non_assignes.values() | map('length') | sum > 0 %}
+      <tr>
+        <td class="planning-col-tech text-muted">Non assigné</td>
+        {% for j in jours %}
+        <td class="{{ 'planning-col-today' if j == aujourdhui }}">
+          {% for c in non_assignes[j] %}
+          <a href="{{ url_for('planning.edit_creneau', creneau_id=c.id) }}" class="planning-creneau planning-creneau-libre">
+            <div class="planning-creneau-heure">{{ c.horaire }}</div>
+            <div class="planning-creneau-ref">{{ c.dossier.reference }}</div>
+            <div class="planning-creneau-client">{{ c.dossier.client.nom_affichage }}</div>
+          </a>
+          {% endfor %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

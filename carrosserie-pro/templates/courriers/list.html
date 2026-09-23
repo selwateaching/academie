@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Courriers — Carrosserie Pro{% endblock %}
+{% block page_title %}Courriers{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('courriers.choisir_dossier') }}" class="btn btn-accent btn-sm"><i class="bi bi-envelope-plus"></i> Nouveau courrier</a>
+<a href="{{ url_for('courriers.new_modele') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-plus-lg"></i> Nouveau modèle</a>
+{% endblock %}
+{% block content %}
+
+{% if not smtp_configure %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i>
+  L'envoi direct par email n'est pas configuré (variables <code>SMTP_HOST</code>, <code>SMTP_USER</code>, <code>SMTP_PASSWORD</code>…).
+  Vous pouvez tout de même rédiger vos courriers, les copier ou les ouvrir dans votre messagerie habituelle.
+</div>
+{% endif %}
+
+<div class="section-card mb-3">
+  <h6>Modèles de courrier</h6>
+  <p class="text-muted small mb-3">Modèles prêts à l'emploi, personnalisables. Utilisez des jetons comme <code>{{ '{{client_nom}}' }}</code> qui seront remplacés automatiquement par les informations du dossier choisi.</p>
+  {% if modeles %}
+  <div class="table-responsive">
+    <table class="table table-cp mb-0">
+      <thead><tr><th>Nom</th><th>Objet</th><th></th></tr></thead>
+      <tbody>
+        {% for m in modeles %}
+        <tr>
+          <td class="fw-semibold">{{ m.nom }}</td>
+          <td class="text-muted small">{{ m.objet }}</td>
+          <td class="text-end">
+            <a href="{{ url_for('courriers.edit_modele', modele_id=m.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{{ url_for('courriers.delete_modele', modele_id=m.id) }}" data-confirm="Supprimer le modèle « {{ m.nom }} » ?" class="d-inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="bi bi-envelope"></i>Aucun modèle de courrier enregistré.</div>
+  {% endif %}
+</div>
+{% endblock %}

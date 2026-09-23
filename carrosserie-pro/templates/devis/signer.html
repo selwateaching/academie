@@ -1,0 +1,106 @@
+{% extends "base_public.html" %}
+{% block title %}Signature du devis {{ devis.numero }} — Carrosserie Pro{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card" style="max-width: 620px;">
+    <div class="text-center mb-4">
+      <i class="bi bi-shield-shaded" style="font-size:2.2rem; color:#1f3a5f;"></i>
+      <h4 class="mt-2 mb-0 fw-bold">{{ entreprise.nom or "Carrosserie" }}</h4>
+      <p class="text-muted small mb-0">Signature électronique du devis {{ devis.numero }}</p>
+    </div>
+
+    <div class="section-card mb-3">
+      <h6>Récapitulatif</h6>
+      <p class="mb-1"><strong>{{ devis.dossier.client.nom_affichage }}</strong></p>
+      <p class="mb-1 text-muted small">{{ devis.dossier.vehicule.designation }}</p>
+      <div class="table-responsive mt-2">
+        <table class="table table-cp table-sm mb-0">
+          <thead><tr><th>Désignation</th><th class="text-end">Total HT</th></tr></thead>
+          <tbody>
+            {% for l in devis.lignes %}
+            <tr><td>{{ l.designation }}</td><td class="text-end">{{ "%.2f"|format(l.total_ht) }} €</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-between mt-2 pt-2 border-top">
+        <span class="fw-bold">Total TTC</span>
+        <span class="fw-bold fs-5">{{ "%.2f"|format(devis.total_ttc) }} €</span>
+      </div>
+      <div class="mt-2">
+        <a href="{{ url_for('devis.pdf_devis_public', token=devis.signature_token) }}" target="_blank" class="small"><i class="bi bi-file-earmark-pdf"></i> Voir le devis complet (PDF)</a>
+      </div>
+    </div>
+
+    {% if devis.est_signe %}
+    <div class="section-card">
+      <div class="alert alert-success mb-3"><i class="bi bi-check-circle-fill"></i> Ce devis a été signé électroniquement le {{ devis.signature_date.strftime('%d/%m/%Y à %H:%M') }} par <strong>{{ devis.signature_nom }}</strong>.</div>
+      <img src="{{ devis.signature_data }}" alt="Signature" style="max-width: 300px; border: 1px solid #d7dce2; border-radius: 8px; background: #fff;">
+    </div>
+    {% else %}
+    <div class="section-card">
+      <h6>Bon pour accord</h6>
+      <p class="text-muted small">En signant ci-dessous, vous acceptez ce devis et ses conditions dans leur intégralité.</p>
+      <form method="post" id="signature-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="signature_data" id="signature_data">
+        <div class="mb-3">
+          <label class="form-label">Nom et prénom *</label>
+          <input type="text" name="signature_nom" id="signature_nom" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label d-flex justify-content-between align-items-center">
+            Signature *
+            <button type="button" id="signature-clear" class="btn btn-sm btn-outline-secondary">Effacer</button>
+          </label>
+          <canvas id="signature-pad" style="border: 1px solid #d7dce2; border-radius: 8px; width: 100%; height: 180px; touch-action: none; background: #fff;"></canvas>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-check-lg"></i> Signer et valider le devis</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if not devis.est_signe %}
+<script src="{{ url_for('static', filename='vendor/signature_pad/signature_pad.umd.min.js') }}"></script>
+<script>
+(function () {
+  const canvas = document.getElementById("signature-pad");
+  if (!canvas) return;
+
+  function resizeCanvas() {
+    // Conserve le tracé existant : redimensionner un canvas efface son
+    // contenu, or sur mobile l'ouverture du clavier déclenche un "resize" —
+    // sans cette sauvegarde/restauration, la signature disparaît en plein
+    // milieu de la saisie du nom.
+    const donneesExistantes = pad.toData();
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext("2d").scale(ratio, ratio);
+    pad.clear();
+    if (donneesExistantes && donneesExistantes.length) {
+      pad.fromData(donneesExistantes);
+    }
+  }
+
+  const pad = new SignaturePad(canvas, { backgroundColor: "rgba(255,255,255,1)" });
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  document.getElementById("signature-clear").addEventListener("click", () => pad.clear());
+
+  document.getElementById("signature-form").addEventListener("submit", (e) => {
+    if (pad.isEmpty()) {
+      e.preventDefault();
+      alert("Merci d'apposer votre signature avant de valider.");
+      return;
+    }
+    document.getElementById("signature_data").value = pad.toDataURL("image/png");
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

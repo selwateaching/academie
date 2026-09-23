@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if modele else "Nouveau" }} modèle de courrier — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le modèle" if modele else "Nouveau modèle de courrier" }}{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-8">
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="section-card">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">Nom du modèle *</label>
+            <input type="text" name="nom" class="form-control" required value="{{ modele.nom if modele else '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Objet du message</label>
+            <input type="text" name="objet" class="form-control" value="{{ modele.objet if modele else '' }}">
+          </div>
+          <div class="col-12">
+            <label class="form-label">Corps du message</label>
+            <textarea name="corps" class="form-control" rows="14">{{ modele.corps if modele else '' }}</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+        <a href="{{ url_for('courriers.list_courriers') }}" class="btn btn-outline-secondary">Annuler</a>
+        {% if modele %}
+        <form method="post" action="{{ url_for('courriers.delete_modele', modele_id=modele.id) }}" data-confirm="Supprimer ce modèle ?" class="ms-auto">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline-danger"><i class="bi bi-trash"></i></button>
+        </form>
+        {% endif %}
+      </div>
+    </form>
+
+    {% if modele %}
+    {% include "_historique.html" %}
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Variables disponibles</h6>
+      <p class="text-muted small">Cliquez pour copier un jeton, à coller dans l'objet ou le corps du message.</p>
+      <div class="d-flex flex-column gap-1">
+        {% for cle, description in variables %}
+        <button type="button" class="btn btn-sm btn-outline-secondary text-start" style="font-family: monospace;"
+                onclick="navigator.clipboard.writeText('{{ '{{' }}{{ cle }}{{ '}}' }}')" title="{{ description }}">
+          {{ '{{' }}{{ cle }}{{ '}}' }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Tableau de bord — Carrosserie Pro{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('dossiers.new_dossier') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouveau dossier</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card {{ 'stat-success' if ca_mois > 0 }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ ca_mois | round(0, 'common') | int }} €</div>
+          <div class="stat-label">CA facturé ce mois</div>
+        </div>
+        <i class="bi bi-graph-up-arrow"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card {{ 'stat-danger' if nb_factures_impayees > 0 }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ montant_impaye | round(0, 'common') | int }} €</div>
+          <div class="stat-label">Encours impayé ({{ nb_factures_impayees }} facture{{ 's' if nb_factures_impayees != 1 }})</div>
+        </div>
+        <i class="bi bi-hourglass-split"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ dossiers_ouverts }}</div>
+          <div class="stat-label">Dossiers en cours</div>
+        </div>
+        <i class="bi bi-folder2-open"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ devis_en_attente }}</div>
+          <div class="stat-label">Devis en attente de réponse</div>
+        </div>
+        <i class="bi bi-file-earmark-text"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card {{ 'stat-danger' if dossiers_en_retard > 0 else 'stat-success' }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ dossiers_en_retard }}</div>
+          <div class="stat-label">Dossier{{ 's' if dossiers_en_retard != 1 }} en retard</div>
+        </div>
+        <i class="bi bi-exclamation-triangle"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card {{ 'stat-success' if delai_moyen_jours is not none and delai_moyen_jours <= 7 else ('stat-warning' if delai_moyen_jours is not none and delai_moyen_jours <= 14 else ('stat-danger' if delai_moyen_jours is not none else '')) }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ (delai_moyen_jours ~ " j") if delai_moyen_jours is not none else "—" }}</div>
+          <div class="stat-label">Délai moyen de réparation</div>
+        </div>
+        <i class="bi bi-stopwatch"></i>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card {{ 'stat-success' if taux_acceptation is not none and taux_acceptation >= 70 else ('stat-warning' if taux_acceptation is not none and taux_acceptation >= 40 else ('stat-danger' if taux_acceptation is not none else '')) }}">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="stat-value">{{ (taux_acceptation | int ~ " %") if taux_acceptation is not none else "—" }}</div>
+          <div class="stat-label">Taux d'acceptation des devis</div>
+        </div>
+        <i class="bi bi-check2-circle"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if relances %}
+<div class="alert alert-warning d-flex align-items-start gap-2">
+  <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+  <div>
+    <strong>{{ relances|length }} facture{{ 's' if relances|length != 1 }} en retard de paiement.</strong>
+    <a href="{{ url_for('factures.list_factures') }}" class="ms-1">Voir les factures →</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Dossiers récents</h6>
+        <a href="{{ url_for('dossiers.list_dossiers') }}" class="small">Voir tout</a>
+      </div>
+      {% if dossiers_recents %}
+      <div class="table-responsive">
+        <table class="table table-cp mb-0">
+          <thead><tr><th>Référence</th><th>Client</th><th>Véhicule</th><th>Statut</th></tr></thead>
+          <tbody>
+            {% for d in dossiers_recents %}
+            <tr style="cursor:pointer" onclick="location.href='{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}'">
+              <td class="fw-semibold">{{ d.reference }}</td>
+              <td>{{ d.client.nom_affichage }}</td>
+              <td>{{ d.vehicule.designation }}</td>
+              <td><span class="badge-statut st-{{ d.statut }}">{{ d.statut_libelle }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-folder2"></i>Aucun dossier pour le moment.</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Factures récentes</h6>
+        <a href="{{ url_for('factures.list_factures') }}" class="small">Voir tout</a>
+      </div>
+      {% if factures_recentes %}
+      <div class="table-responsive">
+        <table class="table table-cp mb-0">
+          <thead><tr><th>N°</th><th>Client</th><th>Montant TTC</th><th>Statut</th></tr></thead>
+          <tbody>
+            {% for f in factures_recentes %}
+            <tr style="cursor:pointer" onclick="location.href='{{ url_for('factures.view_facture', facture_id=f.id) }}'">
+              <td class="fw-semibold">{{ f.numero }}</td>
+              <td>{{ f.dossier.client.nom_affichage }}</td>
+              <td>{{ "%.2f"|format(f.total_ttc) }} €</td>
+              <td><span class="badge-statut st-{{ f.statut }}">{{ f.statut_libelle }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-receipt"></i>Aucune facture pour le moment.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="section-card">
+      <h6 class="mb-3">Répartition des dossiers</h6>
+      {% for code, info in par_statut.items() %}
+        {% if info.count > 0 %}
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="badge-statut st-{{ code }}">{{ info.label }}</span>
+          <span class="fw-semibold">{{ info.count }}</span>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Devis récents</h6>
+        <a href="{{ url_for('devis.list_devis') }}" class="small">Voir tout</a>
+      </div>
+      {% if devis_recents %}
+      {% for dv in devis_recents %}
+        <a href="{{ url_for('devis.view_devis', devis_id=dv.id) }}" class="d-flex justify-content-between align-items-center py-2 text-decoration-none text-dark border-bottom">
+          <div>
+            <div class="fw-semibold small">{{ dv.numero }}</div>
+            <div class="text-muted" style="font-size:.78rem;">{{ dv.dossier.client.nom_affichage }}</div>
+          </div>
+          <span class="badge-statut st-{{ dv.statut }}">{{ dv.statut_libelle }}</span>
+        </a>
+      {% endfor %}
+      {% else %}
+      <div class="empty-state py-4"><i class="bi bi-file-earmark"></i>Aucun devis pour le moment.</div>
+      {% endif %}
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ url_for('clients.new_client') }}" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-person-plus"></i> Client</a>
+      <a href="{{ url_for('vehicules.new_vehicule') }}" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-car-front"></i> Véhicule</a>
+      <a href="{{ url_for('dossiers.new_dossier') }}" class="btn btn-outline-primary btn-sm flex-grow-1"><i class="bi bi-folder-plus"></i> Dossier</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Catalogue — Carrosserie Pro{% endblock %}
+{% block page_title %}Catalogue pièces &amp; prestations{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('catalogue.new_item') }}" class="btn btn-accent btn-sm"><i class="bi bi-plus-lg"></i> Nouvel article</a>
+{% endblock %}
+{% block content %}
+{% if items %}
+<div class="table-responsive">
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Référence</th><th>Désignation</th><th>Type</th><th>Prix HT</th><th>TVA</th><th>Actif</th><th></th></tr></thead>
+    <tbody>
+      {% for i in items %}
+      <tr>
+        <td>{{ i.reference or "—" }}</td>
+        <td class="fw-semibold">{{ i.designation }}</td>
+        <td>{{ i.type_ligne_libelle }}</td>
+        <td>{{ "%.2f"|format(i.prix_unitaire_ht) }} € / {{ i.unite }}</td>
+        <td>{{ i.taux_tva|round(1) }} %</td>
+        <td>{% if i.actif %}<span class="badge-statut st-accepte">Actif</span>{% else %}<span class="badge-statut st-annule">Inactif</span>{% endif %}</td>
+        <td class="text-end">
+          <a href="{{ url_for('catalogue.edit_item', item_id=i.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="bi bi-list-ul"></i>Le catalogue est vide. Ajoutez vos pièces et forfaits de main d'œuvre les plus utilisés.</div>
+{% endif %}
+{% endblock %}

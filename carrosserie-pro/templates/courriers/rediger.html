@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Courrier — {{ dossier.reference }} — Carrosserie Pro{% endblock %}
+{% block page_title %}Nouveau courrier — {{ dossier.reference }}{% endblock %}
+{% block content %}
+
+{% if not smtp_configure %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle"></i>
+  L'envoi direct par email n'est pas configuré sur ce serveur. Utilisez le bouton « Ouvrir dans ma messagerie » ou copiez le texte ci-dessous.
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="section-card">
+      <h6>Dossier</h6>
+      <p class="mb-1"><a href="{{ url_for('dossiers.view_dossier', dossier_id=dossier.id) }}">{{ dossier.reference }}</a></p>
+      <p class="mb-1">{{ dossier.client.nom_affichage }}</p>
+      <p class="mb-1 text-muted small">{{ dossier.vehicule.designation }}</p>
+    </div>
+
+    <div class="section-card">
+      <h6>Destinataire</h6>
+      <form method="get" id="destinataire-form">
+        <select name="destinataire" class="form-select" onchange="document.getElementById('destinataire-form').submit()">
+          <option value="client" {{ "selected" if destinataire_type == "client" }}>Client{{ " (" ~ dossier.client.email ~ ")" if dossier.client.email }}</option>
+          <option value="expert" {{ "selected" if destinataire_type == "expert" }} {{ "disabled" if not dossier.expert_email }}>
+            Expert{{ " (" ~ dossier.expert_email ~ ")" if dossier.expert_email else " — email non renseigné" }}
+          </option>
+          <option value="assureur" {{ "selected" if destinataire_type == "assureur" }} {{ "disabled" if not (dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email)) }}>
+            Assureur{{ " (" ~ (dossier.assureur.email_gestion_sinistres or dossier.assureur.email) ~ ")" if dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email) else " — email non renseigné" }}
+          </option>
+        </select>
+        {% if modele_actif %}<input type="hidden" name="modele_id" value="{{ modele_actif.id }}">{% endif %}
+        {% if devis %}<input type="hidden" name="devis_id" value="{{ devis.id }}">{% endif %}
+        {% if facture %}<input type="hidden" name="facture_id" value="{{ facture.id }}">{% endif %}
+      </form>
+      {% if dossier.est_assurance and (not dossier.expert_email or not (dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email))) %}
+      <div class="form-text">Email manquant ? <a href="{{ url_for('dossiers.edit_dossier', dossier_id=dossier.id) }}" target="_blank">Compléter le dossier</a> (nouvel onglet).</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
+      <h6>Modèle</h6>
+      <form method="get" id="modele-form">
+        <select name="modele_id" class="form-select" onchange="document.getElementById('modele-form').submit()">
+          <option value="">— Partir d'une page blanche —</option>
+          {% for m in modeles %}
+          <option value="{{ m.id }}" {{ "selected" if modele_actif and modele_actif.id == m.id }}>{{ m.nom }}</option>
+          {% endfor %}
+        </select>
+        <input type="hidden" name="destinataire" value="{{ destinataire_type }}">
+        {% if devis %}<input type="hidden" name="devis_id" value="{{ devis.id }}">{% endif %}
+        {% if facture %}<input type="hidden" name="facture_id" value="{{ facture.id }}">{% endif %}
+      </form>
+      <div class="form-text"><a href="{{ url_for('courriers.list_courriers') }}" target="_blank">Gérer les modèles</a> (nouvel onglet).</div>
+    </div>
+
+    {% if dossier.devis or dossier.factures %}
+    <div class="section-card">
+      <h6>Document lié (optionnel)</h6>
+      <form method="get" id="doc-form">
+        {% if modele_actif %}<input type="hidden" name="modele_id" value="{{ modele_actif.id }}">{% endif %}
+        <input type="hidden" name="destinataire" value="{{ destinataire_type }}">
+        <label class="form-label small">Devis</label>
+        <select name="devis_id" class="form-select form-select-sm mb-2" onchange="document.getElementById('doc-form').submit()">
+          <option value="">—</option>
+          {% for d in dossier.devis %}
+          <option value="{{ d.id }}" {{ "selected" if devis and devis.id == d.id }}>{{ d.numero }}</option>
+          {% endfor %}
+        </select>
+        <label class="form-label small">Facture</label>
+        <select name="facture_id" class="form-select form-select-sm" onchange="document.getElementById('doc-form').submit()">
+          <option value="">—</option>
+          {% for f in dossier.factures %}
+          <option value="{{ f.id }}" {{ "selected" if facture and facture.id == f.id }}>{{ f.numero }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-8">
+    <div class="section-card">
+      <form method="post" action="{{ url_for('courriers.envoyer', dossier_id=dossier.id) }}" id="courrier-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label">Destinataire (email) *</label>
+          <input type="email" name="destinataire" id="destinataire" class="form-control" required value="{{ destinataire }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Objet *</label>
+          <input type="text" name="objet" id="objet" class="form-control" required value="{{ objet }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Message *</label>
+          <textarea name="corps" id="corps" class="form-control" rows="14" required>{{ corps }}</textarea>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-send"></i> Envoyer par email</button>
+          <a href="#" id="btn-mailto" class="btn btn-outline-secondary"><i class="bi bi-box-arrow-up-right"></i> Ouvrir dans ma messagerie</a>
+          <button type="button" id="btn-copier" class="btn btn-outline-secondary"><i class="bi bi-clipboard"></i> Copier le texte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const btnMailto = document.getElementById('btn-mailto');
+  const btnCopier = document.getElementById('btn-copier');
+
+  function refreshMailto() {
+    const to = encodeURIComponent(document.getElementById('destinataire').value || '');
+    const subject = encodeURIComponent(document.getElementById('objet').value || '');
+    const body = encodeURIComponent(document.getElementById('corps').value || '');
+    btnMailto.href = `mailto:${to}?subject=${subject}&body=${body}`;
+  }
+  ['destinataire', 'objet', 'corps'].forEach((id) => {
+    document.getElementById(id).addEventListener('input', refreshMailto);
+  });
+  refreshMailto();
+
+  btnCopier.addEventListener('click', () => {
+    const objet = document.getElementById('objet').value;
+    const corps = document.getElementById('corps').value;
+    navigator.clipboard.writeText(`Objet : ${objet}\n\n${corps}`);
+    btnCopier.innerHTML = '<i class="bi bi-check-lg"></i> Copié !';
+    setTimeout(() => { btnCopier.innerHTML = '<i class="bi bi-clipboard"></i> Copier le texte'; }, 1500);
+  });
+})();
+</script>
+{% endblock %}
