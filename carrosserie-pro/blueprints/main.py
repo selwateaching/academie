@@ -48,6 +48,30 @@ def dashboard():
     for code, label in STATUTS_DOSSIER:
         par_statut[code] = {"label": label, "count": Dossier.query.filter_by(statut=code).count()}
 
+    # Dossiers en retard : sortie prévue dépassée et travaux non terminés
+    dossiers_en_retard = Dossier.query.filter(
+        Dossier.date_sortie_prevue.isnot(None),
+        Dossier.date_sortie_prevue < today,
+        Dossier.statut.notin_(["termine", "facture", "solde", "annule"]),
+    ).count()
+
+    # Délai moyen de réparation (entrée → sortie réelle atelier), sur les dossiers clôturés
+    dossiers_clotures = Dossier.query.filter(
+        Dossier.date_entree_atelier.isnot(None),
+        Dossier.date_sortie_reelle.isnot(None),
+    ).all()
+    if dossiers_clotures:
+        delais = [(d.date_sortie_reelle - d.date_entree_atelier).days for d in dossiers_clotures]
+        delais = [d for d in delais if d >= 0]
+        delai_moyen_jours = round(sum(delais) / len(delais), 1) if delais else None
+    else:
+        delai_moyen_jours = None
+
+    # Taux d'acceptation des devis : acceptés ou facturés / devis ayant reçu une réponse
+    devis_avec_reponse = Devis.query.filter(Devis.statut.in_(["accepte", "refuse", "expire", "facture"])).count()
+    devis_acceptes = Devis.query.filter(Devis.statut.in_(["accepte", "facture"])).count()
+    taux_acceptation = round(100 * devis_acceptes / devis_avec_reponse, 0) if devis_avec_reponse else None
+
     return render_template(
         "dashboard.html",
         total_clients=total_clients,
@@ -63,4 +87,7 @@ def dashboard():
         factures_recentes=factures_recentes,
         relances=relances,
         par_statut=par_statut,
+        dossiers_en_retard=dossiers_en_retard,
+        delai_moyen_jours=delai_moyen_jours,
+        taux_acceptation=taux_acceptation,
     )

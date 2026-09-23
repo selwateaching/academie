@@ -159,6 +159,12 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
+.stat-card.stat-success .stat-value { color: #147d43; }
+.stat-card.stat-success i { color: #147d43; background: #dcf5e3; }
+.stat-card.stat-warning .stat-value { color: #92620a; }
+.stat-card.stat-warning i { color: #92620a; background: #fef3c7; }
+.stat-card.stat-danger .stat-value { color: #c62a1c; }
+.stat-card.stat-danger i { color: #c62a1c; background: #fde3e1; }
 
 /* ── Tables ──────────────────────────────────────────── */
 .table-cp { background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: var(--cp-radius); overflow: hidden; box-shadow: var(--cp-shadow-sm); }
