@@ -80,7 +80,12 @@
       </div>
       <div class="col-md-4">
         <label class="form-label">Nom de la couleur</label>
-        <input type="text" name="teinte_nom" class="form-control" value="{{ vehicule.teinte_nom if vehicule else '' }}">
+        <select name="teinte_nom" class="form-select">
+          <option value="">—</option>
+          {% for c in couleurs %}
+          <option value="{{ c }}" {{ "selected" if vehicule and vehicule.teinte_nom == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
       </div>
       <div class="col-md-4">
         <label class="form-label">Finition</label>
