@@ -294,6 +294,7 @@ body {
   cursor: grab;
   box-shadow: var(--cp-shadow-sm);
   font-size: .84rem;
+  touch-action: none;
 }
 .kanban-card:active { cursor: grabbing; }
 .kanban-card.dragging { opacity: .4; }

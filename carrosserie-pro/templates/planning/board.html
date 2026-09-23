@@ -13,7 +13,7 @@
     </div>
     <div class="kanban-column-body">
       {% for d in col.dossiers %}
-      <a href="{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}" class="kanban-card" draggable="true" data-dossier-id="{{ d.id }}" style="display:block; text-decoration:none; color:inherit;">
+      <a href="{{ url_for('dossiers.view_dossier', dossier_id=d.id) }}" class="kanban-card" draggable="false" data-dossier-id="{{ d.id }}" style="display:block; text-decoration:none; color:inherit;">
         <div class="kanban-card-ref">{{ d.reference }}</div>
         <div class="kanban-card-meta">{{ d.client.nom_affichage }}</div>
         <div class="kanban-card-meta">{{ d.vehicule.designation }}</div>

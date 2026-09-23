@@ -82,16 +82,24 @@
   if (!canvas) return;
 
   function resizeCanvas() {
+    // Conserve le tracé existant : redimensionner un canvas efface son
+    // contenu, or sur mobile l'ouverture du clavier déclenche un "resize" —
+    // sans cette sauvegarde/restauration, la signature disparaît en plein
+    // milieu de la saisie du nom.
+    const donneesExistantes = pad.toData();
     const ratio = Math.max(window.devicePixelRatio || 1, 1);
     canvas.width = canvas.offsetWidth * ratio;
     canvas.height = canvas.offsetHeight * ratio;
     canvas.getContext("2d").scale(ratio, ratio);
     pad.clear();
+    if (donneesExistantes && donneesExistantes.length) {
+      pad.fromData(donneesExistantes);
+    }
   }
 
   const pad = new SignaturePad(canvas, { backgroundColor: "rgba(255,255,255,1)" });
-  window.addEventListener("resize", resizeCanvas);
   resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
 
   document.getElementById("signature-clear").addEventListener("click", () => pad.clear());
 
