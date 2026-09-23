@@ -299,6 +299,7 @@ def new_commande_piece(dossier_id):
         fournisseur_id=request.form.get("fournisseur_id", type=int) or None,
         designation=designation,
         reference=request.form.get("reference", "").strip(),
+        reference_commande_site=request.form.get("reference_commande_site", "").strip(),
         quantite=_parse_float(request.form.get("quantite"), 1.0) or 1.0,
         prix_unitaire_ht=_parse_float(request.form.get("prix_unitaire_ht"), 0.0),
         statut="a_commander",
@@ -327,6 +328,17 @@ def change_statut_commande(dossier_id, commande_id):
         historique.log("dossier", dossier_id, "Statut pièce modifié", f"{commande.designation} : {ancien_libelle} → {commande.statut_libelle}")
         db.session.commit()
         flash("Statut de la pièce mis à jour.", "success")
+    return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
+
+
+@dossiers_bp.route("/<int:dossier_id>/pieces/<int:commande_id>/reference-commande", methods=["POST"])
+@login_required
+def update_reference_commande(dossier_id, commande_id):
+    commande = CommandePiece.query.filter_by(id=commande_id, dossier_id=dossier_id).first_or_404()
+    commande.reference_commande_site = request.form.get("reference_commande_site", "").strip()
+    historique.log("dossier", dossier_id, "Référence commande site mise à jour", f"{commande.designation}")
+    db.session.commit()
+    flash("Référence de commande enregistrée.", "success")
     return redirect(url_for("dossiers.view_dossier", dossier_id=dossier_id))
 
 

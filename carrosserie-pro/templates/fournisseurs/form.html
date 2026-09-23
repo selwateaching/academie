@@ -59,17 +59,24 @@
 </form>
 
 {% if fournisseur %}
-<div class="section-card" style="max-width: 700px;">
+<div class="section-card" style="max-width: 900px;">
   <h6 class="mb-2">Commandes de pièces ({{ commandes|length }})</h6>
   {% if commandes %}
   <table class="table table-cp mb-0">
-    <thead><tr><th>Pièce</th><th>Dossier</th><th>Qté</th><th>Statut</th><th></th></tr></thead>
+    <thead><tr><th>Pièce</th><th>Dossier</th><th>Qté</th><th>Réf. commande site</th><th>Statut</th><th></th></tr></thead>
     <tbody>
     {% for c in commandes %}
       <tr>
         <td class="fw-semibold">{{ c.designation }}</td>
         <td><a href="{{ url_for('dossiers.view_dossier', dossier_id=c.dossier_id) }}">{{ c.dossier.reference }}</a></td>
         <td>{{ c.quantite|round(2) }}</td>
+        <td class="small">
+          {% if c.reference_commande_site_url %}
+          <a href="{{ c.reference_commande_site_url }}" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Voir</a>
+          {% elif c.reference_commande_site %}
+          {{ c.reference_commande_site }}
+          {% else %}—{% endif %}
+        </td>
         <td><span class="badge-statut st-{{ c.statut }}">{{ c.statut_libelle }}</span></td>
         <td class="text-end">
           <a href="{{ url_for('dossiers.view_dossier', dossier_id=c.dossier_id) }}" class="btn btn-sm btn-outline-secondary" title="Gérer depuis le dossier"><i class="bi bi-arrow-right-circle"></i></a>

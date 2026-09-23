@@ -254,6 +254,11 @@ class CommandePiece(db.Model):
     quantite = db.Column(db.Float, default=1.0)
     prix_unitaire_ht = db.Column(db.Float, default=0.0)
 
+    # Numéro ou lien de la commande passée sur le site du fournisseur — en
+    # l'absence d'API pour synchroniser automatiquement, ce champ permet de
+    # garder une trace manuelle du lien entre la commande web et le dossier.
+    reference_commande_site = db.Column(db.String(500), default="")
+
     statut = db.Column(db.String(20), default="a_commander")
     date_commande = db.Column(db.Date, nullable=True)
     date_reception_prevue = db.Column(db.Date, nullable=True)
@@ -263,6 +268,13 @@ class CommandePiece(db.Model):
 
     dossier = db.relationship("Dossier", backref=db.backref("commandes_pieces", cascade="all, delete-orphan", order_by="CommandePiece.created_at.desc()"))
     fournisseur = db.relationship("Fournisseur", backref="commandes")
+
+    @property
+    def reference_commande_site_url(self):
+        valeur = (self.reference_commande_site or "").strip()
+        if valeur.startswith(("http://", "https://")):
+            return valeur
+        return ""
 
     @property
     def statut_libelle(self):

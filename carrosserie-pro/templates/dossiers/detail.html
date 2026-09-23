@@ -145,7 +145,7 @@
       </div>
       {% if dossier.commandes_pieces %}
       <table class="table table-cp mb-3">
-        <thead><tr><th>Désignation</th><th>Fournisseur</th><th>Qté</th><th>Prix HT</th><th>Statut</th><th></th></tr></thead>
+        <thead><tr><th>Désignation</th><th>Fournisseur</th><th>Qté</th><th>Prix HT</th><th>Réf. commande site</th><th>Statut</th><th></th></tr></thead>
         <tbody>
         {% for p in dossier.commandes_pieces %}
           <tr>
@@ -156,6 +156,16 @@
             <td>{{ p.fournisseur.nom if p.fournisseur else "—" }}</td>
             <td>{{ p.quantite|round(2) }}</td>
             <td>{{ "%.2f"|format(p.total_ht) }} €</td>
+            <td>
+              <form method="post" action="{{ url_for('dossiers.update_reference_commande', dossier_id=dossier.id, commande_id=p.id) }}" class="d-flex gap-1">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="text" name="reference_commande_site" class="form-control form-control-sm" style="min-width:150px;" placeholder="N° ou lien de commande" value="{{ p.reference_commande_site }}">
+                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Enregistrer"><i class="bi bi-check-lg"></i></button>
+                {% if p.reference_commande_site_url %}
+                <a href="{{ p.reference_commande_site_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="Ouvrir le lien"><i class="bi bi-box-arrow-up-right"></i></a>
+                {% endif %}
+              </form>
+            </td>
             <td>
               <form method="post" action="{{ url_for('dossiers.change_statut_commande', dossier_id=dossier.id, commande_id=p.id) }}" class="d-flex gap-1">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -206,6 +216,10 @@
         </div>
         <div class="col-md-2">
           <button class="btn btn-sm btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Ajouter</button>
+        </div>
+        <div class="col-12">
+          <label class="form-label small mb-1">N° ou lien de la commande passée sur le site fournisseur</label>
+          <input type="text" name="reference_commande_site" class="form-control form-control-sm" placeholder="Ex : n° de commande, ou lien de la confirmation">
         </div>
       </form>
       {% if not fournisseurs %}
