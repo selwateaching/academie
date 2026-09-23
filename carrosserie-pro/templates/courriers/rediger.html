@@ -20,6 +20,27 @@
     </div>
 
     <div class="section-card">
+      <h6>Destinataire</h6>
+      <form method="get" id="destinataire-form">
+        <select name="destinataire" class="form-select" onchange="document.getElementById('destinataire-form').submit()">
+          <option value="client" {{ "selected" if destinataire_type == "client" }}>Client{{ " (" ~ dossier.client.email ~ ")" if dossier.client.email }}</option>
+          <option value="expert" {{ "selected" if destinataire_type == "expert" }} {{ "disabled" if not dossier.expert_email }}>
+            Expert{{ " (" ~ dossier.expert_email ~ ")" if dossier.expert_email else " — email non renseigné" }}
+          </option>
+          <option value="assureur" {{ "selected" if destinataire_type == "assureur" }} {{ "disabled" if not (dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email)) }}>
+            Assureur{{ " (" ~ (dossier.assureur.email_gestion_sinistres or dossier.assureur.email) ~ ")" if dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email) else " — email non renseigné" }}
+          </option>
+        </select>
+        {% if modele_actif %}<input type="hidden" name="modele_id" value="{{ modele_actif.id }}">{% endif %}
+        {% if devis %}<input type="hidden" name="devis_id" value="{{ devis.id }}">{% endif %}
+        {% if facture %}<input type="hidden" name="facture_id" value="{{ facture.id }}">{% endif %}
+      </form>
+      {% if dossier.est_assurance and (not dossier.expert_email or not (dossier.assureur and (dossier.assureur.email_gestion_sinistres or dossier.assureur.email))) %}
+      <div class="form-text">Email manquant ? <a href="{{ url_for('dossiers.edit_dossier', dossier_id=dossier.id) }}" target="_blank">Compléter le dossier</a> (nouvel onglet).</div>
+      {% endif %}
+    </div>
+
+    <div class="section-card">
       <h6>Modèle</h6>
       <form method="get" id="modele-form">
         <select name="modele_id" class="form-select" onchange="document.getElementById('modele-form').submit()">
@@ -28,6 +49,7 @@
           <option value="{{ m.id }}" {{ "selected" if modele_actif and modele_actif.id == m.id }}>{{ m.nom }}</option>
           {% endfor %}
         </select>
+        <input type="hidden" name="destinataire" value="{{ destinataire_type }}">
         {% if devis %}<input type="hidden" name="devis_id" value="{{ devis.id }}">{% endif %}
         {% if facture %}<input type="hidden" name="facture_id" value="{{ facture.id }}">{% endif %}
       </form>
@@ -39,6 +61,7 @@
       <h6>Document lié (optionnel)</h6>
       <form method="get" id="doc-form">
         {% if modele_actif %}<input type="hidden" name="modele_id" value="{{ modele_actif.id }}">{% endif %}
+        <input type="hidden" name="destinataire" value="{{ destinataire_type }}">
         <label class="form-label small">Devis</label>
         <select name="devis_id" class="form-select form-select-sm mb-2" onchange="document.getElementById('doc-form').submit()">
           <option value="">—</option>

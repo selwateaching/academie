@@ -131,6 +131,8 @@ def rediger(dossier_id):
 
     if destinataire_type == "expert" and dossier.expert_email:
         destinataire = dossier.expert_email
+    elif destinataire_type == "assureur" and dossier.assureur:
+        destinataire = dossier.assureur.email_gestion_sinistres or dossier.assureur.email or ""
     else:
         destinataire = dossier.client.email or ""
 
@@ -144,6 +146,7 @@ def rediger(dossier_id):
         objet=objet,
         corps=corps,
         destinataire=destinataire,
+        destinataire_type=destinataire_type,
         smtp_configure=smtp_configure(),
     )
 
