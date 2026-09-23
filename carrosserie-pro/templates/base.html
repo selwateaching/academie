@@ -23,9 +23,6 @@
       <a href="{{ url_for('main.dashboard') }}" class="nav-link {{ 'active' if request.endpoint == 'main.dashboard' }}">
         <i class="bi bi-speedometer2"></i> Tableau de bord
       </a>
-      <a href="{{ url_for('planning.board') }}" class="nav-link {{ 'active' if request.blueprint == 'planning' }}">
-        <i class="bi bi-kanban"></i> Planning atelier
-      </a>
       <div class="sidebar-section">Parcours client</div>
       <a href="{{ url_for('clients.list_clients') }}" class="nav-link {{ 'active' if request.blueprint == 'clients' }}">
         <i class="bi bi-people"></i> Clients
@@ -35,6 +32,9 @@
       </a>
       <a href="{{ url_for('dossiers.list_dossiers') }}" class="nav-link {{ 'active' if request.blueprint == 'dossiers' }}">
         <i class="bi bi-folder2-open"></i> Dossiers
+      </a>
+      <a href="{{ url_for('planning.board') }}" class="nav-link {{ 'active' if request.blueprint == 'planning' }}">
+        <i class="bi bi-kanban"></i> Planning atelier
       </a>
       <a href="{{ url_for('devis.list_devis') }}" class="nav-link {{ 'active' if request.blueprint == 'devis' }}">
         <i class="bi bi-file-earmark-text"></i> Devis
