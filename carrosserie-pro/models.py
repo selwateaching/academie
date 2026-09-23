@@ -186,6 +186,29 @@ class PointageTemps(db.Model):
     technicien = db.relationship("Technicien", backref=db.backref("pointages", cascade="all, delete-orphan"))
 
 
+class Creneau(db.Model):
+    """Créneau planifié dans le planning atelier : un bloc de travail
+    (jour + horaire) assigné à un carrossier pour un dossier donné."""
+
+    __tablename__ = "creneaux"
+
+    id = db.Column(db.Integer, primary_key=True)
+    dossier_id = db.Column(db.Integer, db.ForeignKey("dossiers.id"), nullable=False)
+    technicien_id = db.Column(db.Integer, db.ForeignKey("techniciens.id"), nullable=True)
+    date = db.Column(db.Date, nullable=False)
+    heure_debut = db.Column(db.Time, nullable=False)
+    heure_fin = db.Column(db.Time, nullable=False)
+    notes = db.Column(db.String(255), default="")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    dossier = db.relationship("Dossier", backref=db.backref("creneaux", cascade="all, delete-orphan", order_by="Creneau.date, Creneau.heure_debut"))
+    technicien = db.relationship("Technicien", backref=db.backref("creneaux", order_by="Creneau.date, Creneau.heure_debut"))
+
+    @property
+    def horaire(self):
+        return f"{self.heure_debut.strftime('%Hh%M')} – {self.heure_fin.strftime('%Hh%M')}"
+
+
 class Fournisseur(db.Model):
     __tablename__ = "fournisseurs"
 

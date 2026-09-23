@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier" if creneau else "Nouveau" }} créneau — Carrosserie Pro{% endblock %}
+{% block page_title %}{{ "Modifier le créneau" if creneau else "Planifier un créneau" }}{% endblock %}
+{% block content %}
+<form method="post" style="max-width: 680px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="section-card">
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Dossier *</label>
+        <select name="dossier_id" class="form-select" required>
+          <option value="">— Sélectionner —</option>
+          {% for d in dossiers %}
+          <option value="{{ d.id }}" {{ "selected" if selected_dossier_id == d.id }}>
+            {{ d.reference }} — {{ d.client.nom_affichage }} — {{ d.vehicule.designation }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Carrossier</label>
+        <select name="technicien_id" class="form-select">
+          <option value="">— Non assigné —</option>
+          {% for t in techniciens %}
+          <option value="{{ t.id }}" {{ "selected" if selected_technicien_id == t.id }}>{{ t.nom }}{{ " (" ~ t.specialite ~ ")" if t.specialite }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Date *</label>
+        <input type="date" name="date" class="form-control" required value="{{ selected_date }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Heure de début *</label>
+        <input type="time" name="heure_debut" class="form-control" required value="{{ selected_heure_debut }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Heure de fin *</label>
+        <input type="time" name="heure_fin" class="form-control" required value="{{ selected_heure_fin }}">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Notes</label>
+        <input type="text" name="notes" class="form-control" value="{{ selected_notes }}" placeholder="Ex : contrôle peinture, remontage...">
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Enregistrer</button>
+    <a href="javascript:history.back()" class="btn btn-outline-secondary">Annuler</a>
+  </div>
+</form>
+
+{% if creneau %}
+<form method="post" action="{{ url_for('planning.delete_creneau', creneau_id=creneau.id) }}" data-confirm="Supprimer ce créneau ?" class="mt-2" style="max-width: 680px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i> Supprimer ce créneau</button>
+</form>
+{% endif %}
+{% endblock %}

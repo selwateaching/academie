@@ -5,6 +5,7 @@
 <a href="{{ url_for('devis.new_devis', dossier_id=dossier.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-file-earmark-plus"></i> Nouveau devis</a>
 <a href="{{ url_for('factures.new_facture', dossier_id=dossier.id) }}" class="btn btn-accent btn-sm"><i class="bi bi-receipt"></i> Facturer directement</a>
 <a href="{{ url_for('courriers.rediger', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-envelope"></i> Courrier</a>
+<a href="{{ url_for('planning.new_creneau', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-calendar-plus"></i> Planifier</a>
 <a href="{{ url_for('dossiers.edit_dossier', dossier_id=dossier.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
 {% endblock %}
 {% block content %}
@@ -317,6 +318,38 @@
           <textarea name="formule" class="form-control form-control-sm" rows="2" placeholder="Formule issue du logiciel teinte du fabricant"></textarea>
         </div>
       </form>
+    </div>
+
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">Créneaux planifiés ({{ dossier.creneaux|length }})</h6>
+        <a href="{{ url_for('planning.new_creneau', dossier_id=dossier.id) }}" class="small">+ Planifier</a>
+      </div>
+      {% if dossier.creneaux %}
+      <table class="table table-cp mb-0">
+        <thead><tr><th>Date</th><th>Horaire</th><th>Carrossier</th><th>Notes</th><th></th></tr></thead>
+        <tbody>
+        {% for c in dossier.creneaux %}
+          <tr>
+            <td>{{ c.date.strftime('%d/%m/%Y') }}</td>
+            <td>{{ c.horaire }}</td>
+            <td>{{ c.technicien.nom if c.technicien else "—" }}</td>
+            <td class="text-muted small">{{ c.notes or "—" }}</td>
+            <td class="text-end">
+              <a href="{{ url_for('planning.edit_creneau', creneau_id=c.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+              <form method="post" action="{{ url_for('planning.delete_creneau', creneau_id=c.id) }}" data-confirm="Supprimer ce créneau ?" class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="retour" value="dossier">
+                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state py-3"><i class="bi bi-calendar3"></i>Aucun créneau planifié.</div>
+      {% endif %}
     </div>
 
     <div class="section-card">

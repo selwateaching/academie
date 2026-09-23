@@ -2,6 +2,10 @@
 {% block title %}Planning atelier — Carrosserie Pro{% endblock %}
 {% block page_title %}Planning atelier{% endblock %}
 {% block content %}
+<div class="planning-tabs mb-3">
+  <a href="{{ url_for('planning.board') }}" class="planning-tab active">Tableau (statuts)</a>
+  <a href="{{ url_for('planning.calendrier') }}" class="planning-tab">Calendrier (carrossiers)</a>
+</div>
 <p class="text-muted small mb-3">Glissez-déposez une carte pour changer le statut d'un dossier. Les changements sont enregistrés immédiatement et tracés dans l'historique.</p>
 
 <div class="kanban-board">
