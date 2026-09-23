@@ -2,11 +2,26 @@
 # Dans le tableau de bord Render : New + → Blueprint → sélectionner ce dépôt
 # et la branche souhaitée. Render détecte ce fichier automatiquement.
 #
-# ⚠️ Stockage : ce service utilise SQLite sur disque éphémère (gratuit),
-# les données sont donc réinitialisées à chaque déploiement/redémarrage.
-# Pour une utilisation en production, définissez la variable d'environnement
-# DATABASE_URL vers une base PostgreSQL managée (Render, ou autre) — le code
-# la prend en charge nativement, aucune modification nécessaire.
+# Base de données : une base PostgreSQL managée est provisionnée
+# automatiquement (plan gratuit) et sa variable DATABASE_URL est injectée
+# dans le service web — les données (clients, dossiers, devis, factures...)
+# sont donc conservées entre les déploiements et les redémarrages, contrairement
+# à SQLite sur disque éphémère (qui réinitialisait tout à chaque déploiement).
+#
+# ⚠️ Les photos uploadées (module Photos) restent sur le disque éphémère du
+# service web et seront perdues à chaque déploiement/redémarrage, même avec
+# PostgreSQL. Pour les conserver durablement, il faudrait un disque persistant
+# Render (plan payant) ou un stockage externe (S3 compatible).
+#
+# Si ce service existe déjà (créé avant l'ajout de cette base), rendez-vous
+# dans l'onglet "Blueprints" du tableau de bord Render et lancez une
+# synchronisation manuelle pour que la base soit créée et reliée au service.
+
+databases:
+  - name: carrosserie-pro-db
+    plan: free
+    databaseName: carrosserie_pro
+    user: carrosserie_pro
 
 services:
   - type: web
@@ -17,6 +32,10 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: carrosserie-pro-db
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: ADMIN_EMAIL

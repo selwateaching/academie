@@ -151,32 +151,41 @@ configure automatiquement le service.
 2. Dans le tableau de bord Render : **New +** → **Blueprint**, puis
    sélectionnez ce dépôt (`selwateaching/academie`) et la branche à déployer.
 3. Render détecte `render.yaml` et propose de créer le service
-   `carrosserie-pro`. Renseignez les variables demandées (`ADMIN_EMAIL`,
+   `carrosserie-pro` **ainsi qu'une base PostgreSQL gratuite**
+   (`carrosserie-pro-db`), reliée automatiquement via la variable
+   `DATABASE_URL`. Renseignez les variables demandées (`ADMIN_EMAIL`,
    `ADMIN_PASSWORD`) puis validez.
 4. Au premier déploiement, Render exécute `pip install -r requirements.txt`
    puis démarre l'application avec `gunicorn`. Une fois le déploiement
    terminé, l'URL fournie par Render (`https://carrosserie-pro-xxxx.onrender.com`)
    ouvre l'application.
 
-**⚠️ Important — persistance des données :** le plan gratuit utilise un
-disque éphémère avec SQLite : les données sont perdues à chaque nouveau
-déploiement ou redémarrage du service. Pour un usage réel en production,
-créez une base PostgreSQL (sur Render ou ailleurs) et définissez la variable
-d'environnement `DATABASE_URL` du service avec son URL de connexion — le
-code la prend en charge sans aucune modification.
+**Si le service existe déjà** (créé avant l'ajout de la base PostgreSQL à
+`render.yaml`) : allez dans l'onglet **Blueprints** du tableau de bord
+Render et lancez une **synchronisation manuelle** pour que la base soit
+créée et reliée au service existant — sinon il continuera d'utiliser
+SQLite sur disque éphémère.
+
+**⚠️ Les photos uploadées** (module Photos) restent sur le disque éphémère
+du service web, même avec PostgreSQL, et sont donc perdues à chaque
+déploiement/redémarrage. Un disque persistant Render (plan payant) ou un
+stockage externe (S3 compatible) serait nécessaire pour les conserver.
 
 Pour déployer manuellement (sans Blueprint) sur Render ou un service
 équivalent (Railway, Fly.io...) : répertoire racine `carrosserie-pro/`,
 commande de build `pip install -r requirements.txt`, commande de démarrage
-`gunicorn app:app`.
+`gunicorn app:app`, et pensez à définir `DATABASE_URL` vers une base
+PostgreSQL managée.
 
 ---
 
 ## Base de données
 
-SQLite par défaut (`carrosserie.db`), configurable via la variable
-d'environnement `DATABASE_URL` (compatible PostgreSQL en production, ex. :
-`postgresql://user:password@host/dbname`).
+PostgreSQL en production via la variable d'environnement `DATABASE_URL`
+(provisionnée automatiquement par `render.yaml`, ex. :
+`postgresql://user:password@host/dbname`). SQLite (`carrosserie.db`) reste
+utilisé par défaut en local si `DATABASE_URL` n'est pas définie — pratique
+pour développer, mais à éviter en production (disque éphémère).
 
 ---
 
