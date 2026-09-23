@@ -4,6 +4,7 @@ from datetime import date
 from flask import Flask, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from dotenv import load_dotenv
+from sqlalchemy import inspect, text
 
 load_dotenv()
 
@@ -343,6 +344,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        _sync_schema()
         _bootstrap()
 
     @app.route("/")
@@ -355,6 +357,37 @@ def create_app():
     app.register_blueprint(main_bp)
 
     return app
+
+
+def _sync_schema():
+    """Ajoute les colonnes manquantes aux tables déjà existantes.
+
+    db.create_all() crée uniquement les tables absentes : quand un champ est
+    ajouté à un modèle dont la table existe déjà en base (cas courant en
+    production, sans outil de migration), la colonne manque et toute requête
+    sur cette table plante. On la rattrape ici avec un ALTER TABLE ciblé."""
+    inspector = inspect(db.engine)
+    table_names = set(inspector.get_table_names())
+    for table in db.metadata.sorted_tables:
+        if table.name not in table_names:
+            continue
+        colonnes_existantes = {c["name"] for c in inspector.get_columns(table.name)}
+        for column in table.columns:
+            if column.name in colonnes_existantes:
+                continue
+            ddl = f'ALTER TABLE "{table.name}" ADD COLUMN "{column.name}" {column.type.compile(dialect=db.engine.dialect)}'
+            default = column.default
+            if default is not None and not callable(default.arg) and isinstance(default.arg, (str, int, float, bool)):
+                valeur = default.arg
+                if isinstance(valeur, bool):
+                    ddl += f" DEFAULT {str(valeur).upper()}"
+                elif isinstance(valeur, str):
+                    ddl += f" DEFAULT '{valeur}'"
+                else:
+                    ddl += f" DEFAULT {valeur}"
+            with db.engine.connect() as conn:
+                conn.execute(text(ddl))
+                conn.commit()
 
 
 def _bootstrap():
