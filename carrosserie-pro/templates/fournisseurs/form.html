@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ "Modifier" if fournisseur else "Nouveau" }} fournisseur — Carrosserie Pro{% endblock %}
 {% block page_title %}{{ "Modifier le fournisseur" if fournisseur else "Nouveau fournisseur" }}{% endblock %}
+{% block page_actions %}
+{% if fournisseur and fournisseur.site_web %}
+<a href="{{ fournisseur.site_web_url }}" target="_blank" rel="noopener" class="btn btn-accent btn-sm"><i class="bi bi-box-arrow-up-right"></i> Commander sur le site</a>
+{% endif %}
+{% endblock %}
 {% block content %}
 <form method="post" style="max-width: 700px;">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -31,6 +36,11 @@
         <input type="email" name="email" class="form-control" value="{{ fournisseur.email if fournisseur else '' }}">
       </div>
       <div class="col-12">
+        <label class="form-label">Site web de commande</label>
+        <input type="text" name="site_web" class="form-control" placeholder="www.exemple.fr" value="{{ fournisseur.site_web if fournisseur else '' }}">
+        <div class="form-text">Le site où vous passez vos commandes de pièces — un bouton « Commander sur le site » apparaîtra sur cette fiche.</div>
+      </div>
+      <div class="col-12">
         <label class="form-label">Notes</label>
         <textarea name="notes" class="form-control" rows="2">{{ fournisseur.notes if fournisseur else '' }}</textarea>
       </div>
@@ -49,6 +59,29 @@
 </form>
 
 {% if fournisseur %}
+<div class="section-card" style="max-width: 700px;">
+  <h6 class="mb-2">Commandes de pièces ({{ commandes|length }})</h6>
+  {% if commandes %}
+  <table class="table table-cp mb-0">
+    <thead><tr><th>Pièce</th><th>Dossier</th><th>Qté</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+    {% for c in commandes %}
+      <tr>
+        <td class="fw-semibold">{{ c.designation }}</td>
+        <td><a href="{{ url_for('dossiers.view_dossier', dossier_id=c.dossier_id) }}">{{ c.dossier.reference }}</a></td>
+        <td>{{ c.quantite|round(2) }}</td>
+        <td><span class="badge-statut st-{{ c.statut }}">{{ c.statut_libelle }}</span></td>
+        <td class="text-end">
+          <a href="{{ url_for('dossiers.view_dossier', dossier_id=c.dossier_id) }}" class="btn btn-sm btn-outline-secondary" title="Gérer depuis le dossier"><i class="bi bi-arrow-right-circle"></i></a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state py-3"><i class="bi bi-box-seam"></i>Aucune commande pour ce fournisseur. Ajoutez-en une depuis la fiche d'un dossier.</div>
+  {% endif %}
+</div>
 {% include "_historique.html" %}
 {% endif %}
 {% endblock %}

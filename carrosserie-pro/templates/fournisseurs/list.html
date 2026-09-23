@@ -8,14 +8,19 @@
 {% if fournisseurs %}
 <div class="table-responsive">
   <table class="table table-cp mb-0">
-    <thead><tr><th>Nom</th><th>Ville</th><th>Téléphone</th><th>Email</th><th></th></tr></thead>
+    <thead><tr><th>Nom</th><th>Ville</th><th>Téléphone</th><th>Email</th><th>Site</th><th></th></tr></thead>
     <tbody>
       {% for f in fournisseurs %}
       <tr>
-        <td class="fw-semibold">{{ f.nom }}</td>
+        <td class="fw-semibold"><a href="{{ url_for('fournisseurs.edit_fournisseur', fournisseur_id=f.id) }}">{{ f.nom }}</a></td>
         <td>{{ f.ville or "—" }}</td>
         <td>{{ f.telephone or "—" }}</td>
         <td>{{ f.email or "—" }}</td>
+        <td>
+          {% if f.site_web %}
+          <a href="{{ f.site_web_url }}" target="_blank" rel="noopener" title="{{ f.site_web }}"><i class="bi bi-box-arrow-up-right"></i></a>
+          {% else %}—{% endif %}
+        </td>
         <td class="text-end">
           <a href="{{ url_for('fournisseurs.edit_fournisseur', fournisseur_id=f.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
           <form method="post" action="{{ url_for('fournisseurs.delete_fournisseur', fournisseur_id=f.id) }}" data-confirm="Supprimer le fournisseur {{ f.nom }} ?" class="d-inline">

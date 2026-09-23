@@ -15,6 +15,7 @@ def _fill(fournisseur, form):
     fournisseur.ville = form.get("ville", "").strip()
     fournisseur.telephone = form.get("telephone", "").strip()
     fournisseur.email = form.get("email", "").strip()
+    fournisseur.site_web = form.get("site_web", "").strip()
     fournisseur.notes = form.get("notes", "").strip()
 
 
@@ -53,8 +54,11 @@ def edit_fournisseur(fournisseur_id):
         db.session.commit()
         flash("Fournisseur mis à jour.", "success")
         return redirect(url_for("fournisseurs.list_fournisseurs"))
+    ordre_statut = {"a_commander": 0, "commandee": 1, "recue": 2, "annulee": 3}
+    commandes = sorted(fournisseur.commandes, key=lambda c: (ordre_statut.get(c.statut, 9), -(c.created_at.timestamp() if c.created_at else 0)))
     return render_template(
-        "fournisseurs/form.html", fournisseur=fournisseur, historique=historique.for_entity("fournisseur", fournisseur_id)
+        "fournisseurs/form.html", fournisseur=fournisseur, commandes=commandes,
+        historique=historique.for_entity("fournisseur", fournisseur_id),
     )
 
 

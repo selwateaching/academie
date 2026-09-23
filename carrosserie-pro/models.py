@@ -219,10 +219,19 @@ class Fournisseur(db.Model):
     ville = db.Column(db.String(100), default="")
     telephone = db.Column(db.String(30), default="")
     email = db.Column(db.String(255), default="")
+    site_web = db.Column(db.String(255), default="")
     notes = db.Column(db.Text, default="")
 
     def __repr__(self):
         return self.nom
+
+    @property
+    def site_web_url(self):
+        if not self.site_web:
+            return ""
+        if self.site_web.startswith(("http://", "https://")):
+            return self.site_web
+        return f"https://{self.site_web}"
 
 
 STATUTS_COMMANDE = [

@@ -195,6 +195,9 @@ body {
 .st-facture { background: #e2e5fd; color: #4338d9; }
 .st-solde, .st-payee { background: #dcf5e3; color: #147d43; }
 .st-annule, .st-annulee, .st-refuse { background: #fde3e1; color: #c62a1c; }
+.st-a_commander { background: #eaecf3; color: #47536b; }
+.st-commandee { background: #dbeafe; color: #1d59d1; }
+.st-recue { background: #dcf5e3; color: #147d43; }
 .st-partiellement_payee { background: #fef3c7; color: #92620a; }
 .st-en_retard { background: #fde3e1; color: #c62a1c; }
 .st-expire { background: #f1f2f5; color: #6b7280; }
