@@ -239,6 +239,14 @@ body {
 }
 .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .auth-flash { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1080; width: 90%; max-width: 420px; }
+.public-retour {
+  position: fixed; top: 16px; left: 16px; z-index: 1080;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255, 255, 255, .12); color: #fff; text-decoration: none;
+  padding: 8px 14px; border-radius: 8px; font-size: .85rem; font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.public-retour:hover { background: rgba(255, 255, 255, .22); color: #fff; }
 
 .empty-state { text-align: center; padding: 64px 20px; color: var(--cp-muted); }
 .empty-state i { font-size: 2.5rem; color: #c9ced9; margin-bottom: 14px; display: block; }

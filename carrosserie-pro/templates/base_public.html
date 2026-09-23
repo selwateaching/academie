@@ -12,6 +12,11 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body class="auth-shell">
+  {% if current_user.is_authenticated %}
+    <a href="{{ url_for('main.dashboard') }}" class="public-retour">
+      <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+    </a>
+  {% endif %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="auth-flash">
