@@ -174,15 +174,28 @@ FAQ_PAR_DEFAUT = [
     (
         "planning",
         "Comment fonctionne le Planning atelier ?",
-        "Le planning n'est pas quelque chose qu'on crée séparément : c'est une "
-        "vue automatique de tous les dossiers, organisés en colonnes selon leur "
-        "statut (Nouveau, Devis envoyé, Attente accord assurance, Accepté, En "
-        "réparation, Terminé, Facturé, Soldé, Annulé). Dès qu'un dossier est créé, "
-        "il apparaît dans la colonne « Nouveau ». Pour faire avancer un dossier, "
-        "cliquez sur sa carte et faites-la glisser (maintenez le clic ou le doigt "
-        "enfoncé et déplacez) vers la colonne suivante — le statut se met à jour "
-        "automatiquement. Un simple clic sans glisser ouvre la fiche du dossier.",
+        "Le Planning atelier a deux vues, accessibles par les onglets en haut de "
+        "la page. « Tableau (statuts) » est une vue automatique de tous les "
+        "dossiers, organisés en colonnes selon leur statut (Nouveau, Devis "
+        "envoyé, Attente accord assurance, Accepté, En réparation, Terminé, "
+        "Facturé, Soldé, Annulé) : faites glisser une carte vers une autre "
+        "colonne pour changer son statut. « Calendrier (carrossiers) » est un "
+        "vrai planning hebdomadaire avec les jours en colonnes et un carrossier "
+        "par ligne, pour planifier des créneaux horaires précis — voir la "
+        "question suivante.",
         "kanban glisser deposer deplacer statut colonne carte",
+    ),
+    (
+        "planning",
+        "Comment planifier un créneau avec un carrossier (jour/heure) ?",
+        "Allez dans « Planning atelier » → onglet « Calendrier (carrossiers) ». "
+        "Cliquez sur le « + » dans la case du carrossier et du jour souhaités "
+        "(ou sur « Planifier un créneau » en haut, ou depuis la fiche d'un "
+        "dossier, bouton « Planifier »). Choisissez le dossier, le carrossier, "
+        "la date et les heures de début/fin, puis « Enregistrer ». Le créneau "
+        "apparaît alors dans la case correspondante du calendrier et sur la "
+        "fiche du dossier ; cliquez dessus pour le modifier ou le supprimer.",
+        "creneau carrossier calendrier horaire jour heure assigner planifier",
     ),
     (
         "devis_factures",
