@@ -28,6 +28,10 @@ Ask the Price, accents, urgences) sont affichés « Bientôt ».
 
 - Chaque mot / expression existe en **anglais → français → arabe**, avec audio.
   Un sélecteur en haut de page choisit la langue d'appui : français, arabe ou les deux.
+- **Phonétique à la française** sous chaque mot et chaque réplique (ex. *Thank you → <u>S</u>ANK you*),
+  affichable ou masquable par un bouton « 🗣️ Phonétique ». Syllabe en MAJUSCULES = syllabe
+  accentuée ; s / z soulignés = « th » anglais. Les transcriptions sont dans le dictionnaire `PH`
+  de `index.html` : toute nouvelle phrase anglaise doit y être ajoutée.
 - Même moteur que les leçons InglisIA (traduction, écoute, reconstitution), plus une
   nouvelle étape **dialogue** : l'interlocuteur (agent, chauffeur, vendeur…) parle,
   l'apprenant choisit sa réponse ; indice en cas d'erreur, traduction à la demande.
