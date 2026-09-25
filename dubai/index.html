@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English for Life in Dubai</title>
+<meta name="description" content="L'anglais pour s'installer, vivre, travailler et investir à Dubaï. Anglais → Français → العربية, avec audio et situations réelles.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230E2A47'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle' fill='%23C9A15B' font-family='Georgia,serif' font-weight='700'%3EE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F4EE; --surface:#FFFFFF; --ink:#14202E; --ink2:#4A5563; --ink3:#8A93A0;
+  --navy:#0E2A47; --navy2:#1B4470; --gold:#B8893B; --gold-soft:#F4EAD7;
+  --line:#E4DED3; --ok:#1F7A4D; --ok-soft:#E3F2EA; --no:#B3261E; --no-soft:#FBE9E7;
+  --radius:14px; --shadow:0 1px 2px rgba(20,32,46,.06),0 8px 24px -12px rgba(20,32,46,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:16px;min-height:100vh;}
+[lang="ar"]{font-family:"Noto Naskh Arabic","Geeza Pro",Tahoma,serif;font-size:1.08em;line-height:1.7;}
+button{font:inherit;color:inherit;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px;}
+
+/* ---- Barre du haut ---- */
+.top{background:var(--navy);color:#fff;}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px;}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.01em;}
+.brand-mark{width:32px;height:32px;border-radius:8px;background:var(--gold);color:var(--navy);display:grid;place-items:center;font-family:Georgia,serif;font-size:19px;}
+.brand small{display:block;font-weight:500;font-size:.72rem;color:#AFC0D4;letter-spacing:.06em;text-transform:uppercase;}
+.langsw{display:flex;align-items:center;gap:8px;font-size:.8rem;color:#C9D5E3;}
+.seg{display:inline-flex;background:rgba(255,255,255,.08);border-radius:9px;padding:3px;}
+.seg button{border:0;background:transparent;color:#DCE5EF;padding:6px 10px;border-radius:7px;cursor:pointer;font-size:.82rem;font-weight:600;}
+.seg button.is-on{background:#fff;color:var(--navy);}
+
+/* ---- Accueil ---- */
+.hero{background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:40px 0 56px;}
+.hero h1{font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.15;font-weight:700;max-width:720px;}
+.hero p{color:#CFDAE7;max-width:640px;margin-top:12px;}
+.hero .ar{margin-top:6px;color:#E9D9B8;}
+.chain{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+.chain span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);padding:6px 12px;border-radius:999px;font-size:.84rem;}
+main{padding:0 0 64px;}
+.section{margin-top:-28px;}
+.section + .section{margin-top:36px;}
+.h2{font-size:1.25rem;font-weight:700;margin:0 0 4px;}
+.lead{color:var(--ink2);margin-bottom:16px;font-size:.95rem;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);}
+.panel{padding:22px;}
+
+.paths{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+.path{display:flex;flex-direction:column;gap:6px;text-align:left;padding:16px;border-radius:12px;border:1px solid var(--line);background:#fff;cursor:pointer;transition:border-color .15s,transform .15s;}
+.path:hover:not([disabled]){border-color:var(--gold);transform:translateY(-1px);}
+.path[disabled]{cursor:default;background:#FBFAF7;}
+.path .pe{font-size:1.5rem;}
+.path b{font-size:1rem;}
+.path .pf{font-size:.86rem;color:var(--ink2);}
+.path .meta{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:6px;flex-wrap:wrap;}
+.tag{font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--gold-soft);color:#7A5A22;}
+.tag.soon{background:#EEF0F3;color:var(--ink3);}
+.tag.live{background:var(--ok-soft);color:var(--ok);}
+.path.is-on{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy) inset;}
+
+.xmods{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;}
+.xmod{padding:14px 16px;border:1px dashed var(--line);border-radius:12px;background:#FBFAF7;}
+.xmod b{display:block;}
+.xmod span{font-size:.86rem;color:var(--ink2);}
+
+/* ---- Parcours ouvert ---- */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.ph h2{font-size:1.4rem;}
+.progress{min-width:200px;}
+.progress small{color:var(--ink2);font-size:.82rem;}
+.bar{height:8px;background:#EEE9DF;border-radius:99px;overflow:hidden;margin-top:6px;}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:99px;transition:width .3s;}
+.lessons{display:grid;gap:10px;}
+.lesson{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;}
+.lesson .le{width:44px;height:44px;border-radius:10px;background:var(--gold-soft);display:grid;place-items:center;font-size:1.3rem;}
+.lesson .lt b{display:block;}
+.lesson .lt span{font-size:.88rem;color:var(--ink2);}
+.lesson .lt .kind{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);}
+.lesson.mission{border-color:var(--navy);background:linear-gradient(90deg,#F1F5FA,#fff 60%);}
+.lesson.mission .le{background:var(--navy);color:#fff;}
+.lesson .ls{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.status{font-size:.76rem;font-weight:600;color:var(--ink3);white-space:nowrap;}
+.status.s3{color:var(--ok);} .status.s2{color:#8A6420;} .status.s1{color:var(--no);}
+@media (max-width:560px){
+  .lesson{grid-template-columns:40px 1fr;}
+  .lesson .ls{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center;}
+}
+
+/* ---- Boutons ---- */
+.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;font-size:.95rem;}
+.btn:hover{background:var(--navy2);}
+.btn.alt{background:#fff;color:var(--navy);box-shadow:0 0 0 1.5px var(--line) inset;}
+.btn.alt:hover{box-shadow:0 0 0 1.5px var(--navy) inset;}
+.btn.sm{padding:8px 14px;font-size:.86rem;}
+.link{border:0;background:none;color:var(--navy2);font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px;}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+.acts.center{justify-content:center;}
+
+/* ---- Fenêtre de leçon ---- */
+#modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:12px;}
+#modal[hidden]{display:none;}
+#modal .backdrop{position:absolute;inset:0;background:rgba(14,42,71,.55);}
+#modal .dlg{position:relative;width:100%;max-width:680px;max-height:94vh;overflow-y:auto;background:var(--surface);border-radius:18px;padding:26px 24px 24px;box-shadow:0 30px 60px -20px rgba(14,42,71,.6);outline:none;}
+#modal .x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:#F1EEE8;cursor:pointer;font-size:1.1rem;}
+#modal h2{font-size:1.3rem;margin-right:44px;}
+.sub{color:var(--ink2);font-size:.95rem;margin-top:6px;}
+.note{background:var(--gold-soft);border-radius:10px;padding:12px 14px;font-size:.93rem;margin-top:14px;}
+.objs{margin:12px 0 0 0;padding-left:0;list-style:none;display:grid;gap:6px;}
+.objs li{display:flex;gap:8px;align-items:flex-start;font-size:.95rem;}
+.objs li::before{content:"□";color:var(--gold);font-weight:700;}
+.words{display:grid;gap:8px;margin-top:16px;}
+.w{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:10px;}
+.w .we{font-size:1.35rem;text-align:center;}
+.w .wt b{display:block;font-size:1.02rem;}
+.tr{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.9rem;color:var(--ink2);}
+.tr [lang="ar"]{direction:rtl;}
+.say{width:38px;height:38px;border-radius:50%;border:0;background:#EEF2F7;cursor:pointer;font-size:1rem;flex:none;}
+.say:hover{background:#DCE5EF;}
+.stagetag{display:inline-block;margin-top:10px;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:6px;background:#EEF2F7;color:var(--navy2);}
+.prog{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:.84rem;color:var(--ink2);}
+.prog .bar{flex:1;margin:0;}
+.q{text-align:center;padding:20px 12px 8px;}
+.q .qe{font-size:2.4rem;line-height:1;}
+.q p{margin-top:10px;color:var(--ink2);}
+.q .qa{display:block;margin-top:8px;font-size:1.15rem;color:var(--ink);font-weight:600;}
+.q .qa [lang="ar"]{font-weight:600;}
+.q .say{width:64px;height:64px;font-size:1.5rem;margin:0 auto;display:block;}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+@media (max-width:520px){.opts{grid-template-columns:1fr;}}
+.opt{padding:13px 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;}
+.opt:hover:not(:disabled){border-color:var(--navy2);}
+.opt .tr{justify-content:center;font-weight:500;}
+.opt.is-ok{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);}
+.opt.is-no{border-color:var(--no);background:var(--no-soft);color:var(--no);opacity:.75;}
+.fb{margin-top:16px;display:flex;gap:10px;align-items:flex-start;}
+.fb i{flex:none;width:32px;height:32px;border-radius:50%;background:var(--navy);color:var(--gold);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:.8rem;}
+.fb div{background:#F1F5FA;border-radius:12px;border-top-left-radius:4px;padding:10px 14px;font-size:.95rem;flex:1;}
+.scr-slots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px;min-height:46px;}
+.slot{min-width:38px;height:42px;padding:0 10px;border-radius:8px;border:1.5px dashed var(--line);display:grid;place-items:center;font-weight:700;}
+.slot.full{border-style:solid;border-color:var(--navy2);background:#F1F5FA;}
+.bank{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px;}
+.tile{min-width:38px;height:42px;padding:0 12px;border-radius:8px;border:1.5px solid var(--line);background:#fff;font-weight:700;cursor:pointer;}
+.tile:hover:not(:disabled){border-color:var(--navy2);}
+.tile:disabled{opacity:.25;cursor:default;}
+.end{text-align:center;padding:10px 0;}
+.score{font-size:2.6rem;font-weight:700;color:var(--navy);margin-top:10px;}
+.pill{display:inline-block;background:#F1EEE8;border-radius:999px;padding:6px 12px;font-size:.86rem;margin-top:8px;}
+
+/* ---- Dialogue ---- */
+.chat{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+.scene{align-self:center;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);padding:6px 0 0;}
+.msg{max-width:86%;padding:10px 14px;border-radius:14px;}
+.msg .who{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);display:flex;align-items:center;gap:8px;}
+.msg .en{font-weight:600;margin-top:2px;}
+.msg .tr{margin-top:4px;}
+.msg .tools{display:flex;gap:10px;margin-top:6px;align-items:center;}
+.msg .tools button{border:0;background:none;cursor:pointer;font-size:.8rem;color:var(--navy2);font-weight:600;padding:0;}
+.msg.npc{align-self:flex-start;background:#F1F5FA;border-top-left-radius:4px;}
+.msg.me{align-self:flex-end;background:var(--navy);color:#fff;border-top-right-radius:4px;}
+.msg.me .who{color:#AFC0D4;}
+.msg.me .tr{color:#D6E0EC;}
+.msg.me .tools button{color:#E9D9B8;}
+.choices{display:grid;gap:8px;margin-top:14px;}
+.choice{text-align:left;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-weight:600;}
+.choice:hover:not(:disabled){border-color:var(--navy2);}
+.choice.is-no{border-color:var(--no);background:var(--no-soft);color:var(--no);opacity:.75;}
+.yourturn{font-size:.8rem;font-weight:700;color:var(--navy2);margin-top:14px;text-transform:uppercase;letter-spacing:.06em;}
+
+footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);font-size:.84rem;}
+[hidden]{display:none!important;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">E</span><div>English for Life in Dubai<small>Vivre · Travailler · Investir</small></div></div>
+    <div class="langsw">
+      <span id="langsw-label">Traductions :</span>
+      <div class="seg" role="group" aria-labelledby="langsw-label">
+        <button type="button" data-sup="fr">Français</button>
+        <button type="button" data-sup="both">FR + عربي</button>
+        <button type="button" data-sup="ar" lang="ar">العربية</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div id="home">
+  <section class="hero">
+    <div class="wrap">
+      <h1>L’anglais dont vous avez vraiment besoin pour vous installer à Dubaï.</h1>
+      <p>Aéroport, taxi, logement, banque, travail, création d’entreprise, immobilier : des situations réelles, avec audio, dialogues et missions concrètes.</p>
+      <p class="ar" lang="ar" dir="rtl">الإنجليزية التي تحتاجها فعلاً للاستقرار في دبي: مواقف حقيقية، مع الصوت والحوارات والمهام العملية.</p>
+      <div class="chain" aria-label="Méthode">
+        <span>English</span><span>→ Français</span><span lang="ar">→ العربية</span><span>→ 🔊 Audio</span><span>→ 💬 Dialogue</span><span>→ 🎯 Mission</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section class="section">
+      <div class="card panel">
+        <h2 class="h2">Les parcours</h2>
+        <p class="lead">Du niveau A1 au B2, dans l’ordre où vous en aurez besoin après votre arrivée.</p>
+        <div class="paths" id="paths"></div>
+      </div>
+    </section>
+
+    <section class="section" id="path-view" hidden>
+      <div class="card panel" id="path-panel"></div>
+    </section>
+
+    <section class="section">
+      <h2 class="h2">Modules transversaux</h2>
+      <p class="lead">Présents à tous les niveaux, du A1 au B2.</p>
+      <div class="xmods">
+        <div class="xmod"><b>📞 Phone Calls</b><span>Appeler un hôtel, une agence, un garage, une banque, un médecin…</span></div>
+        <div class="xmod"><b>📅 Appointments</b><span>Prendre, reporter et annuler un rendez-vous.</span></div>
+        <div class="xmod"><b>💰 Ask the Price</b><span>De « How much is it? » à « Could you give me a breakdown of the costs? »</span></div>
+        <div class="xmod"><b>🎧 Dubai Accents</b><span>Comprendre l’anglais réellement parlé à Dubaï.</span></div>
+        <div class="xmod"><b>🚨 Emergency English</b><span>Police, ambulance, accident, perte de passeport.</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap">Les réponses et votre progression restent sur cet appareil. Audio : voix anglaise de votre navigateur (Chrome, Edge ou Safari conseillés).</div></footer>
+</div>
+
+<div id="modal" hidden>
+  <div class="backdrop" data-close></div>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="m-title" tabindex="-1">
+    <button type="button" class="x" data-close aria-label="Fermer">✕</button>
+    <div id="m-body"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* =====================================================================
+     CONTENU
+     Chaque mot / expression : [anglais, français, arabe, emoji]
+     Dialogue : suite de tours
+       {scene:'…'}                          → intertitre de scène
+       {who:'Officer', en, fr, ar}          → réplique de l'interlocuteur
+       {me:true, choices:[bonne, faux, faux], fr, ar}
+                                            → à vous de répondre ; la 1re
+                                              proposition est la bonne
+                                              (elles sont mélangées à l'écran),
+                                              fr/ar traduisent la bonne réponse
+     ===================================================================== */
+  var PATHS=[
+    {key:'arrive',emoji:'🇦🇪',en:'Arrive in Dubai',fr:'Arriver et se débrouiller',level:'A1',lessons:[
+      {id:'arr-airport',emoji:'✈️',kind:'vocab',title:'À l’aéroport',desc:'Les mots indispensables dès l’atterrissage.',
+        words:[
+          ['Airport','Aéroport','مطار','✈️'],
+          ['Flight','Vol','رحلة جوية','🛫'],
+          ['Passport','Passeport','جواز السفر','🛂'],
+          ['Visa','Visa','تأشيرة','📄'],
+          ['Arrivals','Arrivées','الوصول','🛬'],
+          ['Luggage','Bagages','أمتعة','🧳'],
+          ['Baggage claim','Retrait des bagages','استلام الأمتعة','🛄'],
+          ['Customs','Douane','الجمارك','🛃'],
+          ['Terminal','Terminal','مبنى الركاب','🏢'],
+          ['Gate','Porte (d’embarquement)','بوابة','🚪']
+        ]},
+      {id:'arr-passport',emoji:'🛂',kind:'phrases',title:'Passer le contrôle des passeports',desc:'Répondre à l’agent de l’immigration.',
+        intro:'À l’immigration, les questions sont presque toujours les mêmes : le motif de votre visite, la durée de votre séjour et votre lieu d’hébergement.',
+        words:[
+          ['Here is my passport.','Voici mon passeport.','تفضل، هذا جواز سفري.','🛂'],
+          ['I’m here for work.','Je suis ici pour le travail.','أنا هنا من أجل العمل.','💼'],
+          ['I’m here on holiday.','Je suis ici en vacances.','أنا هنا في عطلة.','🏖️'],
+          ['I’m staying for two weeks.','Je reste deux semaines.','سأبقى لمدة أسبوعين.','📅'],
+          ['I’m staying at a hotel.','Je loge à l’hôtel.','سأقيم في فندق.','🏨'],
+          ['I have a work visa.','J’ai un visa de travail.','لدي تأشيرة عمل.','📄'],
+          ['Could you repeat, please?','Pouvez-vous répéter, s’il vous plaît ?','هل يمكنك أن تعيد من فضلك؟','🔁'],
+          ['Where is the baggage claim?','Où est le retrait des bagages ?','أين مكان استلام الأمتعة؟','🛄']
+        ],
+        dialogue:[
+          {scene:'Contrôle des passeports'},
+          {who:'Officer',en:'Good morning. Your passport, please.',fr:'Bonjour. Votre passeport, s’il vous plaît.',ar:'صباح الخير. جواز سفرك من فضلك.'},
+          {me:true,choices:['Here is my passport.','I’m fine, thank you.','Where is the exit?'],fr:'Voici mon passeport.',ar:'تفضل، هذا جواز سفري.'},
+          {who:'Officer',en:'What is the purpose of your visit?',fr:'Quel est le motif de votre visite ?',ar:'ما هو سبب زيارتك؟'},
+          {me:true,choices:['I’m here for work.','I have two bags.','It’s in Terminal 3.'],fr:'Je suis ici pour le travail.',ar:'أنا هنا من أجل العمل.'},
+          {who:'Officer',en:'How long are you staying?',fr:'Combien de temps restez-vous ?',ar:'كم من الوقت ستبقى؟'},
+          {me:true,choices:['For two weeks.','At a hotel.','By taxi.'],fr:'Deux semaines.',ar:'لمدة أسبوعين.'},
+          {who:'Officer',en:'Where are you staying?',fr:'Où logez-vous ?',ar:'أين ستقيم؟'},
+          {me:true,choices:['At a hotel in Dubai Marina.','Yes, please.','Two weeks ago.'],fr:'Dans un hôtel à Dubai Marina.',ar:'في فندق في دبي مارينا.'},
+          {who:'Officer',en:'Thank you. Welcome to Dubai.',fr:'Merci. Bienvenue à Dubaï.',ar:'شكرًا. أهلًا بك في دبي.'},
+          {me:true,choices:['Thank you very much.','You’re welcome.','Nice to meet you too.'],fr:'Merci beaucoup.',ar:'شكرًا جزيلًا.'}
+        ]},
+      {id:'arr-taxi',emoji:'🚕',kind:'phrases',title:'Prendre un taxi',desc:'Donner l’adresse, demander le prix, payer.',
+        intro:'À la sortie de l’aéroport, suivez les panneaux « Taxi ». Les taxis de Dubaï fonctionnent au compteur et la plupart acceptent la carte bancaire.',
+        words:[
+          ['Where is the taxi stand?','Où est la station de taxis ?','أين موقف سيارات الأجرة؟','🚕'],
+          ['To this address, please.','À cette adresse, s’il vous plaît.','إلى هذا العنوان من فضلك.','📍'],
+          ['How much is it?','C’est combien ?','كم الثمن؟','💰'],
+          ['How long does it take?','Combien de temps ça prend ?','كم من الوقت يستغرق؟','⏱️'],
+          ['Can I pay by card?','Puis-je payer par carte ?','هل يمكنني الدفع بالبطاقة؟','💳'],
+          ['Stop here, please.','Arrêtez-vous ici, s’il vous plaît.','توقف هنا من فضلك.','✋'],
+          ['Can I have a receipt?','Puis-je avoir un reçu ?','هل يمكنني الحصول على إيصال؟','🧾'],
+          ['Keep the change.','Gardez la monnaie.','احتفظ بالباقي.','🪙']
+        ],
+        dialogue:[
+          {scene:'Dans le taxi'},
+          {who:'Driver',en:'Hello! Where are you going?',fr:'Bonjour ! Où allez-vous ?',ar:'مرحبًا! إلى أين تذهب؟'},
+          {me:true,choices:['To Dubai Marina, please.','I’m from France.','Keep the change.'],fr:'À Dubai Marina, s’il vous plaît.',ar:'إلى دبي مارينا من فضلك.'},
+          {who:'Driver',en:'OK. Do you have the address?',fr:'D’accord. Vous avez l’adresse ?',ar:'حسنًا. هل لديك العنوان؟'},
+          {me:true,choices:['Yes, here is the address.','No, I’m not hungry.','For two weeks.'],fr:'Oui, voici l’adresse.',ar:'نعم، هذا هو العنوان.'},
+          {who:'Driver',en:'It takes about thirty minutes.',fr:'Ça prend environ trente minutes.',ar:'يستغرق الأمر حوالي ثلاثين دقيقة.'},
+          {me:true,choices:['How much is it, approximately?','Where is the taxi stand?','Good night.'],fr:'Combien ça coûte, environ ?',ar:'كم الثمن تقريبًا؟'},
+          {who:'Driver',en:'About eighty dirhams.',fr:'Environ quatre-vingts dirhams.',ar:'حوالي ثمانين درهمًا.'},
+          {me:true,choices:['Can I pay by card?','Can I see the menu?','I’m staying at a hotel.'],fr:'Puis-je payer par carte ?',ar:'هل يمكنني الدفع بالبطاقة؟'},
+          {who:'Driver',en:'Yes, of course. … Here we are!',fr:'Oui, bien sûr. … Nous sommes arrivés !',ar:'نعم، بالتأكيد. … وصلنا!'},
+          {me:true,choices:['Thank you. Can I have a receipt?','Where are you going?','Could you repeat the menu?'],fr:'Merci. Puis-je avoir un reçu ?',ar:'شكرًا. هل يمكنني الحصول على إيصال؟'}
+        ]},
+      {id:'arr-sim',emoji:'📱',kind:'mixed',title:'Carte SIM et Internet',desc:'Acheter une SIM, choisir un forfait, être connecté.',
+        intro:'Des cartes SIM pour visiteurs sont vendues dès l’aéroport. On vous demandera votre passeport pour l’activer.',
+        words:[
+          ['SIM card','Carte SIM','شريحة الهاتف','📱'],
+          ['Phone number','Numéro de téléphone','رقم الهاتف','☎️'],
+          ['Mobile data','Données mobiles','بيانات الجوال','📶'],
+          ['Plan','Forfait','باقة','📋'],
+          ['Top up','Recharger (du crédit)','إعادة شحن الرصيد','🔋'],
+          ['I’d like a SIM card, please.','Je voudrais une carte SIM, s’il vous plaît.','أريد شريحة هاتف من فضلك.','🙋'],
+          ['How much data is included?','Combien de données sont incluses ?','كم حجم البيانات المشمولة؟','📊'],
+          ['It doesn’t work.','Ça ne marche pas.','إنها لا تعمل.','⚠️']
+        ],
+        dialogue:[
+          {scene:'Boutique de téléphonie'},
+          {who:'Clerk',en:'Hi, how can I help you?',fr:'Bonjour, comment puis-je vous aider ?',ar:'مرحبًا، كيف يمكنني مساعدتك؟'},
+          {me:true,choices:['I’d like a SIM card, please.','I’d like a table for two.','I’m here on holiday.'],fr:'Je voudrais une carte SIM, s’il vous plaît.',ar:'أريد شريحة هاتف من فضلك.'},
+          {who:'Clerk',en:'Sure. Can I see your passport?',fr:'Bien sûr. Puis-je voir votre passeport ?',ar:'بالتأكيد. هل يمكنني رؤية جواز سفرك؟'},
+          {me:true,choices:['Yes, here it is.','No, it’s a taxi.','Keep the change.'],fr:'Oui, le voici.',ar:'نعم، تفضل.'},
+          {who:'Clerk',en:'This plan has twenty gigabytes for one month.',fr:'Ce forfait comprend vingt gigaoctets pour un mois.',ar:'هذه الباقة فيها عشرون غيغابايت لمدة شهر.'},
+          {me:true,choices:['How much is it?','Where is the exit?','It doesn’t work.'],fr:'C’est combien ?',ar:'كم الثمن؟'},
+          {who:'Clerk',en:'It’s one hundred and twenty-five dirhams.',fr:'C’est cent vingt-cinq dirhams.',ar:'الثمن مئة وخمسة وعشرون درهمًا.'},
+          {me:true,choices:['OK, I’ll take it.','I’m staying for two weeks.','Stop here, please.'],fr:'D’accord, je le prends.',ar:'حسنًا، سآخذها.'},
+          {who:'Clerk',en:'Here is your new phone number.',fr:'Voici votre nouveau numéro de téléphone.',ar:'هذا رقم هاتفك الجديد.'},
+          {me:true,choices:['Thank you. Is the internet active now?','Where is the baggage claim?','Here is my passport.'],fr:'Merci. Internet est-il actif maintenant ?',ar:'شكرًا. هل الإنترنت يعمل الآن؟'}
+        ]},
+      {id:'arr-money',emoji:'💱',kind:'mixed',title:'Changer de l’argent',desc:'Dirhams, taux de change, distributeur.',
+        intro:'La monnaie des Émirats est le dirham (AED). Avant de changer, demandez toujours le taux et s’il y a une commission.',
+        words:[
+          ['Cash','Espèces','نقود','💵'],
+          ['Dirham','Dirham','درهم','🇦🇪'],
+          ['Exchange rate','Taux de change','سعر الصرف','📈'],
+          ['ATM','Distributeur automatique','صراف آلي','🏧'],
+          ['Commission','Commission','عمولة','🧮'],
+          ['I’d like to change 500 euros.','Je voudrais changer 500 euros.','أريد صرف 500 يورو.','💶'],
+          ['What is the exchange rate?','Quel est le taux de change ?','ما هو سعر الصرف؟','❓'],
+          ['Is there a commission?','Y a-t-il une commission ?','هل توجد عمولة؟','🔎'],
+          ['Where is the nearest ATM?','Où est le distributeur le plus proche ?','أين أقرب صراف آلي؟','📍']
+        ],
+        dialogue:[
+          {scene:'Bureau de change'},
+          {who:'Cashier',en:'Good afternoon. How can I help you?',fr:'Bon après-midi. Comment puis-je vous aider ?',ar:'مساء الخير. كيف يمكنني مساعدتك؟'},
+          {me:true,choices:['I’d like to change 500 euros.','I’d like a SIM card.','Where are you going?'],fr:'Je voudrais changer 500 euros.',ar:'أريد صرف 500 يورو.'},
+          {who:'Cashier',en:'Euros to dirhams?',fr:'Des euros en dirhams ?',ar:'من اليورو إلى الدرهم؟'},
+          {me:true,choices:['Yes, please. What is the exchange rate?','No, I’m not hungry.','Yes, I have a work visa.'],fr:'Oui, s’il vous plaît. Quel est le taux de change ?',ar:'نعم من فضلك. ما هو سعر الصرف؟'},
+          {who:'Cashier',en:'Today it’s about four dirhams for one euro.',fr:'Aujourd’hui, c’est environ quatre dirhams pour un euro.',ar:'اليوم حوالي أربعة دراهم لليورو الواحد.'},
+          {me:true,choices:['Is there a commission?','How long does it take?','Is the internet active?'],fr:'Y a-t-il une commission ?',ar:'هل توجد عمولة؟'},
+          {who:'Cashier',en:'No commission. Here are your dirhams.',fr:'Pas de commission. Voici vos dirhams.',ar:'لا توجد عمولة. تفضل دراهمك.'},
+          {me:true,choices:['Thank you. Can I have a receipt?','Stop here, please.','I’m from Morocco.'],fr:'Merci. Puis-je avoir un reçu ?',ar:'شكرًا. هل يمكنني الحصول على إيصال؟'}
+        ]},
+      {id:'arr-signs',emoji:'🪧',kind:'vocab',title:'Comprendre les panneaux',desc:'Se repérer à l’aéroport, dans le métro et dans les centres commerciaux.',
+        intro:'À Dubaï, les panneaux sont écrits en arabe et en anglais. Le vocabulaire utilisé est souvent britannique : « Lift », « Toilets ».',
+        words:[
+          ['Exit','Sortie','مخرج','🚪'],
+          ['Entrance','Entrée','مدخل','🚶'],
+          ['Toilets','Toilettes','دورات المياه','🚻'],
+          ['No smoking','Défense de fumer','ممنوع التدخين','🚭'],
+          ['Metro','Métro','مترو','🚇'],
+          ['Pharmacy','Pharmacie','صيدلية','💊'],
+          ['Prayer room','Salle de prière','مصلى','🕌'],
+          ['Lift','Ascenseur','مصعد','🛗'],
+          ['Information','Accueil / Information','استعلامات','ℹ️']
+        ],
+        dialogue:[
+          {scene:'Au comptoir d’information'},
+          {who:'Staff',en:'Hello, can I help you?',fr:'Bonjour, je peux vous aider ?',ar:'مرحبًا، هل يمكنني مساعدتك؟'},
+          {me:true,choices:['Yes, where are the toilets, please?','Yes, it’s eighty dirhams.','Yes, I’ll take it.'],fr:'Oui, où sont les toilettes, s’il vous plaît ?',ar:'نعم، أين دورات المياه من فضلك؟'},
+          {who:'Staff',en:'Go straight, then turn left.',fr:'Allez tout droit, puis tournez à gauche.',ar:'امشِ مباشرة، ثم انعطف يسارًا.'},
+          {me:true,choices:['Thank you. And where is the metro?','Thank you. Keep the change.','Thank you. I’m an engineer.'],fr:'Merci. Et où est le métro ?',ar:'شكرًا. وأين المترو؟'},
+          {who:'Staff',en:'Follow the Metro signs. Take the lift to the first floor.',fr:'Suivez les panneaux « Metro ». Prenez l’ascenseur jusqu’au premier étage.',ar:'اتبع لافتات المترو. خذ المصعد إلى الطابق الأول.'},
+          {me:true,choices:['Great, thank you very much!','How long are you staying?','Can I see your passport?'],fr:'Parfait, merci beaucoup !',ar:'رائع، شكرًا جزيلًا!'}
+        ]},
+      {id:'arr-intro',emoji:'🤝',kind:'phrases',title:'Se présenter',desc:'Dire qui vous êtes, d’où vous venez et pourquoi vous êtes à Dubaï.',
+        intro:'Remplacez les exemples par votre situation : « I’m from Algeria », « I’m a nurse », etc.',
+        words:[
+          ['Hello, my name is Karim.','Bonjour, je m’appelle Karim.','مرحبًا، اسمي كريم.','👋'],
+          ['I’m from Morocco.','Je viens du Maroc.','أنا من المغرب.','🌍'],
+          ['I’m an engineer.','Je suis ingénieur.','أنا مهندس.','👷'],
+          ['I’ve just arrived in Dubai.','Je viens d’arriver à Dubaï.','وصلت إلى دبي للتو.','🛬'],
+          ['I’m here to work.','Je suis ici pour travailler.','أنا هنا للعمل.','💼'],
+          ['I want to live in Dubai.','Je veux vivre à Dubaï.','أريد أن أعيش في دبي.','🏙️'],
+          ['Nice to meet you.','Enchanté(e).','تشرفت بمعرفتك.','🤝']
+        ],
+        dialogue:[
+          {scene:'Dans le hall de l’immeuble'},
+          {who:'Neighbour',en:'Hi! I’m Sarah. Are you new here?',fr:'Salut ! Je suis Sarah. Vous êtes nouveau ici ?',ar:'مرحبًا! أنا سارة. هل أنت جديد هنا؟'},
+          {me:true,choices:['Yes, I’ve just arrived in Dubai.','Yes, it’s eighty dirhams.','Yes, go straight.'],fr:'Oui, je viens d’arriver à Dubaï.',ar:'نعم، وصلت إلى دبي للتو.'},
+          {who:'Neighbour',en:'Welcome! Where are you from?',fr:'Bienvenue ! D’où venez-vous ?',ar:'أهلًا بك! من أين أنت؟'},
+          {me:true,choices:['I’m from Morocco.','I’m at a hotel.','I’m fine, thanks.'],fr:'Je viens du Maroc.',ar:'أنا من المغرب.'},
+          {who:'Neighbour',en:'What do you do?',fr:'Que faites-vous dans la vie ?',ar:'ماذا تعمل؟'},
+          {me:true,choices:['I’m an engineer.','I do my luggage.','I’m two weeks.'],fr:'Je suis ingénieur.',ar:'أنا مهندس.'},
+          {who:'Neighbour',en:'Why did you come to Dubai?',fr:'Pourquoi êtes-vous venu à Dubaï ?',ar:'لماذا أتيت إلى دبي؟'},
+          {me:true,choices:['I’m here to work, and I want to live here.','Because it’s in Terminal 3.','By taxi, please.'],fr:'Je suis ici pour travailler, et je veux vivre ici.',ar:'أنا هنا للعمل، وأريد أن أعيش هنا.'},
+          {who:'Neighbour',en:'Nice to meet you!',fr:'Enchantée !',ar:'تشرفت بمعرفتك!'},
+          {me:true,choices:['Nice to meet you too.','You’re welcome.','See you last week.'],fr:'Enchanté(e) également.',ar:'وأنا أيضًا تشرفت بمعرفتك.'}
+        ]},
+      {id:'arr-mission',emoji:'🎯',kind:'mission',title:'Mission 01 — Arrive in Dubai',desc:'De l’avion jusqu’à votre porte, sans aide.',
+        brief:'Vous venez d’atterrir à l’aéroport de Dubaï (DXB). Vous commencez un nouveau travail la semaine prochaine. Vous devez passer l’immigration, récupérer vos bagages, acheter une carte SIM, puis prendre un taxi jusqu’à votre logement.',
+        objectives:['Passer le contrôle des passeports','Trouver le retrait des bagages','Acheter une carte SIM et connaître le prix','Prendre un taxi et payer par carte'],
+        dialogue:[
+          {scene:'1 · Immigration'},
+          {who:'Officer',en:'Good evening. Passport, please.',fr:'Bonsoir. Passeport, s’il vous plaît.',ar:'مساء الخير. جواز السفر من فضلك.'},
+          {me:true,choices:['Here is my passport.','Here is the address.','Here we are!'],fr:'Voici mon passeport.',ar:'تفضل، هذا جواز سفري.'},
+          {who:'Officer',en:'Is this your first visit to Dubai?',fr:'C’est votre première visite à Dubaï ?',ar:'هل هذه زيارتك الأولى إلى دبي؟'},
+          {me:true,choices:['Yes, it’s my first visit.','No, I’m an engineer.','Yes, at Terminal 3.'],fr:'Oui, c’est ma première visite.',ar:'نعم، هذه زيارتي الأولى.'},
+          {who:'Officer',en:'What is the purpose of your visit?',fr:'Quel est le motif de votre visite ?',ar:'ما هو سبب زيارتك؟'},
+          {me:true,choices:['I’m here for work. I start a new job next week.','I’m here for a receipt.','I’d like to change 500 euros.'],fr:'Je suis ici pour le travail. Je commence un nouveau poste la semaine prochaine.',ar:'أنا هنا من أجل العمل. سأبدأ عملًا جديدًا الأسبوع القادم.'},
+          {who:'Officer',en:'Welcome to the UAE.',fr:'Bienvenue aux Émirats.',ar:'أهلًا بك في الإمارات.'},
+          {me:true,choices:['Thank you very much.','Nice to meet you, Sarah.','Stop here, please.'],fr:'Merci beaucoup.',ar:'شكرًا جزيلًا.'},
+          {scene:'2 · Bagages'},
+          {who:'Staff',en:'Can I help you, sir? Madam?',fr:'Je peux vous aider, monsieur ? Madame ?',ar:'هل يمكنني مساعدتك يا سيدي؟ يا سيدتي؟'},
+          {me:true,choices:['Yes, where is the baggage claim?','Yes, where is the prayer room of the hotel?','Yes, I’ll take it.'],fr:'Oui, où est le retrait des bagages ?',ar:'نعم، أين مكان استلام الأمتعة؟'},
+          {who:'Staff',en:'Belt number five, on your right.',fr:'Tapis numéro cinq, sur votre droite.',ar:'الحزام رقم خمسة، على يمينك.'},
+          {me:true,choices:['Thank you!','Keep the change!','How long are you staying?'],fr:'Merci !',ar:'شكرًا!'},
+          {scene:'3 · Carte SIM'},
+          {who:'Clerk',en:'Hello! Would you like a SIM card?',fr:'Bonjour ! Vous voulez une carte SIM ?',ar:'مرحبًا! هل تريد شريحة هاتف؟'},
+          {me:true,choices:['Yes, please. How much data is included?','Yes, please. Where are you going?','Yes, my name is Passport.'],fr:'Oui, s’il vous plaît. Combien de données sont incluses ?',ar:'نعم من فضلك. كم حجم البيانات المشمولة؟'},
+          {who:'Clerk',en:'Twenty gigabytes for one month.',fr:'Vingt gigaoctets pour un mois.',ar:'عشرون غيغابايت لمدة شهر.'},
+          {me:true,choices:['How much is it?','Is there a commission on the taxi stand?','Where is the lift of the plan?'],fr:'C’est combien ?',ar:'كم الثمن؟'},
+          {who:'Clerk',en:'One hundred and twenty-five dirhams.',fr:'Cent vingt-cinq dirhams.',ar:'مئة وخمسة وعشرون درهمًا.'},
+          {me:true,choices:['OK. Can I pay by card?','OK. Welcome to Dubai.','OK. Go straight.'],fr:'D’accord. Puis-je payer par carte ?',ar:'حسنًا. هل يمكنني الدفع بالبطاقة؟'},
+          {who:'Clerk',en:'Of course. Here is your new number.',fr:'Bien sûr. Voici votre nouveau numéro.',ar:'بالتأكيد. هذا رقمك الجديد.'},
+          {me:true,choices:['Thank you!','You’re welcome!','Nice to meet you too!'],fr:'Merci !',ar:'شكرًا!'},
+          {scene:'4 · Taxi'},
+          {who:'Driver',en:'Good evening. Where to?',fr:'Bonsoir. Où allons-nous ?',ar:'مساء الخير. إلى أين؟'},
+          {me:true,choices:['To this address, please.','To the baggage claim, please.','To my SIM card, please.'],fr:'À cette adresse, s’il vous plaît.',ar:'إلى هذا العنوان من فضلك.'},
+          {who:'Driver',en:'No problem. It takes about forty minutes.',fr:'Pas de problème. Ça prend environ quarante minutes.',ar:'لا مشكلة. يستغرق الأمر حوالي أربعين دقيقة.'},
+          {me:true,choices:['Can I pay by card?','Can I see your passport?','Is this your first visit?'],fr:'Puis-je payer par carte ?',ar:'هل يمكنني الدفع بالبطاقة؟'},
+          {who:'Driver',en:'Yes, sure. … Here we are!',fr:'Oui, bien sûr. … Nous sommes arrivés !',ar:'نعم، بالتأكيد. … وصلنا!'},
+          {me:true,choices:['Stop here, please. Can I have a receipt?','Go straight, then turn left.','What is the purpose of your visit?'],fr:'Arrêtez-vous ici, s’il vous plaît. Puis-je avoir un reçu ?',ar:'توقف هنا من فضلك. هل يمكنني الحصول على إيصال؟'},
+          {who:'Driver',en:'Here you are. Welcome to Dubai!',fr:'Voilà. Bienvenue à Dubaï !',ar:'تفضل. أهلًا بك في دبي!'}
+        ]}
+    ]},
+    {key:'live',emoji:'🏠',en:'Live in Dubai',fr:'Se loger : chercher, visiter, négocier, louer',level:'A1-A2'},
+    {key:'move',emoji:'🚕',en:'Move Around Dubai',fr:'Métro, voiture, station-service, garage',level:'A1-A2'},
+    {key:'everyday',emoji:'🛒',en:'Everyday Life',fr:'Courses, restaurant, hôtel, téléphone',level:'A1-A2'},
+    {key:'admin',emoji:'🏥',en:'Health & Administration',fr:'Banque, documents, assurance, santé, école',level:'A2-B1'},
+    {key:'work',emoji:'💼',en:'Work in Dubai',fr:'Emploi, entretien, vie professionnelle, contrat',level:'A2-B1'},
+    {key:'business',emoji:'🏢',en:'Start a Business',fr:'Créer sa société, free zone, local commercial',level:'B1-B2'},
+    {key:'realestate',emoji:'🏙️',en:'Real Estate',fr:'Acheter, off-plan, investissement locatif',level:'B1-B2'},
+    {key:'invest',emoji:'💰',en:'Investment English',fr:'Financement, contrats, partenariats',level:'B1-B2'},
+    {key:'social',emoji:'🤝',en:'Professional & Social English',fr:'Rencontres, sorties, réservations',level:'B1-B2'}
+  ];
+
+  /* =====================================================================
+     ÉTAT, STOCKAGE, AUDIO
+     ===================================================================== */
+  var KEY='dubai_progress', SUPKEY='dubai_support';
+  var LESSONS={}; PATHS.forEach(function(p){(p.lessons||[]).forEach(function(l){LESSONS[l.id]=l;});});
+  var support=readSupport(), activePath=null, cur=null, st=null, lastFocus=null;
+
+  function readSupport(){try{var v=localStorage.getItem(SUPKEY);return (v==='fr'||v==='ar'||v==='both')?v:'both';}catch(e){return 'both';}}
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return {};}}
+  function save(id,pct){try{var p=load();if(p[id]===undefined||p[id]<pct){p[id]=pct;localStorage.setItem(KEY,JSON.stringify(p));}}catch(e){}}
+  function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+  function mask(s){return s.split(' ').map(function(x){return x.charAt(0)+new Array(x.length).join('_');}).join(' ');}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+  /* Deux voix si possible : une pour vous, une autre (accent différent) pour l'interlocuteur. */
+  var voices=[];
+  function loadVoices(){try{voices=window.speechSynthesis.getVoices().filter(function(v){return /^en[-_]/i.test(v.lang);});}catch(e){}}
+  if('speechSynthesis' in window){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
+  function pickVoice(other){
+    if(!voices.length) return null;
+    var pref=other?['en-GB','en-IN','en-AU','en-US']:['en-US','en-GB'];
+    for(var i=0;i<pref.length;i++){for(var j=0;j<voices.length;j++){if(voices[j].lang.replace('_','-').indexOf(pref[i])===0) return voices[j];}}
+    return voices[0];
+  }
+  function speak(t,opt){
+    opt=opt||{};
+    try{
+      if(!('speechSynthesis' in window)) return;
+      var u=new SpeechSynthesisUtterance(t.replace(/…/g,','));
+      u.lang='en-US'; u.rate=.88;
+      var v=pickVoice(!!opt.other); if(v){u.voice=v;u.lang=v.lang;}
+      if(!opt.queue) window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    }catch(e){}
+  }
+
+  /* Traductions selon la langue d'appui choisie. */
+  function tr(fr,ar){
+    var out='';
+    if(support!=='ar') out+='<span>'+esc(fr)+'</span>';
+    if(support!=='fr') out+='<span lang="ar" dir="rtl">'+esc(ar)+'</span>';
+    return '<span class="tr">'+out+'</span>';
+  }
+  function statusOf(pct){
+    if(pct===undefined) return '<span class="status">Pas commencé</span>';
+    if(pct>=80) return '<span class="status s3">✓ Maîtrisé · '+pct+' %</span>';
+    if(pct>=50) return '<span class="status s2">En bonne voie · '+pct+' %</span>';
+    return '<span class="status s1">À revoir · '+pct+' %</span>';
+  }
+
+  /* =====================================================================
+     ACCUEIL : parcours
+     ===================================================================== */
+  var pathsBox=document.getElementById('paths'), pathView=document.getElementById('path-view'), pathPanel=document.getElementById('path-panel');
+
+  function renderPaths(){
+    pathsBox.innerHTML=PATHS.map(function(p,i){
+      var live=!!(p.lessons&&p.lessons.length);
+      return '<button type="button" class="path'+(activePath===p.key?' is-on':'')+'" data-path="'+p.key+'"'+(live?'':' disabled')+'>'
+        +'<span class="pe" aria-hidden="true">'+p.emoji+'</span><b>'+(i+1)+'. '+esc(p.en)+'</b><span class="pf">'+esc(p.fr)+'</span>'
+        +'<span class="meta"><span class="tag">'+p.level+'</span>'+(live?'<span class="tag live">'+p.lessons.length+' étapes</span>':'<span class="tag soon">Bientôt</span>')+'</span></button>';
+    }).join('');
+  }
+  function renderPath(){
+    var p=PATHS.filter(function(x){return x.key===activePath;})[0];
+    if(!p){pathView.hidden=true;return;}
+    var prog=load(), done=p.lessons.filter(function(l){return prog[l.id]!==undefined&&prog[l.id]>=50;}).length;
+    pathView.hidden=false;
+    pathPanel.innerHTML='<div class="ph"><div><span class="tag">'+p.level+'</span><h2 style="margin-top:6px">'+p.emoji+' '+esc(p.en)+'</h2><p class="sub">'+esc(p.fr)+'. Terminez les leçons dans l’ordre, puis relevez la mission finale.</p></div>'
+      +'<div class="progress"><small>'+done+' / '+p.lessons.length+' étapes validées</small><div class="bar"><i style="width:'+Math.round(done/p.lessons.length*100)+'%"></i></div></div></div>'
+      +'<div class="lessons">'+p.lessons.map(function(l,i){
+        var mission=l.kind==='mission';
+        var kind=mission?'Mission':(l.kind==='vocab'?'Vocabulaire':(l.kind==='phrases'?'Expressions + dialogue':'Mots, expressions + dialogue'));
+        return '<div class="lesson'+(mission?' mission':'')+'"><span class="le" aria-hidden="true">'+l.emoji+'</span>'
+          +'<div class="lt"><span class="kind">'+(mission?'':'Leçon '+(i+1)+' · ')+kind+'</span><b>'+esc(l.title)+'</b><span>'+esc(l.desc)+'</span></div>'
+          +'<div class="ls">'+statusOf(prog[l.id])+'<button type="button" class="btn sm'+(mission?'':' alt')+'" data-open="'+l.id+'">'+(prog[l.id]!==undefined?'Refaire':(mission?'Lancer la mission':'Commencer'))+'</button></div></div>';
+      }).join('')+'</div>';
+  }
+  pathsBox.addEventListener('click',function(e){
+    var b=e.target.closest('.path'); if(!b||b.disabled) return;
+    activePath=b.getAttribute('data-path'); renderPaths(); renderPath();
+    pathView.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  pathPanel.addEventListener('click',function(e){var b=e.target.closest('[data-open]'); if(b) openLesson(b.getAttribute('data-open'));});
+
+  /* Sélecteur de langue d'appui */
+  var seg=document.querySelector('.seg');
+  function renderSeg(){Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){var on=b.getAttribute('data-sup')===support;b.classList.toggle('is-on',on);b.setAttribute('aria-pressed',on?'true':'false');});}
+  seg.addEventListener('click',function(e){
+    var b=e.target.closest('[data-sup]'); if(!b) return;
+    support=b.getAttribute('data-sup'); try{localStorage.setItem(SUPKEY,support);}catch(err){}
+    renderSeg(); if(!modal.hidden&&st&&st.stage==='learn') renderLearn(); else if(!modal.hidden&&st&&st.stage==='dialogue') renderDialogue(); else if(!modal.hidden&&st&&(st.stage==='translate'||st.stage==='listen')) renderQuestion(true);
+  });
+
+  /* =====================================================================
+     FENÊTRE DE LEÇON
+     Étapes : découvrir → traduction → écoute → reconstitution → dialogue
+     Mission : briefing → dialogue
+     ===================================================================== */
+  var modal=document.getElementById('modal'), body=document.getElementById('m-body'), dlg=modal.querySelector('.dlg');
+  var STAGES={translate:'✍️ Traduction',listen:'🎧 Écoute',scramble:'🔤 Reconstitution',dialogue:'💬 Dialogue'};
+
+  function stagesFor(l){
+    if(l.kind==='mission') return ['dialogue'];
+    var s=['translate','listen','scramble']; if(l.dialogue) s.push('dialogue'); return s;
+  }
+  function openLesson(id){
+    cur=LESSONS[id]; if(!cur) return;
+    lastFocus=document.activeElement;
+    modal.hidden=false; document.documentElement.style.overflow='hidden';
+    st={stage:'learn',results:{},plan:stagesFor(cur)};
+    renderLearn(); dlg.focus();
+  }
+  function closeModal(){
+    modal.hidden=true; document.documentElement.style.overflow='';
+    try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}
+    renderPath();
+    if(lastFocus&&lastFocus.focus) lastFocus.focus();
+  }
+  function head(){return '<h2 id="m-title">'+cur.emoji+' '+esc(cur.title)+'</h2>';}
+  function coach(msg){return '<div class="fb" aria-live="polite"><i aria-hidden="true">EN</i><div id="fb">'+msg+'</div></div>';}
+  function progBar(i,n){return '<div class="prog"><span>'+(i+1)+' / '+n+'</span><div class="bar"><i style="width:'+Math.round(i/n*100)+'%"></i></div></div>';}
+
+  function renderLearn(){
+    st.stage='learn';
+    if(cur.kind==='mission'){
+      body.innerHTML=head()+'<span class="stagetag">🎯 Briefing</span><p class="note">'+esc(cur.brief)+'</p>'
+        +'<p class="sub" style="margin-top:14px"><b>Vos objectifs :</b></p><ul class="objs">'+cur.objectives.map(function(o){return '<li>'+esc(o)+'</li>';}).join('')+'</ul>'
+        +'<p class="sub" style="margin-top:14px">Personne ne vous souffle les réponses : choisissez à chaque fois ce que vous diriez. Écoutez bien les interlocuteurs (🔊), la traduction n’apparaît que si vous la demandez.</p>'
+        +'<div class="acts"><button type="button" class="btn" data-go="dialogue">Commencer la mission</button></div>';
+      return;
+    }
+    var what=cur.kind==='vocab'?'les mots':(cur.kind==='phrases'?'les expressions':'les mots et expressions');
+    var steps=st.plan.map(function(s){return STAGES[s];}).join(' → ');
+    body.innerHTML=head()
+      +'<p class="sub">Découvrez '+what+' et écoutez-les. Ensuite : '+steps+'.</p>'
+      +(cur.intro?'<p class="note">'+esc(cur.intro)+'</p>':'')
+      +'<div class="words">'+cur.words.map(function(w,k){
+        return '<div class="w"><span class="we" aria-hidden="true">'+w[3]+'</span><div class="wt"><b>'+esc(w[0])+'</b>'+tr(w[1],w[2])+'</div><button type="button" class="say" data-say="'+k+'" aria-label="Écouter : '+esc(w[0])+'">🔊</button></div>';
+      }).join('')+'</div>'
+      +'<div class="acts"><button type="button" class="btn" data-go="'+st.plan[0]+'">Je suis prêt(e), commencer</button></div>';
+  }
+
+  function startStage(stage){
+    st.stage=stage; st.i=0; st.tries=0; st.first=0; st.found=0; st.done=false;
+    if(stage==='dialogue'){
+      st.turns=cur.dialogue; st.log=[]; st.n=cur.dialogue.filter(function(t){return t.me;}).length; st.opts=null; st.shown={};
+      advanceDialogue(); return;
+    }
+    st.order=shuffle(cur.words); st.n=st.order.length;
+    if(stage==='scramble') newScramble(); else renderQuestion();
+  }
+  function next(){st.i++; if(st.i<st.n){ if(st.stage==='scramble') newScramble(); else renderQuestion(); } else finishStage();}
+  function finishStage(){
+    st.results[st.stage]={found:st.found,first:st.first,n:st.n};
+    var idx=st.plan.indexOf(st.stage), nxt=st.plan[idx+1];
+    if(!nxt) return renderEnd();
+    var r=st.results[st.stage];
+    var nextTxt={listen:'Vous allez entendre chaque '+(cur.kind==='vocab'?'mot':'expression')+' en anglais : retrouvez sa signification.',
+      scramble:'Remettez les '+(cur.kind==='vocab'?'lettres':'mots')+' dans le bon ordre.',
+      dialogue:'Mettez-vous en situation : répondez à votre interlocuteur dans un vrai dialogue.'}[nxt];
+    body.innerHTML=head()+'<div class="end"><span class="stagetag">'+STAGES[st.stage]+' terminé</span>'
+      +'<p class="sub" style="margin-top:12px"><b>'+r.found+' / '+r.n+'</b> trouvé(s), dont '+r.first+' du premier coup.</p>'
+      +'<p style="margin-top:14px">Étape suivante : <b>'+STAGES[nxt]+'</b>. '+nextTxt+'</p>'
+      +'<div class="acts center"><button type="button" class="btn alt" data-end>Terminer ici</button><button type="button" class="btn" data-go="'+nxt+'">Continuer</button></div></div>';
+  }
+  function renderEnd(){
+    var n=0,first=0,found=0,parts=[];
+    st.plan.forEach(function(s){var r=st.results[s]; if(!r) return; n+=r.n; first+=r.first; found+=r.found; parts.push(STAGES[s]+' : '+r.found+'/'+r.n);});
+    var pct=n?Math.round(first/n*100):0;
+    save(cur.id,pct);
+    var verdict=pct>=80?'Excellent travail.':(pct>=50?'C’est en bonne voie.':'Bon début : refaites la leçon demain pour ancrer le vocabulaire.');
+    var mission=cur.kind==='mission';
+    body.innerHTML='<div class="end">'+head()
+      +'<div class="score">'+pct+' %</div><p class="sub">de réponses justes du premier coup. '+verdict+'</p>'
+      +'<div>'+parts.map(function(p){return '<span class="pill">'+p+'</span>';}).join(' ')+'</div>'
+      +(mission&&pct>=50?'<p class="note" style="margin-top:16px">🎉 Mission accomplie : vous êtes arrivé(e) chez vous. Prochain parcours : <b>Live in Dubai</b> (bientôt).</p>':'')
+      +'<div class="acts center"><button type="button" class="btn alt" data-learn>Revoir '+(mission?'le briefing':'les mots')+'</button><button type="button" class="btn alt" data-go="'+st.plan[0]+'">Recommencer</button><button type="button" class="btn" data-close>Retour au parcours</button></div></div>';
+  }
+
+  /* ----- Traduction & écoute (QCM) ----- */
+  function renderQuestion(keep){
+    var w=st.order[st.i];
+    if(!keep){
+      var others=shuffle(cur.words.filter(function(x){return x[0]!==w[0];})).slice(0,3);
+      st.opts=shuffle(others.concat([w])); st.tries=0; st.done=false; st.msg=null; st.wrong={};
+    }
+    var listen=st.stage==='listen';
+    var prompt=listen
+      ?'<div class="q"><button type="button" class="say" data-replay aria-label="Réécouter">🔊</button><p>Écoutez, puis choisissez la bonne signification.</p></div>'
+      :'<div class="q"><div class="qe" aria-hidden="true">'+w[3]+'</div><p>Comment dit-on en anglais :</p><span class="qa">'+tr(w[1],w[2])+'</span></div>';
+    var opts=st.opts.map(function(o){
+      var cls='opt'+(st.wrong[o[0]]?' is-no':'')+(st.done&&o[0]===w[0]?' is-ok':'');
+      var dis=(st.done||st.wrong[o[0]])?' disabled':'';
+      var inner=listen?'<span aria-hidden="true">'+o[3]+'</span>'+tr(o[1],o[2]):esc(o[0]);
+      return '<button type="button" class="'+cls+'" data-a="'+esc(o[0])+'"'+dis+'>'+inner+'</button>';
+    }).join('');
+    body.innerHTML=head()+'<span class="stagetag">'+STAGES[st.stage]+'</span>'+progBar(st.i,st.n)+prompt
+      +'<div class="opts">'+opts+'</div>'
+      +coach(st.msg||(listen?'Réécoutez autant de fois que nécessaire.':'Prenez votre temps. En cas d’erreur, je vous donne un indice.'))
+      +'<div class="acts" id="acts">'+(st.done?'<button type="button" class="btn" data-next>'+(st.i+1<st.n?'Suivant':'Voir le résultat')+'</button>':(st.tries>=3?'<button type="button" class="btn alt" data-next>Passer</button>':''))+'</div>';
+    if(listen&&!keep) speak(w[0]);
+  }
+  function answer(a){
+    if(st.done) return;
+    var w=st.order[st.i];
+    if(a===w[0]){
+      st.done=true; st.found++; if(st.tries===0) st.first++;
+      st.msg='Exact : « '+esc(w[0])+' ».'; speak(w[0]);
+    } else {
+      st.wrong[a]=true; st.tries++;
+      if(st.tries===1) st.msg='Pas tout à fait. Indice : ça commence par « '+esc(w[0].charAt(0))+' ».';
+      else if(st.tries===2) st.msg='Encore un essai : '+esc(mask(w[0]));
+      else st.msg='Ce n’est pas grave. Réécoutez et réessayez, ou passez à la suite.';
+    }
+    renderQuestion(true);
+  }
+
+  /* ----- Reconstitution ----- */
+  function newScramble(){
+    var w=st.order[st.i];
+    st.tokens=w[0].indexOf(' ')===-1?w[0].split(''):w[0].split(' ');
+    do{ st.bank=shuffle(st.tokens.map(function(_,k){return k;})); }while(st.tokens.length>1&&st.bank.every(function(v,k){return st.tokens[v]===st.tokens[k];}));
+    st.slots=[]; st.tries=0; st.done=false; st.msg=null;
+    renderScramble();
+  }
+  function renderScramble(){
+    var w=st.order[st.i], byLetter=w[0].indexOf(' ')===-1;
+    var slots=st.tokens.map(function(_,k){var v=st.slots[k];return '<span class="slot'+(v!==undefined?' full':'')+'">'+(v!==undefined?esc(st.tokens[v]):'')+'</span>';}).join('');
+    var bank=st.bank.map(function(k){var used=st.slots.indexOf(k)!==-1;return '<button type="button" class="tile" data-tile="'+k+'"'+(used||st.done?' disabled':'')+'>'+esc(st.tokens[k])+'</button>';}).join('');
+    body.innerHTML=head()+'<span class="stagetag">'+STAGES.scramble+'</span>'+progBar(st.i,st.n)
+      +'<div class="q"><div class="qe" aria-hidden="true">'+w[3]+'</div><span class="qa">'+tr(w[1],w[2])+'</span>'
+      +'<button type="button" class="say" data-replay style="width:44px;height:44px;font-size:1.05rem;margin-top:10px" aria-label="Écouter">🔊</button></div>'
+      +'<div class="scr-slots">'+slots+'</div><div class="bank">'+bank+'</div>'
+      +coach(st.msg||('Touchez les '+(byLetter?'lettres':'mots')+' dans le bon ordre.'))
+      +'<div class="acts">'
+        +(st.done?'<button type="button" class="btn" data-next>'+(st.i+1<st.n?'Suivant':'Voir le résultat')+'</button>'
+          :(st.slots.length?'<button type="button" class="btn alt" data-undo>⌫ Effacer</button>':'')+(st.tries>=3?'<button type="button" class="btn alt" data-next>Passer</button>':''))
+      +'</div>';
+  }
+  function placeTile(k){
+    if(st.done) return;
+    st.slots.push(k);
+    if(st.slots.length<st.tokens.length) return renderScramble();
+    var w=st.order[st.i];
+    var ok=st.slots.every(function(v,pos){return st.tokens[v]===st.tokens[pos];});
+    if(ok){ st.done=true; st.found++; if(st.tries===0) st.first++; st.msg='Parfait : « '+esc(w[0])+' ».'; speak(w[0]); }
+    else {
+      st.tries++; st.slots=[];
+      var firstTok=w[0].indexOf(' ')===-1?w[0].charAt(0):w[0].split(' ')[0];
+      st.msg=st.tries===1?'Pas encore dans le bon ordre. Réessayez.':(st.tries===2?'Indice : ça commence par « '+esc(firstTok)+' ».':'Réécoutez avec 🔊 et réessayez, ou passez.');
+    }
+    renderScramble();
+  }
+
+  /* ----- Dialogue ----- */
+  function advanceDialogue(){
+    var toSay=[];
+    while(st.i<st.turns.length&&!st.turns[st.i].me){
+      var t=st.turns[st.i];
+      if(t.scene) st.log.push({scene:t.scene}); else { st.log.push({who:t.who,en:t.en,fr:t.fr,ar:t.ar}); toSay.push(t.en); }
+      st.i++;
+    }
+    st.tries=0; st.wrong={}; st.msg=null;
+    st.opts=st.i<st.turns.length?shuffle(st.turns[st.i].choices):null;
+    renderDialogue();
+    toSay.forEach(function(s,k){speak(s,{other:true,queue:k>0});});
+  }
+  function lastNpc(){for(var k=st.log.length-1;k>=0;k--){if(st.log[k].who&&st.log[k].who!=='You') return st.log[k];}return null;}
+  function renderDialogue(){
+    var html=st.log.map(function(m,k){
+      if(m.scene) return '<div class="scene">'+esc(m.scene)+'</div>';
+      var me=m.who==='You', open=me||st.shown[k];
+      return '<div class="msg '+(me?'me':'npc')+'"><div class="who">'+(me?'Vous':esc(m.who))+'</div><div class="en">'+esc(m.en)+'</div>'
+        +(open?tr(m.fr,m.ar):'')
+        +'<div class="tools"><button type="button" data-sayline="'+k+'">🔊 Écouter</button>'+(me?'':'<button type="button" data-show="'+k+'">'+(open?'Masquer':'Traduire')+'</button>')+'</div></div>';
+    }).join('');
+    var turn=st.opts?'<p class="yourturn">À vous : que répondez-vous ?</p><div class="choices">'+st.opts.map(function(c){
+      return '<button type="button" class="choice'+(st.wrong[c]?' is-no':'')+'" data-choice="'+esc(c)+'"'+(st.wrong[c]?' disabled':'')+'>'+esc(c)+'</button>';
+    }).join('')+'</div>'+coach(st.msg||'Choisissez la réponse la plus naturelle. Vous pouvez réécouter ou traduire la dernière réplique.')
+      +(st.tries>=3?'<div class="acts"><button type="button" class="btn alt" data-skipturn>Voir la réponse et continuer</button></div>':'')
+      :'<div class="acts"><button type="button" class="btn" data-dialogue-end>'+(cur.kind==='mission'?'Terminer la mission':'Voir le résultat')+'</button></div>';
+    var done=st.n-st.turns.slice(st.i).filter(function(t){return t.me;}).length;
+    body.innerHTML=head()+'<span class="stagetag">'+(cur.kind==='mission'?'🎯 Mission':STAGES.dialogue)+'</span>'+progBar(Math.min(done,st.n-1),st.n)
+      +'<div class="chat">'+html+'</div>'+turn;
+    var chat=body.querySelector('.chat'); if(chat&&chat.lastElementChild&&st.log.length>2) chat.lastElementChild.scrollIntoView({block:'nearest'});
+  }
+  function chooseLine(c,skip){
+    var t=st.turns[st.i];
+    if(c===t.choices[0]||skip){
+      if(!skip){st.found++; if(st.tries===0) st.first++;}
+      st.log.push({who:'You',en:t.choices[0],fr:t.fr,ar:t.ar});
+      speak(t.choices[0]);
+      st.i++;
+      setTimeout(advanceDialogue,skip?0:250);
+      renderDialogueFreeze();
+    } else {
+      st.wrong[c]=true; st.tries++;
+      var q=lastNpc();
+      if(st.tries===1) st.msg=q?'Relisez la question. '+(support==='ar'?'<span lang="ar" dir="rtl">'+esc(q.ar)+'</span>':'Elle veut dire : « '+esc(q.fr)+' ».'):'Essayez encore.';
+      else if(st.tries===2) st.msg='La bonne réponse commence par « '+esc(t.choices[0].split(' ').slice(0,2).join(' '))+'… ».';
+      else st.msg='Ce n’est pas grave : regardez la bonne réponse, puis continuez.';
+      renderDialogue();
+    }
+  }
+  function renderDialogueFreeze(){Array.prototype.forEach.call(body.querySelectorAll('.choice'),function(b){b.disabled=true;});}
+
+  /* ----- Événements de la fenêtre ----- */
+  modal.addEventListener('click',function(e){
+    var t=e.target, b;
+    if(t.closest('[data-close]')) return closeModal();
+    if((b=t.closest('[data-say]'))) return speak(cur.words[+b.getAttribute('data-say')][0]);
+    if(t.closest('[data-replay]')) return speak(st.order[st.i][0]);
+    if((b=t.closest('[data-a]'))) return answer(b.getAttribute('data-a'));
+    if((b=t.closest('[data-tile]'))&&!b.disabled) return placeTile(+b.getAttribute('data-tile'));
+    if(t.closest('[data-undo]')){ st.slots.pop(); return renderScramble(); }
+    if(t.closest('[data-next]')) return next();
+    if((b=t.closest('[data-go]'))) return startStage(b.getAttribute('data-go'));
+    if(t.closest('[data-end]')) return renderEnd();
+    if(t.closest('[data-learn]')) return renderLearn();
+    if((b=t.closest('[data-choice]'))&&!b.disabled) return chooseLine(b.getAttribute('data-choice'));
+    if(t.closest('[data-skipturn]')) return chooseLine(null,true);
+    if((b=t.closest('[data-sayline]'))){ var m=st.log[+b.getAttribute('data-sayline')]; return speak(m.en,{other:m.who!=='You'}); }
+    if((b=t.closest('[data-show]'))){ var k=+b.getAttribute('data-show'); st.shown[k]=!st.shown[k]; return renderDialogue(); }
+    if(t.closest('[data-dialogue-end]')) return finishStage();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden) closeModal();});
+
+  renderSeg(); renderPaths();
+})();
+</script>
+</body>
+</html>
