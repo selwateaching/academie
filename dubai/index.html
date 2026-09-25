@@ -700,7 +700,11 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   function renderSeg(){Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){var on=b.getAttribute('data-sup')===support;b.classList.toggle('is-on',on);b.setAttribute('aria-pressed',on?'true':'false');});}
   var phonBtn=document.getElementById('phon-btn');
   function renderPhonBtn(){
-    [phonBtn,document.querySelector('#modal .mph')].forEach(function(b){b.classList.toggle('is-on',phon);b.setAttribute('aria-pressed',phon?'true':'false');});
+    [phonBtn,document.querySelector('#modal .mph')].forEach(function(b){
+      b.classList.toggle('is-on',phon); b.setAttribute('aria-pressed',phon?'true':'false');
+      b.textContent=phon?'🗣️ Phonétique : affichée':'🗣️ Afficher la phonétique';
+      b.title=phon?'Cliquer pour masquer la phonétique':'Cliquer pour afficher la phonétique';
+    });
   }
   function togglePhon(){
     phon=!phon; try{localStorage.setItem(PHKEY,phon?'on':'off');}catch(err){}
