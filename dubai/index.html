@@ -107,6 +107,9 @@ main{padding:0 0 64px;}
 #modal .dlg{position:relative;width:100%;max-width:680px;max-height:94vh;overflow-y:auto;background:var(--surface);border-radius:18px;padding:26px 24px 24px;box-shadow:0 30px 60px -20px rgba(14,42,71,.6);outline:none;}
 #modal .x{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:0;background:#F1EEE8;cursor:pointer;font-size:1.1rem;}
 #modal h2{font-size:1.3rem;margin-right:44px;}
+#modal .mph{position:absolute;top:16px;right:58px;border:1.5px solid var(--line);background:#fff;color:var(--ink3);border-radius:999px;padding:5px 10px;font-size:.78rem;font-weight:600;cursor:pointer;}
+#modal .mph.is-on{border-color:var(--gold);background:var(--gold-soft);color:#7A5A22;}
+#modal .dlg{padding-top:58px;}
 .sub{color:var(--ink2);font-size:.95rem;margin-top:6px;}
 .note{background:var(--gold-soft);border-radius:10px;padding:12px 14px;font-size:.93rem;margin-top:14px;}
 .objs{margin:12px 0 0 0;padding-left:0;list-style:none;display:grid;gap:6px;}
@@ -118,6 +121,11 @@ main{padding:0 0 64px;}
 .w .wt b{display:block;font-size:1.02rem;}
 .tr{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.9rem;color:var(--ink2);}
 .tr [lang="ar"]{direction:rtl;}
+.phon{display:block;font-style:italic;font-size:.88rem;color:#8A6420;letter-spacing:.01em;margin-top:1px;}
+.msg.me .phon{color:#E9D9B8;}
+.fb .phon{margin-top:4px;}
+.phon u{text-decoration-thickness:2px;text-underline-offset:2px;}
+.phlegend{font-size:.84rem;color:var(--ink2);margin-top:12px;padding:8px 12px;border-left:3px solid var(--gold);background:#FBFAF7;border-radius:0 8px 8px 0;}
 .say{width:38px;height:38px;border-radius:50%;border:0;background:#EEF2F7;cursor:pointer;font-size:1rem;flex:none;}
 .say:hover{background:#DCE5EF;}
 .stagetag{display:inline-block;margin-top:10px;font-size:.74rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:6px;background:#EEF2F7;color:var(--navy2);}
@@ -187,6 +195,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
         <button type="button" data-sup="both">FR + عربي</button>
         <button type="button" data-sup="ar" lang="ar">العربية</button>
       </div>
+      <div class="seg"><button type="button" id="phon-btn" aria-pressed="true">🗣️ Phonétique</button></div>
     </div>
   </div>
 </header>
@@ -236,6 +245,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   <div class="backdrop" data-close></div>
   <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="m-title" tabindex="-1">
     <button type="button" class="x" data-close aria-label="Fermer">✕</button>
+    <button type="button" class="mph" data-phon aria-label="Afficher la phonétique">🗣️ Phonétique</button>
     <div id="m-body"></div>
   </div>
 </div>
@@ -463,13 +473,146 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   ];
 
   /* =====================================================================
+     PHONÉTIQUE « à la française » de chaque mot ou réplique anglaise.
+     Syllabe en MAJUSCULES = syllabe accentuée. þ / ð notent le « th »
+     anglais (affichés s / z soulignés : langue entre les dents).
+     « h » se prononce en soufflant.
+     ===================================================================== */
+  var PH={
+    "Airport":"ÈR-port",
+    "Flight":"FLAÏT",
+    "Passport":"PASS-port",
+    "Visa":"VI-za",
+    "Arrivals":"eu-RAÏ-veulz",
+    "Luggage":"LEU-guidj",
+    "Baggage claim":"BA-guidj KLÉÏM",
+    "Customs":"KEUS-teumz",
+    "Terminal":"TEUR-mi-neul",
+    "Gate":"GUÉÏT",
+    "Here is my passport.":"HIR iz maï PASS-port",
+    "I’m here for work.":"aïm HIR for WEURK",
+    "I’m here on holiday.":"aïm HIR onn HO-li-déï",
+    "I’m staying for two weeks.":"aïm STÉÏ-inng for TOU OUIKS",
+    "I’m staying at a hotel.":"aïm STÉÏ-inng at eu ho-TÈL",
+    "I have a work visa.":"aï HAV eu WEURK VI-za",
+    "Could you repeat, please?":"koud you ri-PIT, PLIZ",
+    "Where is the baggage claim?":"OUÈR iz ðeu BA-guidj KLÉÏM",
+    "Good morning. Your passport, please.":"goud MOR-ninng. yor PASS-port, PLIZ",
+    "What is the purpose of your visit?":"OUOT iz ðeu PEUR-peus ov yor VI-zit",
+    "How long are you staying?":"haou LONNG ar you STÉÏ-inng",
+    "For two weeks.":"for TOU OUIKS",
+    "Where are you staying?":"OUÈR ar you STÉÏ-inng",
+    "At a hotel in Dubai Marina.":"at eu ho-TÈL inn dou-BAÏ ma-RI-na",
+    "Thank you. Welcome to Dubai.":"ÞANK you. OUÈL-keum tou dou-BAÏ",
+    "Thank you very much.":"ÞANK you VÈ-ri MEUTCH",
+    "Where is the taxi stand?":"OUÈR iz ðeu TAK-si STANND",
+    "To this address, please.":"tou ÐIS eu-DRÈS, PLIZ",
+    "How much is it?":"haou MEUTCH iz it",
+    "How long does it take?":"haou LONNG deuz it TÉÏK",
+    "Can I pay by card?":"kann aï PÉÏ baï KARD",
+    "Stop here, please.":"STOP HIR, PLIZ",
+    "Can I have a receipt?":"kann aï HAV eu ri-SIT",
+    "Keep the change.":"KIP ðeu TCHÉÏNDJ",
+    "Hello! Where are you going?":"hè-LO ! OUÈR ar you GO-inng",
+    "To Dubai Marina, please.":"tou dou-BAÏ ma-RI-na, PLIZ",
+    "OK. Do you have the address?":"o-KÉÏ. dou you HAV ði eu-DRÈS",
+    "Yes, here is the address.":"YÈS, HIR iz ði eu-DRÈS",
+    "It takes about thirty minutes.":"it TÉÏKS eu-BAOUT ÞEUR-ti MI-nits",
+    "How much is it, approximately?":"haou MEUTCH iz it, eu-PROK-si-meut-li",
+    "About eighty dirhams.":"eu-BAOUT ÉÏ-ti DIR-hamz",
+    "Yes, of course. … Here we are!":"YÈS, ov KORS. HIR oui AR",
+    "Thank you. Can I have a receipt?":"ÞANK you. kann aï HAV eu ri-SIT",
+    "SIM card":"SIMM KARD",
+    "Phone number":"FONN NEUM-beur",
+    "Mobile data":"MO-baïl DÉÏ-ta",
+    "Plan":"PLANN",
+    "Top up":"TOP EUP",
+    "I’d like a SIM card, please.":"aïd LAÏK eu SIMM KARD, PLIZ",
+    "How much data is included?":"haou MEUTCH DÉÏ-ta iz inn-KLOU-did",
+    "It doesn’t work.":"it DEU-zeunt WEURK",
+    "Hi, how can I help you?":"HAÏ, haou kann aï HÈLP you",
+    "Sure. Can I see your passport?":"CHOR. kann aï SI yor PASS-port",
+    "Yes, here it is.":"YÈS, HIR it IZ",
+    "This plan has twenty gigabytes for one month.":"ðis PLANN haz TOUÈN-ti GUI-ga-baïts for OUANN MEUNÞ",
+    "It’s one hundred and twenty-five dirhams.":"its OUANN HEUN-dreud annd touèn-ti-FAÏV DIR-hamz",
+    "OK, I’ll take it.":"o-KÉÏ, aïl TÉÏK it",
+    "Here is your new phone number.":"HIR iz yor NIOU FONN NEUM-beur",
+    "Thank you. Is the internet active now?":"ÞANK you. iz ði INN-teur-nèt AK-tiv NAOU",
+    "Cash":"KACH",
+    "Dirham":"DIR-ham",
+    "Exchange rate":"iks-TCHÉÏNDJ RÉÏT",
+    "ATM":"éï-ti-ÈM",
+    "Commission":"keu-MI-cheun",
+    "I’d like to change 500 euros.":"aïd LAÏK tou TCHÉÏNDJ FAÏV HEUN-dreud YOU-roz",
+    "What is the exchange rate?":"OUOT iz ði iks-TCHÉÏNDJ RÉÏT",
+    "Is there a commission?":"iz ÐÈR eu keu-MI-cheun",
+    "Where is the nearest ATM?":"OUÈR iz ðeu NI-rist éï-ti-ÈM",
+    "Good afternoon. How can I help you?":"goud af-teur-NOUN. haou kann aï HÈLP you",
+    "Euros to dirhams?":"YOU-roz tou DIR-hamz",
+    "Yes, please. What is the exchange rate?":"YÈS, PLIZ. OUOT iz ði iks-TCHÉÏNDJ RÉÏT",
+    "Today it’s about four dirhams for one euro.":"tou-DÉÏ its eu-BAOUT FOR DIR-hamz for OUANN YOU-ro",
+    "No commission. Here are your dirhams.":"NO keu-MI-cheun. HIR ar yor DIR-hamz",
+    "Exit":"ÈK-sit",
+    "Entrance":"ÈN-treuns",
+    "Toilets":"TOÏ-leuts",
+    "No smoking":"NO SMO-kinng",
+    "Metro":"MÈ-tro",
+    "Pharmacy":"FAR-ma-si",
+    "Prayer room":"PRÈR ROUM",
+    "Lift":"LIFT",
+    "Information":"inn-for-MÉÏ-cheun",
+    "Hello, can I help you?":"hè-LO, kann aï HÈLP you",
+    "Yes, where are the toilets, please?":"YÈS, OUÈR ar ðeu TOÏ-leuts, PLIZ",
+    "Go straight, then turn left.":"GO STRÉÏT, ðèn TEURN LÈFT",
+    "Thank you. And where is the metro?":"ÞANK you. annd OUÈR iz ðeu MÈ-tro",
+    "Follow the Metro signs. Take the lift to the first floor.":"FO-lo ðeu MÈ-tro SAÏNZ. TÉÏK ðeu LIFT tou ðeu FEURST FLOR",
+    "Great, thank you very much!":"GRÉÏT, ÞANK you VÈ-ri MEUTCH",
+    "Hello, my name is Karim.":"hè-LO, maï NÉÏM iz ka-RIM",
+    "I’m from Morocco.":"aïm from meu-RO-ko",
+    "I’m an engineer.":"aïm ann èn-dji-NIR",
+    "I’ve just arrived in Dubai.":"aïv DJEUST eu-RAÏVD inn dou-BAÏ",
+    "I’m here to work.":"aïm HIR tou WEURK",
+    "I want to live in Dubai.":"aï OUONT tou LIV inn dou-BAÏ",
+    "Nice to meet you.":"NAÏS tou MIT you",
+    "Hi! I’m Sarah. Are you new here?":"HAÏ ! aïm SÈ-ra. ar you NIOU HIR",
+    "Yes, I’ve just arrived in Dubai.":"YÈS, aïv DJEUST eu-RAÏVD inn dou-BAÏ",
+    "Welcome! Where are you from?":"OUÈL-keum ! OUÈR ar you FROM",
+    "What do you do?":"OUOT dou you DOU",
+    "Why did you come to Dubai?":"OUAÏ did you KEUM tou dou-BAÏ",
+    "I’m here to work, and I want to live here.":"aïm HIR tou WEURK, annd aï OUONT tou LIV HIR",
+    "Nice to meet you!":"NAÏS tou MIT you",
+    "Nice to meet you too.":"NAÏS tou MIT you TOU",
+    "Good evening. Passport, please.":"goud IV-ninng. PASS-port, PLIZ",
+    "Is this your first visit to Dubai?":"iz ÐIS yor FEURST VI-zit tou dou-BAÏ",
+    "Yes, it’s my first visit.":"YÈS, its maï FEURST VI-zit",
+    "I’m here for work. I start a new job next week.":"aïm HIR for WEURK. aï START eu NIOU DJOB nèkst OUIK",
+    "Welcome to the UAE.":"OUÈL-keum tou ði you-éï-I",
+    "Can I help you, sir? Madam?":"kann aï HÈLP you, SEUR ? MA-deum",
+    "Yes, where is the baggage claim?":"YÈS, OUÈR iz ðeu BA-guidj KLÉÏM",
+    "Belt number five, on your right.":"BÈLT NEUM-beur FAÏV, onn yor RAÏT",
+    "Thank you!":"ÞANK you",
+    "Hello! Would you like a SIM card?":"hè-LO ! woud you LAÏK eu SIMM KARD",
+    "Yes, please. How much data is included?":"YÈS, PLIZ. haou MEUTCH DÉÏ-ta iz inn-KLOU-did",
+    "Twenty gigabytes for one month.":"TOUÈN-ti GUI-ga-baïts for OUANN MEUNÞ",
+    "One hundred and twenty-five dirhams.":"OUANN HEUN-dreud annd touèn-ti-FAÏV DIR-hamz",
+    "OK. Can I pay by card?":"o-KÉÏ. kann aï PÉÏ baï KARD",
+    "Of course. Here is your new number.":"ov KORS. HIR iz yor NIOU NEUM-beur",
+    "Good evening. Where to?":"goud IV-ninng. OUÈR TOU",
+    "No problem. It takes about forty minutes.":"NO PRO-bleum. it TÉÏKS eu-BAOUT FOR-ti MI-nits",
+    "Yes, sure. … Here we are!":"YÈS, CHOR. HIR oui AR",
+    "Stop here, please. Can I have a receipt?":"STOP HIR, PLIZ. kann aï HAV eu ri-SIT",
+    "Here you are. Welcome to Dubai!":"HIR you AR. OUÈL-keum tou dou-BAÏ"
+  };
+
+  /* =====================================================================
      ÉTAT, STOCKAGE, AUDIO
      ===================================================================== */
-  var KEY='dubai_progress', SUPKEY='dubai_support';
+  var KEY='dubai_progress', SUPKEY='dubai_support', PHKEY='dubai_phonetic';
   var LESSONS={}; PATHS.forEach(function(p){(p.lessons||[]).forEach(function(l){LESSONS[l.id]=l;});});
-  var support=readSupport(), activePath=null, cur=null, st=null, lastFocus=null;
+  var support=readSupport(), phon=readPhon(), activePath=null, cur=null, st=null, lastFocus=null;
 
   function readSupport(){try{var v=localStorage.getItem(SUPKEY);return (v==='fr'||v==='ar'||v==='both')?v:'both';}catch(e){return 'both';}}
+  function readPhon(){try{return localStorage.getItem(PHKEY)!=='off';}catch(e){return true;}}
   function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){return {};}}
   function save(id,pct){try{var p=load();if(p[id]===undefined||p[id]<pct){p[id]=pct;localStorage.setItem(KEY,JSON.stringify(p));}}catch(e){}}
   function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
@@ -504,6 +647,11 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
     if(support!=='ar') out+='<span>'+esc(fr)+'</span>';
     if(support!=='fr') out+='<span lang="ar" dir="rtl">'+esc(ar)+'</span>';
     return '<span class="tr">'+out+'</span>';
+  }
+  function phonetic(en){
+    if(!phon||!PH[en]) return '';
+    var th={'þ':'s','Þ':'S','ð':'z','Ð':'Z'};
+    return '<span class="phon">'+esc(PH[en]).replace(/[þÞðÐ]/g,function(c){return '<u>'+th[c]+'</u>';})+'</span>';
   }
   function statusOf(pct){
     if(pct===undefined) return '<span class="status">Pas commencé</span>';
@@ -550,10 +698,24 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   /* Sélecteur de langue d'appui */
   var seg=document.querySelector('.seg');
   function renderSeg(){Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){var on=b.getAttribute('data-sup')===support;b.classList.toggle('is-on',on);b.setAttribute('aria-pressed',on?'true':'false');});}
+  var phonBtn=document.getElementById('phon-btn');
+  function renderPhonBtn(){
+    [phonBtn,document.querySelector('#modal .mph')].forEach(function(b){b.classList.toggle('is-on',phon);b.setAttribute('aria-pressed',phon?'true':'false');});
+  }
+  function togglePhon(){
+    phon=!phon; try{localStorage.setItem(PHKEY,phon?'on':'off');}catch(err){}
+    renderPhonBtn(); rerender();
+  }
+  phonBtn.addEventListener('click',togglePhon);
+  function rerender(){
+    if(modal.hidden||!st) return;
+    if(st.stage==='learn') renderLearn(); else if(st.stage==='dialogue') renderDialogue();
+    else if(st.stage==='translate'||st.stage==='listen') renderQuestion(true); else if(st.stage==='scramble'&&st.tokens) renderScramble();
+  }
   seg.addEventListener('click',function(e){
     var b=e.target.closest('[data-sup]'); if(!b) return;
     support=b.getAttribute('data-sup'); try{localStorage.setItem(SUPKEY,support);}catch(err){}
-    renderSeg(); if(!modal.hidden&&st&&st.stage==='learn') renderLearn(); else if(!modal.hidden&&st&&st.stage==='dialogue') renderDialogue(); else if(!modal.hidden&&st&&(st.stage==='translate'||st.stage==='listen')) renderQuestion(true);
+    renderSeg(); rerender();
   });
 
   /* =====================================================================
@@ -599,8 +761,9 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
     body.innerHTML=head()
       +'<p class="sub">Découvrez '+what+' et écoutez-les. Ensuite : '+steps+'.</p>'
       +(cur.intro?'<p class="note">'+esc(cur.intro)+'</p>':'')
+      +(phon?'<p class="phlegend">🗣️ <b>Phonétique :</b> lisez comme en français. La syllabe en MAJUSCULES est accentuée. Les lettres <u>s</u> et <u>z</u> soulignées remplacent le « th » anglais : dites-les la langue entre les dents. Le « h » se souffle.</p>':'')
       +'<div class="words">'+cur.words.map(function(w,k){
-        return '<div class="w"><span class="we" aria-hidden="true">'+w[3]+'</span><div class="wt"><b>'+esc(w[0])+'</b>'+tr(w[1],w[2])+'</div><button type="button" class="say" data-say="'+k+'" aria-label="Écouter : '+esc(w[0])+'">🔊</button></div>';
+        return '<div class="w"><span class="we" aria-hidden="true">'+w[3]+'</span><div class="wt"><b>'+esc(w[0])+'</b>'+phonetic(w[0])+tr(w[1],w[2])+'</div><button type="button" class="say" data-say="'+k+'" aria-label="Écouter : '+esc(w[0])+'">🔊</button></div>';
       }).join('')+'</div>'
       +'<div class="acts"><button type="button" class="btn" data-go="'+st.plan[0]+'">Je suis prêt(e), commencer</button></div>';
   }
@@ -670,7 +833,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
     var w=st.order[st.i];
     if(a===w[0]){
       st.done=true; st.found++; if(st.tries===0) st.first++;
-      st.msg='Exact : « '+esc(w[0])+' ».'; speak(w[0]);
+      st.msg='Exact : « '+esc(w[0])+' ».'+phonetic(w[0]); speak(w[0]);
     } else {
       st.wrong[a]=true; st.tries++;
       if(st.tries===1) st.msg='Pas tout à fait. Indice : ça commence par « '+esc(w[0].charAt(0))+' ».';
@@ -708,7 +871,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
     if(st.slots.length<st.tokens.length) return renderScramble();
     var w=st.order[st.i];
     var ok=st.slots.every(function(v,pos){return st.tokens[v]===st.tokens[pos];});
-    if(ok){ st.done=true; st.found++; if(st.tries===0) st.first++; st.msg='Parfait : « '+esc(w[0])+' ».'; speak(w[0]); }
+    if(ok){ st.done=true; st.found++; if(st.tries===0) st.first++; st.msg='Parfait : « '+esc(w[0])+' ».'+phonetic(w[0]); speak(w[0]); }
     else {
       st.tries++; st.slots=[];
       var firstTok=w[0].indexOf(' ')===-1?w[0].charAt(0):w[0].split(' ')[0];
@@ -735,7 +898,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
     var html=st.log.map(function(m,k){
       if(m.scene) return '<div class="scene">'+esc(m.scene)+'</div>';
       var me=m.who==='You', open=me||st.shown[k];
-      return '<div class="msg '+(me?'me':'npc')+'"><div class="who">'+(me?'Vous':esc(m.who))+'</div><div class="en">'+esc(m.en)+'</div>'
+      return '<div class="msg '+(me?'me':'npc')+'"><div class="who">'+(me?'Vous':esc(m.who))+'</div><div class="en">'+esc(m.en)+'</div>'+phonetic(m.en)
         +(open?tr(m.fr,m.ar):'')
         +'<div class="tools"><button type="button" data-sayline="'+k+'">🔊 Écouter</button>'+(me?'':'<button type="button" data-show="'+k+'">'+(open?'Masquer':'Traduire')+'</button>')+'</div></div>';
     }).join('');
@@ -773,6 +936,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   modal.addEventListener('click',function(e){
     var t=e.target, b;
     if(t.closest('[data-close]')) return closeModal();
+    if(t.closest('[data-phon]')) return togglePhon();
     if((b=t.closest('[data-say]'))) return speak(cur.words[+b.getAttribute('data-say')][0]);
     if(t.closest('[data-replay]')) return speak(st.order[st.i][0]);
     if((b=t.closest('[data-a]'))) return answer(b.getAttribute('data-a'));
@@ -790,7 +954,7 @@ footer{border-top:1px solid var(--line);padding:22px 0 30px;color:var(--ink3);fo
   });
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!modal.hidden) closeModal();});
 
-  renderSeg(); renderPaths();
+  renderSeg(); renderPhonBtn(); renderPaths();
 })();
 </script>
 </body>
