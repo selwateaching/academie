@@ -51,3 +51,8 @@ il suffit de lui donner une liste `lessons`.
 - Root Directory : `dubai`
 - Build Command : *(vide)*
 - Publish Directory : `.`
+
+Si le service a été créé en **Web Service** (Python) plutôt qu'en Static Site :
+- Root Directory : `dubai`
+- Build Command : `pip install -r requirements.txt`
+- Start Command : `python server.py`
