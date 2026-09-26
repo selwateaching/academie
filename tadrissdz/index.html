@@ -8146,6 +8146,65 @@ function spRenderExercices() {
     }
     _spExoMatPrefilled = true;
   }
+  spRenderExoHistory();
+}
+
+function spExoHistKey() {
+  if (!spCurrentEleve) return null;
+  return 'TADRISS_EXO_HIST_' + (spCurrentEleve.code || spCurrentEleve.id);
+}
+
+function spSaveExoScore(correct, total) {
+  var key = spExoHistKey(); if (!key) return;
+  try {
+    var hist = JSON.parse(localStorage.getItem(key) || '[]');
+    hist.unshift({
+      date: new Date().toISOString(),
+      mat: document.getElementById('spExoMat').value,
+      niv: document.getElementById('spExoNiv').value.trim(),
+      chap: document.getElementById('spExoChap').value.trim(),
+      correct: correct,
+      total: total
+    });
+    hist = hist.slice(0, 50);
+    localStorage.setItem(key, JSON.stringify(hist));
+  } catch (e) {}
+  spRenderExoHistory();
+}
+
+function spRenderExoHistory() {
+  var el = document.getElementById('spExoHistory');
+  if (!el) return;
+  var isAR = CURRENT_LANG === 'ar';
+  var hist = [];
+  try { var key = spExoHistKey(); hist = key ? JSON.parse(localStorage.getItem(key) || '[]') : []; } catch (e) { hist = []; }
+  if (!hist.length) {
+    el.innerHTML = '<div style="text-align:center;padding:1.2rem;color:var(--ink3);font-size:.8rem;border:1px dashed var(--br);border-radius:9px">'+(isAR?'لا يوجد سجل بعد — أنجز تمارين لرؤية تقدمك هنا.':'Aucun historique pour l\'instant — fais des exercices pour voir ta progression ici.')+'</div>';
+    return;
+  }
+  var recent = hist.slice(0, 8);
+  var sumPct = 0;
+  recent.forEach(function(h){ sumPct += (h.total ? h.correct / h.total : 0); });
+  var avgPct = Math.round((sumPct / recent.length) * 100);
+  var avgCol = avgPct >= 80 ? 'var(--g)' : avgPct >= 50 ? 'var(--a)' : 'var(--r)';
+  var h2 = '<div style="display:flex;align-items:center;gap:14px;margin-bottom:.9rem;padding:.9rem 1rem;background:var(--bg);border-radius:9px">';
+  h2 += '<div style="font-size:1.6rem;font-weight:800;color:'+avgCol+'">'+avgPct+'%</div>';
+  h2 += '<div style="font-size:.78rem;color:var(--ink3)">'+(isAR?('متوسط آخر '+recent.length+' محاولات'):('Moyenne sur les '+recent.length+' derniers essais · '+hist.length+' au total'))+'</div>';
+  h2 += '</div>';
+  h2 += '<div style="display:flex;flex-direction:column;gap:6px">';
+  hist.slice(0, 10).forEach(function(hh){
+    var pct = hh.total ? Math.round(hh.correct / hh.total * 100) : 0;
+    var col = pct >= 80 ? 'var(--g)' : pct >= 50 ? 'var(--a)' : 'var(--r)';
+    var d = new Date(hh.date);
+    var dateStr = isNaN(d.getTime()) ? '' : d.toLocaleDateString(isAR?'ar':'fr-FR', {day:'2-digit', month:'2-digit'});
+    h2 += '<div style="display:flex;align-items:center;gap:10px;padding:6px 9px;border-radius:6px;background:var(--w);border:1px solid var(--br)">';
+    h2 += '<div style="font-size:.68rem;color:var(--ink3);min-width:34px">'+dateStr+'</div>';
+    h2 += '<div style="flex:1;font-size:.78rem;font-weight:600">'+(hh.mat||'')+(hh.chap?(' · '+hh.chap):'')+'</div>';
+    h2 += '<div style="font-size:.78rem;font-weight:700;color:'+col+'">'+hh.correct+'/'+hh.total+'</div>';
+    h2 += '</div>';
+  });
+  h2 += '</div>';
+  el.innerHTML = h2;
 }
 
 async function spGenExercices() {
@@ -8251,6 +8310,7 @@ function spVerifExo() {
   });
   var scoreEl = document.getElementById('spExoScore');
   if (scoreEl) scoreEl.textContent = correct + ' / ' + qs.length + ' correct' + (correct > 1 ? 's' : '');
+  if (qs.length) spSaveExoScore(correct, qs.length);
 }
 
 function spRenderRessources() {
@@ -8602,6 +8662,10 @@ function exportNotesPDF() {
               </div>
               <div class="fg"><label class="fl">Chapitre / Sujet</label><input class="fi" id="spExoChap" placeholder="Ex. Les fractions, La voix passive, La photosynthèse..."></div>
               <button class="btn bt" id="spExoBtn" onclick="spGenExercices()">✦ Générer des exercices</button>
+              <div style="margin-top:1.3rem;">
+                <div style="font-size:.78rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">📊 Ma progression</div>
+                <div id="spExoHistory"></div>
+              </div>
               <div id="spExoContent" style="margin-top:1.1rem;"></div>
             </div>
           </div>
