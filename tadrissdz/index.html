@@ -6461,6 +6461,22 @@ function rCahier() {
     '<div class="stat str"><div>🎯</div><div class="sv">'+yearPct+'%</div><div class="sl">'+T('cj_acheve_annee')+'</div></div>';
   renderCjWeek();
 }
+/* Déroulement d'une séance dans le tableau de la semaine : un aperçu court, et le
+   texte complet repliable. Les séances créées par Tadriss IA ont un déroulement
+   détaillé qui, affiché en entier, étirait la ligne sur toute la page. */
+function cjContenuCourt(txt) {
+  var t = (txt || '').replace(/\*\*/g, '').trim();
+  if (!t) return '';
+  var style = 'font-size:.72rem;color:var(--ink2);margin-top:3px;white-space:pre-wrap;';
+  var lignes = t.split('\n');
+  if (t.length <= 160 && lignes.length <= 3) return '<div style="' + style + '">' + t + '</div>';
+  var apercu = lignes.slice(0, 2).join('\n');
+  if (apercu.length > 140) apercu = apercu.slice(0, 140) + '…';
+  var voir = CURRENT_LANG === 'ar' ? 'عرض السير الكامل' : 'Voir le déroulement complet';
+  return '<div style="' + style + '">' + apercu + '</div>' +
+    '<details style="margin-top:3px;"><summary style="cursor:pointer;font-size:.72rem;color:var(--g);font-weight:600;">▸ ' + voir + '</summary>' +
+    '<div style="' + style + '">' + t + '</div></details>';
+}
 function renderCjWeek() {
   var rows = [];
   for (var i=0;i<5;i++) {
@@ -6481,7 +6497,7 @@ function renderCjWeek() {
       '<td style="white-space:nowrap;"><strong>'+r.jour+'</strong><br><span style="font-size:.7rem;color:var(--ink3)">'+r.jourDate.getDate()+' '+moLbl(r.jourDate.getMonth())+'</span></td>'+
       '<td style="white-space:nowrap;">'+(s.heure||'--:--')+'<br><span style="font-size:.7rem;color:var(--ink3)">'+(s.duree||'')+'</span></td>'+
       '<td>'+(cls?cls.nm:'')+'<br><span style="font-size:.7rem;color:var(--ink3)">'+(s.mat||'')+'</span></td>'+
-      '<td style="min-width:180px;"><strong>'+s.titre+'</strong>'+(s.contenu?'<div style="font-size:.72rem;color:var(--ink2);margin-top:3px;white-space:pre-wrap;">'+s.contenu+'</div>':'')+'</td>'+
+      '<td style="min-width:180px;"><strong>'+s.titre+'</strong>'+cjContenuCourt(s.contenu)+'</td>'+
       '<td style="min-width:160px;font-size:.78rem;white-space:pre-wrap;">'+(s.objectifs||'—')+'</td>'+
       '<td style="font-size:.78rem;">'+(s.supports||'—')+'</td>'+
       '<td>'+badge+'</td>'+
@@ -8034,7 +8050,7 @@ function tiaCreateSeance(idx) {
   var today = ymdLocal(dateCible);
   var rec = {
     id: D.cj.length ? Math.max.apply(null, D.cj.map(function (x) { return x.id; })) + 1 : 1,
-    date: today, heure: '08:00', cid: null,
+    date: today, heure: '08:00', cid: (gAC() ? gAC().id : null), /* classe active, comme les fiches créées depuis Cours IA */
     duree: obj.duree || '1h', titre: obj.titre || 'Séance', contenu: obj.contenu || '',
     objectifs: obj.objectifs || '', supports: obj.supports || '',
     statut: 'inacheve', mat: obj.mat || D.s.mat || '', reste: ''
