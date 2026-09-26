@@ -1278,6 +1278,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <button class="btn bo bsm" onclick="exportElevesPDF()" title="Exporter PDF">📄 PDF</button>
       <button class="btn bo bsm" id="trombinoToggleBtn" onclick="toggleTrombino()">🖼 Trombinoscope</button>
       <button class="btn bo bsm" id="trombinoPrintBtn" style="display:none" onclick="printCleanPage('Trombinoscope', document.getElementById('trombinoBox').innerHTML)">🖨 Imprimer</button>
+      <button class="btn bo bsm" onclick="OM('mGroupes')">👥 Groupes</button>
       <button class="btn bt" onclick="OM('mEleve')">+ Ajouter</button>
     </div>
   </div>
@@ -2146,6 +2147,41 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <button class="btn bo" onclick="CM('mSequence')">Annuler</button>
       <button class="btn bt" onclick="saveSequence()">Enregistrer</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="mGroupes">
+  <div class="modal" style="width:680px;max-width:92vw;">
+    <div class="mh"><div class="mt2">👥 Former des groupes</div><button class="mx" onclick="CM('mGroupes')">✕</button></div>
+    <div class="mb">
+      <div class="fg2">
+        <div class="fg"><label class="fl">Répartir par</label>
+          <select class="fs" id="grpUnite" onchange="document.getElementById('grpValLbl').textContent = this.value==='n' ? 'Nombre de groupes' : 'Élèves par groupe'">
+            <option value="n">Nombre de groupes</option>
+            <option value="taille">Élèves par groupe</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl" id="grpValLbl">Nombre de groupes</label><input type="number" class="fi" id="grpVal" min="1" value="4"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Mode</label>
+        <select class="fs" id="grpMode">
+          <option value="hetero">Niveaux mélangés (hétérogène)</option>
+          <option value="homo">Même niveau (homogène)</option>
+        </select>
+      </div>
+      <button class="btn bt" style="width:100%;margin-bottom:1rem" onclick="genererGroupes()">🎲 Générer les groupes</button>
+      <div id="grpResult"></div>
+      <div id="grpResultActions" style="display:none;gap:.6rem;margin:.8rem 0 1.2rem;">
+        <button class="btn bo bsm" onclick="imprimerGroupes()">🖨 Imprimer</button>
+        <button class="btn bo bsm" onclick="enregistrerGroupes()">💾 Enregistrer dans l'historique</button>
+      </div>
+      <div style="border-top:1px solid var(--br);margin-top:1rem;padding-top:1rem;">
+        <div class="fl" style="margin-bottom:.6rem;">Historique</div>
+        <div id="grpHistorique"></div>
+      </div>
+    </div>
+    <div class="mf"><button class="btn bo" onclick="CM('mGroupes')">Fermer</button></div>
   </div>
 </div>
 
@@ -4533,6 +4569,7 @@ function OM(id) {
   var e = document.getElementById(id); if (!e) return;
   e.classList.add('open');
   if (id === 'mClasse') rClsList();
+  if (id === 'mGroupes') { curGroupes = null; document.getElementById('grpResult').innerHTML = ''; document.getElementById('grpResultActions').style.display = 'none'; rGroupesHistorique(); }
   if (id === 'mEleve') { fillClsSel(); resetElPhotoUI(); var mElDelBtn0 = document.getElementById('mElDelBtn'); if (mElDelBtn0) mElDelBtn0.style.display = D._eId ? '' : 'none'; }
   if (id === 'mNote') {
     var evEdit = D._evId ? D.ev.find(function(x){ return x.id===D._evId; }) : null;
@@ -4756,14 +4793,14 @@ var D = {
     { id:4, domaine:'Comportement & autonomie', libelle:'Je travaille de manière autonome et organisée' },
     { id:5, domaine:'Comportement & autonomie', libelle:'Je respecte les consignes et le matériel de classe' },
     { id:6, domaine:'Expression', libelle:"Je m'exprime clairement à l'oral devant la classe" }
-  ], acquis:[]
+  ], acquis:[], groupes:[]
 };
 
 var D_DEFAULTS = JSON.parse(JSON.stringify(D)); /* état "vierge" figé, avant toute lecture du stockage — sert à réinitialiser proprement à chaque changement de compte */
 
 var CURRENT_STORAGE_KEY = 'TADRISS_DZ'; /* clé par défaut avant identification du compte Firebase */
-function ld() { try { var x = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}'); ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis'].forEach(function(k) { if (x[k]!==undefined) D[k] = x[k]; }); } catch(e) {} }
-function sv() { try { var o = {}; ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis'].forEach(function(k) { o[k] = D[k]; }); localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(o)); } catch(e) {} if (typeof window.scheduleCloudSync === 'function') window.scheduleCloudSync(); }
+function ld() { try { var x = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}'); ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes'].forEach(function(k) { if (x[k]!==undefined) D[k] = x[k]; }); } catch(e) {} }
+function sv() { try { var o = {}; ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes'].forEach(function(k) { o[k] = D[k]; }); localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(o)); } catch(e) {} if (typeof window.scheduleCloudSync === 'function') window.scheduleCloudSync(); }
 function resetToDefaults() { var fresh = JSON.parse(JSON.stringify(D_DEFAULTS)); Object.keys(fresh).forEach(function(k){ D[k] = fresh[k]; }); }
 /* Un autre onglet (ex: Labo Langues, ouvert séparément pour corriger une production orale)
    peut écrire directement dans ce même stockage local. Sans ceci, l'onglet Tadriss déjà
@@ -5036,6 +5073,112 @@ document.addEventListener('keydown', function(e) {
 function gAC() { return D.cls.find(function(c) { return c.on; }) || D.cls[0]; }
 function gCE() { var a = gAC(); return a ? D.el.filter(function(e) { return e.cid === a.id; }) : D.el; }
 function calcMoy(eid) { var p = 0, cf = 0; D.ev.forEach(function(v) { if (v.notes[eid] !== undefined) { p += v.notes[eid] * v.coef; cf += v.coef; } }); return cf ? p / cf : null; }
+
+/* ===== Former des groupes (Mes élèves) ===== */
+var curGroupes = null;
+
+function genererGroupes() {
+  var ce = gCE(), ac = gAC();
+  var isAR = CURRENT_LANG === 'ar';
+  if (!ce.length) { N(isAR?'لا يوجد تلاميذ في هذا القسم.':'Aucun élève dans cette classe.', 'err'); return; }
+  var unite = document.getElementById('grpUnite').value;
+  var val = parseInt(document.getElementById('grpVal').value) || 1;
+  var mode = document.getElementById('grpMode').value;
+  var nbGroupes = unite === 'n' ? Math.max(1, Math.min(val, ce.length)) : Math.max(1, Math.ceil(ce.length / Math.max(1, val)));
+
+  var sorted = ce.slice().sort(function(a, b) {
+    var ma = calcMoy(a.id), mb = calcMoy(b.id);
+    ma = ma === null ? -1 : ma; mb = mb === null ? -1 : mb;
+    return mb - ma;
+  });
+
+  var groupes = [];
+  for (var i = 0; i < nbGroupes; i++) groupes.push([]);
+
+  if (mode === 'hetero') {
+    sorted.forEach(function(e, i) { groupes[i % nbGroupes].push(e.id); });
+  } else {
+    var base = Math.floor(sorted.length / nbGroupes), rest = sorted.length % nbGroupes, idx = 0;
+    for (var g = 0; g < nbGroupes; g++) {
+      var taille = base + (g < rest ? 1 : 0);
+      for (var k = 0; k < taille; k++) { groupes[g].push(sorted[idx].id); idx++; }
+    }
+  }
+
+  curGroupes = { id: null, cid: ac.id, date: new Date().toISOString(), mode: mode, unite: unite, val: val, groupes: groupes };
+  renderGroupesResult(curGroupes);
+  document.getElementById('grpResultActions').style.display = 'flex';
+}
+
+function renderGroupesResult(g) {
+  var isAR = CURRENT_LANG === 'ar';
+  var h = g.groupes.map(function(ids, i) {
+    var membres = ids.map(function(eid) {
+      var e = D.el.find(function(x) { return x.id === eid; }); if (!e) return '';
+      var m = calcMoy(eid), mv = m !== null ? m.toFixed(1) : '--';
+      return '<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:.8rem;"><span>' + e.pr + ' ' + e.no + '</span><span style="color:var(--ink3)">' + mv + '/20</span></div>';
+    }).join('');
+    return '<div class="card" style="margin-bottom:.8rem;"><div class="ch"><div class="ct">' + (isAR ? 'المجموعة ' : 'Groupe ') + (i + 1) + ' (' + ids.length + ')</div></div><div>' + membres + '</div></div>';
+  }).join('');
+  document.getElementById('grpResult').innerHTML = h;
+}
+
+function imprimerGroupes() {
+  if (!curGroupes) return;
+  var ac = gAC();
+  printCleanPage((CURRENT_LANG === 'ar' ? 'المجموعات — ' : 'Groupes — ') + (ac ? ac.nm : ''), document.getElementById('grpResult').innerHTML);
+}
+
+function enregistrerGroupes() {
+  if (!curGroupes) return;
+  var isAR = CURRENT_LANG === 'ar';
+  var entry = { id: Date.now(), cid: curGroupes.cid, date: curGroupes.date, mode: curGroupes.mode, unite: curGroupes.unite, val: curGroupes.val, groupes: curGroupes.groupes };
+  D.groupes.unshift(entry);
+  sv();
+  rGroupesHistorique();
+  N(isAR ? 'تم حفظ المجموعات في السجل.' : 'Groupes enregistrés dans l\'historique.', 'ok');
+}
+
+function rGroupesHistorique() {
+  var el = document.getElementById('grpHistorique'); if (!el) return;
+  var ac = gAC(); if (!ac) { el.innerHTML = ''; return; }
+  var isAR = CURRENT_LANG === 'ar';
+  var list = (D.groupes || []).filter(function(g) { return g.cid === ac.id; });
+  if (!list.length) { el.innerHTML = '<div style="text-align:center;padding:1rem;color:var(--ink3);font-size:.78rem">' + (isAR ? 'لا يوجد سجل لهذا القسم.' : 'Aucun historique pour cette classe.') + '</div>'; return; }
+  el.innerHTML = list.map(function(g) {
+    var d = new Date(g.date); var dateStr = isNaN(d.getTime()) ? '' : d.toLocaleDateString(isAR ? 'ar' : 'fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    var modeLbl = g.mode === 'hetero' ? (isAR ? 'غير متجانسة' : 'Hétérogène') : (isAR ? 'متجانسة' : 'Homogène');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:6px;background:var(--w);border:1px solid var(--br);margin-bottom:6px;">'
+      + '<div style="flex:1;font-size:.78rem;"><b>' + g.groupes.length + (isAR ? ' مجموعات' : ' groupes') + '</b> · ' + modeLbl + ' <span style="color:var(--ink3)">— ' + dateStr + '</span></div>'
+      + '<button class="btn bxs bo" onclick="voirGroupesHistorique(' + g.id + ')" title="' + (isAR ? 'عرض' : 'Voir') + '">👁</button>'
+      + '<button class="btn bxs bo" onclick="reformerGroupesHistorique(' + g.id + ')" title="' + (isAR ? 'إعادة تشكيل' : 'Reformer') + '">🔁</button>'
+      + '<button class="btn bxs bo" onclick="supprimerGroupesHistorique(' + g.id + ')" style="color:var(--r)" title="' + (isAR ? 'حذف' : 'Supprimer') + '">🗑</button>'
+      + '</div>';
+  }).join('');
+}
+
+function voirGroupesHistorique(id) {
+  var g = D.groupes.find(function(x) { return x.id === id; }); if (!g) return;
+  curGroupes = g;
+  renderGroupesResult(g);
+  document.getElementById('grpResultActions').style.display = 'flex';
+}
+
+function reformerGroupesHistorique(id) {
+  var g = D.groupes.find(function(x) { return x.id === id; }); if (!g) return;
+  document.getElementById('grpUnite').value = g.unite;
+  document.getElementById('grpVal').value = g.val;
+  document.getElementById('grpMode').value = g.mode;
+  document.getElementById('grpValLbl').textContent = g.unite === 'n' ? (CURRENT_LANG === 'ar' ? 'عدد المجموعات' : 'Nombre de groupes') : (CURRENT_LANG === 'ar' ? 'تلاميذ لكل مجموعة' : 'Élèves par groupe');
+  genererGroupes();
+}
+
+function supprimerGroupesHistorique(id) {
+  if (!confirm(CURRENT_LANG === 'ar' ? 'حذف هذه المجموعات من السجل؟' : 'Supprimer ces groupes de l\'historique ?')) return;
+  D.groupes = D.groupes.filter(function(x) { return x.id !== id; });
+  sv();
+  rGroupesHistorique();
+}
 var MO = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 var MO_AR = ['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبت','أكت','نوف','ديس'];
 function moLbl(i) { return CURRENT_LANG==='ar' ? MO_AR[i] : MO[i]; }
