@@ -113,6 +113,75 @@ def fallback_content(doc_type, level, subject, user_prompt):
     }
 
 
+EXERCICES_SYSTEM_PROMPT = (
+    "Tu es TADRISS IA, un assistant pédagogique pour les enseignants et élèves du "
+    "système scolaire algérien (primaire, moyen, secondaire). Tu réponds uniquement "
+    "avec un objet JSON valide, sans aucun texte avant, après, ni de balises "
+    "markdown autour du JSON."
+)
+
+
+def build_exercices_prompt(level, subject):
+    level = (level or "").strip() or "non précisé"
+    subject = (subject or "").strip() or "non précisée"
+    return f"""Génère une série de 6 exercices interactifs à trous (une seule bonne réponse à choisir parmi des options), conformes au programme officiel algérien.
+
+Contexte :
+- Niveau : {level}
+- Matière : {subject}
+
+Chaque exercice est une phrase ou une égalité coupée en deux par UN seul blanc à compléter, avec 2 ou 3 options de réponse (dont une seule correcte, les autres plausibles mais fausses).
+
+Réponds STRICTEMENT avec un objet JSON valide, au format exact suivant, sans rien d'autre :
+{{
+  "title": "titre court de la série d'exercices",
+  "rtl": true ou false,
+  "questions": [
+    {{"before": "texte avant le blanc", "after": "texte après le blanc (peut être vide)", "options": ["option1", "option2"], "answer": "option correcte, identique à l'une des options"}}
+  ]
+}}
+
+Les 6 exercices doivent couvrir des notions variées du niveau et de la matière indiqués, être corrects, non ambigus, et adaptés à l'âge des élèves. Mets "rtl" à true uniquement si la matière est rédigée en arabe (ex. Arabe, Éducation islamique)."""
+
+
+def fallback_exercices(level, subject):
+    """Repli local si l'IA est indisponible, pour que l'app reste opérationnelle."""
+    return {
+        "title": f"Exercices — {subject or 'Matière'} · {level or 'Niveau'}",
+        "rtl": False,
+        "questions": [
+            {"before": "Exercice indisponible pour le moment.", "after": "", "options": ["réessayer"], "answer": "réessayer"},
+        ],
+    }
+
+
+def generate_exercices(level, subject):
+    prompt = build_exercices_prompt(level, subject)
+    try:
+        client = get_client()
+        response = client.messages.create(
+            model=MODEL_ID,
+            max_tokens=3000,
+            system=EXERCICES_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = next((b.text for b in response.content if b.type == "text"), "")
+        data = _extract_json(text)
+        questions = data.get("questions")
+        if not isinstance(questions, list) or not questions:
+            raise ValueError("Format de réponse IA invalide")
+        for q in questions:
+            if not isinstance(q, dict) or not q.get("options") or q.get("answer") not in q.get("options", []):
+                raise ValueError("Format de réponse IA invalide")
+        data.setdefault("title", f"Exercices — {subject or 'Matière'} · {level or 'Niveau'}")
+        data.setdefault("rtl", False)
+        return data
+    except Exception as exc:  # noqa: BLE001 - l'app doit rester utilisable si l'IA tombe
+        result = fallback_exercices(level, subject)
+        result["_ai_error"] = str(exc)
+        return result
+
+
 def generate_document(doc_type, level, subject, lang, user_prompt):
     prompt = build_prompt(doc_type, level, subject, lang, user_prompt)
     try:

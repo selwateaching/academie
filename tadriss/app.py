@@ -23,7 +23,7 @@ from flask_limiter.util import get_remote_address
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from sqlalchemy import inspect, text
 
-from ai import generate_document
+from ai import generate_document, generate_exercices
 from models import (
     DEFAULT_STATE,
     SUBSCRIPTION_DAYS,
@@ -264,6 +264,19 @@ def api_ai_generate():
         payload.get("prompt", ""),
     )
     return jsonify({"ok": True, "document": document})
+
+
+@app.route("/api/exercices/generate", methods=["POST"])
+@limiter.limit("15 per minute", methods=["POST"])
+def api_exercices_generate():
+    if not (current_user.is_authenticated or current_eleve()):
+        abort(403)
+    payload = request.get_json(force=True, silent=True) or {}
+    exercices = generate_exercices(
+        payload.get("level", ""),
+        payload.get("subject", ""),
+    )
+    return jsonify({"ok": True, "exercices": exercices})
 
 
 # ---------------------------------------------------------------------------

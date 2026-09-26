@@ -14,6 +14,19 @@
   .sp-moy{display:flex;align-items:center;gap:18px}
   .sp-moy .val{font:900 40px Nunito;color:var(--navy)}
   @media print{.no-print{display:none!important}body{padding:0}}
+  .exo-q{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--line)}
+  .exo-q:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .exo-num{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#f2f4fa;color:var(--navy);align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-right:6px}
+  .exo-blank{display:inline-block;min-width:120px;padding:4px 8px;border:1.5px solid var(--line);border-radius:6px;font:inherit;font-size:12px;background:#fff;color:var(--navy);margin:0 3px}
+  .exo-blank.ok{border-color:var(--green);background:var(--green-soft);color:var(--green);font-weight:700}
+  .exo-blank.bad{border-color:var(--coral);background:var(--coral-soft);color:var(--coral);font-weight:700}
+  .exo-score{font-size:12px;font-weight:700;color:var(--muted);margin-left:10px}
+  .exo-corrige{display:none}
+  @media print{
+    .exo-blank{appearance:none;-webkit-appearance:none;background:transparent;border:none;border-bottom:1.5px solid #333;border-radius:0;min-width:140px;color:transparent}
+    .exo-blank option{color:#000}
+    .exo-corrige{display:block;margin-top:.9rem;padding-top:.7rem;border-top:1px dashed #999;font-size:11px;color:#555}
+  }
 </style>
 </head>
 <body>
@@ -66,6 +79,111 @@
     <div class="empty"><strong>Aucune absence enregistrée</strong><span>👍</span></div>
     {% endif %}
   </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="card-title"><h3>Exercices interactifs</h3></div>
+    <div class="no-print form-grid" style="margin-bottom:12px">
+      <div class="field">
+        <label>Matière</label>
+        <select id="exoMatiere">
+          <option>Mathématiques</option>
+          <option>Français</option>
+          <option>Arabe</option>
+          <option>Anglais</option>
+          <option>Tamazight</option>
+          <option>Histoire-Géographie</option>
+          <option>Sciences physiques</option>
+          <option>Sciences naturelles (SVT)</option>
+          <option>Éducation islamique</option>
+          <option>Éducation civique</option>
+          <option>Informatique</option>
+          <option>Éducation artistique</option>
+          <option>Éducation physique et sportive</option>
+          <option>Philosophie</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Niveau</label>
+        <input id="exoNiveau" placeholder="Ex. 4AM, 1re année secondaire...">
+      </div>
+    </div>
+    <div class="no-print" style="margin-bottom:14px">
+      <button class="btn primary" onclick="genererExercices()" id="exoBtn">✦ Générer des exercices</button>
+      <span class="exo-score" id="exoStatus"></span>
+    </div>
+    <div id="exoContent"></div>
+  </div>
 </div>
+
+<script>
+function escHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+async function genererExercices(){
+  var matiere=document.getElementById('exoMatiere').value;
+  var niveau=document.getElementById('exoNiveau').value.trim();
+  if(!niveau){alert('Indique ton niveau (ex. 4AM, 1re année secondaire...).');return}
+  var btn=document.getElementById('exoBtn');
+  var statusEl=document.getElementById('exoStatus');
+  btn.disabled=true;
+  statusEl.textContent='Génération en cours...';
+  document.getElementById('exoContent').innerHTML='';
+  try{
+    var r=await fetch('/api/exercices/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:matiere,level:niveau})});
+    var data=await r.json();
+    if(!data.ok) throw new Error('Erreur serveur');
+    renderExercices(data.exercices, matiere, niveau);
+    statusEl.textContent='';
+  }catch(e){
+    statusEl.textContent='Impossible de générer les exercices pour le moment.';
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+function renderExercices(ex, matiere, niveau){
+  var dir = ex.rtl ? ' dir="rtl"' : '';
+  var qsHtml = (ex.questions||[]).map(function(q,i){
+    var opts = '<option value="">— choisir —</option>' + (q.options||[]).map(function(o){
+      return '<option value="'+escHtml(o)+'">'+escHtml(o)+'</option>';
+    }).join('');
+    return '<div class="exo-q">'+
+      '<span class="exo-num">'+(i+1)+'</span>'+
+      '<span>'+escHtml(q.before||'')+' <select class="exo-blank" data-answer="'+escHtml(q.answer||'')+'">'+opts+'</select> '+escHtml(q.after||'')+'</span>'+
+      '</div>';
+  }).join('');
+  var corrigeHtml = '<div class="exo-corrige"><strong>Corrigé :</strong> '+(ex.questions||[]).map(function(q,i){
+    return (i+1)+'. '+escHtml(q.answer||'');
+  }).join(' — ')+'</div>';
+  document.getElementById('exoContent').innerHTML =
+    '<div'+dir+'>'+
+    '<h4 style="margin:0 0 10px">'+escHtml(ex.title||'Exercices')+' <small style="color:var(--muted);font-weight:400">('+escHtml(matiere)+' · '+escHtml(niveau)+')</small></h4>'+
+    qsHtml+
+    '<div class="no-print" style="margin-top:14px;display:flex;align-items:center;gap:12px">'+
+      '<button class="btn primary" onclick="verifierExercices()">Vérifier mes réponses</button>'+
+      '<button class="btn" onclick="reinitialiserExercices()">Recommencer</button>'+
+      '<span class="exo-score" id="exoScore"></span>'+
+    '</div>'+
+    corrigeHtml+
+    '</div>';
+}
+
+function verifierExercices(){
+  var blanks=document.querySelectorAll('#exoContent .exo-blank');
+  var correct=0;
+  blanks.forEach(function(b){
+    b.classList.remove('ok','bad');
+    if(b.value===b.dataset.answer){b.classList.add('ok');correct++}
+    else if(b.value!==''){b.classList.add('bad')}
+  });
+  var scoreEl=document.getElementById('exoScore');
+  if(scoreEl) scoreEl.textContent=correct+' / '+blanks.length+' correct'+(correct>1?'s':'');
+}
+
+function reinitialiserExercices(){
+  document.querySelectorAll('#exoContent .exo-blank').forEach(function(b){b.value='';b.classList.remove('ok','bad')});
+  var scoreEl=document.getElementById('exoScore');
+  if(scoreEl) scoreEl.textContent='';
+}
+</script>
 </body>
 </html>
