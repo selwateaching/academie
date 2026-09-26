@@ -6407,7 +6407,7 @@ function rCal() {
   for (var i=0;i<dw;i++) g.innerHTML+='<div style="padding:4px;min-height:55px;border-radius:6px;opacity:.3"></div>';
   for (var dy=1;dy<=l.getDate();dy++) {
     var dt=new Date(calM.getFullYear(),calM.getMonth(),dy), it=dt.toDateString()===td.toDateString();
-    var ds=dt.toISOString().split('T')[0];
+    var ds=ymdLocal(dt);
     var ferie=ferieDuJour(ds);
     var evs=D.evt.filter(function(v){return v.date===ds;});
     var eh=evs.map(function(v){var col=v.type.indexOf('Contrôle')>=0?'#C8102E':v.type.indexOf('Devoir')>=0?'#D4AF37':v.type.indexOf('Réunion')>=0?'#8B5CF6':'#006B3F';return '<div style="font-size:.55rem;border-radius:3px;padding:1px 4px;margin-top:2px;background:'+col+'22;color:'+col+';overflow:hidden;white-space:nowrap;text-overflow:ellipsis">'+v.title+'</div>';}).join('');
@@ -6437,6 +6437,9 @@ var JOURS_CJ = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi'];
 var JOURS_CJ_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
 function jourCjLbl(i) { return CURRENT_LANG==='ar' ? JOURS_CJ_AR[i] : JOURS_CJ[i]; }
 function getWeekStart(d) { var x=new Date(d); x.setHours(0,0,0,0); var day=x.getDay(); x.setDate(x.getDate()-day); return x; }
+/* Date locale AAAA-MM-JJ. toISOString() donne la date UTC : en Algérie (UTC+1), minuit local
+   devient la veille, et chaque séance s'affichait un jour trop tard. */
+function ymdLocal(d) { var m=d.getMonth()+1, j=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(j<10?'0':'')+j; }
 var cjWeek = getWeekStart(new Date());
 function cjWeekP() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()-7); rCahier(); }
 function cjWeekN() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+7); rCahier(); }
@@ -6462,7 +6465,7 @@ function renderCjWeek() {
   var rows = [];
   for (var i=0;i<5;i++) {
     var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
-    var ds = d.toISOString().split('T')[0];
+    var ds = ymdLocal(d);
     var seances = D.cj.filter(function(s){ return s.date===ds; }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
     seances.forEach(function(s){ rows.push({s:s, jour:jourCjLbl(i), jourDate:d}); });
   }
@@ -6634,7 +6637,7 @@ function cjPrint() {
   var any = false;
   for (var i=0;i<5;i++) {
     var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
-    var ds = d.toISOString().split('T')[0];
+    var ds = ymdLocal(d);
     var seances = D.cj.filter(function(s){ return s.date===ds; }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
     seances.forEach(function(s) {
       any = true;
@@ -7388,7 +7391,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   var jourAujourdhui = dateCible.getDay(); /* 0=Dimanche ... 5=Vendredi, 6=Samedi */
   if (jourAujourdhui === 5) dateCible.setDate(dateCible.getDate() + 2); /* Vendredi → Dimanche suivant */
   else if (jourAujourdhui === 6) dateCible.setDate(dateCible.getDate() + 1); /* Samedi → Dimanche suivant */
-  var today = dateCible.toISOString().split('T')[0];
+  var today = ymdLocal(dateCible);
   cjWeek = getWeekStart(dateCible); /* affiche automatiquement la bonne semaine, pour que la fiche n'apparaisse pas "perdue" */
   /* Évite les doublons : si une séance du jour a déjà ce titre pour cette classe, on la complète plutôt que d'en créer une nouvelle */
   var existante = D.cj.find(function(s) { return s.date === today && s.titre === titre && s.cid === (ac ? ac.id : null); });
@@ -8021,7 +8024,12 @@ function tiaCreateSeance(idx) {
   var hist = D.iaChat || []; var m = hist[idx];
   if (!m || m.role !== 'card' || !m.seance || m.created) return;
   var obj = m.seance;
-  var today = new Date().toISOString().slice(0, 10);
+  /* Séance créée un vendredi ou un samedi → dimanche suivant (semaine scolaire dim.–jeu.),
+     sinon elle tomberait hors du tableau de la semaine et paraîtrait introuvable. */
+  var dateCible = new Date();
+  if (dateCible.getDay() === 5) dateCible.setDate(dateCible.getDate() + 2);
+  else if (dateCible.getDay() === 6) dateCible.setDate(dateCible.getDate() + 1);
+  var today = ymdLocal(dateCible);
   var rec = {
     id: D.cj.length ? Math.max.apply(null, D.cj.map(function (x) { return x.id; })) + 1 : 1,
     date: today, heure: '08:00', cid: null,
