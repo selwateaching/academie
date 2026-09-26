@@ -8185,7 +8185,9 @@ async function spGenExercices() {
   }
 }
 
+var curExo = null;
 function spDispExercices(ex) {
+  curExo = ex;
   var isAR = CURRENT_LANG === 'ar';
   var h = '<div style="margin-bottom:1rem;padding:1rem;background:var(--tp);border-radius:9px"><div style="font-weight:700">'+(ex.titre||'Exercices')+'</div><div style="font-size:.75rem;color:var(--t);margin-top:3px">'+(ex.questions?ex.questions.length:0)+' questions</div></div>';
   (ex.questions||[]).forEach(function(q,i){
@@ -8200,8 +8202,30 @@ function spDispExercices(ex) {
     h += '<div class="spExoExpl" style="display:none;margin-top:.6rem;font-size:.73rem;color:var(--ink3);font-style:italic;padding:.5rem;background:rgba(0,0,0,.03);border-radius:5px">'+(q.expl?((isAR?'الشرح: ':'Explication : ')+q.expl):'')+'</div>';
     h += '</div>';
   });
-  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:.5rem"><button class="btn bt" onclick="spVerifExo()">'+(isAR?'تحقق من إجاباتي':'Vérifier mes réponses')+'</button><span id="spExoScore" style="font-size:.82rem;font-weight:700;color:var(--ink3)"></span></div>';
+  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:.5rem"><button class="btn bt" onclick="spVerifExo()">'+(isAR?'تحقق من إجاباتي':'Vérifier mes réponses')+'</button><button class="btn bo" onclick="spPrintExo()">🖨 '+(isAR?'طباعة':'Imprimer')+'</button><span id="spExoScore" style="font-size:.82rem;font-weight:700;color:var(--ink3)"></span></div>';
   document.getElementById('spExoContent').innerHTML = h;
+}
+
+function spPrintExo() {
+  if (!curExo) return;
+  var isAR = CURRENT_LANG === 'ar';
+  var mat = document.getElementById('spExoMat').value;
+  var niv = document.getElementById('spExoNiv').value.trim();
+  var h = '<h2 style="margin:0 0 4px">'+(curExo.titre||'Exercices')+'</h2>';
+  h += '<div style="color:#75809d;font-size:12px;margin-bottom:14px">'+mat+' · '+niv+'</div>';
+  (curExo.questions||[]).forEach(function(q,i){
+    h += '<div style="margin:0 0 14px;page-break-inside:avoid">';
+    h += '<div style="font-weight:700;margin-bottom:6px">'+(i+1)+'. '+(q.q||'')+'</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:4px;margin-left:8px">';
+    (q.choix||[]).forEach(function(ch){
+      var isRight = (ch||'').trim() === (q.rep||'').trim();
+      h += '<div style="padding:3px 0">'+(isRight?'☑ ':'☐ ')+ch+(isRight?' <b>('+(isAR?'صحيح':'correct')+')</b>':'')+'</div>';
+    });
+    h += '</div>';
+    if (q.expl) h += '<div style="margin-top:5px;font-size:11px;color:#75809d;font-style:italic">'+(isAR?'الشرح : ':'Explication : ')+q.expl+'</div>';
+    h += '</div>';
+  });
+  printCleanPage((curExo.titre||'Exercices') + ' — ' + mat, h);
 }
 
 function spPickExo(btn) {
