@@ -8202,30 +8202,31 @@ function spDispExercices(ex) {
     h += '<div class="spExoExpl" style="display:none;margin-top:.6rem;font-size:.73rem;color:var(--ink3);font-style:italic;padding:.5rem;background:rgba(0,0,0,.03);border-radius:5px">'+(q.expl?((isAR?'الشرح: ':'Explication : ')+q.expl):'')+'</div>';
     h += '</div>';
   });
-  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:.5rem"><button class="btn bt" onclick="spVerifExo()">'+(isAR?'تحقق من إجاباتي':'Vérifier mes réponses')+'</button><button class="btn bo" onclick="spPrintExo()">🖨 '+(isAR?'طباعة':'Imprimer')+'</button><span id="spExoScore" style="font-size:.82rem;font-weight:700;color:var(--ink3)"></span></div>';
+  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:.5rem;flex-wrap:wrap"><button class="btn bt" onclick="spVerifExo()">'+(isAR?'تحقق من إجاباتي':'Vérifier mes réponses')+'</button><button class="btn bo" onclick="spPrintExo(false)">🖨 '+(isAR?'طباعة (فارغة)':'Imprimer (vierge)')+'</button><button class="btn bo" onclick="spPrintExo(true)">🖨 '+(isAR?'طباعة (مع الحل)':'Imprimer (corrigé)')+'</button><span id="spExoScore" style="font-size:.82rem;font-weight:700;color:var(--ink3)"></span></div>';
   document.getElementById('spExoContent').innerHTML = h;
 }
 
-function spPrintExo() {
+function spPrintExo(avecCorrige) {
   if (!curExo) return;
   var isAR = CURRENT_LANG === 'ar';
   var mat = document.getElementById('spExoMat').value;
   var niv = document.getElementById('spExoNiv').value.trim();
   var h = '<h2 style="margin:0 0 4px">'+(curExo.titre||'Exercices')+'</h2>';
-  h += '<div style="color:#75809d;font-size:12px;margin-bottom:14px">'+mat+' · '+niv+'</div>';
+  h += '<div style="color:#75809d;font-size:12px;margin-bottom:14px">'+mat+' · '+niv+(avecCorrige?(' · '+(isAR?'مع الحل':'avec corrigé')):(' · '+(isAR?'اسم التلميذ : ___________':'Nom : ___________')))+'</div>';
   (curExo.questions||[]).forEach(function(q,i){
     h += '<div style="margin:0 0 14px;page-break-inside:avoid">';
     h += '<div style="font-weight:700;margin-bottom:6px">'+(i+1)+'. '+(q.q||'')+'</div>';
     h += '<div style="display:flex;flex-direction:column;gap:4px;margin-left:8px">';
     (q.choix||[]).forEach(function(ch){
-      var isRight = (ch||'').trim() === (q.rep||'').trim();
+      var isRight = avecCorrige && (ch||'').trim() === (q.rep||'').trim();
       h += '<div style="padding:3px 0">'+(isRight?'☑ ':'☐ ')+ch+(isRight?' <b>('+(isAR?'صحيح':'correct')+')</b>':'')+'</div>';
     });
     h += '</div>';
-    if (q.expl) h += '<div style="margin-top:5px;font-size:11px;color:#75809d;font-style:italic">'+(isAR?'الشرح : ':'Explication : ')+q.expl+'</div>';
+    if (avecCorrige && q.expl) h += '<div style="margin-top:5px;font-size:11px;color:#75809d;font-style:italic">'+(isAR?'الشرح : ':'Explication : ')+q.expl+'</div>';
     h += '</div>';
   });
-  printCleanPage((curExo.titre||'Exercices') + ' — ' + mat, h);
+  var titreDoc = (curExo.titre||'Exercices') + ' — ' + mat + (avecCorrige ? (isAR?' (الحل)':' (corrigé)') : '');
+  printCleanPage(titreDoc, h);
 }
 
 function spPickExo(btn) {
