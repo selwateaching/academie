@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Inscription — Tadriss DZ</title>
+<title>Découvrir Tadriss DZ</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -25,9 +25,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
 .plan-opt{border:2px solid var(--br);border-radius:10px;padding:1rem .9rem;cursor:pointer;text-align:center;transition:all .15s;}
 .plan-opt:hover{border-color:var(--t2);}
 .plan-opt.sel{border-color:var(--t);background:var(--tp);}
-.plan-opt .pname{font-weight:800;font-size:1.02rem;color:var(--ink);}
-.plan-opt .pprice{font-family:Georgia,serif;font-weight:800;font-size:1.5rem;color:var(--t);margin:.3rem 0;}
-.plan-opt .pprice small{font-size:.7rem;font-weight:600;color:var(--ink3);}
+.plan-opt .pname{font-weight:800;font-size:1.02rem;color:var(--ink);margin-bottom:.4rem;}
 .plan-opt .pdesc{font-size:.75rem;color:var(--ink3);}
 .btn{width:100%;padding:.85rem;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;background:var(--t);color:#fff;transition:background .15s;}
 .btn:hover{background:var(--t2);}
@@ -42,19 +40,17 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
 <body>
 <div class="wrap">
   <div class="brand">Tadriss<span>DZ</span></div>
-  <div class="sub">Demande d'inscription à un forfait</div>
+  <div class="sub">Découvrez Tadriss.fr — générez une fiche pédagogique en quelques secondes, toute matière, tout niveau</div>
 
   <div class="card" id="formCard">
     <label class="fl">Choisis ton forfait</label>
     <div class="plans">
       <div class="plan-opt" id="optStarter" onclick="choisirForfait('starter')">
         <div class="pname">Starter</div>
-        <div class="pprice">990 <small>DA/mois</small></div>
         <div class="pdesc">1 matière, générations IA — 40/mois</div>
       </div>
       <div class="plan-opt" id="optPro" onclick="choisirForfait('pro')">
         <div class="pname">Pro</div>
-        <div class="pprice">1 999 <small>DA/mois</small></div>
         <div class="pdesc">1 matière complète, générations IA — 100/mois</div>
       </div>
     </div>
