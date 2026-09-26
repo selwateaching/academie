@@ -6444,7 +6444,26 @@ var cjWeek = getWeekStart(new Date());
 function cjWeekP() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()-7); rCahier(); }
 function cjWeekN() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+7); rCahier(); }
 
+/* Identifiants des séances. Un seul identifiant invalide (vide, texte, doublon) rendait
+   Math.max(...) = NaN : les séances suivantes recevaient l'id NaN, et comme NaN !== NaN,
+   les boutons Supprimer / Achevé / Modifier n'agissaient plus sur elles. */
+function cjNextId() {
+  var max = 0;
+  (D.cj || []).forEach(function (x) { var n = Number(x.id); if (isFinite(n) && n > max) max = n; });
+  return max + 1;
+}
+function cjFixIds() {
+  var vus = {}, max = 0, change = false;
+  D.cj.forEach(function (x) { var n = Number(x.id); if (isFinite(n) && n > 0 && !vus[n]) { vus[n] = x; if (n > max) max = n; } });
+  D.cj.forEach(function (x) {
+    var n = Number(x.id);
+    if (vus[n] === x) { if (x.id !== n) { x.id = n; change = true; } }
+    else { x.id = ++max; change = true; }
+  });
+  return change;
+}
 function rCahier() {
+  if (cjFixIds() && !window._spDistant) sv();
   var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
   document.getElementById('cjWeekL').textContent = T('cj_semaine_du')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth());
   var now = new Date();
@@ -6622,7 +6641,7 @@ function saveSeance() {
     if (idx>=0) D.cj[idx] = Object.assign(D.cj[idx], obj);
     D._sId = null;
   } else {
-    obj.id = D.cj.length ? Math.max.apply(null,D.cj.map(function(x){ return x.id; }))+1 : 1;
+    obj.id = cjNextId();
     if (_pendingProgLink) { obj.progLink = _pendingProgLink; _pendingProgLink = null; }
     D.cj.push(obj);
   }
@@ -7420,7 +7439,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
     return;
   }
   var obj = {
-    id: D.cj.length ? Math.max.apply(null,D.cj.map(function(x){ return x.id; }))+1 : 1,
+    id: cjNextId(),
     date: today,
     heure: '08:00',
     cid: ac ? ac.id : null,
@@ -8049,7 +8068,7 @@ function tiaCreateSeance(idx) {
   else if (dateCible.getDay() === 6) dateCible.setDate(dateCible.getDate() + 1);
   var today = ymdLocal(dateCible);
   var rec = {
-    id: D.cj.length ? Math.max.apply(null, D.cj.map(function (x) { return x.id; })) + 1 : 1,
+    id: cjNextId(),
     date: today, heure: '08:00', cid: (gAC() ? gAC().id : null), /* classe active, comme les fiches créées depuis Cours IA */
     duree: obj.duree || '1h', titre: obj.titre || 'Séance', contenu: obj.contenu || '',
     objectifs: obj.objectifs || '', supports: obj.supports || '',
