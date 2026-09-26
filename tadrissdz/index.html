@@ -8154,6 +8154,14 @@ function spExoHistKey() {
   return 'TADRISS_EXO_HIST_' + (spCurrentEleve.code || spCurrentEleve.id);
 }
 
+function spResetExoHistory() {
+  var isAR = CURRENT_LANG === 'ar';
+  if (!confirm(isAR?'حذف كل سجل التقدم؟ لا يمكن التراجع عن هذا الإجراء.':'Effacer tout l\'historique de progression ? Cette action est irréversible.')) return;
+  var key = spExoHistKey(); if (!key) return;
+  try { localStorage.removeItem(key); } catch (e) {}
+  spRenderExoHistory();
+}
+
 function spSaveExoScore(correct, total) {
   var key = spExoHistKey(); if (!key) return;
   try {
@@ -8663,7 +8671,10 @@ function exportNotesPDF() {
               <div class="fg"><label class="fl">Chapitre / Sujet</label><input class="fi" id="spExoChap" placeholder="Ex. Les fractions, La voix passive, La photosynthèse..."></div>
               <button class="btn bt" id="spExoBtn" onclick="spGenExercices()">✦ Générer des exercices</button>
               <div style="margin-top:1.3rem;">
-                <div style="font-size:.78rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;">📊 Ma progression</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+                  <div style="font-size:.78rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;">📊 Ma progression</div>
+                  <button type="button" onclick="spResetExoHistory()" style="border:0;background:none;color:var(--r);font-size:.68rem;font-weight:700;cursor:pointer;padding:2px 4px;">Réinitialiser</button>
+                </div>
                 <div id="spExoHistory"></div>
               </div>
               <div id="spExoContent" style="margin-top:1.1rem;"></div>
