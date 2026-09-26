@@ -2332,6 +2332,7 @@ var LANG = {
     sp_tab_ressources: '📁 Ressources',
     sp_tab_bulletin: '📋 Bulletin',
     sp_tab_agenda: '📅 Agenda',
+    sp_tab_exercices: '✏️ Exercices',
     sp_notes_title: 'Mes notes',
     sp_abs_title: "Mon historique d'absences",
     sp_abs_empty: 'Aucune absence enregistrée ✓',
@@ -2406,6 +2407,7 @@ var LANG = {
     sp_tab_ressources: '📁 الموارد',
     sp_tab_bulletin: '📋 الكشف',
     sp_tab_agenda: '📅 جدول الأعمال',
+    sp_tab_exercices: '✏️ تمارين',
     sp_notes_title: 'نقاطي',
     sp_abs_title: 'سجل غياباتي',
     sp_abs_empty: 'لا غياب مسجَّل ✓',
@@ -3495,7 +3497,7 @@ function switchLang() {
   if (spLogoutBtn) spLogoutBtn.textContent = LANG[CURRENT_LANG].sp_change_eleve;
 
   /* SP tabs */
-  var tabKeys = ['sp_tab_notes','sp_tab_absences','sp_tab_devoirs','sp_tab_ressources','sp_tab_bulletin','sp_tab_agenda'];
+  var tabKeys = ['sp_tab_notes','sp_tab_absences','sp_tab_devoirs','sp_tab_ressources','sp_tab_bulletin','sp_tab_agenda','sp_tab_exercices'];
   document.querySelectorAll('.sp-tab').forEach(function(el, i) { if (tabKeys[i]) el.textContent = LANG[CURRENT_LANG][tabKeys[i]]; });
 
   /* SP section titles */
@@ -8117,7 +8119,7 @@ function spTab(tab) {
   document.querySelectorAll('.sp-section').forEach(function(s){ s.classList.remove('on'); });
   // Activate clicked tab
   var tabs = document.querySelectorAll('.sp-tab');
-  var tabNames = ['notes','absences','devoirs','ressources','bulletin','agenda'];
+  var tabNames = ['notes','absences','devoirs','ressources','bulletin','agenda','exercices'];
   var idx = tabNames.indexOf(tab);
   if(idx>=0 && tabs[idx]) tabs[idx].classList.add('on');
   var sec = document.getElementById('sp-' + tab);
@@ -8128,6 +8130,100 @@ function spTab(tab) {
   else if(tab==='ressources') spRenderRessources();
   else if(tab==='bulletin') spRenderBulletin();
   else if(tab==='agenda') spRenderAgenda();
+  else if(tab==='exercices') spRenderExercices();
+}
+
+var _spExoMatPrefilled = false;
+function spRenderExercices() {
+  if (!spCurrentEleve) return;
+  if (!_spExoMatPrefilled) {
+    var cls = D.cls.find(function(c){ return c.id === spCurrentEleve.cid; });
+    if (cls && cls.mat) {
+      var sel = document.getElementById('spExoMat');
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === cls.mat || sel.options[i].text === cls.mat) { sel.selectedIndex = i; break; }
+      }
+    }
+    _spExoMatPrefilled = true;
+  }
+}
+
+async function spGenExercices() {
+  if (!spCurrentEleve) return;
+  var mat = document.getElementById('spExoMat').value;
+  var niv = document.getElementById('spExoNiv').value.trim();
+  if (!niv) { N(CURRENT_LANG==='ar'?'أدخل مستواك (مثال: 4AM)':'Indique ton niveau (ex. 4AM, 1re année secondaire...).', 'err'); return; }
+  var q = { autorise: true };
+  try {
+    if (typeof verifierEtIncrementerQuota === 'function') q = await verifierEtIncrementerQuota();
+  } catch (eQuota) {
+    console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
+  }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + ').'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + ').'), 'err'); return; }
+  var btn = document.getElementById('spExoBtn'); var prevText = btn.innerHTML;
+  btn.innerHTML = T('generation') || '…'; btn.disabled = true;
+  document.getElementById('spExoContent').innerHTML = '';
+  var bk = String.fromCharCode(96);
+  var prompt = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien, niveau ' + niv + '. Génère une série de 6 exercices interactifs à choix multiple, variés, corrects, non ambigus et adaptés au niveau, alignés sur le programme MEN algérien. Reste concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","questions":[{"num":1,"q":"...","choix":["...","...","..."],"rep":"...texte exact d\'un des choix...","expl":"..."}]}\nJSON uniquement.';
+  try {
+    var r = await fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt, max_tokens: 3200, model: 'claude-sonnet-5' }) });
+    if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE');
+    var data = await r.json();
+    btn.innerHTML = prevText; btn.disabled = false;
+    if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); return; }
+    var text = extractClaudeText(data);
+    if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي.':'Réponse vide de l\'IA.','err'); return; }
+    var re1 = new RegExp(bk+bk+bk+'json','g'), re2 = new RegExp(bk+bk+bk,'g');
+    var clean = text.replace(re1,'').replace(re2,'').trim();
+    var ex = JSON.parse(clean);
+    spDispExercices(ex);
+  } catch (err) {
+    btn.innerHTML = prevText; btn.disabled = false;
+    N(CURRENT_LANG==='ar'?'تعذر إنشاء التمارين.':'Impossible de générer les exercices pour le moment.', 'err');
+  }
+}
+
+function spDispExercices(ex) {
+  var isAR = CURRENT_LANG === 'ar';
+  var h = '<div style="margin-bottom:1rem;padding:1rem;background:var(--tp);border-radius:9px"><div style="font-weight:700">'+(ex.titre||'Exercices')+'</div><div style="font-size:.75rem;color:var(--t);margin-top:3px">'+(ex.questions?ex.questions.length:0)+' questions</div></div>';
+  (ex.questions||[]).forEach(function(q,i){
+    var rep = (q.rep||'').trim();
+    h += '<div class="spExoQ" data-rep="'+rep.replace(/"/g,'&quot;')+'" style="border:1.5px solid var(--br);border-radius:9px;padding:1rem;margin-bottom:.85rem">';
+    h += '<div style="font-size:.85rem;font-weight:600;margin-bottom:.65rem">'+(i+1)+'. '+(q.q||'')+'</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:6px">';
+    (q.choix||[]).forEach(function(ch){
+      h += '<button type="button" class="spExoChoice" data-txt="'+(ch||'').replace(/"/g,'&quot;')+'" onclick="spPickExo(this)" style="text-align:left;padding:7px 10px;border-radius:6px;font-size:.8rem;border:1px solid var(--br);background:#fff;cursor:pointer">'+ch+'</button>';
+    });
+    h += '</div>';
+    h += '<div class="spExoExpl" style="display:none;margin-top:.6rem;font-size:.73rem;color:var(--ink3);font-style:italic;padding:.5rem;background:rgba(0,0,0,.03);border-radius:5px">'+(q.expl?((isAR?'الشرح: ':'Explication : ')+q.expl):'')+'</div>';
+    h += '</div>';
+  });
+  h += '<div style="display:flex;align-items:center;gap:12px;margin-top:.5rem"><button class="btn bt" onclick="spVerifExo()">'+(isAR?'تحقق من إجاباتي':'Vérifier mes réponses')+'</button><span id="spExoScore" style="font-size:.82rem;font-weight:700;color:var(--ink3)"></span></div>';
+  document.getElementById('spExoContent').innerHTML = h;
+}
+
+function spPickExo(btn) {
+  var q = btn.closest('.spExoQ');
+  q.querySelectorAll('.spExoChoice').forEach(function(b){ b.classList.remove('sel'); b.style.borderColor='var(--br)'; b.style.background='#fff'; b.style.fontWeight='400'; });
+  btn.classList.add('sel'); btn.style.borderColor='var(--t)'; btn.style.background='var(--tp)'; btn.style.fontWeight='700';
+}
+
+function spVerifExo() {
+  var qs = document.querySelectorAll('#spExoContent .spExoQ');
+  var correct = 0;
+  qs.forEach(function(q){
+    var rep = (q.dataset.rep||'').trim();
+    var sel = q.querySelector('.spExoChoice.sel');
+    q.querySelectorAll('.spExoChoice').forEach(function(b){
+      var isRight = (b.dataset.txt||'').trim() === rep;
+      if (isRight) { b.style.borderColor='var(--g)'; b.style.background='var(--gp)'; b.style.fontWeight='700'; }
+      else if (b === sel) { b.style.borderColor='var(--r)'; b.style.background='var(--rp)'; }
+    });
+    var expl = q.querySelector('.spExoExpl'); if (expl) expl.style.display = 'block';
+    if (sel && (sel.dataset.txt||'').trim() === rep) correct++;
+  });
+  var scoreEl = document.getElementById('spExoScore');
+  if (scoreEl) scoreEl.textContent = correct + ' / ' + qs.length + ' correct' + (correct > 1 ? 's' : '');
 }
 
 function spRenderRessources() {
@@ -8386,6 +8482,7 @@ function exportNotesPDF() {
           <div class="sp-tab" onclick="spTab('ressources')">📁 Ressources</div>
           <div class="sp-tab" onclick="spTab('bulletin')">📋 Bulletin</div>
           <div class="sp-tab" onclick="spTab('agenda')">📅 Agenda</div>
+          <div class="sp-tab" onclick="spTab('exercices')">✏️ Exercices</div>
           <div class="sp-tab" onclick="spOpenLaboLangues()" style="margin-left:auto;">🎙️ Labo Langues</div>
         </div>
 
@@ -8446,6 +8543,38 @@ function exportNotesPDF() {
             <div class="ch"><div class="ct" data-i18n="sp_agenda_title">Mon agenda</div></div>
             <div class="cb" id="spAgendaBody">
               <div style="text-align:center;padding:2rem;color:var(--ink3);" data-i18n="sp_agenda_empty">Aucun événement à venir</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXERCICES -->
+        <div class="sp-section" id="sp-exercices">
+          <div class="card">
+            <div class="ch"><div class="ct">Exercices interactifs</div></div>
+            <div class="cb">
+              <div class="g2" style="margin-bottom:.5rem;">
+                <div class="fg"><label class="fl">Matière</label>
+                  <select class="fs" id="spExoMat">
+                    <option>Mathématiques</option>
+                    <option>Français</option>
+                    <option>Arabe</option>
+                    <option>Anglais</option>
+                    <option>Tamazight</option>
+                    <option>Histoire-Géographie</option>
+                    <option>Sciences physiques</option>
+                    <option>Sciences naturelles (SVT)</option>
+                    <option>Éducation islamique</option>
+                    <option>Éducation civique</option>
+                    <option>Informatique</option>
+                    <option>Éducation artistique</option>
+                    <option>Éducation physique et sportive</option>
+                    <option>Philosophie</option>
+                  </select>
+                </div>
+                <div class="fg"><label class="fl">Niveau</label><input class="fi" id="spExoNiv" placeholder="Ex. 4AM, 1re année secondaire..."></div>
+              </div>
+              <button class="btn bt" id="spExoBtn" onclick="spGenExercices()">✦ Générer des exercices</button>
+              <div id="spExoContent" style="margin-top:1.1rem;"></div>
             </div>
           </div>
         </div>
