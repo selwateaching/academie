@@ -589,9 +589,31 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 .abo-status{display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,107,63,.3);border:1px solid rgba(0,107,63,.5);color:#6EDCB0;font-size:.72rem;font-family:'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
 .quota-bar{height:10px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden;margin:.5rem 0;}
 .quota-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--t),var(--t2));}
-.tc-cursive{font-family:'Playwrite FR Moderne','Caveat',cursive;font-size:1.25em;line-height:2.2;letter-spacing:.02em;}
-.tc-cursive-trace{color:#B5B8C2;}
-.tc-seyes{height:48px;margin:6px 0 14px;border-left:2px solid #E8A0A0;border-bottom:2px solid #8FA7D8;background-image:repeating-linear-gradient(180deg,transparent 0,transparent 11px,#CBD7F0 11px,#CBD7F0 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+.tc-cursive{font-family:'Playwrite FR Moderne','Caveat',cursive;font-size:1.6em;line-height:1.9;}
+.tc-trace-line,.tc-seyes{height:72px;margin:6px 0 16px;border-left:2px solid #E8A0A0;background-image:linear-gradient(180deg,transparent 47px,#6F8FCB 47px,#6F8FCB 49px,transparent 49px),repeating-linear-gradient(180deg,transparent 0,transparent 11px,#C9D6EE 11px,#C9D6EE 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;}
+.tc-trace-line{font-family:'Playwrite FR Moderne','Caveat',cursive;font-size:44px;line-height:1;color:#B9BFCC;padding:8px 0 0 12px;white-space:nowrap;overflow:hidden;}
+.tc-cursive-trace{color:#B9BFCC;}
+/* ===== Chargement dynamique des générations IA ===== */
+@keyframes glspin{to{transform:rotate(360deg)}}
+@keyframes glpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
+@keyframes glsh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes glfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.gl-wrap{padding:2.2rem 1.6rem 1.6rem;text-align:center}
+.gl-orb{position:relative;width:76px;height:76px;margin:0 auto 1.1rem}
+.gl-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,var(--t),var(--t2),var(--a),rgba(0,160,96,0) 75%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));animation:glspin 1.1s linear infinite}
+.gl-core{position:absolute;inset:14px;border-radius:50%;background:var(--tp);display:flex;align-items:center;justify-content:center;animation:glpulse 1.8s ease-in-out infinite}
+.gl-core svg{width:28px;height:28px}
+.gl-title{font-weight:800;font-size:.98rem;color:var(--ink);margin-bottom:.35rem}
+.gl-msg{font-size:.84rem;color:var(--t);font-weight:600;min-height:1.3em;animation:glfade .45s ease}
+.gl-bar{height:7px;background:var(--bg);border-radius:6px;overflow:hidden;margin:1.1rem auto .45rem;max-width:340px}
+.gl-fill{height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--t),var(--t2),var(--t));background-size:200% 100%;animation:glsh 1.6s linear infinite;transition:width .4s ease}
+.gl-meta{display:flex;justify-content:space-between;max-width:340px;margin:0 auto;font-size:.7rem;color:var(--ink3)}
+.gl-sk-wrap{margin:1.6rem auto 0;max-width:420px;text-align:left}
+.gl-sk{height:11px;border-radius:6px;margin-bottom:.6rem;background:linear-gradient(90deg,#ECEAE4 25%,#F7F6F2 50%,#ECEAE4 75%);background-size:200% 100%;animation:glsh 1.4s linear infinite}
+.gl-tip{margin-top:1.1rem;font-size:.72rem;color:var(--ink3)}
+.gl-btn-spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:glspin .75s linear infinite;vertical-align:-2px;margin-right:7px}
+.btn.bo .gl-btn-spin{border-color:rgba(0,107,63,.25);border-top-color:var(--t)}
+
 </style>
 </head>
 <body>
@@ -4672,14 +4694,14 @@ function telechargerPDF(titre, element) {
   clone.style.maxHeight = 'none';
   clone.style.overflow = 'visible';
   var wrap = document.createElement('div');
-  wrap.style.cssText = 'background:#fff;padding:6px;width:190mm;' + (CURRENT_LANG==='ar' ? 'direction:rtl;' : '');
+  wrap.style.cssText = 'background:#fff;padding:6px;width:720px;' + (CURRENT_LANG==='ar' ? 'direction:rtl;' : '');
   wrap.appendChild(clone);
   N(CURRENT_LANG==='ar'?'جارٍ تحضير ملف PDF...':'Préparation du PDF…', 'info');
   html2pdf().set({
     margin: 10,
     filename: nomFichier(titre) + '.pdf',
     image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { scale: 2, useCORS: true, windowWidth: 800 },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
     pagebreak: { mode: ['css', 'legacy'], avoid: ['.pp-step', '.tc-box', '.tc-remember', 'tr'] }
   }).from(wrap).save();
@@ -4691,8 +4713,9 @@ function telechargerWord(titre, contenuHTML) {
     '.pp-section{background:#E6F4EE;color:#006B3F;font-weight:bold;padding:5px;margin-top:12px;}' +
     '.pp-step{border-left:4px solid #006B3F;padding:6px 10px;margin:8px 0;background:#F5F5F2;} .pp-step-num{font-weight:bold;color:#006B3F;}' +
     '.tc-box{padding:8px;margin:8px 0;border-left:4px solid #3B82F6;background:#EFF6FF;} .tc-remember{padding:8px;margin:8px 0;background:#FBF6E3;border:1px solid #D4AF37;}' +
-    '.tc-cursive{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:14pt;} .tc-cursive-trace{color:#B5B8C2;}' +
-    '.tc-seyes{height:36pt;border-bottom:1.5pt solid #8FA7D8;margin:4pt 0 10pt;}';
+    '.tc-cursive{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:18pt;} .tc-cursive-trace{color:#B9BFCC;}' +
+    '.tc-seyes{height:40pt;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 12pt;}' +
+    '.tc-trace-line{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:28pt;color:#B9BFCC;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 6pt;}';
   var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
     '<head><meta charset="utf-8"><title>' + titre + '</title><style>' + css + '</style></head>' +
     '<body' + (CURRENT_LANG==='ar' ? ' dir="rtl"' : '') + '>' + contenuHTML + '</body></html>';
@@ -4782,7 +4805,7 @@ function printCleanPage(title, contentHTML) {
     '.tromb-av{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;overflow:hidden;}' +
     '.tromb-nm{font-size:12px;font-weight:700;}' +
     '.tromb-cl{font-size:10px;color:var(--ink3);margin-top:2px;}' +
-    '.tc-cursive{font-family:"Playwrite FR Moderne","Caveat",cursive;font-size:1.25em;line-height:2.2;letter-spacing:.02em;} .tc-cursive-trace{color:#B5B8C2;} .tc-seyes{height:48px;margin:6px 0 14px;border-left:2px solid #E8A0A0;border-bottom:2px solid #8FA7D8;background-image:repeating-linear-gradient(180deg,transparent 0,transparent 11px,#CBD7F0 11px,#CBD7F0 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
+    '.tc-cursive{font-family:"Playwrite FR Moderne","Caveat",cursive;font-size:1.6em;line-height:1.9;} .tc-cursive-trace{color:#B9BFCC;} .tc-trace-line,.tc-seyes{height:72px;margin:6px 0 16px;border-left:2px solid #E8A0A0;background-image:linear-gradient(180deg,transparent 47px,#6F8FCB 47px,#6F8FCB 49px,transparent 49px),repeating-linear-gradient(180deg,transparent 0,transparent 11px,#C9D6EE 11px,#C9D6EE 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;box-sizing:border-box;page-break-inside:avoid;} .tc-trace-line{font-family:"Playwrite FR Moderne","Caveat",cursive;font-size:44px;line-height:1;color:#B9BFCC;padding:8px 0 0 12px;white-space:nowrap;overflow:hidden;}' +
     'button,.btn,.fac,.mx,select,input[type=file]{display:none !important;}' +
     'a[href]{color:inherit;text-decoration:none;}' +
     '</style></head><body>' + contentHTML + '</body></html>';
@@ -6982,6 +7005,7 @@ async function genProgaIA() {
   var isL = progaIsLangue();
   var btn = document.getElementById('btnGenProga');
   btn.textContent = T('generation'); btn.disabled = true;
+  startGenLoader('progaBox', 'btnGenProga', 'proga');
   var mat = D.s.mat;
   var schema, consignes;
   if (isL) {
@@ -7083,7 +7107,7 @@ async function genQuiz() {
   if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('qzN').value, nb=document.getElementById('qzNb').value, ty=document.getElementById('qzT').value, df=document.getElementById('qzD').value, ins=document.getElementById('qzI').value, lang=document.getElementById('qzLang').value, mat=D.s.mat;
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
-  var btn=document.getElementById('btnGQ'); btn.textContent=T('generation'); btn.disabled=true;
+  var btn=document.getElementById('btnGQ'); btn.textContent=T('generation'); btn.disabled=true; startGenLoader('qzDis','btnGQ','quiz');
   var bk=String.fromCharCode(96);
   var prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+(lang==='ar'?'arabe':'français')+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.';
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
@@ -7284,13 +7308,55 @@ function choisirSequenceProga(pi, si) {
   var menu = document.getElementById('progaSeqMenu'); if (menu) menu.style.display = 'none';
   N((CURRENT_LANG==='ar'?'تمت التعبئة المسبقة من "':'Pré-rempli depuis "') + sq.nom + '"', 'ok');
 }
+/* ===== Chargement dynamique des générations IA ===== */
+var GL_MSGS = {
+  cours: { fr:['Analyse de votre demande…','Alignement sur le programme officiel MEN…','Rédaction du contenu pédagogique…','Création des activités et exercices…','Mise en page du document…','Dernières vérifications…'],
+           ar:['تحليل طلبك…','المطابقة مع البرنامج الرسمي…','تحرير المحتوى التربوي…','إعداد الأنشطة والتمارين…','تنسيق الوثيقة…','التحقق النهائي…'] },
+  quiz:  { fr:['Analyse du sujet…','Rédaction des questions…','Préparation des réponses et explications…','Vérification du niveau de difficulté…','Finalisation du quiz…'],
+           ar:['تحليل الموضوع…','تحرير الأسئلة…','إعداد الأجوبة والشروحات…','التحقق من مستوى الصعوبة…','إنهاء الاختبار…'] },
+  proga: { fr:['Lecture du programme officiel…','Découpage de l\'année en périodes…','Construction des projets et séquences…','Répartition des séances…','Finalisation de la progression…'],
+           ar:['قراءة البرنامج الرسمي…','تقسيم السنة إلى فترات…','بناء المشاريع والوحدات…','توزيع الحصص…','إنهاء التدرج…'] },
+  exo:   { fr:['Préparation de tes exercices…','Choix des questions adaptées à ton niveau…','Vérification des réponses…','Presque prêt…'],
+           ar:['تحضير تمارينك…','اختيار أسئلة مناسبة لمستواك…','التحقق من الأجوبة…','اقتربنا…'] }
+};
+function glBtnHTML(label) { return '<span class="gl-btn-spin"></span>' + label; }
+function startGenLoader(boxId, btnId, kind) {
+  var box = document.getElementById(boxId), btn = document.getElementById(btnId);
+  if (!box) return;
+  var isAR = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'ar');
+  var msgs = (GL_MSGS[kind] || GL_MSGS.cours)[isAR ? 'ar' : 'fr'];
+  var prev = box.innerHTML;
+  var bulb = '<svg viewBox="0 0 100 100"><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="#D4AF37"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/></svg>';
+  box.innerHTML = '<div class="gl-wrap">' +
+    '<div class="gl-orb"><div class="gl-ring"></div><div class="gl-core">' + bulb + '</div></div>' +
+    '<div class="gl-title">' + (isAR ? 'Tadriss IA يعمل من أجلك' : 'Tadriss IA travaille pour vous') + '</div>' +
+    '<div class="gl-msg">' + msgs[0] + '</div>' +
+    '<div class="gl-bar"><div class="gl-fill"></div></div>' +
+    '<div class="gl-meta"><span class="gl-pct">0 %</span><span class="gl-time">0 s</span></div>' +
+    '<div class="gl-sk-wrap"><div class="gl-sk" style="width:62%"></div><div class="gl-sk" style="width:94%"></div><div class="gl-sk" style="width:86%"></div><div class="gl-sk" style="width:90%"></div><div class="gl-sk" style="width:55%"></div></div>' +
+    '<div class="gl-tip">' + (isAR ? 'يستغرق الإنشاء عادةً من 20 إلى 60 ثانية.' : 'Une génération prend en général 20 à 60 secondes.') + '</div>' +
+    '</div>';
+  var root = box.querySelector('.gl-wrap'), fill = root.querySelector('.gl-fill'), pctEl = root.querySelector('.gl-pct'),
+      timeEl = root.querySelector('.gl-time'), msgEl = root.querySelector('.gl-msg');
+  if (btn) btn.innerHTML = glBtnHTML(isAR ? 'جارٍ الإنشاء…' : 'Génération en cours…');
+  var t0 = Date.now(), idx = 0;
+  var iv = setInterval(function () {
+    if (!document.body.contains(root)) { clearInterval(iv); return; }          /* résultat affiché : le chargement disparaît */
+    if (btn && !btn.disabled) { clearInterval(iv); box.innerHTML = prev; return; } /* erreur : on remet l'affichage précédent */
+    var sec = (Date.now() - t0) / 1000;
+    var pct = Math.min(96, Math.round(100 * (1 - Math.exp(-sec / 20))));
+    fill.style.width = pct + '%'; pctEl.textContent = pct + ' %'; timeEl.textContent = Math.floor(sec) + ' s';
+    var ni = Math.min(msgs.length - 1, Math.floor(sec / 6));
+    if (ni !== idx) { idx = ni; var clone = msgEl.cloneNode(false); clone.textContent = msgs[ni]; msgEl.parentNode.replaceChild(clone, msgEl); msgEl = clone; }
+  }, 250);
+}
 /* ===== ÉCRITURE CURSIVE : activée si le prof mentionne "cursive" dans sa demande ===== */
 function tcVeutCursive() {
   var ids = ['crsT','crsObj','crsPrereq','crsActivite','crsActeParole'];
   var txt = ids.map(function(id){ var el = document.getElementById(id); return el ? el.value : ''; }).join(' ').toLowerCase();
   return /cursiv|écriture attachée|ecriture attachee|lettres attachées|lettres attachees/.test(txt);
 }
-var TC_CURSIVE_INSTRUCTION = '\n\n=== ÉCRITURE CURSIVE DEMANDÉE ===\nL\'enseignant veut que les modèles d\'écriture soient en cursive. Règles obligatoires :\n- Chaque lettre, mot ou phrase que l\'élève doit lire, recopier ou écrire en cursive (modèles, exemples, mots à reproduire) doit être entouré de <span class="tc-cursive">...</span>.\n- Pour un modèle à repasser, utilise <span class="tc-cursive tc-cursive-trace">...</span> et répète le modèle plusieurs fois sur la ligne.\n- Pour chaque ligne où l\'élève écrit seul, insère <div class="tc-seyes"></div>.\n- N\'écris JAMAIS "(cursive)" ou "(script)" en toutes lettres : utilise uniquement les balises ci-dessus.\n- Les consignes restent en écriture normale ; seul le contenu à écrire est en cursive.';
+var TC_CURSIVE_INSTRUCTION = '\n\n=== ÉCRITURE CURSIVE DEMANDÉE (document d\'écriture pour élèves) ===\nRègles obligatoires de mise en forme :\n- Dans le texte (explications, exemples), chaque mot à montrer en cursive est entouré de <span class=\"tc-cursive\">...</span>.\n- Pour chaque modèle à repasser, utilise UNE ligne d\'écriture : <div class=\"tc-trace-line\">a a a a a a a</div> (8 à 10 fois la lettre, ou 3 à 4 mots courts). Le modèle s\'affiche en grand, en gris clair, sur des lignes Seyès.\n- Juste après chaque modèle, ajoute 1 ou 2 lignes vides pour écrire seul : <div class=\"tc-seyes\"></div>.\n- Ne mets JAMAIS tc-trace-line ou tc-seyes à l\'intérieur d\'un encadré (tc-box, tc-example...) : place-les directement dans le document, sous une consigne courte.\n- Progression type pour une fiche d\'écriture : lettres rondes (a c o d q g), puis lettres à pont (m n), puis boucles (l e b h k f), puis petits mots, puis une courte phrase.\n- N\'écris JAMAIS \"(cursive)\" ou \"(script)\" en toutes lettres : utilise uniquement ces balises. Les consignes restent en écriture normale.';
 async function genCours(extraInstruction) {
   var titre=document.getElementById('crsT').value.trim(); if (!titre){N(T('entrez_titre'),'err');return;}
   var q = { autorise: true };
@@ -7302,15 +7368,15 @@ async function genCours(extraInstruction) {
   if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
-  var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true;
+  var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true; startGenLoader('crsDis','btnGCrs','cours');
   /* "Régénérer" et "Simplifier" appellent aussi genCours(), mais restaient visuellement figés
      pendant la génération (seul btnGCrs, hors écran à ce moment, montrait un état de chargement) */
   var btnRegenLoad = document.getElementById('btnTcRegen');
   var btnSimplifyLoad = document.getElementById('btnTcSimplify');
   var regenPrevText = btnRegenLoad ? btnRegenLoad.innerHTML : null;
   var simplifyPrevText = btnSimplifyLoad ? btnSimplifyLoad.innerHTML : null;
-  if (btnRegenLoad && btnRegenLoad.style.display !== 'none') { btnRegenLoad.innerHTML = T('generation'); btnRegenLoad.disabled = true; }
-  if (btnSimplifyLoad && btnSimplifyLoad.style.display !== 'none') { btnSimplifyLoad.innerHTML = T('generation'); btnSimplifyLoad.disabled = true; }
+  if (btnRegenLoad && btnRegenLoad.style.display !== 'none') { btnRegenLoad.innerHTML = glBtnHTML(''); btnRegenLoad.disabled = true; }
+  if (btnSimplifyLoad && btnSimplifyLoad.style.display !== 'none') { btnSimplifyLoad.innerHTML = glBtnHTML(''); btnSimplifyLoad.disabled = true; }
   var isLangue = (ty === 'fiche_peda') && isLangueMatiere(mat);
   var acCls = gAC();
   var dateStr = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
@@ -8460,6 +8526,7 @@ async function spGenExercices() {
   var btn = document.getElementById('spExoBtn'); var prevText = btn.innerHTML;
   btn.innerHTML = T('generation') || '…'; btn.disabled = true;
   document.getElementById('spExoContent').innerHTML = '';
+  startGenLoader('spExoContent', 'spExoBtn', 'exo');
   var bk = String.fromCharCode(96);
   var prompt = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien, niveau ' + niv + '. Génère une série de 6 exercices interactifs à choix multiple sur le chapitre/sujet précis suivant : "' + chap + '". Les exercices doivent porter uniquement sur cette notion précise (pas d\'autres chapitres), être variés, corrects, non ambigus et adaptés au niveau, alignés sur le programme MEN algérien. Reste concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","questions":[{"num":1,"q":"...","choix":["...","...","..."],"rep":"...texte exact d\'un des choix...","expl":"..."}]}\nJSON uniquement.';
   try {
