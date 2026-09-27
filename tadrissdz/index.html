@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* ===== TOKENS APP ===== */
 :root{
@@ -1532,7 +1532,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     </div>
     <div>
       <div class="card" style="margin-bottom:1.2rem">
-        <div class="ch"><div class="ct" id="qzDisT">Résultat Quiz</div><div style="display:flex;gap:.6rem"><button class="btn bo bsm" id="btnQzPrint" onclick="printCleanPage(document.getElementById('qzDisT').textContent, document.getElementById('qzDis').innerHTML)">Imprimer</button><button class="btn bt bsm" id="btnSQ" style="display:none" onclick="saveQz()">Sauvegarder</button><button class="btn bo bsm" id="btnQzClose" onclick="closeQzResult()" title="Fermer">✕ Fermer</button></div></div>
+        <div class="ch"><div class="ct" id="qzDisT">Résultat Quiz</div><div style="display:flex;gap:.6rem"><button class="btn bo bsm" onclick="telechargerPDF(document.getElementById('qzDisT').textContent, document.getElementById('qzDis'))">⬇ PDF</button>
+<button class="btn bo bsm" onclick="telechargerWord(document.getElementById('qzDisT').textContent, document.getElementById('qzDis').innerHTML)">⬇ Word</button><button class="btn bo bsm" id="btnQzPrint" onclick="printCleanPage(document.getElementById('qzDisT').textContent, document.getElementById('qzDis').innerHTML)">Imprimer</button><button class="btn bt bsm" id="btnSQ" style="display:none" onclick="saveQz()">Sauvegarder</button><button class="btn bo bsm" id="btnQzClose" onclick="closeQzResult()" title="Fermer">✕ Fermer</button></div></div>
         <div class="cb" style="max-height:380px;overflow-y:auto" id="qzDis"><div style="text-align:center;padding:3rem;color:var(--ink3)"><div style="width:44px;height:44px;margin:0 auto"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%"><defs><linearGradient id="genBulbQz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulbQz)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg></div><div style="margin-top:.75rem">Entrez un sujet et générez votre quiz</div></div></div>
       </div>
       <div class="card"><div class="ch"><div class="ct">Correction automatique</div></div><div class="cb">
@@ -1592,6 +1593,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <button class="btn bo bsm" id="btnTpView" style="display:none" onclick="tpToggleView()">📊 Vue tableau</button>
           <button class="btn bo bsm" id="btnTcRegen" style="display:none" onclick="genCours()" title="Régénérer avec les mêmes paramètres">🔄 Régénérer</button>
           <button class="btn bo bsm" id="btnTcSimplify" style="display:none" onclick="tcSimplify()" title="Refaire une version plus simple">✏️ Simplifier</button>
+          <button class="btn bo bsm" onclick="telechargerPDF(document.getElementById('crsDisT').textContent, document.getElementById('crsDis'))">⬇ PDF</button>
+<button class="btn bo bsm" onclick="telechargerWord(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)">⬇ Word</button>
           <button class="btn bo bsm" id="btnTcPrint" onclick="printCleanPage(document.getElementById('crsDisT').textContent, document.getElementById('crsDis').innerHTML)">Imprimer</button>
           <button class="btn bt bsm" id="btnSCrs" style="display:none" onclick="saveCours()">Sauvegarder</button>
           <button class="btn bo bsm" id="btnTcClose" onclick="closeCrsResult()" title="Fermer">✕ Fermer</button>
@@ -4655,7 +4658,48 @@ function extractClaudeText(data) {
 }
 
 /* ===== IMPRESSION PROPRE (A4, sans barre latérale ni surplus) ===== */
-function printCleanPage(title, contentHTML) {
+/* ===== TÉLÉCHARGEMENT PDF ET WORD ===== */
+function nomFichier(t) {
+  return (t || 'document').replace(/[\\\/:*?"<>|]/g, '').trim().slice(0, 80) || 'document';
+}
+function telechargerPDF(titre, element) {
+  if (typeof html2pdf === 'undefined') { N(CURRENT_LANG==='ar'?'أداة PDF غير محمّلة، أعد تحميل الصفحة.':'Outil PDF non chargé, rechargez la page.', 'err'); return; }
+  var clone = element.cloneNode(true);
+  clone.style.maxHeight = 'none';
+  clone.style.overflow = 'visible';
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'background:#fff;padding:6px;width:190mm;' + (CURRENT_LANG==='ar' ? 'direction:rtl;' : '');
+  wrap.appendChild(clone);
+  N(CURRENT_LANG==='ar'?'جارٍ تحضير ملف PDF...':'Préparation du PDF…', 'info');
+  html2pdf().set({
+    margin: 10,
+    filename: nomFichier(titre) + '.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.pp-step', '.tc-box', '.tc-remember', 'tr'] }
+  }).from(wrap).save();
+}
+function telechargerWord(titre, contenuHTML) {
+  var css = 'body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;color:#1A1A1F;}' +
+    'h1,h2,h3{color:#006B3F;} table{border-collapse:collapse;width:100%;} th,td{border:1px solid #999;padding:5px;vertical-align:top;} th{background:#E6F4EE;}' +
+    '.pp-banner{background:#006B3F;color:#fff;padding:10px;} .pp-meta{background:#F0EEE9;padding:6px;margin:6px 0;}' +
+    '.pp-section{background:#E6F4EE;color:#006B3F;font-weight:bold;padding:5px;margin-top:12px;}' +
+    '.pp-step{border-left:4px solid #006B3F;padding:6px 10px;margin:8px 0;background:#F5F5F2;} .pp-step-num{font-weight:bold;color:#006B3F;}' +
+    '.tc-box{padding:8px;margin:8px 0;border-left:4px solid #3B82F6;background:#EFF6FF;} .tc-remember{padding:8px;margin:8px 0;background:#FBF6E3;border:1px solid #D4AF37;}' +
+    '.tc-cursive{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:14pt;} .tc-cursive-trace{color:#B5B8C2;}' +
+    '.tc-seyes{height:36pt;border-bottom:1.5pt solid #8FA7D8;margin:4pt 0 10pt;}';
+  var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><title>' + titre + '</title><style>' + css + '</style></head>' +
+    '<body' + (CURRENT_LANG==='ar' ? ' dir="rtl"' : '') + '>' + contenuHTML + '</body></html>';
+  var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nomFichier(titre) + '.doc';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  N(CURRENT_LANG==='ar'?'تم تحميل ملف Word!':'Document Word téléchargé !', 'ok');
+} function printCleanPage(title, contentHTML) {
   var w = window.open('', '_blank');
   if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
   var isARpp = CURRENT_LANG==='ar';
