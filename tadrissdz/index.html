@@ -7,8 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playwrite+FR+Moderne:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* ===== TOKENS APP ===== */
 :root{
@@ -588,6 +589,9 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 .abo-status{display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,107,63,.3);border:1px solid rgba(0,107,63,.5);color:#6EDCB0;font-size:.72rem;font-family:'Inter',sans-serif;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;}
 .quota-bar{height:10px;background:rgba(255,255,255,.12);border-radius:5px;overflow:hidden;margin:.5rem 0;}
 .quota-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,var(--t),var(--t2));}
+.tc-cursive{font-family:'Playwrite FR Moderne','Caveat',cursive;font-size:1.25em;line-height:2.2;letter-spacing:.02em;}
+.tc-cursive-trace{color:#B5B8C2;}
+.tc-seyes{height:48px;margin:6px 0 14px;border-left:2px solid #E8A0A0;border-bottom:2px solid #8FA7D8;background-image:repeating-linear-gradient(180deg,transparent 0,transparent 11px,#CBD7F0 11px,#CBD7F0 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 </style>
 </head>
 <body>
@@ -4699,12 +4703,14 @@ function telechargerWord(titre, contenuHTML) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
   N(CURRENT_LANG==='ar'?'تم تحميل ملف Word!':'Document Word téléchargé !', 'ok');
-} function printCleanPage(title, contentHTML) {
+}
+function printCleanPage(title, contentHTML) {
   var w = window.open('', '_blank');
   if (!w) { N(CURRENT_LANG==='ar'?'يرجى السماح بالنوافذ المنبثقة للطباعة.':'Autorisez les pop-ups pour imprimer.', 'err'); return; }
   var isARpp = CURRENT_LANG==='ar';
   var html = '<!DOCTYPE html><html '+(isARpp?'dir="rtl" lang="ar"':'lang="fr"')+'><head><meta charset="UTF-8"><title>' + (title || 'Tadriss DZ') + '</title>' +
     '<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap" rel="stylesheet">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Playwrite+FR+Moderne:wght@300;400&display=swap" rel="stylesheet">' +
     '<style>' +
     '@page{size:A4;margin:14mm;}' +
     ':root{--bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;--t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--b:#3B82F6;--bp:#EFF6FF;--p:#8B5CF6;--pp:#F5F3FF;--g:#22C55E;--gp:#F0FDF4;--br:#E2DDD5;--rd:12px;}' +
@@ -4776,6 +4782,7 @@ function telechargerWord(titre, contenuHTML) {
     '.tromb-av{width:60px;height:60px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;overflow:hidden;}' +
     '.tromb-nm{font-size:12px;font-weight:700;}' +
     '.tromb-cl{font-size:10px;color:var(--ink3);margin-top:2px;}' +
+    '.tc-cursive{font-family:"Playwrite FR Moderne","Caveat",cursive;font-size:1.25em;line-height:2.2;letter-spacing:.02em;} .tc-cursive-trace{color:#B5B8C2;} .tc-seyes{height:48px;margin:6px 0 14px;border-left:2px solid #E8A0A0;border-bottom:2px solid #8FA7D8;background-image:repeating-linear-gradient(180deg,transparent 0,transparent 11px,#CBD7F0 11px,#CBD7F0 12px);-webkit-print-color-adjust:exact;print-color-adjust:exact;}' +
     'button,.btn,.fac,.mx,select,input[type=file]{display:none !important;}' +
     'a[href]{color:inherit;text-decoration:none;}' +
     '</style></head><body>' + contentHTML + '</body></html>';
@@ -7277,6 +7284,13 @@ function choisirSequenceProga(pi, si) {
   var menu = document.getElementById('progaSeqMenu'); if (menu) menu.style.display = 'none';
   N((CURRENT_LANG==='ar'?'تمت التعبئة المسبقة من "':'Pré-rempli depuis "') + sq.nom + '"', 'ok');
 }
+/* ===== ÉCRITURE CURSIVE : activée si le prof mentionne "cursive" dans sa demande ===== */
+function tcVeutCursive() {
+  var ids = ['crsT','crsObj','crsPrereq','crsActivite','crsActeParole'];
+  var txt = ids.map(function(id){ var el = document.getElementById(id); return el ? el.value : ''; }).join(' ').toLowerCase();
+  return /cursiv|écriture attachée|ecriture attachee|lettres attachées|lettres attachees/.test(txt);
+}
+var TC_CURSIVE_INSTRUCTION = '\n\n=== ÉCRITURE CURSIVE DEMANDÉE ===\nL\'enseignant veut que les modèles d\'écriture soient en cursive. Règles obligatoires :\n- Chaque lettre, mot ou phrase que l\'élève doit lire, recopier ou écrire en cursive (modèles, exemples, mots à reproduire) doit être entouré de <span class="tc-cursive">...</span>.\n- Pour un modèle à repasser, utilise <span class="tc-cursive tc-cursive-trace">...</span> et répète le modèle plusieurs fois sur la ligne.\n- Pour chaque ligne où l\'élève écrit seul, insère <div class="tc-seyes"></div>.\n- N\'écris JAMAIS "(cursive)" ou "(script)" en toutes lettres : utilise uniquement les balises ci-dessus.\n- Les consignes restent en écriture normale ; seul le contenu à écrire est en cursive.';
 async function genCours(extraInstruction) {
   var titre=document.getElementById('crsT').value.trim(); if (!titre){N(T('entrez_titre'),'err');return;}
   var q = { autorise: true };
@@ -7416,6 +7430,7 @@ async function genCours(extraInstruction) {
   }
   var maxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
+  if (tcVeutCursive()) prompt += TC_CURSIVE_INSTRUCTION;
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){
     if (!r.ok) { throw new Error('SERVEUR_INDISPONIBLE'); }
     return r.json();
