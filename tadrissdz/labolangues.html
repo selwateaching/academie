@@ -1066,6 +1066,31 @@ function llKey(uid) { return 'LABOLANGUES_' + uid; }
 function llAudioKey(uid) { return 'LABOLANGUES_' + uid + '_audio'; }
 function llReadData(uid) { try { return JSON.parse(localStorage.getItem(llKey(uid)) || '{}'); } catch(e) { return {}; } }
 function llSaveData(uid, data) { try { localStorage.setItem(llKey(uid), JSON.stringify(data)); } catch(e) {} }
+/* Pousse vers Firestore (document eleveAcces/{code}, déjà utilisé par l'espace élève principal)
+   les activités assignées à chaque élève, pour qu'elles soient visibles depuis SON PROPRE
+   appareil (pas seulement celui du prof qui les a créées). Ne synchronise que la définition des
+   activités (texte, pas d'audio) : les enregistrements élève restent, pour l'instant, une limite
+   connue — voir le commentaire dans llEleveLoginSubmit. */
+function llSyncActivitesToCloud(uid) {
+  try {
+    var roster = llReadRoster(uid);
+    var data = llReadData(uid);
+    var acts = data.acts || [];
+    (roster.el || []).forEach(function(e) {
+      var eligibles = acts.filter(function(a) {
+        if (a.classeId !== e.cid) return false;
+        if (a.assigneMode === 'specifique') return (a.assigneElevesIds || []).indexOf(e.id) >= 0;
+        return true;
+      }).map(function(a) {
+        return { id: a.id, langueId: a.langueId, typeActivite: a.typeActivite, theme: a.theme, consigne: a.consigne, dureeMaxSec: a.dureeMaxSec, bareme: a.bareme, dateLimite: a.dateLimite || '' };
+      });
+      var code = e.code || llGenCode(e.id);
+      setDoc(doc(dbFs, 'eleveAcces', code), { ll: { acts: eligibles, updatedAt: Date.now() } }, { merge: true }).catch(function(err) {
+        console.warn('Sync Labo Langues échouée pour', e.pr, e.no, err && err.message);
+      });
+    });
+  } catch (e) { console.warn('llSyncActivitesToCloud a échoué :', e && e.message); }
+}
 function llAudioSave(uid, key, dataUrl) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); m[key] = dataUrl; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
 function llAudioGet(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); return m[key] || null; } catch(e) { return null; } }
 function llAudioDelete(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); delete m[key]; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
@@ -1078,7 +1103,7 @@ function llShow(id) {
 }
 
 /* ===== État courant ===== */
-var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null };
+var LL_STATE = { firebaseUser: null, profDoc: null, profUid: null, eleve: null, eleveUid: null, curAct: null, cloudLL: null };
 
 /* Arrivée depuis l'espace élève principal avec le code déjà connu (?code=123456) : on saute
    directement l'écran de saisie pour ne jamais faire retaper le code à l'élève.
@@ -1121,7 +1146,7 @@ window.llGoProf = function() {
     var p = snap.exists() ? snap.data() : {};
     LL_STATE.profDoc = p;
     if (!llIsLangueMatiere(p.matiere)) { llShow('llNotLangue'); return; }
-    if (p.laboLanguesActif) { llShow('llProfApp'); llRenderProfApp(); }
+    if (p.laboLanguesActif) { llShow('llProfApp'); llRenderProfApp(); llSyncActivitesToCloud(uid); }
     else { llShow('llDiscovery'); llRenderDiscovery(p); }
   }).catch(function() { llShow('llNeedLogin'); });
 };
@@ -1438,6 +1463,7 @@ window.llSaveAct = function() {
     if (!existing) data.acts.push(act);
     llSaveData(uid, data);
     llSyncDevoirToTadriss(uid, act);
+    llSyncActivitesToCloud(uid);
     llCloseModal('llModalAct');
     LL_STATE.editActId = null;
     if (editId) llOpenProd(editId); else llRenderProfApp();
@@ -1495,6 +1521,7 @@ window.llDeleteAct = function() {
   llSaveData(uid, data);
   llRemoveTadrissEval(uid, id);
   llRemoveTadrissDevoir(uid, id);
+  llSyncActivitesToCloud(uid);
   llCloseProd();
 };
 var LL_CRITERES = [
@@ -1768,6 +1795,7 @@ window.llEleveLoginSubmit = async function() {
         found = (payload.el || [])[0] || null;
         foundUid = payload.profUid;
         cls = (payload.cls || [])[0] || null;
+        LL_STATE.cloudLL = payload.ll || null;
       }
     } catch (e) {}
   }
@@ -1777,7 +1805,8 @@ window.llEleveLoginSubmit = async function() {
   document.getElementById('llEleveClasseTxt').textContent = cls ? cls.nm : '';
   var localRoster = llReadRoster(foundUid);
   var localData = llReadData(foundUid);
-  if (!(localRoster.el && localRoster.el.length) && !(localData.acts && localData.acts.length)) {
+  var cloudActs = (LL_STATE.cloudLL && LL_STATE.cloudLL.acts) || [];
+  if (!(localRoster.el && localRoster.el.length) && !(localData.acts && localData.acts.length) && !cloudActs.length) {
     /* L'identité est confirmée, mais les activités elles-mêmes (créées par le prof) ne sont
        aujourd'hui disponibles que sur l'appareil du prof — vraie limite technique actuelle,
        plutôt qu'un faux résultat vide silencieux qui ressemblerait à un bug. */
@@ -1799,7 +1828,8 @@ function llRenderEleveApp() {
   var uid = LL_STATE.eleveUid, eid = LL_STATE.eleve.id, cid = LL_STATE.eleve.cid;
   var isAR = LL_CUR === 'ar';
   var data = llReadData(uid);
-  var acts = (data.acts||[]).filter(function(a) {
+  var actsSource = (data.acts && data.acts.length) ? data.acts : ((LL_STATE.cloudLL && LL_STATE.cloudLL.acts) || []);
+  var acts = actsSource.filter(function(a) {
     if (a.classeId !== cid) return false;
     if (a.assigneMode === 'specifique') return (a.assigneElevesIds||[]).indexOf(eid) >= 0;
     return true;
@@ -1891,6 +1921,7 @@ window.llOpenStudio = function(actId) {
   var uid = LL_STATE.eleveUid;
   var data = llReadData(uid);
   var act = (data.acts||[]).find(function(a){ return a.id === actId; });
+  if (!act) act = ((LL_STATE.cloudLL && LL_STATE.cloudLL.acts) || []).find(function(a){ return a.id === actId; });
   if (!act) return;
   var isAR = LL_CUR === 'ar';
   var lg = LL_LANGUES.find(function(l){ return l.id === act.langueId; }) || LL_LANGUES[0];
