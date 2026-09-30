@@ -2049,7 +2049,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <div class="fg"><label class="fl">Matière</label>
             <select class="fs" id="nCM">
               <option>Mathématiques</option><option>Français</option><option>Arabe</option>
-              <option>Sciences</option><option>Physique-Chimie</option><option>Hist-Géo</option><option>Anglais</option>
+              <option>Sciences</option><option>Physique-Chimie</option><option>Hist-Géo</option><option>Anglais</option><option>Tamazight</option>
             </select>
           </div>
           <div class="fg"><label class="fl">Nb élèves</label><input type="number" class="fi" id="nCN" placeholder="35"></div>
@@ -2277,7 +2277,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <select class="fs" id="pMa">
           <option>Mathématiques</option><option>Langue arabe</option><option>Langue française</option>
           <option>Sciences (SVT)</option><option>Physique-Chimie</option><option>Histoire-Géo</option>
-          <option>Anglais</option><option>Informatique</option><option>Éducation physique</option>
+          <option>Anglais</option><option>Informatique</option><option>Éducation physique</option><option>Tamazight</option>
         </select>
       </div><div class="fg"><label class="fl">Poste</label><select class="fs" id="pPo"><option>Professeur</option><option>PP</option><option>CPE / Censeur</option><option>Directeur</option><option>Conseiller péda.</option><option>Surveillant</option></select></div></div>
       <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="pEm2" placeholder="prof@education.dz"></div>
@@ -4461,8 +4461,8 @@ function switchLang() {
   var nCl = document.getElementById('nCl'); if (nCl) nCl.placeholder = isAR?'مثال: 3م ج، 1ث ب...':'Ex: 3AM C, 1AS B...';
   var nCM = document.getElementById('nCM');
   if (nCM) {
-    var nCMAR=['الرياضيات','الفرنسية','العربية','العلوم','الفيزياء والكيمياء','التاريخ والجغرافيا','الإنجليزية'];
-    var nCMFR=['Mathématiques','Français','Arabe','Sciences','Physique-Chimie','Hist-Géo','Anglais'];
+    var nCMAR=['الرياضيات','الفرنسية','العربية','العلوم','الفيزياء والكيمياء','التاريخ والجغرافيا','الإنجليزية','تيفيناغ (أمازيغية)'];
+    var nCMFR=['Mathématiques','Français','Arabe','Sciences','Physique-Chimie','Hist-Géo','Anglais','Tamazight'];
     for(var nci=0;nci<nCM.options.length&&nci<nCMAR.length;nci++) nCM.options[nci].text = isAR?nCMAR[nci]:nCMFR[nci];
   }
   var nCN = document.getElementById('nCN'); if (nCN) nCN.placeholder = isAR?'35':'35';
@@ -4529,8 +4529,8 @@ function switchLang() {
   }
   var pMa = document.getElementById('pMa');
   if (pMa) {
-    var pmaAR=['الرياضيات','اللغة العربية','اللغة الفرنسية','العلوم (علوم الطبيعة)','الفيزياء والكيمياء','التاريخ والجغرافيا','الإنجليزية','الإعلام الآلي','التربية البدنية'];
-    var pmaFR=['Mathématiques','Langue arabe','Langue française','Sciences (SVT)','Physique-Chimie','Histoire-Géo','Anglais','Informatique','Éducation physique'];
+    var pmaAR=['الرياضيات','اللغة العربية','اللغة الفرنسية','العلوم (علوم الطبيعة)','الفيزياء والكيمياء','التاريخ والجغرافيا','الإنجليزية','الإعلام الآلي','التربية البدنية','تيفيناغ (أمازيغية)'];
+    var pmaFR=['Mathématiques','Langue arabe','Langue française','Sciences (SVT)','Physique-Chimie','Histoire-Géo','Anglais','Informatique','Éducation physique','Tamazight'];
     for(var pmai=0;pmai<pMa.options.length&&pmai<pmaAR.length;pmai++) pMa.options[pmai].text = isAR?pmaAR[pmai]:pmaFR[pmai];
   }
   var mProfBtns = document.querySelectorAll('#mProf .mf button');
@@ -5603,7 +5603,7 @@ function peShowDetail(eid) {
 /* ===== BIBLIOTHEQUE PEDAGOGIQUE (catalogue partage, lu depuis un Google Sheet publie en CSV) ===== */
 /* Remplacer cette URL par le lien "Publier sur le Web -> CSV" du Google Sheet officiel Tadriss. */
 var RESSOURCES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2Z7YocPLmtlE35f4jUZssux5G--QnRsQJlPuFXgrwbvVQf3jdvtwYC1u9U1c9SFdD48r2I5bZAOdx/pub?gid=0&single=true&output=csv';
-var BIBLIO_MATIERES = ['Mathématiques','Langue arabe','Langue française','Anglais','Espagnol','Histoire-Géographie','Sciences de la nature (SVT)','Informatique/TIC','Éducation islamique','Musique','Autre'];
+var BIBLIO_MATIERES = ['Mathématiques','Langue arabe','Langue française','Anglais','Espagnol','Histoire-Géographie','Sciences de la nature (SVT)','Informatique/TIC','Éducation islamique','Tamazight','Musique','Autre'];
 var BIBLIO_DATA = null;
 var BIBLIO_FILTERS = { q:'', matiere:'', niveau:'', type:'' };
 
@@ -7174,7 +7174,7 @@ var curCrs=null;
 /* Cycle Primaire (1AP-5AP) : un même enseignant enseigne TOUTES les matières à sa classe — toutes
    les matières sont donc incluses d'office dans l'abonnement, sans verrouillage ni add-on payant.
    Moyen/Lycée : profs spécialisés dans une matière — 1 matière incluse, add-on payant pour en ajouter. */
-var PRIMAIRE_MATIERES = ['Langue arabe','Mathématiques','Langue française','Éducation islamique','Histoire-Géographie','Sciences de la nature (SVT)','Éducation civique','Éducation physique','Anglais','Arts plastiques','Musique'];
+var PRIMAIRE_MATIERES = ['Langue arabe','Mathématiques','Langue française','Éducation islamique','Histoire-Géographie','Sciences de la nature (SVT)','Éducation civique','Éducation physique','Anglais','Tamazight','Arts plastiques','Musique'];
 function isPrimaire() {
   var c = ((D.s.cycle||'') + ' ' + (D.s.type||'')).toLowerCase();
   return c.indexOf('primaire') >= 0 || c.indexOf('ابتدائي') >= 0;
