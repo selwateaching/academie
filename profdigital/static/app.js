@@ -70,10 +70,35 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),2600)}
 function card(title,body,extra=''){return `<section class="card ${extra}"><div class="card-title"><h3>${title}</h3></div>${body}</section>`}
 function setPage(p){state.page=p;save();document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.page===p));document.getElementById('pageTitle').textContent=pages[p];document.getElementById('content').innerHTML=(render[p]||render.dashboard)();window.scrollTo({top:0,behavior:'smooth'})}
-function stat(icon,n,label){return `<div class="stat"><div class="stat-icon">${icon}</div><div><strong>${n}</strong><span>${label}</span></div></div>`}
-function renderDashboard(){return `<div class="page-head"><div><div class="eyebrow">${state.academie} · ${state.year}</div><h1>Bonjour, enseignant 👋</h1><p>Votre espace pédagogique est prêt.</p></div><div class="actions"><button class="btn ai" onclick="openGenerator('week')">✦ Préparer ma semaine</button><button class="btn primary" onclick="openGenerator('sheet')">+ Nouvelle fiche</button></div></div>
+function stat(icon,n,label,id){return `<div class="stat"><div class="stat-icon">${icon}</div><div><strong${id?` id="${id}"`:''}>${n}</strong><span>${label}</span></div></div>`}
+function renderDashboard(){
+  loadDashboardStats();
+  return `<div class="page-head"><div><div class="eyebrow">${state.academie} · ${state.year}</div><h1>Bonjour, enseignant 👋</h1><p>Votre espace pédagogique est prêt.</p></div><div class="actions"><button class="btn ai" onclick="openGenerator('week')">✦ Préparer ma semaine</button><button class="btn primary" onclick="openGenerator('sheet')">+ Nouvelle fiche</button></div></div>
 <section class="hero"><div class="eyebrow">ProfDigital IA</div><h2>Préparez vos cours en quelques secondes.</h2><p>L'IA adapte la séance au cycle, au niveau, à la matière et à la langue du programme. Les documents peuvent être enregistrés puis exportés.</p><div class="ai-input"><input id="quickAI" placeholder="Ex. Prépare une séance de 1h sur les fractions..." onkeydown="if(event.key==='Enter')quickAI()"><button class="btn primary" onclick="quickAI()">Générer ✦</button></div></section>
-<div class="grid grid-4">${stat('📚','68 %','Progression')}${stat('✓','42','Séances réalisées')}${stat('13,8','13,8/20','Moyenne classe')}${stat('5','5','Élèves à accompagner')}</div><div style="height:16px"></div><div class="grid grid-2">${card('Aujourd’hui',`<div class="list">${state.schedule.slice(0,3).map(x=>`<div class="list-item"><span class="time-pill">${esc(x[0])}</span><div class="grow"><b>${esc(x[2])}</b><small>${esc(x[1])} · ${esc(x[3])}</small></div><span class="tag ${x[4]||''}">Séance</span></div>`).join('')}</div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Fiche pédagogique','Séance complète + remédiation','sheet')}${quick('📝','Contrôle','Sujet + barème + corrigé','assessment')}${quick('📅','Cahier journal','Générer à partir de la semaine','journal')}${quick('📚','Cours','Cours + exercices + corrigé','course')}</div>`)}</div>`}
+<div class="grid grid-4">${stat('📚','—','Progression','statProgression')}${stat('✓',state.schedule.filter(s=>s[7]).length,'Séances réalisées','statSeances')}${stat('📊','—','Moyenne classe','statMoyenne')}${stat('🧑‍🎓','—','Élèves à accompagner','statAccompagner')}</div><div style="height:16px"></div><div class="grid grid-2">${card('Aujourd’hui',`<div class="list">${state.schedule.slice(0,3).map(x=>`<div class="list-item"><span class="time-pill">${esc(x[0])}</span><div class="grow"><b>${esc(x[2])}</b><small>${esc(x[1])} · ${esc(x[3])}</small></div><span class="tag ${x[4]||''}">Séance</span></div>`).join('')}</div>`)}${card('Actions rapides',`<div class="feature-grid">${quick('📖','Fiche pédagogique','Séance complète + remédiation','sheet')}${quick('📝','Contrôle','Sujet + barème + corrigé','assessment')}${quick('📅','Cahier journal','Générer à partir de la semaine','journal')}${quick('📚','Cours','Cours + exercices + corrigé','course')}</div>`)}</div>`;
+}
+async function loadDashboardStats(){
+  const progressItems=state.progress.map(p=>computeSequenceProgress(p[0]));
+  const progressionMoy=progressItems.length?Math.round(progressItems.reduce((a,b)=>a+b,0)/progressItems.length):0;
+  const elProgression=document.getElementById('statProgression');
+  if(elProgression)elProgression.textContent=progressionMoy+' %';
+
+  await ensureClasses();
+  if(state.page!=='dashboard')return;
+  const classes=classesCache.filter(c=>(c.annee_scolaire||'—')===currentAnnee);
+  let allEleves=[];
+  for(const c of classes){
+    try{const r=await fetch(`/api/classes/${c.id}/eleves`);allEleves=allEleves.concat(await r.json());}catch(e){/* ignore, classe suivante */}
+  }
+  if(state.page!=='dashboard')return;
+  const withMoy=allEleves.filter(e=>e.moyenne!==null&&e.moyenne!==undefined);
+  const moyClasse=withMoy.length?(withMoy.reduce((a,b)=>a+b.moyenne,0)/withMoy.length).toFixed(1):null;
+  const aAccompagner=withMoy.filter(e=>e.moyenne<10).length;
+  const elMoy=document.getElementById('statMoyenne');
+  if(elMoy)elMoy.textContent=moyClasse!==null?moyClasse+'/20':'—';
+  const elAccomp=document.getElementById('statAccompagner');
+  if(elAccomp)elAccomp.textContent=allEleves.length?aAccompagner:'—';
+}
 function quick(i,t,d,type){return `<button class="feature" onclick="openGenerator('${type}')"><span>${i}</span><b>${t}</b><small>${d}</small></button>`}
 function renderSchedule(){
   const dayKeys=['Dim','Lun','Mar','Mer','Jeu'];
