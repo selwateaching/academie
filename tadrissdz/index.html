@@ -4754,11 +4754,13 @@ function printCleanPage(title, contentHTML) {
     '<style>' +
     '@page{size:A4;margin:14mm;}' +
     ':root{--bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;--t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--b:#3B82F6;--bp:#EFF6FF;--p:#8B5CF6;--pp:#F5F3FF;--g:#22C55E;--gp:#F0FDF4;--br:#E2DDD5;--rd:12px;}' +
-    '*{box-sizing:border-box;}' +
+    '*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}' +
     'body{font-family:Arial,Helvetica,sans-serif;color:var(--ink);margin:0;padding:0;font-size:13px;line-height:1.5;}' +
-    'table{width:100%;border-collapse:collapse;margin-top:8px;}' +
-    'th{background:var(--bg);text-align:'+(isARpp?'right':'left')+';padding:6px 8px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);border-bottom:1px solid var(--br);}' +
-    'td{padding:6px 8px;font-size:12px;border-bottom:1px solid var(--br);}' +
+    'table{width:100%;border-collapse:collapse;margin-top:8px;border-radius:10px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);}' +
+    'th{background:var(--t);text-align:'+(isARpp?'right':'left')+';padding:8px 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#fff;}' +
+    'td{padding:7px 8px;font-size:12px;border-bottom:1px solid var(--br);}' +
+    'tbody tr:nth-child(even) td{background:var(--bg);}' +
+    'tbody tr:hover td{background:var(--tp);}' +
     '.badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600;}' +
     '.bg2{background:var(--gp);color:var(--g);}.bc2{background:var(--rp);color:var(--r);}.ba2{background:var(--ap);color:var(--a);}.bb2{background:var(--bp);color:var(--b);}.bt2{background:var(--tp);color:var(--t);}' +
     '.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.2rem 1.4rem;margin-bottom:1rem;position:relative;}' +
