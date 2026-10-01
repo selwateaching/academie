@@ -1835,6 +1835,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
         </div>
         <div class="fg"><label class="fl">Année scolaire</label><input class="fi" id="pAn" placeholder="2025-2026"></div>
+        <div class="fg2">
+          <div class="fg"><label class="fl">Circonscription pédagogique</label><input class="fi" id="pCirc" placeholder="Ex: Circonscription de..."></div>
+          <div class="fg"><label class="fl">Inspection (primaire/moyen/secondaire)</label><input class="fi" id="pInsp" placeholder="Ex: Inspection de l'enseignement primaire"></div>
+        </div>
         <button class="btn bt" style="width:100%" onclick="saveP()">Sauvegarder</button>
       </div></div>
       <div class="card"><div class="ch"><div class="ct" style="color:var(--r)">Zone dangereuse</div></div><div class="cb">
@@ -2169,7 +2173,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg2"><div class="fg"><label class="fl">Lexique</label><input class="fi" id="sqLexique" placeholder=""></div><div class="fg"><label class="fl">Grammaire</label><input class="fi" id="sqGrammaire" placeholder=""></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Conjugaison</label><input class="fi" id="sqConjugaison" placeholder=""></div><div class="fg"><label class="fl">Orthographe</label><input class="fi" id="sqOrthographe" placeholder=""></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Lecture systématique</label><input class="fi" id="sqLectureSyst" placeholder=""></div><div class="fg"><label class="fl">Dictée</label><input class="fi" id="sqDictee" placeholder=""></div></div>
-        <div class="fg"><label class="fl">Production orale / écrite</label><input class="fi" id="sqProduction" placeholder=""></div>
+        <div class="fg2"><div class="fg"><label class="fl">Comptine</label><input class="fi" id="sqComptine" placeholder=""></div><div class="fg"><label class="fl">Production orale / écrite</label><input class="fi" id="sqProduction" placeholder=""></div></div>
       </div>
       <div id="sqSciFields" style="display:none">
         <div class="fg"><label class="fl">Compétences visées</label><textarea class="fta" id="sqCompetences" style="min-height:55px"></textarea></div>
@@ -3070,9 +3074,12 @@ var LANG_JS = {
     proga_badge_encours_print: '◐ En cours',
     th_projet: 'Projet', th_sequence: 'Séquence', th_actes_parole: 'Actes de parole',
     th_lecture: 'Lecture', th_lexique: 'Lexique', th_grammaire: 'Grammaire',
-    th_conjugaison: 'Conjugaison', th_orthographe: 'Orthographe',
+    th_conjugaison: 'Conjugaison', th_orthographe: 'Orthographe', th_comptine: 'Comptine',
     th_unite: 'Unité', th_chapitre_seq: 'Chapitre / Séquence',
     th_competences: 'Compétences', th_nb_seances: 'Nb séances', th_periode: 'Période',
+    proga_eval_diag: 'Évaluation diagnostique prévue en deux semaines',
+    proga_wilaya_lbl: "Direction de l'Éducation de la wilaya :", proga_circ_lbl: 'Circonscription pédagogique :',
+    proga_insp_lbl: "Inspection de l'enseignement :", proga_sig_ens: 'Enseignant(e)', proga_sig_dir: 'Directeur(trice)', proga_sig_insp: 'Inspecteur(trice)',
     vue_tableau_btn: '📊 Vue tableau',
     vue_fiche_btn: '📋 Vue fiche',
     aucun_cours_dossier: 'Aucun cours dans ce dossier',
@@ -3366,8 +3373,11 @@ var LANG_JS = {
     proga_badge_encours_print: '◐ قيد الإنجاز',
     th_projet: 'مشروع', th_sequence: 'وحدة', th_actes_parole: 'الأفعال اللغوية',
     th_lecture: 'القراءة', th_lexique: 'المعجم', th_grammaire: 'القواعد',
-    th_conjugaison: 'التصريف', th_orthographe: 'الإملاء',
+    th_conjugaison: 'التصريف', th_orthographe: 'الإملاء', th_comptine: 'النشيد',
     th_unite: 'وحدة', th_chapitre_seq: 'الفصل / الوحدة',
+    proga_eval_diag: 'التقويم التشخيصي المبرمج في أسبوعين',
+    proga_wilaya_lbl: 'مديرية التربية لولاية :', proga_circ_lbl: 'المقاطعة التربوية :',
+    proga_insp_lbl: 'مفتشية التعليم :', proga_sig_ens: 'الأستاذ(ة)', proga_sig_dir: 'المدير(ة)', proga_sig_insp: 'المفتش(ة)',
     th_competences: 'الكفاءات', th_nb_seances: 'عدد الحصص', th_periode: 'الفترة',
     vue_tableau_btn: '📊 عرض جدول',
     vue_fiche_btn: '📋 عرض بطاقة',
@@ -6916,7 +6926,7 @@ window.addSequenceTo = function(projetId) {
   document.getElementById('mSeqT').textContent = T('proga_nouvelle_seq');
   document.getElementById('sqNom').value = '';
   document.getElementById('sqStatut').value = 'a_venir';
-  ['sqActes','sqLecture','sqLexique','sqGrammaire','sqConjugaison','sqOrthographe','sqLectureSyst','sqDictee','sqProduction'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['sqActes','sqLecture','sqLexique','sqGrammaire','sqConjugaison','sqOrthographe','sqLectureSyst','sqDictee','sqComptine','sqProduction'].forEach(function(id){ document.getElementById(id).value=''; });
   document.getElementById('sqCompetences').value = '';
   document.getElementById('sqNbSeances').value = 3;
   document.getElementById('sqPeriode').value = '';
@@ -6940,6 +6950,7 @@ window.editSequence = function(projetId, seqId) {
   document.getElementById('sqOrthographe').value = sq.orthographe || '';
   document.getElementById('sqLectureSyst').value = sq.lectureSyst || '';
   document.getElementById('sqDictee').value = sq.dictee || '';
+  document.getElementById('sqComptine').value = sq.comptine || '';
   document.getElementById('sqProduction').value = sq.production || '';
   document.getElementById('sqCompetences').value = sq.competences || '';
   document.getElementById('sqNbSeances').value = sq.nbSeances || 3;
@@ -6959,6 +6970,7 @@ function saveSequence() {
     lexique: document.getElementById('sqLexique').value, grammaire: document.getElementById('sqGrammaire').value,
     conjugaison: document.getElementById('sqConjugaison').value, orthographe: document.getElementById('sqOrthographe').value,
     lectureSyst: document.getElementById('sqLectureSyst').value, dictee: document.getElementById('sqDictee').value,
+    comptine: document.getElementById('sqComptine').value,
     production: document.getElementById('sqProduction').value,
     competences: document.getElementById('sqCompetences').value,
     nbSeances: parseInt(document.getElementById('sqNbSeances').value) || 1,
@@ -7018,8 +7030,8 @@ async function genProgaIA() {
   var mat = D.s.mat;
   var schema, consignes;
   if (isL) {
-    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","production":"..."}]}]}';
-    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Production orale/écrite. Prévois exactement 3 Projets pour l\'année, 2 séquences par projet. Reste très concis : 3 à 6 mots par champ, pas de phrases complètes.';
+    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
+    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite. Prévois exactement 3 Projets pour l\'année, 2 séquences par projet. Reste très concis : 3 à 6 mots par champ, pas de phrases complètes.';
   } else {
     schema = '{"projets":[{"nom":"Unité 1 : ...","tacheFinale":"","sequences":[{"nom":"Chapitre : ...","competences":"...","nbSeances":3,"periode":"Semaines 1-2"}]}]}';
     consignes = 'Structure par Unités/Chapitres du programme officiel, réparties sur l\'année scolaire algérienne (environ 30 semaines, découpées en 3 trimestres). Prévois 4 à 6 Unités, chacune avec 2 à 4 chapitres/séquences, en indiquant la période prévue (ex: "Semaines 3-4") et le nombre de séances.';
@@ -7072,14 +7084,19 @@ function printProga() {
   var isL = progaIsLangue();
   var title = T('proga_title') + ' — ' + D.s.mat;
   var html = '<h3 style="text-align:center;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;margin-bottom:14px;">'+T('min_edu_nat')+'</h3>';
+  /* En-tête administratif officiel (wilaya / circonscription / inspection / établissement),
+     pour que le document puisse être imprimé et transmis tel quel à la direction. */
+  html += '<div class="pp-meta"><div><b>'+T('proga_wilaya_lbl')+'</b> ' + (D.s.wil||'') + '</div><div><b>'+T('proga_circ_lbl')+'</b> ' + (D.s.circ||'') + '</div></div>';
+  html += '<div class="pp-meta"><div><b>'+T('proga_insp_lbl')+'</b> ' + (D.s.insp||'') + '</div><div><b>'+T('cj_etablissement_lbl')+'</b> ' + (D.s.et||'') + '</div></div>';
   html += '<div class="pp-banner"><div class="pp-banner-top">📊 '+T('proga_title')+'</div><div class="pp-banner-theme">' + D.s.mat + '</div></div>';
-  html += '<div class="pp-meta"><div><b>'+T('cj_etablissement_lbl')+'</b> ' + (D.s.et||'') + '</div><div><b>'+T('cj_enseignant_lbl')+'</b> ' + D.s.pre + ' ' + D.s.nom + '</div><div><b>'+T('annee_scolaire_lbl')+'</b> ' + (D.s.an||'') + '</div></div>';
+  html += '<div class="pp-meta"><div><b>'+T('cj_enseignant_lbl')+'</b> ' + D.s.pre + ' ' + D.s.nom + '</div><div><b>'+T('annee_scolaire_lbl')+'</b> ' + (D.s.an||'') + '</div></div>';
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
-    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
+    html += '<div class="pp-section">📋 '+T('proga_eval_diag')+'</div>';
+    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
     D.progression.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
-        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
+        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
     });
   } else {
@@ -7091,6 +7108,12 @@ function printProga() {
     });
   }
   html += '</tbody></table>';
+  /* Lignes de signature, pour la remise officielle à la direction. */
+  html += '<div style="display:flex;justify-content:space-between;margin-top:40px;text-align:center;font-size:.8rem;">' +
+    '<div style="width:30%;"><div style="border-top:1px solid #333;padding-top:6px;">'+T('proga_sig_ens')+'</div></div>' +
+    '<div style="width:30%;"><div style="border-top:1px solid #333;padding-top:6px;">'+T('proga_sig_dir')+'</div></div>' +
+    '<div style="width:30%;"><div style="border-top:1px solid #333;padding-top:6px;">'+T('proga_sig_insp')+'</div></div>' +
+    '</div>';
   printCleanPage(title, html);
 }
 
@@ -8293,6 +8316,8 @@ function rParams(){
   document.getElementById('pEm').value=s.em||'';
   document.getElementById('pEt').value=s.et||'';
   document.getElementById('pAn').value=s.an||'2025-2026';
+  document.getElementById('pCirc').value=s.circ||'';
+  document.getElementById('pInsp').value=s.insp||'';
   document.getElementById('pMatCustom').value=s.matCustom||'';
   // Selects
   var selMat=document.getElementById('pMat');
@@ -8332,7 +8357,7 @@ function saveP(){
     var matCustom=document.getElementById('pMatCustom').value.trim();
     mat=(selMat==='Autre'&&matCustom)?matCustom:selMat||D.s.mat;
   }
-  D.s={pre:p,nom:n,mat:mat,matCustom:document.getElementById('pMatCustom').value.trim(),em:document.getElementById('pEm').value,et:document.getElementById('pEt').value,wil:document.getElementById('pWil').value,cycle:document.getElementById('pCycle').value,type:document.getElementById('pType').value,an:document.getElementById('pAn').value};
+  D.s={pre:p,nom:n,mat:mat,matCustom:document.getElementById('pMatCustom').value.trim(),em:document.getElementById('pEm').value,et:document.getElementById('pEt').value,wil:document.getElementById('pWil').value,cycle:document.getElementById('pCycle').value,type:document.getElementById('pType').value,an:document.getElementById('pAn').value,circ:document.getElementById('pCirc').value,insp:document.getElementById('pInsp').value};
   sv();
   document.getElementById('sbNm').textContent=T('prof')+' '+p+' '+n;
   document.getElementById('sbMat').textContent=mat;
