@@ -507,7 +507,7 @@ tr:hover td{background:var(--tp);}
 .pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:.72rem;font-weight:700;}
 .pp-banner-theme{font-size:1.3rem;font-weight:800;margin-top:.6rem;line-height:1.25;max-width:76%;}
 .pp-banner-theme-cursive{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;}
-.pp-banner-illus{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(3deg);width:60px;height:60px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 8px 18px rgba(0,0,0,.18);}
+.pp-banner-illus{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(3deg);width:74px;height:74px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 8px 18px rgba(0,0,0,.18);}
 .pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
 .pp-meta b{color:var(--t);}
 @media(max-width:600px){.pp-banner-illus{display:none;}.pp-banner-theme{max-width:100%;}}
@@ -7708,55 +7708,30 @@ function ficheIconPrimaire(matiere, niveau) {
   }
   return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#F6E3EF')+'"/><path d="M32 16l4.5 12.5H50l-11 8 4.2 13.5L32 42l-11.2 8L25 36.5l-11-8h13.5z" fill="'+(accent||'#DFA9C9')+'"/></svg>';
 }
-/* Mot-clé de secours (en anglais, pour de meilleurs résultats sur la banque d'images)
-   quand le titre exact de la fiche ne donne aucune photo pertinente. */
-function matiereSearchTerm(matiere) {
-  var m = (matiere || '').toLowerCase();
-  if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) return 'mathematics';
-  if (m.indexOf('arabe') >= 0) return 'arabic calligraphy';
-  if (m.indexOf('français') >= 0 || m.indexOf('francais') >= 0 || m.indexOf('lecture') >= 0 || m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('grammaire') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('orthograph') >= 0) return 'books reading';
-  if (m.indexOf('anglais') >= 0) return 'world map';
-  if (m.indexOf('tamazight') >= 0) return 'amazigh culture';
-  if (m.indexOf('histoire') >= 0 || m.indexOf('géo') >= 0 || m.indexOf('geo') >= 0) return 'world map';
-  if (m.indexOf('physique') >= 0) return 'physics experiment';
-  if (m.indexOf('sciences') >= 0 || m.indexOf('svt') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) return 'science nature';
-  if (m.indexOf('islamique') >= 0) return 'mosque';
-  if (m.indexOf('civique') >= 0) return 'community people';
-  if (m.indexOf('informatique') >= 0) return 'computer technology';
-  if (m.indexOf('art') >= 0 || m.indexOf('musique') >= 0) return 'art painting';
-  if (m.indexOf('sportive') >= 0 || m.indexOf('eps') >= 0) return 'team sport';
-  if (m.indexOf('philo') >= 0) return 'thinking philosophy';
-  return 'classroom school';
-}
-/* Cherche une photo libre de droit (Openverse — banque Creative Commons gratuite,
-   sans clé API) correspondant au sujet de la fiche. Échoue silencieusement : si
-   aucune photo n'est trouvée ou que la requête échoue, le badge emoji reste affiché. */
-async function fetchOpenverseImage(query) {
-  try {
-    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-    var timeoutId = ctrl ? setTimeout(function(){ ctrl.abort(); }, 4000) : null;
-    var url = 'https://api.openverse.org/v1/images/?q=' + encodeURIComponent(query) + '&license_type=commercial&mature=false&page_size=1';
-    var r = await fetch(url, ctrl ? { signal: ctrl.signal } : {});
-    if (timeoutId) clearTimeout(timeoutId);
-    if (!r.ok) return null;
-    var data = await r.json();
-    if (data && data.results && data.results.length && data.results[0].thumbnail) return data.results[0].thumbnail;
-    return null;
-  } catch (e) { return null; }
-}
-var FICHE_IMG_TOKEN = 0;
-async function loadFicheIllustration(crs) {
-  var token = ++FICHE_IMG_TOKEN;
-  var queries = [crs.titre, matiereSearchTerm(crs.mat || D.s.mat)];
-  for (var i = 0; i < queries.length; i++) {
-    var url = await fetchOpenverseImage(queries[i]);
-    if (token !== FICHE_IMG_TOKEN) return; /* un autre document a été affiché entre-temps */
-    if (url) {
-      var el = document.getElementById('ppBannerIllus');
-      if (el) { el.style.backgroundImage = "url('" + url.replace(/'/g, "%27") + "')"; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = ''; }
-      return;
-    }
+/* Icône du bandeau de la fiche : on cherche d'abord un mot-clé précis dans le TITRE
+   (ex. "lion" dans "les animaux sauvages" → 🦁) avant de retomber sur l'icône générique
+   de la matière. Illustration façon dessin (emoji), jamais de photo — demande explicite
+   de la cliente pour des fiches pédagogiques destinées aux enfants. */
+var TITRE_EMOJI_MAP = [
+  [/lion|tigre|savane/i, '🦁'], [/mouton|brebis/i, '🐑'], [/vache|ferme(?!r)/i, '🐄'],
+  [/poule|poulet|coq\b/i, '🐔'], [/chat\b|chaton/i, '🐱'], [/chien|chiot/i, '🐶'],
+  [/cheval|chevaux/i, '🐴'], [/oiseau|oiseaux/i, '🐦'], [/poisson/i, '🐟'],
+  [/animau/i, '🐾'], [/insecte|papillon|abeille/i, '🦋'],
+  [/football|handball|basket|volley|sport[s]? en [ée]quipe|sport collectif/i, '⚽'],
+  [/sport/i, '🤸'], [/fruit|légume|pomme|orange\b/i, '🍎'], [/repas|alimentation|nutrition/i, '🍽️'],
+  [/eau\b|pluie|cycle de l.eau/i, '💧'], [/plante|fleur|jardin/i, '🌱'], [/arbre|forêt|foret/i, '🌳'],
+  [/soleil|météo|meteo|saison/i, '☀️'], [/famille/i, '👨‍👩‍👧'], [/maison|habitat/i, '🏠'],
+  [/voiture|transport|train|avion|bateau/i, '🚗'], [/corps humain|squelette/i, '🫀'],
+  [/fraction|nombre|calcul|addition|soustraction|multiplication|division/i, '➗'],
+  [/géométrie|forme géométrique/i, '📐'], [/temps|horloge|heure/i, '🕐'], [/argent|monnaie|prix/i, '💰'],
+  [/espace|planète|étoile|univers/i, '🪐'], [/volcan|montagne/i, '🌋'], [/mer|océan|plage/i, '🌊']
+];
+function ficheTitreEmoji(titre, matiere) {
+  var t = (titre || '');
+  for (var i = 0; i < TITRE_EMOJI_MAP.length; i++) {
+    if (TITRE_EMOJI_MAP[i][0].test(t)) return TITRE_EMOJI_MAP[i][1];
   }
+  return matiereEmoji(matiere);
 }
 function dispCrs(crs, keepMode){
   if (!keepMode) TP_VIEW_MODE = 'cards';
@@ -7785,8 +7760,7 @@ function dispCrs(crs, keepMode){
     var estPrimaireIllustre = niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire());
     var titreClass = estPrimaireIllustre ? ' pp-banner-theme-cursive' : '';
     var matDoc = crs.mat || D.s.mat;
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus" id="ppBannerIllus">'+matiereEmoji(matDoc)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
-    loadFicheIllustration(crs);
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus">'+ficheTitreEmoji(crs.titre, matDoc)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
