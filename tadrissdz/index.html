@@ -7515,7 +7515,7 @@ async function genCours(extraInstruction) {
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var contenuFinal = (ty === 'fiche_peda') ? (enteteHTML + text) : text;
-    curCrs={titre:titre,niveau:nv,type:ty,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
+    curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';
     document.getElementById('btnTcSimplify').style.display='inline-flex';
@@ -7709,7 +7709,8 @@ function dispCrs(crs, keepMode){
        pédagogiquement pour ce niveau (modèle d'écriture pour les enfants). */
     var estPrimaireIllustre = niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire());
     var titreClass = estPrimaireIllustre ? ' pp-banner-theme-cursive' : '';
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus">'+matiereEmoji(D.s.mat)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    var matDoc = crs.mat || D.s.mat;
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus">'+matiereEmoji(matDoc)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
