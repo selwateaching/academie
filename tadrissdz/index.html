@@ -7694,7 +7694,7 @@ function dispCrs(crs, keepMode){
     hasSteps = false;
   }
   var niveauEstPrimaire = /^[1-5]AP$/.test((crs.niveau || '').trim());
-  var estFichePrimaire = (crs.type === 'fiche_peda') && (niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire()));
+  var estFichePrimaire = false; /* style illustré désormais appliqué à tous les niveaux, y compris Primaire — ancien style cursif/pastel conservé ci-dessous mais désactivé */
   if (estFichePrimaire) {
     var palNiveau = NIVEAU_PALETTE[(crs.niveau || '').trim()];
     var borderStyle = palNiveau ? (' style="border-color:'+palNiveau.border+'"') : '';
