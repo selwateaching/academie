@@ -511,10 +511,10 @@ tr:hover td{background:var(--tp);}
 .pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
 .pp-meta b{color:var(--t);}
 @media(max-width:600px){.pp-banner-illus{display:none;}.pp-banner-theme{max-width:100%;}}
-.pp-section{background:var(--tp);color:var(--t);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;padding:.5rem .9rem;border-radius:8px;margin:1rem 0 .6rem;}
+.pp-section{display:inline-flex;align-items:center;gap:.4rem;background:var(--tp);color:var(--t);font-weight:800;font-size:.85rem;text-transform:none;letter-spacing:0;padding:.55rem 1rem;border-radius:999px;margin:1.3rem 0 .7rem;}
 .pp-section.pp-sub{background:var(--bp);color:var(--b);}
-.pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);}
-.pp-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;}
+.pp-step{display:flex;gap:.9rem;align-items:flex-start;margin:.9rem 0;padding:1rem 1.1rem;background:#fff;border:1px solid var(--br);border-radius:14px;border-left:4px solid var(--t);box-shadow:0 2px 10px rgba(16,27,77,.03);}
+.pp-step-num{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;}
 /* Fiche pédagogique Primaire — style test : cursif, pastel, icônes, peu chargé */
 .pp-primaire{position:relative;border:3px dashed #F3C9DA;border-radius:20px;padding:1.2rem 1.4rem;background:#FFFFFF;}
 .pp-primaire-star{position:absolute;pointer-events:none;}
@@ -529,8 +529,8 @@ tr:hover td{background:var(--tp);}
 .pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}
 .pp-primaire .pp-section{font-family:'Caveat',cursive;font-size:1.25rem;font-weight:700;background:#D9E8FA;color:#2C5AA0;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}
 .pp-primaire .pp-section.pp-sub{background:#FDEBD3;color:#B36B00;}
-.pp-step-body{flex:1;font-size:.82rem;line-height:1.6;}
-.pp-step-title{font-weight:800;margin-bottom:.25rem;}
+.pp-step-body{flex:1;font-size:.84rem;line-height:1.7;}
+.pp-step-title{font-weight:800;margin-bottom:.3rem;font-size:.92rem;}
 .pp-tbl{width:100%;border-collapse:collapse;margin-top:.3rem;}
 .pp-tbl{border:1px solid var(--t);}
 .pp-tbl th{background:var(--tp);color:var(--t);text-align:left;padding:8px 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--t);}
@@ -4715,8 +4715,8 @@ function telechargerWord(titre, contenuHTML) {
     '.pp-banner{background:#006B3F;color:#fff;padding:14px 16px;} .pp-banner-top{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;padding:3px 10px;font-size:9pt;font-weight:bold;}' +
     '.pp-banner-theme{font-size:16pt;font-weight:bold;margin-top:8px;} .pp-banner-theme-cursive{font-family:"Caveat","Segoe Script","Comic Sans MS",cursive;font-size:22pt;}' +
     '.pp-banner-illus{display:none;} .pp-meta{background:#F0EEE9;padding:6px;margin:6px 0;}' +
-    '.pp-section{background:#E6F4EE;color:#006B3F;font-weight:bold;padding:5px;margin-top:12px;}' +
-    '.pp-step{border-left:4px solid #006B3F;padding:6px 10px;margin:8px 0;background:#F5F5F2;} .pp-step-num{font-weight:bold;color:#006B3F;}' +
+    '.pp-section{background:#E6F4EE;color:#006B3F;font-weight:bold;padding:7px 12px;margin-top:14px;border-radius:20px;display:inline-block;}' +
+    '.pp-step{border:1px solid #E2DDD5;border-left:4px solid #006B3F;padding:10px 12px;margin:10px 0;background:#fff;border-radius:10px;} .pp-step-num{font-weight:bold;color:#006B3F;} .pp-step-title{font-size:12pt;}' +
     '.tc-box{padding:10px;margin:10px 0;border-left:4px solid #3B82F6;background:#EFF6FF;} .tc-box-title{font-size:13pt;font-weight:bold;} .tc-remember{padding:8px;margin:8px 0;background:#FBF6E3;border:1px solid #D4AF37;}' +
     '.tc-cursive{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:18pt;} .tc-cursive-trace{color:#B9BFCC;}' +
     '.tc-seyes{height:40pt;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 12pt;}' +
@@ -4756,12 +4756,12 @@ function printCleanPage(title, contentHTML) {
     '.pp-banner-illus{display:none;}' +
     '.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}' +
     '.pp-meta b{color:var(--t);}' +
-    '.pp-section{background:var(--tp);color:var(--t);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;padding:.5rem .9rem;border-radius:8px;margin:1rem 0 .6rem;}' +
+    '.pp-section{display:inline-flex;align-items:center;gap:6px;background:var(--tp);color:var(--t);font-weight:800;font-size:12px;text-transform:none;letter-spacing:0;padding:7px 14px;border-radius:999px;margin:16px 0 9px;}' +
     '.pp-section.pp-sub{background:var(--bp);color:var(--b);}' +
-    '.pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);page-break-inside:avoid;}' +
-    '.pp-step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.78rem;}' +
-    '.pp-step-body{flex:1;font-size:.82rem;line-height:1.6;}' +
-    '.pp-step-title{font-weight:800;margin-bottom:.25rem;}' +
+    '.pp-step{display:flex;gap:12px;align-items:flex-start;margin:11px 0;padding:12px 14px;background:#fff;border:1px solid var(--br);border-radius:14px;border-left:4px solid var(--t);page-break-inside:avoid;}' +
+    '.pp-step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;}' +
+    '.pp-step-body{flex:1;font-size:12px;line-height:1.7;}' +
+    '.pp-step-title{font-weight:800;margin-bottom:5px;font-size:13px;}' +
     '.pp-tbl{width:100%;border-collapse:collapse;margin-top:.3rem;}' +
     '.pp-tbl{border:1px solid var(--t);}' +
     '.pp-tbl th{background:var(--tp);color:var(--t);text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--t);}' +
