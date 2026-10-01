@@ -1599,7 +1599,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option></select></div>
+          <div class="fg"><label class="fl">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option></select></div>
           <div class="fg"><label class="fl">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -1607,6 +1607,9 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <div class="fg"><label class="fl">Séquence</label><input class="fi" id="crsSequence" placeholder="Ex: Séquence 1 — Tu habites où ?"></div>
           <div class="fg"><label class="fl">Acte de parole</label><input class="fi" id="crsActeParole" placeholder="Ex: Saluer, se présenter, demander une information"></div>
           <div class="fg"><label class="fl">Activité (discipline)</label><input class="fi" id="crsActivite" placeholder="Ex: Grammaire, Conjugaison, Orthographe, Lecture..."></div>
+        </div>
+        <div id="crsDeroulFields" style="display:none">
+          <div class="fg"><label class="fl">Séquence (depuis la Progression)</label><select class="fs" id="crsDeroulSeq" onchange="onCrsDeroulSeqChange()"><option value="">— Choisir une séquence —</option></select></div>
         </div>
         <div class="fg"><label class="fl">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
         <div class="fg"><label class="fl">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
@@ -7253,6 +7256,9 @@ function onCrsTypeChange() {
   var mat = getCrsMatiereSelectionnee();
   var show = (ty === 'fiche_peda') && isLangueMatiere(mat);
   document.getElementById('crsLangueFields').style.display = show ? 'block' : 'none';
+  var showDeroul = (ty === 'deroulement');
+  document.getElementById('crsDeroulFields').style.display = showDeroul ? 'block' : 'none';
+  if (showDeroul) rCrsDeroulSeqOptions();
   var crsType = document.getElementById('crsType');
   var opt = crsType.selectedOptions[0];
   if (opt) {
@@ -7263,6 +7269,25 @@ function onCrsTypeChange() {
     var heading = crsCards[0] ? crsCards[0].querySelector('.ct') : null;
     if (heading) heading.textContent = (isAR ? 'إنشاء : ' : 'Générer : ') + label;
   }
+}
+function rCrsDeroulSeqOptions() {
+  var sel = document.getElementById('crsDeroulSeq'); if (!sel) return;
+  var cur = sel.value;
+  var html = '<option value="">— Choisir une séquence —</option>';
+  (D.progression || []).forEach(function(pj) {
+    (pj.sequences || []).forEach(function(sq) {
+      html += '<option value="' + pj.id + ':' + sq.id + '">' + pj.nom + ' — ' + sq.nom + '</option>';
+    });
+  });
+  sel.innerHTML = html;
+  sel.value = cur;
+}
+function onCrsDeroulSeqChange() {
+  var sel = document.getElementById('crsDeroulSeq'); if (!sel || !sel.value) return;
+  var parts = sel.value.split(':');
+  var pj = (D.progression || []).find(function(p){ return p.id === parseInt(parts[0]); }); if (!pj) return;
+  var sq = (pj.sequences || []).find(function(s){ return s.id === parseInt(parts[1]); }); if (!sq) return;
+  document.getElementById('crsT').value = pj.nom + ' — ' + sq.nom;
 }
 function rCrsIA(){
   renderSC();document.getElementById('btnSCrs').style.display='none';
@@ -7475,6 +7500,34 @@ async function genCours(extraInstruction) {
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Rédige une FICHE PÉDAGOGIQUE OFFICIELLE (pas un cours détaillé, pas un script de classe) sur le sujet: "'+titre+'". Niveau: '+nv+'. Durée: '+dur+'. Langue: '+(lang==='ar'?'arabe':'français')+'.'+(obj?'\nObjectifs fournis par le professeur: '+obj:'')+(prereq?'\nPrérequis: '+prereq:'')+
       '\n\nVoici le squelette HTML EXACT que tu dois utiliser. Remplace chaque texte entre crochets [ ] par un contenu réel, TRÈS CONCIS. NE SUPPRIME AUCUNE RUBRIQUE, NE CHANGE PAS L\'ORDRE ni les durées entre parenthèses (déjà calculées), garde tous les intitulés en gras strictement identiques, ainsi que les balises <div class="tc-box ..."> / <div class="tc-remember"> (ne les retire pas, ne les remplace pas par des <p>). Ta réponse doit commencer par "<p><strong>Évaluation :</strong>" et ne rien contenir avant :\n\n'+skeletonSci+
       '\n\nRègle absolue de style — une vraie fiche pédagogique n\'est PAS un cours rédigé : \n- CHAQUE Moment fait 1 à 3 lignes maximum avant le tableau/la liste, jamais un paragraphe narratif de plusieurs phrases\n- N\'écris JAMAIS "Le professeur commence par...", "Il propose ensuite...", "Le professeur explique que..." — élimine tout récit de déroulement, ne garde que la consigne ou la question posée aux élèves\n- La situation-problème doit être concrète et déclencher réellement le besoin de la notion, pas une simple accroche\n- Utilise des tableaux et listes à puces plutôt que du texte continu, exactement comme dans le squelette\n- "Retiens" = une règle en UNE phrase + un exemple chiffré, jamais plus\n- Les questions d\'application sont numérotées, courtes, sans mise en situation longue, et sans ambiguïté syntaxique\n- Utilise des exemples et contextes algériens (noms, lieux, DA) mais SANS développer une histoire\n- Ne mets aucun texte avant "<p><strong>Évaluation :</strong>", et rien après la Remédiation';
+  } else if (ty === 'deroulement') {
+    enteteHTML += '<div class="pp-meta"><div><b>Inspection de l\'enseignement :</b> '+(D.s.insp||'')+'</div><div><b>Année scolaire :</b> '+(D.s.an||'')+'</div></div>'+
+      '<div class="pp-meta"><div><b>Circonscription pédagogique :</b> '+(D.s.circ||'')+'</div><div><b>Cours :</b> '+nv+'</div></div>'+
+      '<div class="pp-meta"><div><b>Établissement scolaire :</b> '+(D.s.et||'')+'</div></div>';
+    /* Contexte de la séquence choisie dans la Progression, pour que le contenu généré reste cohérent avec elle */
+    var deroulSeqVal = document.getElementById('crsDeroulSeq') ? document.getElementById('crsDeroulSeq').value : '';
+    var deroulCtx = '';
+    if (deroulSeqVal) {
+      var dParts = deroulSeqVal.split(':');
+      var dPj = (D.progression||[]).find(function(p){ return p.id === parseInt(dParts[0]); });
+      var dSq = dPj ? (dPj.sequences||[]).find(function(s){ return s.id === parseInt(dParts[1]); }) : null;
+      if (dSq) {
+        deroulCtx = '\nContexte de la séquence (déjà planifiée, à détailler jour par jour — reste cohérent avec ces éléments) : ' +
+          [dSq.actes&&('Actes de parole: '+dSq.actes), dSq.lecture&&('Lecture: '+dSq.lecture), dSq.lexique&&('Lexique: '+dSq.lexique), dSq.grammaire&&('Grammaire: '+dSq.grammaire), dSq.conjugaison&&('Conjugaison: '+dSq.conjugaison), dSq.orthographe&&('Orthographe: '+dSq.orthographe), dSq.comptine&&('Comptine: '+dSq.comptine)].filter(Boolean).join(' · ');
+      }
+    }
+    var ACT_TYPES = "Comptine, Oral / réception, Oral / production, Écrit / réception, Écrit / production, Étude des mots illustrés, Exercices écrits / Dictée, Lecture, Phonétique articulatoire";
+    function deroulJour() {
+      return '<div style="margin-bottom:8px;"><b>[Type d\'activité parmi : '+ACT_TYPES+'] : [durée entre 15 et 45] min</b><br>[description très courte de l\'activité, 1 ligne]<br><span style="color:#9090A0;font-size:11px;">MS : ______&nbsp;&nbsp;&nbsp;CA : ______</span></div>'+
+        '<div><b>[un 2e type d\'activité différent du premier] : [durée] min</b><br>[description très courte, 1 ligne]<br><span style="color:#9090A0;font-size:11px;">MS : ______&nbsp;&nbsp;&nbsp;CA : ______</span></div>';
+    }
+    var skeletonDeroul = '<table class="pp-tbl"><tr><th></th><th>1er jour (1 heure)</th><th>2ème jour (1 heure)</th></tr>'+
+      '<tr><td><b>1ère semaine</b></td><td>'+deroulJour()+'</td><td>'+deroulJour()+'</td></tr>'+
+      '<tr><td><b>2ème semaine</b></td><td>'+deroulJour()+'</td><td>'+deroulJour()+'</td></tr>'+
+      '<tr><td><b>3ème semaine</b></td><td>'+deroulJour()+'</td><td>'+deroulJour()+'</td></tr>'+
+      '</table>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale), niveau Primaire. Détaille le DÉROULEMENT jour par jour, sur 3 semaines, de la séquence : "'+titre+'".'+deroulCtx+
+      '\n\nVoici le squelette HTML EXACT à utiliser. Remplace UNIQUEMENT les textes entre crochets [ ]. NE TOUCHE JAMAIS aux lignes "MS : ______ CA : ______" (laisse-les telles quelles, c\'est l\'enseignant qui les remplira à la main). Choisis à chaque fois 2 types d\'activité DIFFÉRENTS dans la liste fournie, adaptés à une progression logique sur les 3 semaines (ex: découverte/réception en semaine 1, production en semaine 2, lecture/évaluation en semaine 3). Les durées doivent totaliser environ 60 minutes par jour (ex: 15+45, 30+30, 40+20). Reste très concis (1 ligne par description). Ne mets aucun texte avant la balise <table>, et rien après :\n\n'+skeletonDeroul;
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -7541,7 +7594,7 @@ async function genCours(extraInstruction) {
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
-    var contenuFinal = (ty === 'fiche_peda') ? (enteteHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement') ? (enteteHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';
@@ -7596,7 +7649,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
