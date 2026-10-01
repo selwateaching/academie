@@ -506,6 +506,7 @@ tr:hover td{background:var(--tp);}
 .pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.3rem 1.5rem;margin-bottom:1rem;position:relative;}
 .pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:.72rem;font-weight:700;}
 .pp-banner-theme{font-size:1.3rem;font-weight:800;margin-top:.6rem;line-height:1.25;max-width:76%;}
+.pp-banner-theme-cursive{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;}
 .pp-banner-illus{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(3deg);width:60px;height:60px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 8px 18px rgba(0,0,0,.18);}
 .pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
 .pp-meta b{color:var(--t);}
@@ -4749,6 +4750,7 @@ function printCleanPage(title, contentHTML) {
     '.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.2rem 1.4rem;margin-bottom:1rem;position:relative;}' +
     '.pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:11px;font-weight:700;}' +
     '.pp-banner-theme{font-size:19px;font-weight:800;margin-top:.5rem;line-height:1.25;max-width:76%;}' +
+    '.pp-banner-theme-cursive{font-family:"Caveat",cursive;font-size:27px;font-weight:700;}' +
     '.pp-banner-illus{display:none;}' +
     '.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}' +
     '.pp-meta b{color:var(--t);}' +
@@ -7694,14 +7696,18 @@ function dispCrs(crs, keepMode){
     hasSteps = false;
   }
   var niveauEstPrimaire = /^[1-5]AP$/.test((crs.niveau || '').trim());
-  var estFichePrimaire = false; /* style illustré désormais appliqué à tous les niveaux, y compris Primaire — ancien style cursif/pastel conservé ci-dessous mais désactivé */
+  var estFichePrimaire = false; /* ancien style cursif/pastel en bloc désactivé — gardé ci-dessous pour mémoire, non atteint */
   if (estFichePrimaire) {
     var palNiveau = NIVEAU_PALETTE[(crs.niveau || '').trim()];
     var borderStyle = palNiveau ? (' style="border-color:'+palNiveau.border+'"') : '';
     var etoile = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.6 6.6L22 9l-5.5 4.6L18 21l-6-3.8L6 21l1.5-7.4L2 9l7.4-.4z" fill="'+(palNiveau?palNiveau.accent:'#DFA9C9')+'" opacity=".55"/></svg>';
     document.getElementById('crsDis').innerHTML='<div class="pp-primaire"'+borderStyle+'><span class="pp-primaire-star pp-primaire-star-tl">'+etoile+'</span><span class="pp-primaire-star pp-primaire-star-br">'+etoile+'</span><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat, crs.niveau)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   } else {
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div><div class="pp-banner-illus">'+matiereEmoji(D.s.mat)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    /* Primaire : même style illustré, mais le titre reste en écriture cursive — important
+       pédagogiquement pour ce niveau (modèle d'écriture pour les enfants). */
+    var estPrimaireIllustre = niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire());
+    var titreClass = estPrimaireIllustre ? ' pp-banner-theme-cursive' : '';
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus">'+matiereEmoji(D.s.mat)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
