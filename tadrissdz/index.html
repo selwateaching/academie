@@ -507,7 +507,8 @@ tr:hover td{background:var(--tp);}
 .pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:.72rem;font-weight:700;}
 .pp-banner-theme{font-size:1.3rem;font-weight:800;margin-top:.6rem;line-height:1.25;max-width:76%;}
 .pp-banner-theme-cursive{font-family:'Caveat',cursive;font-size:1.9rem;font-weight:700;}
-.pp-banner-illus{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(3deg);width:74px;height:74px;background:#fff;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;box-shadow:0 8px 18px rgba(0,0,0,.18);}
+.pp-banner-illus{position:absolute;right:16px;top:50%;transform:translateY(-50%) rotate(3deg);width:108px;height:108px;background:#fff;border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(0,0,0,.18);}
+.pp-banner-illus img{width:78%;height:78%;object-fit:contain;}
 .pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
 .pp-meta b{color:var(--t);}
 @media(max-width:600px){.pp-banner-illus{display:none;}.pp-banner-theme{max-width:100%;}}
@@ -949,6 +950,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <button id="footRGPD" onclick="OM('mRGPD')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Confidentialité</button>
       <button id="footCGV" onclick="OM('mCGV')" style="background:none;border:none;color:rgba(255,255,255,.5);text-decoration:underline;font-size:.78rem;cursor:pointer;font-family:'Inter',sans-serif;padding:0;">Conditions de vente</button>
       <span id="footCopyright">🇩🇿 République Algérienne · © 2026</span>
+      <a href="https://openmoji.org" target="_blank" rel="noopener" style="color:rgba(255,255,255,.35);text-decoration:none;font-size:.7rem;">Icônes OpenMoji (CC BY-SA 4.0)</a>
     </div>
   </div>
 </div><!-- /site -->
@@ -7668,23 +7670,25 @@ var NIVEAU_PALETTE = {
 /* Petit jeu d'icônes pastel/cartoon, sans texte, style cohérent — utilisé pour
    habiller visuellement les fiches pédagogiques du Primaire (test demandé par la cliente).
    Le fond du cercle suit la palette du niveau (si fourni) ; la forme suit la matière. */
+/* Icône de secours selon la matière du compte (quand aucun mot-clé du titre ne correspond).
+   Renvoie le nom de fichier dans /openmoji/ (illustrations dessinées, banque OpenMoji CC BY-SA). */
 function matiereEmoji(matiere) {
   var m = (matiere || '').toLowerCase();
-  if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) return '➗';
-  if (m.indexOf('arabe') >= 0) return '📖';
-  if (m.indexOf('français') >= 0 || m.indexOf('francais') >= 0 || m.indexOf('lecture') >= 0 || m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('grammaire') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('orthograph') >= 0) return '✏️';
-  if (m.indexOf('anglais') >= 0) return '🌍';
-  if (m.indexOf('tamazight') >= 0) return '🗣️';
-  if (m.indexOf('histoire') >= 0 || m.indexOf('géo') >= 0 || m.indexOf('geo') >= 0) return '🗺️';
-  if (m.indexOf('physique') >= 0) return '⚗️';
-  if (m.indexOf('sciences') >= 0 || m.indexOf('svt') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) return '🔬';
-  if (m.indexOf('islamique') >= 0) return '🕌';
-  if (m.indexOf('civique') >= 0) return '⚖️';
-  if (m.indexOf('informatique') >= 0) return '💻';
-  if (m.indexOf('art') >= 0 || m.indexOf('musique') >= 0) return '🎨';
-  if (m.indexOf('sportive') >= 0 || m.indexOf('eps') >= 0) return '⚽';
-  if (m.indexOf('philo') >= 0) return '💭';
-  return '📘';
+  if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) return 'division';
+  if (m.indexOf('arabe') >= 0) return 'livre';
+  if (m.indexOf('français') >= 0 || m.indexOf('francais') >= 0 || m.indexOf('lecture') >= 0 || m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('grammaire') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('orthograph') >= 0) return 'livre';
+  if (m.indexOf('anglais') >= 0) return 'planete';
+  if (m.indexOf('tamazight') >= 0) return 'livre';
+  if (m.indexOf('histoire') >= 0 || m.indexOf('géo') >= 0 || m.indexOf('geo') >= 0) return 'planete';
+  if (m.indexOf('physique') >= 0) return 'ordinateur';
+  if (m.indexOf('sciences') >= 0 || m.indexOf('svt') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) return 'plante';
+  if (m.indexOf('islamique') >= 0) return 'mosquee';
+  if (m.indexOf('civique') >= 0) return 'famille';
+  if (m.indexOf('informatique') >= 0) return 'ordinateur';
+  if (m.indexOf('art') >= 0 || m.indexOf('musique') >= 0) return 'musique';
+  if (m.indexOf('sportive') >= 0 || m.indexOf('eps') >= 0) return 'ballon';
+  if (m.indexOf('philo') >= 0) return 'livre';
+  return 'etoile';
 }
 function ficheIconPrimaire(matiere, niveau) {
   var m = (matiere || '').toLowerCase();
@@ -7708,28 +7712,28 @@ function ficheIconPrimaire(matiere, niveau) {
   }
   return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="'+(bg||'#F6E3EF')+'"/><path d="M32 16l4.5 12.5H50l-11 8 4.2 13.5L32 42l-11.2 8L25 36.5l-11-8h13.5z" fill="'+(accent||'#DFA9C9')+'"/></svg>';
 }
-/* Icône du bandeau de la fiche : on cherche d'abord un mot-clé précis dans le TITRE
-   (ex. "lion" dans "les animaux sauvages" → 🦁) avant de retomber sur l'icône générique
-   de la matière. Illustration façon dessin (emoji), jamais de photo — demande explicite
-   de la cliente pour des fiches pédagogiques destinées aux enfants. */
-var TITRE_EMOJI_MAP = [
-  [/lion|tigre|savane/i, '🦁'], [/mouton|brebis/i, '🐑'], [/vache|ferme(?!r)/i, '🐄'],
-  [/poule|poulet|coq\b/i, '🐔'], [/chat\b|chaton/i, '🐱'], [/chien|chiot/i, '🐶'],
-  [/cheval|chevaux/i, '🐴'], [/oiseau|oiseaux/i, '🐦'], [/poisson/i, '🐟'],
-  [/animau/i, '🐾'], [/insecte|papillon|abeille/i, '🦋'],
-  [/football|handball|basket|volley|sport[s]? en [ée]quipe|sport collectif/i, '⚽'],
-  [/sport/i, '🤸'], [/fruit|légume|pomme|orange\b/i, '🍎'], [/repas|alimentation|nutrition/i, '🍽️'],
-  [/eau\b|pluie|cycle de l.eau/i, '💧'], [/plante|fleur|jardin/i, '🌱'], [/arbre|forêt|foret/i, '🌳'],
-  [/soleil|météo|meteo|saison/i, '☀️'], [/famille/i, '👨‍👩‍👧'], [/maison|habitat/i, '🏠'],
-  [/voiture|transport|train|avion|bateau/i, '🚗'], [/corps humain|squelette/i, '🫀'],
-  [/fraction|nombre|calcul|addition|soustraction|multiplication|division/i, '➗'],
-  [/géométrie|forme géométrique/i, '📐'], [/temps|horloge|heure/i, '🕐'], [/argent|monnaie|prix/i, '💰'],
-  [/espace|planète|étoile|univers/i, '🪐'], [/volcan|montagne/i, '🌋'], [/mer|océan|plage/i, '🌊']
+/* Illustration du bandeau de la fiche : on cherche d'abord un mot-clé précis dans le TITRE
+   (ex. "lion" dans "les animaux sauvages") avant de retomber sur l'icône générique de la
+   matière. Vrais dessins (banque OpenMoji, hébergés dans /openmoji/), jamais de photo ni
+   d'emoji — demande explicite de la cliente pour des fiches destinées aux enfants. */
+var TITRE_ILLUS_MAP = [
+  [/lion|tigre|savane/i, 'lion'], [/mouton|brebis/i, 'mouton'], [/vache|ferme(?!r)/i, 'vache'],
+  [/poule|poulet|coq\b/i, 'poule'], [/chat\b|chaton/i, 'chat'], [/chien|chiot/i, 'chien'],
+  [/cheval|chevaux/i, 'cheval'], [/oiseau|oiseaux/i, 'oiseau'], [/poisson/i, 'poisson'],
+  [/animau/i, 'patte'], [/insecte|papillon|abeille/i, 'papillon'],
+  [/football|handball|basket|volley|sport[s]? en [ée]quipe|sport collectif/i, 'ballon'],
+  [/sport/i, 'course'], [/fruit|légume|pomme|orange\b/i, 'pomme'], [/repas|alimentation|nutrition/i, 'repas'],
+  [/eau\b|pluie|cycle de l.eau/i, 'eau'], [/plante|fleur|jardin/i, 'plante'], [/arbre|forêt|foret/i, 'arbre'],
+  [/soleil|météo|meteo|saison/i, 'soleil'], [/famille/i, 'famille'], [/maison|habitat/i, 'maison'],
+  [/voiture|transport|train|avion|bateau/i, 'voiture'], [/corps humain|squelette/i, 'coeur'],
+  [/fraction|nombre|calcul|addition|soustraction|multiplication|division/i, 'division'],
+  [/géométrie|forme géométrique/i, 'geometrie'], [/temps|horloge|heure/i, 'horloge'], [/argent|monnaie|prix/i, 'argent'],
+  [/espace|planète|étoile|univers/i, 'planete'], [/volcan|montagne/i, 'montagne'], [/mer|océan|plage/i, 'mer']
 ];
-function ficheTitreEmoji(titre, matiere) {
+function ficheTitreIllus(titre, matiere) {
   var t = (titre || '');
-  for (var i = 0; i < TITRE_EMOJI_MAP.length; i++) {
-    if (TITRE_EMOJI_MAP[i][0].test(t)) return TITRE_EMOJI_MAP[i][1];
+  for (var i = 0; i < TITRE_ILLUS_MAP.length; i++) {
+    if (TITRE_ILLUS_MAP[i][0].test(t)) return TITRE_ILLUS_MAP[i][1];
   }
   return matiereEmoji(matiere);
 }
@@ -7760,7 +7764,7 @@ function dispCrs(crs, keepMode){
     var estPrimaireIllustre = niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire());
     var titreClass = estPrimaireIllustre ? ' pp-banner-theme-cursive' : '';
     var matDoc = crs.mat || D.s.mat;
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus">'+ficheTitreEmoji(crs.titre, matDoc)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus"><img src="/openmoji/'+ficheTitreIllus(crs.titre, matDoc)+'.svg" alt=""></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');

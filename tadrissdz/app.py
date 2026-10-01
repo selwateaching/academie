@@ -63,6 +63,11 @@ def guides(filename):
     return send_from_directory(os.path.join(os.path.dirname(__file__), "guides"), filename)
 
 
+@app.get("/openmoji/<path:filename>")
+def openmoji(filename):
+    return send_from_directory(os.path.join(os.path.dirname(__file__), "openmoji"), filename)
+
+
 @app.post("/.netlify/functions/generate")
 def generate():
     body = request.get_json(silent=True) or {}
