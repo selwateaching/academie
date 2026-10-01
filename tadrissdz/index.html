@@ -4187,10 +4187,24 @@ function switchLang() {
       var crsObj = document.getElementById('crsObj'); if (crsObj) crsObj.placeholder = isAR ? 'مثال: حل معادلة من الدرجة الأولى بمجهول واحد...' : 'Ex: Savoir résoudre une équation du 1er degré à une inconnue...';
       var crsPrereq = document.getElementById('crsPrereq'); if (crsPrereq) crsPrereq.placeholder = isAR ? 'مثال: العمليات الأساسية، أولويات العمليات...' : 'Ex: Maîtrise des opérations de base, priorités opératoires...';
       var crsType = document.getElementById('crsType');
-      if (crsType && crsType.options.length >= 9) {
-        var crsTypeAR = ['📋 ورقة تحضير (نموذج رسمي)','درس كامل','ورقة مراجعة','سلسلة تمارين','مقدمة الفصل','ملخص / خلاصة','موضوع نمط BEM','موضوع نمط BAC','🎯 اختبار تحديد المستوى'];
-        var crsTypeFR = ['📋 Fiche pédagogique (canevas officiel)','Cours complet',"Fiche de révision","Série d'exercices","Introduction au chapitre","Synthèse / Résumé","Sujet type BEM","Sujet type BAC","🎯 Test de positionnement"];
-        for(var ci=0;ci<9;ci++) crsType.options[ci].text = isAR ? crsTypeAR[ci] : crsTypeFR[ci];
+      if (crsType) {
+        /* Recalé par value (pas par position) : un ajout/retrait d'option ne doit jamais décaler les libellés des autres. */
+        var crsTypeTxt = {
+          fiche_peda: isAR ? '📋 ورقة تحضير (نموذج رسمي)' : '📋 Fiche pédagogique (canevas officiel)',
+          deroulement: isAR ? '📅 سير الحصص الأسبوعي (ابتدائي)' : '📅 Déroulement de séquence (Primaire)',
+          cours: isAR ? 'درس كامل' : 'Cours complet',
+          fiche: isAR ? 'ورقة مراجعة' : 'Fiche de révision',
+          exos: isAR ? 'سلسلة تمارين' : "Série d'exercices",
+          intro: isAR ? 'مقدمة الفصل' : 'Introduction au chapitre',
+          synthese: isAR ? 'ملخص / خلاصة' : 'Synthèse / Résumé',
+          bem: isAR ? 'موضوع نمط BEM' : 'Sujet type BEM',
+          bac: isAR ? 'موضوع نمط BAC' : 'Sujet type BAC',
+          positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement'
+        };
+        for (var ci = 0; ci < crsType.options.length; ci++) {
+          var ctv = crsType.options[ci].value;
+          if (crsTypeTxt[ctv]) crsType.options[ci].text = crsTypeTxt[ctv];
+        }
         onCrsTypeChange();
       }
       var crsDur = document.getElementById('crsDur');
