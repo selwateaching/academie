@@ -502,11 +502,13 @@ tr:hover td{background:var(--tp);}
 .ab.R{background:var(--ap);border-color:var(--a);color:var(--a);}
 /* Programme National */
 /* ===== DOCUMENTS PÉDAGOGIQUES (fiche, cahier journal, progression) — écran + impression ===== */
-.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1rem;}
-.pp-banner-top{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;font-weight:800;}
-.pp-banner-theme{display:inline-block;background:rgba(255,255,255,.18);border-radius:8px;padding:.4rem .8rem;margin-top:.6rem;font-size:.85rem;font-weight:700;}
-.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--bg);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
+.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.3rem 1.5rem;margin-bottom:1rem;position:relative;}
+.pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:.72rem;font-weight:700;}
+.pp-banner-theme{font-size:1.3rem;font-weight:800;margin-top:.6rem;line-height:1.25;max-width:76%;}
+.pp-banner-illus{position:absolute;right:18px;top:50%;transform:translateY(-50%) rotate(3deg);width:60px;height:60px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 8px 18px rgba(0,0,0,.18);}
+.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}
 .pp-meta b{color:var(--t);}
+@media(max-width:600px){.pp-banner-illus{display:none;}.pp-banner-theme{max-width:100%;}}
 .pp-section{background:var(--tp);color:var(--t);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;padding:.5rem .9rem;border-radius:8px;margin:1rem 0 .6rem;}
 .pp-section.pp-sub{background:var(--bp);color:var(--b);}
 .pp-step{display:flex;gap:.7rem;align-items:flex-start;margin:.7rem 0;padding:.7rem .9rem;background:var(--bg);border-radius:10px;border-left:4px solid var(--t);}
@@ -533,8 +535,8 @@ tr:hover td{background:var(--tp);}
 .pp-tbl td{padding:8px 10px;font-size:.8rem;line-height:1.6;border:1px solid var(--br);vertical-align:top;}
 .pp-tbl tr:nth-child(even) td{background:var(--bg);}
 /* ===== COURS VISUEL IA (tc-*) — système de blocs sémantiques pour le générateur de cours ===== */
-.tc-box{border-radius:10px;padding:.85rem 1.1rem;margin:.9rem 0;font-size:.85rem;line-height:1.75;border-left-width:4px;border-left-style:solid;}
-.tc-box-title{display:flex;align-items:center;gap:.4rem;font-weight:800;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.45rem;}
+.tc-box{border-radius:12px;padding:1rem 1.15rem;margin:1.1rem 0;font-size:.85rem;line-height:1.75;border-left-width:4px;border-left-style:solid;box-shadow:0 2px 10px rgba(16,27,77,.03);}
+.tc-box-title{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:.92rem;text-transform:none;letter-spacing:0;margin-bottom:.5rem;}
 .tc-def{background:var(--bp);border-left-color:var(--b);}
 .tc-def>.tc-box-title{color:var(--b);}
 .tc-method{background:var(--tp);border-left-color:var(--t);}
@@ -546,7 +548,7 @@ tr:hover td{background:var(--tp);}
 .tc-info{background:var(--bg);border-left-color:var(--ink3);}
 .tc-info>.tc-box-title{color:var(--ink3);}
 .tc-remember{background:linear-gradient(135deg,var(--a),#e8c15a);color:#3d2f00;border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:0 4px 14px rgba(212,175,55,.25);}
-.tc-remember>.tc-box-title{color:#3d2f00;font-size:.78rem;}
+.tc-remember>.tc-box-title{color:#3d2f00;font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
 .tc-flow{display:flex;flex-direction:column;gap:0;margin:1.1rem 0;}
 .tc-flow-step{display:flex;gap:.85rem;align-items:flex-start;position:relative;padding-bottom:1.15rem;}
@@ -4671,10 +4673,11 @@ function printCleanPage(title, contentHTML) {
     'td{padding:6px 8px;font-size:12px;border-bottom:1px solid var(--br);}' +
     '.badge{display:inline-flex;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600;}' +
     '.bg2{background:var(--gp);color:var(--g);}.bc2{background:var(--rp);color:var(--r);}.ba2{background:var(--ap);color:var(--a);}.bb2{background:var(--bp);color:var(--b);}.bt2{background:var(--tp);color:var(--t);}' +
-    '.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:14px;padding:1.1rem 1.4rem;margin-bottom:1rem;}' +
-    '.pp-banner-top{display:flex;align-items:center;gap:.6rem;font-size:1.1rem;font-weight:800;}' +
-    '.pp-banner-theme{display:inline-block;background:rgba(255,255,255,.18);border-radius:8px;padding:.4rem .8rem;margin-top:.6rem;font-size:.85rem;font-weight:700;}' +
-    '.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--bg);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}' +
+    '.pp-banner{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.2rem 1.4rem;margin-bottom:1rem;position:relative;}' +
+    '.pp-banner-top{display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.18);border-radius:999px;padding:.3rem .8rem;font-size:11px;font-weight:700;}' +
+    '.pp-banner-theme{font-size:19px;font-weight:800;margin-top:.5rem;line-height:1.25;max-width:76%;}' +
+    '.pp-banner-illus{display:none;}' +
+    '.pp-meta{display:flex;flex-wrap:wrap;gap:.35rem 1.6rem;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.7rem 1rem;margin-bottom:.7rem;font-size:.8rem;}' +
     '.pp-meta b{color:var(--t);}' +
     '.pp-section{background:var(--tp);color:var(--t);font-weight:800;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;padding:.5rem .9rem;border-radius:8px;margin:1rem 0 .6rem;}' +
     '.pp-section.pp-sub{background:var(--bp);color:var(--b);}' +
@@ -4700,15 +4703,15 @@ function printCleanPage(title, contentHTML) {
     '.pp-primaire .pp-meta{background:#FDF1F6;border-radius:12px;}' +
     '.pp-primaire .pp-section{font-family:"Caveat",cursive;font-size:1.25rem;font-weight:700;background:#DCF2E6;color:#2E7D5B;border-radius:14px;text-transform:none;letter-spacing:0;padding:.5rem 1rem;}' +
     '.pp-primaire .pp-section.pp-sub{background:#E4E9FB;color:#3E4FA0;}' +
-    '.tc-box{border-radius:10px;padding:10px 14px;margin:12px 0;font-size:12px;line-height:1.6;border-left-width:4px;border-left-style:solid;page-break-inside:avoid;}' +
-    '.tc-box-title{display:flex;align-items:center;gap:6px;font-weight:800;font-size:10px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}' +
+    '.tc-box{border-radius:12px;padding:12px 16px;margin:12px 0;font-size:12px;line-height:1.6;border-left-width:4px;border-left-style:solid;page-break-inside:avoid;}' +
+    '.tc-box-title{display:flex;align-items:center;gap:6px;font-weight:800;font-size:13px;text-transform:none;letter-spacing:0;margin-bottom:6px;}' +
     '.tc-def{background:var(--bp);border-left-color:var(--b);} .tc-def>.tc-box-title{color:var(--b);}' +
     '.tc-method{background:var(--tp);border-left-color:var(--t);} .tc-method>.tc-box-title{color:var(--t);}' +
     '.tc-warn{background:var(--ap);border-left-color:var(--a);} .tc-warn>.tc-box-title{color:#8a6d00;}' +
     '.tc-example{background:var(--pp);border-left-color:var(--p);} .tc-example>.tc-box-title{color:var(--p);}' +
     '.tc-info{background:var(--bg);border-left-color:var(--ink3);} .tc-info>.tc-box-title{color:var(--ink3);}' +
     '.tc-remember{background:#F8ECC4;color:#3d2f00;border:1px solid var(--a);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
-    '.tc-remember>.tc-box-title{color:#3d2f00;font-size:10px;} .tc-remember p,.tc-remember li{margin:0;}' +
+    '.tc-remember>.tc-box-title{color:#3d2f00;font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
     '.tc-flow-step{display:flex;gap:10px;align-items:flex-start;position:relative;padding-bottom:12px;page-break-inside:avoid;}' +
     '.tc-flow-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;}' +
@@ -7511,6 +7514,24 @@ var NIVEAU_PALETTE = {
 /* Petit jeu d'icônes pastel/cartoon, sans texte, style cohérent — utilisé pour
    habiller visuellement les fiches pédagogiques du Primaire (test demandé par la cliente).
    Le fond du cercle suit la palette du niveau (si fourni) ; la forme suit la matière. */
+function matiereEmoji(matiere) {
+  var m = (matiere || '').toLowerCase();
+  if (m.indexOf('math') >= 0 || m.indexOf('calcul') >= 0) return '➗';
+  if (m.indexOf('arabe') >= 0) return '📖';
+  if (m.indexOf('français') >= 0 || m.indexOf('francais') >= 0 || m.indexOf('lecture') >= 0 || m.indexOf('écrit') >= 0 || m.indexOf('ecrit') >= 0 || m.indexOf('grammaire') >= 0 || m.indexOf('conjug') >= 0 || m.indexOf('orthograph') >= 0) return '✏️';
+  if (m.indexOf('anglais') >= 0) return '🌍';
+  if (m.indexOf('tamazight') >= 0) return '🗣️';
+  if (m.indexOf('histoire') >= 0 || m.indexOf('géo') >= 0 || m.indexOf('geo') >= 0) return '🗺️';
+  if (m.indexOf('physique') >= 0) return '⚗️';
+  if (m.indexOf('sciences') >= 0 || m.indexOf('svt') >= 0 || m.indexOf('éveil') >= 0 || m.indexOf('eveil') >= 0) return '🔬';
+  if (m.indexOf('islamique') >= 0) return '🕌';
+  if (m.indexOf('civique') >= 0) return '⚖️';
+  if (m.indexOf('informatique') >= 0) return '💻';
+  if (m.indexOf('art') >= 0 || m.indexOf('musique') >= 0) return '🎨';
+  if (m.indexOf('sportive') >= 0 || m.indexOf('eps') >= 0) return '⚽';
+  if (m.indexOf('philo') >= 0) return '💭';
+  return '📘';
+}
 function ficheIconPrimaire(matiere, niveau) {
   var m = (matiere || '').toLowerCase();
   var pal = NIVEAU_PALETTE[(niveau || '').trim()];
@@ -7555,7 +7576,7 @@ function dispCrs(crs, keepMode){
     var etoile = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.6 6.6L22 9l-5.5 4.6L18 21l-6-3.8L6 21l1.5-7.4L2 9l7.4-.4z" fill="'+(palNiveau?palNiveau.accent:'#DFA9C9')+'" opacity=".55"/></svg>';
     document.getElementById('crsDis').innerHTML='<div class="pp-primaire"'+borderStyle+'><span class="pp-primaire-star pp-primaire-star-tl">'+etoile+'</span><span class="pp-primaire-star pp-primaire-star-br">'+etoile+'</span><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat, crs.niveau)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   } else {
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div><div class="pp-banner-illus">'+matiereEmoji(D.s.mat)+'</div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
