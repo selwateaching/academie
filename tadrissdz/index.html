@@ -7582,8 +7582,33 @@ function closeCrsResult(){
 /* Restructure le HTML généré par l'IA (Cours IA) en bannière + étapes numérotées, sans toucher au
    prompt : repère les marqueurs fixes du squelette ("Déroulement de la séance", moments surlignés
    en jaune) et les remplace par les classes .pp-section / .pp-step. */
+/* Encadre en tc-box colorés les rubriques clés même si l'IA n'a pas gardé les balises
+   <div class="tc-box ..."> du squelette (elle reformule parfois malgré la consigne) —
+   on détecte directement le texte renvoyé plutôt que de dépendre du balisage exact. */
+function tpBoxify(html) {
+  var out = html;
+  out = out.replace(
+    /<p><strong>((?:Situation de communication|Situation-probl[èe]me)[^<]*?)\s*:?<\/strong>([\s\S]*?)<\/p>/i,
+    '<div class="tc-box tc-example"><div class="tc-box-title">🎬 $1</div>$2</div>'
+  );
+  out = out.replace(
+    /<p><strong>(Comp[ée]tence vis[ée]e)\s*:<\/strong>([\s\S]*?)<\/p>/i,
+    '<div class="tc-box tc-def"><div class="tc-box-title">🎯 $1</div>$2</div>'
+  );
+  /* "Retiens" sur sa propre ligne, suivi d'un paragraphe séparé (squelette "langue") */
+  out = out.replace(
+    /<p><strong>Retiens\s*:?<\/strong><\/p>\s*<p>([\s\S]+?)<\/p>/i,
+    '<div class="tc-remember"><div class="tc-box-title">⭐ Retiens</div><p>$1</p></div>'
+  );
+  /* "Retiens :" et la règle dans le même paragraphe (squelette générique) */
+  out = out.replace(
+    /<p><strong>Retiens\s*:<\/strong>([\s\S]+?)<\/p>/i,
+    '<div class="tc-remember"><div class="tc-box-title">⭐ Retiens</div>$1</div>'
+  );
+  return out;
+}
 function tpParseSteps(html) {
-  var out = html.replace(
+  var out = tpBoxify(html).replace(
     /<p style="text-align:center;background:#FFF3B0;font-weight:700;padding:4px;border-radius:4px;">([^<]*)<\/p>/,
     '<div class="pp-section">📋 $1</div>'
   );
