@@ -36,7 +36,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 MODEL = os.environ.get("TRAD_MODEL", "claude-sonnet-5-5")
-ACCESS_CODE = os.environ.get("TRAD_ACCESS_CODE", "").strip()
+ACCESS_CODE = os.environ.get("TRAD_ACCESS_CODE", "").strip() or ""
 PER_HOUR = int(os.environ.get("TRAD_PER_HOUR", "600"))
 MAX_TEXT = 4000
 
@@ -343,7 +343,23 @@ def phrases():
 # TRAD_ACCESS_CODE et DOSSIER_KEY ne sont pas définis.
 from cryptography.fernet import Fernet, InvalidToken
 
-DOSSIER_KEY = os.environ.get("DOSSIER_KEY", "").strip()
+def read_setting(name):
+    """Valeur d'un réglage : variable d'environnement, ou « Secret File » Render du même nom."""
+    v = os.environ.get(name, "").strip()
+    if v:
+        return v
+    for folder in ("/etc/secrets", BASE_DIR, os.getcwd()):
+        try:
+            with open(os.path.join(folder, name), encoding="utf-8") as f:
+                v = f.read().strip()
+            if v:
+                return v
+        except OSError:
+            pass
+    return ""
+
+
+DOSSIER_KEY = read_setting("DOSSIER_KEY")
 RETENTION_MONTHS = int(os.environ.get("DOSSIER_RETENTION_MONTHS", "0"))  # 0 = jamais de suppression automatique
 DATA_DIR = os.environ.get("DATA_DIR") or ("/var/data" if os.path.isdir("/var/data") else os.path.join(BASE_DIR, "data"))
 DB_PATH = os.path.join(DATA_DIR, "dossiers.db")
