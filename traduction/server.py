@@ -1,7 +1,8 @@
-"""Interprète — serveur (Render ou autre).
+"""Traducteur Association — serveur (Render ou autre).
 
   /               la page (static/index.html)
   /api/translate  traduit un texte avec Claude (clé gardée côté serveur)
+  /api/document   traduit la photo d'un document (courrier, formulaire…)
   /api/transcribe transcrit un fichier audio reçu (WhatsApp, etc.) avec Whisper
 
 Variables d'environnement :
@@ -11,6 +12,7 @@ Variables d'environnement :
   TRAD_MODEL          facultatif : modèle Claude (défaut claude-sonnet-5-5)
   TRAD_PER_HOUR       facultatif : requêtes max par heure et par IP (défaut 600)
 """
+import base64
 import hmac
 import os
 import threading
@@ -122,6 +124,45 @@ def translate():
             max_tokens=1500,
             system=system,
             messages=[{"role": "user", "content": text}],
+        )
+    except anthropic.APIError as e:
+        return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)
+    out = "".join(b.text for b in msg.content if b.type == "text").strip()
+    return jsonify({"translation": out})
+
+
+@app.post("/api/document")
+def document():
+    denied = check_access()
+    if denied:
+        return denied
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
+    f = request.files.get("image")
+    dst = request.form.get("to", "").strip()[:60]
+    if not f or not dst:
+        return error("Photo ou langue manquante.", 400)
+    mime = f.mimetype if f.mimetype in ("image/jpeg", "image/png", "image/webp", "image/gif") else "image/jpeg"
+    b64 = base64.standard_b64encode(f.read()).decode()
+    system = (
+        "Tu es un traducteur dans une association qui aide des personnes étrangères. "
+        f"On te donne la photo d'un document (courrier, formulaire, ordonnance, facture…). "
+        f"1) Traduis fidèlement tout le texte lisible vers : {dst}, en gardant la structure (titres, listes, montants, dates). "
+        "Mets entre [crochets] ce qui est illisible. "
+        f"2) Termine par une ligne « ➜ En bref : » suivie de 1 à 3 phrases très simples, en {dst}, "
+        "qui disent de quoi il s'agit et ce que la personne doit faire (et avant quelle date, s'il y en a une). "
+        "Si le document est dans une darija, écris en lettres arabes, dans le dialecte demandé. "
+        "Ne rajoute aucun autre commentaire."
+    )
+    try:
+        msg = get_client().messages.create(
+            model=MODEL,
+            max_tokens=4000,
+            system=system,
+            messages=[{"role": "user", "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
+                {"type": "text", "text": "Traduis ce document."},
+            ]}],
         )
     except anthropic.APIError as e:
         return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)

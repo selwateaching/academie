@@ -1,14 +1,16 @@
-# Interprète — traduire les appels et messages vocaux
+# Traducteur Association — appels, messages vocaux et documents
 
-Application web pour l'association : discuter avec une personne qui ne parle pas français.
+Application web pour les permanences : la personne n'a rien à apprendre. Écran d'accueil avec 4 gros boutons,
+après avoir choisi la langue de la personne :
 
-- **🎤 Ils parlent** : l'appli écoute (appel sur haut-parleur près du micro), transcrit la langue de la personne et affiche la traduction **en français**.
-- **🎤 Je réponds** (ou saisie au clavier) : votre réponse en français est traduite et **lue à voix haute** dans sa langue.
-- **📎 Importer un message vocal** reçu (WhatsApp `.opus`, `.m4a`, `.mp3`…) : transcription + traduction.
-- Darija **algérienne, tunisienne, marocaine** en tête de liste (comprend le mélange darija/français), puis 21 autres langues (arabe standard, anglais, espagnol, russe, ukrainien, turc, chinois, persan, ourdou, hindi, bengali, somali, amharique…).
+1. **🇫🇷 Français → langue** : vous parlez ou écrivez, la traduction s'affiche en gros et est lue à voix haute.
+2. **🌍 Langue → français** : la personne parle, la traduction française s'affiche.
+3. **📷 Traduire un document** : photo d'un courrier, formulaire, ordonnance… → traduction complète + « En bref » (de quoi il s'agit, ce qu'il faut faire). Vers le français ou vers la langue de la personne.
+4. **🎤 Conversation** : les deux sens en direct. On peut aussi y importer un message vocal reçu (WhatsApp `.opus`, `.m4a`…).
 
-La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** recommandés (ordinateur ou Android).
-Les clés restent sur le serveur, jamais dans la page.
+Langues : darija algérienne, tunisienne et marocaine (comprend le mélange darija/français), arabe standard, anglais, dari, pashto, turc, espagnol, portugais, russe, ukrainien, bengali, et 14 autres.
+
+La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** recommandés. Le pashto et le dari sont peu ou pas reconnus à la voix : dans ce cas, utilisez le message vocal importé ou le clavier. Les clés restent sur le serveur.
 
 ## Variables d'environnement
 

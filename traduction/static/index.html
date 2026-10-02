@@ -3,94 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Interprète</title>
+<title>Traducteur Association</title>
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#6b7488;--them:#e8eefc;--me:#dff5e8;--acc:#2f5bea;--rec:#d92d3a;--bd:#d9dfec}
 @media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2030;--ink:#e8ecf5;--mut:#98a2b8;--them:#243258;--me:#1f4733;--bd:#2c3550}}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh}
-header{padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-header h1{font-size:18px;margin:0;flex:1;min-width:120px}
 select,input,button{font:inherit;color:inherit}
-select,input[type=text],input[type=password]{padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}
+select,input[type=text],input[type=password]{padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card)}
+header{padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center}
+header h1{font-size:18px;margin:0;flex:1}
+.back{border:1px solid var(--bd);background:var(--card);border-radius:10px;padding:8px 12px;cursor:pointer}
+.screen{display:none;flex:1;min-height:0;flex-direction:column}
+.screen.on{display:flex}
+/* accueil */
+#home{padding:16px;gap:14px;overflow-y:auto}
+.langpick{display:flex;flex-direction:column;gap:6px}
+.langpick label{font-weight:600}
+.langpick select{font-size:20px;padding:14px}
+.big{flex:1;min-height:90px;border:0;border-radius:18px;font-size:20px;font-weight:700;color:#fff;cursor:pointer;padding:14px;line-height:1.25}
+.b1{background:#1f9d57}.b2{background:var(--acc)}.b3{background:#c97a12}.b4{background:#7a3fd1}
+.big small{display:block;font-weight:400;font-size:14px;opacity:.9}
+/* conversation */
 #log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.msg{max-width:88%;padding:10px 12px;border-radius:14px}
+.msg{max-width:92%;padding:10px 12px;border-radius:14px}
 .msg.them{background:var(--them);align-self:flex-start}
 .msg.me{background:var(--me);align-self:flex-end}
-.msg .tr{font-size:20px;font-weight:600}
+.msg .tr{font-size:22px;font-weight:600;white-space:pre-wrap}
 .msg .orig{font-size:14px;color:var(--mut);margin-top:4px}
-.msg button{margin-top:6px;border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:4px 10px;cursor:pointer}
-.empty{margin:auto;color:var(--mut);text-align:center;max-width:420px}
+.msg button{margin:6px 6px 0 0;border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:5px 10px;cursor:pointer}
+.empty{margin:auto;color:var(--mut);text-align:center;max-width:420px;padding:10px}
 footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 .row{display:flex;gap:8px}
-.mic{flex:1;padding:14px;border:0;border-radius:12px;font-weight:600;cursor:pointer;color:#fff}
-.mic.them{background:var(--acc)} .mic.me{background:#1f9d57}
+.mic{flex:1;padding:16px;border:0;border-radius:12px;font-weight:700;cursor:pointer;color:#fff;font-size:17px}
+.mic.them{background:var(--acc)}.mic.me{background:#1f9d57}
 .mic.on{background:var(--rec);animation:p 1.2s infinite}
 @keyframes p{50%{opacity:.7}}
-#txt{flex:1} #send{padding:8px 14px;border:0;border-radius:8px;background:#1f9d57;color:#fff;cursor:pointer}
+#txt{flex:1}
+.send{padding:8px 16px;border:0;border-radius:10px;background:#1f9d57;color:#fff;cursor:pointer}
 #status{font-size:13px;color:var(--mut);min-height:18px}
-label.small{font-size:13px;color:var(--mut);display:flex;gap:4px;align-items:center}
-a.link,.fileb{font-size:13px;color:var(--acc);cursor:pointer;text-decoration:underline}
+.hide{display:none!important}
+.fileb{font-size:14px;color:var(--acc);cursor:pointer;text-decoration:underline}
+/* document */
+#doc{padding:14px;gap:12px;overflow-y:auto}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:12px;border:2px solid var(--bd);background:var(--card);border-radius:12px;cursor:pointer;font-weight:600}
+.seg button.sel{border-color:#c97a12;background:#c97a1222}
+.cam{padding:18px;border-radius:14px;background:#c97a12;color:#fff;text-align:center;font-weight:700;font-size:19px;cursor:pointer;display:block}
+.cam.alt{background:var(--card);color:var(--ink);border:1px solid var(--bd);font-size:16px;font-weight:600}
+#docOut{white-space:pre-wrap;font-size:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+#docPrev{max-width:100%;max-height:200px;border-radius:10px;align-self:flex-start}
 </style>
 </head>
 <body>
 <header>
-  <h1>🗣️ Interprète</h1>
-  <label class="small">Ils parlent
-    <select id="lang"></select>
-  </label>
-  <label class="small"><input type="checkbox" id="autospeak" checked> Lire ma réponse à voix haute</label>
+  <button class="back hide" id="back">← Accueil</button>
+  <h1>🌍 Traducteur Association</h1>
   <input type="password" id="code" placeholder="Code d'accès" style="width:130px;display:none">
 </header>
 
-<div id="log"><div class="empty" id="empty">
-  Choisissez la langue de la personne, puis appuyez sur <b>🎤 Ils parlent</b> (mettez l'appel sur haut-parleur près du micro).
-  Leur message apparaît en français. Répondez avec <b>🎤 Je réponds</b> ou en écrivant : la traduction s'affiche et est lue à voix haute.
-</div></div>
+<!-- ACCUEIL -->
+<section class="screen on" id="home">
+  <div class="langpick">
+    <label for="lang">Langue de la personne</label>
+    <select id="lang"></select>
+  </div>
+  <button class="big b1" data-go="fr2l">🇫🇷 FRANÇAIS → 🌍 <span class="ln">langue</span><small>Je parle ou j'écris, la personne lit et écoute</small></button>
+  <button class="big b2" data-go="l2fr">🌍 <span class="ln">langue</span> → 🇫🇷 FRANÇAIS<small>La personne parle, je lis en français</small></button>
+  <button class="big b3" data-go="doc">📷 TRADUIRE UN DOCUMENT<small>Photo d'un courrier, d'un formulaire…</small></button>
+  <button class="big b4" data-go="conv">🎤 TRADUIRE UNE CONVERSATION<small>Dans les deux sens, en direct</small></button>
+</section>
 
-<footer>
-  <div id="status"></div>
-  <div class="row">
-    <button class="mic them" id="micThem">🎤 Ils parlent</button>
-    <button class="mic me" id="micMe">🎤 Je réponds</button>
+<!-- VOIX / CONVERSATION -->
+<section class="screen" id="talk">
+  <div id="log"></div>
+  <footer>
+    <div id="status"></div>
+    <div class="row">
+      <button class="mic them" id="micThem">🎤 Ils parlent</button>
+      <button class="mic me" id="micMe">🎤 Je parle (français)</button>
+    </div>
+    <div class="row" id="txtRow">
+      <input type="text" id="txt" placeholder="Ou écrivez en français…">
+      <button class="send" id="send">Envoyer</button>
+    </div>
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <label class="fileb" id="fileLbl">📎 Importer un message vocal reçu<input type="file" id="file" accept="audio/*,.opus,.ogg,.m4a,.mp3,.wav" hidden></label>
+      <label class="small" style="font-size:13px;color:var(--mut)"><input type="checkbox" id="autospeak" checked> Lire à voix haute</label>
+    </div>
+  </footer>
+</section>
+
+<!-- DOCUMENT -->
+<section class="screen" id="doc">
+  <div class="seg">
+    <button id="dirFr" class="sel">Document → français</button>
+    <button id="dirL">Document → <span class="ln">langue</span></button>
   </div>
-  <div class="row">
-    <input type="text" id="txt" placeholder="Ou écrivez votre réponse en français…">
-    <button id="send">Envoyer</button>
+  <label class="cam">📷 Prendre une photo<input type="file" id="cam" accept="image/*" capture="environment" hidden></label>
+  <label class="cam alt">🖼️ Choisir une image<input type="file" id="gal" accept="image/*" hidden></label>
+  <img id="docPrev" class="hide" alt="">
+  <div id="docStatus" style="color:var(--mut)"></div>
+  <div id="docOut" class="hide"></div>
+  <div class="row hide" id="docBtns">
+    <button class="back" id="docSpeak">🔊 Écouter</button>
+    <button class="back" id="docCopy">📋 Copier</button>
   </div>
-  <div class="row" style="justify-content:space-between">
-    <label class="fileb">📎 Importer un message vocal reçu<input type="file" id="file" accept="audio/*,.opus,.ogg,.m4a,.mp3,.wav" hidden></label>
-    <a class="link" id="clear">Nouvelle conversation</a>
-  </div>
-</footer>
+</section>
 
 <script>
 const NEEDS_CODE = __NEEDS_CODE__;
+// [code reconnaissance/voix, nom affiché, nom donné à Claude]
 const LANGS = [
-  ["ar-DZ","الدارجة الجزائرية — arabe algérien (darija)"],["ar-TN","الدارجة التونسية — arabe tunisien (darija)"],
-  ["ar-MA","الدارجة المغربية — arabe marocain (darija)"],["ar-SA","العربية الفصحى — arabe standard"],["en-US","English — Anglais"],["es-ES","Español — Espagnol"],
-  ["pt-PT","Português — Portugais"],["ru-RU","Русский — Russe"],["uk-UA","Українська — Ukrainien"],
-  ["tr-TR","Türkçe — Turc"],["zh-CN","中文 — Chinois"],["ro-RO","Română — Roumain"],
-  ["it-IT","Italiano — Italien"],["de-DE","Deutsch — Allemand"],["pl-PL","Polski — Polonais"],
-  ["fa-IR","فارسی — Persan"],["ur-PK","اردو — Ourdou"],["hi-IN","हिन्दी — Hindi"],
-  ["bn-BD","বাংলা — Bengali"],["vi-VN","Tiếng Việt — Vietnamien"],["sq-AL","Shqip — Albanais"],
-  ["ta-IN","தமிழ் — Tamoul"],["so-SO","Soomaali — Somali"],["am-ET","አማርኛ — Amharique"]
+  ["ar-DZ","الدارجة الجزائرية — Arabe algérien","arabe algérien (darija)"],
+  ["ar-TN","الدارجة التونسية — Arabe tunisien","arabe tunisien (darija)"],
+  ["ar-MA","الدارجة المغربية — Arabe marocain","arabe marocain (darija)"],
+  ["ar-SA","العربية — Arabe standard","arabe standard"],
+  ["en-US","English — Anglais","anglais"],
+  ["fa-AF","دری — Dari","dari (persan d'Afghanistan)"],
+  ["ps-AF","پښتو — Pashto","pashto"],
+  ["tr-TR","Türkçe — Turc","turc"],
+  ["es-ES","Español — Espagnol","espagnol"],
+  ["pt-PT","Português — Portugais","portugais"],
+  ["ru-RU","Русский — Russe","russe"],
+  ["uk-UA","Українська — Ukrainien","ukrainien"],
+  ["bn-BD","বাংলা — Bengali","bengali"],
+  ["fa-IR","فارسی — Persan (Iran)","persan"],
+  ["ur-PK","اردو — Ourdou","ourdou"],
+  ["hi-IN","हिन्दी — Hindi","hindi"],
+  ["zh-CN","中文 — Chinois","chinois"],
+  ["ro-RO","Română — Roumain","roumain"],
+  ["it-IT","Italiano — Italien","italien"],
+  ["de-DE","Deutsch — Allemand","allemand"],
+  ["pl-PL","Polski — Polonais","polonais"],
+  ["vi-VN","Tiếng Việt — Vietnamien","vietnamien"],
+  ["sq-AL","Shqip — Albanais","albanais"],
+  ["ta-IN","தமிழ் — Tamoul","tamoul"],
+  ["so-SO","Soomaali — Somali","somali"],
+  ["am-ET","አማርኛ — Amharique","amharique"]
 ];
 const $ = id => document.getElementById(id);
 const log = $("log"), statusEl = $("status");
-let history = [];
+let history = [], mode = null;
 
 const save = (k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const load = k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 
 for (const [c,n] of LANGS) $("lang").add(new Option(n,c));
 $("lang").value = load("lang") || "ar-DZ";
-$("lang").onchange = ()=>save("lang",$("lang").value);
+if(!$("lang").value) $("lang").selectedIndex = 0;
+const entry = () => LANGS.find(l=>l[0]===$("lang").value) || LANGS[0];
+const langName = () => entry()[2];
+const shortName = () => entry()[1].split(" — ").pop();
+function refreshLn(){ document.querySelectorAll(".ln").forEach(e=>e.textContent = shortName()); }
+$("lang").onchange = ()=>{ save("lang",$("lang").value); refreshLn(); };
+refreshLn();
 $("autospeak").checked = load("autospeak") !== "0";
 $("autospeak").onchange = ()=>save("autospeak",$("autospeak").checked?"1":"0");
 if (NEEDS_CODE){ $("code").style.display=""; $("code").value = load("code")||""; $("code").onchange=()=>save("code",$("code").value); }
-
-const langName = c => (LANGS.find(l=>l[0]===c)||[c,c])[1].split(" — ").pop();
 const setStatus = t => statusEl.textContent = t || "";
 
 async function api(path, opts){
@@ -105,7 +175,6 @@ function translate(text, from, to){
   return api("/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({text,from,to,context})}).then(j=>j.translation);
 }
-
 function speak(text, lang){
   if(!("speechSynthesis" in window)) return Promise.resolve();
   return new Promise(res=>{
@@ -115,6 +184,32 @@ function speak(text, lang){
     speechSynthesis.speak(u);
   });
 }
+
+// ------- navigation
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  $("back").classList.toggle("hide", id==="home");
+}
+const HINTS = {
+  fr2l:"Appuyez sur « Je parle » ou écrivez en français : la traduction s'affiche en gros et est lue à voix haute.",
+  l2fr:"Donnez le téléphone à la personne (ou mettez l'appel sur haut-parleur) et appuyez sur « Ils parlent » : la traduction française s'affiche.",
+  conv:"Appuyez sur « Ils parlent » quand la personne parle, sur « Je parle » quand vous répondez."
+};
+function go(m){
+  stopRec(); speechSynthesis.cancel(); setStatus("");
+  if(m==="doc"){ show("doc"); return; }
+  mode = m; history = [];
+  log.innerHTML = "";
+  const e = document.createElement("div"); e.className="empty"; e.id="empty"; e.textContent = HINTS[m]; log.append(e);
+  $("micThem").classList.toggle("hide", m==="fr2l");
+  $("micMe").classList.toggle("hide", m==="l2fr");
+  $("txtRow").classList.toggle("hide", m==="l2fr");
+  $("fileLbl").classList.toggle("hide", m==="fr2l");
+  $("micThem").textContent = m==="l2fr" ? "🎤 La personne parle ("+shortName()+")" : "🎤 Ils parlent";
+  show("talk");
+}
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+$("back").onclick = ()=>{ stopRec(); speechSynthesis.cancel(); show("home"); };
 
 function addMsg(who, big, small, speakLang){
   $("empty")?.remove();
@@ -130,23 +225,20 @@ function addMsg(who, big, small, speakLang){
   }
   log.append(d); log.scrollTop = log.scrollHeight;
 }
-
-// ------- Message d'eux : langue étrangère -> français
 async function handleThem(text){
   setStatus("Traduction…");
   try{
-    const fr = await translate(text, langName($("lang").value), "français");
+    const fr = await translate(text, langName(), "français");
     history.push({who:"them",orig:text});
     addMsg("them", fr, text);
     setStatus("");
   }catch(e){ setStatus("⚠️ "+e.message); }
 }
-// ------- Ma réponse : français -> langue étrangère
 async function handleMe(text){
   setStatus("Traduction…");
   try{
     const lang = $("lang").value;
-    const out = await translate(text, "français", langName(lang));
+    const out = await translate(text, "français", langName());
     history.push({who:"me",orig:text});
     addMsg("me", out, text, lang);
     setStatus("");
@@ -154,27 +246,30 @@ async function handleMe(text){
   }catch(e){ setStatus("⚠️ "+e.message); }
 }
 
-// ------- Reconnaissance vocale (Chrome / Edge / Safari)
+// ------- reconnaissance vocale
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, recWho = null;
+function labels(){
+  $("micThem").classList.remove("on"); $("micMe").classList.remove("on");
+  $("micThem").textContent = mode==="l2fr" ? "🎤 La personne parle ("+shortName()+")" : "🎤 Ils parlent";
+  $("micMe").textContent = "🎤 Je parle (français)";
+}
 function stopRec(){
   if(rec){ const r = rec; rec = null; r.onend = null; try{r.stop()}catch(e){} }
-  $("micThem").classList.remove("on"); $("micMe").classList.remove("on");
-  $("micThem").textContent="🎤 Ils parlent"; $("micMe").textContent="🎤 Je réponds";
-  recWho = null;
+  recWho = null; labels();
 }
 function startRec(who){
   if(!SR){ setStatus("Ce navigateur ne gère pas la voix : utilisez Chrome ou Edge, ou écrivez."); return; }
   const wasSame = recWho === who;
   stopRec();
-  if(wasSame) { setStatus(""); return; }
+  if(wasSame){ setStatus(""); return; }
   speechSynthesis.cancel();
   const r = new SR();
   r.lang = who==="them" ? $("lang").value : "fr-FR";
   r.continuous = true; r.interimResults = true;
   recWho = who; rec = r;
   const btn = who==="them" ? $("micThem") : $("micMe");
-  btn.classList.add("on"); btn.textContent = "⏹️ Écoute… (appuyer pour arrêter)";
+  btn.classList.add("on"); btn.textContent = "⏹️ J'écoute… (appuyer pour arrêter)";
   r.onresult = ev=>{
     let interim = "";
     for(let i=ev.resultIndex;i<ev.results.length;i++){
@@ -188,15 +283,14 @@ function startRec(who){
   };
   r.onerror = ev=>{
     if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ setStatus("Micro refusé : autorisez-le dans le navigateur."); stopRec(); }
-    else if(ev.error==="language-not-supported"){ setStatus("Cette langue n'est pas reconnue par ce navigateur."); stopRec(); }
+    else if(ev.error==="language-not-supported"){ setStatus("Cette langue n'est pas reconnue à la voix par ce navigateur : utilisez l'import de message vocal ou écrivez."); stopRec(); }
   };
-  r.onend = ()=>{ if(rec===r){ try{r.start()}catch(e){ stopRec(); } } }; // reste à l'écoute
+  r.onend = ()=>{ if(rec===r){ try{r.start()}catch(e){ stopRec(); } } };
   r.start();
 }
 $("micThem").onclick = ()=>startRec("them");
 $("micMe").onclick = ()=>startRec("me");
 
-// ------- Réponse écrite
 function sendText(){
   const t = $("txt").value.trim(); if(!t) return;
   $("txt").value = ""; handleMe(t);
@@ -204,7 +298,6 @@ function sendText(){
 $("send").onclick = sendText;
 $("txt").onkeydown = e=>{ if(e.key==="Enter") sendText(); };
 
-// ------- Import d'un message vocal reçu
 $("file").onchange = async e=>{
   const f = e.target.files[0]; e.target.value = ""; if(!f) return;
   setStatus("Transcription du fichier…");
@@ -219,11 +312,52 @@ $("file").onchange = async e=>{
   }catch(err){ setStatus("⚠️ "+err.message); }
 };
 
-$("clear").onclick = ()=>{
-  stopRec(); speechSynthesis.cancel(); history = []; log.innerHTML = "";
-  log.append(Object.assign(document.createElement("div"),{className:"empty",id:"empty",textContent:"Nouvelle conversation."}));
-  setStatus("");
-};
+// ------- document
+let docToFr = true, docLangCode = "fr-FR";
+function setDir(fr){
+  docToFr = fr;
+  $("dirFr").classList.toggle("sel", fr); $("dirL").classList.toggle("sel", !fr);
+}
+$("dirFr").onclick = ()=>setDir(true);
+$("dirL").onclick = ()=>setDir(false);
+
+function shrink(file, max=1800){
+  return new Promise((res,rej)=>{
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = ()=>{
+      const k = Math.min(1, max/Math.max(img.width,img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b=>b?res(b):rej(new Error("Image illisible")),"image/jpeg",.85);
+    };
+    img.onerror = ()=>rej(new Error("Image illisible"));
+    img.src = url;
+  });
+}
+async function doDoc(file){
+  if(!file) return;
+  $("docOut").classList.add("hide"); $("docBtns").classList.add("hide");
+  $("docStatus").textContent = "Lecture et traduction du document… (quelques secondes)";
+  try{
+    const blob = await shrink(file);
+    $("docPrev").src = URL.createObjectURL(blob); $("docPrev").classList.remove("hide");
+    const fd = new FormData();
+    fd.append("image", blob, "doc.jpg");
+    fd.append("to", docToFr ? "français" : langName());
+    docLangCode = docToFr ? "fr-FR" : $("lang").value;
+    const j = await api("/api/document",{method:"POST",body:fd});
+    $("docOut").textContent = j.translation;
+    $("docOut").classList.remove("hide"); $("docBtns").classList.remove("hide");
+    $("docOut").setAttribute("dir", docToFr ? "ltr" : "auto");
+    $("docStatus").textContent = "";
+  }catch(e){ $("docStatus").textContent = "⚠️ "+e.message; }
+}
+$("cam").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f); };
+$("gal").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f); };
+$("docSpeak").onclick = ()=>speak($("docOut").textContent, docLangCode);
+$("docCopy").onclick = ()=>{ navigator.clipboard?.writeText($("docOut").textContent); $("docStatus").textContent = "Copié."; };
 </script>
 </body>
 </html>
