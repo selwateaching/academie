@@ -123,6 +123,34 @@ textarea{width:100%;min-height:90px}
 .phr .f{font-size:14px;color:var(--mut)}
 .phr .t{font-size:22px;font-weight:600;margin-top:2px}
 .phr button{margin-top:8px}
+/* dossiers */
+.page{padding:16px;gap:12px;overflow-y:auto;max-width:760px;width:100%;margin:0 auto}
+.dcard{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:12px 14px;box-shadow:var(--shadow);text-align:start;width:100%;display:block}
+.dcard .n{font-weight:700;font-size:18px}
+.dcard .m{font-size:14px;color:var(--mut);margin-top:2px}
+.badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand);margin-inline-end:6px}
+.badge.late{background:#fde4e4;color:#b3261e}.badge.clos{background:var(--bd);color:var(--mut)}
+.form label{display:block;font-size:13px;font-weight:700;color:var(--mut);margin:10px 0 4px}
+.form input,.form select,.form textarea{width:100%}
+.btn{border:0;border-radius:12px;background:var(--brand);color:#fff;font-weight:700;padding:12px 16px;min-height:48px}
+.row .btn{flex:1 1 auto}
+.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--bd)}
+.btn.danger{background:#b3261e}
+.entry{border-inline-start:4px solid var(--brand);background:var(--card);border-radius:10px;padding:8px 12px;box-shadow:var(--shadow)}
+.entry .h{font-size:13px;color:var(--mut)}
+.entry button{border:0;background:none;color:var(--mut);float:inline-end}
+.paper{background:#fff;color:#000;padding:28px 30px;border-radius:6px;box-shadow:var(--shadow);font-family:Georgia,"Times New Roman",serif;font-size:15px;line-height:1.5}
+.paper .from{white-space:pre-line;font-size:14px}
+.paper .to{margin:18px 0 0 auto;width:50%;white-space:pre-line}
+.paper .ob{margin:18px 0 12px}
+.paper .bd{white-space:pre-wrap}
+#printArea{display:none}
+@media print{
+  body>*:not(#printArea){display:none!important}
+  #printArea{display:block!important;position:static}
+  #printArea .paper{box-shadow:none;border-radius:0;padding:0;font-size:12pt}
+  @page{margin:22mm}
+}
 /* mode écran */
 #tv{padding:24px;gap:18px;overflow-y:auto;background:#081014;color:#fff}
 #tv .pair{border-radius:20px;padding:18px 24px;background:#12222a;border:1px solid #1f3640}
@@ -153,9 +181,10 @@ textarea{width:100%;min-height:90px}
     <button class="big" data-go="pair"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg></span><span class="tx">Deux téléphones<small>Chacun parle sa langue sur son propre appareil</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="big" data-go="conv"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span class="tx">Conversation<small>Les deux sens sur un seul appareil</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="big" data-go="phrases"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 9h6M9 13h6"/></svg></span><span class="tx">Phrases utiles<small>Accueil, papiers, rendez-vous : même sans Internet</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="big" data-go="dossiers"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h6l2 2h10v10H3z"/></svg></span><span class="tx">Dossiers et courriers<small>Suivi des personnes, courriers standards à imprimer</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <button class="big warm" data-go="doc"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="tx">Document<small>Courrier, formulaire, PDF : traduire, simplifier, expliquer</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
   </div>
-  <div class="foot">Traduction automatique : à faire vérifier pour toute décision importante. Rien n'est conservé après « Nouvelle personne ».</div>
+  <div class="foot">Traduction automatique : à faire vérifier pour toute décision importante. Les conversations et documents ne sont pas conservés. Seuls les dossiers le sont, chiffrés.</div>
 </main>
 
 <!-- VOIX / CONVERSATION -->
@@ -179,6 +208,65 @@ textarea{width:100%;min-height:90px}
     <div class="warn">⚠️ Traduction automatique : à faire vérifier pour toute décision importante (santé, justice, papiers).</div>
   </footer>
 </section>
+
+<!-- DOSSIERS -->
+<section class="screen" id="dossiers">
+  <div class="page">
+    <div class="row"><input type="text" id="dSearch" placeholder="Rechercher un nom…" aria-label="Rechercher"><button class="btn" id="dNew">+ Nouveau</button></div>
+    <div id="dMsg" class="warn"></div>
+    <div id="dList" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="warn">🔒 Données chiffrées, accessibles seulement avec le code d'accès. Ne notez que le nécessaire. Dossiers inactifs supprimés automatiquement après <span id="dRet">24</span> mois.</div>
+  </div>
+</section>
+
+<section class="screen" id="dform">
+  <div class="page form">
+    <h2 id="dFormTitle" style="margin:0">Nouveau dossier</h2>
+    <label for="fPrenom">Prénom</label><input type="text" id="fPrenom" autocomplete="off">
+    <label for="fNom">Nom</label><input type="text" id="fNom" autocomplete="off">
+    <label for="fLang">Langue</label><select id="fLang"></select>
+    <label for="fTel">Téléphone (facultatif)</label><input type="text" id="fTel" inputmode="tel" autocomplete="off">
+    <label for="fStatut">Statut</label><select id="fStatut"><option>En cours</option><option>En attente</option><option>Clos</option></select>
+    <label for="fEch">Prochaine échéance (facultatif)</label><input type="date" id="fEch">
+    <label for="fNotes">Situation, remarques (le strict nécessaire)</label><textarea id="fNotes"></textarea>
+    <div class="row" style="margin-top:12px"><button class="btn sec" id="fCancel" style="flex:1">Annuler</button><button class="btn" id="fSave" style="flex:1">Enregistrer</button></div>
+    <div id="fMsg" class="warn"></div>
+  </div>
+</section>
+
+<section class="screen" id="dossier">
+  <div class="page">
+    <div id="dHead"></div>
+    <div class="row" style="flex-wrap:wrap">
+      <button class="btn" id="dTranslate">🌍 Traduire avec cette personne</button>
+      <button class="btn" id="dLetter">✉️ Courrier standard</button>
+      <button class="btn sec" id="dEdit">✏️ Modifier</button>
+    </div>
+    <div class="form"><label>Ajouter au suivi</label>
+      <div class="row"><select id="jType" style="flex:1"><option value="rdv">📅 Rendez-vous</option><option value="appel">📞 Appel</option><option value="demarche">📝 Démarche</option><option value="courrier">✉️ Courrier</option><option value="note">🗒️ Note</option></select><input type="date" id="jDate" style="flex:1"></div>
+      <textarea id="jText" placeholder="Ce qui a été fait, dit ou décidé…" style="margin-top:6px"></textarea>
+      <button class="btn" id="jAdd" style="margin-top:6px;width:100%">Ajouter</button>
+    </div>
+    <div id="jList" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="row"><button class="btn sec" id="dClose" style="flex:1"></button><button class="btn danger" id="dDel" style="flex:1">🗑 Supprimer le dossier</button></div>
+  </div>
+</section>
+
+<section class="screen" id="letter">
+  <div class="page form">
+    <label for="lTpl">Modèle de courrier</label><select id="lTpl"></select>
+    <div id="lFields"></div>
+    <div class="paper" id="lPreview"></div>
+    <div class="row" style="flex-wrap:wrap">
+      <button class="btn" id="lPrint">🖨️ Imprimer / PDF</button>
+      <button class="btn sec" id="lTrans">🌍 Traduire pour la personne</button>
+    </div>
+    <div id="lTransOut" class="paper hide" dir="auto" style="white-space:pre-wrap"></div>
+    <div id="lMsg" class="warn"></div>
+  </div>
+</section>
+
+<div id="printArea"></div>
 
 <!-- PHRASES UTILES -->
 <section class="screen" id="phrases">
@@ -295,14 +383,17 @@ $("lang").onchange = ()=>{ save("lang",$("lang").value); refreshLn(); };
 refreshLn();
 $("autospeak").checked = load("autospeak") !== "0";
 $("autospeak").onchange = ()=>save("autospeak",$("autospeak").checked?"1":"0");
-if (NEEDS_CODE){ $("code").style.display=""; $("code").value = load("code")||""; $("code").onchange=()=>save("code",$("code").value); }
+if (NEEDS_CODE){ $("code").value = load("code")||""; if(!$("code").value) $("code").style.display=""; $("code").onchange=()=>save("code",$("code").value); }
 const setStatus = t => statusEl.textContent = t || "";
 
 async function api(path, opts){
   opts.headers = Object.assign({"X-Access-Code": $("code").value}, opts.headers||{});
   const r = await fetch(path, opts);
   const j = await r.json().catch(()=>({}));
-  if(!r.ok) throw new Error(j.error || ("Erreur "+r.status));
+  if(!r.ok){
+    if(r.status===401 && NEEDS_CODE){ $("code").style.display = ""; $("code").value = ""; $("code").focus(); }
+    throw new Error(j.error || ("Erreur "+r.status));
+  }
   return j;
 }
 function translate(text, from, to){
@@ -335,6 +426,7 @@ function go(m){
   if(m==="doc"){ show("doc"); return; }
   if(m==="pair"){ hostStart(); return; }
   if(m==="phrases"){ openPhrases(); return; }
+  if(m==="dossiers"){ openDossiers(); return; }
   mode = m; history = [];
   log.innerHTML = "";
   const e = document.createElement("div"); e.className="empty"; e.id="empty"; e.textContent = HINTS[m]; log.append(e);
@@ -739,5 +831,6 @@ const updOnline = ()=>$("offline").style.display = navigator.onLine ? "none" : "
 addEventListener("online",updOnline); addEventListener("offline",updOnline); updOnline();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 </script>
+<script src="/dossiers.js"></script>
 </body>
 </html>

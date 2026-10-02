@@ -13,6 +13,27 @@ Langues : darija algérienne, tunisienne et marocaine (comprend le mélange dari
 
 La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** recommandés. Le pashto et le dari sont peu ou pas reconnus à la voix : dans ce cas, utilisez le message vocal importé ou le clavier. Les clés restent sur le serveur.
 
+## Dossiers et courriers standards
+
+Carte **Dossiers et courriers** : suivi des personnes accompagnées.
+- **Dossier** : prénom, nom, langue, téléphone (facultatif), statut (En cours / En attente / Clos), échéance (en rouge si dépassée), remarques.
+- **Journal de suivi** : rendez-vous, appels, démarches, courriers, notes, datés et signés du prénom du bénévole.
+- **Traduire avec cette personne** : ouvre la conversation dans sa langue.
+- **Courrier standard** : 6 modèles (attestation d'accompagnement, attestation de présence, demande de rendez-vous, transmission de pièces, demande de réexamen, rappel de rendez-vous) pré-remplis avec les données du dossier et l'en-tête de l'association, à imprimer ou enregistrer en PDF, avec une version traduite pour la personne. Chaque courrier généré est noté dans le journal.
+- **Courriers modifiables** : les textes sont dans `letters.json` (un seul fichier, identique pour tous les bénévoles).
+
+**Protection des données** (à activer, sinon les dossiers restent désactivés) :
+| Variable | Rôle |
+|---|---|
+| `DOSSIER_KEY` | **obligatoire pour les dossiers** : phrase secrète longue qui chiffre les dossiers sur le disque. Ne la perdez pas : sans elle, les dossiers sont illisibles. |
+| `TRAD_ACCESS_CODE` | **obligatoire pour les dossiers** : sans lui, l'accès est refusé. 10 mauvais codes bloquent l'adresse 15 minutes. |
+| `ASSO_NAME`, `ASSO_ADDRESS`, `ASSO_CONTACT`, `ASSO_CITY` | en-tête des courriers |
+| `DOSSIER_RETENTION_MONTHS` | suppression automatique des dossiers inactifs (défaut 24) |
+| `DATA_DIR` | dossier de stockage (défaut `/var/data` s'il existe) |
+
+⚠️ **Il faut un disque persistant.** Sur Render, l'offre gratuite efface les fichiers à chaque redémarrage : les dossiers disparaîtraient. Il faut une offre payante (Starter) avec un **Disk** monté sur `/var/data` (1 Go suffit).
+⚠️ **RGPD** : vous devenez responsable de données de personnes vulnérables. Informez les personnes, ne notez que le nécessaire, inscrivez ce traitement dans le registre de l'association, et supprimez les dossiers sur demande (bouton 🗑). Les textes envoyés à la traduction partent chez Anthropic.
+
 ## Phrases utiles (hors connexion)
 
 18 phrases d'accueil courantes (« Avez-vous un rendez-vous ? », « Signez ici », « Apportez vos papiers »…) traduites dans la langue choisie, avec lecture à voix haute. Elles sont téléchargées automatiquement quand il y a du réseau et **gardées sur l'appareil** : on peut ensuite les utiliser sans Internet. Pensez à ouvrir l'appli une fois avec du réseau pour chaque langue que vous utilisez.
@@ -56,6 +77,7 @@ Le micro du navigateur exige HTTPS (fourni par Render).
 
 ## Limites à connaître
 
+- Le code d'accès est partagé : tout bénévole qui le connaît voit tous les dossiers. Changez-le quand un bénévole part.
 - Les sessions « deux téléphones » sont gardées en mémoire du serveur et effacées après 3 h (ou au redémarrage). Gardez `--workers 1`.
 - Seule la personne qui a le code/lien de session peut y participer ; ne le diffusez pas.
 

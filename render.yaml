@@ -18,7 +18,11 @@ services:
     name: interprete
     runtime: python
     rootDir: traduction
-    plan: free
+    plan: starter  # un disque persistant exige une offre payante
+    disk:
+      name: dossiers
+      mountPath: /var/data
+      sizeGB: 1
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn server:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
     healthCheckPath: /healthz
@@ -28,6 +32,16 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: TRAD_ACCESS_CODE
+        sync: false
+      - key: DOSSIER_KEY
+        generateValue: true
+      - key: ASSO_NAME
+        sync: false
+      - key: ASSO_ADDRESS
+        sync: false
+      - key: ASSO_CONTACT
+        sync: false
+      - key: ASSO_CITY
         sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
