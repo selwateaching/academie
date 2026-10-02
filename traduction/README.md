@@ -20,6 +20,7 @@ Carte **Dossiers et courriers** : suivi des personnes accompagnées.
 - **Journal de suivi** : rendez-vous, appels, démarches, courriers, notes, datés et signés du prénom du bénévole.
 - **Traduire avec cette personne** : ouvre la conversation dans sa langue.
 - **Courrier standard** : 6 modèles (attestation d'accompagnement, attestation de présence, demande de rendez-vous, transmission de pièces, demande de réexamen, rappel de rendez-vous) pré-remplis avec les données du dossier et l'en-tête de l'association, à imprimer ou enregistrer en PDF, avec une version traduite pour la personne. Chaque courrier généré est noté dans le journal.
+- **Export / import Excel** : « ⬇️ Exporter (Excel) » télécharge tous les dossiers et leur suivi (2 onglets) pour archive ou sauvegarde ; « ⬆️ Importer un Excel » ajoute une liste de personnes (modèle fourni avec « 📋 Modèle Excel », `.csv` accepté ; les doublons prénom + nom sont ignorés).
 - **Courriers modifiables** : les textes sont dans `letters.json` (un seul fichier, identique pour tous les bénévoles).
 
 **Protection des données** (à activer, sinon les dossiers restent désactivés) :
@@ -28,7 +29,7 @@ Carte **Dossiers et courriers** : suivi des personnes accompagnées.
 | `DOSSIER_KEY` | **obligatoire pour les dossiers** : phrase secrète longue qui chiffre les dossiers sur le disque. Ne la perdez pas : sans elle, les dossiers sont illisibles. |
 | `TRAD_ACCESS_CODE` | **obligatoire pour les dossiers** : sans lui, l'accès est refusé. 10 mauvais codes bloquent l'adresse 15 minutes. |
 | `ASSO_NAME`, `ASSO_ADDRESS`, `ASSO_CONTACT`, `ASSO_CITY` | en-tête des courriers |
-| `DOSSIER_RETENTION_MONTHS` | suppression automatique des dossiers inactifs (défaut 24) |
+| `DOSSIER_RETENTION_MONTHS` | facultatif : suppression automatique des dossiers inactifs après N mois. **Par défaut 0 = jamais rien de supprimé automatiquement.** |
 | `DATA_DIR` | dossier de stockage (défaut `/var/data` s'il existe) |
 
 ⚠️ **Il faut un disque persistant.** Sur Render, l'offre gratuite efface les fichiers à chaque redémarrage : les dossiers disparaîtraient. Il faut une offre payante (Starter) avec un **Disk** monté sur `/var/data` (1 Go suffit).

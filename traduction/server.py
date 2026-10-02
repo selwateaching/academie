@@ -127,6 +127,9 @@ def healthz():
         "ok": True,
         "translate": bool(os.environ.get("ANTHROPIC_API_KEY")),
         "transcribe": bool(os.environ.get("OPENAI_API_KEY")),
+        "dossiers": bool(ACCESS_CODE and DOSSIER_KEY),
+        "TRAD_ACCESS_CODE": bool(ACCESS_CODE),
+        "DOSSIER_KEY": bool(DOSSIER_KEY),
     }
 
 
@@ -341,7 +344,7 @@ def phrases():
 from cryptography.fernet import Fernet, InvalidToken
 
 DOSSIER_KEY = os.environ.get("DOSSIER_KEY", "").strip()
-RETENTION_MONTHS = int(os.environ.get("DOSSIER_RETENTION_MONTHS", "24"))
+RETENTION_MONTHS = int(os.environ.get("DOSSIER_RETENTION_MONTHS", "0"))  # 0 = jamais de suppression automatique
 DATA_DIR = os.environ.get("DATA_DIR") or ("/var/data" if os.path.isdir("/var/data") else os.path.join(BASE_DIR, "data"))
 DB_PATH = os.path.join(DATA_DIR, "dossiers.db")
 _db_lock = threading.Lock()
@@ -369,8 +372,9 @@ def db():
 
 
 def dossier_guard():
-    if not ACCESS_CODE or not DOSSIER_KEY:
-        return error("Les dossiers sont désactivés : définissez TRAD_ACCESS_CODE et DOSSIER_KEY sur le serveur.", 503)
+    missing = [n for n, v in (("TRAD_ACCESS_CODE", ACCESS_CODE), ("DOSSIER_KEY", DOSSIER_KEY)) if not v]
+    if missing:
+        return error("Dossiers non activés : il manque sur Render la variable " + " et ".join(missing) + ".", 503)
     return check_access()
 
 
@@ -419,7 +423,7 @@ def dossiers_list():
         ids = [r[0] for r in con.execute("SELECT id FROM dossiers")]
         out = [summary(d) for d in (load_dossier(con, i) for i in ids) if d]
     out.sort(key=lambda d: -d["updated"])
-    return jsonify({"dossiers": out, "retention_months": RETENTION_MONTHS})
+    return jsonify({"dossiers": out})
 
 
 @app.post("/api/dossiers")
@@ -514,6 +518,213 @@ def dossier_delete(did):
         con.execute("VACUUM")  # efface réellement les données du fichier
     return jsonify({"ok": True})
 
+
+
+# ---- export / import Excel
+import csv
+import datetime as _dt
+import unicodedata
+
+from openpyxl import Workbook, load_workbook
+
+COLS = [("Prénom", "prenom"), ("Nom", "nom"), ("Langue", "langue_nom"), ("Téléphone", "tel"),
+        ("Statut", "statut"), ("Échéance", "echeance"), ("Remarques", "notes")]
+TYPE_LABEL = {"rdv": "Rendez-vous", "appel": "Appel", "demarche": "Démarche", "courrier": "Courrier", "note": "Note"}
+LANG_KEYS = [  # (mot recherché, code navigateur, nom donné à Claude) — le plus précis d'abord
+    ("algerien", "ar-DZ", "arabe algérien (darija)"), ("tunisien", "ar-TN", "arabe tunisien (darija)"),
+    ("marocain", "ar-MA", "arabe marocain (darija)"), ("arabe", "ar-SA", "arabe standard"),
+    ("anglais", "en-US", "anglais"), ("dari", "fa-AF", "dari (persan d'Afghanistan)"),
+    ("pashto", "ps-AF", "pashto"), ("pachto", "ps-AF", "pashto"), ("turc", "tr-TR", "turc"),
+    ("espagnol", "es-ES", "espagnol"), ("portugais", "pt-PT", "portugais"), ("russe", "ru-RU", "russe"),
+    ("ukrainien", "uk-UA", "ukrainien"), ("bengali", "bn-BD", "bengali"), ("persan", "fa-IR", "persan"),
+    ("farsi", "fa-IR", "persan"), ("ourdou", "ur-PK", "ourdou"), ("hindi", "hi-IN", "hindi"),
+    ("chinois", "zh-CN", "chinois"), ("roumain", "ro-RO", "roumain"), ("italien", "it-IT", "italien"),
+    ("allemand", "de-DE", "allemand"), ("polonais", "pl-PL", "polonais"), ("vietnamien", "vi-VN", "vietnamien"),
+    ("albanais", "sq-AL", "albanais"), ("tamoul", "ta-IN", "tamoul"), ("somali", "so-SO", "somali"),
+    ("amharique", "am-ET", "amharique"),
+]
+ALIASES = {
+    "prenom": "prenom", "firstname": "prenom", "nom": "nom", "nomdefamille": "nom", "lastname": "nom",
+    "langue": "langue", "language": "langue", "telephone": "tel", "tel": "tel", "phone": "tel", "portable": "tel",
+    "statut": "statut", "status": "statut", "echeance": "echeance", "prochaineecheance": "echeance",
+    "datelimite": "echeance", "remarques": "notes", "notes": "notes", "situation": "notes", "commentaire": "notes",
+    "dossier": "dossier", "personne": "dossier", "date": "date", "type": "type", "note": "texte",
+    "texte": "texte", "suivi": "texte", "auteur": "auteur", "benevole": "auteur",
+}
+
+
+def norm(v):
+    t = unicodedata.normalize("NFD", str(v or "")).encode("ascii", "ignore").decode().lower()
+    return "".join(c for c in t if c.isalnum())
+
+
+def to_date(v):
+    if isinstance(v, (_dt.datetime, _dt.date)):
+        return v.strftime("%Y-%m-%d")
+    t = str(v or "").strip()
+    for f in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y", "%d/%m/%y"):
+        try:
+            return _dt.datetime.strptime(t[:10] if f == "%Y-%m-%d" else t, f).strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+    return ""
+
+
+def lang_of(text):
+    n = norm(text)
+    for key, code, name in LANG_KEYS:
+        if key in n:
+            return code, name
+    return "", str(text or "").strip()[:60]
+
+
+def xlsx_response(wb, filename):
+    buf = io.BytesIO()
+    wb.save(buf)
+    return Response(buf.getvalue(), mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{filename}"', "Cache-Control": "no-store"})
+
+
+def style_header(ws, widths):
+    from openpyxl.styles import Font, PatternFill
+    for c in ws[1]:
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="0F5C6E")
+    for i, w in enumerate(widths):
+        ws.column_dimensions[chr(65 + i)].width = w
+    ws.freeze_panes = "A2"
+
+
+@app.get("/api/dossiers-export")
+def dossiers_export():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    with _db_lock, db() as con:
+        ds = [d for d in (load_dossier(con, r[0]) for r in con.execute("SELECT id FROM dossiers")) if d]
+    ds.sort(key=lambda d: (d.get("nom", "").lower(), d.get("prenom", "").lower()))
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Dossiers"
+    ws.append([h for h, _ in COLS] + ["Créé le", "Dernière modification"])
+    for d in ds:
+        ws.append([d.get(k, "") for _, k in COLS] + [
+            _dt.datetime.fromtimestamp(d.get("created", 0)).strftime("%Y-%m-%d"),
+            _dt.datetime.fromtimestamp(d.get("updated", 0)).strftime("%Y-%m-%d")])
+    style_header(ws, [16, 18, 26, 16, 12, 12, 50, 12, 20])
+    sj = wb.create_sheet("Suivi")
+    sj.append(["Dossier", "Date", "Type", "Note", "Auteur"])
+    for d in ds:
+        for e in d.get("journal", []):
+            sj.append([f"{d.get('prenom', '')} {d.get('nom', '')}".strip(), e.get("date", ""),
+                       TYPE_LABEL.get(e.get("type"), "Note"), e.get("texte", ""), e.get("auteur", "")])
+    style_header(sj, [28, 12, 14, 70, 14])
+    return xlsx_response(wb, f"dossiers-{_dt.date.today().isoformat()}.xlsx")
+
+
+@app.get("/api/dossiers-modele")
+def dossiers_modele():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Dossiers"
+    ws.append([h for h, _ in COLS])
+    ws.append(["Amina", "Benali", "arabe algérien", "06 00 00 00 00", "En cours", "2026-12-01", "Exemple : à supprimer"])
+    style_header(ws, [16, 18, 26, 16, 12, 12, 50])
+    aide = wb.create_sheet("Aide")
+    for line in ["Remplissez l'onglet « Dossiers » (une personne par ligne), puis importez le fichier dans Tarjam.",
+                 "Colonnes : Prénom, Nom, Langue, Téléphone, Statut, Échéance, Remarques. Seul un prénom OU un nom est obligatoire.",
+                 "Langue : arabe algérien, arabe tunisien, arabe marocain, arabe, anglais, dari, pashto, turc, espagnol, portugais, russe, ukrainien, bengali, persan, ourdou, hindi, chinois, roumain, italien, allemand, polonais, vietnamien, albanais, tamoul, somali, amharique.",
+                 "Statut : En cours, En attente ou Clos (« En cours » par défaut).",
+                 "Échéance : une date (2026-12-01 ou 01/12/2026).",
+                 "Onglet facultatif « Suivi » : colonnes Dossier (Prénom Nom), Date, Type, Note, Auteur.",
+                 "Les personnes déjà présentes (même prénom et même nom) sont ignorées."]:
+        aide.append([line])
+    aide.column_dimensions["A"].width = 130
+    return xlsx_response(wb, "modele-dossiers.xlsx")
+
+
+def read_rows(file):
+    """Renvoie {nom_onglet: [dict colonne_normalisée -> valeur]} depuis un .xlsx ou un .csv."""
+    name = (file.filename or "").lower()
+    raw = file.read()
+    if len(raw) > 5_000_000:
+        raise ValueError("Fichier trop gros (5 Mo maximum).")
+    sheets = {}
+    if name.endswith(".csv"):
+        text = raw.decode("utf-8-sig", errors="replace")
+        dialect = csv.Sniffer().sniff(text[:2000], delimiters=";,\t") if text.strip() else csv.excel
+        sheets["Dossiers"] = [list(r) for r in csv.reader(io.StringIO(text), dialect)]
+    else:
+        wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+        for ws in wb.worksheets:
+            sheets[ws.title] = [list(r) for r in ws.iter_rows(values_only=True)]
+    out = {}
+    for title, rows in sheets.items():
+        rows = [r for r in rows if any(c not in (None, "") for c in r)][:2001]
+        if not rows:
+            continue
+        keys = [ALIASES.get(norm(h), "") for h in rows[0]]
+        out[title] = [{k: c for k, c in zip(keys, r) if k} for r in rows[1:]]
+    return out
+
+
+@app.post("/api/dossiers-import")
+def dossiers_import():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    f = request.files.get("file")
+    if not f:
+        return error("Aucun fichier reçu.", 400)
+    try:
+        sheets = read_rows(f)
+    except Exception:
+        return error("Fichier illisible : utilisez un .xlsx (Excel) ou .csv, de préférence le modèle.", 400)
+    main = sheets.get("Dossiers") or next((v for k, v in sheets.items() if k != "Suivi"), [])
+    suivi = sheets.get("Suivi", [])
+    created, skipped, problems = 0, 0, []
+    with _db_lock, db() as con:
+        existing = {}
+        for r in con.execute("SELECT id FROM dossiers"):
+            d = load_dossier(con, r[0])
+            if d:
+                existing[norm(d.get("prenom")) + "|" + norm(d.get("nom"))] = d
+        for i, row in enumerate(main, start=2):
+            prenom, nom = clip(row.get("prenom"), 60), clip(row.get("nom"), 60)
+            if not prenom and not nom:
+                problems.append(f"Ligne {i} : ni prénom ni nom, ignorée.")
+                continue
+            key = norm(prenom) + "|" + norm(nom)
+            if key in existing:
+                skipped += 1
+                continue
+            code, lname = lang_of(row.get("langue"))
+            statut = {"encours": "En cours", "enattente": "En attente", "clos": "Clos"}.get(norm(row.get("statut")), "En cours")
+            if row.get("langue") and not code:
+                problems.append(f"Ligne {i} : langue « {lname} » non reconnue (gardée telle quelle).")
+            d = {"prenom": prenom, "nom": nom, "langue_code": code, "langue_nom": lname,
+                 "tel": clip(row.get("tel"), 30), "statut": statut, "echeance": to_date(row.get("echeance")),
+                 "notes": clip(row.get("notes"), 3000), "created": time.time(), "journal": [],
+                 "id": uuid.uuid4().hex[:12]}
+            existing[key] = d
+            d["_new"] = True
+            created += 1
+        for e in suivi:
+            d = existing.get(norm(" ".join(str(e.get("dossier", "")).split()[:1])) + "|" + norm(" ".join(str(e.get("dossier", "")).split()[1:])))
+            texte = clip(e.get("texte"), 2000)
+            if not d or not d.get("_new") or not texte:
+                continue
+            t = norm(e.get("type"))
+            typ = "rdv" if "rendez" in t else "appel" if "appel" in t else "demarche" if "demarche" in t else "courrier" if "courrier" in t else "note"
+            d["journal"].append({"id": uuid.uuid4().hex[:8], "type": typ, "date": to_date(e.get("date")),
+                                 "texte": texte, "auteur": clip(e.get("auteur"), 40)})
+        for d in existing.values():
+            if d.pop("_new", False):
+                save_dossier(con, d)
+    return jsonify({"crees": created, "ignores": skipped, "problemes": problems[:20]})
 
 @app.get("/api/letters")
 def letters():

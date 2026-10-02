@@ -4,3 +4,4 @@ gunicorn>=23.0
 requests
 segno>=1.6
 cryptography>=42
+openpyxl>=3.1

@@ -70,11 +70,12 @@ Chacun parle dans son téléphone, dans sa langue ; le message de l'un s'affiche
 18 phrases d'accueil (bonjour, nom, rendez-vous, s'asseoir, attendre, pièce d'identité, formulaire, signer, répéter, parler lentement, compréhension, enfants, médecin, papiers à apporter, revenir lundi à 10 h, gratuité, utilisation de l'appli, au revoir) traduites dans la langue choisie avec 🔊. Elles se téléchargent automatiquement quand il y a du réseau et restent sur l'appareil : ouvrir l'appli une fois avec du réseau pour chaque langue utilisée.
 
 ## Dossiers et courriers
-Disponible seulement si l'association a activé les dossiers (sinon le message « Les dossiers sont désactivés » s'affiche). Les dossiers sont chiffrés, protégés par le code d'accès, et supprimés automatiquement après une période d'inactivité (24 mois par défaut).
+Disponible seulement si l'association a activé les dossiers (sinon un message indique la variable manquante sur le serveur). Les dossiers sont chiffrés et protégés par le code d'accès ; rien n'est supprimé automatiquement.
 - **+ Nouveau** : prénom, nom, langue, téléphone (facultatif), statut (En cours / En attente / Clos), prochaine échéance (en rouge si dépassée), remarques. Ne noter que le strict nécessaire.
 - La liste se filtre avec la barre de recherche. Appuyer sur un dossier pour l'ouvrir.
 - **Ajouter au suivi** : type (rendez-vous, appel, démarche, courrier, note), date, texte → **Ajouter**. Chaque ligne est signée du prénom du bénévole (demandé une fois). La croix ✕ supprime une ligne.
 - **🌍 Traduire avec cette personne** : règle la langue du dossier et ouvre la Conversation.
+- **⬇️ Exporter (Excel)** : télécharge tous les dossiers et leur suivi dans un fichier Excel (archive ou sauvegarde). **⬆️ Importer un Excel** : ajoute une liste de personnes ; **📋 Modèle Excel** donne le fichier à remplir (colonnes Prénom, Nom, Langue, Téléphone, Statut, Échéance, Remarques). Les personnes déjà présentes sont ignorées.
 - **✏️ Modifier**, **Clore/Rouvrir le dossier**, **🗑 Supprimer le dossier** (définitif, sur demande de la personne ou à la fin du suivi).
 - **✉️ Courrier standard** : choisir un modèle parmi 6 : attestation d'accompagnement, attestation de présence, demande de rendez-vous, transmission de pièces, demande de réexamen, rappel de rendez-vous. Remplir les cases (les noms viennent du dossier, l'en-tête de l'association est automatique), vérifier l'aperçu, puis **🖨️ Imprimer / PDF** (choisir « Enregistrer au format PDF » dans la fenêtre d'impression pour un fichier). **🌍 Traduire pour la personne** ajoute une version traduite à joindre ; seul le courrier en français fait foi. Chaque courrier imprimé est noté dans le journal du dossier. Les modèles sont les mêmes pour tous ; l'association peut les modifier dans un fichier unique.
 
@@ -95,7 +96,7 @@ Disponible seulement si l'association a activé les dossiers (sinon le message �
 - **« Langue non reconnue à la voix »** : le dari, le pashto et certaines langues ne sont pas reconnus : écrire, ou importer un message vocal.
 - **Rien ne s'affiche / « Erreur »** : vérifier Internet ; réessayer.
 - **« Code d'accès incorrect »** : ressaisir le code ; **« Trop d'essais »** : attendre 15 minutes.
-- **« Le serveur n'a pas encore de clé API »** ou « Les dossiers sont désactivés » : problème de configuration, prévenir le responsable de l'appli.
+- **« Le serveur n'a pas encore de clé API »** ou « Dossiers non activés » : problème de configuration, prévenir le responsable de l'appli.
 - **Pas de son** : monter le volume, cocher « Lire à voix haute », appuyer sur 🔊 ; sur iPhone désactiver le mode silencieux.
 - **Traduction bizarre** : reformuler avec une phrase plus courte ; en darija, parler sans mélanger trop de langues.
 - **L'appli est lente au premier lancement** : le serveur se réveille (environ 30 secondes).

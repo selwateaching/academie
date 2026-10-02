@@ -20,7 +20,7 @@ async function openDossiers(){
   show("dossiers"); $("dMsg").textContent = "Chargement…"; $("dList").innerHTML = "";
   try{
     const j = await dj("/api/dossiers","GET");
-    D.list = j.dossiers; $("dRet").textContent = j.retention_months || "—"; $("dMsg").textContent = "";
+    D.list = j.dossiers; $("dMsg").textContent = "";
     renderList();
   }catch(e){ $("dMsg").textContent = "⚠️ " + e.message; }
 }
@@ -178,3 +178,31 @@ $("back").onclick = () => {
 };
 const _showD = show;
 show = function(id){ _showD(id); const t = $("back").lastChild; if(t && t.nodeType===3) t.textContent = UP[id] ? " Retour" : " Accueil"; };
+
+// ---------- export / import Excel
+async function download(path, filename){
+  const r = await fetch(path, {headers:{"X-Access-Code": $("code").value}});
+  if(!r.ok){ const j = await r.json().catch(()=>({})); throw new Error(j.error || ("Erreur "+r.status)); }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = filename;
+  document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+$("dExport").onclick = async () => {
+  try{ await download("/api/dossiers-export", "dossiers-" + today() + ".xlsx"); $("dMsg").textContent = "✅ Fichier Excel téléchargé."; }
+  catch(e){ $("dMsg").textContent = "⚠️ " + e.message; }
+};
+$("dModele").onclick = async () => {
+  try{ await download("/api/dossiers-modele", "modele-dossiers.xlsx"); $("dMsg").textContent = "✅ Modèle téléchargé : remplissez-le puis importez-le."; }
+  catch(e){ $("dMsg").textContent = "⚠️ " + e.message; }
+};
+$("dImport").onclick = () => $("dFile").click();
+$("dFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  $("dMsg").textContent = "Import en cours…";
+  try{
+    const fd = new FormData(); fd.append("file", f);
+    const j = await api("/api/dossiers-import", {method:"POST", body: fd});
+    await openDossiers();
+    $("dMsg").textContent = `✅ ${j.crees} dossier(s) ajouté(s)` + (j.ignores ? `, ${j.ignores} déjà existant(s) ignoré(s)` : "") + "." + (j.problemes.length ? "\n⚠️ " + j.problemes.join("\n⚠️ ") : "");
+    $("dMsg").style.whiteSpace = "pre-line";
+  }catch(err){ $("dMsg").textContent = "⚠️ " + err.message; }
+};

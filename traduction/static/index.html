@@ -249,7 +249,13 @@ textarea{width:100%;min-height:90px}
     <div class="row"><input type="text" id="dSearch" placeholder="Rechercher un nom…" aria-label="Rechercher"><button class="btn" id="dNew">+ Nouveau</button></div>
     <div id="dMsg" class="warn"></div>
     <div id="dList" style="display:flex;flex-direction:column;gap:10px"></div>
-    <div class="warn">🔒 Données chiffrées, accessibles seulement avec le code d'accès. Ne notez que le nécessaire. Dossiers inactifs supprimés automatiquement après <span id="dRet">24</span> mois.</div>
+    <div class="row" style="flex-wrap:wrap">
+      <button class="btn sec" id="dExport">⬇️ Exporter (Excel)</button>
+      <button class="btn sec" id="dImport">⬆️ Importer un Excel</button>
+      <button class="btn sec" id="dModele">📋 Modèle Excel</button>
+      <input type="file" id="dFile" accept=".xlsx,.csv" hidden>
+    </div>
+    <div class="warn">🔒 Données chiffrées, accessibles avec le code d'accès. Rien n'est supprimé automatiquement.</div>
   </div>
 </section>
 
