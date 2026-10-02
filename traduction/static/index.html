@@ -67,7 +67,8 @@ a.link,.fileb{font-size:13px;color:var(--acc);cursor:pointer;text-decoration:und
 <script>
 const NEEDS_CODE = __NEEDS_CODE__;
 const LANGS = [
-  ["ar-SA","العربية — Arabe"],["en-US","English — Anglais"],["es-ES","Español — Espagnol"],
+  ["ar-DZ","الدارجة الجزائرية — arabe algérien (darija)"],["ar-TN","الدارجة التونسية — arabe tunisien (darija)"],
+  ["ar-MA","الدارجة المغربية — arabe marocain (darija)"],["ar-SA","العربية الفصحى — arabe standard"],["en-US","English — Anglais"],["es-ES","Español — Espagnol"],
   ["pt-PT","Português — Portugais"],["ru-RU","Русский — Russe"],["uk-UA","Українська — Ukrainien"],
   ["tr-TR","Türkçe — Turc"],["zh-CN","中文 — Chinois"],["ro-RO","Română — Roumain"],
   ["it-IT","Italiano — Italien"],["de-DE","Deutsch — Allemand"],["pl-PL","Polski — Polonais"],
@@ -83,7 +84,7 @@ const save = (k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
 const load = k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 
 for (const [c,n] of LANGS) $("lang").add(new Option(n,c));
-$("lang").value = load("lang") || "ar-SA";
+$("lang").value = load("lang") || "ar-DZ";
 $("lang").onchange = ()=>save("lang",$("lang").value);
 $("autospeak").checked = load("autospeak") !== "0";
 $("autospeak").onchange = ()=>save("autospeak",$("autospeak").checked?"1":"0");

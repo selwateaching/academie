@@ -5,7 +5,7 @@ Application web pour l'association : discuter avec une personne qui ne parle pas
 - **🎤 Ils parlent** : l'appli écoute (appel sur haut-parleur près du micro), transcrit la langue de la personne et affiche la traduction **en français**.
 - **🎤 Je réponds** (ou saisie au clavier) : votre réponse en français est traduite et **lue à voix haute** dans sa langue.
 - **📎 Importer un message vocal** reçu (WhatsApp `.opus`, `.m4a`, `.mp3`…) : transcription + traduction.
-- 21 langues (arabe, anglais, espagnol, russe, ukrainien, turc, chinois, persan, ourdou, hindi, bengali, somali, amharique…).
+- Darija **algérienne, tunisienne, marocaine** en tête de liste (comprend le mélange darija/français), puis 21 autres langues (arabe standard, anglais, espagnol, russe, ukrainien, turc, chinois, persan, ourdou, hindi, bengali, somali, amharique…).
 
 La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** recommandés (ordinateur ou Android).
 Les clés restent sur le serveur, jamais dans la page.

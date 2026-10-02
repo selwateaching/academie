@@ -106,6 +106,11 @@ def translate():
         f"vers : {dst}. Le texte vient d'une reconnaissance vocale et peut contenir des erreurs "
         "ou des hésitations : corrige-les avec bon sens sans rien inventer. "
         "Garde le ton et le niveau de langue, avec des mots simples. "
+        "Pour l'arabe algérien, tunisien ou marocain (darija) : le texte reçu mélange souvent darija "
+        "et mots français, écrits en lettres arabes ou latines (arabizi) ; comprends-les, et traduis vers "
+        "le français naturel. Quand la cible est une darija, écris en lettres arabes, dans le dialecte "
+        "demandé (pas en arabe littéraire), avec des mots simples et courants, en gardant tels quels "
+        "les termes administratifs français usuels (CAF, préfecture, rendez-vous…). "
         "Réponds UNIQUEMENT par la traduction, sans commentaire, sans guillemets. "
         "Si le message est incompréhensible, réponds exactement : [incompréhensible]"
     )
