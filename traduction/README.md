@@ -1,6 +1,6 @@
-# Traducteur Association — appels, messages vocaux et documents
+# Tarjama — interprète pour l'association (appels, messages vocaux, documents)
 
-Application web pour les permanences : la personne n'a rien à apprendre. Écran d'accueil avec 5 gros boutons,
+**Tarjama** (ترجمة, « traduction ») : application web pour les permanences : la personne n'a rien à apprendre. Écran d'accueil avec 5 gros boutons,
 après avoir choisi la langue de la personne :
 
 1. **🇫🇷 Français → langue** : vous parlez ou écrivez, la traduction s'affiche en gros et est lue à voix haute.

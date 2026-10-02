@@ -3,99 +3,155 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Traducteur Association</title>
+<title>Tarjama — Interprète pour l'association</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#2f5bea">
+<meta name="theme-color" content="#0f5c6e">
 <link rel="icon" href="/icon.svg">
 <style>
-:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#6b7488;--them:#e8eefc;--me:#dff5e8;--acc:#2f5bea;--rec:#d92d3a;--bd:#d9dfec}
-@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2030;--ink:#e8ecf5;--mut:#98a2b8;--them:#243258;--me:#1f4733;--bd:#2c3550}}
-*{box-sizing:border-box}
-body{margin:0;font:16px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh}
-select,input,button{font:inherit;color:inherit}
-select,input[type=text],input[type=password]{padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card)}
-header{padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center}
-header h1{font-size:18px;margin:0;flex:1}
-.back{border:1px solid var(--bd);background:var(--card);border-radius:10px;padding:8px 12px;cursor:pointer}
+:root{
+  --bg:#f3f6f7;--card:#fff;--ink:#14282e;--mut:#5d7078;--bd:#dbe3e6;
+  --brand:#0f5c6e;--brand-2:#0b4654;--brand-soft:#e1f0f3;
+  --warm:#d9641a;--warm-soft:#fcebdf;--ok:#1b8a5a;--rec:#d92d3a;
+  --me:#d8eef2;--them:#fff;--shadow:0 1px 2px rgba(20,40,46,.06),0 6px 18px rgba(20,40,46,.07);
+  --r:16px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0d1619;--card:#16232a;--ink:#e8f0f2;--mut:#93a8b0;--bd:#26383f;
+  --brand:#4fb3c8;--brand-2:#79c9db;--brand-soft:#173a44;--warm:#f08a4b;--warm-soft:#3a2517;
+  --me:#17434d;--them:#1b2b32;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.3);
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Arabic",sans-serif;
+  background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh;
+  padding-bottom:env(safe-area-inset-bottom)}
+select,input,button,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+select,input[type=text],input[type=password],textarea{padding:12px 14px;border:1px solid var(--bd);border-radius:12px;background:var(--card);min-height:48px}
+.hide{display:none!important}
+svg.i{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-.25em}
+
+/* en-tête */
+header{padding:10px 16px;padding-top:max(10px,env(safe-area-inset-top));background:var(--brand);color:#fff;display:flex;gap:10px;align-items:center;min-height:60px}
+header .logo{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:22px;font-weight:700}
+header h1{font-size:19px;margin:0;line-height:1.1;letter-spacing:.2px;flex:1}
+header h1 small{display:block;font-size:12px;font-weight:400;opacity:.8;letter-spacing:.3px}
+header .back{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:999px;padding:9px 14px;min-height:40px;font-size:14px;font-weight:600;display:inline-flex;gap:6px;align-items:center}
+header input{background:rgba(255,255,255,.95);color:#14282e;border:0;min-height:40px}
+.back{border:1px solid var(--bd);background:var(--card);border-radius:12px;padding:10px 14px;min-height:44px;font-weight:600;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+
 .screen{display:none;flex:1;min-height:0;flex-direction:column}
 .screen.on{display:flex}
+
 /* accueil */
-#home{padding:16px;gap:14px;overflow-y:auto}
-.langpick{display:flex;flex-direction:column;gap:6px}
-.langpick label{font-weight:600}
-.langpick select{font-size:20px;padding:14px}
-.big{flex:1;min-height:90px;border:0;border-radius:18px;font-size:20px;font-weight:700;color:#fff;cursor:pointer;padding:14px;line-height:1.25}
-.b1{background:#1f9d57}.b2{background:var(--acc)}.b3{background:#c97a12}.b4{background:#7a3fd1}
-.big small{display:block;font-weight:400;font-size:14px;opacity:.9}
+#home{padding:18px 16px 24px;gap:14px;overflow-y:auto;max-width:900px;width:100%;margin:0 auto}
+.langpick{background:var(--card);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.langpick label{font-size:13px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.6px}
+.langpick select{font-size:20px;font-weight:600;min-height:56px;border-width:2px;border-color:var(--brand)}
+.cards{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:720px){.cards{grid-template-columns:1fr 1fr}}
+.big{display:flex;align-items:center;gap:14px;text-align:start;border:1px solid var(--bd);background:var(--card);color:var(--ink);border-radius:var(--r);padding:16px;min-height:88px;box-shadow:var(--shadow);transition:transform .08s}
+.big:active{transform:scale(.985)}
+.big .ic{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--brand-soft);color:var(--brand)}
+.big .ic svg{width:28px;height:28px}
+.big .tx{flex:1;font-size:18px;font-weight:700;line-height:1.2}
+.big .tx small{display:block;font-weight:400;font-size:14px;color:var(--mut);margin-top:3px}
+.big .chev{color:var(--mut);width:1.2em;height:1.2em}
+.big.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+.big.primary .ic{background:rgba(255,255,255,.18);color:#fff}
+.big.primary .tx small,.big.primary .chev{color:rgba(255,255,255,.82)}
+.big.warm .ic{background:var(--warm-soft);color:var(--warm)}
+.foot{font-size:12px;color:var(--mut);text-align:center;margin-top:4px}
+
 /* conversation */
-#log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.msg{max-width:92%;padding:10px 12px;border-radius:14px}
-.msg.them{background:var(--them);align-self:flex-start}
-.msg.me{background:var(--me);align-self:flex-end}
-.msg .tr{font-size:22px;font-weight:600;white-space:pre-wrap}
-.msg .orig{font-size:14px;color:var(--mut);margin-top:4px}
-.msg button{margin:6px 6px 0 0;border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:5px 10px;cursor:pointer}
-.empty{margin:auto;color:var(--mut);text-align:center;max-width:420px;padding:10px}
-footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
-.row{display:flex;gap:8px}
-.mic{flex:1;padding:16px;border:0;border-radius:12px;font-weight:700;cursor:pointer;color:#fff;font-size:17px}
-.mic.them{background:var(--acc)}.mic.me{background:#1f9d57}
-.mic.on{background:var(--rec);animation:p 1.2s infinite}
-@keyframes p{50%{opacity:.7}}
-#txt{flex:1}
-.send{padding:8px 16px;border:0;border-radius:10px;background:#1f9d57;color:#fff;cursor:pointer}
-#status{font-size:13px;color:var(--mut);min-height:18px}
-.hide{display:none!important}
-.fileb{font-size:14px;color:var(--acc);cursor:pointer;text-decoration:underline}
+#log,#rlog{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:90%;padding:12px 14px;border-radius:18px;box-shadow:var(--shadow);border:1px solid var(--bd)}
+.msg.them{background:var(--them);align-self:flex-start;border-end-start-radius:6px}
+.msg.me{background:var(--me);align-self:flex-end;border-end-end-radius:6px;border-color:transparent}
+.msg .tr{font-size:22px;font-weight:600;white-space:pre-wrap;line-height:1.35}
+.msg .orig{font-size:14px;color:var(--mut);margin-top:5px}
+.msg button{margin:8px 8px 0 0;border:1px solid var(--bd);background:var(--card);border-radius:999px;padding:6px 14px;min-height:36px}
+.empty{margin:auto;color:var(--mut);text-align:center;max-width:420px;padding:16px;font-size:17px}
+footer{background:var(--card);border-top:1px solid var(--bd);padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;align-items:center}
+.mic{flex:1;min-height:60px;padding:12px;border:0;border-radius:999px;font-weight:700;color:#fff;font-size:17px;background:var(--brand);position:relative}
+.mic.me{background:var(--ok)}
+.mic.on{background:var(--rec);animation:ring 1.4s infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(217,45,58,.5)}100%{box-shadow:0 0 0 16px rgba(217,45,58,0)}}
+@media(prefers-reduced-motion:reduce){.mic.on{animation:none}.big{transition:none}}
+#txt,#rtxt{flex:1}
+.send{min-width:52px;min-height:48px;border:0;border-radius:12px;background:var(--brand);color:#fff;font-weight:700;padding:0 16px}
+#status,#rstatus{font-size:13px;color:var(--mut);min-height:18px}
+.fileb{font-size:14px;color:var(--brand);cursor:pointer;font-weight:600}
+.warn{font-size:12px;color:var(--mut);text-align:center;line-height:1.3}
+#offline{display:none;background:#b3261e;color:#fff;text-align:center;padding:8px;font-size:14px;font-weight:600}
+
 /* document */
-#doc{padding:14px;gap:12px;overflow-y:auto}
-.seg{display:flex;gap:8px}
-.seg button{flex:1;padding:12px;border:2px solid var(--bd);background:var(--card);border-radius:12px;cursor:pointer;font-weight:600}
-.seg button.sel{border-color:#c97a12;background:#c97a1222}
-.cam{padding:18px;border-radius:14px;background:#c97a12;color:#fff;text-align:center;font-weight:700;font-size:19px;cursor:pointer;display:block}
-.cam.alt{background:var(--card);color:var(--ink);border:1px solid var(--bd);font-size:16px;font-weight:600}
-#docOut{white-space:pre-wrap;font-size:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
-#docPrev{max-width:100%;max-height:200px;border-radius:10px;align-self:flex-start}
-.warn{font-size:12px;color:var(--mut);text-align:center}
-#offline{display:none;background:#b3261e;color:#fff;text-align:center;padding:6px;font-size:14px}
-textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);min-height:70px}
+#doc{padding:16px;gap:12px;overflow-y:auto;max-width:720px;width:100%;margin:0 auto}
+.seg{display:flex;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:4px}
+.seg button{flex:1;padding:11px 6px;border:0;background:transparent;border-radius:10px;font-weight:600;min-height:44px;color:var(--mut)}
+.seg button.sel{background:var(--brand);color:#fff}
+.cam{padding:20px;border-radius:var(--r);background:var(--warm);color:#fff;text-align:center;font-weight:700;font-size:19px;cursor:pointer;display:block;box-shadow:var(--shadow)}
+.cam.alt{background:var(--card);color:var(--ink);border:1px solid var(--bd);font-size:16px;padding:16px}
+details summary{cursor:pointer;color:var(--brand);font-weight:600;padding:6px 0}
+textarea{width:100%;min-height:90px}
+#docOut{white-space:pre-wrap;font-size:20px;line-height:1.5;background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+#docPrev{max-width:100%;max-height:200px;border-radius:12px;align-self:flex-start;border:1px solid var(--bd)}
+
 /* deux téléphones */
-.b5{background:#0e8a8a}
-#join{padding:20px;gap:16px;justify-content:center}
-#join select{font-size:22px;padding:16px}
-#join .big{flex:none;background:#1f9d57}
-#pairInfo{background:var(--card);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-#pairInfo .code{font-size:26px;font-weight:800;letter-spacing:3px}
-#qr{background:#fff;padding:6px;border-radius:8px;line-height:0}
+#join{padding:24px 20px;gap:16px;justify-content:center;max-width:480px;width:100%;margin:0 auto}
+#join select{font-size:24px;min-height:64px;border-width:2px;border-color:var(--brand)}
+#join .big{justify-content:center;background:var(--ok);color:#fff;border:0;font-size:22px;font-weight:700;min-height:68px;border-radius:999px}
+#pairInfo{background:var(--card);border-bottom:1px solid var(--bd);padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#pairInfo .code{font-size:28px;font-weight:800;letter-spacing:4px;color:var(--brand)}
+#qr{background:#fff;padding:6px;border-radius:10px;line-height:0;border:1px solid var(--bd)}
 .dot{font-size:14px;color:var(--mut)}
-#tv{padding:20px;gap:18px;overflow-y:auto;background:#0b0e14;color:#fff}
-#tv .pair{border-radius:16px;padding:16px 20px;background:#1b2030}
-#tv .fr{font-size:clamp(28px,5vw,56px);font-weight:700}
-#tv .lg{font-size:clamp(28px,5vw,56px);font-weight:700;color:#8fd3ff;margin-top:8px}
-#tv .who{font-size:16px;color:#98a2b8;margin-bottom:4px}
+#roomState{font-weight:600}
+
+#qr:empty{display:none}
+#hostInfo .btns{display:flex;gap:8px;flex-wrap:wrap}
+#hostInfo .btns .back{min-height:40px;padding:8px 12px;font-size:14px}
+#roomLink{word-break:break-all;font-size:12px}
+@media(max-width:560px){
+  header h1 small{display:none}
+  #wipe{font-size:0;gap:0;padding:9px 11px}
+  #wipe svg{font-size:16px}
+  #roomLink{display:none}
+}
+/* mode écran */
+#tv{padding:24px;gap:18px;overflow-y:auto;background:#081014;color:#fff}
+#tv .pair{border-radius:20px;padding:18px 24px;background:#12222a;border:1px solid #1f3640}
+#tv .fr{font-size:clamp(28px,5vw,58px);font-weight:700;line-height:1.25}
+#tv .lg{font-size:clamp(28px,5vw,58px);font-weight:700;color:#7fd6ea;margin-top:10px;line-height:1.35}
+#tv .who{font-size:16px;color:#93a8b0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
 </style>
 </head>
 <body>
 <header>
-  <button class="back hide" id="back">← Accueil</button>
-  <h1>🌍 Traducteur Association</h1>
-  <button class="back hide" id="wipe" title="Efface tout et revient à l'accueil">🧹 Nouvelle personne</button>
-  <input type="password" id="code" placeholder="Code d'accès" style="width:130px;display:none">
+  <button class="back hide" id="back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg> Accueil</button>
+  <div class="logo" aria-hidden="true">ت</div>
+  <h1>Tarjama<small>Interprète · Association</small></h1>
+  <button class="back hide" id="wipe" aria-label="Nouvelle personne : tout effacer" title="Efface tout et revient à l'accueil"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg> Nouvelle personne</button>
+  <input type="password" id="code" placeholder="Code d'accès" aria-label="Code d'accès" style="width:130px;display:none">
 </header>
 
-<div id="offline">📶 Pas de connexion : la traduction a besoin d'Internet.</div>
+<div id="offline" role="status">Pas de connexion : la traduction a besoin d'Internet.</div>
 <!-- ACCUEIL -->
-<section class="screen on" id="home">
+<main class="screen on" id="home">
   <div class="langpick">
-    <label for="lang">Langue de la personne</label>
+    <label for="lang">Langue de la personne accueillie</label>
     <select id="lang"></select>
   </div>
-  <button class="big b1" data-go="fr2l">🇫🇷 FRANÇAIS → 🌍 <span class="ln">langue</span><small>Je parle ou j'écris, la personne lit et écoute</small></button>
-  <button class="big b2" data-go="l2fr">🌍 <span class="ln">langue</span> → 🇫🇷 FRANÇAIS<small>La personne parle, je lis en français</small></button>
-  <button class="big b3" data-go="doc">📷 TRADUIRE UN DOCUMENT<small>Photo d'un courrier, d'un formulaire…</small></button>
-  <button class="big b5" data-go="pair">📱 DEUX TÉLÉPHONES<small>Chacun parle sa langue sur son propre téléphone</small></button>
-  <button class="big b4" data-go="conv">🎤 TRADUIRE UNE CONVERSATION<small>Dans les deux sens, en direct</small></button>
-</section>
+  <div class="cards">
+    <button class="big primary" data-go="fr2l"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg></span><span class="tx">Français → <span class="ln">langue</span><small>Je parle ou j'écris, la personne lit et écoute</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="big primary" data-go="l2fr"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3"/></svg></span><span class="tx"><span class="ln">Langue</span> → français<small>La personne parle, je lis en français</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="big" data-go="pair"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg></span><span class="tx">Deux téléphones<small>Chacun parle sa langue sur son propre appareil</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="big" data-go="conv"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span class="tx">Conversation<small>Les deux sens sur un seul appareil</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="big warm" data-go="doc"><span class="ic"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span><span class="tx">Document<small>Courrier, formulaire, PDF : traduire, simplifier, expliquer</small></span><svg class="i chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+  </div>
+  <div class="foot">Traduction automatique : à faire vérifier pour toute décision importante. Rien n'est conservé après « Nouvelle personne ».</div>
+</main>
 
 <!-- VOIX / CONVERSATION -->
 <section class="screen" id="talk">
@@ -158,11 +214,11 @@ textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;b
 <section class="screen" id="room">
   <div id="pairInfo">
     <div id="hostInfo" class="hide" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-      <div><div class="dot">Code de la session</div><div class="code" id="roomCode"></div></div>
+      <div><div class="dot">Code de la session · à faire scanner ou envoyer</div><div class="code" id="roomCode"></div></div>
       <div id="qr"></div>
-      <div class="dot" id="roomLink" style="flex:1;min-width:160px">Faites scanner le QR code ou envoyez le lien à la personne.</div>
-      <button class="back" id="shareBtn">📤 Envoyer le lien</button>
-      <button class="back" id="tvBtn">📺 Mode écran</button>
+      <div class="dot" id="roomLink" style="flex:1;min-width:160px"></div>
+      <div class="btns"><button class="back" id="shareBtn">📤 Envoyer le lien</button>
+      <button class="back" id="tvBtn">📺 Mode écran</button></div>
     </div>
     <div class="dot" id="roomState"></div>
   </div>
@@ -285,8 +341,8 @@ function addMsg(who, big, small, speakLang){
   $("empty")?.remove();
   const d = document.createElement("div");
   d.className = "msg "+who;
-  const a = document.createElement("div"); a.className="tr"; a.textContent = big;
-  const b = document.createElement("div"); b.className="orig"; b.textContent = small;
+  const a = document.createElement("div"); a.className="tr"; a.dir="auto"; a.textContent = big;
+  const b = document.createElement("div"); b.className="orig"; b.dir="auto"; b.textContent = small;
   d.append(a,b);
   if(speakLang){
     const btn = document.createElement("button"); btn.textContent="🔊 Écouter";
@@ -430,7 +486,7 @@ async function doDoc(file, pasted){
     const j = await api("/api/document",{method:"POST",body:fd});
     $("docOut").textContent = j.translation;
     $("docOut").classList.remove("hide"); $("docBtns").classList.remove("hide");
-    $("docOut").setAttribute("dir", docToFr ? "ltr" : "auto");
+    $("docOut").setAttribute("dir", "auto");
     $("docStatus").textContent = "";
   }catch(e){ $("docStatus").textContent = "⚠️ "+e.message; }
 }
@@ -473,8 +529,8 @@ function roomBubble(m){
   const mine = m.side === R.side;
   const d = document.createElement("div");
   d.className = "msg " + (mine ? "me" : "them");
-  const a = document.createElement("div"); a.className="tr";
-  const b = document.createElement("div"); b.className="orig";
+  const a = document.createElement("div"); a.className="tr"; a.dir="auto";
+  const b = document.createElement("div"); b.className="orig"; b.dir="auto";
   if(mine){ a.textContent = m.text; b.textContent = "→ " + m.tr; }
   else { a.textContent = m.tr; b.textContent = m.text; }
   d.append(a,b);
@@ -551,7 +607,7 @@ async function hostStart(){
     $("roomCode").textContent = j.code;
     $("roomLink").textContent = link;
     $("qr").innerHTML = "";
-    try{ new QRCode($("qr"),{text:link,width:110,height:110}); }catch(e){ $("qr").textContent=""; }
+    try{ new QRCode($("qr"),{text:link,width:96,height:96}); }catch(e){ $("qr").textContent=""; }
     enterRoom("host","fr-FR");
     $("hostInfo").style.display = "flex";
   }catch(e){ alert(e.message); show("home"); }
@@ -589,7 +645,7 @@ function startTv(){
       const d = document.createElement("div"); d.className="pair";
       d.innerHTML = '<div class="who"></div><div class="fr"></div><div class="lg" dir="auto"></div>';
       d.querySelector(".who").textContent = m.side==="host" ? "🇫🇷 Association" : "🌍 " + (R.guestName||"");
-      d.querySelector(".fr").textContent = fr; d.querySelector(".lg").textContent = lg;
+      d.querySelector(".fr").textContent = fr; d.querySelector(".lg").textContent = lg; d.querySelector(".fr").dir="auto";
       box.append(d); window.scrollTo(0,document.body.scrollHeight); box.scrollTop = box.scrollHeight;
     }
   });
@@ -619,7 +675,12 @@ async function wipeAll(){
 }
 $("wipe").onclick = wipeAll;
 const _show = show;
-show = function(id){ _show(id); const guest = !!new URLSearchParams(location.search).get("room"); $("wipe").classList.toggle("hide", id==="home" || guest); };
+show = function(id){
+  _show(id);
+  const guest = !!new URLSearchParams(location.search).get("room");
+  $("wipe").classList.toggle("hide", id==="home" || guest);
+  if(guest) $("back").classList.add("hide");
+};
 let idleT;
 function resetIdle(){
   clearTimeout(idleT);
