@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide du professeur débutant</title>
+<meta name="description" content="Le guide pratique du jeune enseignant algérien : quoi enseigner, comment gérer sa classe, niveau par niveau.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F3EE;--w:#FFF;--ink:#20241F;--ink2:#4B5048;--ink3:#8A8F86;
+  --t:#1F7A4D;--t2:#2E9966;--tp:#E6F3EC;--br:#E3E0D6;--rd:14px;
+  --a:#C8792B;--ap:#FBF0E3;--r:#C8422E;--rp:#FBEAE6;
+}
+*{box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);margin:0;line-height:1.55;}
+a{color:inherit;}
+.wrap{max-width:900px;margin:0 auto;padding:0 1.1rem;}
+header.top{background:var(--ink);color:#fff;padding:0;}
+.top-inner{max-width:900px;margin:0 auto;padding:.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;}
+.brand{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;}
+.brand span{color:#9FE0BE;}
+.crumb{font-size:.78rem;color:rgba(255,255,255,.65);display:none;}
+.crumb a{text-decoration:underline;cursor:pointer;}
+@media(min-width:620px){.crumb{display:block;}}
+
+/* HERO / HOME */
+.hero{padding:2.4rem 1.1rem 1.6rem;text-align:center;}
+.hero h1{font-size:clamp(1.5rem,4vw,2.1rem);margin:0 0 .5rem;font-weight:800;}
+.hero p{color:var(--ink2);max-width:540px;margin:0 auto;font-size:.95rem;}
+.cards{display:grid;grid-template-columns:1fr;gap:1rem;max-width:760px;margin:1.6rem auto 2rem;padding:0 1.1rem;}
+@media(min-width:680px){.cards{grid-template-columns:1fr 1fr;}}
+.card-choice{background:var(--w);border:1px solid var(--br);border-radius:18px;padding:1.6rem 1.4rem;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:left;}
+.card-choice:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(31,122,77,.12);border-color:var(--t);}
+.card-choice .ico{font-size:2rem;margin-bottom:.6rem;}
+.card-choice h3{margin:0 0 .4rem;font-size:1.05rem;}
+.card-choice p{margin:0;color:var(--ink3);font-size:.84rem;}
+
+/* SECTION LAYOUT */
+.pg{display:none;padding:1.6rem 1.1rem 5rem;max-width:900px;margin:0 auto;}
+.pg.on{display:block;}
+.sect-title{font-size:1.25rem;font-weight:800;margin:0 0 .3rem;}
+.sect-sub{color:var(--ink3);font-size:.85rem;margin:0 0 1.4rem;}
+
+/* PROGRAMME: niveau picker */
+.niv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(85px,1fr));gap:.6rem;margin-bottom:1.6rem;}
+.niv-btn{background:var(--w);border:1.5px solid var(--br);border-radius:12px;padding:.8rem .5rem;text-align:center;cursor:pointer;font-weight:700;font-size:.9rem;transition:all .15s;}
+.niv-btn:hover,.niv-btn.on{border-color:var(--t);background:var(--tp);color:var(--t);}
+.niv-btn .cyc{display:block;font-size:.62rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
+.niv-btn.on .cyc{color:var(--t);}
+
+.mat-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.6rem;}
+.mat-chip{background:var(--w);border:1.5px solid var(--br);border-radius:999px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.mat-chip:hover,.mat-chip.on{border-color:var(--t);background:var(--t);color:#fff;}
+
+.seq-list{display:flex;flex-direction:column;gap:.6rem;}
+.seq-item{background:var(--w);border:1px solid var(--br);border-radius:12px;padding:.85rem 1.1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;}
+.seq-item:hover{border-color:var(--t);}
+.seq-item span.n{font-weight:700;font-size:.88rem;}
+.seq-item span.chev{color:var(--ink3);}
+
+/* SEQUENCE DETAIL */
+.seq-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--t);font-weight:700;font-size:.82rem;cursor:pointer;margin-bottom:1rem;background:none;border:none;padding:0;font-family:inherit;}
+.seq-head{background:linear-gradient(135deg,var(--t),var(--t2));color:#fff;border-radius:16px;padding:1.2rem 1.4rem;margin-bottom:1.2rem;}
+.seq-head .lvl{display:inline-flex;background:rgba(255,255,255,.2);border-radius:999px;padding:.25rem .7rem;font-size:.72rem;font-weight:700;margin-bottom:.5rem;}
+.seq-head h2{margin:0;font-size:1.2rem;}
+.blk{background:var(--w);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.9rem;}
+.blk.alt{border-left-color:var(--a);}
+.blk.warn{border-left-color:var(--r);}
+.blk h4{margin:0 0 .6rem;font-size:.9rem;display:flex;align-items:center;gap:.5rem;}
+.blk ul{margin:0;padding-left:1.1rem;font-size:.86rem;}
+.blk li{margin-bottom:.3rem;}
+.blk p{margin:0;font-size:.86rem;}
+.tadriss-cta{background:var(--ink);color:#fff;border-radius:16px;padding:1.3rem 1.4rem;margin-top:1.6rem;text-align:center;}
+.tadriss-cta p{margin:0 0 .8rem;font-size:.86rem;color:rgba(255,255,255,.75);}
+.tadriss-cta a.btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--t2);color:#fff;text-decoration:none;font-weight:700;padding:.7rem 1.4rem;border-radius:10px;font-size:.88rem;}
+
+/* GERER CLASSE */
+.timeline{display:flex;flex-direction:column;gap:1.2rem;margin-bottom:1.6rem;}
+.tl-step{background:var(--w);border:1px solid var(--br);border-radius:14px;padding:1.1rem 1.3rem;}
+.tl-step h4{margin:0 0 .6rem;font-size:.95rem;color:var(--t);}
+.tl-step ul{margin:0;padding-left:1.1rem;font-size:.86rem;}
+.tl-step li{margin-bottom:.3rem;}
+
+.persona{background:linear-gradient(135deg,var(--a),#DDA255);color:#fff;border-radius:16px;padding:1.3rem 1.4rem;margin:1.6rem 0;}
+.persona h3{margin:0 0 .6rem;font-size:1.02rem;}
+.persona p{margin:0 0 .7rem;font-size:.87rem;line-height:1.65;}
+.persona .principe{background:rgba(255,255,255,.18);border-radius:10px;padding:.7rem .9rem;font-size:.84rem;font-weight:600;}
+
+table.diff{width:100%;border-collapse:collapse;background:var(--w);border-radius:12px;overflow:hidden;border:1px solid var(--br);font-size:.82rem;}
+table.diff th{background:var(--ink);color:#fff;text-align:left;padding:.6rem .8rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;}
+table.diff td{padding:.7rem .8rem;border-bottom:1px solid var(--br);vertical-align:top;}
+table.diff tr:last-child td{border-bottom:none;}
+td.no{color:var(--r);}
+td.yes{color:var(--t);}
+.diff-wrap{overflow-x:auto;margin-bottom:1rem;}
+
+/* FLOATING TADRISS BUTTON */
+.floatbtn{position:fixed;bottom:18px;right:18px;left:18px;max-width:420px;margin:0 auto;background:var(--ink);color:#fff;border-radius:14px;padding:.75rem 1rem;display:flex;align-items:center;gap:.7rem;box-shadow:0 10px 30px rgba(0,0,0,.25);text-decoration:none;z-index:500;}
+.floatbtn .emoji{font-size:1.3rem;}
+.floatbtn .txt{flex:1;}
+.floatbtn .t1{font-size:.68rem;color:rgba(255,255,255,.6);}
+.floatbtn .t2{font-size:.86rem;font-weight:700;}
+.floatbtn .go{background:var(--t2);border-radius:8px;padding:.4rem .7rem;font-size:.78rem;font-weight:700;white-space:nowrap;}
+@media(min-width:620px){.floatbtn{left:auto;width:340px;}}
+
+footer.foot{text-align:center;padding:2rem 1rem 6rem;color:var(--ink3);font-size:.75rem;}
+footer.foot a{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand" onclick="goHome()">📘 Guide<span> du prof débutant</span></div>
+    <div class="crumb" id="crumb"></div>
+  </div>
+</header>
+
+<!-- HOME -->
+<div class="pg on" id="pg-home">
+  <div class="hero">
+    <h1>Vous débutez dans l'enseignement ?</h1>
+    <p>Ce guide vous dit quoi faire, étape par étape — que vous ne sachiez pas comment gérer votre classe, ou que vous ne sachiez pas exactement quoi enseigner cette semaine.</p>
+  </div>
+  <div class="cards">
+    <div class="card-choice" onclick="go('classe')">
+      <div class="ico">🏫</div>
+      <h3>Je commence mon métier</h3>
+      <p>Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.</p>
+    </div>
+    <div class="card-choice" onclick="go('programme')">
+      <div class="ico">📚</div>
+      <h3>Je découvre mon programme</h3>
+      <p>Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRAMME : niveau -->
+<div class="pg" id="pg-programme">
+  <div class="wrap">
+    <div class="sect-title">📚 Je découvre mon programme</div>
+    <div class="sect-sub">Choisissez votre niveau</div>
+    <div class="niv-grid" id="nivGrid"></div>
+    <div id="matBox" style="display:none">
+      <div class="sect-sub" style="margin-bottom:.8rem">Choisissez votre matière</div>
+      <div class="mat-chips" id="matChips"></div>
+      <div class="seq-list" id="seqList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRAMME : séquence détail -->
+<div class="pg" id="pg-sequence">
+  <div class="wrap">
+    <button class="seq-back" onclick="go('programme')">← Retour au programme</button>
+    <div id="seqDetail"></div>
+  </div>
+</div>
+
+<!-- GERER CLASSE -->
+<div class="pg" id="pg-classe">
+  <div class="wrap">
+    <div class="sect-title">🏫 Je commence mon métier</div>
+    <div class="sect-sub" id="classeIntro"></div>
+
+    <div class="timeline" id="timelineBox"></div>
+
+    <div class="persona" id="personaBox"></div>
+
+    <div class="sect-title" style="font-size:1.05rem;margin-top:1.6rem;">🆘 Difficultés courantes et quoi faire</div>
+    <div class="diff-wrap" style="margin-top:.8rem;">
+      <table class="diff">
+        <thead><tr><th>Difficulté</th><th>À éviter</th><th>À faire</th></tr></thead>
+        <tbody id="diffBody"></tbody>
+      </table>
+    </div>
+
+    <div class="tadriss-cta">
+      <p>Vous savez maintenant comment aborder votre classe. Pour préparer vos séances au quotidien :</p>
+      <a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener">🤖 Ouvrir Tadriss</a>
+    </div>
+  </div>
+</div>
+
+<a class="floatbtn" href="https://tadriss.fr" target="_blank" rel="noopener">
+  <div class="emoji">🤖</div>
+  <div class="txt">
+    <div class="t1">Besoin de préparer votre cours ?</div>
+    <div class="t2">Ouvrir Tadriss</div>
+  </div>
+  <div class="go">Aller →</div>
+</a>
+
+<footer class="foot">Guide du professeur débutant — un outil gratuit lié à <a href="https://tadriss.fr" target="_blank" rel="noopener">tadriss.fr</a></footer>
+
+<script src="data.js"></script>
+<script>
+var curNiv = null, curMat = null;
+
+function go(page){
+  document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
+  document.getElementById('pg-'+page).classList.add('on');
+  window.scrollTo(0,0);
+  updateCrumb(page);
+  if (page === 'programme') renderNiveaux();
+  if (page === 'classe') renderClasse();
+}
+function goHome(){ go('home'); curNiv=null; curMat=null; }
+
+function updateCrumb(page){
+  var c = document.getElementById('crumb');
+  var map = { home:'', programme:'Programme', sequence:'Programme › Séquence', classe:'Gérer sa classe' };
+  c.innerHTML = page==='home' ? '' : '<a onclick="goHome()">Accueil</a> › ' + (map[page]||'');
+}
+
+function renderNiveaux(){
+  var grid = document.getElementById('nivGrid');
+  grid.innerHTML = GUIDE_DATA.niveaux.map(function(n){
+    return '<div class="niv-btn'+(curNiv===n.id?' on':'')+'" onclick="pickNiveau(\''+n.id+'\')">'+n.id+'<span class="cyc">'+n.cycle+'</span></div>';
+  }).join('');
+  if (curNiv) pickNiveau(curNiv, true);
+}
+function pickNiveau(id, keepMat){
+  curNiv = id;
+  if (!keepMat) curMat = null;
+  renderNiveaux();
+  var box = document.getElementById('matBox');
+  box.style.display = 'block';
+  var data = GUIDE_DATA.programme[id] || {};
+  var mats = Object.keys(data);
+  var chips = document.getElementById('matChips');
+  chips.innerHTML = mats.map(function(m){
+    return '<div class="mat-chip'+(curMat===m?' on':'')+'" onclick="pickMatiere(\''+m.replace(/'/g,"\\'")+'\')">'+m+'</div>';
+  }).join('');
+  if (curMat && data[curMat]) renderSeqList(data[curMat]);
+  else document.getElementById('seqList').innerHTML = '';
+}
+function pickMatiere(m){
+  curMat = m;
+  pickNiveau(curNiv, true);
+  renderSeqList(GUIDE_DATA.programme[curNiv][m]);
+}
+function renderSeqList(seqs){
+  var list = document.getElementById('seqList');
+  list.innerHTML = seqs.map(function(s, i){
+    return '<div class="seq-item" onclick="openSeq('+i+')"><span class="n">'+s[0]+'</span><span class="chev">→</span></div>';
+  }).join('');
+}
+function openSeq(i){
+  var seq = GUIDE_DATA.programme[curNiv][curMat][i];
+  var nom = seq[0], enseigner = seq[1], saitFaire = seq[2], activites = seq[3], verifie = seq[4], remediation = seq[5];
+  var h = '<div class="seq-head"><div class="lvl">'+curNiv+' · '+curMat+'</div><h2>'+nom+'</h2></div>';
+  function block(icon, titre, items, cls){
+    if (!items || !items.length) return '';
+    cls = cls || '';
+    return '<div class="blk '+cls+'"><h4>'+icon+' '+titre+'</h4><ul>'+items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
+  }
+  h += block('👨‍🏫','Ce que je dois enseigner', enseigner);
+  h += block('👧','Ce que l\'élève doit savoir faire', saitFaire);
+  h += block('📝','Ce que je lui fais faire', activites, 'alt');
+  h += block('✅','Comment je vérifie', verifie, 'alt');
+  h += block('🆘','S\'il n\'a pas compris', remediation, 'warn');
+  h += '<div class="tadriss-cta"><p>Vous savez maintenant ce que vous devez enseigner. Préparez votre fiche, votre cours, vos exercices ou votre évaluation :</p>' +
+       '<a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener">🤖 Préparer ma séance avec Tadriss</a></div>';
+  document.getElementById('seqDetail').innerHTML = h;
+  go('sequence');
+}
+
+function renderClasse(){
+  var gc = GUIDE_DATA.gererClasse;
+  document.getElementById('classeIntro').textContent = gc.intro;
+  function liList(items){ return '<ul>'+items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'; }
+  var tl = [
+    ['🗓️ Avant la rentrée', gc.avantRentree],
+    ['🚪 Premier jour', gc.premierJour],
+    ['📅 Première semaine', gc.premiereSemaine],
+    ['📖 Pendant l\'année', gc.pendantAnnee]
+  ];
+  document.getElementById('timelineBox').innerHTML = tl.map(function(t){
+    return '<div class="tl-step"><h4>'+t[0]+'</h4>'+liList(t[1])+'</div>';
+  }).join('');
+
+  var p = gc.typeProfesseur;
+  document.getElementById('personaBox').innerHTML =
+    '<h3>'+p.titre+'</h3><p>'+p.texte+'</p><div class="principe">'+p.principe+'</div>';
+
+  document.getElementById('diffBody').innerHTML = gc.difficultes.map(function(d){
+    return '<tr><td><strong>'+d.titre+'</strong></td><td class="no">'+d.eviter+'</td><td class="yes">'+d.faire+'</td></tr>';
+  }).join('');
+}
+
+go('home');
+</script>
+</body>
+</html>
