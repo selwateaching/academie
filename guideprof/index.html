@@ -67,6 +67,9 @@ header.top{background:var(--ink);color:#fff;padding:0;}
 /* DOCUMENTS ADMINISTRATIFS */
 .doc-card{background:var(--w);border:1px solid var(--br);border-radius:16px;padding:1.2rem 1.3rem;margin-bottom:1rem;}
 .doc-card .dc-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.doc-card .dc-dl{margin-left:auto;flex:none;background:var(--bg);border:1px solid var(--br);border-radius:8px;width:30px;height:30px;font-size:.9rem;cursor:pointer;color:var(--ink2);}
+.doc-card .dc-dl:hover{background:var(--tp);border-color:var(--t);color:var(--t);}
+html[dir="rtl"] .doc-card .dc-dl{margin-left:0;margin-right:auto;}
 .doc-card .dc-ico{font-size:1.5rem;flex:none;}
 .doc-card h3{margin:0;font-size:1.02rem;}
 .doc-card .dc-quoi{font-size:.86rem;color:var(--ink2);margin:0 0 .6rem;}
@@ -137,7 +140,7 @@ footer.foot{text-align:center;padding:2rem 1rem 6rem;color:var(--ink3);font-size
 footer.foot a{text-decoration:underline;}
 
 @media print{
-  header.top,.floatbtn,.crumb,#dlBtn,#langBtn,.niv-placeholder,.hero .ico{display:none!important;}
+  header.top,.floatbtn,.crumb,#dlBtn,#langBtn,.niv-placeholder,.hero .ico,.dc-dl{display:none!important;}
   body{background:#fff;}
   .pg{display:block!important;padding:0 .4rem;max-width:100%;}
   .pg:not(.on){display:none!important;}
@@ -359,6 +362,15 @@ function downloadPage(){
   window.print();
 }
 
+function downloadOneDoc(i){
+  var cards = document.querySelectorAll('#docsList .doc-card');
+  cards.forEach(function(c, idx){ c.style.display = (idx === i) ? '' : 'none'; });
+  window.print();
+}
+window.addEventListener('afterprint', function(){
+  document.querySelectorAll('#docsList .doc-card').forEach(function(c){ c.style.display = ''; });
+});
+
 function toggleLang(){
   CURRENT_LANG = (CURRENT_LANG === 'fr') ? 'ar' : 'fr';
   try { localStorage.setItem('guideprofLang', CURRENT_LANG); } catch(e){}
@@ -520,10 +532,10 @@ function renderDocs(){
   var da = dataSrc().docsAdmin || GUIDE_DATA.docsAdmin;
   if (!da) return;
   document.getElementById('docsIntro').textContent = da.intro;
-  document.getElementById('docsList').innerHTML = da.documents.map(function(d){
+  document.getElementById('docsList').innerHTML = da.documents.map(function(d, i){
     var tadriss = d.tadriss ? '<div class="dc-tadriss">🦉 '+d.tadriss+'</div>' : '';
     return '<div class="doc-card">' +
-      '<div class="dc-head"><span class="dc-ico">'+d.icone+'</span><h3>'+d.nom+'</h3></div>' +
+      '<div class="dc-head"><span class="dc-ico">'+d.icone+'</span><h3>'+d.nom+'</h3><button class="dc-dl" onclick="downloadOneDoc('+i+')" title="Télécharger cette fiche">📥</button></div>' +
       '<p class="dc-quoi">'+d.cQuoi+'</p>' +
       '<div class="dc-quand">⏰ '+t('docsLabelQuand')+' : '+d.quand+'</div>' +
       '<div class="dc-label">'+t('docsLabelComment')+'</div>' +
