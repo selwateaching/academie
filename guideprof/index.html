@@ -11,6 +11,7 @@
   --bg:#F5F3EE;--w:#FFF;--ink:#20241F;--ink2:#4B5048;--ink3:#8A8F86;
   --t:#1F7A4D;--t2:#2E9966;--tp:#E6F3EC;--br:#E3E0D6;--rd:14px;
   --a:#C8792B;--ap:#FBF0E3;--r:#C8422E;--rp:#FBEAE6;
+  --s:#4C5FB8;--sp:#EAECF9;
 }
 *{box-sizing:border-box;}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);margin:0;line-height:1.55;}
@@ -43,11 +44,23 @@ header.top{background:var(--ink);color:#fff;padding:0;}
 .sect-sub{color:var(--ink3);font-size:.85rem;margin:0 0 1.4rem;}
 
 /* PROGRAMME: niveau picker */
-.niv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(85px,1fr));gap:.6rem;margin-bottom:1.6rem;}
-.niv-btn{background:var(--w);border:1.5px solid var(--br);border-radius:12px;padding:.8rem .5rem;text-align:center;cursor:pointer;font-weight:700;font-size:.9rem;transition:all .15s;}
-.niv-btn:hover,.niv-btn.on{border-color:var(--t);background:var(--tp);color:var(--t);}
-.niv-btn .cyc{display:block;font-size:.62rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px;}
-.niv-btn.on .cyc{color:var(--t);}
+.niv-grid{margin-bottom:.4rem;}
+.cyc-section{margin-bottom:1.7rem;}
+.cyc-label{display:flex;align-items:center;gap:.55rem;font-size:.74rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin-bottom:.7rem;}
+.cyc-label .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+.cyc-label.cyc-p .dot{background:var(--t);}
+.cyc-label.cyc-m .dot{background:var(--a);}
+.cyc-label.cyc-s .dot{background:var(--s);}
+.cyc-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.65rem;}
+.niv-btn{background:var(--w);border:1.5px solid var(--br);border-radius:14px;padding:1.05rem .5rem;text-align:center;cursor:pointer;font-weight:800;font-size:1.05rem;transition:transform .15s,box-shadow .15s,border-color .15s,background .15s,color .15s;box-shadow:0 1px 2px rgba(32,36,31,.03);}
+.niv-btn:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(32,36,31,.08);}
+.niv-btn.niv-p:hover,.niv-btn.niv-p.on{border-color:var(--t);background:var(--tp);color:var(--t);}
+.niv-btn.niv-m:hover,.niv-btn.niv-m.on{border-color:var(--a);background:var(--ap);color:var(--a);}
+.niv-btn.niv-s:hover,.niv-btn.niv-s.on{border-color:var(--s);background:var(--sp);color:var(--s);}
+
+.niv-placeholder{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.5rem;border:1.5px dashed var(--br);border-radius:16px;padding:2.6rem 1.4rem;margin-top:1.2rem;color:var(--ink3);}
+.niv-placeholder .ico{font-size:2.2rem;}
+.niv-placeholder p{margin:0;font-size:.88rem;max-width:380px;}
 
 .mat-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.6rem;}
 .mat-chip{background:var(--w);border:1.5px solid var(--br);border-radius:999px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
@@ -156,6 +169,10 @@ html[dir="rtl"] table.diff th,html[dir="rtl"] table.diff td{text-align:right;}
     <div class="sect-title" id="progTitle">📚 Je découvre mon programme</div>
     <div class="sect-sub" id="progSub1">Choisissez votre niveau</div>
     <div class="niv-grid" id="nivGrid"></div>
+    <div class="niv-placeholder" id="nivPlaceholder">
+      <div class="ico">👆</div>
+      <p id="nivPlaceholderTxt">Choisissez un niveau ci-dessus pour découvrir le programme et ce que vous devez enseigner.</p>
+    </div>
     <div id="matBox" style="display:none">
       <div class="sect-sub" id="progSub2" style="margin-bottom:.8rem">Choisissez votre matière</div>
       <div class="mat-chips" id="matChips"></div>
@@ -225,6 +242,7 @@ var TXT = {
     card2H:'Je découvre mon programme',
     card2P:'Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.',
     progTitle:'📚 Je découvre mon programme', progSub1:'Choisissez votre niveau', progSub2:'Choisissez votre matière',
+    nivPlaceholder:'Choisissez un niveau ci-dessus pour découvrir le programme et ce que vous devez enseigner.',
     seqBack:'← Retour au programme',
     classeTitle:'🏫 Je commence mon métier',
     diffTitle:'🆘 Difficultés courantes et quoi faire', diffTh1:'Difficulté', diffTh2:'À éviter', diffTh3:'À faire',
@@ -248,6 +266,7 @@ var TXT = {
     card2H:'أكتشف برنامجي',
     card2P:'اختر مستواك ومادتك: ما يجب عليك تدريسه، ما يجب أن يتقنه تلاميذك، وكيف تتحقق من ذلك.',
     progTitle:'📚 أكتشف برنامجي', progSub1:'اختر مستواك', progSub2:'اختر مادتك',
+    nivPlaceholder:'اختر مستوى أعلاه لاكتشاف البرنامج وما يجب عليك تدريسه.',
     seqBack:'→ العودة إلى البرنامج',
     classeTitle:'🏫 أبدأ مهنتي',
     diffTitle:'🆘 الصعوبات الشائعة وكيفية التعامل معها', diffTh1:'الصعوبة', diffTh2:'ما يجب تجنبه', diffTh3:'ما يجب فعله',
@@ -296,6 +315,7 @@ function applyLang(){
   document.getElementById('progTitle').textContent = t('progTitle');
   document.getElementById('progSub1').textContent = t('progSub1');
   document.getElementById('progSub2').textContent = t('progSub2');
+  document.getElementById('nivPlaceholderTxt').textContent = t('nivPlaceholder');
   document.getElementById('seqBackBtn').textContent = t('seqBack');
   document.getElementById('classeTitle').textContent = t('classeTitle');
   document.getElementById('diffTitle').textContent = t('diffTitle');
@@ -335,9 +355,20 @@ function updateCrumb(page){
 
 function renderNiveaux(){
   var grid = document.getElementById('nivGrid');
-  grid.innerHTML = dataSrc().niveaux.map(function(n){
-    return '<div class="niv-btn'+(curNiv===n.id?' on':'')+'" onclick="pickNiveau(\''+n.id+'\')">'+n.id+'<span class="cyc">'+n.cycle+'</span></div>';
+  var famClasses = ['p','m','s'];
+  var groups = [], byCycle = {};
+  dataSrc().niveaux.forEach(function(n){
+    if (!byCycle[n.cycle]) { byCycle[n.cycle] = { cycle:n.cycle, items:[] }; groups.push(byCycle[n.cycle]); }
+    byCycle[n.cycle].items.push(n);
+  });
+  grid.innerHTML = groups.map(function(g, gi){
+    var cls = famClasses[gi] || 'p';
+    var row = g.items.map(function(n){
+      return '<div class="niv-btn niv-'+cls+(curNiv===n.id?' on':'')+'" onclick="pickNiveau(\''+n.id+'\')">'+n.id+'</div>';
+    }).join('');
+    return '<div class="cyc-section"><div class="cyc-label cyc-'+cls+'"><span class="dot"></span>'+g.cycle+'</div><div class="cyc-row">'+row+'</div></div>';
   }).join('');
+  document.getElementById('nivPlaceholder').style.display = curNiv ? 'none' : 'flex';
   if (curNiv) renderMatieres();
   else document.getElementById('matBox').style.display = 'none';
 }
