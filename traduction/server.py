@@ -2,6 +2,7 @@
 
   /               la page (static/index.html)
   /api/translate  traduit un texte avec Claude (clé gardée côté serveur)
+  /api/room/...   salles : relie deux téléphones (bénévole / personne accueillie)
   /api/document   traduit la photo d'un document (courrier, formulaire…)
   /api/transcribe transcrit un fichier audio reçu (WhatsApp, etc.) avec Whisper
 
@@ -15,6 +16,7 @@ Variables d'environnement :
 import base64
 import hmac
 import os
+import secrets
 import threading
 import time
 from collections import defaultdict, deque
@@ -86,21 +88,8 @@ def healthz():
     }
 
 
-@app.post("/api/translate")
-def translate():
-    denied = check_access()
-    if denied:
-        return denied
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
-    data = request.get_json(silent=True) or {}
-    text = str(data.get("text", "")).strip()[:MAX_TEXT]
-    src = str(data.get("from", "")).strip()[:40]
-    dst = str(data.get("to", "")).strip()[:40]
-    if not text or not dst:
-        return error("Texte ou langue manquants.", 400)
-    context = str(data.get("context", "")).strip()[:1500]
-
+def translate_text(text, src, dst, context=""):
+    """Traduit avec Claude. Lève anthropic.APIError en cas de problème."""
     system = (
         "Tu es un interprète professionnel dans une association qui aide des personnes étrangères "
         "(démarches administratives, santé, logement, école, vie quotidienne). "
@@ -118,17 +107,123 @@ def translate():
     )
     if context:
         system += f"\n\nDébut de la conversation, pour le contexte :\n{context}"
+    msg = get_client().messages.create(
+        model=MODEL,
+        max_tokens=1500,
+        system=system,
+        messages=[{"role": "user", "content": text}],
+    )
+    return "".join(b.text for b in msg.content if b.type == "text").strip()
+
+
+@app.post("/api/translate")
+def translate():
+    denied = check_access()
+    if denied:
+        return denied
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
+    data = request.get_json(silent=True) or {}
+    text = str(data.get("text", "")).strip()[:MAX_TEXT]
+    src = str(data.get("from", "")).strip()[:40]
+    dst = str(data.get("to", "")).strip()[:40]
+    if not text or not dst:
+        return error("Texte ou langue manquants.", 400)
+    context = str(data.get("context", "")).strip()[:1500]
     try:
-        msg = get_client().messages.create(
-            model=MODEL,
-            max_tokens=1500,
-            system=system,
-            messages=[{"role": "user", "content": text}],
-        )
+        return jsonify({"translation": translate_text(text, src, dst, context)})
     except anthropic.APIError as e:
         return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)
-    out = "".join(b.text for b in msg.content if b.type == "text").strip()
-    return jsonify({"translation": out})
+
+
+# ------------------------------------------------------------ salles (2 téléphones)
+# Une salle relie le téléphone du bénévole (français) et celui de la personne
+# (sa langue). Gardées en mémoire (1 seul worker gunicorn) et effacées après 3 h.
+ROOM_TTL = 3 * 3600
+ROOM_MAX_MSGS = 400
+ROOM_MAX_ROOMS = 200
+ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+rooms = {}
+rooms_lock = threading.Lock()
+
+
+def get_room(code):
+    now = time.time()
+    with rooms_lock:
+        for c in [c for c, r in rooms.items() if now - r["created"] > ROOM_TTL]:
+            del rooms[c]
+        return rooms.get(str(code).upper())
+
+
+@app.post("/api/room")
+def room_create():
+    denied = check_access()
+    if denied:
+        return denied
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
+    get_room("")  # nettoie les salles expirées
+    with rooms_lock:
+        if len(rooms) >= ROOM_MAX_ROOMS:
+            return error("Trop de sessions ouvertes, réessayez plus tard.", 429)
+        code = "".join(secrets.choice(ALPHABET) for _ in range(6))
+        rooms[code] = {"created": time.time(), "guest_code": "", "guest_name": "", "msgs": []}
+    return jsonify({"code": code})
+
+
+@app.post("/api/room/<code>/join")
+def room_join(code):
+    r = get_room(code)
+    if not r:
+        return error("Session introuvable ou expirée.", 404)
+    d = request.get_json(silent=True) or {}
+    r["guest_code"] = str(d.get("lang_code", ""))[:12]
+    r["guest_name"] = str(d.get("lang_name", ""))[:60]
+    if not r["guest_name"]:
+        return error("Langue manquante.", 400)
+    return jsonify({"ok": True})
+
+
+@app.post("/api/room/<code>/say")
+def room_say(code):
+    r = get_room(code)
+    if not r:
+        return error("Session introuvable ou expirée.", 404)
+    d = request.get_json(silent=True) or {}
+    side = d.get("side")
+    text = str(d.get("text", "")).strip()[:MAX_TEXT]
+    if side not in ("host", "guest") or not text:
+        return error("Message invalide.", 400)
+    if not r["guest_name"]:
+        return error("La personne n'a pas encore rejoint la session.", 409)
+    if len(r["msgs"]) >= ROOM_MAX_MSGS:
+        return error("Session pleine : créez-en une nouvelle.", 429)
+    fr, other = "français", r["guest_name"]
+    src, dst = (fr, other) if side == "host" else (other, fr)
+    context = "\n".join(
+        f"{'Association' if m['side'] == 'host' else 'Personne'}: {m['text']}" for m in r["msgs"][-6:]
+    )
+    try:
+        tr = translate_text(text, src, dst, context)
+    except anthropic.APIError as e:
+        return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)
+    with rooms_lock:
+        mid = (r["msgs"][-1]["id"] + 1) if r["msgs"] else 1
+        r["msgs"].append({"id": mid, "side": side, "text": text, "tr": tr})
+    return jsonify({"id": mid})
+
+
+@app.get("/api/room/<code>")
+def room_poll(code):
+    r = get_room(code)
+    if not r:
+        return error("Session introuvable ou expirée.", 404)
+    since = request.args.get("since", 0, type=int)
+    return jsonify({
+        "guest_code": r["guest_code"],
+        "guest_name": r["guest_name"],
+        "msgs": [m for m in r["msgs"] if m["id"] > since],
+    })
 
 
 @app.post("/api/document")

@@ -53,6 +53,20 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
 .cam.alt{background:var(--card);color:var(--ink);border:1px solid var(--bd);font-size:16px;font-weight:600}
 #docOut{white-space:pre-wrap;font-size:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
 #docPrev{max-width:100%;max-height:200px;border-radius:10px;align-self:flex-start}
+/* deux téléphones */
+.b5{background:#0e8a8a}
+#join{padding:20px;gap:16px;justify-content:center}
+#join select{font-size:22px;padding:16px}
+#join .big{flex:none;background:#1f9d57}
+#pairInfo{background:var(--card);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#pairInfo .code{font-size:26px;font-weight:800;letter-spacing:3px}
+#qr{background:#fff;padding:6px;border-radius:8px;line-height:0}
+.dot{font-size:14px;color:var(--mut)}
+#tv{padding:20px;gap:18px;overflow-y:auto;background:#0b0e14;color:#fff}
+#tv .pair{border-radius:16px;padding:16px 20px;background:#1b2030}
+#tv .fr{font-size:clamp(28px,5vw,56px);font-weight:700}
+#tv .lg{font-size:clamp(28px,5vw,56px);font-weight:700;color:#8fd3ff;margin-top:8px}
+#tv .who{font-size:16px;color:#98a2b8;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -71,6 +85,7 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
   <button class="big b1" data-go="fr2l">🇫🇷 FRANÇAIS → 🌍 <span class="ln">langue</span><small>Je parle ou j'écris, la personne lit et écoute</small></button>
   <button class="big b2" data-go="l2fr">🌍 <span class="ln">langue</span> → 🇫🇷 FRANÇAIS<small>La personne parle, je lis en français</small></button>
   <button class="big b3" data-go="doc">📷 TRADUIRE UN DOCUMENT<small>Photo d'un courrier, d'un formulaire…</small></button>
+  <button class="big b5" data-go="pair">📱 DEUX TÉLÉPHONES<small>Chacun parle sa langue sur son propre téléphone</small></button>
   <button class="big b4" data-go="conv">🎤 TRADUIRE UNE CONVERSATION<small>Dans les deux sens, en direct</small></button>
 </section>
 
@@ -110,6 +125,38 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
     <button class="back" id="docCopy">📋 Copier</button>
   </div>
 </section>
+
+<!-- DEUX TÉLÉPHONES : la personne rejoint -->
+<section class="screen" id="join">
+  <h2 style="margin:0;text-align:center">🌍</h2>
+  <select id="joinLang"></select>
+  <button class="big" id="joinBtn">✅ OK</button>
+  <div id="joinStatus" style="text-align:center;color:var(--mut)"></div>
+</section>
+
+<!-- DEUX TÉLÉPHONES : conversation -->
+<section class="screen" id="room">
+  <div id="pairInfo">
+    <div id="hostInfo" class="hide" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div><div class="dot">Code de la session</div><div class="code" id="roomCode"></div></div>
+      <div id="qr"></div>
+      <div class="dot" id="roomLink" style="flex:1;min-width:160px">Faites scanner le QR code ou envoyez le lien à la personne.</div>
+      <button class="back" id="shareBtn">📤 Envoyer le lien</button>
+      <button class="back" id="tvBtn">📺 Mode écran</button>
+    </div>
+    <div class="dot" id="roomState"></div>
+  </div>
+  <div id="rlog" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px"></div>
+  <footer>
+    <div id="rstatus" style="font-size:13px;color:var(--mut);min-height:18px"></div>
+    <div class="row"><button class="mic me" id="rmic">🎤</button></div>
+    <div class="row"><input type="text" id="rtxt"><button class="send" id="rsend">➤</button></div>
+    <label style="font-size:13px;color:var(--mut)"><input type="checkbox" id="rspeak"> 🔊</label>
+  </footer>
+</section>
+
+<!-- MODE ÉCRAN TV -->
+<section class="screen" id="tv"></section>
 
 <script>
 const NEEDS_CODE = __NEEDS_CODE__;
@@ -198,6 +245,7 @@ const HINTS = {
 function go(m){
   stopRec(); speechSynthesis.cancel(); setStatus("");
   if(m==="doc"){ show("doc"); return; }
+  if(m==="pair"){ hostStart(); return; }
   mode = m; history = [];
   log.innerHTML = "";
   const e = document.createElement("div"); e.className="empty"; e.id="empty"; e.textContent = HINTS[m]; log.append(e);
@@ -209,7 +257,7 @@ function go(m){
   show("talk");
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
-$("back").onclick = ()=>{ stopRec(); speechSynthesis.cancel(); show("home"); };
+$("back").onclick = ()=>{ stopRec(); speechSynthesis.cancel(); leaveRoom(); show("home"); };
 
 function addMsg(who, big, small, speakLang){
   $("empty")?.remove();
@@ -358,6 +406,172 @@ $("cam").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f);
 $("gal").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f); };
 $("docSpeak").onclick = ()=>speak($("docOut").textContent, docLangCode);
 $("docCopy").onclick = ()=>{ navigator.clipboard?.writeText($("docOut").textContent); $("docStatus").textContent = "Copié."; };
+
+// ------- deux téléphones : salles
+const R = {code:null, side:null, myCode:"fr-FR", last:0, timer:null, guestName:"", guestCode:"", speaking:0, spokenQ:Promise.resolve(), rec:null, recOn:false};
+const rbox = $("rlog");
+const rStatus = t => $("rstatus").textContent = t || "";
+const nativeName = e => e[1].split(" — ")[0];
+
+function startPoll(onMsgs){
+  clearInterval(R.timer);
+  const tick = async ()=>{
+    if(!R.code) return;
+    try{
+      const r = await fetch(`/api/room/${R.code}?since=${R.last}`);
+      if(!r.ok){ if(r.status===404){ clearInterval(R.timer); rStatus("Session terminée."); } return; }
+      const j = await r.json();
+      R.guestName = j.guest_name; R.guestCode = j.guest_code;
+      onMsgs(j);
+      for(const m of j.msgs) R.last = Math.max(R.last, m.id);
+    }catch(e){}
+  };
+  tick(); R.timer = setInterval(tick, 1200);
+}
+function leaveRoom(){
+  clearInterval(R.timer); R.code = null; R.recOn = false;
+  if(R.rec){ try{R.rec.onend=null;R.rec.stop()}catch(e){} R.rec=null; }
+}
+
+function speakQueued(text, lang){
+  R.spokenQ = R.spokenQ.then(async ()=>{ R.speaking++; await speak(text, lang); setTimeout(()=>R.speaking--, 400); });
+}
+function roomBubble(m){
+  const mine = m.side === R.side;
+  const d = document.createElement("div");
+  d.className = "msg " + (mine ? "me" : "them");
+  const a = document.createElement("div"); a.className="tr";
+  const b = document.createElement("div"); b.className="orig";
+  if(mine){ a.textContent = m.text; b.textContent = "→ " + m.tr; }
+  else { a.textContent = m.tr; b.textContent = m.text; }
+  d.append(a,b);
+  if(!mine){
+    const btn = document.createElement("button"); btn.textContent = "🔊";
+    btn.onclick = ()=>speak(m.tr, R.myCode);
+    d.append(btn);
+  }
+  rbox.append(d); rbox.scrollTop = rbox.scrollHeight;
+}
+function onRoomData(j){
+  if(R.side==="host"){
+    $("roomState").textContent = j.guest_name ? "✅ Personne connectée : " + j.guest_name : "⏳ En attente de la personne…";
+  }
+  for(const m of j.msgs){
+    roomBubble(m);
+    if(m.side !== R.side && $("rspeak").checked) speakQueued(m.tr, R.myCode);
+  }
+}
+
+async function roomSay(text){
+  rStatus("…");
+  try{
+    const r = await fetch(`/api/room/${R.code}/say`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({side:R.side,text})});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || ("Erreur "+r.status));
+    rStatus("");
+  }catch(e){ rStatus("⚠️ "+e.message); }
+}
+function roomMic(){
+  if(!SR){ rStatus("Utilisez Chrome (Android) ou Safari (iPhone), ou écrivez."); return; }
+  if(R.recOn){ R.recOn=false; if(R.rec){ try{R.rec.onend=null;R.rec.stop()}catch(e){} R.rec=null; } $("rmic").classList.remove("on"); rStatus(""); return; }
+  speechSynthesis.cancel();
+  const r = new SR(); r.lang = R.myCode; r.continuous = true; r.interimResults = true;
+  R.rec = r; R.recOn = true; $("rmic").classList.add("on");
+  r.onresult = ev=>{
+    if(R.speaking) return; // ne pas retranscrire la voix de synthèse
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const res = ev.results[i];
+      if(res.isFinal){ const t = res[0].transcript.trim(); if(t) roomSay(t); }
+      else interim += res[0].transcript;
+    }
+    if(interim) rStatus("… "+interim);
+  };
+  r.onerror = ev=>{
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ rStatus("Micro refusé."); R.recOn=false; $("rmic").classList.remove("on"); }
+    else if(ev.error==="language-not-supported"){ rStatus("Langue non reconnue à la voix : écrivez."); R.recOn=false; $("rmic").classList.remove("on"); }
+  };
+  r.onend = ()=>{ if(R.recOn && R.rec===r){ try{r.start()}catch(e){} } };
+  r.start();
+}
+$("rmic").onclick = roomMic;
+function rSend(){ const t=$("rtxt").value.trim(); if(!t) return; $("rtxt").value=""; roomSay(t); }
+$("rsend").onclick = rSend; $("rtxt").onkeydown = e=>{ if(e.key==="Enter") rSend(); };
+$("rspeak").onchange = ()=>save("rspeak_"+R.side, $("rspeak").checked?"1":"0");
+
+function enterRoom(side, myCode){
+  R.side = side; R.myCode = myCode; R.last = 0; rbox.innerHTML = "";
+  $("rspeak").checked = (load("rspeak_"+side) ?? (side==="guest" ? "1" : "0")) === "1";
+  $("rmic").textContent = side==="host" ? "🎤 Je parle (français)" : "🎤";
+  $("rtxt").placeholder = side==="host" ? "Ou écrivez en français…" : "✍️";
+  $("hostInfo").classList.toggle("hide", side!=="host");
+  show("room");
+  startPoll(onRoomData);
+}
+async function hostStart(){
+  setStatus("");
+  try{
+    const j = await api("/api/room",{method:"POST"});
+    R.code = j.code;
+    const link = location.origin + "/?room=" + j.code;
+    $("roomCode").textContent = j.code;
+    $("roomLink").textContent = link;
+    $("qr").innerHTML = "";
+    try{ new QRCode($("qr"),{text:link,width:110,height:110}); }catch(e){ $("qr").textContent=""; }
+    enterRoom("host","fr-FR");
+    $("hostInfo").style.display = "flex";
+  }catch(e){ alert(e.message); show("home"); }
+}
+$("shareBtn").onclick = ()=>{
+  const link = location.origin + "/?room=" + R.code;
+  if(navigator.share) navigator.share({title:"Traducteur", url:link}).catch(()=>{});
+  else { navigator.clipboard?.writeText(link); $("roomLink").textContent = "Lien copié : " + link; }
+};
+$("tvBtn").onclick = ()=>window.open(location.origin + "/?room=" + R.code + "&tv=1", "_blank");
+
+// la personne rejoint via le lien
+for (const e of LANGS) $("joinLang").add(new Option(nativeName(e), e[0]));
+$("joinLang").value = load("lang") || "ar-DZ";
+$("joinBtn").onclick = async ()=>{
+  const e = LANGS.find(l=>l[0]===$("joinLang").value);
+  $("joinStatus").textContent = "…";
+  try{
+    const r = await fetch(`/api/room/${R.code}/join`,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({lang_code:e[0], lang_name:e[2]})});
+    const j = await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error || "Erreur");
+    save("lang", e[0]);
+    enterRoom("guest", e[0]);
+  }catch(err){ $("joinStatus").textContent = "⚠️ " + err.message; }
+};
+
+// mode écran TV
+function startTv(){
+  const box = $("tv"); show("tv");
+  startPoll(j=>{
+    for(const m of j.msgs){
+      const fr = m.side==="host" ? m.text : m.tr;
+      const lg = m.side==="host" ? m.tr : m.text;
+      const d = document.createElement("div"); d.className="pair";
+      d.innerHTML = '<div class="who"></div><div class="fr"></div><div class="lg" dir="auto"></div>';
+      d.querySelector(".who").textContent = m.side==="host" ? "🇫🇷 Association" : "🌍 " + (R.guestName||"");
+      d.querySelector(".fr").textContent = fr; d.querySelector(".lg").textContent = lg;
+      box.append(d); window.scrollTo(0,document.body.scrollHeight); box.scrollTop = box.scrollHeight;
+    }
+  });
+}
+
+// démarrage : lien de session ?room=CODE
+(function(){
+  const q = new URLSearchParams(location.search), code = (q.get("room")||"").toUpperCase();
+  if(!code) return;
+  R.code = code;
+  $("back").classList.add("hide"); $("back").onclick = null;
+  if(q.get("tv")) startTv(); else show("join");
+  document.querySelector("header h1").textContent = "🌍";
+})();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
 </html>
