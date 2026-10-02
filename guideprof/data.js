@@ -11,6 +11,7 @@ niveaux: [
   { id:'1AM', label:'1AM', cycle:'Moyen' },
   { id:'2AM', label:'2AM', cycle:'Moyen' },
   { id:'3AM', label:'3AM', cycle:'Moyen' },
+  { id:'4AM', label:'4AM', cycle:'Moyen' },
   { id:'1AS', label:'1AS', cycle:'Secondaire' },
   { id:'2AS', label:'2AS', cycle:'Secondaire' },
   { id:'3AS', label:'3AS', cycle:'Secondaire' }
@@ -715,6 +716,96 @@ programme: {
     ["2. Sauts",["Coordination.","Impulsion.","Réception."],[],[],[],[]],
     ["3. Lancers",["Précision.","Puissance.","Coordination."],[],[],[],[]],
     ["4. Jeux collectifs",["Règles.","Coopération.","Stratégie.","Déplacement.","Communication."],[],[],[],[]]
+  ]
+},
+
+"4AM": {
+  "Arabe": [
+    ["1. فهم وتحليل النص (Comprendre et analyser un texte)",
+      ["Lire et comprendre différents types de textes.","Identifier le thème et les informations importantes.","Distinguer les idées principales et secondaires.","Comprendre les mots et expressions dans leur contexte.","Repérer l'organisation du texte."],
+      ["Lire correctement.","Répondre à des questions sur le texte.","Justifier une réponse par un élément du texte.","Reformuler une idée avec ses propres mots.","Résumer l'essentiel."],
+      ["Lecture silencieuse puis lecture à voix haute.","Questions de compréhension.","Recherche d'informations.","Classement des idées.","Reformulation."],
+      ["Je demande à l'élève : « Où as-tu trouvé cette réponse dans le texte ? »"],
+      ["Je reprends un paragraphe court, j'explique le vocabulaire et je pose une question plus simple avant de revenir à la question initiale."]],
+    ["2. المفردات (Vocabulaire)",["Synonymes et antonymes.","Familles de mots.","Sens propre et figuré.","Expressions.","Utilisation du mot dans une phrase."],["Comprendre un mot dans son contexte et l'utiliser correctement."],[],[],[]],
+    ["3. النحو (Grammaire)",["Identifier les éléments de la phrase.","Reconnaître les différentes fonctions.","Accords.","Construction et transformation des phrases.","Étude des structures rencontrées dans les textes."],[],["Identifier → analyser → transformer → produire une phrase."],[],[]],
+    ["4. الصرف والتحويل (Conjugaison / transformation)",["Reconnaître les temps et formes étudiés.","Transformer une phrase.","Adapter le verbe au sujet et au contexte.","Passer d'une forme à une autre lorsque demandé."],[],[],[],[]],
+    ["5. الإملاء (Orthographe)",["Orthographe des mots.","Accords.","Ponctuation.","Correction des erreurs fréquentes."],[],["Méthode : écrire → relire → repérer l'erreur → corriger → expliquer pourquoi."],[],[]],
+    ["6. الإنتاج الكتابي (Production écrite)",[],["Comprendre le sujet → chercher des idées → les organiser → rédiger → relire → corriger."],["Je ne demande pas simplement « écris un texte ». Je guide l'élève étape par étape."],[],[]]
+  ],
+  "Français": [
+    ["1. Compréhension de l'oral",["Écouter.","Repérer les informations importantes.","Comprendre le message.","Prendre des notes simples.","Reformuler."],[],[],["Méthode : Écouter → comprendre → repérer → reformuler."],[]],
+    ["2. Lecture et compréhension",["Identifier le thème.","Comprendre les informations.","Repérer l'organisation du texte.","Déduire certaines informations.","Justifier ses réponses."],[],[],["Question réflexe du professeur : « Quelle partie du texte te permet de répondre ? »"],[]],
+    ["3. Vocabulaire",["Synonymes.","Antonymes.","Familles de mots.","Champ lexical.","Sens des mots selon le contexte.","Expressions."],[],[],[],[]],
+    ["4. Grammaire",["Nature et fonction.","Organisation de la phrase.","Types et formes de phrases.","Groupes de la phrase.","Accords.","Transformation des phrases."],[],["Méthode : observer → identifier → expliquer → transformer → réutiliser."],[],[]],
+    ["5. Conjugaison",["Temps étudiés.","Valeur des temps dans le texte.","Transformation des phrases.","Concordance selon les situations étudiées."],[],[],[],[]],
+    ["6. Orthographe",["Accords.","Homophones étudiés.","Terminaisons.","Ponctuation.","Relecture et autocorrection."],[],[],[],[]],
+    ["7. Production écrite",[],["Construire un texte organisé."],["Étapes : Sujet → objectif → idées → organisation → rédaction → relecture → correction."],["Je vérifie particulièrement : Est-ce que l'élève répond au sujet ? Les idées sont-elles organisées ? Les phrases sont-elles compréhensibles ? Les connecteurs sont-ils correctement utilisés ? A-t-il relu son texte ?"],[]]
+  ],
+  "Anglais": [
+    ["1. Communication",["Introduce oneself and others.","Ask and answer questions.","Give information.","Express simple opinions.","Communicate in familiar situations."],[],[],[],[]],
+    ["2. Daily life",["Routines.","Activities.","Time.","School and personal life."],[],[],[],[]],
+    ["3. People and relationships",["Describe people.","Talk about family and friends.","Express preferences."],[],[],[],[]],
+    ["4. Places and travel",["Describe places.","Ask for and give directions.","Talk about journeys."],[],[],[],[]],
+    ["5. Health and lifestyle",["Healthy habits.","Daily routines.","Giving simple advice."],[],[],[],[]],
+    ["6. Environment",["Nature.","Pollution.","Protection of the environment.","Simple actions and solutions."],[],[],[],[]],
+    ["7. Writing",[],["Comprendre la consigne → chercher les idées → organiser → écrire → relire → corriger."],[],[],
+      ["Méthode générale : Listen → Understand → Speak → Read → Write."]]
+  ],
+  "Mathématiques": [
+    ["1. Nombres et calcul",["Nombres.","Opérations.","Calcul mental.","Priorités de calcul.","Calcul avec différentes écritures."],[],[],[],[]],
+    ["2. Fractions et nombres",["Comprendre une fraction.","Comparer.","Calculer.","Utiliser les fractions dans les problèmes."],[],[],[],[]],
+    ["3. Calcul littéral",["Utiliser des lettres.","Réduire une expression.","Développer/factoriser selon les notions étudiées.","Remplacer une lettre par une valeur."],[],["Méthode : observer → appliquer la règle → calculer → vérifier."],[],[]],
+    ["4. Équations et problèmes",[],["Ne pas chercher immédiatement une opération."],["Lire → comprendre la situation → choisir l'inconnue → écrire → résoudre → vérifier."],[],[]],
+    ["5. Proportionnalité",["Situations proportionnelles.","Tableaux.","Pourcentages selon les notions étudiées.","Résolution de problèmes."],[],[],[],[]],
+    ["6. Géométrie",["Figures.","Propriétés.","Constructions.","Calculs de longueurs et mesures.","Justification."],[],[],[],[]],
+    ["7. Grandeurs et mesures",["Longueurs.","Aires.","Volumes.","Conversions.","Utilisation des unités."],[],[],[],[]]
+  ],
+  "Sciences et technologie": [
+    ["1. Démarche scientifique",[],["Comprendre qu'une expérience ne consiste pas seulement à regarder ce qui se passe. Expliquer : « Qu'est-ce que j'observe ? » « Qu'est-ce que cela signifie ? » « Quelle conclusion puis-je tirer ? »"],[],[],
+      ["Méthode : Problème → hypothèse → expérience/observation → résultats → interprétation → conclusion. Particulièrement important en 4AM."]],
+    ["2. Le vivant",["Observer les êtres vivants.","Identifier leurs caractéristiques.","Comparer.","Classer.","Exploiter des documents scientifiques."],[],[],[],[]],
+    ["3. Corps humain et santé",["Fonctionnement du corps.","Hygiène.","Santé.","Prévention.","Interprétation de documents."],[],[],[],[]],
+    ["4. Environnement",["Relations entre êtres vivants.","Milieu de vie.","Ressources.","Protection de l'environnement."],[],[],[],[]],
+    ["5. Matière et transformations",["Observer une transformation.","Décrire les résultats.","Identifier les éléments importants.","Interpréter."],[],[],[],[]],
+    ["6. Énergie et phénomènes",["Identifier un phénomène.","Observer.","Mesurer si nécessaire.","Exploiter les résultats."],[],[],[],
+      ["📌 Réflexe professeur : ne pas donner directement la conclusion. Faire chercher l'élève."]]
+  ],
+  "Éducation islamique": [
+    ["1. Foi et comportement",["Valeurs.","Responsabilité.","Respect.","Honnêteté.","Bon comportement."],[],[],[],[]],
+    ["2. Pratiques religieuses",["Approfondissement des pratiques étudiées.","Comprendre leur sens.","Relier les apprentissages à la vie quotidienne."],[],[],[],[]],
+    ["3. Coran et Hadith",["Lecture.","Compréhension.","Mémorisation selon les éléments étudiés.","Retenir les enseignements essentiels."],[],[],[],[]],
+    ["4. Vie du Prophète ﷺ",["Étudier des épisodes de sa vie.","Comprendre les enseignements.","Identifier les comportements à retenir."],[],[],[],[]]
+  ],
+  "Histoire": [
+    ["1. Lire et analyser un document historique",["Identifier : la nature du document, sa date, son auteur/source, son contexte, les informations importantes."],[],[],[],[]],
+    ["2. Chronologie",["Situer les événements.","Classer les événements.","Comprendre les relations entre différentes périodes."],[],[],[],[]],
+    ["3. Étudier un événement historique",[],[],["Contexte → événements → acteurs → conséquences."],[],[]],
+    ["4. Histoire de l'Algérie",["Utiliser : textes, cartes, images, chronologies, documents historiques."],[],[],["Je lui fais toujours justifier sa réponse par le document."],[]]
+  ],
+  "Géographie": [
+    ["1. Lire une carte",["Lire une légende.","Identifier les informations.","Localiser.","Comparer.","Interpréter."],[],[],[],[]],
+    ["2. Population et territoires",["Répartition de la population.","Territoires.","Différences entre espaces."],[],[],[],[]],
+    ["3. Activités économiques",["Agriculture.","Industrie.","Services.","Ressources.","Échanges."],[],[],[],[]],
+    ["4. Environnement et développement",["Ressources.","Problèmes environnementaux.","Développement durable.","Solutions possibles."],[],
+      ["Méthode : Observer → décrire → expliquer → conclure."],[],[]]
+  ],
+  "Éducation civique": [
+    ["1. Droits et responsabilités",["Ses droits.","Ses devoirs.","Ses responsabilités."],[],[],[],[]],
+    ["2. Citoyenneté",["Respect des règles.","Vie collective.","Responsabilité.","Participation à la vie de la société."],[],[],[],[]],
+    ["3. Société et institutions",["Comprendre les principales institutions étudiées.","Comprendre leur rôle.","Savoir utiliser un document civique."],[],[],[],[]],
+    ["4. Environnement et responsabilité",["Protection du cadre de vie.","Comportements responsables.","Participation collective."],[],[],[],[]]
+  ],
+  "Éducation artistique": [
+    ["1. Observer et analyser",["Observer une image ou une œuvre.","Décrire.","Identifier les éléments principaux."],[],[],[],[]],
+    ["2. Techniques",["Couleurs.","Formes.","Composition.","Différentes techniques graphiques."],[],[],[],[]],
+    ["3. Création personnelle",[],["Imaginer → choisir → réaliser → présenter son travail."],[],[],[]]
+  ],
+  "Éducation physique": [
+    ["1. Course",["Vitesse.","Endurance.","Déplacement."],[],[],[],[]],
+    ["2. Sauts",["Impulsion.","Coordination.","Réception."],[],[],[],[]],
+    ["3. Lancers",["Coordination.","Précision.","Distance."],[],[],[],[]],
+    ["4. Jeux et sports collectifs",["Respect des règles.","Coopération.","Placement.","Communication.","Esprit d'équipe."],[],[],[],[]]
   ]
 },
 
