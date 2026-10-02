@@ -14,3 +14,20 @@ services:
         sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
+  - type: web
+    name: interprete
+    runtime: python
+    rootDir: traduction
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: TRAD_ACCESS_CODE
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.7

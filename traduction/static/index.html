@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interprète</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#6b7488;--them:#e8eefc;--me:#dff5e8;--acc:#2f5bea;--rec:#d92d3a;--bd:#d9dfec}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2030;--ink:#e8ecf5;--mut:#98a2b8;--them:#243258;--me:#1f4733;--bd:#2c3550}}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.4 system-ui,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;height:100dvh}
+header{padding:10px 14px;background:var(--card);border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;flex:1;min-width:120px}
+select,input,button{font:inherit;color:inherit}
+select,input[type=text],input[type=password]{padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--card)}
+#log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:10px 12px;border-radius:14px}
+.msg.them{background:var(--them);align-self:flex-start}
+.msg.me{background:var(--me);align-self:flex-end}
+.msg .tr{font-size:20px;font-weight:600}
+.msg .orig{font-size:14px;color:var(--mut);margin-top:4px}
+.msg button{margin-top:6px;border:1px solid var(--bd);background:var(--card);border-radius:8px;padding:4px 10px;cursor:pointer}
+.empty{margin:auto;color:var(--mut);text-align:center;max-width:420px}
+footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px}
+.mic{flex:1;padding:14px;border:0;border-radius:12px;font-weight:600;cursor:pointer;color:#fff}
+.mic.them{background:var(--acc)} .mic.me{background:#1f9d57}
+.mic.on{background:var(--rec);animation:p 1.2s infinite}
+@keyframes p{50%{opacity:.7}}
+#txt{flex:1} #send{padding:8px 14px;border:0;border-radius:8px;background:#1f9d57;color:#fff;cursor:pointer}
+#status{font-size:13px;color:var(--mut);min-height:18px}
+label.small{font-size:13px;color:var(--mut);display:flex;gap:4px;align-items:center}
+a.link,.fileb{font-size:13px;color:var(--acc);cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗣️ Interprète</h1>
+  <label class="small">Ils parlent
+    <select id="lang"></select>
+  </label>
+  <label class="small"><input type="checkbox" id="autospeak" checked> Lire ma réponse à voix haute</label>
+  <input type="password" id="code" placeholder="Code d'accès" style="width:130px;display:none">
+</header>
+
+<div id="log"><div class="empty" id="empty">
+  Choisissez la langue de la personne, puis appuyez sur <b>🎤 Ils parlent</b> (mettez l'appel sur haut-parleur près du micro).
+  Leur message apparaît en français. Répondez avec <b>🎤 Je réponds</b> ou en écrivant : la traduction s'affiche et est lue à voix haute.
+</div></div>
+
+<footer>
+  <div id="status"></div>
+  <div class="row">
+    <button class="mic them" id="micThem">🎤 Ils parlent</button>
+    <button class="mic me" id="micMe">🎤 Je réponds</button>
+  </div>
+  <div class="row">
+    <input type="text" id="txt" placeholder="Ou écrivez votre réponse en français…">
+    <button id="send">Envoyer</button>
+  </div>
+  <div class="row" style="justify-content:space-between">
+    <label class="fileb">📎 Importer un message vocal reçu<input type="file" id="file" accept="audio/*,.opus,.ogg,.m4a,.mp3,.wav" hidden></label>
+    <a class="link" id="clear">Nouvelle conversation</a>
+  </div>
+</footer>
+
+<script>
+const NEEDS_CODE = __NEEDS_CODE__;
+const LANGS = [
+  ["ar-SA","العربية — Arabe"],["en-US","English — Anglais"],["es-ES","Español — Espagnol"],
+  ["pt-PT","Português — Portugais"],["ru-RU","Русский — Russe"],["uk-UA","Українська — Ukrainien"],
+  ["tr-TR","Türkçe — Turc"],["zh-CN","中文 — Chinois"],["ro-RO","Română — Roumain"],
+  ["it-IT","Italiano — Italien"],["de-DE","Deutsch — Allemand"],["pl-PL","Polski — Polonais"],
+  ["fa-IR","فارسی — Persan"],["ur-PK","اردو — Ourdou"],["hi-IN","हिन्दी — Hindi"],
+  ["bn-BD","বাংলা — Bengali"],["vi-VN","Tiếng Việt — Vietnamien"],["sq-AL","Shqip — Albanais"],
+  ["ta-IN","தமிழ் — Tamoul"],["so-SO","Soomaali — Somali"],["am-ET","አማርኛ — Amharique"]
+];
+const $ = id => document.getElementById(id);
+const log = $("log"), statusEl = $("status");
+let history = [];
+
+const save = (k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const load = k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+
+for (const [c,n] of LANGS) $("lang").add(new Option(n,c));
+$("lang").value = load("lang") || "ar-SA";
+$("lang").onchange = ()=>save("lang",$("lang").value);
+$("autospeak").checked = load("autospeak") !== "0";
+$("autospeak").onchange = ()=>save("autospeak",$("autospeak").checked?"1":"0");
+if (NEEDS_CODE){ $("code").style.display=""; $("code").value = load("code")||""; $("code").onchange=()=>save("code",$("code").value); }
+
+const langName = c => (LANGS.find(l=>l[0]===c)||[c,c])[1].split(" — ").pop();
+const setStatus = t => statusEl.textContent = t || "";
+
+async function api(path, opts){
+  opts.headers = Object.assign({"X-Access-Code": $("code").value}, opts.headers||{});
+  const r = await fetch(path, opts);
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error || ("Erreur "+r.status));
+  return j;
+}
+function translate(text, from, to){
+  const context = history.slice(-6).map(m=>`${m.who==="them"?"Personne":"Association"}: ${m.orig}`).join("\n");
+  return api("/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({text,from,to,context})}).then(j=>j.translation);
+}
+
+function speak(text, lang){
+  if(!("speechSynthesis" in window)) return Promise.resolve();
+  return new Promise(res=>{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.onend = u.onerror = res;
+    speechSynthesis.speak(u);
+  });
+}
+
+function addMsg(who, big, small, speakLang){
+  $("empty")?.remove();
+  const d = document.createElement("div");
+  d.className = "msg "+who;
+  const a = document.createElement("div"); a.className="tr"; a.textContent = big;
+  const b = document.createElement("div"); b.className="orig"; b.textContent = small;
+  d.append(a,b);
+  if(speakLang){
+    const btn = document.createElement("button"); btn.textContent="🔊 Écouter";
+    btn.onclick = ()=>speak(big, speakLang);
+    d.append(btn);
+  }
+  log.append(d); log.scrollTop = log.scrollHeight;
+}
+
+// ------- Message d'eux : langue étrangère -> français
+async function handleThem(text){
+  setStatus("Traduction…");
+  try{
+    const fr = await translate(text, langName($("lang").value), "français");
+    history.push({who:"them",orig:text});
+    addMsg("them", fr, text);
+    setStatus("");
+  }catch(e){ setStatus("⚠️ "+e.message); }
+}
+// ------- Ma réponse : français -> langue étrangère
+async function handleMe(text){
+  setStatus("Traduction…");
+  try{
+    const lang = $("lang").value;
+    const out = await translate(text, "français", langName(lang));
+    history.push({who:"me",orig:text});
+    addMsg("me", out, text, lang);
+    setStatus("");
+    if($("autospeak").checked) await speak(out, lang);
+  }catch(e){ setStatus("⚠️ "+e.message); }
+}
+
+// ------- Reconnaissance vocale (Chrome / Edge / Safari)
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, recWho = null;
+function stopRec(){
+  if(rec){ const r = rec; rec = null; r.onend = null; try{r.stop()}catch(e){} }
+  $("micThem").classList.remove("on"); $("micMe").classList.remove("on");
+  $("micThem").textContent="🎤 Ils parlent"; $("micMe").textContent="🎤 Je réponds";
+  recWho = null;
+}
+function startRec(who){
+  if(!SR){ setStatus("Ce navigateur ne gère pas la voix : utilisez Chrome ou Edge, ou écrivez."); return; }
+  const wasSame = recWho === who;
+  stopRec();
+  if(wasSame) { setStatus(""); return; }
+  speechSynthesis.cancel();
+  const r = new SR();
+  r.lang = who==="them" ? $("lang").value : "fr-FR";
+  r.continuous = true; r.interimResults = true;
+  recWho = who; rec = r;
+  const btn = who==="them" ? $("micThem") : $("micMe");
+  btn.classList.add("on"); btn.textContent = "⏹️ Écoute… (appuyer pour arrêter)";
+  r.onresult = ev=>{
+    let interim = "";
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const res = ev.results[i];
+      if(res.isFinal){
+        const t = res[0].transcript.trim();
+        if(t) (who==="them"?handleThem:handleMe)(t);
+      } else interim += res[0].transcript;
+    }
+    if(interim) setStatus("… "+interim);
+  };
+  r.onerror = ev=>{
+    if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ setStatus("Micro refusé : autorisez-le dans le navigateur."); stopRec(); }
+    else if(ev.error==="language-not-supported"){ setStatus("Cette langue n'est pas reconnue par ce navigateur."); stopRec(); }
+  };
+  r.onend = ()=>{ if(rec===r){ try{r.start()}catch(e){ stopRec(); } } }; // reste à l'écoute
+  r.start();
+}
+$("micThem").onclick = ()=>startRec("them");
+$("micMe").onclick = ()=>startRec("me");
+
+// ------- Réponse écrite
+function sendText(){
+  const t = $("txt").value.trim(); if(!t) return;
+  $("txt").value = ""; handleMe(t);
+}
+$("send").onclick = sendText;
+$("txt").onkeydown = e=>{ if(e.key==="Enter") sendText(); };
+
+// ------- Import d'un message vocal reçu
+$("file").onchange = async e=>{
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  setStatus("Transcription du fichier…");
+  try{
+    const fd = new FormData(); fd.append("audio", f);
+    const j = await api("/api/transcribe",{method:"POST",body:fd});
+    if(!j.text) throw new Error("Aucune parole détectée.");
+    const fr = await translate(j.text, j.language || "langue inconnue", "français");
+    history.push({who:"them",orig:j.text});
+    addMsg("them", fr, "🎧 "+j.text);
+    setStatus("");
+  }catch(err){ setStatus("⚠️ "+err.message); }
+};
+
+$("clear").onclick = ()=>{
+  stopRec(); speechSynthesis.cancel(); history = []; log.innerHTML = "";
+  log.append(Object.assign(document.createElement("div"),{className:"empty",id:"empty",textContent:"Nouvelle conversation."}));
+  setStatus("");
+};
+</script>
+</body>
+</html>
