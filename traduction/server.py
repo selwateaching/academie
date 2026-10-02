@@ -14,6 +14,8 @@ Variables d'environnement :
   TRAD_PER_HOUR       facultatif : requêtes max par heure et par IP (défaut 600)
 """
 import base64
+import io
+import json
 import hmac
 import os
 import secrets
@@ -23,6 +25,7 @@ from collections import defaultdict, deque
 
 import anthropic
 import requests
+import segno
 from flask import Flask, Response, jsonify, request, send_from_directory
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -246,6 +249,74 @@ def room_poll(code):
         "guest_name": r["guest_name"],
         "msgs": [m for m in r["msgs"] if m["id"] > since],
     })
+
+
+PHRASES = [
+    "Bonjour, bienvenue.",
+    "Comment vous appelez-vous ?",
+    "Avez-vous un rendez-vous ?",
+    "Asseyez-vous, s'il vous plaît.",
+    "Attendez ici, s'il vous plaît.",
+    "Avez-vous une pièce d'identité ?",
+    "Pouvez-vous remplir ce formulaire ?",
+    "Signez ici, s'il vous plaît.",
+    "Je ne comprends pas. Pouvez-vous répéter ?",
+    "Parlez lentement, s'il vous plaît.",
+    "Avez-vous compris ?",
+    "Avez-vous des enfants ? Combien ?",
+    "Avez-vous besoin d'un médecin ?",
+    "Apportez vos papiers : passeport, justificatif de domicile, avis d'imposition.",
+    "Revenez lundi à 10 heures.",
+    "C'est gratuit.",
+    "Je vais utiliser l'application pour vous traduire.",
+    "Merci, au revoir.",
+]
+_phrase_cache = {}
+
+
+@app.post("/api/phrases")
+def phrases():
+    """Phrases d'accueil traduites ; le navigateur les garde pour le hors connexion."""
+    denied = check_access()
+    if denied:
+        return denied
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
+    dst = str((request.get_json(silent=True) or {}).get("to", "")).strip()[:60]
+    if not dst:
+        return error("Langue manquante.", 400)
+    if dst not in _phrase_cache:
+        system = (
+            "Tu es un interprète dans une association d'accueil de personnes étrangères. "
+            f"Traduis chaque phrase française de la liste en {dst}, en mots simples et polis. "
+            "Si la langue est une darija, écris en lettres arabes, dans le dialecte demandé. "
+            "Réponds UNIQUEMENT par un tableau JSON de chaînes, dans le même ordre, de même longueur."
+        )
+        try:
+            msg = get_client().messages.create(
+                model=MODEL, max_tokens=4000, system=system,
+                messages=[{"role": "user", "content": json.dumps(PHRASES, ensure_ascii=False)}],
+            )
+            text = "".join(b.text for b in msg.content if b.type == "text")
+            out = json.loads(text[text.index("["): text.rindex("]") + 1])
+        except anthropic.APIError as e:
+            return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)
+        except ValueError:
+            return error("Réponse de traduction illisible, réessayez.", 502)
+        if not isinstance(out, list) or len(out) != len(PHRASES):
+            return error("Réponse de traduction incomplète, réessayez.", 502)
+        _phrase_cache[dst] = [str(x) for x in out]
+    return jsonify({"phrases": [{"fr": f, "tr": t} for f, t in zip(PHRASES, _phrase_cache[dst])]})
+
+
+@app.get("/qr.svg")
+def qr():
+    text = request.args.get("text", "")[:300]
+    if not text:
+        return error("Texte manquant.", 400)
+    buf = io.BytesIO()
+    segno.make(text, error="m").save(buf, kind="svg", scale=6, border=2, dark="#0f5c6e")
+    return Response(buf.getvalue(), mimetype="image/svg+xml", headers={"Cache-Control": "no-store"})
 
 
 TASKS = {

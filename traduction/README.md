@@ -13,6 +13,10 @@ Langues : darija algérienne, tunisienne et marocaine (comprend le mélange dari
 
 La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** recommandés. Le pashto et le dari sont peu ou pas reconnus à la voix : dans ce cas, utilisez le message vocal importé ou le clavier. Les clés restent sur le serveur.
 
+## Phrases utiles (hors connexion)
+
+18 phrases d'accueil courantes (« Avez-vous un rendez-vous ? », « Signez ici », « Apportez vos papiers »…) traduites dans la langue choisie, avec lecture à voix haute. Elles sont téléchargées automatiquement quand il y a du réseau et **gardées sur l'appareil** : on peut ensuite les utiliser sans Internet. Pensez à ouvrir l'appli une fois avec du réseau pour chaque langue que vous utilisez.
+
 ## Confidentialité et accueil
 
 - **🧹 Nouvelle personne** (en haut de chaque écran) efface tout : conversation, document, photo, session partagée. À presser entre deux personnes accueillies.
