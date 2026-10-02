@@ -20,6 +20,11 @@ def data_js():
     return send_from_directory(os.path.dirname(__file__), "data.js")
 
 
+@app.get("/data_ar.js")
+def data_ar_js():
+    return send_from_directory(os.path.dirname(__file__), "data_ar.js")
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)

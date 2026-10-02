@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Guide du professeur débutant</title>
 <meta name="description" content="Le guide pratique du jeune enseignant algérien : quoi enseigner, comment gérer sa classe, niveau par niveau.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Kufi+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F5F3EE;--w:#FFF;--ink:#20241F;--ink2:#4B5048;--ink3:#8A8F86;
@@ -106,33 +106,46 @@ td.yes{color:var(--t);}
 
 footer.foot{text-align:center;padding:2rem 1rem 6rem;color:var(--ink3);font-size:.75rem;}
 footer.foot a{text-decoration:underline;}
+
+.langbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:999px;padding:.35rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.langbtn:hover{background:rgba(255,255,255,.22);}
+
+html[dir="rtl"] body{font-family:'Noto Kufi Arabic','Inter',sans-serif;}
+html[dir="rtl"] .card-choice{text-align:right;}
+html[dir="rtl"] .blk{border-left:none;border-right:4px solid var(--t);}
+html[dir="rtl"] .blk.alt{border-right-color:var(--a);}
+html[dir="rtl"] .blk.warn{border-right-color:var(--r);}
+html[dir="rtl"] table.diff th,html[dir="rtl"] table.diff td{text-align:right;}
 </style>
 </head>
 <body>
 
 <header class="top">
   <div class="top-inner">
-    <div class="brand" onclick="goHome()">📘 Guide<span> du prof débutant</span></div>
-    <div class="crumb" id="crumb"></div>
+    <div class="brand" onclick="goHome()">📘 <span id="brandTxt">Guide du prof débutant</span></div>
+    <div style="display:flex;align-items:center;gap:.8rem;">
+      <div class="crumb" id="crumb"></div>
+      <button class="langbtn" id="langBtn" onclick="toggleLang()">AR / عربي</button>
+    </div>
   </div>
 </header>
 
 <!-- HOME -->
 <div class="pg on" id="pg-home">
   <div class="hero">
-    <h1>Vous débutez dans l'enseignement ?</h1>
-    <p>Ce guide vous dit quoi faire, étape par étape — que vous ne sachiez pas comment gérer votre classe, ou que vous ne sachiez pas exactement quoi enseigner cette semaine.</p>
+    <h1 id="heroH1">Vous débutez dans l'enseignement ?</h1>
+    <p id="heroP">Ce guide vous dit quoi faire, étape par étape — que vous ne sachiez pas comment gérer votre classe, ou que vous ne sachiez pas exactement quoi enseigner cette semaine.</p>
   </div>
   <div class="cards">
     <div class="card-choice" onclick="go('classe')">
       <div class="ico">🏫</div>
-      <h3>Je commence mon métier</h3>
-      <p>Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.</p>
+      <h3 id="card1H">Je commence mon métier</h3>
+      <p id="card1P">Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.</p>
     </div>
     <div class="card-choice" onclick="go('programme')">
       <div class="ico">📚</div>
-      <h3>Je découvre mon programme</h3>
-      <p>Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.</p>
+      <h3 id="card2H">Je découvre mon programme</h3>
+      <p id="card2P">Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.</p>
     </div>
   </div>
 </div>
@@ -140,11 +153,11 @@ footer.foot a{text-decoration:underline;}
 <!-- PROGRAMME : niveau -->
 <div class="pg" id="pg-programme">
   <div class="wrap">
-    <div class="sect-title">📚 Je découvre mon programme</div>
-    <div class="sect-sub">Choisissez votre niveau</div>
+    <div class="sect-title" id="progTitle">📚 Je découvre mon programme</div>
+    <div class="sect-sub" id="progSub1">Choisissez votre niveau</div>
     <div class="niv-grid" id="nivGrid"></div>
     <div id="matBox" style="display:none">
-      <div class="sect-sub" style="margin-bottom:.8rem">Choisissez votre matière</div>
+      <div class="sect-sub" id="progSub2" style="margin-bottom:.8rem">Choisissez votre matière</div>
       <div class="mat-chips" id="matChips"></div>
       <div class="seq-list" id="seqList"></div>
     </div>
@@ -154,7 +167,7 @@ footer.foot a{text-decoration:underline;}
 <!-- PROGRAMME : séquence détail -->
 <div class="pg" id="pg-sequence">
   <div class="wrap">
-    <button class="seq-back" onclick="go('programme')">← Retour au programme</button>
+    <button class="seq-back" id="seqBackBtn" onclick="go('programme')">← Retour au programme</button>
     <div id="seqDetail"></div>
   </div>
 </div>
@@ -162,24 +175,24 @@ footer.foot a{text-decoration:underline;}
 <!-- GERER CLASSE -->
 <div class="pg" id="pg-classe">
   <div class="wrap">
-    <div class="sect-title">🏫 Je commence mon métier</div>
+    <div class="sect-title" id="classeTitle">🏫 Je commence mon métier</div>
     <div class="sect-sub" id="classeIntro"></div>
 
     <div class="timeline" id="timelineBox"></div>
 
     <div class="persona" id="personaBox"></div>
 
-    <div class="sect-title" style="font-size:1.05rem;margin-top:1.6rem;">🆘 Difficultés courantes et quoi faire</div>
+    <div class="sect-title" id="diffTitle" style="font-size:1.05rem;margin-top:1.6rem;">🆘 Difficultés courantes et quoi faire</div>
     <div class="diff-wrap" style="margin-top:.8rem;">
       <table class="diff">
-        <thead><tr><th>Difficulté</th><th>À éviter</th><th>À faire</th></tr></thead>
+        <thead><tr><th id="diffTh1">Difficulté</th><th id="diffTh2">À éviter</th><th id="diffTh3">À faire</th></tr></thead>
         <tbody id="diffBody"></tbody>
       </table>
     </div>
 
     <div class="tadriss-cta">
-      <p>Vous savez maintenant comment aborder votre classe. Pour préparer vos séances au quotidien :</p>
-      <a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener">🤖 Ouvrir Tadriss</a>
+      <p id="classeCtaP">Vous savez maintenant comment aborder votre classe. Pour préparer vos séances au quotidien :</p>
+      <a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener"><span id="classeCtaBtn">🤖 Ouvrir Tadriss</span></a>
     </div>
   </div>
 </div>
@@ -187,17 +200,122 @@ footer.foot a{text-decoration:underline;}
 <a class="floatbtn" href="https://tadriss.fr" target="_blank" rel="noopener">
   <div class="emoji">🤖</div>
   <div class="txt">
-    <div class="t1">Besoin de préparer votre cours ?</div>
-    <div class="t2">Ouvrir Tadriss</div>
+    <div class="t1" id="floatT1">Besoin de préparer votre cours ?</div>
+    <div class="t2" id="floatT2">Ouvrir Tadriss</div>
   </div>
-  <div class="go">Aller →</div>
+  <div class="go" id="floatGo">Aller →</div>
 </a>
 
-<footer class="foot">Guide du professeur débutant — un outil gratuit lié à <a href="https://tadriss.fr" target="_blank" rel="noopener">tadriss.fr</a></footer>
+<footer class="foot" id="footTxt">Guide du professeur débutant — un outil gratuit lié à <a href="https://tadriss.fr" target="_blank" rel="noopener">tadriss.fr</a></footer>
 
 <script src="data.js"></script>
+<script src="data_ar.js"></script>
 <script>
 var curNiv = null, curMat = null;
+var CURRENT_LANG = 'fr';
+try { CURRENT_LANG = localStorage.getItem('guideprofLang') || 'fr'; } catch(e){}
+
+var TXT = {
+  fr: {
+    brand:'Guide du prof débutant', langBtn:'AR / عربي',
+    heroH1:"Vous débutez dans l'enseignement ?",
+    heroP:"Ce guide vous dit quoi faire, étape par étape — que vous ne sachiez pas comment gérer votre classe, ou que vous ne sachiez pas exactement quoi enseigner cette semaine.",
+    card1H:'Je commence mon métier',
+    card1P:'Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.',
+    card2H:'Je découvre mon programme',
+    card2P:'Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.',
+    progTitle:'📚 Je découvre mon programme', progSub1:'Choisissez votre niveau', progSub2:'Choisissez votre matière',
+    seqBack:'← Retour au programme',
+    classeTitle:'🏫 Je commence mon métier',
+    diffTitle:'🆘 Difficultés courantes et quoi faire', diffTh1:'Difficulté', diffTh2:'À éviter', diffTh3:'À faire',
+    classeCtaP:'Vous savez maintenant comment aborder votre classe. Pour préparer vos séances au quotidien :',
+    classeCtaBtn:'🤖 Ouvrir Tadriss',
+    floatT1:'Besoin de préparer votre cours ?', floatT2:'Ouvrir Tadriss', floatGo:'Aller →',
+    footTxt:'Guide du professeur débutant — un outil gratuit lié à ',
+    crumbHome:'Accueil', crumbProgramme:'Programme', crumbSequence:'Programme › Séquence', crumbClasse:'Gérer sa classe',
+    blkEnseigner:'Ce que je dois enseigner', blkSaitFaire:"Ce que l'élève doit savoir faire",
+    blkActivites:'Ce que je lui fais faire', blkVerifie:'Comment je vérifie', blkRemediation:"S'il n'a pas compris",
+    seqCtaP:'Vous savez maintenant ce que vous devez enseigner. Préparez votre fiche, votre cours, vos exercices ou votre évaluation :',
+    seqCtaBtn:'🤖 Préparer ma séance avec Tadriss',
+    tlAvant:'🗓️ Avant la rentrée', tlJour:'🚪 Premier jour', tlSemaine:'📅 Première semaine', tlAnnee:"📖 Pendant l'année"
+  },
+  ar: {
+    brand:'دليل الأستاذ المبتدئ', langBtn:'FR / Français',
+    heroH1:'هل أنت مقبل على مهنة التعليم؟',
+    heroP:'يدلّك هذا الدليل على ما يجب فعله، خطوة بخطوة — سواء كنت لا تعرف كيف تسيّر قسمك، أو لا تعرف بالضبط ماذا تدرّس هذا الأسبوع.',
+    card1H:'أبدأ مهنتي',
+    card1P:'قبل الدخول المدرسي، اليوم الأول، الأسبوع الأول، تسيير القسم يومياً — الانضباط، التحفيز، الصعوبات.',
+    card2H:'أكتشف برنامجي',
+    card2P:'اختر مستواك ومادتك: ما يجب عليك تدريسه، ما يجب أن يتقنه تلاميذك، وكيف تتحقق من ذلك.',
+    progTitle:'📚 أكتشف برنامجي', progSub1:'اختر مستواك', progSub2:'اختر مادتك',
+    seqBack:'→ العودة إلى البرنامج',
+    classeTitle:'🏫 أبدأ مهنتي',
+    diffTitle:'🆘 الصعوبات الشائعة وكيفية التعامل معها', diffTh1:'الصعوبة', diffTh2:'ما يجب تجنبه', diffTh3:'ما يجب فعله',
+    classeCtaP:'أصبحت الآن تعرف كيف تتعامل مع قسمك. لتحضير حصصك يومياً:',
+    classeCtaBtn:'🤖 فتح Tadriss',
+    floatT1:'تحتاج إلى تحضير درسك؟', floatT2:'فتح Tadriss', floatGo:'← الذهاب',
+    footTxt:'دليل الأستاذ المبتدئ — أداة مجانية مرتبطة بـ ',
+    crumbHome:'الرئيسية', crumbProgramme:'البرنامج', crumbSequence:'البرنامج › الوحدة', crumbClasse:'تسيير القسم',
+    blkEnseigner:'ما يجب أن أدرّسه', blkSaitFaire:'ما يجب أن يتقنه التلميذ',
+    blkActivites:'ما أجعله يقوم به', blkVerifie:'كيف أتحقق', blkRemediation:'إذا لم يفهم',
+    seqCtaP:'أصبحت الآن تعرف ما يجب عليك تدريسه. حضّر بطاقتك، درسك، تمارينك أو تقييمك:',
+    seqCtaBtn:'🤖 حضّر حصتي مع Tadriss',
+    tlAvant:'🗓️ قبل الدخول المدرسي', tlJour:'🚪 اليوم الأول', tlSemaine:'📅 الأسبوع الأول', tlAnnee:'📖 خلال السنة'
+  }
+};
+
+var MATIERE_AR = {
+  'Anglais':'الإنجليزية','Arabe':'اللغة العربية','Français':'الفرنسية','Géographie':'الجغرافيا',
+  'Histoire':'التاريخ','Mathématiques':'الرياضيات','Sciences':'العلوم','Sciences et technologie':'العلوم والتكنولوجيا',
+  'Éducation artistique':'التربية الفنية','Éducation civique':'التربية المدنية','Éducation islamique':'التربية الإسلامية',
+  'Éducation physique':'التربية البدنية','Éducation scientifique et technologique':'التربية العلمية والتكنولوجية'
+};
+
+function t(k){ return (TXT[CURRENT_LANG] && TXT[CURRENT_LANG][k]) || TXT.fr[k] || k; }
+function dataSrc(){ return (CURRENT_LANG === 'ar' && typeof GUIDE_DATA_AR !== 'undefined') ? GUIDE_DATA_AR : GUIDE_DATA; }
+function matLabel(m){ return (CURRENT_LANG === 'ar' && MATIERE_AR[m]) ? MATIERE_AR[m] : m; }
+
+function toggleLang(){
+  CURRENT_LANG = (CURRENT_LANG === 'fr') ? 'ar' : 'fr';
+  try { localStorage.setItem('guideprofLang', CURRENT_LANG); } catch(e){}
+  applyLang();
+}
+
+function applyLang(){
+  var isAR = (CURRENT_LANG === 'ar');
+  document.documentElement.lang = isAR ? 'ar' : 'fr';
+  document.documentElement.dir = isAR ? 'rtl' : 'ltr';
+  document.getElementById('brandTxt').textContent = t('brand');
+  document.getElementById('langBtn').textContent = t('langBtn');
+  document.getElementById('heroH1').textContent = t('heroH1');
+  document.getElementById('heroP').textContent = t('heroP');
+  document.getElementById('card1H').textContent = t('card1H');
+  document.getElementById('card1P').textContent = t('card1P');
+  document.getElementById('card2H').textContent = t('card2H');
+  document.getElementById('card2P').textContent = t('card2P');
+  document.getElementById('progTitle').textContent = t('progTitle');
+  document.getElementById('progSub1').textContent = t('progSub1');
+  document.getElementById('progSub2').textContent = t('progSub2');
+  document.getElementById('seqBackBtn').textContent = t('seqBack');
+  document.getElementById('classeTitle').textContent = t('classeTitle');
+  document.getElementById('diffTitle').textContent = t('diffTitle');
+  document.getElementById('diffTh1').textContent = t('diffTh1');
+  document.getElementById('diffTh2').textContent = t('diffTh2');
+  document.getElementById('diffTh3').textContent = t('diffTh3');
+  document.getElementById('classeCtaP').textContent = t('classeCtaP');
+  document.getElementById('classeCtaBtn').textContent = t('classeCtaBtn');
+  document.getElementById('floatT1').textContent = t('floatT1');
+  document.getElementById('floatT2').textContent = t('floatT2');
+  document.getElementById('floatGo').textContent = t('floatGo');
+  document.getElementById('footTxt').innerHTML = t('footTxt') + '<a href="https://tadriss.fr" target="_blank" rel="noopener">tadriss.fr</a>';
+
+  var active = document.querySelector('.pg.on');
+  var page = active ? active.id.replace('pg-','') : 'home';
+  updateCrumb(page);
+  if (page === 'programme') renderNiveaux();
+  if (page === 'sequence' && curNiv && curMat) { /* re-render current séquence impossible without index; just leave as-is */ }
+  if (page === 'classe') renderClasse();
+}
 
 function go(page){
   document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('on'); });
@@ -211,13 +329,13 @@ function goHome(){ go('home'); curNiv=null; curMat=null; }
 
 function updateCrumb(page){
   var c = document.getElementById('crumb');
-  var map = { home:'', programme:'Programme', sequence:'Programme › Séquence', classe:'Gérer sa classe' };
-  c.innerHTML = page==='home' ? '' : '<a onclick="goHome()">Accueil</a> › ' + (map[page]||'');
+  var map = { home:'', programme:t('crumbProgramme'), sequence:t('crumbSequence'), classe:t('crumbClasse') };
+  c.innerHTML = page==='home' ? '' : '<a onclick="goHome()">'+t('crumbHome')+'</a> › ' + (map[page]||'');
 }
 
 function renderNiveaux(){
   var grid = document.getElementById('nivGrid');
-  grid.innerHTML = GUIDE_DATA.niveaux.map(function(n){
+  grid.innerHTML = dataSrc().niveaux.map(function(n){
     return '<div class="niv-btn'+(curNiv===n.id?' on':'')+'" onclick="pickNiveau(\''+n.id+'\')">'+n.id+'<span class="cyc">'+n.cycle+'</span></div>';
   }).join('');
   if (curNiv) renderMatieres();
@@ -231,11 +349,11 @@ function pickNiveau(id){
 function renderMatieres(){
   var box = document.getElementById('matBox');
   box.style.display = 'block';
-  var data = GUIDE_DATA.programme[curNiv] || {};
+  var data = dataSrc().programme[curNiv] || {};
   var mats = Object.keys(data);
   var chips = document.getElementById('matChips');
   chips.innerHTML = mats.map(function(m){
-    return '<div class="mat-chip'+(curMat===m?' on':'')+'" onclick="pickMatiere(\''+m.replace(/'/g,"\\'")+'\')">'+m+'</div>';
+    return '<div class="mat-chip'+(curMat===m?' on':'')+'" onclick="pickMatiere(\''+m.replace(/'/g,"\\'")+'\')">'+matLabel(m)+'</div>';
   }).join('');
   if (curMat && data[curMat]) renderSeqList(data[curMat]);
   else document.getElementById('seqList').innerHTML = '';
@@ -246,42 +364,43 @@ function pickMatiere(m){
 }
 function renderSeqList(seqs){
   var list = document.getElementById('seqList');
+  var chev = (CURRENT_LANG === 'ar') ? '←' : '→';
   list.innerHTML = seqs.map(function(s, i){
-    return '<div class="seq-item" onclick="openSeq('+i+')"><span class="n">'+s[0]+'</span><span class="chev">→</span></div>';
+    return '<div class="seq-item" onclick="openSeq('+i+')"><span class="n">'+s[0]+'</span><span class="chev">'+chev+'</span></div>';
   }).join('');
 }
 function openSeq(i){
-  var seq = GUIDE_DATA.programme[curNiv][curMat][i];
+  var seq = dataSrc().programme[curNiv][curMat][i];
   var nom = seq[0], enseigner = seq[1], saitFaire = seq[2], activites = seq[3], verifie = seq[4], remediation = seq[5];
-  var h = '<div class="seq-head"><div class="lvl">'+curNiv+' · '+curMat+'</div><h2>'+nom+'</h2></div>';
+  var h = '<div class="seq-head"><div class="lvl">'+curNiv+' · '+matLabel(curMat)+'</div><h2>'+nom+'</h2></div>';
   function block(icon, titre, items, cls){
     if (!items || !items.length) return '';
     cls = cls || '';
     return '<div class="blk '+cls+'"><h4>'+icon+' '+titre+'</h4><ul>'+items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
   }
-  h += block('👨‍🏫','Ce que je dois enseigner', enseigner);
-  h += block('👧','Ce que l\'élève doit savoir faire', saitFaire);
-  h += block('📝','Ce que je lui fais faire', activites, 'alt');
-  h += block('✅','Comment je vérifie', verifie, 'alt');
-  h += block('🆘','S\'il n\'a pas compris', remediation, 'warn');
-  h += '<div class="tadriss-cta"><p>Vous savez maintenant ce que vous devez enseigner. Préparez votre fiche, votre cours, vos exercices ou votre évaluation :</p>' +
-       '<a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener">🤖 Préparer ma séance avec Tadriss</a></div>';
+  h += block('👨‍🏫', t('blkEnseigner'), enseigner);
+  h += block('👧', t('blkSaitFaire'), saitFaire);
+  h += block('📝', t('blkActivites'), activites, 'alt');
+  h += block('✅', t('blkVerifie'), verifie, 'alt');
+  h += block('🆘', t('blkRemediation'), remediation, 'warn');
+  h += '<div class="tadriss-cta"><p>'+t('seqCtaP')+'</p>' +
+       '<a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener">'+t('seqCtaBtn')+'</a></div>';
   document.getElementById('seqDetail').innerHTML = h;
   go('sequence');
 }
 
 function renderClasse(){
-  var gc = GUIDE_DATA.gererClasse;
+  var gc = dataSrc().gererClasse;
   document.getElementById('classeIntro').textContent = gc.intro;
   function liList(items){ return '<ul>'+items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'; }
   var tl = [
-    ['🗓️ Avant la rentrée', gc.avantRentree],
-    ['🚪 Premier jour', gc.premierJour],
-    ['📅 Première semaine', gc.premiereSemaine],
-    ['📖 Pendant l\'année', gc.pendantAnnee]
+    [t('tlAvant'), gc.avantRentree],
+    [t('tlJour'), gc.premierJour],
+    [t('tlSemaine'), gc.premiereSemaine],
+    [t('tlAnnee'), gc.pendantAnnee]
   ];
-  document.getElementById('timelineBox').innerHTML = tl.map(function(t){
-    return '<div class="tl-step"><h4>'+t[0]+'</h4>'+liList(t[1])+'</div>';
+  document.getElementById('timelineBox').innerHTML = tl.map(function(tItem){
+    return '<div class="tl-step"><h4>'+tItem[0]+'</h4>'+liList(tItem[1])+'</div>';
   }).join('');
 
   var p = gc.typeProfesseur;
@@ -293,6 +412,7 @@ function renderClasse(){
   }).join('');
 }
 
+applyLang();
 go('home');
 </script>
 </body>
