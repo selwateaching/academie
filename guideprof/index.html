@@ -34,6 +34,8 @@ header.top{background:var(--ink);color:#fff;padding:0;}
 .card-choice{background:var(--w);border:1px solid var(--br);border-radius:18px;padding:1.6rem 1.4rem;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:left;}
 .card-choice:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(31,122,77,.12);border-color:var(--t);}
 .card-choice .ico{font-size:2rem;margin-bottom:.6rem;}
+.card-choice .ico-img{width:64px;height:64px;object-fit:cover;border-radius:14px;margin-bottom:.8rem;box-shadow:0 4px 12px rgba(32,36,31,.15);}
+.hero-banner{display:block;max-width:600px;width:100%;margin:0 auto;border-radius:18px;box-shadow:0 14px 34px rgba(32,36,31,.18);}
 .card-choice h3{margin:0 0 .4rem;font-size:1.05rem;}
 .card-choice p{margin:0;color:var(--ink3);font-size:.84rem;}
 
@@ -173,20 +175,21 @@ html[dir="rtl"] table.diff th,html[dir="rtl"] table.diff td{text-align:right;}
   <div class="hero">
     <h1 id="heroH1">Vous débutez dans l'enseignement ?</h1>
     <p id="heroP">Ce guide vous dit quoi faire, étape par étape — que vous ne sachiez pas comment gérer votre classe, ou que vous ne sachiez pas exactement quoi enseigner cette semaine.</p>
+    <img class="hero-banner" src="img/hero-banner.jpg" alt="" style="margin-top:1.6rem;">
   </div>
   <div class="cards">
     <div class="card-choice" onclick="go('classe')">
-      <div class="ico">🏫</div>
+      <img class="ico-img" src="img/icon-classe.jpg" alt="">
       <h3 id="card1H">Je commence mon métier</h3>
       <p id="card1P">Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.</p>
     </div>
     <div class="card-choice" onclick="go('programme')">
-      <div class="ico">📚</div>
+      <img class="ico-img" src="img/icon-programme.jpg" alt="">
       <h3 id="card2H">Je découvre mon programme</h3>
       <p id="card2P">Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.</p>
     </div>
     <div class="card-choice" onclick="go('docs')">
-      <div class="ico">📋</div>
+      <img class="ico-img" src="img/icon-docs.jpg" alt="">
       <h3 id="card3H">Mes documents administratifs</h3>
       <p id="card3P">Progression, cahier journal, fiche pédagogique… ce qu'on vous demande de fournir, quand, et comment les remplir.</p>
     </div>
