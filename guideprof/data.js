@@ -1088,5 +1088,103 @@ gererClasse: {
     { titre:"Absences répétées", eviter:"Ignorer ou sanctionner sans comprendre", faire:"Contacter la famille tôt, sans accusation — comprendre la cause avant de sanctionner" },
     { titre:"Élève perturbateur", eviter:"L'exclure immédiatement, l'humilier devant la classe", faire:"Avertissement discret et individuel d'abord ; conséquence claire et connue à l'avance si ça continue ; jamais d'humiliation publique" }
   ]
+},
+
+/* BROUILLON à valider par Selwa — usages administratifs généraux en Algérie,
+   peuvent varier selon la wilaya / l'établissement / le cycle. */
+docsAdmin: {
+  intro: "En plus de préparer ses cours, un professeur doit tenir à jour plusieurs documents administratifs. Voici les principaux, ce qu'ils sont, quand les fournir et comment les remplir.",
+  documents: [
+    {
+      nom: "La progression annuelle",
+      icone: "📅",
+      cQuoi: "Le planning qui répartit tout le programme de l'année sur les semaines/trimestres : quelle séquence est enseignée à quelle période. C'est la vue d'ensemble de votre année.",
+      quand: "À préparer dès la rentrée (1res semaines) et à présenter à l'administration/l'inspecteur en début d'année. Elle peut être ajustée en cours d'année si le rythme réel diffère.",
+      commentRemplir: [
+        "Lister toutes les séquences/projets du programme officiel de votre niveau.",
+        "Les répartir sur les semaines disponibles de l'année scolaire (en tenant compte des vacances, examens, jours fériés).",
+        "Garder une marge pour la révision et l'imprévu (absences, retards).",
+        "La mettre à jour si vous prenez du retard ou de l'avance."
+      ],
+      tadriss: "Tadriss génère votre progression annuelle automatiquement à partir du programme officiel — vous n'avez plus qu'à l'ajuster à votre calendrier."
+    },
+    {
+      nom: "Le cahier journal (cahier de textes)",
+      icone: "📓",
+      cQuoi: "Le registre où vous notez, séance après séance, ce qui a été réellement enseigné (date, contenu, devoirs donnés). C'est la trace officielle de ce qui s'est passé en classe.",
+      quand: "À remplir après chaque séance, au jour le jour. Il est régulièrement visé par le directeur/l'inspecteur.",
+      commentRemplir: [
+        "Noter la date et la durée de la séance.",
+        "Résumer en une ou deux lignes ce qui a été enseigné (le titre de la séquence/leçon suffit, pas besoin de tout détailler).",
+        "Indiquer le travail donné aux élèves (devoirs, exercices).",
+        "Le tenir à jour régulièrement plutôt que de le remplir en retard juste avant un contrôle."
+      ],
+      tadriss: "Après chaque séance préparée avec Tadriss, le résumé pour votre cahier journal est déjà prêt — copiez-le directement."
+    },
+    {
+      nom: "La fiche pédagogique (fiche de préparation)",
+      icone: "📝",
+      cQuoi: "Le document détaillé préparé avant une séance : objectifs, déroulement minute par minute, supports utilisés, méthode d'évaluation. Souvent exigée pour les séances importantes ou lors d'une inspection.",
+      quand: "Avant une séance, surtout en début de carrière ou avant une visite d'inspection. Avec l'expérience, certains professeurs la simplifient pour les séances courantes mais la gardent complète pour les leçons clés.",
+      commentRemplir: [
+        "Indiquer le niveau, la matière, la séquence et l'objectif de la séance.",
+        "Détailler le déroulement : mise en situation, activités, correction, synthèse, durée de chaque étape.",
+        "Préciser le matériel/support utilisé (manuel, tableau, fiche d'exercices…).",
+        "Prévoir comment vous allez vérifier que les élèves ont compris."
+      ],
+      tadriss: "Tadriss génère une fiche pédagogique complète et conforme en quelques secondes, pour n'importe quelle séquence de votre programme."
+    },
+    {
+      nom: "Le registre de notes (cahier d'évaluation)",
+      icone: "📊",
+      cQuoi: "Le carnet où vous consignez toutes les notes des élèves : contrôles, devoirs, interrogations. Il sert de base aux bulletins trimestriels.",
+      quand: "À jour en continu, dès qu'une évaluation est corrigée.",
+      commentRemplir: [
+        "Une ligne par élève, une colonne par évaluation.",
+        "Noter le type d'évaluation (interrogation, devoir, composition) et le coefficient.",
+        "Calculer les moyennes régulièrement, pas seulement en fin de trimestre.",
+        "Conserver une trace des copies corrigées en cas de contestation."
+      ],
+      tadriss: "Tadriss calcule automatiquement les moyennes et génère vos bulletins à partir des notes saisies."
+    },
+    {
+      nom: "Le cahier d'appel (registre de présence)",
+      icone: "🗓️",
+      cQuoi: "Le suivi des présences/absences des élèves, séance par séance.",
+      quand: "À chaque séance, en début de cours.",
+      commentRemplir: [
+        "Faire l'appel systématiquement en début de séance.",
+        "Noter immédiatement les absences (et les retards si c'est l'usage dans votre établissement).",
+        "Signaler à l'administration les absences répétées d'un même élève.",
+        "Ne pas attendre la fin de semaine pour reporter les absences — le risque d'erreur augmente."
+      ],
+      tadriss: ""
+    },
+    {
+      nom: "Le PV de coordination pédagogique",
+      icone: "🤝",
+      cQuoi: "Le compte-rendu des réunions avec les autres professeurs de la même matière (harmonisation des progressions, des évaluations, des méthodes).",
+      quand: "Après chaque réunion de coordination (généralement 1 à plusieurs fois par trimestre, selon l'établissement).",
+      commentRemplir: [
+        "Noter la date, les présents et l'objet de la réunion.",
+        "Résumer les décisions prises (ex : date commune d'un contrôle, ajustement de la progression).",
+        "Le faire signer par les participants si c'est l'usage de votre établissement."
+      ],
+      tadriss: ""
+    },
+    {
+      nom: "Le bilan pédagogique de fin de trimestre",
+      icone: "📈",
+      cQuoi: "Un résumé de ce qui a été enseigné sur le trimestre, du niveau général de la classe, et des difficultés rencontrées.",
+      quand: "En fin de trimestre, souvent demandé par l'administration ou lors des conseils de classe.",
+      commentRemplir: [
+        "Comparer la progression prévue et la progression réellement suivie.",
+        "Noter le niveau général de la classe et les points faibles récurrents.",
+        "Proposer des pistes de remédiation pour le trimestre suivant."
+      ],
+      tadriss: ""
+    }
+  ],
+  note: "⚠️ Ces usages sont généraux et peuvent varier selon la wilaya, l'établissement ou le cycle — vérifiez toujours les consignes précises de votre direction/inspection."
 }
 };

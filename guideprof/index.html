@@ -29,8 +29,8 @@ header.top{background:var(--ink);color:#fff;padding:0;}
 .hero{padding:2.4rem 1.1rem 1.6rem;text-align:center;}
 .hero h1{font-size:clamp(1.5rem,4vw,2.1rem);margin:0 0 .5rem;font-weight:800;}
 .hero p{color:var(--ink2);max-width:540px;margin:0 auto;font-size:.95rem;}
-.cards{display:grid;grid-template-columns:1fr;gap:1rem;max-width:760px;margin:1.6rem auto 2rem;padding:0 1.1rem;}
-@media(min-width:680px){.cards{grid-template-columns:1fr 1fr;}}
+.cards{display:grid;grid-template-columns:1fr;gap:1rem;max-width:960px;margin:1.6rem auto 2rem;padding:0 1.1rem;}
+@media(min-width:680px){.cards{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));}}
 .card-choice{background:var(--w);border:1px solid var(--br);border-radius:18px;padding:1.6rem 1.4rem;cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:left;}
 .card-choice:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(31,122,77,.12);border-color:var(--t);}
 .card-choice .ico{font-size:2rem;margin-bottom:.6rem;}
@@ -61,6 +61,20 @@ header.top{background:var(--ink);color:#fff;padding:0;}
 .niv-placeholder{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.5rem;border:1.5px dashed var(--br);border-radius:16px;padding:2.6rem 1.4rem;margin-top:1.2rem;color:var(--ink3);}
 .niv-placeholder .ico{font-size:2.2rem;}
 .niv-placeholder p{margin:0;font-size:.88rem;max-width:380px;}
+
+/* DOCUMENTS ADMINISTRATIFS */
+.doc-card{background:var(--w);border:1px solid var(--br);border-radius:16px;padding:1.2rem 1.3rem;margin-bottom:1rem;}
+.doc-card .dc-head{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;}
+.doc-card .dc-ico{font-size:1.5rem;flex:none;}
+.doc-card h3{margin:0;font-size:1.02rem;}
+.doc-card .dc-quoi{font-size:.86rem;color:var(--ink2);margin:0 0 .6rem;}
+.doc-card .dc-quand{font-size:.78rem;color:var(--a);font-weight:700;background:var(--ap);display:inline-block;border-radius:999px;padding:.25rem .7rem;margin-bottom:.7rem;}
+.doc-card .dc-label{font-weight:800;font-size:.72rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:0 0 .4rem;}
+.doc-card ul{margin:0 0 .3rem;padding-left:1.1rem;font-size:.85rem;}
+.doc-card li{margin-bottom:.25rem;}
+.doc-card .dc-tadriss{background:var(--tp);color:var(--t);border-radius:10px;padding:.6rem .8rem;font-size:.82rem;font-weight:600;margin-top:.7rem;}
+.docs-note{border:1.5px dashed var(--a);background:var(--ap);color:var(--ink2);border-radius:14px;padding:1rem 1.2rem;font-size:.84rem;margin:1.4rem 0;}
+html[dir="rtl"] .doc-card .dc-quand{font-weight:800;}
 
 .mat-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.6rem;}
 .mat-chip{background:var(--w);border:1.5px solid var(--br);border-radius:999px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
@@ -160,6 +174,11 @@ html[dir="rtl"] table.diff th,html[dir="rtl"] table.diff td{text-align:right;}
       <h3 id="card2H">Je découvre mon programme</h3>
       <p id="card2P">Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.</p>
     </div>
+    <div class="card-choice" onclick="go('docs')">
+      <div class="ico">📋</div>
+      <h3 id="card3H">Mes documents administratifs</h3>
+      <p id="card3P">Progression, cahier journal, fiche pédagogique… ce qu'on vous demande de fournir, quand, et comment les remplir.</p>
+    </div>
   </div>
 </div>
 
@@ -214,6 +233,20 @@ html[dir="rtl"] table.diff th,html[dir="rtl"] table.diff td{text-align:right;}
   </div>
 </div>
 
+<!-- DOCUMENTS ADMINISTRATIFS -->
+<div class="pg" id="pg-docs">
+  <div class="wrap">
+    <div class="sect-title" id="docsTitle">📋 Mes documents administratifs</div>
+    <div class="sect-sub" id="docsIntro"></div>
+    <div id="docsList"></div>
+    <div class="docs-note" id="docsNote"></div>
+    <div class="tadriss-cta">
+      <p id="docsCtaP">Beaucoup de ces documents, Tadriss peut vous aider à les préparer :</p>
+      <a class="btn" href="https://tadriss.fr" target="_blank" rel="noopener"><span id="docsCtaBtn">🦉 Ouvrir Tadriss</span></a>
+    </div>
+  </div>
+</div>
+
 <a class="floatbtn" href="https://tadriss.fr" target="_blank" rel="noopener">
   <div class="emoji">🦉</div>
   <div class="txt">
@@ -241,6 +274,13 @@ var TXT = {
     card1P:'Avant la rentrée, le premier jour, la première semaine, gérer sa classe au quotidien — discipline, motivation, difficultés.',
     card2H:'Je découvre mon programme',
     card2P:'Choisissez votre niveau et votre matière : ce que vous devez enseigner, ce que vos élèves doivent savoir faire, comment vérifier.',
+    card3H:'Mes documents administratifs',
+    card3P:"Progression, cahier journal, fiche pédagogique… ce qu'on vous demande de fournir, quand, et comment les remplir.",
+    docsTitle:'📋 Mes documents administratifs',
+    docsLabelQuand:'À fournir', docsLabelComment:'Comment le remplir',
+    docsCtaP:'Beaucoup de ces documents, Tadriss peut vous aider à les préparer :',
+    docsCtaBtn:'🦉 Ouvrir Tadriss',
+    crumbDocs:'Documents administratifs',
     progTitle:'📚 Je découvre mon programme', progSub1:'Choisissez votre niveau', progSub2:'Choisissez votre matière',
     nivPlaceholder:'Choisissez un niveau ci-dessus pour découvrir le programme et ce que vous devez enseigner.',
     seqBack:'← Retour au programme',
@@ -265,6 +305,13 @@ var TXT = {
     card1P:'قبل الدخول المدرسي، اليوم الأول، الأسبوع الأول، تسيير القسم يومياً — الانضباط، التحفيز، الصعوبات.',
     card2H:'أكتشف برنامجي',
     card2P:'اختر مستواك ومادتك: ما يجب عليك تدريسه، ما يجب أن يتقنه تلاميذك، وكيف تتحقق من ذلك.',
+    card3H:'وثائقي الإدارية',
+    card3P:'التدرج السنوي، دفتر النصوص، البطاقة البيداغوجية… ما يُطلب منك تقديمه، متى، وكيف تملأه.',
+    docsTitle:'📋 وثائقي الإدارية',
+    docsLabelQuand:'متى تقدَّم', docsLabelComment:'كيف تملأها',
+    docsCtaP:'للعديد من هذه الوثائق، يمكن لـ Tadriss مساعدتك في تحضيرها:',
+    docsCtaBtn:'🦉 فتح Tadriss',
+    crumbDocs:'الوثائق الإدارية',
     progTitle:'📚 أكتشف برنامجي', progSub1:'اختر مستواك', progSub2:'اختر مادتك',
     nivPlaceholder:'اختر مستوى أعلاه لاكتشاف البرنامج وما يجب عليك تدريسه.',
     seqBack:'→ العودة إلى البرنامج',
@@ -312,6 +359,11 @@ function applyLang(){
   document.getElementById('card1P').textContent = t('card1P');
   document.getElementById('card2H').textContent = t('card2H');
   document.getElementById('card2P').textContent = t('card2P');
+  document.getElementById('card3H').textContent = t('card3H');
+  document.getElementById('card3P').textContent = t('card3P');
+  document.getElementById('docsTitle').textContent = t('docsTitle');
+  document.getElementById('docsCtaP').textContent = t('docsCtaP');
+  document.getElementById('docsCtaBtn').textContent = t('docsCtaBtn');
   document.getElementById('progTitle').textContent = t('progTitle');
   document.getElementById('progSub1').textContent = t('progSub1');
   document.getElementById('progSub2').textContent = t('progSub2');
@@ -335,6 +387,7 @@ function applyLang(){
   if (page === 'programme') renderNiveaux();
   if (page === 'sequence' && curNiv && curMat) { /* re-render current séquence impossible without index; just leave as-is */ }
   if (page === 'classe') renderClasse();
+  if (page === 'docs') renderDocs();
 }
 
 function go(page){
@@ -344,12 +397,13 @@ function go(page){
   updateCrumb(page);
   if (page === 'programme') renderNiveaux();
   if (page === 'classe') renderClasse();
+  if (page === 'docs') renderDocs();
 }
 function goHome(){ go('home'); curNiv=null; curMat=null; }
 
 function updateCrumb(page){
   var c = document.getElementById('crumb');
-  var map = { home:'', programme:t('crumbProgramme'), sequence:t('crumbSequence'), classe:t('crumbClasse') };
+  var map = { home:'', programme:t('crumbProgramme'), sequence:t('crumbSequence'), classe:t('crumbClasse'), docs:t('crumbDocs') };
   c.innerHTML = page==='home' ? '' : '<a onclick="goHome()">'+t('crumbHome')+'</a> › ' + (map[page]||'');
 }
 
@@ -441,6 +495,24 @@ function renderClasse(){
   document.getElementById('diffBody').innerHTML = gc.difficultes.map(function(d){
     return '<tr><td><strong>'+d.titre+'</strong></td><td class="no">'+d.eviter+'</td><td class="yes">'+d.faire+'</td></tr>';
   }).join('');
+}
+
+function renderDocs(){
+  var da = dataSrc().docsAdmin || GUIDE_DATA.docsAdmin;
+  if (!da) return;
+  document.getElementById('docsIntro').textContent = da.intro;
+  document.getElementById('docsList').innerHTML = da.documents.map(function(d){
+    var tadriss = d.tadriss ? '<div class="dc-tadriss">🦉 '+d.tadriss+'</div>' : '';
+    return '<div class="doc-card">' +
+      '<div class="dc-head"><span class="dc-ico">'+d.icone+'</span><h3>'+d.nom+'</h3></div>' +
+      '<p class="dc-quoi">'+d.cQuoi+'</p>' +
+      '<div class="dc-quand">⏰ '+t('docsLabelQuand')+' : '+d.quand+'</div>' +
+      '<div class="dc-label">'+t('docsLabelComment')+'</div>' +
+      '<ul>'+d.commentRemplir.map(function(x){ return '<li>'+x+'</li>'; }).join('')+'</ul>' +
+      tadriss +
+    '</div>';
+  }).join('');
+  document.getElementById('docsNote').textContent = da.note || '';
 }
 
 applyLang();
