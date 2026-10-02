@@ -106,6 +106,16 @@ def manifest():
     return send_from_directory(STATIC_DIR, "manifest.json", mimetype="application/manifest+json")
 
 
+ICONS = {"icon-512.png", "icon-192.png", "apple-touch-icon.png", "favicon-48.png", "aide-grand.png"}
+
+
+@app.get("/<name>.png")
+def icon_png(name):
+    if name + ".png" not in ICONS:
+        return error("Introuvable.", 404)
+    return send_from_directory(STATIC_DIR, name + ".png", mimetype="image/png", max_age=86400)
+
+
 @app.get("/icon.svg")
 def icon():
     return send_from_directory(STATIC_DIR, "icon.svg", mimetype="image/svg+xml")
