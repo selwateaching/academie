@@ -79,6 +79,21 @@ def index():
     return Response(html, mimetype="text/html", headers={"Cache-Control": "no-cache"})
 
 
+@app.get("/sw.js")
+def service_worker():
+    return send_from_directory(STATIC_DIR, "sw.js", mimetype="text/javascript", max_age=0)
+
+
+@app.get("/manifest.json")
+def manifest():
+    return send_from_directory(STATIC_DIR, "manifest.json", mimetype="application/manifest+json")
+
+
+@app.get("/icon.svg")
+def icon():
+    return send_from_directory(STATIC_DIR, "icon.svg", mimetype="image/svg+xml")
+
+
 @app.get("/healthz")
 def healthz():
     return {
@@ -213,6 +228,13 @@ def room_say(code):
     return jsonify({"id": mid})
 
 
+@app.delete("/api/room/<code>")
+def room_delete(code):
+    with rooms_lock:
+        rooms.pop(str(code).upper(), None)
+    return jsonify({"ok": True})
+
+
 @app.get("/api/room/<code>")
 def room_poll(code):
     r = get_room(code)
@@ -226,6 +248,28 @@ def room_poll(code):
     })
 
 
+TASKS = {
+    "traduire": (
+        "Traduis fidèlement tout le texte lisible vers : {dst}, en gardant la structure (titres, listes, "
+        "montants, dates). Mets entre [crochets] ce qui est illisible. "
+        "Termine par une ligne « ➜ En bref : » suivie de 1 à 3 phrases très simples, en {dst}, qui disent "
+        "de quoi il s'agit et ce que la personne doit faire (et avant quelle date, s'il y en a une)."
+    ),
+    "formulaire": (
+        "C'est un formulaire à remplir. En {dst}, explique-le pour une personne qui ne lit pas bien le "
+        "français : à quoi sert ce formulaire, puis chaque champ ou case dans l'ordre (nom du champ en "
+        "français entre guillemets, ce qu'il faut y écrire en mots simples, un exemple). "
+        "Indique les pièces à joindre, où signer et la date limite s'il y en a."
+    ),
+    "simplifier": (
+        "Réécris ce document en langage très simple (niveau débutant, phrases courtes) en {dst}, avec "
+        "ces rubriques : 1) De quoi s'agit-il ? 2) Ce que vous devez faire 3) Avant quelle date "
+        "4) Ce qui se passe si vous ne faites rien. Pas de jargon : explique les mots administratifs."
+    ),
+}
+DOC_MIMES = ("image/jpeg", "image/png", "image/webp", "image/gif")
+
+
 @app.post("/api/document")
 def document():
     denied = check_access()
@@ -233,31 +277,36 @@ def document():
         return denied
     if not os.environ.get("ANTHROPIC_API_KEY"):
         return error("Le serveur n'a pas encore de clé API Anthropic.", 503)
-    f = request.files.get("image")
+    f = request.files.get("image") or request.files.get("pdf")
+    pasted = request.form.get("text", "").strip()[:20000]
     dst = request.form.get("to", "").strip()[:60]
-    if not f or not dst:
-        return error("Photo ou langue manquante.", 400)
-    mime = f.mimetype if f.mimetype in ("image/jpeg", "image/png", "image/webp", "image/gif") else "image/jpeg"
-    b64 = base64.standard_b64encode(f.read()).decode()
+    task = request.form.get("task", "traduire")
+    if task not in TASKS or not dst or not (f or pasted):
+        return error("Document, texte ou langue manquant.", 400)
     system = (
         "Tu es un traducteur dans une association qui aide des personnes étrangères. "
-        f"On te donne la photo d'un document (courrier, formulaire, ordonnance, facture…). "
-        f"1) Traduis fidèlement tout le texte lisible vers : {dst}, en gardant la structure (titres, listes, montants, dates). "
-        "Mets entre [crochets] ce qui est illisible. "
-        f"2) Termine par une ligne « ➜ En bref : » suivie de 1 à 3 phrases très simples, en {dst}, "
-        "qui disent de quoi il s'agit et ce que la personne doit faire (et avant quelle date, s'il y en a une). "
-        "Si le document est dans une darija, écris en lettres arabes, dans le dialecte demandé. "
+        "On te donne un document (courrier, formulaire, ordonnance, facture…). "
+        + TASKS[task].format(dst=dst)
+        + " Ajoute un pictogramme (emoji) au début des points importants pour faciliter la "
+        "compréhension : 📅 date, 💶 argent, 📄 papier à fournir, 📍 lieu, 📞 téléphone, ⚠️ urgent, ✍️ signer. "
+        "Si la langue demandée est une darija, écris en lettres arabes, dans le dialecte demandé, "
+        "en gardant les termes administratifs français usuels (CAF, préfecture…). "
         "Ne rajoute aucun autre commentaire."
     )
+    if pasted and not f:
+        content = [{"type": "text", "text": "Voici le texte du document :\n\n" + pasted}]
+    else:
+        data = base64.standard_b64encode(f.read()).decode()
+        if f.mimetype == "application/pdf" or (f.filename or "").lower().endswith(".pdf"):
+            block = {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": data}}
+        else:
+            mime = f.mimetype if f.mimetype in DOC_MIMES else "image/jpeg"
+            block = {"type": "image", "source": {"type": "base64", "media_type": mime, "data": data}}
+        content = [block, {"type": "text", "text": "Voici le document."}]
     try:
         msg = get_client().messages.create(
-            model=MODEL,
-            max_tokens=4000,
-            system=system,
-            messages=[{"role": "user", "content": [
-                {"type": "image", "source": {"type": "base64", "media_type": mime, "data": b64}},
-                {"type": "text", "text": "Traduis ce document."},
-            ]}],
+            model=MODEL, max_tokens=6000, system=system,
+            messages=[{"role": "user", "content": content}],
         )
     except anthropic.APIError as e:
         return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)

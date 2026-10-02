@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Traducteur Association</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2f5bea">
+<link rel="icon" href="/icon.svg">
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mut:#6b7488;--them:#e8eefc;--me:#dff5e8;--acc:#2f5bea;--rec:#d92d3a;--bd:#d9dfec}
 @media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2030;--ink:#e8ecf5;--mut:#98a2b8;--them:#243258;--me:#1f4733;--bd:#2c3550}}
@@ -53,6 +56,9 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
 .cam.alt{background:var(--card);color:var(--ink);border:1px solid var(--bd);font-size:16px;font-weight:600}
 #docOut{white-space:pre-wrap;font-size:20px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
 #docPrev{max-width:100%;max-height:200px;border-radius:10px;align-self:flex-start}
+.warn{font-size:12px;color:var(--mut);text-align:center}
+#offline{display:none;background:#b3261e;color:#fff;text-align:center;padding:6px;font-size:14px}
+textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--card);min-height:70px}
 /* deux téléphones */
 .b5{background:#0e8a8a}
 #join{padding:20px;gap:16px;justify-content:center}
@@ -73,9 +79,11 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
 <header>
   <button class="back hide" id="back">← Accueil</button>
   <h1>🌍 Traducteur Association</h1>
+  <button class="back hide" id="wipe" title="Efface tout et revient à l'accueil">🧹 Nouvelle personne</button>
   <input type="password" id="code" placeholder="Code d'accès" style="width:130px;display:none">
 </header>
 
+<div id="offline">📶 Pas de connexion : la traduction a besoin d'Internet.</div>
 <!-- ACCUEIL -->
 <section class="screen on" id="home">
   <div class="langpick">
@@ -103,20 +111,31 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
       <button class="send" id="send">Envoyer</button>
     </div>
     <div class="row" style="justify-content:space-between;align-items:center">
+      <button class="back" id="swap">⇄ Inverser</button>
       <label class="fileb" id="fileLbl">📎 Importer un message vocal reçu<input type="file" id="file" accept="audio/*,.opus,.ogg,.m4a,.mp3,.wav" hidden></label>
       <label class="small" style="font-size:13px;color:var(--mut)"><input type="checkbox" id="autospeak" checked> Lire à voix haute</label>
     </div>
+    <div class="warn">⚠️ Traduction automatique : à faire vérifier pour toute décision importante (santé, justice, papiers).</div>
   </footer>
 </section>
 
 <!-- DOCUMENT -->
 <section class="screen" id="doc">
+  <div class="seg" id="taskSeg">
+    <button data-task="traduire" class="sel">📄 Traduire</button>
+    <button data-task="simplifier">🧭 Simplifier</button>
+    <button data-task="formulaire">✍️ Formulaire</button>
+  </div>
   <div class="seg">
     <button id="dirFr" class="sel">Document → français</button>
     <button id="dirL">Document → <span class="ln">langue</span></button>
   </div>
   <label class="cam">📷 Prendre une photo<input type="file" id="cam" accept="image/*" capture="environment" hidden></label>
-  <label class="cam alt">🖼️ Choisir une image<input type="file" id="gal" accept="image/*" hidden></label>
+  <label class="cam alt">🖼️ Choisir une image ou un PDF<input type="file" id="gal" accept="image/*,application/pdf,.pdf" hidden></label>
+  <details><summary style="cursor:pointer;color:var(--acc)">✍️ Ou collez un texte</summary>
+    <textarea id="docText" placeholder="Collez ici le texte du courrier…"></textarea>
+    <button class="back" id="docTextGo" style="margin-top:6px">Traduire ce texte</button>
+  </details>
   <img id="docPrev" class="hide" alt="">
   <div id="docStatus" style="color:var(--mut)"></div>
   <div id="docOut" class="hide"></div>
@@ -124,6 +143,7 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
     <button class="back" id="docSpeak">🔊 Écouter</button>
     <button class="back" id="docCopy">📋 Copier</button>
   </div>
+  <div class="warn">⚠️ Traduction automatique : vérifiez les dates, montants et noms sur le document d'origine.</div>
 </section>
 
 <!-- DEUX TÉLÉPHONES : la personne rejoint -->
@@ -152,6 +172,7 @@ footer{background:var(--card);border-top:1px solid var(--bd);padding:10px 14px;d
     <div class="row"><button class="mic me" id="rmic">🎤</button></div>
     <div class="row"><input type="text" id="rtxt"><button class="send" id="rsend">➤</button></div>
     <label style="font-size:13px;color:var(--mut)"><input type="checkbox" id="rspeak"> 🔊</label>
+    <div class="warn">⚠️ Traduction automatique : à faire vérifier pour toute décision importante.</div>
   </footer>
 </section>
 
@@ -253,6 +274,7 @@ function go(m){
   $("micMe").classList.toggle("hide", m==="l2fr");
   $("txtRow").classList.toggle("hide", m==="l2fr");
   $("fileLbl").classList.toggle("hide", m==="fr2l");
+  $("swap").classList.toggle("hide", m==="conv");
   $("micThem").textContent = m==="l2fr" ? "🎤 La personne parle ("+shortName()+")" : "🎤 Ils parlent";
   show("talk");
 }
@@ -369,6 +391,11 @@ function setDir(fr){
 $("dirFr").onclick = ()=>setDir(true);
 $("dirL").onclick = ()=>setDir(false);
 
+let docTask = "traduire";
+$("taskSeg").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+  docTask = b.dataset.task;
+  $("taskSeg").querySelectorAll("button").forEach(x=>x.classList.toggle("sel", x===b));
+});
 function shrink(file, max=1800){
   return new Promise((res,rej)=>{
     const img = new Image(), url = URL.createObjectURL(file);
@@ -384,15 +411,20 @@ function shrink(file, max=1800){
     img.src = url;
   });
 }
-async function doDoc(file){
-  if(!file) return;
+async function doDoc(file, pasted){
+  if(!file && !pasted) return;
   $("docOut").classList.add("hide"); $("docBtns").classList.add("hide");
   $("docStatus").textContent = "Lecture et traduction du document… (quelques secondes)";
   try{
-    const blob = await shrink(file);
-    $("docPrev").src = URL.createObjectURL(blob); $("docPrev").classList.remove("hide");
     const fd = new FormData();
-    fd.append("image", blob, "doc.jpg");
+    if(file && (file.type==="application/pdf" || /\.pdf$/i.test(file.name))){
+      fd.append("pdf", file, "doc.pdf"); $("docPrev").classList.add("hide");
+    } else if(file){
+      const blob = await shrink(file);
+      $("docPrev").src = URL.createObjectURL(blob); $("docPrev").classList.remove("hide");
+      fd.append("image", blob, "doc.jpg");
+    } else { fd.append("text", pasted); $("docPrev").classList.add("hide"); }
+    fd.append("task", docTask);
     fd.append("to", docToFr ? "français" : langName());
     docLangCode = docToFr ? "fr-FR" : $("lang").value;
     const j = await api("/api/document",{method:"POST",body:fd});
@@ -404,6 +436,7 @@ async function doDoc(file){
 }
 $("cam").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f); };
 $("gal").onchange = e=>{ const f=e.target.files[0]; e.target.value=""; doDoc(f); };
+$("docTextGo").onclick = ()=>doDoc(null, $("docText").value.trim());
 $("docSpeak").onclick = ()=>speak($("docOut").textContent, docLangCode);
 $("docCopy").onclick = ()=>{ navigator.clipboard?.writeText($("docOut").textContent); $("docStatus").textContent = "Copié."; };
 
@@ -571,6 +604,32 @@ function startTv(){
   if(q.get("tv")) startTv(); else show("join");
   document.querySelector("header h1").textContent = "🌍";
 })();
+
+// ------- inverser, nouvelle personne (effacement), inactivité, hors connexion
+$("swap").onclick = ()=>go(mode==="fr2l" ? "l2fr" : "fr2l");
+async function wipeAll(){
+  stopRec(); speechSynthesis.cancel();
+  if(R.code && R.side==="host") fetch("/api/room/"+R.code,{method:"DELETE"}).catch(()=>{});
+  leaveRoom();
+  history = []; log.innerHTML = ""; rbox.innerHTML = "";
+  $("docOut").textContent = ""; $("docOut").classList.add("hide"); $("docBtns").classList.add("hide");
+  $("docPrev").removeAttribute("src"); $("docPrev").classList.add("hide");
+  $("docStatus").textContent = ""; $("docText").value = ""; $("txt").value = ""; $("rtxt").value = "";
+  setStatus(""); show("home"); $("wipe").classList.add("hide");
+}
+$("wipe").onclick = wipeAll;
+const _show = show;
+show = function(id){ _show(id); const guest = !!new URLSearchParams(location.search).get("room"); $("wipe").classList.toggle("hide", id==="home" || guest); };
+let idleT;
+function resetIdle(){
+  clearTimeout(idleT);
+  if(new URLSearchParams(location.search).get("tv")) return;
+  idleT = setTimeout(()=>{ if(!$("home").classList.contains("on")) wipeAll(); }, 10*60*1000); // 10 min sans activité
+}
+["pointerdown","keydown"].forEach(ev=>addEventListener(ev,resetIdle)); resetIdle();
+const updOnline = ()=>$("offline").style.display = navigator.onLine ? "none" : "block";
+addEventListener("online",updOnline); addEventListener("offline",updOnline); updOnline();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </body>
