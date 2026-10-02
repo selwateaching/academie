@@ -1161,6 +1161,32 @@ docsAdmin: {
       tadriss: ""
     },
     {
+      nom: "Le cahier/livret d'activités de l'élève",
+      icone: "📔",
+      cQuoi: "Le cahier (souvent lié au manuel scolaire) où l'élève réalise lui-même les exercices pratiques de chaque séquence. Ce n'est pas le professeur qui le remplit, mais il doit en assurer le suivi.",
+      quand: "Vérifié régulièrement — à la fin de chaque séquence, ou chaque semaine selon l'usage de l'établissement.",
+      commentRemplir: [
+        "Vérifier que chaque élève complète bien les exercices au fur et à mesure, pas tout d'un coup en retard.",
+        "Corriger ou viser (parapher) les pages faites, pour que l'élève et les parents voient le suivi.",
+        "Repérer les cahiers incomplets ou mal tenus et le signaler à l'élève, voire aux parents si ça persiste.",
+        "S'en servir comme indicateur : un élève qui ne le remplit jamais est souvent un élève en difficulté silencieuse."
+      ],
+      tadriss: "Tadriss peut générer des séries d'exercices supplémentaires si le cahier d'activités ne suffit pas pour un élève en difficulté ou en avance."
+    },
+    {
+      nom: "Le cahier (registre) de classe",
+      icone: "🗂️",
+      cQuoi: "Un registre commun à toute la classe — pas propre à une matière — où CHAQUE professeur qui intervient note brièvement ce qui a été fait (ou non fait) pendant son heure. Il reste dans la classe ou au bureau de la vie scolaire et permet à l'administration ou au professeur principal de voir d'un coup d'œil, heure par heure, ce qui a été couvert dans toutes les matières.",
+      quand: "À chaque heure de cours, par chaque professeur intervenant ce jour-là — distinct du cahier journal qui, lui, est personnel à chaque professeur pour sa propre matière.",
+      commentRemplir: [
+        "Noter la date, l'heure et la matière avant de commencer la séance.",
+        "Indiquer en une ligne ce qui a été fait (le titre de la séquence/activité suffit).",
+        "Si le cours n'a pas pu avoir lieu (absence, imprévu), le noter clairement plutôt que de laisser la case vide.",
+        "Signer ou parapher selon l'usage de votre établissement."
+      ],
+      tadriss: ""
+    },
+    {
       nom: "Le PV de coordination pédagogique",
       icone: "🤝",
       cQuoi: "Le compte-rendu des réunions avec les autres professeurs de la même matière (harmonisation des progressions, des évaluations, des méthodes).",
