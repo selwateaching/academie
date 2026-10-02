@@ -220,15 +220,18 @@ function renderNiveaux(){
   grid.innerHTML = GUIDE_DATA.niveaux.map(function(n){
     return '<div class="niv-btn'+(curNiv===n.id?' on':'')+'" onclick="pickNiveau(\''+n.id+'\')">'+n.id+'<span class="cyc">'+n.cycle+'</span></div>';
   }).join('');
-  if (curNiv) pickNiveau(curNiv, true);
+  if (curNiv) renderMatieres();
+  else document.getElementById('matBox').style.display = 'none';
 }
-function pickNiveau(id, keepMat){
+function pickNiveau(id){
   curNiv = id;
-  if (!keepMat) curMat = null;
+  curMat = null;
   renderNiveaux();
+}
+function renderMatieres(){
   var box = document.getElementById('matBox');
   box.style.display = 'block';
-  var data = GUIDE_DATA.programme[id] || {};
+  var data = GUIDE_DATA.programme[curNiv] || {};
   var mats = Object.keys(data);
   var chips = document.getElementById('matChips');
   chips.innerHTML = mats.map(function(m){
@@ -239,8 +242,7 @@ function pickNiveau(id, keepMat){
 }
 function pickMatiere(m){
   curMat = m;
-  pickNiveau(curNiv, true);
-  renderSeqList(GUIDE_DATA.programme[curNiv][m]);
+  renderMatieres();
 }
 function renderSeqList(seqs){
   var list = document.getElementById('seqList');

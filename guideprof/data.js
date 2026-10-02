@@ -12,7 +12,8 @@ niveaux: [
   { id:'2AM', label:'2AM', cycle:'Moyen' },
   { id:'3AM', label:'3AM', cycle:'Moyen' },
   { id:'1AS', label:'1AS', cycle:'Secondaire' },
-  { id:'2AS', label:'2AS', cycle:'Secondaire' }
+  { id:'2AS', label:'2AS', cycle:'Secondaire' },
+  { id:'3AS', label:'3AS', cycle:'Secondaire' }
 ],
 
 programme: {
@@ -882,6 +883,98 @@ programme: {
     ["2. Sauts",["Technique.","Coordination.","Performance."],[],[],[],[]],
     ["3. Lancers",["Précision.","Puissance.","Technique."],[],[],[],[]],
     ["4. Sports collectifs",["Règles.","Technique.","Stratégie.","Coopération.","Communication."],[],[],[],[]]
+  ]
+},
+
+"3AS": {
+  "Arabe": [
+    ["1. Analyse approfondie d'un texte",
+      ["Identifier le thème.","Comprendre la problématique.","Déterminer la structure.","Distinguer idées principales et secondaires.","Analyser les procédés utilisés.","Comprendre le point de vue.","Interpréter les informations."],
+      ["Analyser un texte de manière autonome.","Justifier ses réponses.","Expliquer un procédé.","Relier plusieurs informations.","Résumer l'essentiel."],
+      ["Analyse guidée puis autonome.","Questions de compréhension.","Relevé d'indices.","Synthèse.","Résumé.","Comparaison de passages."],
+      ["Je demande non seulement la réponse, mais aussi : « Quel élément du texte permet de le démontrer ? »"],
+      ["Je reviens aux indices du texte et je reconstruis le raisonnement étape par étape."]],
+    ["2. Vocabulaire et expression",["Précision lexicale.","Champs lexicaux.","Dérivation.","Synonymes/antonymes.","Expressions.","Vocabulaire spécialisé."],["Choisir le mot juste et l'utiliser dans une formulation adaptée."],[],[],[]],
+    ["3. Grammaire",["Structures complexes.","Propositions.","Relations logiques.","Fonctions.","Transformations.","Accords.","Procédés grammaticaux étudiés."],["Analyser une structure et expliquer son fonctionnement."],[],[],[]],
+    ["4. Conjugaison",["Temps et modes étudiés.","Formation.","Emploi.","Valeur dans le texte."],["Ne plus seulement demander « Quel est le temps ? », mais aussi « Quel effet ou quelle fonction a-t-il ici ? »"],[],[],[]],
+    ["5. Production écrite",
+      [],
+      ["Construire une production autonome et structurée."],
+      ["Méthode : Comprendre le sujet → définir l'objectif → chercher les idées → sélectionner → organiser → rédiger → relire → corriger."],
+      ["Grille d'auto-vérification : Ai-je répondu au sujet ? Mes idées sont-elles organisées ? Ai-je justifié mes affirmations ? Les paragraphes sont-ils liés ? Ai-je utilisé un vocabulaire précis ? Ai-je relu mon texte ?"],
+      []]
+  ],
+  "Français": [
+    ["1. Comprendre un texte",["Situation de communication.","Thème.","Problématique.","Organisation.","Point de vue.","Informations explicites et implicites.","Procédés utilisés."],["Comprendre seul.","Relever les indices.","Interpréter.","Justifier."],[],[],[]],
+    ["2. Texte argumentatif",
+      ["Thème.","Thèse.","Arguments.","Exemples.","Contre-arguments selon les situations.","Connecteurs logiques.","Organisation du raisonnement.","Conclusion."],
+      ["Identifier dans un texte : THÈSE → ARGUMENT → EXEMPLE → CONCLUSION. Puis être capable de construire son propre raisonnement."],
+      ["Exercice : « Faut-il limiter l'utilisation du téléphone portable à l'école ? » L'élève doit : 1) comprendre le problème ; 2) choisir une position ; 3) trouver des arguments ; 4) chercher des exemples ; 5) organiser ses idées ; 6) rédiger."],
+      [],
+      ["Ne pas lui demander directement de rédiger. Faire : Sujet → opinion → argument 1 → exemple → argument 2 → exemple → conclusion."]],
+    ["3. Texte explicatif",["Expliquer un phénomène.","Présenter des informations.","Établir les causes.","Présenter les conséquences.","Organiser logiquement les informations."],["Expliquer clairement un phénomène sans simplement recopier le document."],[],[],[]],
+    ["4. Synthèse",[],["Lire plusieurs informations → sélectionner l'essentiel → éliminer les répétitions → organiser → reformuler. Ne pas simplement recopier les documents."],[],[],[]],
+    ["5. Vocabulaire",["Précision lexicale.","Champs lexicaux.","Relations entre les mots.","Dérivation.","Expressions.","Vocabulaire spécialisé."],["Objectif : avoir une expression suffisamment précise pour défendre une idée ou expliquer un phénomène."],[],[],[]],
+    ["6. Grammaire",["Phrase complexe.","Propositions.","Relations logiques.","Subordination.","Transformations.","Connecteurs.","Accords.","Structures étudiées."],["Analyser et réutiliser les structures dans sa propre production."],[],[],[]],
+    ["7. Production écrite",[],[],["Méthode : ① Je lis attentivement le sujet ② Je repère les mots importants ③ Je comprends exactement ce qu'on me demande ④ Je cherche mes idées ⑤ Je les classe ⑥ Je construis mon plan ⑦ Je rédige ⑧ Je relis ⑨ Je corrige ⑩ J'améliore mon expression."],[],[]]
+  ],
+  "Anglais": [
+    ["1. Communication",["Comprendre un message.","Répondre.","Poser des questions.","Donner son opinion.","Justifier simplement."],[],[],[],[]],
+    ["2. Society",["Vie sociale.","Relations entre les personnes.","Problèmes de société selon les thèmes étudiés."],[],[],[],[]],
+    ["3. Environment",["Pollution.","Ressources.","Protection.","Changements environnementaux.","Solutions."],[],[],[],[]],
+    ["4. Technology",["Technologies.","Communication.","Usages.","Avantages/inconvénients.","Impacts selon les thèmes étudiés."],[],[],[],[]],
+    ["5. Health",["Habitudes.","Alimentation.","Prévention.","Conseils.","Mode de vie."],[],[],[],[]],
+    ["6. Writing",[],["Produire un texte organisé : Introduction → idées → exemples → conclusion, selon le type de tâche demandée."],[],[],[]]
+  ],
+  "Mathématiques": [
+    ["1. Nombres et calcul",[],["Maîtriser les calculs nécessaires aux notions étudiées et savoir vérifier la cohérence d'un résultat."],[],[],[]],
+    ["2. Fonctions",["Fonctions étudiées.","Représentations.","Variations.","Tableaux.","Graphiques.","Interprétation."],["Passer d'une représentation à une autre et interpréter les résultats."],[],[],[]],
+    ["3. Équations et inéquations",[],["Apprendre à rédiger les étapes, pas seulement écrire le résultat."],["Méthode : Identifier → transformer → résoudre → vérifier → conclure."],[],[]],
+    ["4. Suites ou notions algébriques étudiées",["Identifier une relation.","Calculer.","Démontrer.","Interpréter.","Utiliser une propriété."],[],[],[],[]],
+    ["5. Probabilités et statistiques",[],["Exploiter des données.","Calculer les indicateurs étudiés.","Interpréter.","Résoudre une situation probabiliste."],[],[],[]],
+    ["6. Géométrie",[],["Être capable de justifier une réponse avec une propriété mathématique appropriée."],["Développer : construction → propriété → raisonnement → démonstration → conclusion."],[],[]],
+    ["7. Résolution de problèmes",[],[],[],["Faire prendre cette habitude : « Je ne cherche pas immédiatement quelle formule utiliser. Je cherche d'abord ce que le problème me demande. »"],[]]
+  ],
+  "Sciences": [
+    ["1. Exploiter un document scientifique",[],["Observer → relever → comparer → interpréter → conclure."],[],[],[]],
+    ["2. Expérimentation",[],[],[],[],["Méthode : Problème → hypothèse → protocole → résultats → interprétation → conclusion. Distinguer résultat (ce que l'expérience montre), interprétation (ce que le résultat signifie) et conclusion (réponse au problème initial)."]],
+    ["3. Biologie",["Fonctionnement du vivant.","Mécanismes biologiques.","Santé.","Environnement.","Exploitation de documents scientifiques selon les thèmes étudiés."],[],[],[],[]],
+    ["4. Physique",[],["Identifier les données → choisir la relation → calculer → vérifier l'unité → interpréter."],[],[],[]],
+    ["5. Chimie",[],["Identifier les espèces ou phénomènes étudiés.","Exploiter les données.","Effectuer les calculs nécessaires.","Interpréter les résultats.","Rédiger une conclusion."],[],[],[]]
+  ],
+  "Éducation islamique": [
+    ["1. Foi et comportement",[],["Comprendre les notions étudiées et en dégager les enseignements."],[],[],[]],
+    ["2. Coran et Hadith",[],[],["Méthode : Lire → comprendre → expliquer → dégager l'enseignement → réfléchir à son application."],[],[]],
+    ["3. Pratiques religieuses",["Notions.","Règles.","Compréhension.","Application."],[],[],[],[]],
+    ["4. Vie du Prophète ﷺ",[],["Connaître les éléments étudiés et être capable d'en dégager les enseignements et valeurs."],[],[],[]]
+  ],
+  "Histoire": [
+    ["1. Analyse historique",["Grille approfondie : 📄 Nature du document · 📅 Date · 👤 Auteur/origine · 📍 Contexte · 📌 Sujet · 🔎 Informations importantes · 🧠 Interprétation · 📚 Mise en relation avec les connaissances."],[],[],[],[]],
+    ["2. Construire une chronologie",[],["Situer les événements.","Les ordonner.","Identifier les périodes.","Établir des relations entre eux."],[],[],[]],
+    ["3. Expliquer un événement",[],[],["Toujours rechercher : Causes → événement → conséquences, et lorsque pertinent : Contexte → acteurs → déroulement → conséquences."],[],[]],
+    ["4. Composition historique",[],[],["Apprendre progressivement : Introduction → développement organisé → conclusion. Apprendre à l'élève à répondre au sujet posé, et non à réciter tout ce qu'il connaît."],[],[]]
+  ],
+  "Géographie": [
+    ["1. Analyse de documents",["Exploiter carte, graphique, tableau, texte, statistiques."],[],["Méthode : Identifier → relever → comparer → interpréter → expliquer."],[],[]],
+    ["2. Territoires et population",["Répartition.","Dynamiques démographiques.","Urbanisation.","Mobilités.","Organisation des territoires."],[],[],[],[]],
+    ["3. Économie",["Agriculture.","Industrie.","Services.","Échanges.","Ressources.","Développement."],[],[],[],[]],
+    ["4. Environnement et développement",["Ressources.","Risques.","Contraintes.","Protection.","Développement durable selon les thèmes étudiés."],[],[],[],[]]
+  ],
+  "Éducation civique": [
+    ["1. Citoyenneté",["Droits.","Devoirs.","Responsabilité.","Participation à la vie collective."],[],[],[],[]],
+    ["2. Société",["Respect.","Dialogue.","Coopération.","Responsabilité individuelle et collective."],[],[],[],[]],
+    ["3. Environnement et responsabilité",[],["Identifier un problème, expliquer ses conséquences et proposer des actions adaptées."],[],[],[]]
+  ],
+  "Éducation artistique": [
+    ["1. Analyse d'une œuvre",["L'élève observe, décrit et interprète."],[],[],[],[]],
+    ["2. Techniques",["Il maîtrise progressivement les techniques travaillées."],[],[],[],[]],
+    ["3. Création",["Il conçoit une production personnelle et justifie ses choix."],[],[],[],[]]
+  ],
+  "Éducation physique": [
+    ["1. Course",["Vitesse.","Endurance.","Gestion de l'effort."],[],[],[],[]],
+    ["2. Sauts",["Technique.","Coordination.","Performance."],[],[],[],[]],
+    ["3. Lancers",["Précision.","Puissance.","Technique."],[],[],[],[]],
+    ["4. Sports collectifs",["Règles.","Technique.","Stratégie.","Coopération.","Autonomie."],[],[],[],[]]
   ]
 }
 },
