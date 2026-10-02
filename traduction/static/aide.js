@@ -13,7 +13,7 @@
   ];
   const $ = id => document.getElementById(id);
   const guest = !!new URLSearchParams(location.search).get("room");
-  if(guest){ $("helpBtn")?.classList.add("hide"); return; }
+  if(guest){ $("helpBtn")?.classList.add("hide"); $("helpHome")?.classList.add("hide"); return; }
 
   const panel = $("helpPanel"), msgs = $("helpMsgs"), hist = [];
   function bubble(role, text){
@@ -23,12 +23,13 @@
   function open(){
     panel.classList.remove("hide");
     if(!msgs.children.length){
-      bubble("bot", "Bonjour ! Je vous aide à utiliser Tarjama. Choisissez une question ci-dessous ou posez la vôtre.");
+      bubble("bot", "Bonjour ! Je vous aide à utiliser Tarjam. Choisissez une question ci-dessous ou posez la vôtre.");
     }
     $("helpIn").focus();
   }
   function close(){ panel.classList.add("hide"); }
   $("helpBtn").onclick = open; $("helpClose").onclick = close;
+  if($("helpHome")) $("helpHome").onclick = open;
   panel.addEventListener("click", e => { if(e.target === panel) close(); });
 
   const chips = $("helpChips");

@@ -536,7 +536,7 @@ with open(os.path.join(BASE_DIR, "aide.md"), encoding="utf-8") as _f:
 
 @app.post("/api/help")
 def help_chat():
-    """Assistant d'aide : répond aux questions sur l'utilisation de Tarjama (guide aide.md)."""
+    """Assistant d'aide : répond aux questions sur l'utilisation de Tarjam (guide aide.md)."""
     denied = check_access()
     if denied:
         return denied
@@ -557,7 +557,7 @@ def help_chat():
         msgs.pop()
     msgs.append({"role": "user", "content": question})
     system = (
-        "Tu es l'assistant d'aide intégré à l'application Tarjama. Tu aides des débutants (bénévoles "
+        "Tu es l'assistant d'aide intégré à l'application Tarjam. Tu aides des débutants (bénévoles "
         "d'une association) à utiliser l'application. Réponds en français simple et chaleureux (ou dans "
         "la langue de la question), en phrases courtes, avec des étapes numérotées quand il faut "
         "agir, en nommant les boutons exactement comme dans le guide. Appuie-toi UNIQUEMENT sur le guide "
@@ -576,6 +576,16 @@ def help_chat():
 @app.get("/notice")
 def notice():
     return send_from_directory(STATIC_DIR, "notice.html", mimetype="text/html", max_age=0)
+
+
+@app.get("/aide.png")
+def aide_png():
+    return send_from_directory(STATIC_DIR, "aide.png", mimetype="image/png", max_age=86400)
+
+
+@app.get("/aide-face.png")
+def aide_face_png():
+    return send_from_directory(STATIC_DIR, "aide-face.png", mimetype="image/png", max_age=86400)
 
 
 @app.get("/aide.js")

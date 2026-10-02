@@ -1,6 +1,6 @@
-# Tarjama — guide complet (base de connaissances de l'assistant d'aide)
+# Tarjam — guide complet (base de connaissances de l'assistant d'aide)
 
-Tarjama est une application web d'interprétation pour une association qui accueille des personnes étrangères. Elle traduit la voix, le texte et les documents entre le français et d'autres langues, et permet de suivre les personnes (dossiers) et de produire des courriers standards.
+Tarjam est une application web d'interprétation pour une association qui accueille des personnes étrangères. Elle traduit la voix, le texte et les documents entre le français et d'autres langues, et permet de suivre les personnes (dossiers) et de produire des courriers standards.
 
 ## Premier démarrage
 - Ouvrir l'adresse de l'application dans le navigateur (Chrome ou Edge sur ordinateur et Android, Safari sur iPhone).
@@ -104,4 +104,4 @@ Disponible seulement si l'association a activé les dossiers (sinon le message �
 - **La personne ne voit pas sa langue** : choisir la plus proche (par exemple arabe standard) ou utiliser l'écriture.
 
 ## Ce que l'assistant ne fait pas
-Il explique le fonctionnement de Tarjama. Il ne donne pas de conseil juridique, médical ou administratif, et ne remplace pas un interprète professionnel.
+Il explique le fonctionnement de Tarjam. Il ne donne pas de conseil juridique, médical ou administratif, et ne remplace pas un interprète professionnel.
