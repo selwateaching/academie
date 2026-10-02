@@ -663,7 +663,8 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </h1>
         <p class="hero-sub">Le premier cartable numérique complet pour les professeurs algériens. IA intégrée, programme national, cloud privé sécurisé.</p>
         <div class="hero-btns">
-          <button class="hb hb-main" data-i18n="hero_main" onclick="toggleView()">Se connecter →</button>
+          <button class="hb hb-main" data-i18n="hero_signup" onclick="openCreateAccount()">Créer un compte →</button>
+          <button class="hb hb-out" data-i18n="hero_login" onclick="toggleView()">Déjà inscrit ? Se connecter</button>
           <button class="hb hb-out" onclick="document.getElementById('prix').scrollIntoView({behavior:'smooth'})">Voir les tarifs</button>
         </div>
       </div>
@@ -2352,6 +2353,8 @@ var LANG = {
     nav_apropos: 'Qui suis-je',
     nav_cta: "Ouvrir l'App",
     hero_main: "Ouvrir l'application",
+    hero_signup: 'Créer un compte →',
+    hero_login: 'Déjà inscrit ? Se connecter',
     hero_out: 'Voir les tarifs',
     /* Stats */
     ss_label_1: 'Enseignants en Algérie',
@@ -2431,6 +2434,8 @@ var LANG = {
     nav_apropos: 'من أنا',
     nav_cta: 'فتح التطبيق',
     hero_main: 'فتح التطبيق',
+    hero_signup: 'إنشاء حساب ←',
+    hero_login: 'لديك حساب؟ تسجيل الدخول',
     hero_out: 'عرض الأسعار',
     ss_label_1: 'أستاذ في الجزائر',
     ss_label_2: 'مؤسسة تعليمية',
@@ -4623,6 +4628,14 @@ function toggleView() {
     window._loginRequested = true;
     if (typeof window.revealAppOrGate === 'function') window.revealAppOrGate();
   }
+}
+
+/* Bouton "Créer un compte" du hero : ouvre directement le formulaire d'inscription
+   (plutôt que l'écran de connexion par défaut) pour qu'un nouveau visiteur n'ait pas
+   à chercher le petit lien "Pas encore de compte ?" caché dans l'écran de connexion. */
+function openCreateAccount() {
+  toggleView();
+  if (typeof authShowView === 'function') authShowView('register');
 }
 
 /* ===== MODALS ===== */
