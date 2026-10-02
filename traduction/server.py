@@ -528,6 +528,60 @@ def letters():
 def dossiers_js():
     return send_from_directory(STATIC_DIR, "dossiers.js", mimetype="text/javascript", max_age=0)
 
+
+# ------------------------------------------------------------ assistant d'aide et notice
+with open(os.path.join(BASE_DIR, "aide.md"), encoding="utf-8") as _f:
+    HELP_KB = _f.read()
+
+
+@app.post("/api/help")
+def help_chat():
+    """Assistant d'aide : répond aux questions sur l'utilisation de Tarjama (guide aide.md)."""
+    denied = check_access()
+    if denied:
+        return denied
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return error("L'assistant n'est pas disponible : clé API manquante sur le serveur.", 503)
+    d = request.get_json(silent=True) or {}
+    question = str(d.get("question", "")).strip()[:600]
+    if not question:
+        return error("Question vide.", 400)
+    screen = str(d.get("screen", ""))[:30]
+    msgs = []
+    for m in (d.get("history") or [])[-6:]:
+        if isinstance(m, dict) and m.get("role") in ("user", "assistant") and str(m.get("content", "")).strip():
+            msgs.append({"role": m["role"], "content": str(m["content"])[:1200]})
+    while msgs and msgs[0]["role"] != "user":
+        msgs.pop(0)
+    if msgs and msgs[-1]["role"] == "user":
+        msgs.pop()
+    msgs.append({"role": "user", "content": question})
+    system = (
+        "Tu es l'assistant d'aide intégré à l'application Tarjama. Tu aides des débutants (bénévoles "
+        "d'une association) à utiliser l'application. Réponds en français simple et chaleureux (ou dans "
+        "la langue de la question), en phrases courtes, avec des étapes numérotées quand il faut "
+        "agir, en nommant les boutons exactement comme dans le guide. Appuie-toi UNIQUEMENT sur le guide "
+        "ci-dessous : si l'information n'y est pas, dis-le et conseille de demander au responsable de "
+        "l'association. Ne donne aucun conseil juridique, médical ou administratif et n'invente aucune "
+        "fonction. Reste bref (8 lignes maximum sauf demande de détail). "
+        f"L'utilisateur est actuellement sur l'écran : {screen or 'accueil'}.\n\n=== GUIDE ===\n{HELP_KB}"
+    )
+    try:
+        msg = get_client().messages.create(model=MODEL, max_tokens=700, system=system, messages=msgs)
+    except anthropic.APIError as e:
+        return error(f"Erreur : {getattr(e, 'message', e)}", 502)
+    return jsonify({"answer": "".join(b.text for b in msg.content if b.type == "text").strip()})
+
+
+@app.get("/notice")
+def notice():
+    return send_from_directory(STATIC_DIR, "notice.html", mimetype="text/html", max_age=0)
+
+
+@app.get("/aide.js")
+def aide_js():
+    return send_from_directory(STATIC_DIR, "aide.js", mimetype="text/javascript", max_age=0)
+
 @app.get("/qr.svg")
 def qr():
     text = request.args.get("text", "")[:300]

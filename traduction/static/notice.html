@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarjama — Notice d'utilisation</title>
+<style>
+:root{--brand:#0f5c6e;--soft:#e1f0f3;--warm:#d9641a;--ink:#14282e;--mut:#5d7078;--bd:#cfdadd}
+*{box-sizing:border-box}
+body{margin:0;background:#e9eef0;color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Arabic",sans-serif}
+.bar{position:sticky;top:0;background:var(--brand);color:#fff;padding:10px 16px;display:flex;gap:12px;align-items:center;z-index:5}
+.bar b{flex:1}.bar button{border:0;border-radius:10px;background:#fff;color:var(--brand);font-weight:700;padding:10px 16px;font-size:15px;cursor:pointer}
+.page{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:14mm 15mm;box-shadow:0 2px 12px rgba(0,0,0,.15);page-break-after:always;position:relative}
+.page:last-child{page-break-after:auto}
+h1{font-size:26px;margin:0;color:var(--brand)}
+h1 small{display:block;font-size:14px;font-weight:400;color:var(--mut)}
+h2{font-size:17px;margin:14px 0 6px;color:var(--brand);border-bottom:2px solid var(--soft);padding-bottom:3px}
+p,li{margin:3px 0}
+ul,ol{margin:4px 0 4px 20px;padding:0}
+.top{display:flex;gap:14px;align-items:center;border-bottom:3px solid var(--brand);padding-bottom:10px;margin-bottom:6px}
+.logo{width:54px;height:54px;border-radius:14px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:700}
+.url{margin-left:auto;text-align:center;font-size:12px}.url img{width:78px;height:78px;display:block;margin:0 auto 2px}
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:4px 0}
+td,th{border:1px solid var(--bd);padding:5px 8px;vertical-align:top;text-align:left}
+th{background:var(--soft)}
+td:first-child{white-space:nowrap;font-weight:700;width:1%}
+.box{background:var(--soft);border-radius:8px;padding:8px 12px;margin:8px 0;font-size:14px}
+.box.warn{background:#fcebdf}
+.steps{counter-reset:s;list-style:none;margin:6px 0;padding:0}
+.steps li{counter-increment:s;padding-left:34px;position:relative;margin:6px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;display:grid;place-items:center;font-size:13px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.foot{position:absolute;left:15mm;right:15mm;bottom:9mm;font-size:11px;color:var(--mut);display:flex;justify-content:space-between}
+/* affiche */
+.poster{text-align:center}
+.poster h1{font-size:54px;margin:4mm 0 0}
+.poster .big{font-size:30px;font-weight:800;margin:6mm 0 8mm;line-height:1.25}
+.pstep{display:flex;align-items:center;gap:8mm;text-align:start;border:3px solid var(--brand);border-radius:6mm;padding:6mm 8mm;margin:6mm 0}
+.pstep .n{flex:none;width:22mm;height:22mm;border-radius:50%;background:var(--brand);color:#fff;font-size:38px;font-weight:800;display:grid;place-items:center}
+.pstep .t{flex:1;font-size:23px;font-weight:700;line-height:1.3}
+.pstep .t div{font-weight:600;font-size:21px;margin-top:2px}
+.pstep .t .ar{font-size:25px;color:var(--brand)}
+.pstep .ic{font-size:22mm;line-height:1}
+.poster .small{font-size:15px;color:var(--mut);margin-top:6mm}
+@media print{
+  body{background:#fff}.bar{display:none}
+  .page{margin:0;box-shadow:none;width:auto;min-height:0;height:267mm;padding:0;overflow:hidden}
+  @page{size:A4;margin:15mm}
+}
+@media(max-width:800px){.page{width:auto;margin:0;min-height:0;padding:16px}.cols{grid-template-columns:1fr}.foot{position:static;margin-top:14px}}
+</style>
+</head>
+<body>
+<div class="bar"><b>Notice Tarjama</b><button onclick="print()">🖨️ Imprimer (2 pages)</button></div>
+
+<!-- PAGE 1 : NOTICE BÉNÉVOLES -->
+<section class="page">
+  <div class="top">
+    <div class="logo">ت</div>
+    <h1>Tarjama<small>Notice d'utilisation pour les bénévoles</small></h1>
+    <div class="url"><img id="qr" alt="" width="78" height="78"><span id="addr"></span></div>
+  </div>
+
+  <p><b>À quoi ça sert ?</b> Parler avec une personne qui ne parle pas français : l'application traduit la voix, le texte et les documents, et permet de suivre les personnes accompagnées.</p>
+
+  <h2>1. Avant de commencer</h2>
+  <ul>
+    <li><b>Ouvrir l'adresse</b> ci-dessus (ou scanner le QR code) avec <b>Chrome</b> ou <b>Edge</b> (Safari sur iPhone).</li>
+    <li><b>Code d'accès</b> : saisi <b>une seule fois</b> par appareil (case en haut à droite). Il ne change jamais tout seul.</li>
+    <li><b>Autoriser le micro</b> quand le navigateur le demande.</li>
+    <li>Pour la garder comme une appli : menu du navigateur → « Ajouter à l'écran d'accueil ».</li>
+    <li>Il faut <b>Internet</b> (sauf « Phrases utiles »). Le tout premier lancement peut prendre 30 secondes.</li>
+  </ul>
+
+  <h2>2. Choisir la langue, puis un bouton</h2>
+  <p>Sur l'accueil, choisir d'abord <b>la langue de la personne</b> (mémorisée), puis :</p>
+  <table>
+    <tr><td>Français → langue</td><td>Je parle ou j'écris en français ; la traduction s'affiche en gros et est lue à voix haute.</td></tr>
+    <tr><td>Langue → français</td><td>La personne parle ; je lis la traduction en français. Permet aussi d'importer un message vocal reçu.</td></tr>
+    <tr><td>Deux téléphones</td><td>Chacun parle sa langue sur son propre téléphone (QR code). Mode écran pour une télé.</td></tr>
+    <tr><td>Conversation</td><td>Les deux sens sur un seul appareil, quand on est face à face.</td></tr>
+    <tr><td>Phrases utiles</td><td>18 phrases d'accueil toutes prêtes, avec voix, même sans Internet.</td></tr>
+    <tr><td>Dossiers et courriers</td><td>Suivi des personnes ; 6 courriers standards à imprimer.</td></tr>
+    <tr><td>Document</td><td>Photo / PDF / texte d'un courrier : traduire, simplifier, expliquer un formulaire.</td></tr>
+  </table>
+
+  <div class="cols">
+  <div>
+    <h2>3. Conversation face à face</h2>
+    <ol class="steps">
+      <li>Accueil → <b>Conversation</b>.</li>
+      <li>La personne parle : <b>🎤 Ils parlent</b>. La traduction française apparaît (bleu).</li>
+      <li>Je réponds : <b>🎤 Je parle (français)</b> ou j'écris. La traduction apparaît (vert) et est lue à voix haute.</li>
+      <li>Appuyer de nouveau sur le micro pour l'arrêter.</li>
+    </ol>
+    <h2>4. Deux téléphones</h2>
+    <ol class="steps">
+      <li>Accueil → <b>Deux téléphones</b> : un QR code s'affiche.</li>
+      <li>La personne le <b>scanne</b>, choisit sa langue, appuie sur <b>OK</b>.</li>
+      <li>Chacun appuie sur son 🎤 et parle : le message arrive traduit sur l'autre écran.</li>
+      <li><b>📺 Mode écran</b> : texte géant pour une télé.</li>
+    </ol>
+  </div>
+  <div>
+    <h2>5. Traduire un courrier</h2>
+    <ol class="steps">
+      <li>Accueil → <b>Document</b>.</li>
+      <li>Choisir : <b>Traduire</b> · <b>Simplifier</b> · <b>Formulaire</b>, puis le sens (vers français / vers sa langue).</li>
+      <li><b>📷 Photo</b> (bonne lumière, document à plat), image, PDF ou texte collé.</li>
+      <li>Lire le résultat, <b>🔊 Écouter</b>. <b>Vérifier dates et montants</b> sur l'original.</li>
+    </ol>
+    <h2>6. Dossier et courrier standard</h2>
+    <ol class="steps">
+      <li><b>Dossiers et courriers</b> → <b>+ Nouveau</b> (ou ouvrir un dossier).</li>
+      <li><b>Ajouter au suivi</b> : rendez-vous, appel, démarche… (signé de votre prénom).</li>
+      <li><b>✉️ Courrier standard</b> → modèle → remplir → <b>🖨️ Imprimer / PDF</b>.</li>
+    </ol>
+  </div>
+  </div>
+
+  <div class="box"><b>🧹 Entre deux personnes</b> : appuyer sur <b>« Nouvelle personne »</b> (en haut). Tout est effacé : conversation, photos, session. Cela se fait aussi seul après 10 minutes sans activité. Les dossiers ne sont pas supprimés.</div>
+  <div class="box warn"><b>⚠️ Traduction automatique.</b> Elle peut se tromper, surtout pour les dialectes et les sujets graves (santé, justice, papiers) : faire vérifier. Parler lentement, par phrases courtes, une idée à la fois.</div>
+  <div class="foot"><span>Besoin d'aide ? Appuyez sur le bouton <b>?</b> en haut de l'appli.</span><span>Page 1/3</span></div>
+</section>
+
+<!-- PAGE 2 : PROBLÈMES + CONFIDENTIALITÉ -->
+<section class="page">
+  <div class="top"><div class="logo">ت</div><h1>Tarjama<small>En cas de problème · Confidentialité</small></h1></div>
+
+  <h2>Problèmes fréquents</h2>
+  <table>
+    <tr><th>Je vois…</th><th>Je fais…</th></tr>
+    <tr><td>Le micro ne démarre pas, « Micro refusé »</td><td>Autoriser le micro dans le navigateur (cadenas à côté de l'adresse). Utiliser Chrome / Edge (Safari sur iPhone). Sinon, écrire.</td></tr>
+    <tr><td>« Ce navigateur ne gère pas la voix »</td><td>Changer de navigateur, ou écrire. (Chrome sur iPhone ne gère pas la voix : utiliser Safari.)</td></tr>
+    <tr><td>« Langue non reconnue à la voix »</td><td>Le dari, le pashto et quelques langues ne sont pas reconnus à la voix : écrire, ou importer un message vocal.</td></tr>
+    <tr><td>« Code d'accès incorrect »</td><td>Ressaisir le code. Après 10 erreurs : attendre 15 minutes.</td></tr>
+    <tr><td>Rien ne s'affiche, « Erreur »</td><td>Vérifier Internet (bandeau rouge « Pas de connexion »), réessayer. Premier lancement : patienter 30 secondes.</td></tr>
+    <tr><td>Pas de son</td><td>Monter le volume, cocher « Lire à voix haute », appuyer sur 🔊. Sur iPhone : désactiver le mode silencieux.</td></tr>
+    <tr><td>Traduction étrange</td><td>Reformuler avec une phrase plus courte. En darija, éviter de trop mélanger les langues.</td></tr>
+    <tr><td>La personne ne trouve pas sa langue</td><td>Choisir la plus proche (arabe standard…) ou passer par l'écriture.</td></tr>
+    <tr><td>« Session introuvable ou expirée »</td><td>Recréer une session « Deux téléphones » (elles durent 3 heures).</td></tr>
+    <tr><td>« La personne n'a pas encore rejoint »</td><td>Attendre qu'elle ait choisi sa langue et appuyé sur OK.</td></tr>
+    <tr><td>Photo de courrier illisible</td><td>Refaire avec plus de lumière, document à plat, texte net ; ou coller le texte.</td></tr>
+    <tr><td>« Les dossiers sont désactivés », « clé API »</td><td>Problème de réglage : prévenir le responsable de l'application.</td></tr>
+  </table>
+
+  <h2>Bonnes pratiques</h2>
+  <ul>
+    <li>Parler <b>lentement</b>, <b>phrases courtes</b>, faire des pauses.</li>
+    <li>Demander « <b>Avez-vous compris ?</b> » (dans Phrases utiles) et laisser la personne reformuler.</li>
+    <li>Pour la santé, la justice, les papiers importants : faire vérifier par un interprète professionnel ou une personne de confiance.</li>
+    <li>Un courrier traduit se <b>joint</b> au courrier en français, qui seul fait foi.</li>
+  </ul>
+
+  <h2>Confidentialité — à dire à la personne</h2>
+  <ul>
+    <li>Ses paroles et documents sont <b>traduits par un service en ligne</b> ; l'application ne les garde pas, et ils sont effacés de l'écran avec « Nouvelle personne ».</li>
+    <li>Seuls les <b>dossiers</b> sont conservés, <b>chiffrés</b>, avec l'accord de la personne. Ne noter que le nécessaire.</li>
+    <li>La personne peut demander la <b>suppression</b> de son dossier (bouton 🗑 dans le dossier).</li>
+    <li>Le code d'accès est partagé : ne pas le communiquer aux personnes accueillies ; le changer quand un bénévole part.</li>
+  </ul>
+  <div class="foot"><span>Tarjama · Interprète pour l'association</span><span>Page 2/3</span></div>
+</section>
+
+<!-- PAGE 3 : AFFICHE POUR LES PERSONNES ACCUEILLIES -->
+<section class="page poster">
+  <h1>Tarjama · ترجمة</h1>
+  <div class="big">Parlez dans votre langue<br>تكلّم بلغتك<br><span style="font-size:22px;font-weight:600;color:var(--mut)">Speak in your language</span></div>
+
+  <div class="pstep"><div class="ic">📱</div><div class="t">Scannez le code avec votre téléphone<div>Scan the code with your phone</div><div class="ar" dir="rtl">امسح الرمز بهاتفك</div></div><div class="n">1</div></div>
+  <div class="pstep"><div class="ic">🌍</div><div class="t">Choisissez votre langue, puis « OK »<div>Choose your language, then “OK”</div><div class="ar" dir="rtl">اختر لغتك ثم اضغط «OK»</div></div><div class="n">2</div></div>
+  <div class="pstep"><div class="ic">🎤</div><div class="t">Appuyez sur le micro et parlez<div>Press the microphone and speak</div><div class="ar" dir="rtl">اضغط على الميكروفون وتحدّث</div></div><div class="n">3</div></div>
+
+  <p class="small">Le bénévole voit votre message en français et vous répond : vous le lisez et l'entendez dans votre langue.<br>
+  Les paroles ne sont pas enregistrées.<br>
+  <span dir="rtl">لا يتم تسجيل كلامك.</span></p>
+  <div class="foot" style="justify-content:center"><span>Affiche à placer à l'accueil — le bénévole vous montre le code à scanner.</span></div>
+</section>
+
+<script>
+  const url = location.origin + "/";
+  document.getElementById("addr").textContent = location.host;
+  const q = document.getElementById("qr");
+  q.src = "/qr.svg?text=" + encodeURIComponent(url); q.onerror = () => q.remove();
+</script>
+</body>
+</html>
