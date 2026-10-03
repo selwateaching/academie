@@ -7751,7 +7751,8 @@ async function genCours(extraInstruction) {
   var wantComptineImg = (ty === 'comptine') && crsComptineImgEl && crsComptineImgEl.checked && (typeof biblioIsPro === 'function') && biblioIsPro();
   var comptineImgPromise = wantComptineImg
     ? fetch('/.netlify/functions/generate-image', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: 'colorful cheerful cartoon illustration for a children\'s educational rhyme, simple shapes, bright warm colors, no text, no words, theme: ' + titre }) })
-        .then(function(r){ return r.json(); }).catch(function(){ return null; })
+        .then(function(r){ return r.json(); })
+        .catch(function(err){ return { error: { message: 'Erreur réseau : ' + (err && err.message || 'inconnue') } }; })
     : Promise.resolve(null);
   Promise.all([
     fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){
@@ -7772,7 +7773,8 @@ async function genCours(extraInstruction) {
     if (imgResult && imgResult.base64) {
       imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="max-width:100%;border-radius:14px;" alt=""></div>';
     } else if (wantComptineImg) {
-      N(CURRENT_LANG==='ar'?'تعذّر إنشاء الصورة، لكن الأنشودة جاهزة.':'Illustration impossible à générer, mais la comptine est prête.','err');
+      var imgErrDetail = (imgResult && imgResult.error && imgResult.error.message) ? imgResult.error.message : '';
+      N((CURRENT_LANG==='ar'?'تعذّر إنشاء الصورة، لكن الأنشودة جاهزة.':'Illustration impossible à générer, mais la comptine est prête.') + (imgErrDetail ? ' — ' + imgErrDetail : ''),'err');
     }
     var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
