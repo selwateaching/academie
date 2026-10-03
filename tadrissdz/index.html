@@ -1642,6 +1642,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
           <div class="fg" id="crsComptineImgLocked" style="display:none;background:var(--ap,#FBF0E3);border-radius:10px;padding:.7rem .9rem;font-size:.82rem;color:var(--ink2);">
             🔒 L'illustration automatique est réservée au forfait <b>Pro</b>. <a onclick="go('abonnement')" style="color:var(--t);cursor:pointer;text-decoration:underline;">Voir les forfaits</a>
+            <div id="crsComptineImgDebugPlan" style="margin-top:.4rem;font-size:.72rem;color:var(--ink3);"></div>
           </div>
         </div>
         <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
@@ -7372,6 +7373,11 @@ function onCrsTypeChange() {
     if (imgRowEl) imgRowEl.style.display = comptineIsPro ? 'block' : 'none';
     if (imgLockedEl) imgLockedEl.style.display = comptineIsPro ? 'none' : 'block';
     if (!comptineIsPro) { var cbImg = document.getElementById('crsComptineImg'); if (cbImg) cbImg.checked = false; }
+    /* Repère visuel temporaire pour diagnostiquer les cas où un compte Pro voit quand même
+       le message verrouillé : affiche la valeur brute détectée côté navigateur, sans avoir
+       besoin d'ouvrir la console. À retirer une fois le souci confirmé résolu. */
+    var debugPlanEl = document.getElementById('crsComptineImgDebugPlan');
+    if (debugPlanEl) debugPlanEl.textContent = '(forfait détecté par le site : ' + JSON.stringify(window._planProf) + ')';
   }
   updateCrsTLabel();
   var crsType = document.getElementById('crsType');
