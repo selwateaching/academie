@@ -94,7 +94,8 @@ STABILITY_ENGINE_ID = "stable-diffusion-xl-1024-v1-0"  # le modèle le moins che
 
 @app.post("/.netlify/functions/generate-image")
 def generate_image():
-    api_key = os.environ.get("STABILITY_API_KEY")
+    api_key_raw = os.environ.get("STABILITY_API_KEY")
+    api_key = (api_key_raw or "").strip()  # retire espaces/retours à la ligne accidentels copiés depuis Render
     if not api_key:
         return jsonify({"error": {"message": "Génération d'images non configurée (clé Stability AI manquante).", "type": "config_error"}})
 
@@ -122,7 +123,8 @@ def generate_image():
             timeout=60,
         )
         if not r.ok:
-            return jsonify({"error": {"message": f"Stability AI a renvoyé une erreur ({r.status_code}) : {r.text[:300]}", "type": "api_error"}})
+            diag = f" [diagnostic : clé reçue de {len(api_key_raw or '')} caractères, {len(api_key)} après nettoyage des espaces]"
+            return jsonify({"error": {"message": f"Stability AI a renvoyé une erreur ({r.status_code}) : {r.text[:300]}{diag}", "type": "api_error"}})
         data = r.json()
         artifacts = data.get("artifacts") or []
         if not artifacts or not artifacts[0].get("base64"):
