@@ -82,6 +82,17 @@ Disponible seulement si l'association a activé les dossiers (sinon un message i
 - **✏️ Modifier**, **Clore/Rouvrir le dossier**, **🗑 Supprimer le dossier** (définitif, sur demande de la personne ou à la fin du suivi).
 - **✉️ Courrier standard** : choisir un modèle parmi 12 : consentement à la transmission du dossier (à faire signer avant d'envoyer un dossier à une entreprise), présentation d'un candidat à une entreprise, convocation à un entretien d'embauche, lettre d'intention d'embauche (à faire signer par l'entreprise), courrier d'accompagnement pour une demande d'autorisation de travail, relance d'un dossier en attente, attestation d'accompagnement, attestation de présence, demande de rendez-vous, transmission de pièces, demande de réexamen, rappel de rendez-vous. Les modèles d'intention d'embauche et d'autorisation de travail sont indicatifs : ils ne remplacent pas le formulaire officiel de la DREETS ou de la préfecture. Remplir les cases (les noms viennent du dossier, l'en-tête de l'association est automatique), vérifier l'aperçu, puis **🖨️ Imprimer / PDF** (choisir « Enregistrer au format PDF » dans la fenêtre d'impression pour un fichier). **🌍 Traduire pour la personne** ajoute une version traduite à joindre ; seul le courrier en français fait foi. Chaque courrier imprimé est noté dans le journal du dossier. Les modèles sont les mêmes pour tous ; l'association peut les modifier dans un fichier unique.
 
+## Entreprises, offres et candidats suggérés
+Dans **Dossiers et courriers**, trois onglets en haut : **👥 Candidats**, **🏢 Entreprises**, **📊 Tableau**.
+- **Entreprises** → **+ Nouvelle entreprise** : nom, secteur, personne à contacter, téléphone, e-mail, adresse, notes.
+- Ouvrir une entreprise → **Offres d'emploi** : poste, nombre de postes, urgence (Normale / Urgente), niveau de français minimum → **+ Ajouter l'offre**. Le statut d'une offre se change (Ouverte / Pourvue / Annulée).
+- Sous chaque offre ouverte, **« 👥 Candidats suggérés »** liste les candidats dont le métier correspond (non clos, pas déjà embauchés), les mieux placés d'abord (consentement enregistré, niveau de français suffisant). Le bouton **Proposer** associe le candidat à l'entreprise, passe son étape à « Proposé à une entreprise » et le note dans son journal. **Il est refusé si le consentement du candidat n'est pas enregistré** : faire signer le courrier « Consentement » puis enregistrer la date dans le dossier.
+- **🤝 Entretien traduit (2 téléphones)** (dans la fiche d'un candidat) ouvre la session « Deux téléphones » dans sa langue, pour un entretien d'embauche avec l'employeur ; noter ensuite l'entretien dans le suivi.
+
+## Tableau de bord et démonstration
+- **📊 Tableau** : nombre de candidats en cours, postes à pourvoir (dont urgents), titres de séjour à surveiller, candidats sans consentement, candidats par étape.
+- En bas du tableau, **Créer les données de démo** ajoute 8 candidats et 3 entreprises FICTIFS marqués « DÉMO » pour présenter l'application ; **Supprimer les données de démo** les retire sans toucher aux vrais dossiers.
+
 ## Bonnes pratiques
 - Parler lentement, phrases courtes, une idée à la fois ; faire des pauses.
 - Reformuler et demander « Avez-vous compris ? » (disponible dans Phrases utiles).

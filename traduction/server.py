@@ -382,6 +382,7 @@ def db():
     con = sqlite3.connect(DB_PATH, timeout=10)
     try:
         con.execute("CREATE TABLE IF NOT EXISTS dossiers (id TEXT PRIMARY KEY, updated REAL, data BLOB)")
+        con.execute("CREATE TABLE IF NOT EXISTS entreprises (id TEXT PRIMARY KEY, updated REAL, data BLOB)")
         yield con
     finally:
         con.close()
@@ -441,8 +442,9 @@ def clean_dossier(d):
 
 def summary(d):
     out = {k: d.get(k, "") for k in ("id", "prenom", "nom", "langue_nom", "statut", "echeance", "updated",
-                                      "metier", "entreprise", "etape", "titre_expiration", "niveau_fr")}
+                                      "metier", "entreprise", "etape", "titre_expiration", "niveau_fr", "demo", "consentement")}
     out["pieces_ok"] = len(d.get("pieces") or [])
+    out["demo"] = bool(d.get("demo"))
     return out
 
 
@@ -674,6 +676,19 @@ def dossiers_export():
             sj.append([f"{d.get('prenom', '')} {d.get('nom', '')}".strip(), e.get("date", ""),
                        TYPE_LABEL.get(e.get("type"), "Note"), e.get("texte", ""), e.get("auteur", "")])
     style_header(sj, [28, 12, 14, 70, 14])
+    with _db_lock, db() as con:
+        es = [e for e in (load_ent(con, r[0]) for r in con.execute("SELECT id FROM entreprises")) if e]
+    if es:
+        we = wb.create_sheet("Entreprises")
+        we.append(["Entreprise", "Secteur", "Contact", "Téléphone", "E-mail", "Adresse", "Notes"])
+        wo = wb.create_sheet("Offres")
+        wo.append(["Entreprise", "Poste", "Nombre", "Urgence", "Niveau de français minimum", "Statut", "Notes"])
+        for e in sorted(es, key=lambda x: x.get("nom", "").lower()):
+            we.append([e.get(k, "") for k in ("nom", "secteur", "contact_nom", "contact_tel", "contact_email", "adresse", "notes")])
+            for o in e.get("offres", []):
+                wo.append([e["nom"], o["poste"], o["nb"], o["urgence"], o["niveau_min"], o["statut"], o["notes"]])
+        style_header(we, [28, 22, 20, 16, 28, 36, 50])
+        style_header(wo, [28, 26, 9, 12, 26, 12, 40])
     return xlsx_response(wb, f"dossiers-{_dt.date.today().isoformat()}.xlsx")
 
 
@@ -794,6 +809,174 @@ def dossiers_import():
                 save_dossier(con, d)
     return jsonify({"crees": created, "ignores": skipped, "problemes": problems[:20]})
 
+
+# ---- entreprises et offres
+ENT_FIELDS = {"nom": 100, "contact_nom": 80, "contact_tel": 30, "contact_email": 100,
+              "adresse": 200, "secteur": 60, "notes": 2000}
+OFFRE_STATUTS = ("Ouverte", "Pourvue", "Annulée")
+
+
+def load_ent(con, eid):
+    row = con.execute("SELECT data FROM entreprises WHERE id=?", (eid,)).fetchone()
+    if not row:
+        return None
+    try:
+        d = json.loads(fernet().decrypt(row[0]))
+    except InvalidToken:
+        return None
+    d["id"] = eid
+    return d
+
+
+def save_ent(con, d):
+    eid = d.pop("id")
+    d["updated"] = time.time()
+    con.execute("INSERT OR REPLACE INTO entreprises VALUES (?,?,?)",
+                (eid, d["updated"], fernet().encrypt(json.dumps(d, ensure_ascii=False).encode())))
+    con.commit()
+    d["id"] = eid
+
+
+def clean_offres(raw):
+    out = []
+    for o in (raw or [])[:50]:
+        if not isinstance(o, dict) or not clip(o.get("poste"), 80):
+            continue
+        try:
+            nb = max(1, min(99, int(o.get("nb") or 1)))
+        except (TypeError, ValueError):
+            nb = 1
+        out.append({"id": clip(o.get("id"), 12) or uuid.uuid4().hex[:8], "poste": clip(o.get("poste"), 80), "nb": nb,
+                    "urgence": "Urgente" if o.get("urgence") == "Urgente" else "Normale",
+                    "niveau_min": o.get("niveau_min") if o.get("niveau_min") in PARCOURS["niveaux_francais"] else "",
+                    "statut": o.get("statut") if o.get("statut") in OFFRE_STATUTS else "Ouverte",
+                    "notes": clip(o.get("notes"), 500)})
+    return out
+
+
+@app.get("/api/entreprises")
+def entreprises_list():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    with _db_lock, db() as con:
+        out = [d for d in (load_ent(con, r[0]) for r in con.execute("SELECT id FROM entreprises")) if d]
+    out.sort(key=lambda d: d.get("nom", "").lower())
+    return jsonify({"entreprises": out})
+
+
+@app.post("/api/entreprises")
+def entreprise_create():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    data = request.get_json(silent=True) or {}
+    d = {k: clip(data.get(k), n) for k, n in ENT_FIELDS.items()}
+    if not d["nom"]:
+        return error("Indiquez le nom de l'entreprise.", 400)
+    d.update({"offres": clean_offres(data.get("offres")), "created": time.time(), "id": uuid.uuid4().hex[:12]})
+    with _db_lock, db() as con:
+        save_ent(con, d)
+    return jsonify(d), 201
+
+
+@app.put("/api/entreprises/<eid>")
+def entreprise_update(eid):
+    denied = dossier_guard()
+    if denied:
+        return denied
+    data = request.get_json(silent=True) or {}
+    with _db_lock, db() as con:
+        d = load_ent(con, eid)
+        if not d:
+            return error("Entreprise introuvable.", 404)
+        for k, n in ENT_FIELDS.items():
+            if k in data:
+                d[k] = clip(data[k], n)
+        if "offres" in data:
+            d["offres"] = clean_offres(data["offres"])
+        if not d["nom"]:
+            return error("Indiquez le nom de l'entreprise.", 400)
+        save_ent(con, d)
+    return jsonify(d)
+
+
+@app.delete("/api/entreprises/<eid>")
+def entreprise_delete(eid):
+    denied = dossier_guard()
+    if denied:
+        return denied
+    with _db_lock, db() as con:
+        con.execute("DELETE FROM entreprises WHERE id=?", (eid,))
+        con.commit()
+        con.execute("VACUUM")
+    return jsonify({"ok": True})
+
+
+# ---- données de démonstration (fictives, supprimables d'un clic)
+DEMO_CANDIDATS = [
+    ("Karim", "Démo A.", "marocain", "Maçon", "Intermédiaire", "Oui", "Immédiate", "Proposé à une entreprise", "Carte de séjour", 400, True, ["identite", "titre", "photo", "cv", "consentement"]),
+    ("Amina", "Démo B.", "algérien", "Aide-soignante", "Avancé", "Non", "Dans 1 mois", "Pré-sélectionné", "Récépissé", 40, True, ["identite", "titre", "cv", "diplomes", "consentement"]),
+    ("Ahmed", "Démo C.", "tunisien", "Cuisinier", "Débutant", "Non", "Immédiate", "Entretien", "Visa long séjour", 25, True, ["identite", "titre", "photo"]),
+    ("Olena", "Démo D.", "ukrainien", "Agent de propreté", "Intermédiaire", "Oui", "Immédiate", "Démarches administratives", "Protection temporaire", 200, True, ["identite", "titre", "photo", "domicile", "cv", "secu", "rib", "consentement", "promesse"]),
+    ("Mamadou", "Démo E.", "anglais", "Soudeur", "Débutant", "Oui", "Dans 2 semaines", "Premier contact", "", 0, False, ["identite"]),
+    ("Zahra", "Démo F.", "dari", "Couturière", "Débutant", "Non", "Immédiate", "Pré-sélectionné", "Récépissé", 20, True, ["identite", "titre", "cv", "consentement"]),
+    ("Ivan", "Démo G.", "russe", "Chauffeur-livreur", "Intermédiaire", "Oui", "Immédiate", "Embauché", "Carte de séjour", 500, True, PIECE_KEYS and sorted(PIECE_KEYS)),
+    ("Fatima", "Démo H.", "arabe", "Employée de restauration", "Intermédiaire", "Non", "Immédiate", "Pré-sélectionné", "Récépissé", 70, False, ["identite", "titre"]),
+]
+DEMO_ENTREPRISES = [
+    ("Maçonnerie Démo SARL", "BTP", "Mme Martin", [("Maçon", 2, "Urgente", "Débutant"), ("Coffreur", 1, "Normale", "")]),
+    ("EHPAD Démo Les Lilas", "Santé / médico-social", "M. Dupont", [("Aide-soignant", 3, "Normale", "Intermédiaire"), ("Agent de propreté", 1, "Normale", "")]),
+    ("Restaurant Démo Chez Léa", "Restauration", "Léa B.", [("Cuisinier", 1, "Urgente", "Débutant"), ("Employé de restauration", 2, "Normale", "")]),
+]
+
+
+@app.post("/api/demo")
+def demo_create():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    now = _dt.date.today()
+    etapes = PARCOURS["etapes"]
+    with _db_lock, db() as con:
+        for (pre, nom, lang, metier, niv, permis, dispo, etape, titre, jours, consent, pieces) in DEMO_CANDIDATS:
+            code, lname = lang_of(lang)
+            d = {"prenom": pre, "nom": nom, "langue_code": code, "langue_nom": lname, "tel": "", "statut": "En cours",
+                 "echeance": "", "notes": "Dossier FICTIF de démonstration.", "metier": metier, "niveau_fr": niv,
+                 "permis": permis, "disponibilite": dispo,
+                 "etape": next((e for e in etapes if norm(e) == norm(etape)), etape),
+                 "entreprise": "Maçonnerie Démo SARL" if etape == "Proposé à une entreprise" else "",
+                 "titre_type": titre, "titre_expiration": (now + _dt.timedelta(days=jours)).isoformat() if jours else "",
+                 "consentement": now.isoformat() if consent else "", "pieces": list(pieces or []), "demo": True,
+                 "created": time.time(), "journal": [{"id": uuid.uuid4().hex[:8], "type": "note", "date": now.isoformat(),
+                                                      "texte": "Dossier de démonstration créé.", "auteur": "Démo"}],
+                 "id": uuid.uuid4().hex[:12]}
+            save_dossier(con, clean_dossier(d))
+        for nom, secteur, contact, offres in DEMO_ENTREPRISES:
+            save_ent(con, {"nom": nom, "secteur": secteur, "contact_nom": contact, "contact_tel": "", "contact_email": "",
+                           "adresse": "Maine-et-Loire (fictif)", "notes": "Entreprise FICTIVE de démonstration.", "demo": True,
+                           "offres": clean_offres([{"poste": p, "nb": n, "urgence": u, "niveau_min": m} for p, n, u, m in offres]),
+                           "created": time.time(), "id": uuid.uuid4().hex[:12]})
+    return jsonify({"ok": True, "candidats": len(DEMO_CANDIDATS), "entreprises": len(DEMO_ENTREPRISES)})
+
+
+@app.delete("/api/demo")
+def demo_delete():
+    denied = dossier_guard()
+    if denied:
+        return denied
+    n = 0
+    with _db_lock, db() as con:
+        for table, loader in (("dossiers", load_dossier), ("entreprises", load_ent)):
+            for r in list(con.execute(f"SELECT id FROM {table}")):
+                d = loader(con, r[0])
+                if d and d.get("demo"):
+                    con.execute(f"DELETE FROM {table} WHERE id=?", (r[0],))
+                    n += 1
+        con.commit()
+        con.execute("VACUUM")
+    return jsonify({"supprimes": n})
+
 @app.get("/api/letters")
 def letters():
     """Courriers standards (letters.json) + coordonnées de l'association."""
@@ -811,6 +994,11 @@ def letters():
             "ville": os.environ.get("ASSO_CITY", ""),
         },
     })
+
+
+@app.get("/entreprises.js")
+def entreprises_js():
+    return send_from_directory(STATIC_DIR, "entreprises.js", mimetype="text/javascript", max_age=0)
 
 
 @app.get("/dossiers.js")

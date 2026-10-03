@@ -64,6 +64,7 @@ function renderList(){
     const b = el("button","dcard"); b.type = "button";
     b.append(el("div","n", fullName(d) || "(sans nom)"));
     const m = el("div","m");
+    if(d.demo) m.append(el("span","badge late","DÉMO"));
     if(d.etape) m.append(el("span","badge", d.etape));
     if(d.statut === "Clos") m.append(el("span","badge clos","Clos"));
     const tb = titreBadge(d); if(tb) m.append(el("span","badge "+tb[1], tb[0]));
@@ -173,6 +174,10 @@ $("dClose").onclick = async () => {
 $("dDel").onclick = async () => {
   if(!confirm("Supprimer définitivement ce dossier et tout son suivi ? Cette action est irréversible.")) return;
   try{ await dj("/api/dossiers/"+D.cur.id,"DELETE"); D.cur = null; openDossiers(); }catch(e){ alert(e.message); }
+};
+$("dEntretien").onclick = () => {
+  if(D.cur.langue_code){ $("lang").value = D.cur.langue_code; $("lang").dispatchEvent(new Event("change")); }
+  go("pair");
 };
 $("dTranslate").onclick = () => {
   if(D.cur.langue_code){ $("lang").value = D.cur.langue_code; $("lang").dispatchEvent(new Event("change")); }

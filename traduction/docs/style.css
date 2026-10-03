@@ -1,0 +1,13 @@
+@page{size:A4;margin:12mm 14mm}
+body{font:9.8pt/1.38 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#14282e;margin:0}
+h1{font-size:22pt;margin:0;color:#0f5c6e}h1 small{display:block;font-size:11pt;color:#5d7078;font-weight:400;margin-top:2pt}
+h2{break-after:avoid;font-size:12pt;color:#0f5c6e;border-bottom:2px solid #e1f0f3;padding-bottom:2pt;margin:10pt 0 4pt}
+p,li{margin:3pt 0}ul,ol{margin:3pt 0 3pt 16pt;padding:0}
+table{border-collapse:collapse;width:100%;font-size:9pt;margin:3pt 0}
+td,th{border:1px solid #cfdadd;padding:4pt 6pt;vertical-align:top;text-align:left}th{background:#e1f0f3}
+td:first-child{font-weight:700;width:30%}
+.box{background:#e1f0f3;border-radius:6pt;padding:6pt 10pt;margin:8pt 0}.warn{background:#fcebdf}
+.q{border-bottom:1px dotted #9fb3b9;min-height:22pt;margin:2pt 0 6pt}
+.top{display:flex;gap:12pt;align-items:center;border-bottom:3px solid #0f5c6e;padding-bottom:8pt;margin-bottom:6pt}
+.top img{width:54pt;height:54pt;border-radius:12pt}
+li,tr,.box{break-inside:avoid}

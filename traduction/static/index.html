@@ -158,6 +158,16 @@ textarea{width:100%;min-height:90px}
 .pieces label{display:flex;gap:10px;align-items:center;margin:0;padding:8px 2px;font-size:15px;font-weight:500;color:var(--ink);text-transform:none;letter-spacing:0;min-height:40px}
 .pieces input{width:22px;height:22px;min-height:0;flex:none}
 .pieces label.ok{color:var(--mut);text-decoration:line-through}
+.bar{height:10px;border-radius:6px;background:var(--brand);min-width:4px}
+.brow{display:flex;gap:10px;align-items:center;font-size:14px;margin:4px 0}
+.brow .l{flex:0 0 46%}.brow .n{flex:0 0 28px;text-align:end;font-weight:700}.brow .t{flex:1}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:26px;color:var(--brand)}.kpi.warn2 b{color:#b3261e}
+.offre{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.sugg{margin-top:8px;border-top:1px dashed var(--bd);padding-top:6px}
+.sugg .c{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:5px 0;font-size:14px}
+.sugg button{min-height:36px;padding:6px 12px}
 /* aide */
 .helpcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:2px solid #c9a24a;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fffaf0,#f6ead0);color:#3b2a0b;box-shadow:0 6px 20px rgba(201,162,74,.35);animation:glow 2.6s ease-in-out infinite}
 .helpcard img{width:84px;height:84px;border-radius:18px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -252,6 +262,8 @@ textarea{width:100%;min-height:90px}
 <!-- DOSSIERS -->
 <section class="screen" id="dossiers">
   <div class="page">
+    <div class="seg" id="dTabs"><button data-tab="cand" class="sel">👥 Candidats</button><button data-tab="ent">🏢 Entreprises</button><button data-tab="board">📊 Tableau</button></div>
+    <div id="tabCand">
     <div class="row"><input type="text" id="dSearch" placeholder="Rechercher un nom…" aria-label="Rechercher"><button class="btn" id="dNew">+ Nouveau</button></div>
     <select id="dEtapeFilter" aria-label="Filtrer par étape"></select>
     <div id="dAlert" class="alertbox hide"></div>
@@ -263,6 +275,12 @@ textarea{width:100%;min-height:90px}
       <button class="btn sec" id="dModele">📋 Modèle Excel</button>
       <input type="file" id="dFile" accept=".xlsx,.csv" hidden>
     </div>
+    </div>
+    <div id="tabEnt" class="hide">
+      <button class="btn" id="eNew" style="width:100%">+ Nouvelle entreprise</button>
+      <div id="eList" style="display:flex;flex-direction:column;gap:10px;margin-top:10px"></div>
+    </div>
+    <div id="tabBoard" class="hide"></div>
     <div class="warn">🔒 Données chiffrées, accessibles avec le code d'accès. Rien n'est supprimé automatiquement.</div>
   </div>
 </section>
@@ -292,6 +310,34 @@ textarea{width:100%;min-height:90px}
   </div>
 </section>
 
+<section class="screen" id="eform">
+  <div class="page form">
+    <h2 id="eFormTitle" style="margin:0">Nouvelle entreprise</h2>
+    <label for="eNom">Nom de l'entreprise</label><input type="text" id="eNom" autocomplete="off">
+    <label for="eSecteur">Secteur</label><input type="text" id="eSecteur" autocomplete="off" placeholder="ex. BTP, restauration, santé, agriculture">
+    <label for="eContactNom">Personne à contacter</label><input type="text" id="eContactNom" autocomplete="off">
+    <div class="row"><div style="flex:1"><label for="eContactTel">Téléphone</label><input type="text" id="eContactTel" inputmode="tel"></div>
+      <div style="flex:1"><label for="eContactEmail">E-mail</label><input type="text" id="eContactEmail" inputmode="email"></div></div>
+    <label for="eAdresse">Adresse</label><input type="text" id="eAdresse" autocomplete="off">
+    <label for="eNotes">Notes</label><textarea id="eNotes"></textarea>
+    <div class="row" style="margin-top:12px"><button class="btn sec" id="eCancel" style="flex:1">Annuler</button><button class="btn" id="eSave" style="flex:1">Enregistrer</button></div>
+    <div id="eMsg" class="warn"></div>
+  </div>
+</section>
+
+<section class="screen" id="entreprise">
+  <div class="page">
+    <div id="eHead"></div>
+    <div class="row"><button class="btn sec" id="eEdit">✏️ Modifier</button><button class="btn danger" id="eDel">🗑 Supprimer</button></div>
+    <div class="form"><label>Offres d'emploi</label>
+      <div id="oList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div class="row" style="margin-top:8px"><input type="text" id="oPoste" placeholder="Poste (ex. maçon)" style="flex:2"><input type="number" id="oNb" value="1" min="1" max="99" style="flex:0 0 70px" aria-label="Nombre de postes"></div>
+      <div class="row" style="margin-top:6px"><select id="oUrg" style="flex:1"><option>Normale</option><option>Urgente</option></select><select id="oNiv" style="flex:1"></select></div>
+      <button class="btn" id="oAdd" style="margin-top:6px;width:100%">+ Ajouter l'offre</button>
+    </div>
+  </div>
+</section>
+
 <section class="screen" id="dossier">
   <div class="page">
     <div id="dHead"></div>
@@ -300,6 +346,7 @@ textarea{width:100%;min-height:90px}
     <div class="row" style="flex-wrap:wrap">
       <button class="btn" id="dTranslate">🌍 Traduire avec cette personne</button>
       <button class="btn" id="dLetter">✉️ Courrier standard</button>
+      <button class="btn" id="dEntretien">🤝 Entretien traduit (2 téléphones)</button>
       <button class="btn sec" id="dEdit">✏️ Modifier</button>
     </div>
     <div class="form"><label>Ajouter au suivi</label>
@@ -903,6 +950,7 @@ addEventListener("online",updOnline); addEventListener("offline",updOnline); upd
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(()=>{});
 </script>
 <script src="/dossiers.js"></script>
+<script src="/entreprises.js"></script>
 <script src="/aide.js"></script>
 </body>
 </html>

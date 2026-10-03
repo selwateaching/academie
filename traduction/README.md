@@ -22,6 +22,9 @@ Carte **Dossiers et courriers** : suivi des personnes accompagnées.
 - **Traduire avec cette personne** : ouvre la conversation dans sa langue.
 - **Courrier standard** : 12 modèles, dont ceux du recrutement (consentement à signer, présentation de candidat, convocation à un entretien, intention d'embauche, courrier d'accompagnement DREETS, relance) en plus des attestations et demandes courantes pré-remplis avec les données du dossier et l'en-tête de l'association, à imprimer ou enregistrer en PDF, avec une version traduite pour la personne. Chaque courrier généré est noté dans le journal.
 - **Export / import Excel** : « ⬇️ Exporter (Excel) » télécharge tous les dossiers et leur suivi (2 onglets) pour archive ou sauvegarde ; « ⬆️ Importer un Excel » ajoute une liste de personnes (modèle fourni avec « 📋 Modèle Excel », `.csv` accepté ; les doublons prénom + nom sont ignorés).
+- **Entreprises et offres** : fiches entreprises, offres d'emploi (poste, nombre, urgence, niveau de français minimum), **candidats suggérés** automatiquement par offre, bouton « Proposer » (refusé sans consentement du candidat, qui met à jour l'étape et le journal).
+- **Tableau de bord** : candidats par étape, postes à pourvoir, titres de séjour à surveiller, consentements manquants. **Mode démo** : données FICTIVES (marquées « DÉMO ») créées/supprimées d'un clic pour présenter l'application.
+- **Entretien traduit** : bouton dans la fiche candidat qui ouvre la session « Deux téléphones » dans sa langue.
 - **Courriers modifiables** : les textes sont dans `letters.json` (un seul fichier, identique pour tous les bénévoles).
 
 **Protection des données** (à activer, sinon les dossiers restent désactivés) :
@@ -86,3 +89,7 @@ Le micro du navigateur exige HTTPS (fourni par Render).
 - Une traduction automatique peut se tromper : pour les situations sensibles (santé, justice), à faire confirmer.
 - Les dialectes arabes sont compris de façon variable par la reconnaissance vocale.
 - Un appel téléphonique n'est pas capté directement par le navigateur : haut-parleur + micro de l'appareil.
+
+## Proposer l'outil à une association
+
+Le dossier `docs/` contient une **note de présentation** (`proposition.pdf`, 2 pages : fonctions, données personnelles, limites, coûts, essai de 4 semaines) et un **questionnaire de cadrage** (`questionnaire.pdf`) pour recueillir les vraies étapes, pièces et courriers de l'association. Présentez toujours l'outil avec les **données de démo** : jamais de vraies données de personnes pour une démonstration.
