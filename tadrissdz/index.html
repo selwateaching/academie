@@ -1626,6 +1626,16 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
             <div class="fg"><label class="fl" data-fl="diffcomptine">Niveau de difficulté</label><select class="fs" id="crsComptineDiff"><option value="facile">🟢 Facile</option><option value="moyen" selected>🟡 Moyen</option><option value="difficile">🔴 Difficile</option></select></div>
             <div class="fg"><label class="fl" data-fl="langcomptine">Langue de la comptine</label><select class="fs" id="crsComptineLang"><option value="fr">Français</option><option value="ar">Arabe</option><option value="en">Anglais</option><option value="es">Espagnol</option></select></div>
           </div>
+          <div class="fg" id="crsComptineImgRow" style="background:var(--tp,#E6F4EE);border-radius:10px;padding:.7rem .9rem;">
+            <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;font-size:.84rem;line-height:1.4;">
+              <input type="checkbox" id="crsComptineImg" style="margin-top:3px;flex:none;">
+              <span>🖼️ <strong>Illustrer avec une image (Pro)</strong><br>
+              <span style="color:var(--ink3);font-size:.78rem;">Génère une illustration colorée en lien avec le sujet, ajoutée en haut de la fiche.</span></span>
+            </label>
+          </div>
+          <div class="fg" id="crsComptineImgLocked" style="display:none;background:var(--ap,#FBF0E3);border-radius:10px;padding:.7rem .9rem;font-size:.82rem;color:var(--ink2);">
+            🔒 L'illustration automatique est réservée au forfait <b>Pro</b>. <a onclick="go('abonnement')" style="color:var(--t);cursor:pointer;text-decoration:underline;">Voir les forfaits</a>
+          </div>
         </div>
         <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
         <div class="fg"><label class="fl" data-fl="prerequis">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
@@ -7343,6 +7353,14 @@ function onCrsTypeChange() {
   var showComptine = (ty === 'comptine');
   var crsComptineFieldsEl = document.getElementById('crsComptineFields');
   if (crsComptineFieldsEl) crsComptineFieldsEl.style.display = showComptine ? 'block' : 'none';
+  if (showComptine) {
+    var comptineIsPro = (typeof biblioIsPro === 'function') && biblioIsPro();
+    var imgRowEl = document.getElementById('crsComptineImgRow');
+    var imgLockedEl = document.getElementById('crsComptineImgLocked');
+    if (imgRowEl) imgRowEl.style.display = comptineIsPro ? 'block' : 'none';
+    if (imgLockedEl) imgLockedEl.style.display = comptineIsPro ? 'none' : 'block';
+    if (!comptineIsPro) { var cbImg = document.getElementById('crsComptineImg'); if (cbImg) cbImg.checked = false; }
+  }
   updateCrsTLabel();
   var crsType = document.getElementById('crsType');
   var opt = crsType.selectedOptions[0];
@@ -7711,17 +7729,34 @@ async function genCours(extraInstruction) {
   var maxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
   if (tcVeutCursive()) prompt += TC_CURSIVE_INSTRUCTION;
-  fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){
-    if (!r.ok) { throw new Error('SERVEUR_INDISPONIBLE'); }
-    return r.json();
-  }).then(function(data){
+  var crsComptineImgEl = document.getElementById('crsComptineImg');
+  var wantComptineImg = (ty === 'comptine') && crsComptineImgEl && crsComptineImgEl.checked && (typeof biblioIsPro === 'function') && biblioIsPro();
+  var comptineImgPromise = wantComptineImg
+    ? fetch('/.netlify/functions/generate-image', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: 'colorful cheerful cartoon illustration for a children\'s educational rhyme, simple shapes, bright warm colors, no text, no words, theme: ' + titre }) })
+        .then(function(r){ return r.json(); }).catch(function(){ return null; })
+    : Promise.resolve(null);
+  Promise.all([
+    fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){
+      if (!r.ok) { throw new Error('SERVEUR_INDISPONIBLE'); }
+      return r.json();
+    }),
+    comptineImgPromise
+  ]).then(function(results){
+    var data = results[0];
+    var imgResult = results[1];
     btn.innerHTML=T('gen_cours'); btn.disabled=false;
     if (btnRegenLoad && regenPrevText !== null) { btnRegenLoad.innerHTML = regenPrevText; btnRegenLoad.disabled = false; }
     if (btnSimplifyLoad && simplifyPrevText !== null) { btnSimplifyLoad.innerHTML = simplifyPrevText; btnSimplifyLoad.disabled = false; }
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine') ? (enteteHTML + text) : text;
+    var imgHTML = '';
+    if (imgResult && imgResult.base64) {
+      imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="max-width:100%;border-radius:14px;" alt=""></div>';
+    } else if (wantComptineImg) {
+      N(CURRENT_LANG==='ar'?'تعذّر إنشاء الصورة، لكن الأنشودة جاهزة.':'Illustration impossible à générer, mais la comptine est prête.','err');
+    }
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';

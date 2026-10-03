@@ -1,5 +1,6 @@
 import os
 
+import requests
 from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder=None)
@@ -84,6 +85,49 @@ def generate():
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
         return jsonify({"content": [{"type": "text", "text": text}]})
+    except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
+        return jsonify({"error": {"message": str(exc), "type": "api_error"}})
+
+
+STABILITY_ENGINE_ID = "stable-diffusion-xl-1024-v1-0"  # le modèle le moins cher de Stability AI
+
+
+@app.post("/.netlify/functions/generate-image")
+def generate_image():
+    api_key = os.environ.get("STABILITY_API_KEY")
+    if not api_key:
+        return jsonify({"error": {"message": "Génération d'images non configurée (clé Stability AI manquante).", "type": "config_error"}})
+
+    body = request.get_json(silent=True) or {}
+    prompt = (body.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": {"message": "Prompt manquant.", "type": "bad_request"}})
+
+    try:
+        r = requests.post(
+            f"https://api.stability.ai/v1/generation/{STABILITY_ENGINE_ID}/text-to-image",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json={
+                "text_prompts": [{"text": prompt}],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 30,
+            },
+            timeout=60,
+        )
+        if not r.ok:
+            return jsonify({"error": {"message": f"Stability AI a renvoyé une erreur ({r.status_code}) : {r.text[:300]}", "type": "api_error"}})
+        data = r.json()
+        artifacts = data.get("artifacts") or []
+        if not artifacts or not artifacts[0].get("base64"):
+            return jsonify({"error": {"message": "Aucune image renvoyée par Stability AI.", "type": "api_error"}})
+        return jsonify({"base64": artifacts[0]["base64"]})
     except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
         return jsonify({"error": {"message": str(exc), "type": "api_error"}})
 
