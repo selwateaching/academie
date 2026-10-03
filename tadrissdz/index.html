@@ -1219,6 +1219,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="si sub" onclick="goCoursType('intro',this)"><span class="sic">💡</span><span id="navSub_intro">Introduction au chapitre</span></div>
         <div class="si sub" onclick="goCoursType('synthese',this)"><span class="sic">🧾</span><span id="navSub_synthese">Synthèse / Résumé</span></div>
         <div class="si sub" onclick="goCoursType('positionnement',this)"><span class="sic">🎯</span><span id="navSub_positionnement">Test de positionnement</span></div>
+        <div class="si sub" onclick="goCoursType('comptine',this)"><span class="sic">🎵</span><span id="navSub_comptine">Comptine pédagogique</span></div>
         </div>
         <div class="si" onclick="go('quiz')"><span class="sic"><img src="data:image/jpeg;base64,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" alt="Quiz IA"></span><span data-i18n-si="si_quiz">Quiz IA</span></div>
         <div class="si" onclick="window.open('https://tadriss-fiches.onrender.com/','_blank')"><span class="sic">🧑‍🏫</span><span>Assistant pédagogique</span></div>
@@ -1584,30 +1585,30 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="g2">
     <div>
       <div class="card" style="margin-bottom:1.2rem"><div class="ch"><div class="ct">Générer un cours</div><div style="position:relative;"><button class="btn bo bsm" onclick="tgProgaSeqMenu()">🗺️ Depuis la progression</button><div id="progaSeqMenu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:60;background:var(--w);border:1px solid var(--br);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.18);width:320px;max-height:360px;overflow-y:auto;padding:.4rem;"></div></div></div><div class="cb">
-        <div class="fg"><label class="fl">Titre du cours / Chapitre</label><input class="fi" id="crsT" placeholder="Ex: Les équations du 1er degré, La cellule vivante..."></div>
+        <div class="fg"><label class="fl" data-fl="titre">Titre du cours / Chapitre</label><input class="fi" id="crsT" placeholder="Ex: Les équations du 1er degré, La cellule vivante..."></div>
         <div class="fg2">
-          <div class="fg"><label class="fl">Niveau</label>
+          <div class="fg"><label class="fl" data-fl="niveau">Niveau</label>
             <select class="fs" id="crsN">
               <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
               <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
               <option>1AS</option><option>2AS</option><option>3AS</option>
             </select>
           </div>
-          <div class="fg"><label class="fl">Durée</label><select class="fs" id="crsDur"><option>30 min</option><option selected>1h</option><option>2h</option><option>3h</option></select></div>
+          <div class="fg"><label class="fl" data-fl="duree">Durée</label><select class="fs" id="crsDur"><option>30 min</option><option selected>1h</option><option>2h</option><option>3h</option></select></div>
         </div>
         <div class="fg" id="crsMatiereRow" style="display:none">
-          <label class="fl">Matière pour cette fiche</label>
+          <label class="fl" data-fl="matiere">Matière pour cette fiche</label>
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option></select></div>
-          <div class="fg"><label class="fl">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
+          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option></select></div>
+          <div class="fg"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
-          <div class="fg"><label class="fl">Projet</label><input class="fi" id="crsProjet" placeholder="Ex: Projet 1 — C'est notre quartier"></div>
-          <div class="fg"><label class="fl">Séquence</label><input class="fi" id="crsSequence" placeholder="Ex: Séquence 1 — Tu habites où ?"></div>
-          <div class="fg"><label class="fl">Acte de parole</label><input class="fi" id="crsActeParole" placeholder="Ex: Saluer, se présenter, demander une information"></div>
-          <div class="fg"><label class="fl">Activité (discipline)</label><input class="fi" id="crsActivite" placeholder="Ex: Grammaire, Conjugaison, Orthographe, Lecture..."></div>
+          <div class="fg"><label class="fl" data-fl="projet">Projet</label><input class="fi" id="crsProjet" placeholder="Ex: Projet 1 — C'est notre quartier"></div>
+          <div class="fg"><label class="fl" data-fl="sequence">Séquence</label><input class="fi" id="crsSequence" placeholder="Ex: Séquence 1 — Tu habites où ?"></div>
+          <div class="fg"><label class="fl" data-fl="actedeparole">Acte de parole</label><input class="fi" id="crsActeParole" placeholder="Ex: Saluer, se présenter, demander une information"></div>
+          <div class="fg"><label class="fl" data-fl="activite">Activité (discipline)</label><input class="fi" id="crsActivite" placeholder="Ex: Grammaire, Conjugaison, Orthographe, Lecture..."></div>
           <div class="fg" style="background:var(--tp,#E6F4EE);border-radius:10px;padding:.7rem .9rem;">
             <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;font-size:.84rem;line-height:1.4;">
               <input type="checkbox" id="crsOralMode" style="margin-top:3px;flex:none;">
@@ -1617,10 +1618,16 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
         </div>
         <div id="crsDeroulFields" style="display:none">
-          <div class="fg"><label class="fl">Séquence (depuis la Progression)</label><select class="fs" id="crsDeroulSeq" onchange="onCrsDeroulSeqChange()"><option value="">— Choisir une séquence —</option></select></div>
+          <div class="fg"><label class="fl" data-fl="sequenceprogression">Séquence (depuis la Progression)</label><select class="fs" id="crsDeroulSeq" onchange="onCrsDeroulSeqChange()"><option value="">— Choisir une séquence —</option></select></div>
         </div>
-        <div class="fg"><label class="fl">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
-        <div class="fg"><label class="fl">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
+        <div id="crsComptineFields" style="display:none">
+          <div class="fg2">
+            <div class="fg"><label class="fl" data-fl="diffcomptine">Niveau de difficulté</label><select class="fs" id="crsComptineDiff"><option value="facile">🟢 Facile</option><option value="moyen" selected>🟡 Moyen</option><option value="difficile">🔴 Difficile</option></select></div>
+            <div class="fg"><label class="fl" data-fl="langcomptine">Langue de la comptine</label><select class="fs" id="crsComptineLang"><option value="fr">Français</option><option value="ar">Arabe</option><option value="es">Espagnol</option></select></div>
+          </div>
+        </div>
+        <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
+        <div class="fg"><label class="fl" data-fl="prerequis">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
         <button class="btn bt" style="width:100%" id="btnGCrs" onclick="genCours()"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulb2)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> Générer le cours</button>
       </div></div>
       <div class="card"><div class="ch"><div class="ct">Cours sauvegardés</div><button class="btn bo bsm" onclick="clearCours()">Vider</button></div>
@@ -4177,8 +4184,8 @@ function switchLang() {
   }
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
-  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement'};
+  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4192,10 +4199,29 @@ function switchLang() {
     var crsCards = pgCrs.querySelectorAll('.card');
     if (crsCards[0]) {
       var crsGCt = crsCards[0].querySelector('.ct'); if (crsGCt) crsGCt.textContent = isAR ? 'إنشاء درس' : 'Générer un cours';
-      var crsLbls = crsCards[0].querySelectorAll('.fl');
-      var crsLblPairs = [['Titre du cours / Chapitre','عنوان الدرس / الفصل'],['Niveau','المستوى'],['Durée','المدة'],['Type de document','نوع الوثيقة'],['Langue','اللغة'],['Objectifs pédagogiques','الأهداف التربوية'],['Prérequis','المكتسبات القبلية']];
-      crsLbls.forEach(function(lb,i){ if(crsLblPairs[i]) lb.textContent = isAR ? crsLblPairs[i][1] : crsLblPairs[i][0]; });
-      var crsT = document.getElementById('crsT'); if (crsT) crsT.placeholder = isAR ? 'مثال: معادلات الدرجة الأولى، الخلية الحية...' : 'Ex: Les équations du 1er degré, La cellule vivante...';
+      /* Recalé par clé data-fl (pas par position) : un champ conditionnel ajouté/retiré dans le
+         formulaire (langue, déroulement, comptine...) ne doit jamais décaler les libellés suivants. */
+      var crsLblTxt = {
+        niveau: isAR ? 'المستوى' : 'Niveau',
+        duree: isAR ? 'المدة' : 'Durée',
+        matiere: isAR ? 'المادة لهذه الورقة' : 'Matière pour cette fiche',
+        type: isAR ? 'نوع الوثيقة' : 'Type de document',
+        langue: isAR ? 'اللغة' : 'Langue',
+        projet: isAR ? 'المشروع' : 'Projet',
+        sequence: isAR ? 'التسلسل' : 'Séquence',
+        actedeparole: isAR ? 'الفعل الكلامي' : 'Acte de parole',
+        activite: isAR ? 'النشاط (الانضباط)' : 'Activité (discipline)',
+        sequenceprogression: isAR ? 'التسلسل (من التدرج السنوي)' : 'Séquence (depuis la Progression)',
+        diffcomptine: isAR ? 'مستوى الصعوبة' : 'Niveau de difficulté',
+        langcomptine: isAR ? 'لغة الأنشودة' : 'Langue de la comptine',
+        objectifs: isAR ? 'الأهداف التربوية' : 'Objectifs pédagogiques',
+        prerequis: isAR ? 'المكتسبات القبلية' : 'Prérequis'
+      };
+      crsCards[0].querySelectorAll('.fl[data-fl]').forEach(function(lb){
+        var key = lb.getAttribute('data-fl');
+        if (crsLblTxt[key] != null) lb.textContent = crsLblTxt[key];
+      });
+      if (typeof updateCrsTLabel === 'function') updateCrsTLabel();
       var crsObj = document.getElementById('crsObj'); if (crsObj) crsObj.placeholder = isAR ? 'مثال: حل معادلة من الدرجة الأولى بمجهول واحد...' : 'Ex: Savoir résoudre une équation du 1er degré à une inconnue...';
       var crsPrereq = document.getElementById('crsPrereq'); if (crsPrereq) crsPrereq.placeholder = isAR ? 'مثال: العمليات الأساسية، أولويات العمليات...' : 'Ex: Maîtrise des opérations de base, priorités opératoires...';
       var crsType = document.getElementById('crsType');
@@ -4211,7 +4237,8 @@ function switchLang() {
           synthese: isAR ? 'ملخص / خلاصة' : 'Synthèse / Résumé',
           bem: isAR ? 'موضوع نمط BEM' : 'Sujet type BEM',
           bac: isAR ? 'موضوع نمط BAC' : 'Sujet type BAC',
-          positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement'
+          positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement',
+          comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique'
         };
         for (var ci = 0; ci < crsType.options.length; ci++) {
           var ctv = crsType.options[ci].value;
@@ -7285,6 +7312,24 @@ function getCrsMatiereSelectionnee() {
   if (sel && row && row.style.display !== 'none' && sel.value) return sel.value;
   return D.s.mat;
 }
+/* Libellé + placeholder du champ crsT ("Titre"/"Sujet") : dépend à la fois du type de
+   document sélectionné (comptine ou non) et de la langue de l'interface — appelée depuis
+   onCrsTypeChange() et depuis switchLang() pour rester juste dans les deux cas. */
+function updateCrsTLabel() {
+  var crsTEl = document.getElementById('crsT'); if (!crsTEl) return;
+  var crsTLabelEl = crsTEl.closest('.fg') ? crsTEl.closest('.fg').querySelector('.fl') : null;
+  if (!crsTLabelEl) return;
+  var isARnow = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'ar');
+  var tyEl = document.getElementById('crsType');
+  var showComptine = tyEl && tyEl.value === 'comptine';
+  if (showComptine) {
+    crsTLabelEl.textContent = isARnow ? 'موضوع الأنشودة' : 'Sujet / thème de la comptine';
+    crsTEl.placeholder = isARnow ? 'مثال: أيام الأسبوع، الحيوانات، جدول الضرب 7...' : 'Ex: Les jours de la semaine, les animaux, la table de 7...';
+  } else {
+    crsTLabelEl.textContent = isARnow ? 'عنوان الدرس / الفصل' : 'Titre du cours / Chapitre';
+    crsTEl.placeholder = isARnow ? 'مثال: معادلات الدرجة الأولى، الخلية الحية...' : 'Ex: Les équations du 1er degré, La cellule vivante...';
+  }
+}
 function onCrsTypeChange() {
   var ty = document.getElementById('crsType').value;
   var mat = getCrsMatiereSelectionnee();
@@ -7293,6 +7338,10 @@ function onCrsTypeChange() {
   var showDeroul = (ty === 'deroulement');
   document.getElementById('crsDeroulFields').style.display = showDeroul ? 'block' : 'none';
   if (showDeroul) rCrsDeroulSeqOptions();
+  var showComptine = (ty === 'comptine');
+  var crsComptineFieldsEl = document.getElementById('crsComptineFields');
+  if (crsComptineFieldsEl) crsComptineFieldsEl.style.display = showComptine ? 'block' : 'none';
+  updateCrsTLabel();
   var crsType = document.getElementById('crsType');
   var opt = crsType.selectedOptions[0];
   if (opt) {
@@ -7578,6 +7627,32 @@ async function genCours(extraInstruction) {
       '</table>';
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale), niveau Primaire. Détaille le DÉROULEMENT jour par jour, sur 3 semaines, de la séquence : "'+titre+'".'+deroulCtx+
       '\n\nVoici le squelette HTML EXACT à utiliser. Remplace UNIQUEMENT les textes entre crochets [ ]. NE TOUCHE JAMAIS aux lignes "MS : ______ CA : ______" (laisse-les telles quelles, c\'est l\'enseignant qui les remplira à la main). Choisis à chaque fois 2 types d\'activité DIFFÉRENTS dans la liste fournie, adaptés à une progression logique sur les 3 semaines (ex: découverte/réception en semaine 1, production en semaine 2, lecture/évaluation en semaine 3). Les durées doivent totaliser environ 60 minutes par jour (ex: 15+45, 30+30, 40+20). Reste très concis (1 ligne par description). Ne mets aucun texte avant la balise <table>, et rien après :\n\n'+skeletonDeroul;
+  } else if (ty === 'comptine') {
+    var compDiff = document.getElementById('crsComptineDiff') ? document.getElementById('crsComptineDiff').value : 'moyen';
+    var compLang = document.getElementById('crsComptineLang') ? document.getElementById('crsComptineLang').value : 'fr';
+    var compLangLabel = {fr:'Français', ar:'Arabe', es:'Espagnol'}[compLang] || 'Français';
+    var compDiffLabel = {facile:'Facile', moyen:'Moyen', difficile:'Difficile'}[compDiff] || 'Moyen';
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau de difficulté :</b> '+compDiffLabel+'</div><div><b>Langue :</b> '+compLangLabel+'</div></div>';
+    var skeletonComptine =
+      '<p><strong>Titre :</strong> [titre court et accrocheur de la comptine]</p>'+
+      '<div class="tc-box tc-example"><div class="tc-box-title">🎵 Texte de la comptine</div>[le texte complet de la comptine, rythmé, avec rimes si possible, répétitif, adapté au niveau '+compDiffLabel+', écrit en '+compLangLabel+' — 4 à 8 lignes]</div>'+
+      '<p><strong>Gestes suggérés</strong></p><ul><li>[geste associé au 1er passage/ligne]</li><li>[geste associé au 2e passage/ligne]</li><li>[geste associé au refrain ou à la fin]</li></ul>'+
+      '<p><strong>Déroulement pédagogique</strong></p><ol>'+
+      '<li><strong>Écoute</strong> — [1 ligne : comment le professeur présente la comptine la 1re fois]</li>'+
+      '<li><strong>Répétition guidée</strong> — [1 ligne : comment on répète ligne par ligne avec les gestes]</li>'+
+      '<li><strong>Mémorisation</strong> — [1 ligne : comment on consolide]</li>'+
+      '<li><strong>Restitution</strong> — [1 ligne : comment les élèves la restituent seuls]</li>'+
+      '</ol>'+
+      '<p><strong>Objectif pédagogique :</strong> [1 ligne, en lien direct avec le sujet "'+titre+'"]</p>';
+    prompt = 'Tu es professeur dans le système éducatif algérien (MEN), spécialiste de la pédagogie par la comptine (écoute, répétition, mémorisation, gestuelle — l\'élève écoute, répète, mémorise et parfois mime). Crée une COMPTINE PÉDAGOGIQUE sur le sujet : "'+titre+'". Niveau de difficulté : '+compDiffLabel+'. Langue de la comptine : '+compLangLabel+'.'+(obj?'\nObjectifs fournis par le professeur: '+obj:'')+
+      '\n\nVoici le squelette HTML EXACT à utiliser. Remplace chaque texte entre crochets [ ] par un contenu réel. NE CHANGE PAS les intitulés ni la balise <div class="tc-box tc-example">. Ta réponse doit commencer par "<p><strong>Titre" et ne rien contenir avant :\n\n'+skeletonComptine+
+      '\n\nExigences :\n'+
+      '- La comptine doit être RYTHMÉE et si possible RIMÉE, facile à mémoriser par répétition (structure répétitive, phrases courtes)\n'+
+      '- Adapte la longueur et la complexité du vocabulaire au niveau "'+compDiffLabel+'" : Facile = phrases très courtes, vocabulaire très simple, beaucoup de répétition ; Moyen = phrases un peu plus longues, quelques mots nouveaux ; Difficile = structure plus riche, vocabulaire plus varié\n'+
+      '- Les gestes doivent être simples, mimables par un enfant, et correspondre VRAIMENT au sens du texte à cet endroit précis\n'+
+      '- Le contenu doit porter précisément sur le sujet "'+titre+'" (jamais une comptine générique sans rapport)\n'+
+      '- Écris TOUT le contenu (titre, texte, gestes, objectif) en '+compLangLabel+(compLang==='ar' ? ', en écriture arabe avec les voyelles courtes (tachkil) sur les mots importants si utile pour la prononciation' : '')+'\n'+
+      '- Reste concis : c\'est une fiche d\'usage pratique en classe, pas un article';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -7644,7 +7719,7 @@ async function genCours(extraInstruction) {
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Vérifiez votre clé API et votre crédit.')+'</div>'; return; }
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement') ? (enteteHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine') ? (enteteHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';
@@ -7699,7 +7774,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
