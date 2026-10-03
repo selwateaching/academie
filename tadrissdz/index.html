@@ -7772,7 +7772,7 @@ async function genCours(extraInstruction) {
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var imgHTML = '';
     if (imgResult && imgResult.base64) {
-      imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="width:220px;max-width:55%;height:auto;border-radius:14px;" alt=""></div>';
+      imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="width:340px;max-width:75%;height:auto;border-radius:14px;" alt=""></div>';
     } else if (wantComptineImg) {
       var imgErrDetail = (imgResult && imgResult.error && imgResult.error.message) ? imgResult.error.message : '(aucun détail renvoyé par le serveur)';
       N(CURRENT_LANG==='ar'?'تعذّر إنشاء الصورة، لكن الأنشودة جاهزة.':'Illustration impossible à générer, mais la comptine est prête.','err');
