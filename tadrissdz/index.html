@@ -8592,7 +8592,8 @@ function rGuide() {
   var box = document.getElementById('guideBox');
   if (!box) return;
   var notice = CURRENT_LANG==='ar' ? '<div style="background:var(--ap);border:1px solid rgba(212,175,55,.4);border-radius:9px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.82rem;color:var(--ink);">'+T('guide_ar_notice')+'</div>' : '';
-  box.innerHTML = notice + GUIDE_SECTIONS.map(function(s, i) {
+  var dlBtn = '<a class="btn bt" href="guides/guide-complet-fr.pdf" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;margin-bottom:1rem;">📄 '+(CURRENT_LANG==='ar'?'تحميل الدليل الكامل (PDF)':'Télécharger le guide complet (PDF)')+'</a>';
+  box.innerHTML = notice + dlBtn + GUIDE_SECTIONS.map(function(s, i) {
     return '<div class="prog-mat"><div class="prog-mat-h" onclick="tgProg(this)"><span style="display:inline-flex;align-items:center;margin-right:.5rem;">'+s.icone+'</span>'+s.titre+'<span style="margin-left:auto;font-size:.8rem;color:var(--ink3)">▸</span></div><div class="prog-mat-body'+(i===0?' open':'')+'" style="font-size:.85rem;line-height:1.7;color:var(--ink2);">'+s.corps+'</div></div>';
   }).join('');
 }
