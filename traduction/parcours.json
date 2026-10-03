@@ -1,0 +1,30 @@
+{
+  "_aide": "Parcours de recrutement de l'association. Modifiez ici les étapes et la liste des pièces à fournir ; l'ordre est celui d'affichage. 'alerte_jours' : nombre de jours avant l'expiration d'un titre de séjour où l'alerte devient orange.",
+  "etapes": [
+    "Premier contact",
+    "Pré-sélectionné",
+    "Entretien",
+    "Proposé à une entreprise",
+    "Promesse d'embauche",
+    "Démarches administratives",
+    "Autorisation de travail obtenue",
+    "Embauché",
+    "Suivi après embauche",
+    "Clos / abandon"
+  ],
+  "pieces": [
+    {"key": "identite", "label": "Passeport / pièce d'identité"},
+    {"key": "titre", "label": "Titre de séjour ou visa"},
+    {"key": "photo", "label": "Photo d'identité"},
+    {"key": "domicile", "label": "Justificatif de domicile / hébergement"},
+    {"key": "cv", "label": "CV"},
+    {"key": "diplomes", "label": "Diplômes et certificats"},
+    {"key": "secu", "label": "Numéro ou attestation de sécurité sociale"},
+    {"key": "rib", "label": "RIB"},
+    {"key": "consentement", "label": "Consentement signé (transmission aux entreprises)"},
+    {"key": "promesse", "label": "Promesse d'embauche / contrat de travail"},
+    {"key": "cerfa", "label": "Formulaire de demande d'autorisation de travail"}
+  ],
+  "niveaux_francais": ["Débutant", "Intermédiaire", "Avancé"],
+  "alerte_jours": 90
+}

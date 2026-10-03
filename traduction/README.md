@@ -16,10 +16,11 @@ La voix en direct utilise la reconnaissance du navigateur : **Chrome ou Edge** r
 ## Dossiers et courriers standards
 
 Carte **Dossiers et courriers** : suivi des personnes accompagnées.
-- **Dossier** : prénom, nom, langue, téléphone (facultatif), statut (En cours / En attente / Clos), échéance (en rouge si dépassée), remarques.
+- **Dossier candidat** : prénom, nom, langue, métier, niveau de français, permis, disponibilité, **étape du parcours**, entreprise, **titre de séjour (type + expiration, alerte à 90 jours)**, **consentement à la transmission aux entreprises**, téléphone (facultatif), statut, échéance, remarques.
+- **Parcours et pièces** : les étapes (Premier contact → … → Embauché) et la liste des pièces à cocher sont dans `parcours.json` — à adapter à votre fonctionnement. Filtre par étape, alertes de titres de séjour, compteur de pièces.
 - **Journal de suivi** : rendez-vous, appels, démarches, courriers, notes, datés et signés du prénom du bénévole.
 - **Traduire avec cette personne** : ouvre la conversation dans sa langue.
-- **Courrier standard** : 6 modèles (attestation d'accompagnement, attestation de présence, demande de rendez-vous, transmission de pièces, demande de réexamen, rappel de rendez-vous) pré-remplis avec les données du dossier et l'en-tête de l'association, à imprimer ou enregistrer en PDF, avec une version traduite pour la personne. Chaque courrier généré est noté dans le journal.
+- **Courrier standard** : 12 modèles, dont ceux du recrutement (consentement à signer, présentation de candidat, convocation à un entretien, intention d'embauche, courrier d'accompagnement DREETS, relance) en plus des attestations et demandes courantes pré-remplis avec les données du dossier et l'en-tête de l'association, à imprimer ou enregistrer en PDF, avec une version traduite pour la personne. Chaque courrier généré est noté dans le journal.
 - **Export / import Excel** : « ⬇️ Exporter (Excel) » télécharge tous les dossiers et leur suivi (2 onglets) pour archive ou sauvegarde ; « ⬆️ Importer un Excel » ajoute une liste de personnes (modèle fourni avec « 📋 Modèle Excel », `.csv` accepté ; les doublons prénom + nom sont ignorés).
 - **Courriers modifiables** : les textes sont dans `letters.json` (un seul fichier, identique pour tous les bénévoles).
 

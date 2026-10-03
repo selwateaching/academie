@@ -152,6 +152,12 @@ textarea{width:100%;min-height:90px}
   #printArea .paper{box-shadow:none;border-radius:0;padding:0;font-size:12pt}
   @page{margin:22mm}
 }
+.alertbox{background:#fcebdf;border:1px solid #e9b98f;color:#6b3a10;border-radius:12px;padding:8px 12px;font-size:14px}
+.alertbox.late{background:#fde4e4;border-color:#e5a3a3;color:#7a1d17}
+.pieces{display:flex;flex-direction:column;gap:2px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:6px 10px}
+.pieces label{display:flex;gap:10px;align-items:center;margin:0;padding:8px 2px;font-size:15px;font-weight:500;color:var(--ink);text-transform:none;letter-spacing:0;min-height:40px}
+.pieces input{width:22px;height:22px;min-height:0;flex:none}
+.pieces label.ok{color:var(--mut);text-decoration:line-through}
 /* aide */
 .helpcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:2px solid #c9a24a;border-radius:var(--r);padding:12px 14px;background:linear-gradient(135deg,#fffaf0,#f6ead0);color:#3b2a0b;box-shadow:0 6px 20px rgba(201,162,74,.35);animation:glow 2.6s ease-in-out infinite}
 .helpcard img{width:84px;height:84px;border-radius:18px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.25)}
@@ -247,6 +253,8 @@ textarea{width:100%;min-height:90px}
 <section class="screen" id="dossiers">
   <div class="page">
     <div class="row"><input type="text" id="dSearch" placeholder="Rechercher un nom…" aria-label="Rechercher"><button class="btn" id="dNew">+ Nouveau</button></div>
+    <select id="dEtapeFilter" aria-label="Filtrer par étape"></select>
+    <div id="dAlert" class="alertbox hide"></div>
     <div id="dMsg" class="warn"></div>
     <div id="dList" style="display:flex;flex-direction:column;gap:10px"></div>
     <div class="row" style="flex-wrap:wrap">
@@ -265,6 +273,16 @@ textarea{width:100%;min-height:90px}
     <label for="fPrenom">Prénom</label><input type="text" id="fPrenom" autocomplete="off">
     <label for="fNom">Nom</label><input type="text" id="fNom" autocomplete="off">
     <label for="fLang">Langue</label><select id="fLang"></select>
+    <label for="fMetier">Métier recherché / exercé</label><input type="text" id="fMetier" autocomplete="off" placeholder="ex. maçon, aide-soignant, cuisinier">
+    <div class="row"><div style="flex:1"><label for="fNiveau">Niveau de français</label><select id="fNiveau"></select></div>
+      <div style="flex:1"><label for="fPermis">Permis de conduire</label><select id="fPermis"><option value=""></option><option>Oui</option><option>Non</option></select></div></div>
+    <label for="fDispo">Disponibilité</label><input type="text" id="fDispo" autocomplete="off" placeholder="ex. immédiate, à partir du 1er janvier">
+    <label for="fEtape">Étape du parcours</label><select id="fEtape"></select>
+    <label for="fEntreprise">Entreprise (si proposée ou embauchée)</label><input type="text" id="fEntreprise" autocomplete="off">
+    <div class="row"><div style="flex:1"><label for="fTitreType">Titre de séjour / visa (type)</label><input type="text" id="fTitreType" autocomplete="off" placeholder="ex. récépissé, carte de séjour"></div>
+      <div style="flex:1"><label for="fTitreExp">Expire le</label><input type="date" id="fTitreExp"></div></div>
+    <label for="fConsent">Consentement à la transmission aux entreprises (date)</label>
+    <div class="row"><input type="date" id="fConsent" style="flex:1"><button type="button" class="btn sec" id="fConsentNow">Aujourd'hui</button></div>
     <label for="fTel">Téléphone (facultatif)</label><input type="text" id="fTel" inputmode="tel" autocomplete="off">
     <label for="fStatut">Statut</label><select id="fStatut"><option>En cours</option><option>En attente</option><option>Clos</option></select>
     <label for="fEch">Prochaine échéance (facultatif)</label><input type="date" id="fEch">
@@ -277,6 +295,8 @@ textarea{width:100%;min-height:90px}
 <section class="screen" id="dossier">
   <div class="page">
     <div id="dHead"></div>
+    <div class="form"><label for="dEtapeSel">Étape du parcours</label><select id="dEtapeSel"></select></div>
+    <div class="form"><label>Pièces du dossier <span id="dPiecesCount"></span></label><div id="dPieces" class="pieces"></div></div>
     <div class="row" style="flex-wrap:wrap">
       <button class="btn" id="dTranslate">🌍 Traduire avec cette personne</button>
       <button class="btn" id="dLetter">✉️ Courrier standard</button>
@@ -295,6 +315,7 @@ textarea{width:100%;min-height:90px}
 <section class="screen" id="letter">
   <div class="page form">
     <label for="lTpl">Modèle de courrier</label><select id="lTpl"></select>
+    <div id="lNote" class="alertbox hide"></div>
     <div id="lFields"></div>
     <div class="paper" id="lPreview"></div>
     <div class="row" style="flex-wrap:wrap">

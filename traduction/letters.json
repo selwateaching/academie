@@ -1,14 +1,236 @@
 {
-  "_aide": "Courriers standards de l'association. Modifiez les textes ici. Variables automatiques : {{prenom}} {{nom}} {{asso_nom}} {{asso_adresse}} {{asso_contact}} {{ville}} {{date}} {{signataire}} {{fonction}}. Chaque 'champs' crée une case à remplir : {{cle}}.",
+  "_aide": "Courriers standards de l'association. Modifiez les textes ici. Variables automatiques : {{prenom}} {{nom}} {{asso_nom}} {{asso_adresse}} {{asso_contact}} {{ville}} {{date}} {{signataire}} {{fonction}}. Chaque 'champs' crée une case à remplir : {{cle}}. Options d'un modèle : 'expediteur' = 'asso' (défaut), 'entreprise' ou 'personne' (qui signe) ; 'note' = avertissement affiché ; 'default_from' dans un champ = valeur reprise du dossier (metier, entreprise, niveau_fr, disponibilite, titre_type, titre_expiration, tel). Variables du dossier : {{metier}} {{entreprise}} {{niveau_fr}} {{disponibilite}} {{titre_type}} {{titre_expiration}} {{tel}}.",
   "templates": [
+    {
+      "id": "consentement",
+      "titre": "Consentement à la transmission du dossier",
+      "pour": "personne",
+      "expediteur": "personne",
+      "objet": "Consentement à la transmission de mes informations",
+      "note": "À faire signer par la personne (version traduite possible) avant toute transmission à une entreprise.",
+      "champs": [],
+      "corps": "Je soussigné(e) {{prenom}} {{nom}}, autorise l'association {{asso_nom}} à transmettre mes coordonnées et mes informations professionnelles (métier, compétences, niveau de français, disponibilité) aux entreprises susceptibles de me recruter.\n\nJ'ai été informé(e) que :\n- seules les informations utiles au recrutement sont transmises ;\n- je peux retirer mon accord ou demander la suppression de mes données à tout moment, en contactant l'association ({{asso_contact}}) ;\n- mes données sont conservées de manière sécurisée."
+    },
+    {
+      "id": "presentation_candidat",
+      "titre": "Présentation d'un candidat à une entreprise",
+      "pour": "organisme",
+      "objet": "Candidature – {{poste}} – {{prenom}} {{nom}}",
+      "note": "À n'envoyer qu'avec le consentement signé de la personne.",
+      "champs": [
+        {
+          "key": "poste",
+          "label": "Poste concerné",
+          "type": "text",
+          "default_from": "metier"
+        },
+        {
+          "key": "niveau_fr",
+          "label": "Niveau de français",
+          "type": "text",
+          "default_from": "niveau_fr"
+        },
+        {
+          "key": "disponibilite",
+          "label": "Disponibilité",
+          "type": "text",
+          "default_from": "disponibilite"
+        },
+        {
+          "key": "situation",
+          "label": "Situation administrative (titre, date de validité)",
+          "type": "text"
+        },
+        {
+          "key": "points_forts",
+          "label": "Points forts, expérience",
+          "type": "textarea"
+        }
+      ],
+      "corps": "Madame, Monsieur,\n\nSuite à votre besoin de recrutement, l'association {{asso_nom}} a le plaisir de vous présenter {{prenom}} {{nom}}, candidat(e) pré-sélectionné(e) pour le poste de {{poste}}.\n\n- Niveau de français : {{niveau_fr}}\n- Disponibilité : {{disponibilite}}\n- Situation administrative : {{situation}}\n\nPoints forts : {{points_forts}}\n\nCette présentation est faite avec l'accord de l'intéressé(e). Nous pouvons organiser un entretien et vous accompagner dans les démarches administratives ({{asso_contact}}).\n\nVeuillez agréer, Madame, Monsieur, nos salutations distinguées."
+    },
+    {
+      "id": "convocation_entretien",
+      "titre": "Convocation à un entretien d'embauche",
+      "pour": "personne",
+      "objet": "Votre entretien pour le poste de {{poste}}",
+      "champs": [
+        {
+          "key": "entreprise",
+          "label": "Entreprise",
+          "type": "text",
+          "default_from": "entreprise"
+        },
+        {
+          "key": "poste",
+          "label": "Poste",
+          "type": "text",
+          "default_from": "metier"
+        },
+        {
+          "key": "date_entretien",
+          "label": "Date de l'entretien",
+          "type": "date"
+        },
+        {
+          "key": "heure",
+          "label": "Heure",
+          "type": "text",
+          "default": "10h00"
+        },
+        {
+          "key": "lieu",
+          "label": "Adresse de l'entretien",
+          "type": "textarea"
+        },
+        {
+          "key": "contact_entreprise",
+          "label": "Personne à contacter sur place",
+          "type": "text"
+        },
+        {
+          "key": "pieces",
+          "label": "À apporter (une chose par ligne)",
+          "type": "textarea",
+          "default": "Pièce d'identité\nTitre de séjour\nCV"
+        }
+      ],
+      "corps": "Bonjour {{prenom}},\n\nL'entreprise {{entreprise}} vous propose un entretien pour le poste de {{poste}} :\n\n- Date : {{date_entretien}} à {{heure}}\n- Adresse : {{lieu}}\n- Personne à contacter : {{contact_entreprise}}\n\nMerci d'apporter :\n{{pieces}}\n\nMerci de confirmer votre présence ou de nous prévenir en cas d'empêchement au {{asso_contact}}.\n\nCordialement,"
+    },
+    {
+      "id": "intention_embauche",
+      "titre": "Lettre d'intention d'embauche (à faire signer par l'entreprise)",
+      "pour": "organisme",
+      "expediteur": "entreprise",
+      "objet": "Intention d'embauche de {{prenom}} {{nom}}",
+      "note": "Modèle indicatif. Il ne remplace pas le formulaire officiel demandé par la DREETS ou la préfecture : vérifiez les pièces exigées.",
+      "champs": [
+        {
+          "key": "entreprise",
+          "label": "Entreprise",
+          "type": "text",
+          "default_from": "entreprise"
+        },
+        {
+          "key": "entreprise_adresse",
+          "label": "Adresse de l'entreprise",
+          "type": "textarea"
+        },
+        {
+          "key": "representant",
+          "label": "Nom du représentant de l'entreprise",
+          "type": "text"
+        },
+        {
+          "key": "fonction_rep",
+          "label": "Fonction du représentant",
+          "type": "text",
+          "default": "gérant"
+        },
+        {
+          "key": "poste",
+          "label": "Poste proposé",
+          "type": "text",
+          "default_from": "metier"
+        },
+        {
+          "key": "contrat",
+          "label": "Type de contrat (CDI, CDD…)",
+          "type": "text",
+          "default": "CDI"
+        },
+        {
+          "key": "date_debut",
+          "label": "Date de début prévue",
+          "type": "date"
+        },
+        {
+          "key": "heures",
+          "label": "Durée hebdomadaire (heures)",
+          "type": "text",
+          "default": "35"
+        },
+        {
+          "key": "salaire",
+          "label": "Rémunération brute mensuelle",
+          "type": "text"
+        }
+      ],
+      "corps": "Madame, Monsieur,\n\nJe soussigné(e) {{representant}}, {{fonction_rep}} de l'entreprise {{entreprise}}, déclare avoir l'intention d'embaucher {{prenom}} {{nom}} au poste de {{poste}}, en contrat {{contrat}}, à compter du {{date_debut}}, pour une durée hebdomadaire de {{heures}} heures, avec une rémunération brute mensuelle de {{salaire}}.\n\nJe vous prie d'agréer, Madame, Monsieur, mes salutations distinguées."
+    },
+    {
+      "id": "accompagnement_dreets",
+      "titre": "Courrier d'accompagnement – demande d'autorisation de travail",
+      "pour": "organisme",
+      "objet": "Demande d'autorisation de travail – {{prenom}} {{nom}}",
+      "note": "Modèle indicatif : la liste des pièces à joindre est fixée par la DREETS. Vérifiez-la avant dépôt.",
+      "champs": [
+        {
+          "key": "entreprise",
+          "label": "Entreprise employeur",
+          "type": "text",
+          "default_from": "entreprise"
+        },
+        {
+          "key": "poste",
+          "label": "Poste",
+          "type": "text",
+          "default_from": "metier"
+        },
+        {
+          "key": "reference",
+          "label": "Référence du dossier (si connue)",
+          "type": "text"
+        },
+        {
+          "key": "pieces",
+          "label": "Pièces jointes (une par ligne)",
+          "type": "textarea"
+        }
+      ],
+      "corps": "Madame, Monsieur,\n\nL'association {{asso_nom}} accompagne l'entreprise {{entreprise}} et {{prenom}} {{nom}} dans la demande d'autorisation de travail pour le poste de {{poste}} (référence : {{reference}}).\n\nVous trouverez ci-joint les pièces constitutives du dossier :\n{{pieces}}\n\nNous restons à votre disposition pour tout complément d'information ({{asso_contact}}).\n\nVeuillez agréer, Madame, Monsieur, nos salutations distinguées."
+    },
+    {
+      "id": "relance_dossier",
+      "titre": "Relance d'un dossier en attente",
+      "pour": "organisme",
+      "objet": "Relance – dossier de {{prenom}} {{nom}}",
+      "champs": [
+        {
+          "key": "reference",
+          "label": "Référence du dossier",
+          "type": "text"
+        },
+        {
+          "key": "date_depot",
+          "label": "Date de dépôt",
+          "type": "date"
+        },
+        {
+          "key": "objet_demande",
+          "label": "Objet de la demande",
+          "type": "text"
+        }
+      ],
+      "corps": "Madame, Monsieur,\n\nNous nous permettons de relancer votre service au sujet du dossier de {{prenom}} {{nom}} (référence : {{reference}}), déposé le {{date_depot}} pour {{objet_demande}}.\n\nÀ ce jour, nous n'avons pas reçu de réponse. Pourriez-vous nous indiquer l'état d'avancement de ce dossier et, le cas échéant, les pièces complémentaires à fournir ?\n\nNous vous remercions de l'attention portée à notre demande ({{asso_contact}}).\n\nVeuillez agréer, Madame, Monsieur, nos salutations distinguées."
+    },
     {
       "id": "attestation_suivi",
       "titre": "Attestation d'accompagnement",
       "pour": "personne",
       "objet": "Attestation d'accompagnement",
       "champs": [
-        {"key": "date_debut", "label": "Accompagné(e) depuis le", "type": "date"},
-        {"key": "motif", "label": "Pour quelles démarches", "type": "text", "default": "ses démarches administratives"}
+        {
+          "key": "date_debut",
+          "label": "Accompagné(e) depuis le",
+          "type": "date"
+        },
+        {
+          "key": "motif",
+          "label": "Pour quelles démarches",
+          "type": "text",
+          "default": "ses démarches administratives"
+        }
       ],
       "corps": "Je soussigné(e) {{signataire}}, {{fonction}} de l'association {{asso_nom}}, atteste que {{prenom}} {{nom}} est accompagné(e) par notre association depuis le {{date_debut}} pour {{motif}}.\n\nCette attestation est établie pour servir et valoir ce que de droit."
     },
@@ -18,9 +240,23 @@
       "pour": "personne",
       "objet": "Attestation de présence",
       "champs": [
-        {"key": "jour", "label": "Le jour", "type": "date"},
-        {"key": "heure_debut", "label": "De (heure)", "type": "text", "default": "14h00"},
-        {"key": "heure_fin", "label": "À (heure)", "type": "text", "default": "15h00"}
+        {
+          "key": "jour",
+          "label": "Le jour",
+          "type": "date"
+        },
+        {
+          "key": "heure_debut",
+          "label": "De (heure)",
+          "type": "text",
+          "default": "14h00"
+        },
+        {
+          "key": "heure_fin",
+          "label": "À (heure)",
+          "type": "text",
+          "default": "15h00"
+        }
       ],
       "corps": "Je soussigné(e) {{signataire}}, {{fonction}} de l'association {{asso_nom}}, atteste que {{prenom}} {{nom}} s'est présenté(e) à notre permanence le {{jour}}, de {{heure_debut}} à {{heure_fin}}.\n\nCette attestation est établie pour servir et valoir ce que de droit."
     },
@@ -30,8 +266,16 @@
       "pour": "organisme",
       "objet": "Demande de rendez-vous pour {{prenom}} {{nom}}",
       "champs": [
-        {"key": "reference", "label": "Référence du dossier (si connue)", "type": "text"},
-        {"key": "motif", "label": "Motif du rendez-vous", "type": "textarea"}
+        {
+          "key": "reference",
+          "label": "Référence du dossier (si connue)",
+          "type": "text"
+        },
+        {
+          "key": "motif",
+          "label": "Motif du rendez-vous",
+          "type": "textarea"
+        }
       ],
       "corps": "Madame, Monsieur,\n\nL'association {{asso_nom}} accompagne {{prenom}} {{nom}} dans ses démarches. Référence du dossier : {{reference}}.\n\nNous sollicitons un rendez-vous concernant : {{motif}}.\n\nMerci de nous indiquer vos disponibilités. Vous pouvez nous joindre au {{asso_contact}}.\n\nDans l'attente de votre réponse, nous vous prions d'agréer, Madame, Monsieur, nos salutations distinguées."
     },
@@ -41,8 +285,16 @@
       "pour": "organisme",
       "objet": "Transmission de pièces – {{prenom}} {{nom}}",
       "champs": [
-        {"key": "reference", "label": "Référence du dossier", "type": "text"},
-        {"key": "pieces", "label": "Pièces jointes (une par ligne)", "type": "textarea"}
+        {
+          "key": "reference",
+          "label": "Référence du dossier",
+          "type": "text"
+        },
+        {
+          "key": "pieces",
+          "label": "Pièces jointes (une par ligne)",
+          "type": "textarea"
+        }
       ],
       "corps": "Madame, Monsieur,\n\nPour le compte de {{prenom}} {{nom}}, que notre association accompagne, nous vous transmettons les pièces suivantes à l'appui de son dossier (référence : {{reference}}) :\n\n{{pieces}}\n\nNous vous remercions de bien vouloir nous accuser réception.\n\nVeuillez agréer, Madame, Monsieur, nos salutations distinguées."
     },
@@ -52,9 +304,21 @@
       "pour": "organisme",
       "objet": "Demande de réexamen – {{prenom}} {{nom}}",
       "champs": [
-        {"key": "reference", "label": "Référence du dossier", "type": "text"},
-        {"key": "date_decision", "label": "Date de la décision", "type": "date"},
-        {"key": "motif", "label": "Objet de la décision et éléments nouveaux", "type": "textarea"}
+        {
+          "key": "reference",
+          "label": "Référence du dossier",
+          "type": "text"
+        },
+        {
+          "key": "date_decision",
+          "label": "Date de la décision",
+          "type": "date"
+        },
+        {
+          "key": "motif",
+          "label": "Objet de la décision et éléments nouveaux",
+          "type": "textarea"
+        }
       ],
       "corps": "Madame, Monsieur,\n\nNous vous écrivons au nom de {{prenom}} {{nom}}, accompagné(e) par l'association {{asso_nom}}, au sujet de la décision du {{date_decision}} (référence : {{reference}}).\n\nNous vous demandons de bien vouloir réexaminer cette situation : {{motif}}.\n\nNous restons à votre disposition pour tout complément ({{asso_contact}}).\n\nVeuillez agréer, Madame, Monsieur, nos salutations distinguées."
     },
@@ -64,9 +328,23 @@
       "pour": "personne",
       "objet": "Votre rendez-vous à l'association",
       "champs": [
-        {"key": "date_rdv", "label": "Date du rendez-vous", "type": "date"},
-        {"key": "heure", "label": "Heure", "type": "text", "default": "14h00"},
-        {"key": "pieces", "label": "À apporter (une chose par ligne)", "type": "textarea", "default": "Passeport ou titre de séjour\nJustificatif de domicile"}
+        {
+          "key": "date_rdv",
+          "label": "Date du rendez-vous",
+          "type": "date"
+        },
+        {
+          "key": "heure",
+          "label": "Heure",
+          "type": "text",
+          "default": "14h00"
+        },
+        {
+          "key": "pieces",
+          "label": "À apporter (une chose par ligne)",
+          "type": "textarea",
+          "default": "Passeport ou titre de séjour\nJustificatif de domicile"
+        }
       ],
       "corps": "Bonjour {{prenom}},\n\nNous vous rappelons votre rendez-vous à l'association {{asso_nom}} le {{date_rdv}} à {{heure}}, à l'adresse : {{asso_adresse}}.\n\nMerci d'apporter :\n{{pieces}}\n\nEn cas d'empêchement, merci de nous prévenir au {{asso_contact}}.\n\nCordialement,"
     }

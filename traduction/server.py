@@ -420,11 +420,36 @@ def clip(v, n):
 
 
 FIELDS = {"prenom": 60, "nom": 60, "langue_code": 12, "langue_nom": 60, "tel": 30,
-          "statut": 20, "echeance": 10, "notes": 3000}
+          "statut": 20, "echeance": 10, "notes": 3000,
+          "metier": 80, "niveau_fr": 20, "disponibilite": 80, "permis": 10, "entreprise": 100,
+          "etape": 60, "titre_type": 60, "titre_expiration": 10, "consentement": 10}
+DATE_FIELDS = ("echeance", "titre_expiration", "consentement")
+with open(os.path.join(BASE_DIR, "parcours.json"), encoding="utf-8") as _f:
+    PARCOURS = json.load(_f)
+PIECE_KEYS = {p["key"] for p in PARCOURS["pieces"]}
+
+
+def clean_dossier(d):
+    """Normalise les champs d'un dossier (dates, statut, pièces)."""
+    for k in DATE_FIELDS:
+        d[k] = to_date(d.get(k))
+    if d.get("statut") not in ("En cours", "En attente", "Clos"):
+        d["statut"] = "En cours"
+    d["pieces"] = [k for k in dict.fromkeys(d.get("pieces") or []) if k in PIECE_KEYS]
+    return d
 
 
 def summary(d):
-    return {k: d.get(k, "") for k in ("id", "prenom", "nom", "langue_nom", "statut", "echeance", "updated")}
+    out = {k: d.get(k, "") for k in ("id", "prenom", "nom", "langue_nom", "statut", "echeance", "updated",
+                                      "metier", "entreprise", "etape", "titre_expiration", "niveau_fr")}
+    out["pieces_ok"] = len(d.get("pieces") or [])
+    return out
+
+
+@app.get("/api/parcours")
+def parcours():
+    denied = check_access()
+    return denied or jsonify(PARCOURS)
 
 
 @app.get("/api/dossiers")
@@ -451,7 +476,8 @@ def dossier_create():
     d = {k: clip(data.get(k), n) for k, n in FIELDS.items()}
     if not d["prenom"] and not d["nom"]:
         return error("Indiquez au moins un prénom ou un nom.", 400)
-    d["statut"] = d["statut"] if d["statut"] in ("En cours", "En attente", "Clos") else "En cours"
+    d["pieces"] = [str(x)[:40] for x in (data.get("pieces") or [])][:40]
+    clean_dossier(d)
     d["created"] = time.time()
     d["journal"] = []
     d["id"] = uuid.uuid4().hex[:12]
@@ -483,8 +509,9 @@ def dossier_update(did):
         for k, n in FIELDS.items():
             if k in data:
                 d[k] = clip(data[k], n)
-        if d["statut"] not in ("En cours", "En attente", "Clos"):
-            d["statut"] = "En cours"
+        if "pieces" in data:
+            d["pieces"] = [str(x)[:40] for x in (data["pieces"] or [])][:40]
+        clean_dossier(d)
         save_dossier(con, d)
     return jsonify(d)
 
@@ -544,7 +571,11 @@ import unicodedata
 from openpyxl import Workbook, load_workbook
 
 COLS = [("Prénom", "prenom"), ("Nom", "nom"), ("Langue", "langue_nom"), ("Téléphone", "tel"),
-        ("Statut", "statut"), ("Échéance", "echeance"), ("Remarques", "notes")]
+        ("Statut", "statut"), ("Échéance", "echeance"), ("Remarques", "notes"),
+        ("Métier", "metier"), ("Niveau de français", "niveau_fr"), ("Disponibilité", "disponibilite"),
+        ("Permis", "permis"), ("Entreprise", "entreprise"), ("Étape", "etape"), ("Type de titre", "titre_type"),
+        ("Expiration du titre", "titre_expiration"), ("Consentement (date)", "consentement")]
+PIECE_LABELS = {p["key"]: p["label"] for p in PARCOURS["pieces"]}
 TYPE_LABEL = {"rdv": "Rendez-vous", "appel": "Appel", "demarche": "Démarche", "courrier": "Courrier", "note": "Note"}
 LANG_KEYS = [  # (mot recherché, code navigateur, nom donné à Claude) — le plus précis d'abord
     ("algerien", "ar-DZ", "arabe algérien (darija)"), ("tunisien", "ar-TN", "arabe tunisien (darija)"),
@@ -566,6 +597,11 @@ ALIASES = {
     "datelimite": "echeance", "remarques": "notes", "notes": "notes", "situation": "notes", "commentaire": "notes",
     "dossier": "dossier", "personne": "dossier", "date": "date", "type": "type", "note": "texte",
     "texte": "texte", "suivi": "texte", "auteur": "auteur", "benevole": "auteur",
+    "metier": "metier", "niveaudefrancais": "niveau_fr", "niveaufrancais": "niveau_fr", "niveau": "niveau_fr",
+    "disponibilite": "disponibilite", "permis": "permis", "entreprise": "entreprise", "employeur": "entreprise",
+    "etape": "etape", "typedetitre": "titre_type", "titre": "titre_type", "expirationdutitre": "titre_expiration",
+    "expirationtitre": "titre_expiration", "consentementdate": "consentement", "consentement": "consentement",
+    "piecesrecues": "pieces",
 }
 
 
@@ -622,12 +658,15 @@ def dossiers_export():
     wb = Workbook()
     ws = wb.active
     ws.title = "Dossiers"
-    ws.append([h for h, _ in COLS] + ["Créé le", "Dernière modification"])
+    ws.append([h for h, _ in COLS] + ["Pièces reçues", "Pièces manquantes", "Créé le", "Dernière modification"])
     for d in ds:
+        got = [k for k in PIECE_LABELS if k in (d.get("pieces") or [])]
         ws.append([d.get(k, "") for _, k in COLS] + [
+            "; ".join(PIECE_LABELS[k] for k in got),
+            "; ".join(v for k, v in PIECE_LABELS.items() if k not in got),
             _dt.datetime.fromtimestamp(d.get("created", 0)).strftime("%Y-%m-%d"),
             _dt.datetime.fromtimestamp(d.get("updated", 0)).strftime("%Y-%m-%d")])
-    style_header(ws, [16, 18, 26, 16, 12, 12, 50, 12, 20])
+    style_header(ws, [16, 18, 26, 16, 12, 12, 40, 22, 18, 22, 8, 24, 26, 22, 18, 18, 60, 60, 12, 20])
     sj = wb.create_sheet("Suivi")
     sj.append(["Dossier", "Date", "Type", "Note", "Auteur"])
     for d in ds:
@@ -647,11 +686,18 @@ def dossiers_modele():
     ws = wb.active
     ws.title = "Dossiers"
     ws.append([h for h, _ in COLS])
-    ws.append(["Amina", "Benali", "arabe algérien", "06 00 00 00 00", "En cours", "2026-12-01", "Exemple : à supprimer"])
-    style_header(ws, [16, 18, 26, 16, 12, 12, 50])
+    ex = {"prenom": "Amina", "nom": "Benali", "langue_nom": "arabe algérien", "tel": "06 00 00 00 00",
+          "statut": "En cours", "echeance": "2026-12-01", "notes": "Exemple : à supprimer", "metier": "Aide-soignante",
+          "niveau_fr": "Intermédiaire", "disponibilite": "Immédiate", "permis": "Non", "entreprise": "",
+          "etape": PARCOURS["etapes"][1], "titre_type": "Récépissé", "titre_expiration": "2027-03-01",
+          "consentement": "2026-10-01"}
+    ws.append([ex.get(k, "") for _, k in COLS])
+    style_header(ws, [16, 18, 26, 16, 12, 12, 40, 22, 18, 22, 8, 24, 26, 22, 18, 18])
     aide = wb.create_sheet("Aide")
     for line in ["Remplissez l'onglet « Dossiers » (une personne par ligne), puis importez le fichier dans Tarjam.",
-                 "Colonnes : Prénom, Nom, Langue, Téléphone, Statut, Échéance, Remarques. Seul un prénom OU un nom est obligatoire.",
+                 "Colonnes : Prénom, Nom, Langue, Téléphone, Statut, Échéance, Remarques, Métier, Niveau de français (Débutant / Intermédiaire / Avancé), Disponibilité, Permis (Oui / Non), Entreprise, Étape, Type de titre, Expiration du titre, Consentement (date). Seul un prénom OU un nom est obligatoire.",
+                 "Étape : " + ", ".join(PARCOURS["etapes"]) + ".",
+                 "Pièces reçues (colonne facultative) : noms séparés par des points-virgules : " + " ; ".join(PIECE_LABELS.values()) + ".",
                  "Langue : arabe algérien, arabe tunisien, arabe marocain, arabe, anglais, dari, pashto, turc, espagnol, portugais, russe, ukrainien, bengali, persan, ourdou, hindi, chinois, roumain, italien, allemand, polonais, vietnamien, albanais, tamoul, somali, amharique.",
                  "Statut : En cours, En attente ou Clos (« En cours » par défaut).",
                  "Échéance : une date (2026-12-01 ou 01/12/2026).",
@@ -721,10 +767,16 @@ def dossiers_import():
             statut = {"encours": "En cours", "enattente": "En attente", "clos": "Clos"}.get(norm(row.get("statut")), "En cours")
             if row.get("langue") and not code:
                 problems.append(f"Ligne {i} : langue « {lname} » non reconnue (gardée telle quelle).")
-            d = {"prenom": prenom, "nom": nom, "langue_code": code, "langue_nom": lname,
-                 "tel": clip(row.get("tel"), 30), "statut": statut, "echeance": to_date(row.get("echeance")),
-                 "notes": clip(row.get("notes"), 3000), "created": time.time(), "journal": [],
-                 "id": uuid.uuid4().hex[:12]}
+            d = {k: clip(row.get(k), n) for k, n in FIELDS.items() if k in row}
+            for k in FIELDS:
+                d.setdefault(k, "")
+            asked = {norm(x) for x in str(row.get("pieces") or "").replace(",", ";").split(";") if x.strip()}
+            d.update({"prenom": prenom, "nom": nom, "langue_code": code, "langue_nom": lname, "statut": statut,
+                      "pieces": [k for k, lab in PIECE_LABELS.items() if norm(lab) in asked or k in asked],
+                      "created": time.time(), "journal": [], "id": uuid.uuid4().hex[:12]})
+            if d["etape"]:
+                d["etape"] = next((e for e in PARCOURS["etapes"] if norm(e) == norm(d["etape"])), d["etape"])
+            clean_dossier(d)
             existing[key] = d
             d["_new"] = True
             created += 1
