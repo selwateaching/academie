@@ -7749,8 +7749,9 @@ async function genCours(extraInstruction) {
   if (tcVeutCursive()) prompt += TC_CURSIVE_INSTRUCTION;
   var crsComptineImgEl = document.getElementById('crsComptineImg');
   var wantComptineImg = (ty === 'comptine') && crsComptineImgEl && crsComptineImgEl.checked && (typeof biblioIsPro === 'function') && biblioIsPro();
+  var comptineImgPrompt = 'children\'s educational book illustration, cartoon style, flat bright warm colors, simple shapes, no text, no letters, no numbers, no words anywhere in the image — a single clear scene that concretely and literally depicts the specific theme "' + titre + '" (a ' + mat + ' lesson for ' + nv + ' level Algerian primary/middle school students). Show recognizable visual elements directly tied to this exact theme, not a generic scene of children playing outside.';
   var comptineImgPromise = wantComptineImg
-    ? fetch('/.netlify/functions/generate-image', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: 'colorful cheerful cartoon illustration for a children\'s educational rhyme, simple shapes, bright warm colors, no text, no words, theme: ' + titre }) })
+    ? fetch('/.netlify/functions/generate-image', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: comptineImgPrompt, negative_prompt: 'text, letters, words, numbers, writing, caption, watermark, signature, blurry, generic stock photo, unrelated scene, deformed' }) })
         .then(function(r){ return r.json(); })
         .catch(function(err){ return { error: { message: 'Erreur réseau : ' + (err && err.message || 'inconnue') } }; })
     : Promise.resolve(null);
@@ -7771,7 +7772,7 @@ async function genCours(extraInstruction) {
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. تحقق من مفتاح الواجهة البرمجية.':'Réponse vide de l\'IA. Vérifiez la clé API.','err'); return; }
     var imgHTML = '';
     if (imgResult && imgResult.base64) {
-      imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="max-width:100%;border-radius:14px;" alt=""></div>';
+      imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="width:220px;max-width:55%;height:auto;border-radius:14px;" alt=""></div>';
     } else if (wantComptineImg) {
       var imgErrDetail = (imgResult && imgResult.error && imgResult.error.message) ? imgResult.error.message : '(aucun détail renvoyé par le serveur)';
       N(CURRENT_LANG==='ar'?'تعذّر إنشاء الصورة، لكن الأنشودة جاهزة.':'Illustration impossible à générer, mais la comptine est prête.','err');

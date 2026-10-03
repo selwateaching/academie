@@ -101,8 +101,13 @@ def generate_image():
 
     body = request.get_json(silent=True) or {}
     prompt = (body.get("prompt") or "").strip()
+    negative_prompt = (body.get("negative_prompt") or "").strip()
     if not prompt:
         return jsonify({"error": {"message": "Prompt manquant.", "type": "bad_request"}})
+
+    text_prompts = [{"text": prompt, "weight": 1}]
+    if negative_prompt:
+        text_prompts.append({"text": negative_prompt, "weight": -1})
 
     try:
         r = requests.post(
@@ -113,7 +118,7 @@ def generate_image():
                 "Accept": "application/json",
             },
             json={
-                "text_prompts": [{"text": prompt}],
+                "text_prompts": text_prompts,
                 "cfg_scale": 7,
                 "height": 1024,
                 "width": 1024,
