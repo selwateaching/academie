@@ -9819,6 +9819,11 @@ function authApplyProfile(p, uid) {
   window._paiementsMois = p.paiementsMois || {}; /* suivi mensuel des virements pointés par l'admin — {"2026-01":true,...} */
   window._prochainPaiement = p.prochainPaiement || null;
   window._planProf = p.plan || 'pro'; /* Starter/Pro — défaut "pro" pour les comptes déjà validés avant l'ajout des quotas */
+  /* Le statut Pro arrive ici de façon asynchrone (après le chargement du compte cloud) : si
+     l'enseignant est déjà sur le générateur de comptine à ce moment-là, la case "Illustrer avec
+     une image (Pro)" avait été évaluée trop tôt (compte pas encore reconnu Pro) et restait cachée
+     jusqu'au prochain changement de type de document. On la recalcule ici pour rester à jour. */
+  if (document.getElementById('crsType') && document.getElementById('crsType').value === 'comptine' && typeof onCrsTypeChange === 'function') onCrsTypeChange();
   if (typeof window.sv === 'function') window.sv();
   var sbNm = document.getElementById('sbNm'); if (sbNm) sbNm.textContent = 'Prof. ' + window.D.s.pre + ' ' + window.D.s.nom;
   var sbMat = document.getElementById('sbMat'); if (sbMat) sbMat.textContent = window.D.s.mat;
