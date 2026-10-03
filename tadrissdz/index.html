@@ -1609,7 +1609,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option></select></div>
+          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option></select></div>
           <div class="fg" id="crsLangRow"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -4204,8 +4204,8 @@ function switchLang() {
   }
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
-  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique'};
+  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4258,7 +4258,8 @@ function switchLang() {
           bem: isAR ? 'موضوع نمط BEM' : 'Sujet type BEM',
           bac: isAR ? 'موضوع نمط BAC' : 'Sujet type BAC',
           positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement',
-          comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique'
+          comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique',
+          vocabsci: isAR ? '📖 المفردات العلمية' : '📖 Vocabulaire scientifique'
         };
         for (var ci = 0; ci < crsType.options.length; ci++) {
           var ctv = crsType.options[ci].value;
@@ -7691,6 +7692,20 @@ async function genCours(extraInstruction) {
       '- Le contenu doit porter précisément sur le sujet "'+titre+'" (jamais une comptine générique sans rapport)\n'+
       '- Écris TOUT le contenu (titre, texte, gestes, objectif) en '+compLangLabel+(compLang==='ar' ? ', en écriture arabe avec les voyelles courtes (tachkil) sur les mots importants si utile pour la prononciation' : '')+'\n'+
       '- Reste concis : c\'est une fiche d\'usage pratique en classe, pas un article';
+  } else if (ty === 'vocabsci') {
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN). Crée un LEXIQUE DE VOCABULAIRE SCIENTIFIQUE EXPLICATIF pour aider les élèves de niveau '+nv+' à comprendre et utiliser correctement le registre du français scientifique nécessaire sur le sujet : "'+titre+'". CE N\'EST PAS une fiche d\'exercices ni un cours de maths/physique à résoudre : c\'est un texte qui explique le VOCABULAIRE, pour des élèves qui comprendraient la notion scientifique mais butent sur les mots français utilisés pour en parler.'+(obj?'\nObjectifs fournis par le professeur: '+obj:'')+
+      '\n\nStructure attendue :\n'+
+      '1. Une courte introduction (2-3 lignes) qui explique pourquoi ce vocabulaire est important à maîtriser pour ce sujet.\n'+
+      '2. Pour CHAQUE terme scientifique clé du sujet (6 à 10 termes), un bloc <div class="tc-box tc-def"><div class="tc-box-title">📘 [le terme]</div>[définition simple et précise, en une ou deux phrases claires]</div> suivi d\'un bloc <div class="tc-box tc-example"><div class="tc-box-title">💡 Exemple</div>[une phrase complète, dans un contexte scolaire algérien, qui utilise ce terme correctement]</div>.\n'+
+      '3. Quand un terme a un sens différent en français courant et en français scientifique (ex: « volume », « travail », « milieu », « solution »...), ajoute un bloc <div class="tc-box tc-warn"><div class="tc-box-title">⚠️ Attention</div>[explique la différence entre le sens courant et le sens scientifique]</div> juste après ce terme — uniquement quand c\'est pertinent, pas systématiquement.\n'+
+      '4. Termine par <div class="tc-remember"><div class="tc-box-title">⭐ À retenir</div>[1-2 phrases rappelant comment bien utiliser ce vocabulaire dans une copie/réponse d\'examen]</div>.\n\n'+
+      '=== EXIGENCES ===\n'+
+      '- Les termes choisis doivent être PRÉCISÉMENT ceux nécessaires pour comprendre et parler du sujet "'+titre+'" (jamais du vocabulaire générique sans rapport).\n'+
+      '- Définitions simples, sans jargon non expliqué, adaptées au niveau '+nv+'.\n'+
+      '- Les exemples doivent être des phrases complètes et naturelles, pas juste le mot répété.\n'+
+      '- N\'écris AUCUN exercice, aucune question, aucun problème à résoudre : uniquement du vocabulaire expliqué.\n'+
+      '- Écris directement le HTML, sans phrase d\'introduction générique ni titre avant le premier bloc.';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -7780,7 +7795,7 @@ async function genCours(extraInstruction) {
          pour contenir le message d'erreur Stability AI en entier) — repère de diagnostic temporaire. */
       imgHTML = '<div style="background:#FBEAEA;border:1px solid #E8A3A3;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#7A2424;word-break:break-word;"><b>🔧 Diagnostic image (temporaire) :</b><br>' + imgErrDetail.replace(/</g,'&lt;') + '</div>';
     }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine') ? (enteteHTML + imgHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     dispCrs(curCrs); document.getElementById('btnSCrs').style.display='inline-flex';
     document.getElementById('btnTcRegen').style.display='inline-flex';
@@ -7835,7 +7850,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
