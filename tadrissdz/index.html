@@ -8604,7 +8604,7 @@ function saveP(){
   document.getElementById('sbNm').textContent=T('prof')+' '+p+' '+n;
   document.getElementById('sbMat').textContent=mat;
   document.getElementById('sbAv').textContent=p?p[0]:'P';
-  var sbPlanMatEl = document.getElementById('sbPlanMat'); if (sbPlanMatEl) sbPlanMatEl.textContent='Pro · '+mat;
+  var sbPlanMatEl = document.getElementById('sbPlanMat'); if (sbPlanMatEl) sbPlanMatEl.textContent=planLabelAffichage(window._planProf)+' · '+mat;
   // Update profile card preview immediately
   var pns = document.getElementById('pNS');
   var pms = document.getElementById('pMS');
@@ -9761,6 +9761,17 @@ window.pullFromCloud = pullFromCloud;
    sur le compte Anthropic. */
 var QUOTAS_PAR_PLAN = { starter: 40, pro: 100 };
 
+/* Nom du forfait tel qu'affiché dans la barre latérale ("Abonnement actif : X · matière").
+   Avant ce correctif, le texte était codé en dur à "Pro" partout, même pour un compte
+   Starter ou Découverte — ce qui faisait croire à tort à certaines enseignantes qu'elles
+   étaient en Pro alors que leur forfait réel était différent. */
+function planLabelAffichage(planKey) {
+  var k = (planKey || '').toLowerCase();
+  if (k === 'pro') return 'Pro';
+  if (k === 'starter') return 'Starter';
+  return 'Découverte';
+}
+
 function moisActuelCle() {
   var d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
@@ -9828,7 +9839,7 @@ function authApplyProfile(p, uid) {
   var sbNm = document.getElementById('sbNm'); if (sbNm) sbNm.textContent = 'Prof. ' + window.D.s.pre + ' ' + window.D.s.nom;
   var sbMat = document.getElementById('sbMat'); if (sbMat) sbMat.textContent = window.D.s.mat;
   var sbAv = document.getElementById('sbAv'); if (sbAv) sbAv.textContent = window.D.s.pre ? window.D.s.pre[0] : 'P';
-  var sbPlanMat = document.getElementById('sbPlanMat'); if (sbPlanMat) sbPlanMat.textContent = 'Pro · ' + window.D.s.mat;
+  var sbPlanMat = document.getElementById('sbPlanMat'); if (sbPlanMat) sbPlanMat.textContent = planLabelAffichage(window._planProf) + ' · ' + window.D.s.mat;
   if (typeof window.go === 'function') window.go(window.CUR || 'dash'); /* re-rend la page active avec les données du bon compte */
   applyMatiereLockUI();
 }
