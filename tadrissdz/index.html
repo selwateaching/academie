@@ -1603,7 +1603,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div class="fg2">
           <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option></select></div>
-          <div class="fg"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
+          <div class="fg" id="crsLangRow"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
           <div class="fg"><label class="fl" data-fl="projet">Projet</label><input class="fi" id="crsProjet" placeholder="Ex: Projet 1 — C'est notre quartier"></div>
@@ -7353,6 +7353,11 @@ function onCrsTypeChange() {
   var showComptine = (ty === 'comptine');
   var crsComptineFieldsEl = document.getElementById('crsComptineFields');
   if (crsComptineFieldsEl) crsComptineFieldsEl.style.display = showComptine ? 'block' : 'none';
+  /* Le champ "Langue" générique (FR/AR) est redondant avec "Langue de la comptine" (FR/AR/EN/ES)
+     et les deux étaient visuellement l'un sur l'autre — source de confusion (l'utilisateur ouvrait
+     le mauvais). On masque le générique pour une comptine : un seul sélecteur de langue, sans ambiguïté. */
+  var crsLangRowEl = document.getElementById('crsLangRow');
+  if (crsLangRowEl) crsLangRowEl.style.display = showComptine ? 'none' : 'block';
   if (showComptine) {
     var comptineIsPro = (typeof biblioIsPro === 'function') && biblioIsPro();
     var imgRowEl = document.getElementById('crsComptineImgRow');
