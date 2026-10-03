@@ -559,6 +559,13 @@ tr:hover td{background:var(--tp);}
 .tc-flow-num{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--t);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;z-index:1;}
 .tc-flow-body{flex:1;font-size:.85rem;line-height:1.7;padding-top:.4rem;}
 .tc-flow-body b{color:var(--t);}
+/* Contenu généré en arabe (indépendant de la langue de l'interface) : l'arabe lu à la même
+   taille en px que le latin paraît nettement plus petit (glyphes plus fins, liés) — on agrandit
+   et on bascule sur une police arabe dédiée (Amiri, déjà chargée) plutôt que le fallback système. */
+[dir="rtl"] .tc-box{font-size:1.05rem;line-height:2;font-family:'Amiri',serif;}
+[dir="rtl"] .tc-box-title,[dir="rtl"] .tc-remember>.tc-box-title{font-size:1.05rem;}
+[dir="rtl"] .tc-remember{font-family:'Amiri',serif;}
+[dir="rtl"] .tc-flow-body{font-size:1.05rem;line-height:1.9;font-family:'Amiri',serif;}
 .tc-arrow-row{display:flex;align-items:stretch;gap:.6rem;margin:1.1rem 0;flex-wrap:wrap;}
 .tc-arrow-cell{flex:1;min-width:150px;background:var(--w);border:1px solid var(--br);border-radius:10px;padding:.75rem .95rem;font-size:.82rem;}
 .tc-arrow-cell b.tc-lbl{display:block;font-size:.66rem;text-transform:uppercase;color:var(--ink3);margin-bottom:.35rem;letter-spacing:.03em;}
@@ -7982,6 +7989,14 @@ function ficheTitreIllus(titre, matiere) {
   }
   return matiereEmoji(matiere);
 }
+function crsContenuEstArabe(txt) {
+  /* Détecte si le CONTENU généré est en arabe, indépendamment de la langue de l'interface
+     (CURRENT_LANG) : un document peut être généré en arabe alors que l'interface est en français. */
+  var sample = (txt || '').replace(/<[^>]*>/g, ' ');
+  var arabicChars = (sample.match(/[؀-ۿ]/g) || []).length;
+  var latinChars = (sample.match(/[A-Za-zÀ-ÿ]/g) || []).length;
+  return arabicChars > 20 && arabicChars > latinChars;
+}
 function dispCrs(crs, keepMode){
   if (!keepMode) TP_VIEW_MODE = 'cards';
   document.getElementById('crsDisT').textContent=crs.titre;
@@ -7996,20 +8011,25 @@ function dispCrs(crs, keepMode){
     corps = crs.contenu || '';
     hasSteps = false;
   }
+  var corpsArabe = crsContenuEstArabe(crs.contenu);
+  var corpsStyle = corpsArabe
+    ? "font-size:1.05rem;line-height:2;color:var(--ink);font-family:'Amiri',serif;direction:rtl;text-align:right;"
+    : "font-size:.85rem;line-height:1.8;color:var(--ink);";
+  var corpsDirAttr = corpsArabe ? ' dir="rtl"' : '';
   var niveauEstPrimaire = /^[1-5]AP$/.test((crs.niveau || '').trim());
   var estFichePrimaire = false; /* ancien style cursif/pastel en bloc désactivé — gardé ci-dessous pour mémoire, non atteint */
   if (estFichePrimaire) {
     var palNiveau = NIVEAU_PALETTE[(crs.niveau || '').trim()];
     var borderStyle = palNiveau ? (' style="border-color:'+palNiveau.border+'"') : '';
     var etoile = '<svg viewBox="0 0 24 24" width="14" height="14"><path d="M12 2l2.6 6.6L22 9l-5.5 4.6L18 21l-6-3.8L6 21l1.5-7.4L2 9l7.4-.4z" fill="'+(palNiveau?palNiveau.accent:'#DFA9C9')+'" opacity=".55"/></svg>';
-    document.getElementById('crsDis').innerHTML='<div class="pp-primaire"'+borderStyle+'><span class="pp-primaire-star pp-primaire-star-tl">'+etoile+'</span><span class="pp-primaire-star pp-primaire-star-br">'+etoile+'</span><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat, crs.niveau)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    document.getElementById('crsDis').innerHTML='<div class="pp-primaire"'+borderStyle+'><span class="pp-primaire-star pp-primaire-star-tl">'+etoile+'</span><span class="pp-primaire-star pp-primaire-star-br">'+etoile+'</span><div class="pp-primaire-banner"><div class="pp-primaire-icon">'+ficheIconPrimaire(D.s.mat, crs.niveau)+'</div><div><div class="pp-primaire-title">'+crs.titre+'</div><div class="pp-primaire-sub">'+D.s.mat+' · '+crs.niveau+'</div></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+D.s.mat+'</div><div>🇩🇿 MEN</div></div><div'+corpsDirAttr+' style="'+corpsStyle+'">'+corps+'</div></div>';
   } else {
     /* Primaire : même style illustré, mais le titre reste en écriture cursive — important
        pédagogiquement pour ce niveau (modèle d'écriture pour les enfants). */
     var estPrimaireIllustre = niveauEstPrimaire || ((typeof isPrimaire === 'function') && isPrimaire());
     var titreClass = estPrimaireIllustre ? ' pp-banner-theme-cursive' : '';
     var matDoc = crs.mat || D.s.mat;
-    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus"><img src="/openmoji/'+ficheTitreIllus(crs.titre, matDoc)+'.svg" alt=""></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div style="font-size:.85rem;line-height:1.8;color:var(--ink)">'+corps+'</div></div>';
+    document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">📘 '+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme'+titreClass+'">'+crs.titre+'</div><div class="pp-banner-illus"><img src="/openmoji/'+ficheTitreIllus(crs.titre, matDoc)+'.svg" alt=""></div></div><div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDoc+'</div><div>🇩🇿 MEN</div></div><div'+corpsDirAttr+' style="'+corpsStyle+'">'+corps+'</div></div>';
   }
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
