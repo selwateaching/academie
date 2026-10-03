@@ -123,8 +123,8 @@ def generate_image():
             timeout=60,
         )
         if not r.ok:
-            diag = f" [diagnostic : clé reçue de {len(api_key_raw or '')} caractères, {len(api_key)} après nettoyage des espaces]"
-            return jsonify({"error": {"message": f"Stability AI a renvoyé une erreur ({r.status_code}) : {r.text[:300]}{diag}", "type": "api_error"}})
+            diag = f"[diagnostic : clé de {len(api_key_raw or '')} caractères reçue ({len(api_key)} après nettoyage), préfixe \"{api_key[:7]}\"] "
+            return jsonify({"error": {"message": f"{diag}Stability AI a renvoyé une erreur ({r.status_code}) : {r.text[:250]}", "type": "api_error"}})
         data = r.json()
         artifacts = data.get("artifacts") or []
         if not artifacts or not artifacts[0].get("base64"):
