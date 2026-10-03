@@ -1623,7 +1623,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div id="crsComptineFields" style="display:none">
           <div class="fg2">
             <div class="fg"><label class="fl" data-fl="diffcomptine">Niveau de difficulté</label><select class="fs" id="crsComptineDiff"><option value="facile">🟢 Facile</option><option value="moyen" selected>🟡 Moyen</option><option value="difficile">🔴 Difficile</option></select></div>
-            <div class="fg"><label class="fl" data-fl="langcomptine">Langue de la comptine</label><select class="fs" id="crsComptineLang"><option value="fr">Français</option><option value="ar">Arabe</option><option value="es">Espagnol</option></select></div>
+            <div class="fg"><label class="fl" data-fl="langcomptine">Langue de la comptine</label><select class="fs" id="crsComptineLang"><option value="fr">Français</option><option value="ar">Arabe</option><option value="en">Anglais</option><option value="es">Espagnol</option></select></div>
           </div>
         </div>
         <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
@@ -7630,7 +7630,7 @@ async function genCours(extraInstruction) {
   } else if (ty === 'comptine') {
     var compDiff = document.getElementById('crsComptineDiff') ? document.getElementById('crsComptineDiff').value : 'moyen';
     var compLang = document.getElementById('crsComptineLang') ? document.getElementById('crsComptineLang').value : 'fr';
-    var compLangLabel = {fr:'Français', ar:'Arabe', es:'Espagnol'}[compLang] || 'Français';
+    var compLangLabel = {fr:'Français', ar:'Arabe', en:'Anglais', es:'Espagnol'}[compLang] || 'Français';
     var compDiffLabel = {facile:'Facile', moyen:'Moyen', difficile:'Difficile'}[compDiff] || 'Moyen';
     enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau de difficulté :</b> '+compDiffLabel+'</div><div><b>Langue :</b> '+compLangLabel+'</div></div>';
     var skeletonComptine =
