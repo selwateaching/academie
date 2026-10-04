@@ -487,6 +487,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div style="font-size:.78rem;color:var(--ink3);margin-bottom:.2rem;" id="llStudioLangue"></div>
       <div style="font-weight:700;font-size:1.05rem;margin-bottom:1.1rem;" id="llStudioTheme"></div>
       <img id="llStudioImage" style="display:none;max-width:100%;max-height:220px;border-radius:10px;margin-bottom:1.1rem;object-fit:contain;">
+      <a id="llStudioImageLink" target="_blank" rel="noopener" style="display:none;margin-bottom:1.1rem;padding:7px 14px;border-radius:7px;background:var(--tp);color:var(--t);text-decoration:none;font-size:.78rem;font-weight:700;">📄 Ouvrir le document</a>
       <div class="ll-mic-wrap" id="llMicWrap">🎙️</div>
       <canvas id="llWaveformCanvas" width="360" height="64" style="display:none;margin-bottom:.8rem;"></canvas>
       <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:1.1rem;" id="llStudioTimer">00:00 / 02:00</div>
@@ -1461,6 +1462,16 @@ function llNormalizeImageUrl(url) {
   if (m && url.indexOf('drive.google.com') >= 0) return 'https://drive.google.com/uc?export=view&id=' + m[1];
   return url;
 }
+/* Le lien du professeur n'est pas toujours une image (ça peut être un PDF, par exemple) : un
+   <img> ne peut afficher qu'une vraie image. Si le chargement échoue, on affiche à la place un
+   bouton "Ouvrir le document" qui fonctionne pour n'importe quel type de fichier. */
+var _llMediaCounter = 0;
+function llMediaHtml(url, imgStyle, openLabel) {
+  var id = 'llMedia' + (_llMediaCounter++);
+  return '<img id="' + id + 'img" src="' + url + '" style="' + imgStyle + '" ' +
+    'onerror="document.getElementById(\'' + id + 'img\').style.display=\'none\';document.getElementById(\'' + id + 'lnk\').style.display=\'inline-block\';">' +
+    '<a id="' + id + 'lnk" href="' + url + '" target="_blank" rel="noopener" style="display:none;padding:7px 14px;border-radius:7px;background:var(--tp);color:var(--t);text-decoration:none;font-size:.78rem;font-weight:700;">📄 ' + openLabel + '</a>';
+}
 window.llImageUrlChange = function(input) {
   var url = llNormalizeImageUrl(input.value);
   if (!url) { document.getElementById('llImagePreviewRow').style.display = 'none'; return; }
@@ -1534,7 +1545,7 @@ window.llOpenProd = function(actId) {
   document.getElementById('llProdView').style.display = 'block';
   document.getElementById('llProdTitle').innerHTML = llLangChip(lg) + ' ' + act.theme;
   var html = '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.4rem;">'+(isAR?lg.ar:lg.fr)+' · '+(cls?cls.nm:'')+'</div><div style="font-size:.85rem;">'+act.consigne+'</div>';
-  if (act.imageUrl) html += '<img src="'+act.imageUrl+'" style="max-width:100%;border-radius:8px;margin-top:.8rem;display:block;">';
+  if (act.imageUrl) html += llMediaHtml(act.imageUrl, 'max-width:100%;border-radius:8px;margin-top:.8rem;display:block;', isAR?'فتح المستند':'Ouvrir le document');
   if (act.audioModeleKey) {
     var src = llAudioGet(uid, act.audioModeleKey);
     if (src) html += '<audio controls style="width:100%;margin-top:.8rem;" src="'+src+'"></audio>';
@@ -1899,7 +1910,7 @@ function llRenderEleveApp() {
       : ('<span style="color:var(--t);">'+(isAR?'✓ تم الإرسال، بانتظار التصحيح':'✓ Envoyé, en attente de correction')+'</span>');
     var btnLabel = !sub ? (isAR?'🎙️ بدء التسجيل':"🎙️ Commencer l'enregistrement") : (isAR?'🔄 إعادة المحاولة':'🔄 Recommencer');
     var imgThumb = '';
-    if (a.imageUrl) imgThumb = '<img src="'+a.imageUrl+'" style="max-width:160px;max-height:160px;border-radius:8px;display:block;margin-bottom:.5rem;">';
+    if (a.imageUrl) imgThumb = llMediaHtml(a.imageUrl, 'max-width:160px;max-height:160px;border-radius:8px;display:block;margin-bottom:.5rem;', isAR?'فتح المستند':'Ouvrir le document');
     return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
       '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;"><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span></div>' +
       '<div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div>' +
@@ -1972,9 +1983,19 @@ window.llOpenStudio = function(actId) {
   document.getElementById('llStudioLangue').textContent = lg.flag + ' ' + (isAR?lg.ar:lg.fr);
   document.getElementById('llStudioTheme').textContent = act.theme;
   var studioImgEl = document.getElementById('llStudioImage');
+  var studioImgLinkEl = document.getElementById('llStudioImageLink');
   var studioImgSrc = act.imageUrl || null;
-  if (studioImgSrc) { studioImgEl.src = studioImgSrc; studioImgEl.style.display = 'block'; }
-  else { studioImgEl.style.display = 'none'; studioImgEl.src = ''; }
+  studioImgLinkEl.style.display = 'none';
+  if (studioImgSrc) {
+    studioImgEl.src = studioImgSrc;
+    studioImgEl.style.display = 'block';
+    studioImgEl.onerror = function() {
+      studioImgEl.style.display = 'none';
+      studioImgLinkEl.href = studioImgSrc;
+      studioImgLinkEl.textContent = (isAR ? '📄 فتح المستند' : '📄 Ouvrir le document');
+      studioImgLinkEl.style.display = 'inline-block';
+    };
+  } else { studioImgEl.style.display = 'none'; studioImgEl.src = ''; studioImgEl.onerror = null; }
   document.getElementById('llStudioTimer').textContent = '00:00 / ' + llFormatDuree(LL_ST.maxSec);
   document.getElementById('llStudioStartBtn').style.display = 'block';
   document.getElementById('llStudioImportLbl').style.display = 'block';
