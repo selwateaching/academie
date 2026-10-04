@@ -2036,7 +2036,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
       <div class="fg"><label class="fl">Observations (PAP, PAI, santé, besoins spéciaux...)</label><textarea class="fta" id="eOb" style="min-height:55px"></textarea></div>
     </div>
-    <div class="mf"><button class="btn bxs" id="mElDelBtn" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);display:none" onclick="delEl(D._eId)">🗑 Supprimer</button><button class="btn bo" onclick="CM('mEleve')">Annuler</button><button class="btn bt" onclick="saveEl()">Enregistrer</button></div>
+    <div class="mf"><button class="btn bxs" id="mElDelBtn" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);display:none" onclick="delEl(D._eId)">🗑 Supprimer</button><button class="btn bo" onclick="CM('mEleve')">Annuler</button><button class="btn bt" id="eSaveBtn" onclick="saveEl()">Enregistrer</button></div>
   </div>
 </div>
 
@@ -6042,6 +6042,25 @@ function resetElPhotoUI(photoUrl) {
 function onElPhotoSelected(input) {
   var f = input.files[0]; if (!f) return;
   var isAR = CURRENT_LANG === 'ar';
+  /* Le traitement de la photo (lecture + redimensionnement) est asynchrone : si on clique
+     "Enregistrer" pendant ce court délai, _pendingElPhoto n'est pas encore prêt et la fiche
+     est enregistrée sans photo, sans aucun message d'erreur. On bloque donc le bouton
+     Enregistrer le temps du traitement pour éviter cette perte silencieuse. */
+  var saveBtn = document.getElementById('eSaveBtn');
+  var prevEl = document.getElementById('ePhotoPrev');
+  function setSaveLocked(locked) {
+    if (!saveBtn) return;
+    saveBtn.disabled = locked;
+    saveBtn.style.opacity = locked ? '.6' : '';
+    saveBtn.style.cursor = locked ? 'not-allowed' : '';
+  }
+  setSaveLocked(true);
+  if (prevEl) prevEl.innerHTML = '<span style="color:var(--ink3);font-size:.95rem">⏳</span>';
+  function fail(msg) {
+    setSaveLocked(false);
+    resetElPhotoUI(D._eId ? (D.el.find(function(x){return x.id===D._eId;})||{}).photo : null);
+    N(msg, 'err');
+  }
   var reader = new FileReader();
   reader.onload = function(e) {
     var img = new Image();
@@ -6059,10 +6078,12 @@ function onElPhotoSelected(input) {
       _pendingElPhoto = canvas.toDataURL('image/jpeg', 0.82);
       document.getElementById('ePhotoPrev').innerHTML = '<img src="'+_pendingElPhoto+'" style="width:100%;height:100%;object-fit:cover">';
       document.getElementById('ePhotoRemoveBtn').style.display = '';
+      setSaveLocked(false);
     };
-    img.onerror = function() { N(isAR?'صورة غير صالحة':'Image invalide', 'err'); };
+    img.onerror = function() { fail(isAR?'صورة غير صالحة':'Image invalide'); };
     img.src = e.target.result;
   };
+  reader.onerror = function() { fail(isAR?'تعذرت قراءة الصورة':'Impossible de lire cette image'); };
   reader.readAsDataURL(f);
 }
 function removeElPhoto() {
