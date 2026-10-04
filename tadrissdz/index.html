@@ -6224,106 +6224,1423 @@ function renderBul() {
 
 /* ===== PROGRAMME NATIONAL ===== */
 var PROG = {
-  '1AP': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد إلى غاية 20','الفصل 2 : الجمع البسيط','الفصل 3 : الطرح البسيط','الفصل 4 : الأشكال الهندسية الأساسية','الفصل 5 : التموقع الزمني (الأيام، الأسابيع)'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Reconnaissance des lettres de l\'alphabet','Chap.2 : Association lettre-son','Chap.3 : Lecture de syllabes simples','Chap.4 : Premiers mots et phrases courtes','Chap.5 : Tracé et écriture des lettres'] },
-    { mat:'Éveil scientifique 🔬', chapitres:['الفصل 1 : جسمي وحواسي','الفصل 2 : الكائنات الحية من حولي','الفصل 3 : الفصول الأربعة','الفصل 4 : الأدوات والمواد اليومية'] }
+  "1AP": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد إلى غاية 20",
+        "الفصل 2 : الجمع البسيط",
+        "الفصل 3 : الطرح البسيط",
+        "الفصل 4 : الأشكال الهندسية الأساسية",
+        "الفصل 5 : التموقع الزمني (الأيام، الأسابيع)"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Reconnaissance des lettres de l'alphabet",
+        "Chap.2 : Association lettre-son",
+        "Chap.3 : Lecture de syllabes simples",
+        "Chap.4 : Premiers mots et phrases courtes",
+        "Chap.5 : Tracé et écriture des lettres"
+      ]
+    },
+    {
+      "mat": "Éveil scientifique 🔬",
+      "chapitres": [
+        "الفصل 1 : جسمي وحواسي",
+        "الفصل 2 : الكائنات الحية من حولي",
+        "الفصل 3 : الفصول الأربعة",
+        "الفصل 4 : الأدوات والمواد اليومية"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : حفظ السور القصيرة",
+        "العقيدة : أركان الإيمان المبسطة",
+        "الآداب الإسلامية : آداب الأكل والشرب والسلام"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "أنا وأسرتي",
+        "أنا وقسمي ومدرستي",
+        "قواعد السلامة في الطريق"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Jeux de motricité globale (courir, sauter, lancer)",
+        "Jeux collectifs simples",
+        "Exercices d'équilibre et de coordination"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Découverte des couleurs primaires",
+        "Dessin libre et coloriage",
+        "Modelage simple (pâte à modeler)"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Découverte des sons et des bruits",
+        "Chants collectifs simples",
+        "Le rythme : frapper des mains"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "عائلتي ومحيطي القريب",
+        "المدرسة : فضاء للتعلم والعيش المشترك",
+        "الفصول الأربعة وتعاقب الليل والنهار"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Découverte de l'alphabet Tifinagh",
+        "Vocabulaire de base (famille, corps, couleurs)",
+        "Chants et comptines en tamazight"
+      ]
+    }
   ],
-  '2AP': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد إلى غاية 100','الفصل 2 : الجمع والطرح العموديان','الفصل 3 : مدخل إلى الضرب','الفصل 4 : قياس الطول والكتلة','الفصل 5 : الهندسة — الخطوط والأشكال البسيطة'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Lecture courante de phrases','Chap.2 : Grammaire — le nom et le verbe','Chap.3 : Production de phrases simples','Chap.4 : Enrichissement du vocabulaire','Chap.5 : Dictée de mots et phrases courtes'] },
-    { mat:'Éveil scientifique 🔬', chapitres:['الفصل 1 : الحيوانات وموطنها','الفصل 2 : النباتات ونموها','الفصل 3 : الماء في محيطنا','الفصل 4 : النظافة والصحة'] }
+  "2AP": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد إلى غاية 100",
+        "الفصل 2 : الجمع والطرح العموديان",
+        "الفصل 3 : مدخل إلى الضرب",
+        "الفصل 4 : قياس الطول والكتلة",
+        "الفصل 5 : الهندسة — الخطوط والأشكال البسيطة"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Lecture courante de phrases",
+        "Chap.2 : Grammaire — le nom et le verbe",
+        "Chap.3 : Production de phrases simples",
+        "Chap.4 : Enrichissement du vocabulaire",
+        "Chap.5 : Dictée de mots et phrases courtes"
+      ]
+    },
+    {
+      "mat": "Éveil scientifique 🔬",
+      "chapitres": [
+        "الفصل 1 : الحيوانات وموطنها",
+        "الفصل 2 : النباتات ونموها",
+        "الفصل 3 : الماء في محيطنا",
+        "الفصل 4 : النظافة والصحة"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : حفظ وتلاوة سور مختارة",
+        "السيرة النبوية : محطات من حياة الرسول ﷺ",
+        "الآداب الإسلامية : آداب التعامل مع الوالدين"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "حقوق الطفل وواجباته",
+        "الحياة الجماعية داخل المدرسة",
+        "النظافة والمحافظة على البيئة"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : courses et sauts simples",
+        "Jeux collectifs avec ballon",
+        "Gymnastique au sol — roulades simples"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Les formes géométriques dans le dessin",
+        "Collage et assemblage de matériaux",
+        "Peinture au doigt et à la gouache"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Chants traditionnels algériens",
+        "Initiation aux instruments de percussion simples",
+        "Reconnaissance de sons (aigu/grave, fort/faible)"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "حيي ومدينتي",
+        "وسائل النقل والمواصلات",
+        "معالم من وطني الجزائر"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Lecture de syllabes simples en tamazight",
+        "Expressions courantes du quotidien",
+        "Contes et traditions amazighes"
+      ]
+    }
   ],
-  '3AP': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد إلى غاية 1000','الفصل 2 : الضرب وجداوله','الفصل 3 : مدخل إلى القسمة','الفصل 4 : الكسور البسيطة','الفصل 5 : محيط الأشكال الاعتيادية'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Lecture expressive de textes courts','Chap.2 : Grammaire — l\'accord sujet-verbe','Chap.3 : Rédaction de petits paragraphes','Chap.4 : Conjugaison au présent'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Se présenter et présenter sa famille','Séquence 2 : Décrire un objet ou un animal','Séquence 3 : Raconter une activité quotidienne'] },
-    { mat:'Éveil scientifique 🔬', chapitres:['الفصل 1 : جسم الإنسان — الأعضاء','الفصل 2 : حالات المادة','الفصل 3 : البيئة وحمايتها'] }
+  "3AP": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد إلى غاية 1000",
+        "الفصل 2 : الضرب وجداوله",
+        "الفصل 3 : مدخل إلى القسمة",
+        "الفصل 4 : الكسور البسيطة",
+        "الفصل 5 : محيط الأشكال الاعتيادية"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Lecture expressive de textes courts",
+        "Chap.2 : Grammaire — l'accord sujet-verbe",
+        "Chap.3 : Rédaction de petits paragraphes",
+        "Chap.4 : Conjugaison au présent"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Se présenter et présenter sa famille",
+        "Séquence 2 : Décrire un objet ou un animal",
+        "Séquence 3 : Raconter une activité quotidienne"
+      ]
+    },
+    {
+      "mat": "Éveil scientifique 🔬",
+      "chapitres": [
+        "الفصل 1 : جسم الإنسان — الأعضاء",
+        "الفصل 2 : حالات المادة",
+        "الفصل 3 : البيئة وحمايتها"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : أحكام التجويد البسيطة",
+        "العبادات : الصلاة وشروطها",
+        "القيم الإسلامية : الصدق والأمانة"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "الهوية الوطنية : العلم والنشيد الوطني",
+        "التضامن والتعاون داخل الحي",
+        "احترام القانون والمرافق العامة"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : courses de vitesse et relais",
+        "Jeux collectifs : initiation au handball/basket",
+        "Gymnastique : enchaînements simples"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Dessin d'observation (objets du quotidien)",
+        "Les couleurs chaudes et froides",
+        "Décoration et motifs traditionnels algériens"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Lecture rythmique simple",
+        "Chants patriotiques",
+        "Découverte d'instruments de musique algériens (bendir, derbouka)"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "الجزائر على الخريطة : الموقع والحدود",
+        "التراث المحلي والمعالم التاريخية",
+        "الأنشطة الاقتصادية في محيطي (فلاحة، تجارة)"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Lecture de phrases courtes",
+        "Grammaire de base : le nom et le verbe",
+        "Production orale simple"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chapter 1: Greetings and Introducing Myself",
+        "Chapter 2: Colours and Numbers 1-20",
+        "Chapter 3: My Family and Friends"
+      ]
+    }
   ],
-  '4AP': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد الكبيرة','الفصل 2 : العمليات الأربع العمودية','الفصل 3 : الكسور والمقارنة','الفصل 4 : مساحات الأشكال المستوية','الفصل 5 : التناسبية البسيطة'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Compréhension de textes narratifs','Chap.2 : Grammaire — les compléments','Chap.3 : Rédaction d\'un texte narratif court','Chap.4 : Conjugaison au passé et au futur'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Raconter un événement vécu','Séquence 2 : Décrire un lieu','Séquence 3 : Écrire une carte postale ou une invitation'] },
-    { mat:'Éveil scientifique 🔬', chapitres:['الفصل 1 : التنفس والدورة الدموية','الفصل 2 : الطاقة ومصادرها','الفصل 3 : السماء والأجرام السماوية'] }
+  "4AP": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد الكبيرة",
+        "الفصل 2 : العمليات الأربع العمودية",
+        "الفصل 3 : الكسور والمقارنة",
+        "الفصل 4 : مساحات الأشكال المستوية",
+        "الفصل 5 : التناسبية البسيطة"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Compréhension de textes narratifs",
+        "Chap.2 : Grammaire — les compléments",
+        "Chap.3 : Rédaction d'un texte narratif court",
+        "Chap.4 : Conjugaison au passé et au futur"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Raconter un événement vécu",
+        "Séquence 2 : Décrire un lieu",
+        "Séquence 3 : Écrire une carte postale ou une invitation"
+      ]
+    },
+    {
+      "mat": "Éveil scientifique 🔬",
+      "chapitres": [
+        "الفصل 1 : التنفس والدورة الدموية",
+        "الفصل 2 : الطاقة ومصادرها",
+        "الفصل 3 : السماء والأجرام السماوية"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : حفظ وتفسير مبسط",
+        "العبادات : الصيام وفضائله",
+        "السيرة النبوية : الأخلاق النبوية",
+        "القيم الإسلامية : التعاون والتسامح"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "المؤسسات المحلية (البلدية، المدرسة)",
+        "المواطنة : الحقوق والواجبات",
+        "التربية على المرور والسلامة"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : saut en longueur et lancer de précision",
+        "Sports collectifs : règles de base du football/handball",
+        "Activités d'expression corporelle"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Composition d'une scène (paysage, personnage)",
+        "Initiation à la calligraphie arabe décorative",
+        "Réalisation d'une affiche simple"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Notions de solfège de base",
+        "Chant choral à plusieurs voix",
+        "Musiques du monde et diversité culturelle"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "تضاريس الجزائر : الساحل، الهضاب، الصحراء",
+        "محطات من تاريخ الجزائر القديم",
+        "المناخ وتأثيره على حياة السكان"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Lecture de textes courts",
+        "Enrichissement du vocabulaire",
+        "Rédaction de phrases simples"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chapter 1: My School and Classroom Objects",
+        "Chapter 2: Daily Routines",
+        "Chapter 3: Animals and Their Habitats"
+      ]
+    }
   ],
-  '5AP': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد إلى غاية 999 999','الفصل 2 : الكسور البسيطة','الفصل 3 : الهندسة — الأشكال المستوية','الفصل 4 : القياس والمقادير','الفصل 5 : التناسبية والمسائل'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Lecture et analyse de textes','Chap.2 : Grammaire approfondie','Chap.3 : Production d\'un texte structuré','Chap.4 : Préparation à l\'examen de 5AP'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Lecture de récits courts','Séquence 2 : La phrase et la ponctuation','Séquence 3 : Production d\'écrits simples'] },
-    { mat:'Sciences (Éveil) 🔬', chapitres:['الفصل 1 : جسم الإنسان','الفصل 2 : الكائنات الحية ووسطها','الفصل 3 : مفاهيم حول الطاقة'] }
+  "5AP": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد إلى غاية 999 999",
+        "الفصل 2 : الكسور البسيطة",
+        "الفصل 3 : الهندسة — الأشكال المستوية",
+        "الفصل 4 : القياس والمقادير",
+        "الفصل 5 : التناسبية والمسائل"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Lecture et analyse de textes",
+        "Chap.2 : Grammaire approfondie",
+        "Chap.3 : Production d'un texte structuré",
+        "Chap.4 : Préparation à l'examen de 5AP"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Lecture de récits courts",
+        "Séquence 2 : La phrase et la ponctuation",
+        "Séquence 3 : Production d'écrits simples"
+      ]
+    },
+    {
+      "mat": "Sciences (Éveil) 🔬",
+      "chapitres": [
+        "الفصل 1 : جسم الإنسان",
+        "الفصل 2 : الكائنات الحية ووسطها",
+        "الفصل 3 : مفاهيم حول الطاقة"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : حفظ وتجويد",
+        "العبادات : أركان الإسلام الخمسة",
+        "السيرة النبوية : الهجرة النبوية",
+        "القيم الإسلامية : احترام البيئة والممتلكات العامة"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "الجزائر : الرموز الوطنية ومؤسسات الدولة",
+        "التضامن الوطني والعمل التطوعي",
+        "استعدادًا لشهادة نهاية الطور الابتدائي"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : préparation aux tests physiques",
+        "Sports collectifs : tournoi de classe",
+        "Natation ou activités aquatiques (selon établissement)"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Perspective simple et proportions",
+        "Arts et patrimoine culturel algérien",
+        "Projet final : exposition de classe"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Composition rythmique simple",
+        "Chants et poésie chantée",
+        "Projet musical de fin d'année"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "ثورة التحرير المجيدة : محطات أساسية",
+        "الجزائر وتنوعها الجغرافي والبشري",
+        "استعدادًا لشهادة نهاية الطور الابتدائي"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Lecture et compréhension de textes",
+        "Culture et patrimoine amazigh",
+        "Production écrite simple"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chapter 1: Food and Healthy Habits",
+        "Chapter 2: My House and My City",
+        "Chapter 3: Simple Past — Talking About Yesterday"
+      ]
+    }
   ],
-  '1AM': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد الصحيحة والعشرية','الفصل 2 : العمليات على الأعداد العشرية','الفصل 3 : الهندسة — المستقيمات والزوايا','الفصل 4 : المحيطات والمساحات','الفصل 5 : التناسبية'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Se présenter et présenter autrui','Séquence 2 : Raconter un souvenir d\'enfance','Séquence 3 : Décrire une personne ou un lieu'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Lecture et compréhension de textes narratifs','Chap.2 : Grammaire — la phrase nominale et verbale','Chap.3 : Production écrite narrative'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Chap.1 : Greetings and Introducing Yourself','Chap.2 : The Alphabet and Numbers','Chap.3 : Family Members and Descriptions','Chap.4 : Days, Months and Time'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['الفصل 1 : عصور ما قبل التاريخ والحضارات الأولى','الفصل 2 : التموقع على الخريطة — المعالم الجغرافية','الفصل 3 : تضاريس ومناخ الجزائر'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : تنوع الكائنات الحية','الفصل 2 : جسم الإنسان — التغذية','الفصل 3 : البيئة المحلية'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : اكتشاف المادة — حالاتها وخصائصها','الفصل 2 : المزائج والأجسام النقية — مدخل','الفصل 3 : مصادر الكهرباء وتأثيراتها'] }
+  "1AM": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد الصحيحة والعشرية",
+        "الفصل 2 : العمليات على الأعداد العشرية",
+        "الفصل 3 : الهندسة — المستقيمات والزوايا",
+        "الفصل 4 : المحيطات والمساحات",
+        "الفصل 5 : التناسبية"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Se présenter et présenter autrui",
+        "Séquence 2 : Raconter un souvenir d'enfance",
+        "Séquence 3 : Décrire une personne ou un lieu"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Lecture et compréhension de textes narratifs",
+        "Chap.2 : Grammaire — la phrase nominale et verbale",
+        "Chap.3 : Production écrite narrative"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chap.1 : Greetings and Introducing Yourself",
+        "Chap.2 : The Alphabet and Numbers",
+        "Chap.3 : Family Members and Descriptions",
+        "Chap.4 : Days, Months and Time"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "الفصل 1 : عصور ما قبل التاريخ والحضارات الأولى",
+        "الفصل 2 : التموقع على الخريطة — المعالم الجغرافية",
+        "الفصل 3 : تضاريس ومناخ الجزائر"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : تنوع الكائنات الحية",
+        "الفصل 2 : جسم الإنسان — التغذية",
+        "الفصل 3 : البيئة المحلية"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : اكتشاف المادة — حالاتها وخصائصها",
+        "الفصل 2 : المزائج والأجسام النقية — مدخل",
+        "الفصل 3 : مصادر الكهرباء وتأثيراتها"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : أحكام التجويد (النون الساكنة والتنوين)",
+        "العقيدة : أركان الإيمان وأدلتها",
+        "الفقه : الطهارة وأحكامها"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "التعريف بالدستور الجزائري",
+        "حقوق الإنسان وحقوق الطفل",
+        "المواطنة والانتماء الوطني"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : techniques de course et de saut",
+        "Sports collectifs : handball — règles et tactiques de base",
+        "Gymnastique : éléments acrobatiques simples"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Les éléments du langage plastique (ligne, forme, couleur)",
+        "Dessin d'observation",
+        "Arts et artisanat algérien"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Solfège : la portée et les notes",
+        "Chant choral",
+        "Musique traditionnelle algérienne (chaabi, raï)"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Grammaire : le nom et ses catégories",
+        "Lecture de textes narratifs courts",
+        "Expression orale sur des sujets familiers"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Découverte de l'ordinateur et de ses composants",
+        "Manipulation du clavier et de la souris",
+        "Introduction au traitement de texte"
+      ]
+    }
   ],
-  '2AM': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد النسبية','الفصل 2 : الحساب الحرفي — مدخل','الفصل 3 : الهندسة — المثلثات والرباعيات','الفصل 4 : التماثل المحوري','الفصل 5 : الإحصاء البسيط'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Raconter un fait divers','Séquence 2 : Décrire une scène','Séquence 3 : Le dialogue dans le récit'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Textes descriptifs','Chap.2 : Grammaire — les compléments circonstanciels','Chap.3 : Production d\'un texte descriptif'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Chap.1 : Talking About Daily Routines','Chap.2 : Describing Places and Directions','Chap.3 : Simple Past — Talking About the Past','Chap.4 : Food and Shopping'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['الفصل 1 : الحضارات القديمة (مصر، اليونان، روما)','الفصل 2 : الجزائر القديمة — نوميديا والممالك الأمازيغية','الفصل 3 : مناخات ونطاقات العالم البيومناخية','الفصل 4 : السكان والتمدن'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : التنفس وأوساط الحياة','الفصل 2 : التكاثر عند الكائنات الحية','الفصل 3 : النظم البيئية المحلية'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : حالات المادة','الفصل 2 : المزائج والأجسام النقية','الفصل 3 : مدخل إلى الكهرباء'] }
+  "2AM": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد النسبية",
+        "الفصل 2 : الحساب الحرفي — مدخل",
+        "الفصل 3 : الهندسة — المثلثات والرباعيات",
+        "الفصل 4 : التماثل المحوري",
+        "الفصل 5 : الإحصاء البسيط"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Raconter un fait divers",
+        "Séquence 2 : Décrire une scène",
+        "Séquence 3 : Le dialogue dans le récit"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Textes descriptifs",
+        "Chap.2 : Grammaire — les compléments circonstanciels",
+        "Chap.3 : Production d'un texte descriptif"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chap.1 : Talking About Daily Routines",
+        "Chap.2 : Describing Places and Directions",
+        "Chap.3 : Simple Past — Talking About the Past",
+        "Chap.4 : Food and Shopping"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "الفصل 1 : الحضارات القديمة (مصر، اليونان، روما)",
+        "الفصل 2 : الجزائر القديمة — نوميديا والممالك الأمازيغية",
+        "الفصل 3 : مناخات ونطاقات العالم البيومناخية",
+        "الفصل 4 : السكان والتمدن"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : التنفس وأوساط الحياة",
+        "الفصل 2 : التكاثر عند الكائنات الحية",
+        "الفصل 3 : النظم البيئية المحلية"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : حالات المادة",
+        "الفصل 2 : المزائج والأجسام النقية",
+        "الفصل 3 : مدخل إلى الكهرباء"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : أحكام المد",
+        "السيرة النبوية : الدعوة في مكة",
+        "الفقه : أحكام الصلاة"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "السلطات في الدولة الجزائرية",
+        "التضامن الاجتماعي والتعاضد",
+        "التربية البيئية والتنمية المستدامة"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : lancer du poids, saut en hauteur",
+        "Sports collectifs : basketball — dribble et passes",
+        "Activités de plein air et randonnée"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "La composition et l'équilibre visuel",
+        "Initiation à la calligraphie arabe",
+        "Histoire de l'art : civilisations anciennes"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Rythmes et mesures",
+        "Instruments de l'orchestre",
+        "Musiques du Maghreb et d'Afrique"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Conjugaison des verbes courants",
+        "Textes descriptifs",
+        "Production écrite guidée"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Utilisation d'un tableur simple",
+        "Recherche d'information sur Internet",
+        "Sécurité numérique de base"
+      ]
+    }
   ],
-  '3AM': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الأعداد الناطقة','الفصل 2 : الحساب الحرفي والمعادلات البسيطة','الفصل 3 : مبرهنة فيثاغورس','الفصل 4 : الهندسة في الفضاء','الفصل 5 : الإحصاء والاحتمالات البسيطة'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Argumenter — donner son avis','Séquence 2 : Le texte explicatif','Séquence 3 : Correspondance formelle'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Textes argumentatifs','Chap.2 : Grammaire — les modes et les temps','Chap.3 : Production argumentative'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Chap.1 : Future Plans and Ambitions','Chap.2 : Comparatives and Superlatives','Chap.3 : Health and the Body','Chap.4 : Travel and Transportation'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['الفصل 1 : الفتح العربي الإسلامي والجزائر في العصر الوسيط','الفصل 2 : الاستعمار الفرنسي للجزائر','الفصل 3 : الموارد الطبيعية والاقتصاد العالمي','الفصل 4 : التجمعات الجغرافية الكبرى في العالم'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : الجهاز العصبي','الفصل 2 : التكاثر عند الإنسان','الفصل 3 : الجيولوجيا — الصخور'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : التفاعلات الكيميائية البسيطة','الفصل 2 : الدارات الكهربائية','الفصل 3 : البصريات — الضوء'] }
+  "3AM": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الأعداد الناطقة",
+        "الفصل 2 : الحساب الحرفي والمعادلات البسيطة",
+        "الفصل 3 : مبرهنة فيثاغورس",
+        "الفصل 4 : الهندسة في الفضاء",
+        "الفصل 5 : الإحصاء والاحتمالات البسيطة"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Argumenter — donner son avis",
+        "Séquence 2 : Le texte explicatif",
+        "Séquence 3 : Correspondance formelle"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Textes argumentatifs",
+        "Chap.2 : Grammaire — les modes et les temps",
+        "Chap.3 : Production argumentative"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chap.1 : Future Plans and Ambitions",
+        "Chap.2 : Comparatives and Superlatives",
+        "Chap.3 : Health and the Body",
+        "Chap.4 : Travel and Transportation"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "الفصل 1 : الفتح العربي الإسلامي والجزائر في العصر الوسيط",
+        "الفصل 2 : الاستعمار الفرنسي للجزائر",
+        "الفصل 3 : الموارد الطبيعية والاقتصاد العالمي",
+        "الفصل 4 : التجمعات الجغرافية الكبرى في العالم"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : الجهاز العصبي",
+        "الفصل 2 : التكاثر عند الإنسان",
+        "الفصل 3 : الجيولوجيا — الصخور"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : التفاعلات الكيميائية البسيطة",
+        "الفصل 2 : الدارات الكهربائية",
+        "الفصل 3 : البصريات — الضوء"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : قصص الأنبياء",
+        "السيرة النبوية : الهجرة وبناء الدولة الإسلامية",
+        "الأخلاق : الصدق والأمانة في المعاملات"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "المجتمع المدني والجمعيات",
+        "حقوق المرأة والمساواة",
+        "المواطنة الرقمية واستعمال الإنترنت بأمان"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : perfectionnement technique",
+        "Sports collectifs : volleyball — service et réception",
+        "Préparation physique générale"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Le portrait et les proportions du visage",
+        "Arts numériques : initiation",
+        "Patrimoine architectural algérien"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Harmonie simple et accords de base",
+        "Analyse d'œuvres musicales",
+        "Création d'une courte composition"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Textes argumentatifs simples",
+        "Culture et littérature amazighes",
+        "Production écrite personnelle"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Présentation assistée par ordinateur",
+        "Introduction à la programmation par blocs",
+        "Bon usage des réseaux sociaux"
+      ]
+    }
   ],
-  '1AS': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : مجموعات الأعداد','الفصل 2 : الدوال العددية — عموميات','الفصل 3 : الهندسة التحليلية — المعلم','الفصل 4 : حساب المثلثات الأساسي','الفصل 5 : الإحصاء'] },
-    { mat:'Langue française 📖', chapitres:['Thème 1 : Le texte narratif et ses formes','Thème 2 : L\'argumentation','Thème 3 : Le discours rapporté'] },
-    { mat:'Langue arabe 📖', chapitres:['Thème 1 : Le texte narratif et ses techniques','Thème 2 : Le texte argumentatif','Thème 3 : La poésie classique et ses caractéristiques'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Thème 1 : Personal Identity and Society','Thème 2 : Science and Technology in Everyday Life','Thème 3 : Sports and Health'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['المحور 1 : الاكتشافات الكبرى وتشكل العالم الحديث','المحور 2 : الجيوسياسة المتوسطية','المحور 3 : الموارد الطبيعية والتنمية المستدامة'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : تنظيم المادة الحية','الفصل 2 : التغذية والطاقة عند الكائنات الحية','الفصل 3 : الوراثة — مفاهيم أساسية'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : بنية المادة','الفصل 2 : الحركة والقوى','الفصل 3 : التحولات الكيميائية'] }
+  "4AM": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : المجموعات والحساب العددي",
+        "الفصل 2 : الجبر ومعادلات الدرجة الأولى",
+        "الفصل 3 : الهندسة المستوية — المثلثات",
+        "الفصل 4 : الإحصاء والاحتمالات",
+        "الفصل 5 : الدوال الخطية",
+        "الفصل 6 : الهندسة في الفضاء — المجسمات"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Séquence 1 : Raconter un souvenir",
+        "Séquence 2 : Décrire un lieu ou un personnage",
+        "Séquence 3 : Rédiger un texte argumentatif",
+        "Séquence 4 : Correspondance — Lettre formelle",
+        "Séquence 5 : Prise de position — Article de presse"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Chap.1 : Texte narratif et ses caractéristiques",
+        "Chap.2 : Grammaire — analyse de la phrase (الإعراب)",
+        "Chap.3 : Texte descriptif et texte explicatif",
+        "Chap.4 : Conjugaison et les temps verbaux",
+        "Chap.5 : Production écrite — rédaction argumentée"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Chap.1 : Reported Speech",
+        "Chap.2 : Modal Verbs — Advice and Obligation",
+        "Chap.3 : The Passive Voice",
+        "Chap.4 : Environment and Technology — Reading & Writing",
+        "Chap.5 : BEM Exam Preparation — Sample Papers"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "الفصل 1 : الثورة الجزائرية (1954-1962)",
+        "الفصل 2 : الجزائر المستقلة — بناء الدولة",
+        "الفصل 3 : العولمة وآثارها",
+        "الفصل 4 : القوى الاقتصادية الكبرى في العالم"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : الخلية — وحدة بناء الكائن الحي",
+        "الفصل 2 : التغذية والهضم",
+        "الفصل 3 : التكاثر الجنسي واللاجنسي",
+        "الفصل 4 : الجيولوجيا — بنية الأرض",
+        "الفصل 5 : النظم البيئية والتنوع الحيوي"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : الضوء والرؤية",
+        "الفصل 2 : الكهرباء — الدارات",
+        "الفصل 3 : المادة وحالاتها",
+        "الفصل 4 : التفاعلات الكيميائية",
+        "الفصل 5 : الطاقة الميكانيكية"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "القرآن الكريم : آيات الأحكام",
+        "الفقه : الزكاة والصيام",
+        "القيم الإسلامية : التسامح ونبذ التطرف"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "الانتخابات والمشاركة السياسية",
+        "العدالة الاجتماعية",
+        "استعدادًا لشهادة التعليم المتوسط (BEM)"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : préparation aux épreuves du BEM",
+        "Sports collectifs : tournoi inter-classes",
+        "Sports de combat ou de raquette (selon établissement)"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Projet personnel d'expression plastique",
+        "Mouvements artistiques du XXe siècle",
+        "Exposition de fin de cycle"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Histoire de la musique algérienne et arabo-andalouse",
+        "Projet musical collectif",
+        "Préparation à l'épreuve d'éducation artistique du BEM"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Analyse de textes littéraires amazighs",
+        "Préparation à l'épreuve du BEM",
+        "Projet de recherche sur le patrimoine amazigh"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Notions d'algorithmique simple",
+        "Création d'un document multimédia",
+        "Citoyenneté numérique et droit à l'image"
+      ]
+    }
   ],
-  '2AS': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : الدوال — الدراسة والتمثيل','الفصل 2 : الاشتقاق','الفصل 3 : المتتاليات العددية — مدخل','الفصل 4 : الهندسة في الفضاء','الفصل 5 : الاحتمالات'] },
-    { mat:'Langue française 📖', chapitres:['Thème 1 : Littérature et société','Thème 2 : L\'essai et la réflexion critique','Thème 3 : Le texte poétique'] },
-    { mat:'Langue arabe 📖', chapitres:['Thème 1 : Littérature et société','Thème 2 : Le texte d\'opinion et la critique','Thème 3 : La poésie moderne'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Thème 1 : Cultural Diversity and Globalization','Thème 2 : Media and Communication','Thème 3 : Environmental Issues'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['المحور 1 : الحربان العالميتان','المحور 2 : تصفية الاستعمار وحركات التحرر','المحور 3 : الرهانات الطاقوية العالمية'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : التواصل العصبي والهرموني','الفصل 2 : المناعة — مفاهيم أساسية','الفصل 3 : الجيولوجيا — التكتونية والتضاريس'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : الميكانيك — الشغل والطاقة','الفصل 2 : الكهرباء — القوانين الأساسية','الفصل 3 : الكيمياء العضوية — مدخل'] }
+  "1AS": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : مجموعات الأعداد",
+        "الفصل 2 : الدوال العددية — عموميات",
+        "الفصل 3 : الهندسة التحليلية — المعلم",
+        "الفصل 4 : حساب المثلثات الأساسي",
+        "الفصل 5 : الإحصاء"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Thème 1 : Le texte narratif et ses formes",
+        "Thème 2 : L'argumentation",
+        "Thème 3 : Le discours rapporté"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Thème 1 : Le texte narratif et ses techniques",
+        "Thème 2 : Le texte argumentatif",
+        "Thème 3 : La poésie classique et ses caractéristiques"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Thème 1 : Personal Identity and Society",
+        "Thème 2 : Science and Technology in Everyday Life",
+        "Thème 3 : Sports and Health"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "المحور 1 : الاكتشافات الكبرى وتشكل العالم الحديث",
+        "المحور 2 : الجيوسياسة المتوسطية",
+        "المحور 3 : الموارد الطبيعية والتنمية المستدامة"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : تنظيم المادة الحية",
+        "الفصل 2 : التغذية والطاقة عند الكائنات الحية",
+        "الفصل 3 : الوراثة — مفاهيم أساسية"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : بنية المادة",
+        "الفصل 2 : الحركة والقوى",
+        "الفصل 3 : التحولات الكيميائية"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "أصول الفقه : مصادر التشريع الإسلامي",
+        "العقيدة : قضايا الإيمان المعاصرة",
+        "الأخلاق الإسلامية في التعامل الاجتماعي"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Athlétisme : perfectionnement technique",
+        "Sports collectifs : tactiques avancées",
+        "Préparation physique et santé"
+      ]
+    },
+    {
+      "mat": "Philosophie 🧠",
+      "chapitres": [
+        "Introduction à la philosophie : qu'est-ce que philosopher ?",
+        "La conscience et l'inconscient",
+        "Autrui et la relation à l'autre"
+      ]
+    },
+    {
+      "mat": "Espagnol 🇪🇸",
+      "chapitres": [
+        "Unidad 1: Saludos y presentación personal",
+        "Unidad 2: La familia y los amigos",
+        "Unidad 3: La vida cotidiana"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Architecture d'un système informatique",
+        "Algorithmique et structures de base",
+        "Bureautique avancée"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Analyse d'œuvres d'art classiques",
+        "Techniques mixtes et expérimentation",
+        "Patrimoine artistique algérien et maghrébin"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Analyse d'œuvres musicales classiques et modernes",
+        "Composition et arrangement simple",
+        "Musique arabo-andalouse : écoles et maîtres"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "الدستور الجزائري والمؤسسات الدستورية",
+        "حقوق الإنسان والقانون الدولي",
+        "المواطنة الفعالة والمشاركة المجتمعية"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Littérature amazighe classique",
+        "Grammaire approfondie",
+        "Production écrite argumentative"
+      ]
+    }
   ],
-  '4AM': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : المجموعات والحساب العددي','الفصل 2 : الجبر ومعادلات الدرجة الأولى','الفصل 3 : الهندسة المستوية — المثلثات','الفصل 4 : الإحصاء والاحتمالات','الفصل 5 : الدوال الخطية','الفصل 6 : الهندسة في الفضاء — المجسمات'] },
-    { mat:'Langue française 📖', chapitres:['Séquence 1 : Raconter un souvenir','Séquence 2 : Décrire un lieu ou un personnage','Séquence 3 : Rédiger un texte argumentatif','Séquence 4 : Correspondance — Lettre formelle','Séquence 5 : Prise de position — Article de presse'] },
-    { mat:'Langue arabe 📖', chapitres:['Chap.1 : Texte narratif et ses caractéristiques','Chap.2 : Grammaire — analyse de la phrase (الإعراب)','Chap.3 : Texte descriptif et texte explicatif','Chap.4 : Conjugaison et les temps verbaux','Chap.5 : Production écrite — rédaction argumentée'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Chap.1 : Reported Speech','Chap.2 : Modal Verbs — Advice and Obligation','Chap.3 : The Passive Voice','Chap.4 : Environment and Technology — Reading & Writing','Chap.5 : BEM Exam Preparation — Sample Papers'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['الفصل 1 : الثورة الجزائرية (1954-1962)','الفصل 2 : الجزائر المستقلة — بناء الدولة','الفصل 3 : العولمة وآثارها','الفصل 4 : القوى الاقتصادية الكبرى في العالم'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : الخلية — وحدة بناء الكائن الحي','الفصل 2 : التغذية والهضم','الفصل 3 : التكاثر الجنسي واللاجنسي','الفصل 4 : الجيولوجيا — بنية الأرض','الفصل 5 : النظم البيئية والتنوع الحيوي'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : الضوء والرؤية','الفصل 2 : الكهرباء — الدارات','الفصل 3 : المادة وحالاتها','الفصل 4 : التفاعلات الكيميائية','الفصل 5 : الطاقة الميكانيكية'] }
+  "2AS": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : الدوال — الدراسة والتمثيل",
+        "الفصل 2 : الاشتقاق",
+        "الفصل 3 : المتتاليات العددية — مدخل",
+        "الفصل 4 : الهندسة في الفضاء",
+        "الفصل 5 : الاحتمالات"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Thème 1 : Littérature et société",
+        "Thème 2 : L'essai et la réflexion critique",
+        "Thème 3 : Le texte poétique"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Thème 1 : Littérature et société",
+        "Thème 2 : Le texte d'opinion et la critique",
+        "Thème 3 : La poésie moderne"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Thème 1 : Cultural Diversity and Globalization",
+        "Thème 2 : Media and Communication",
+        "Thème 3 : Environmental Issues"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "المحور 1 : الحربان العالميتان",
+        "المحور 2 : تصفية الاستعمار وحركات التحرر",
+        "المحور 3 : الرهانات الطاقوية العالمية"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : التواصل العصبي والهرموني",
+        "الفصل 2 : المناعة — مفاهيم أساسية",
+        "الفصل 3 : الجيولوجيا — التكتونية والتضاريس"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : الميكانيك — الشغل والطاقة",
+        "الفصل 2 : الكهرباء — القوانين الأساسية",
+        "الفصل 3 : الكيمياء العضوية — مدخل"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "فقه المعاملات المالية",
+        "السيرة النبوية : الدروس المستفادة",
+        "قضايا فقهية معاصرة (الأسرة، البيئة)"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Sports collectifs : arbitrage et organisation de tournois",
+        "Musculation et préparation physique spécifique",
+        "Activités de pleine nature"
+      ]
+    },
+    {
+      "mat": "Philosophie 🧠",
+      "chapitres": [
+        "La liberté et le déterminisme",
+        "L'État et la société",
+        "La vérité et la connaissance scientifique"
+      ]
+    },
+    {
+      "mat": "Espagnol 🇪🇸",
+      "chapitres": [
+        "Unidad 1: Describir lugares y ciudades",
+        "Unidad 2: El pasado — pretérito e imperfecto",
+        "Unidad 3: Costumbres y tradiciones hispanas"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Introduction à la programmation (Python ou Pascal)",
+        "Bases de données : notions fondamentales",
+        "Réseaux informatiques : principes de base"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Art contemporain et nouvelles pratiques",
+        "Projet personnel thématique",
+        "Arts et société"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Harmonie et contrepoint — notions de base",
+        "Musiques du monde",
+        "Projet de composition personnelle"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "العدالة الانتقالية وسيادة القانون",
+        "التنمية المستدامة والمواطنة البيئية",
+        "الإعلام والمواطنة الرقمية"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Littérature amazighe moderne",
+        "Analyse de textes littéraires",
+        "Production d'un essai structuré"
+      ]
+    }
   ],
-  '3AS': [
-    { mat:'Mathématiques ➕', chapitres:['الفصل 1 : المتتاليات العددية','الفصل 2 : النهايات والاتصال','الفصل 3 : الاشتقاق وتطبيقاته','الفصل 4 : التكامل','الفصل 5 : الاحتمالات','الفصل 6 : الهندسة في الفضاء'] },
-    { mat:'Langue française 📖', chapitres:['Thème 1 : Sciences et progrès','Thème 2 : Engagement et militantisme','Thème 3 : Civilisation et culture','Thème 4 : Prospective et société de demain'] },
-    { mat:'Langue arabe 📖', chapitres:['Thème 1 : Courants littéraires et culturels','Thème 2 : Texte argumentatif complexe','Thème 3 : Littérature engagée','Thème 4 : Synthèse et préparation au Baccalauréat'] },
-    { mat:'Anglais 🇬🇧', chapitres:['Thème 1 : Science, Ethics and Society','Thème 2 : Work and Career Choices','Thème 3 : Globalization and Cultural Identity','Thème 4 : Baccalauréat Exam Preparation — Sample Papers'] },
-    { mat:'Histoire-Géographie 🌍', chapitres:['المحور 1 : العالم منذ 1945 — الاستقطاب الثنائي والحرب الباردة','المحور 2 : الجزائر في العالم المعاصر','المحور 3 : التحديات الجيوسياسية والبيئية الراهنة','المحور 4 : تركيب والتحضير لشهادة البكالوريا'] },
-    { mat:'Sciences (SVT) 🔬', chapitres:['الفصل 1 : المناعة','الفصل 2 : الوراثة الجزيئية','الفصل 3 : التكاثر عند الإنسان','الفصل 4 : الفيزيولوجيا العصبية','الفصل 5 : الجيولوجيا — تكتونية الصفائح'] },
-    { mat:'Physique-Chimie ⚗️', chapitres:['الفصل 1 : الحركية الكيميائية','الفصل 2 : دارات RC والتذبذبات الكهربائية','الفصل 3 : الميكانيك — السقوط الحر والحركة','الفصل 4 : الكيمياء العضوية — التفاعلات والتصنيع','الفصل 5 : الموجات والظواهر الاهتزازية'] }
+  "3AS": [
+    {
+      "mat": "Mathématiques ➕",
+      "chapitres": [
+        "الفصل 1 : المتتاليات العددية",
+        "الفصل 2 : النهايات والاتصال",
+        "الفصل 3 : الاشتقاق وتطبيقاته",
+        "الفصل 4 : التكامل",
+        "الفصل 5 : الاحتمالات",
+        "الفصل 6 : الهندسة في الفضاء"
+      ]
+    },
+    {
+      "mat": "Langue française 📖",
+      "chapitres": [
+        "Thème 1 : Sciences et progrès",
+        "Thème 2 : Engagement et militantisme",
+        "Thème 3 : Civilisation et culture",
+        "Thème 4 : Prospective et société de demain"
+      ]
+    },
+    {
+      "mat": "Langue arabe 📖",
+      "chapitres": [
+        "Thème 1 : Courants littéraires et culturels",
+        "Thème 2 : Texte argumentatif complexe",
+        "Thème 3 : Littérature engagée",
+        "Thème 4 : Synthèse et préparation au Baccalauréat"
+      ]
+    },
+    {
+      "mat": "Anglais 🇬🇧",
+      "chapitres": [
+        "Thème 1 : Science, Ethics and Society",
+        "Thème 2 : Work and Career Choices",
+        "Thème 3 : Globalization and Cultural Identity",
+        "Thème 4 : Baccalauréat Exam Preparation — Sample Papers"
+      ]
+    },
+    {
+      "mat": "Histoire-Géographie 🌍",
+      "chapitres": [
+        "المحور 1 : العالم منذ 1945 — الاستقطاب الثنائي والحرب الباردة",
+        "المحور 2 : الجزائر في العالم المعاصر",
+        "المحور 3 : التحديات الجيوسياسية والبيئية الراهنة",
+        "المحور 4 : تركيب والتحضير لشهادة البكالوريا"
+      ]
+    },
+    {
+      "mat": "Sciences (SVT) 🔬",
+      "chapitres": [
+        "الفصل 1 : المناعة",
+        "الفصل 2 : الوراثة الجزيئية",
+        "الفصل 3 : التكاثر عند الإنسان",
+        "الفصل 4 : الفيزيولوجيا العصبية",
+        "الفصل 5 : الجيولوجيا — تكتونية الصفائح"
+      ]
+    },
+    {
+      "mat": "Physique-Chimie ⚗️",
+      "chapitres": [
+        "الفصل 1 : الحركية الكيميائية",
+        "الفصل 2 : دارات RC والتذبذبات الكهربائية",
+        "الفصل 3 : الميكانيك — السقوط الحر والحركة",
+        "الفصل 4 : الكيمياء العضوية — التفاعلات والتصنيع",
+        "الفصل 5 : الموجات والظواهر الاهتزازية"
+      ]
+    },
+    {
+      "mat": "Éducation islamique ☪️",
+      "chapitres": [
+        "الاجتهاد وتجديد الفكر الإسلامي",
+        "الإسلام وحقوق الإنسان",
+        "استعدادًا لشهادة البكالوريا"
+      ]
+    },
+    {
+      "mat": "Éducation physique 🏃",
+      "chapitres": [
+        "Bilan et perfectionnement des acquis moteurs",
+        "Sport et prévention santé",
+        "Préparation à l'épreuve du Baccalauréat"
+      ]
+    },
+    {
+      "mat": "Philosophie 🧠",
+      "chapitres": [
+        "L'éthique et la morale",
+        "Le langage et la pensée",
+        "Synthèse et préparation au Baccalauréat (dissertation philosophique)"
+      ]
+    },
+    {
+      "mat": "Espagnol 🇪🇸",
+      "chapitres": [
+        "Unidad 1: Expresar opiniones y argumentar",
+        "Unidad 2: El futuro y los proyectos",
+        "Unidad 3: Preparación para el examen del Bachillerato"
+      ]
+    },
+    {
+      "mat": "Informatique/TIC 💻",
+      "chapitres": [
+        "Programmation orientée objet — notions de base",
+        "Sécurité informatique et protection des données",
+        "Préparation à l'épreuve du Baccalauréat (filières concernées)"
+      ]
+    },
+    {
+      "mat": "Arts plastiques 🎨",
+      "chapitres": [
+        "Dossier artistique personnel",
+        "Histoire de l'art du XXe siècle à nos jours",
+        "Préparation à l'épreuve du Baccalauréat (filière Arts)"
+      ]
+    },
+    {
+      "mat": "Musique 🎵",
+      "chapitres": [
+        "Dossier musical personnel",
+        "Histoire de la musique algérienne contemporaine",
+        "Préparation à l'épreuve du Baccalauréat (filière Arts)"
+      ]
+    },
+    {
+      "mat": "Éducation civique 🏛️",
+      "chapitres": [
+        "الديمقراطية والتعددية السياسية",
+        "الجزائر والمنظمات الدولية",
+        "استعدادًا لشهادة البكالوريا"
+      ]
+    },
+    {
+      "mat": "Tamazight 🏺",
+      "chapitres": [
+        "Synthèse littéraire et culturelle",
+        "Dossier de recherche personnel",
+        "Préparation à l'épreuve du Baccalauréat"
+      ]
+    }
   ]
 };
 var MATIERE_PROG_KEYS = {
-  'mathématiques': ['mathématiques'],
-  'langue arabe': ['langue arabe'],
-  'langue française': ['langue française'],
-  'histoire-géographie': ['histoire-géographie'],
-  'sciences de la nature (svt)': ['sciences', 'éveil'],
-  'physique-chimie': ['physique-chimie'],
-  'anglais': ['anglais']
+  "mathématiques": [
+    "mathématiques"
+  ],
+  "langue arabe": [
+    "langue arabe"
+  ],
+  "langue française": [
+    "langue française"
+  ],
+  "histoire-géographie": [
+    "histoire-géographie"
+  ],
+  "sciences de la nature (svt)": [
+    "sciences",
+    "éveil"
+  ],
+  "physique-chimie": [
+    "physique-chimie"
+  ],
+  "anglais": [
+    "anglais"
+  ],
+  "éducation islamique": [
+    "éducation islamique"
+  ],
+  "éducation civique": [
+    "éducation civique"
+  ],
+  "éducation physique": [
+    "éducation physique"
+  ],
+  "arts plastiques": [
+    "arts plastiques"
+  ],
+  "musique": [
+    "musique"
+  ],
+  "tamazight": [
+    "tamazight"
+  ],
+  "informatique/tic": [
+    "informatique",
+    "tic"
+  ],
+  "philosophie": [
+    "philosophie"
+  ],
+  "espagnol": [
+    "espagnol"
+  ]
 };
 function rProg() {
   var nv = document.getElementById('progNiveau').value;
