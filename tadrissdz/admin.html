@@ -4,84 +4,141 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Administration — Tadriss</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F0EEE9;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;
-  --t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#D4AF37;--ap:#FBF6E3;--br:#E2DDD5;--rd:12px;
+  --bg:#F7F5F0;--w:#FFF;--ink:#1A1A1F;--ink2:#4A4A52;--ink3:#9090A0;
+  --t:#006B3F;--t2:#00A060;--tp:#E6F4EE;--r:#C8102E;--rp:#FDEEF1;--a:#C9971F;--ap:#FBF6E3;
+  --b:#3B5BDB;--bp:#EAEFFD;--br:#E7E2D8;--rd:16px;--sh:0 1px 2px rgba(20,20,15,.04),0 10px 28px -14px rgba(20,20,15,.14);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);}
-.topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.4rem;height:58px;display:flex;align-items:center;justify-content:space-between;}
-.brand{font-weight:800;font-size:1.02rem;}
-a.back{font-size:.76rem;color:var(--ink3);text-decoration:none;}
-a.back:hover{color:var(--t);}
-.wrap{max-width:1000px;margin:0 auto;padding:1.6rem 1.2rem 4rem;}
-.card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:0 2px 12px rgba(0,0,0,.04);margin-bottom:1.4rem;}
-.ch{padding:1rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;}
-.ct{font-weight:700;font-size:.92rem;}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:.65rem;font-weight:700;background:var(--ap);color:var(--a);}
+html{scrollbar-gutter:stable;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+::selection{background:var(--tp);color:var(--t);}
+
+/* ===== Topbar ===== */
+.topbar{background:var(--w);border-bottom:1px solid var(--br);padding:0 1.6rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;box-shadow:0 1px 0 rgba(20,20,15,.02);}
+.brandRow{display:flex;align-items:center;gap:.7rem;}
+.brandMark{width:36px;height:36px;border-radius:10px;background:linear-gradient(155deg,var(--t2),var(--t));display:flex;align-items:center;justify-content:center;font-size:1.05rem;box-shadow:0 4px 10px -4px rgba(0,107,63,.55);flex-shrink:0;}
+.brandText{line-height:1.15;}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:-.01em;}
+.brandSub{font-size:.68rem;color:var(--ink3);font-weight:500;}
+a.back{font-size:.78rem;color:var(--ink2);text-decoration:none;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--br);display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+a.back:hover{color:var(--t);border-color:var(--t2);background:var(--tp);}
+
+.wrap{max-width:1180px;margin:0 auto;padding:1.8rem 1.4rem 4.5rem;}
+
+/* ===== KPI row ===== */
+.kpiRow{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.6rem;}
+.kpi{background:var(--w);border:1px solid var(--br);border-radius:var(--rd);padding:1.1rem 1.3rem;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--kc,var(--t));}
+.kpiIc{font-size:1.1rem;margin-bottom:.5rem;display:block;}
+.kpiVal{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:var(--ink);line-height:1;}
+.kpiLbl{font-size:.72rem;color:var(--ink3);font-weight:600;margin-top:.35rem;}
+@media (max-width:860px){.kpiRow{grid-template-columns:repeat(2,1fr);}}
+
+/* ===== Cards ===== */
+.card{background:var(--w);border-radius:var(--rd);border:1px solid var(--br);box-shadow:var(--sh);margin-bottom:1.3rem;overflow:hidden;}
+.ch{padding:1.05rem 1.4rem;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between;gap:.8rem;background:linear-gradient(180deg,#FBFAF7,var(--w));}
+.chL{display:flex;align-items:center;gap:.7rem;}
+.chIc{width:30px;height:30px;border-radius:9px;background:var(--tp);display:flex;align-items:center;justify-content:center;font-size:.92rem;flex-shrink:0;}
+.ct{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:-.005em;}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:.66rem;font-weight:700;background:var(--ap);color:var(--a);}
+
+/* ===== Tables ===== */
 table{width:100%;border-collapse:collapse;}
-th{background:var(--bg);padding:9px 12px;text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);}
-td{padding:10px 12px;font-size:.83rem;border-bottom:1px solid var(--br);vertical-align:middle;}
+th{background:#FAF8F4;padding:10px 14px;text-align:left;font-size:.64rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);border-bottom:1px solid var(--br);}
+td{padding:11px 14px;font-size:.83rem;border-bottom:1px solid var(--br);vertical-align:middle;color:var(--ink2);}
+td:first-child{color:var(--ink);}
 tr:last-child td{border-bottom:none;}
-.btn{padding:7px 14px;border:none;border-radius:8px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
-.bt{background:var(--t);color:#fff;}.bt:hover{background:var(--t2);}
-.bt:disabled{opacity:.5;cursor:not-allowed;}
-.empty{text-align:center;padding:2.4rem 1rem;color:var(--ink3);}
-#llLoading,#llNeedLogin,#llNotAdmin{text-align:center;padding:4rem 1rem;color:var(--ink3);}
+tbody tr{transition:background .12s;}
+tbody tr:hover{background:#FAF8F4;}
+
+/* ===== Buttons & inputs ===== */
+.btn{padding:8px 15px;border:none;border-radius:9px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.bt{background:var(--t);color:#fff;box-shadow:0 2px 7px -2px rgba(0,107,63,.5);}
+.bt:hover{background:var(--t2);box-shadow:0 3px 10px -2px rgba(0,107,63,.6);}
+.bt:disabled{opacity:.42;cursor:not-allowed;box-shadow:none;}
+.inp,input[type="text"],input[type="datetime-local"],select{font-family:'Inter',sans-serif;font-size:.83rem;padding:8px 11px;border:1px solid var(--br);border-radius:9px;background:var(--w);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;}
+input[type="text"]:focus,input[type="datetime-local"]:focus,select:focus{border-color:var(--t2);box-shadow:0 0 0 3px var(--tp);}
+input[type="checkbox"]{accent-color:var(--t);}
+
+.empty{text-align:center;padding:2.6rem 1rem;color:var(--ink3);font-size:.85rem;}
+.statePanel{text-align:center;padding:4rem 1.4rem;color:var(--ink3);max-width:420px;margin:3rem auto 0;background:var(--w);border:1px solid var(--br);border-radius:var(--rd);box-shadow:var(--sh);}
+.statePanel .si{font-size:2.1rem;margin-bottom:.9rem;}
+
 .pay-table{width:100%;border-collapse:collapse;min-width:760px;}
-.pay-table th,.pay-table td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--br);}
-.pay-table th{background:var(--bg);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);}
-.pay-table td:first-child,.pay-table th:first-child{text-align:left;position:sticky;left:0;background:var(--w);min-width:180px;font-size:.8rem;}
-.pay-table th:first-child{background:var(--bg);}
+.pay-table th,.pay-table td{padding:9px 7px;text-align:center;border-bottom:1px solid var(--br);}
+.pay-table th{background:#FAF8F4;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);}
+.pay-table td:first-child,.pay-table th:first-child{text-align:left;position:sticky;left:0;background:var(--w);min-width:190px;font-size:.81rem;font-weight:600;}
+.pay-table th:first-child{background:#FAF8F4;}
+.pay-table tbody tr:hover td:first-child{background:#FAF8F4;}
 .pay-table input[type="checkbox"]{width:17px;height:17px;cursor:pointer;accent-color:var(--t);}
+
+/* Les tableaux générés (profs, demandes…) peuvent être plus larges que l'écran sur mobile :
+   on les laisse défiler horizontalement dans leur carte plutôt que déborder de la page. */
+#aLeadsBody,#aPendingBody,#aComptesBody,#aLaboBody,#aMatChangeBody,#aMatAddonBody{overflow-x:auto;}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="brand">🛠️ Administration Tadriss</div>
+  <div class="brandRow">
+    <div class="brandMark">🎓</div>
+    <div class="brandText">
+      <div class="brand">Administration Tadriss</div>
+      <div class="brandSub">Panneau de gestion des comptes</div>
+    </div>
+  </div>
   <a class="back" href="index.html">← Retour à Tadriss</a>
 </div>
 <div class="wrap">
-  <div id="aLoading">Chargement…</div>
-  <div id="aNeedLogin" style="display:none;text-align:center;padding:3rem 1rem;">
-    <div style="font-weight:700;margin-bottom:.8rem;">Connecte-toi d'abord sur Tadriss avec ton compte admin.</div>
+  <div id="aLoading" class="empty">Chargement…</div>
+  <div id="aNeedLogin" class="statePanel" style="display:none;">
+    <div class="si">🔒</div>
+    <div style="font-weight:700;color:var(--ink);margin-bottom:1rem;">Connecte-toi d'abord sur Tadriss avec ton compte admin.</div>
     <a class="btn bt" href="index.html" style="display:inline-block;text-decoration:none;">Aller sur Tadriss</a>
   </div>
-  <div id="aNotAdmin" style="display:none;text-align:center;padding:3rem 1rem;">
-    <div style="font-weight:700;">Ce compte n'est pas administrateur.</div>
-    <div id="aNotAdminDetail" style="margin-top:.8rem;font-size:.78rem;color:var(--ink3);"></div>
+  <div id="aNotAdmin" class="statePanel" style="display:none;">
+    <div class="si">⛔</div>
+    <div style="font-weight:700;color:var(--ink);">Ce compte n'est pas administrateur.</div>
+    <div id="aNotAdminDetail" style="margin-top:.8rem;font-size:.76rem;line-height:1.5;"></div>
   </div>
 
   <div id="aDash" style="display:none;">
+    <div class="kpiRow">
+      <div class="kpi" style="--kc:var(--t);"><span class="kpiIc">👤</span><div class="kpiVal" id="kpiComptes">0</div><div class="kpiLbl">Comptes &amp; forfaits</div></div>
+      <div class="kpi" style="--kc:var(--a);"><span class="kpiIc">🆕</span><div class="kpiVal" id="kpiPending">0</div><div class="kpiLbl">En attente de validation</div></div>
+      <div class="kpi" style="--kc:var(--b);"><span class="kpiIc">📋</span><div class="kpiVal" id="kpiLeads">0</div><div class="kpiLbl">Demandes formulaire</div></div>
+      <div class="kpi" style="--kc:var(--r);"><span class="kpiIc">🔔</span><div class="kpiVal" id="kpiModules">0</div><div class="kpiLbl">Demandes Labo &amp; matières</div></div>
+    </div>
+
     <div class="card">
-      <div style="padding:.9rem 1.3rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
+      <div style="padding:1rem 1.4rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;">
         <label for="aAfterDate" style="font-size:.83rem;font-weight:600;">🕐 N'afficher que les inscriptions à partir de :</label>
-        <input type="datetime-local" id="aAfterDate" style="padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" onchange="window.aApplyAfterFilter()">
+        <input type="datetime-local" id="aAfterDate" onchange="window.aApplyAfterFilter()">
         <button class="btn" style="background:var(--bg);border:1px solid var(--br);color:var(--ink2);" onclick="window.aResetAfterFilter()">Réinitialiser</button>
         <span id="aAfterFilterInfo" style="font-size:.76rem;color:var(--t);font-weight:600;"></span>
       </div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">📋 Demandes d'inscription (formulaire forfaits)</div><span class="badge" id="aLeadsCount">0</span></div>
+      <div class="ch"><div class="chL"><div class="chIc">📋</div><div class="ct">Demandes d'inscription (formulaire forfaits)</div></div><span class="badge" id="aLeadsCount">0</span></div>
       <div id="aLeadsBody"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">🆕 Nouvelles inscriptions — en attente de validation</div><span class="badge" id="aPendingCount">0</span></div>
+      <div class="ch"><div class="chL"><div class="chIc">🆕</div><div class="ct">Nouvelles inscriptions — en attente de validation</div></div><span class="badge" id="aPendingCount">0</span></div>
       <div id="aPendingBody"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">👤 Comptes &amp; forfaits</div><span class="badge" id="aComptesCount">0</span></div>
-      <div style="padding:.9rem 1.3rem;border-bottom:1px solid var(--br);display:flex;gap:.6rem;flex-wrap:wrap;">
-        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="flex:1;min-width:200px;padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;" oninput="window.aRenderComptes()">
-        <select id="aComptesEmailFilter" onchange="window.aRenderComptes()" style="padding:8px 10px;border:1px solid var(--br);border-radius:8px;font-family:'Inter',sans-serif;font-size:.83rem;">
+      <div class="ch"><div class="chL"><div class="chIc">👤</div><div class="ct">Comptes &amp; forfaits</div></div><span class="badge" id="aComptesCount">0</span></div>
+      <div style="padding:1rem 1.4rem;border-bottom:1px solid var(--br);display:flex;gap:.6rem;flex-wrap:wrap;">
+        <input id="aComptesSearch" type="text" placeholder="Rechercher un prof (nom, email)…" style="flex:1;min-width:200px;" oninput="window.aRenderComptes()">
+        <select id="aComptesEmailFilter" onchange="window.aRenderComptes()">
           <option value="tous">Tous les emails</option>
           <option value="verifies">Emails vérifiés</option>
           <option value="non_verifies">Emails non vérifiés</option>
         </select>
       </div>
-      <div style="padding:.7rem 1.3rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+      <div style="padding:.8rem 1.4rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>
         <span style="font-size:.78rem;color:var(--ink3);" id="aComptesSelCount">0 sélectionné(s)</span>
         <button class="btn bt" id="aComptesEmailBtn" disabled onclick="window.aEmailGroup()">✉️ Envoyer un email au groupe</button>
@@ -89,25 +146,25 @@ tr:last-child td{border-bottom:none;}
       <div id="aComptesBody"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">💰 Suivi des paiements — <span id="aPayYear"></span></div>
+      <div class="ch"><div class="chL"><div class="chIc">💰</div><div class="ct">Suivi des paiements — <span id="aPayYear"></span></div></div>
         <div style="display:flex;align-items:center;gap:.5rem;">
           <button class="btn" style="padding:4px 9px;background:var(--bg);border:1px solid var(--br);" onclick="window.aPayYearShift(-1)">←</button>
           <button class="btn" style="padding:4px 9px;background:var(--bg);border:1px solid var(--br);" onclick="window.aPayYearShift(1)">→</button>
         </div>
       </div>
-      <div style="padding:.7rem 1.3rem;font-size:.75rem;color:var(--ink3);border-bottom:1px solid var(--br);">Coche un mois dès que tu vois le virement (ou le paiement CIB/Dahabia/BaridiMob) correspondant arriver. Ça met à jour l'historique visible par l'enseignant dans "Mon abonnement".</div>
+      <div style="padding:.8rem 1.4rem;font-size:.75rem;color:var(--ink3);border-bottom:1px solid var(--br);">Coche un mois dès que tu vois le virement (ou le paiement CIB/Dahabia/BaridiMob) correspondant arriver. Ça met à jour l'historique visible par l'enseignant dans "Mon abonnement".</div>
       <div id="aPayBody" style="overflow-x:auto"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">🎙️ Demandes d'activation — Labo Langues</div><span class="badge" id="aLaboCount">0</span></div>
+      <div class="ch"><div class="chL"><div class="chIc">🎙️</div><div class="ct">Demandes d'activation — Labo Langues</div></div><span class="badge" id="aLaboCount">0</span></div>
       <div id="aLaboBody"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">📚 Demandes de changement de matière</div><span class="badge" id="aMatChangeCount">0</span></div>
+      <div class="ch"><div class="chL"><div class="chIc">📚</div><div class="ct">Demandes de changement de matière</div></div><span class="badge" id="aMatChangeCount">0</span></div>
       <div id="aMatChangeBody"></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">➕ Demandes d'ajout de matière (add-on)</div><span class="badge" id="aMatAddonCount">0</span></div>
+      <div class="ch"><div class="chL"><div class="chIc">➕</div><div class="ct">Demandes d'ajout de matière (add-on)</div></div><span class="badge" id="aMatAddonCount">0</span></div>
       <div id="aMatAddonBody"></div>
     </div>
   </div>
@@ -217,6 +274,7 @@ async function loadRequests() {
   document.getElementById('aLaboCount').textContent = labo.length;
   document.getElementById('aMatChangeCount').textContent = matChange.length;
   document.getElementById('aMatAddonCount').textContent = matAddon.length;
+  var kpiModulesEl = document.getElementById('kpiModules'); if (kpiModulesEl) kpiModulesEl.textContent = labo.length + matChange.length + matAddon.length;
 
   document.getElementById('aLaboBody').innerHTML = labo.length ? renderTable(labo, [
     { label: 'Prof', render: profLabel },
@@ -267,6 +325,7 @@ async function loadLeads() {
 }
 window.aRenderLeads = function() {
   document.getElementById('aLeadsCount').textContent = ALL_LEADS.length;
+  var kpiLeadsEl = document.getElementById('kpiLeads'); if (kpiLeadsEl) kpiLeadsEl.textContent = ALL_LEADS.length;
   document.getElementById('aLeadsBody').innerHTML = ALL_LEADS.length ? renderTable(ALL_LEADS, [
     { label: 'Nom', render: function(l) { return l.nom || ''; } },
     { label: 'Contact', render: function(l) {
@@ -297,6 +356,7 @@ window.aRenderPending = function() {
     return true;
   });
   document.getElementById('aPendingCount').textContent = pending.length;
+  var kpiPendingEl = document.getElementById('kpiPending'); if (kpiPendingEl) kpiPendingEl.textContent = pending.length;
   document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
     { label: 'Prof', render: profLabel },
     { label: 'Email vérifié', render: emailVerifLabel },
@@ -351,6 +411,7 @@ window.aRenderComptes = function() {
   });
   LAST_COMPTES_ROWS = rows;
   document.getElementById('aComptesCount').textContent = validated.length;
+  var kpiComptesEl = document.getElementById('kpiComptes'); if (kpiComptesEl) kpiComptesEl.textContent = validated.length;
   document.getElementById('aComptesBody').innerHTML = rows.length ? renderTable(rows, [
     { label: '', render: function(p) { return '<input type="checkbox" ' + (COMPTE_SEL[p.id] ? 'checked' : '') + ' onchange="window.aToggleCompteSel(\'' + p.id + '\', this.checked)">'; } },
     { label: 'Email vérifié', render: emailVerifLabel },
