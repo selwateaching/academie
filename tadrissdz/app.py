@@ -1,9 +1,14 @@
 import os
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import requests
 from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder=None)
+app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024  # 12 Mo par requête (message + pièces jointes)
 
 MODEL_ID = os.environ.get("TADRISSDZ_AI_MODEL", "claude-sonnet-5")
 
@@ -137,6 +142,60 @@ def generate_image():
         return jsonify({"base64": artifacts[0]["base64"]})
     except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
         return jsonify({"error": {"message": str(exc), "type": "api_error"}})
+
+
+CONTACT_EMAIL = "contact@veloraia.fr"
+MAX_ATTACHMENTS_SIZE = 8 * 1024 * 1024  # 8 Mo au total, raisonnable pour un envoi par email
+
+
+@app.post("/api/contact")
+def contact():
+    smtp_user = os.environ.get("SMTP_USER")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    if not smtp_user or not smtp_password:
+        return jsonify({"error": {"message": "Envoi de messages non configuré (identifiants email manquants côté serveur)."}})
+
+    nom = (request.form.get("nom") or "").strip()
+    email = (request.form.get("email") or "").strip()
+    message = (request.form.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": {"message": "Message manquant."}})
+
+    files = request.files.getlist("fichiers")
+    total_size = sum(len(f.read()) for f in files if f and f.filename)
+    for f in files:
+        if f and f.filename:
+            f.seek(0)
+    if total_size > MAX_ATTACHMENTS_SIZE:
+        return jsonify({"error": {"message": "Fichiers joints trop volumineux (8 Mo maximum au total)."}})
+
+    msg = MIMEMultipart()
+    msg["From"] = smtp_user
+    msg["To"] = CONTACT_EMAIL
+    msg["Subject"] = f"[Tadriss DZ] Signalement de {nom or 'un enseignant'}"
+    if email:
+        msg["Reply-To"] = email
+
+    body = f"Nom : {nom or '(non renseigné)'}\nEmail : {email or '(non renseigné)'}\n\n{message}"
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+
+    for f in files:
+        if not f or not f.filename:
+            continue
+        data = f.read()
+        part = MIMEApplication(data, Name=f.filename)
+        part["Content-Disposition"] = f'attachment; filename="{f.filename}"'
+        msg.attach(part)
+
+    try:
+        smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.environ.get("SMTP_PORT", "465"))
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=20) as server:
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, [CONTACT_EMAIL], msg.as_string())
+        return jsonify({"ok": True})
+    except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
+        return jsonify({"error": {"message": str(exc)}})
 
 
 if __name__ == "__main__":
