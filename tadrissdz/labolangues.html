@@ -1450,8 +1450,19 @@ window.llOnClasseChange = function() {
 window.llOnAssigneModeChange = function() {
   document.getElementById('llElevesBox').style.display = document.getElementById('llAssigneMode').value === 'specifique' ? 'block' : 'none';
 };
+/* Un lien "Partager" Google Drive (drive.google.com/file/d/ID/view ou /open?id=ID) ouvre une
+   page de visionnage, pas l'image elle-même : un <img src="..."> ne peut pas l'afficher. On le
+   convertit automatiquement vers le format d'affichage direct pour que ça marche sans que le
+   professeur ait besoin de connaître cette différence. */
+function llNormalizeImageUrl(url) {
+  url = (url || '').trim();
+  if (!url) return url;
+  var m = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (m && url.indexOf('drive.google.com') >= 0) return 'https://drive.google.com/uc?export=view&id=' + m[1];
+  return url;
+}
 window.llImageUrlChange = function(input) {
-  var url = input.value.trim();
+  var url = llNormalizeImageUrl(input.value);
   if (!url) { document.getElementById('llImagePreviewRow').style.display = 'none'; return; }
   document.getElementById('llImagePreview').src = url;
   document.getElementById('llImagePreviewRow').style.display = 'flex';
@@ -1486,7 +1497,7 @@ window.llSaveAct = function() {
   act.bareme = parseInt(document.getElementById('llBareme').value);
   act.dateLimite = document.getElementById('llDateLimite').value;
   act.plusieursTentatives = document.getElementById('llPlusieursTentatives').checked;
-  act.imageUrl = document.getElementById('llImageUrlInput').value.trim();
+  act.imageUrl = llNormalizeImageUrl(document.getElementById('llImageUrlInput').value);
   function finish() {
     if (!existing) data.acts.push(act);
     llSaveData(uid, data);
