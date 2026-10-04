@@ -403,6 +403,13 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div class="fg"><label class="fl" id="llFlAudioModele">Audio modèle (optionnel)</label>
         <input type="file" accept="audio/*" class="fi" id="llAudioModeleInput" style="padding:6px;">
       </div>
+      <div class="fg"><label class="fl" id="llFlImage">Image à décrire (optionnel)</label>
+        <input type="file" accept="image/*" class="fi" id="llImageInput" style="padding:6px;" onchange="llImageInputChange(this)">
+        <div id="llImagePreviewRow" style="display:none;margin-top:.5rem;align-items:center;gap:.6rem;">
+          <img id="llImagePreview" style="width:70px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--br);">
+          <button type="button" class="btn bxs bo" onclick="llImageRemove()" id="llImageRemoveBtn">🗑 Retirer</button>
+        </div>
+      </div>
     </div>
     <div class="mf"><button class="btn bo" onclick="llCloseModal('llModalAct')" id="llCancelBtn">Annuler</button><button class="btn bt" onclick="llSaveAct()" id="llSaveBtn">Créer</button></div>
   </div>
@@ -478,6 +485,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--ink);min-he
       <div style="font-weight:800;font-size:.85rem;letter-spacing:.05em;color:var(--t);margin-bottom:.3rem;" id="llStudioTitle">🎙️ STUDIO AUDIO</div>
       <div style="font-size:.78rem;color:var(--ink3);margin-bottom:.2rem;" id="llStudioLangue"></div>
       <div style="font-weight:700;font-size:1.05rem;margin-bottom:1.1rem;" id="llStudioTheme"></div>
+      <img id="llStudioImage" style="display:none;max-width:100%;max-height:220px;border-radius:10px;margin-bottom:1.1rem;object-fit:contain;">
       <div class="ll-mic-wrap" id="llMicWrap">🎙️</div>
       <canvas id="llWaveformCanvas" width="360" height="64" style="display:none;margin-bottom:.8rem;"></canvas>
       <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:1.1rem;" id="llStudioTimer">00:00 / 02:00</div>
@@ -619,6 +627,8 @@ var LL_LANG_KEYS = {
   llFlDate:['Date limite','الأجل الأقصى'],
   llFlTentatives:["Autoriser plusieurs envois (l'élève peut recommencer)",'السماح بعدة محاولات (يمكن للتلميذ إعادة المحاولة)'],
   llFlAudioModele:['Audio modèle (optionnel)','صوت نموذجي (اختياري)'],
+  llFlImage:['Image à décrire (optionnel)','صورة للوصف (اختياري)'],
+  llImageRemoveBtn:['🗑 Retirer','🗑 إزالة'],
   llCancelBtn:['Annuler','إلغاء'],
   llSaveBtn:['Créer','إنشاء'],
   llStudioTitle:['🎙️ STUDIO AUDIO','🎙️ استوديو الصوت'],
@@ -1064,6 +1074,7 @@ function llReadRoster(uid) {
 }
 function llKey(uid) { return 'LABOLANGUES_' + uid; }
 function llAudioKey(uid) { return 'LABOLANGUES_' + uid + '_audio'; }
+function llImageKey(uid) { return 'LABOLANGUES_' + uid + '_image'; }
 function llReadData(uid) { try { return JSON.parse(localStorage.getItem(llKey(uid)) || '{}'); } catch(e) { return {}; } }
 function llSaveData(uid, data) { try { localStorage.setItem(llKey(uid), JSON.stringify(data)); } catch(e) {} }
 /* Pousse vers Firestore (document eleveAcces/{code}, déjà utilisé par l'espace élève principal)
@@ -1094,6 +1105,9 @@ function llSyncActivitesToCloud(uid) {
 function llAudioSave(uid, key, dataUrl) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); m[key] = dataUrl; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
 function llAudioGet(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); return m[key] || null; } catch(e) { return null; } }
 function llAudioDelete(uid, key) { try { var m = JSON.parse(localStorage.getItem(llAudioKey(uid)) || '{}'); delete m[key]; localStorage.setItem(llAudioKey(uid), JSON.stringify(m)); } catch(e) {} }
+function llImageSave(uid, key, dataUrl) { try { var m = JSON.parse(localStorage.getItem(llImageKey(uid)) || '{}'); m[key] = dataUrl; localStorage.setItem(llImageKey(uid), JSON.stringify(m)); } catch(e) {} }
+function llImageGet(uid, key) { try { var m = JSON.parse(localStorage.getItem(llImageKey(uid)) || '{}'); return m[key] || null; } catch(e) { return null; } }
+function llImageDelete(uid, key) { try { var m = JSON.parse(localStorage.getItem(llImageKey(uid)) || '{}'); delete m[key]; localStorage.setItem(llImageKey(uid), JSON.stringify(m)); } catch(e) {} }
 function llFormatDuree(sec) { var m = Math.floor(sec/60), s = sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; }
 
 function llShow(id) {
@@ -1411,6 +1425,12 @@ window.llOpenActModal = function(editActId) {
   document.getElementById('llDateLimite').value = act ? (act.dateLimite || '') : '';
   document.getElementById('llPlusieursTentatives').checked = act ? !!act.plusieursTentatives : true;
   document.getElementById('llAudioModeleInput').value = '';
+  var imgInputReset = document.getElementById('llImageInput');
+  imgInputReset.value = '';
+  delete imgInputReset.dataset.removed;
+  var imgSrc = act && act.imageKey ? llImageGet(uid, act.imageKey) : null;
+  document.getElementById('llImagePreviewRow').style.display = imgSrc ? 'flex' : 'none';
+  if (imgSrc) document.getElementById('llImagePreview').src = imgSrc;
   llOnClasseChange();
   if (act && act.assigneMode === 'specifique') {
     (act.assigneElevesIds||[]).forEach(function(id) {
@@ -1433,6 +1453,22 @@ window.llOnClasseChange = function() {
 };
 window.llOnAssigneModeChange = function() {
   document.getElementById('llElevesBox').style.display = document.getElementById('llAssigneMode').value === 'specifique' ? 'block' : 'none';
+};
+window.llImageInputChange = function(input) {
+  delete input.dataset.removed;
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('llImagePreview').src = e.target.result;
+    document.getElementById('llImagePreviewRow').style.display = 'flex';
+  };
+  reader.readAsDataURL(input.files[0]);
+};
+window.llImageRemove = function() {
+  var input = document.getElementById('llImageInput');
+  input.value = '';
+  input.dataset.removed = '1';
+  document.getElementById('llImagePreviewRow').style.display = 'none';
 };
 window.llSaveAct = function() {
   var uid = LL_STATE.profUid;
@@ -1468,6 +1504,23 @@ window.llSaveAct = function() {
     LL_STATE.editActId = null;
     if (editId) llOpenProd(editId); else llRenderProfApp();
   }
+  function saveImageThenFinish() {
+    var imgInput = document.getElementById('llImageInput');
+    if (imgInput.files && imgInput.files[0]) {
+      var imgReader = new FileReader();
+      imgReader.onload = function(e) {
+        if (act.imageKey) llImageDelete(uid, act.imageKey);
+        act.imageKey = 'image_' + act.id;
+        llImageSave(uid, act.imageKey, e.target.result);
+        finish();
+      };
+      imgReader.readAsDataURL(imgInput.files[0]);
+    } else if (imgInput.dataset.removed === '1' && act.imageKey) {
+      llImageDelete(uid, act.imageKey);
+      act.imageKey = null;
+      finish();
+    } else finish();
+  }
   var fileInput = document.getElementById('llAudioModeleInput');
   if (fileInput.files && fileInput.files[0]) {
     var reader = new FileReader();
@@ -1475,10 +1528,10 @@ window.llSaveAct = function() {
       if (act.audioModeleKey) llAudioDelete(uid, act.audioModeleKey);
       act.audioModeleKey = 'modele_' + act.id;
       llAudioSave(uid, act.audioModeleKey, e.target.result);
-      finish();
+      saveImageThenFinish();
     };
     reader.readAsDataURL(fileInput.files[0]);
-  } else finish();
+  } else saveImageThenFinish();
 };
 window.llOpenProd = function(actId) {
   var uid = LL_STATE.profUid;
@@ -1495,6 +1548,10 @@ window.llOpenProd = function(actId) {
   document.getElementById('llProdView').style.display = 'block';
   document.getElementById('llProdTitle').innerHTML = llLangChip(lg) + ' ' + act.theme;
   var html = '<div style="font-size:.72rem;color:var(--ink3);margin-bottom:.4rem;">'+(isAR?lg.ar:lg.fr)+' · '+(cls?cls.nm:'')+'</div><div style="font-size:.85rem;">'+act.consigne+'</div>';
+  if (act.imageKey) {
+    var imgSrc2 = llImageGet(uid, act.imageKey);
+    if (imgSrc2) html += '<img src="'+imgSrc2+'" style="max-width:100%;border-radius:8px;margin-top:.8rem;display:block;">';
+  }
   if (act.audioModeleKey) {
     var src = llAudioGet(uid, act.audioModeleKey);
     if (src) html += '<audio controls style="width:100%;margin-top:.8rem;" src="'+src+'"></audio>';
@@ -1515,6 +1572,7 @@ window.llDeleteAct = function() {
   var data = llReadData(uid);
   var act = (data.acts||[]).find(function(a){ return a.id === id; });
   if (act && act.audioModeleKey) llAudioDelete(uid, act.audioModeleKey);
+  if (act && act.imageKey) llImageDelete(uid, act.imageKey);
   (data.subs||[]).filter(function(s){ return s.actId === id; }).forEach(function(s){ if (s.audioKey) llAudioDelete(uid, s.audioKey); });
   data.subs = (data.subs||[]).filter(function(s){ return s.actId !== id; });
   data.acts = (data.acts||[]).filter(function(a){ return a.id !== id; });
@@ -1858,9 +1916,15 @@ function llRenderEleveApp() {
     var statut = !sub ? ('<span style="color:var(--a);">🔥 '+(isAR?'لم يُنجز بعد':'À faire')+'</span>')
       : ('<span style="color:var(--t);">'+(isAR?'✓ تم الإرسال، بانتظار التصحيح':'✓ Envoyé, en attente de correction')+'</span>');
     var btnLabel = !sub ? (isAR?'🎙️ بدء التسجيل':"🎙️ Commencer l'enregistrement") : (isAR?'🔄 إعادة المحاولة':'🔄 Recommencer');
+    var imgThumb = '';
+    if (a.imageKey) {
+      var imgThumbSrc = llImageGet(uid, a.imageKey);
+      if (imgThumbSrc) imgThumb = '<img src="'+imgThumbSrc+'" style="max-width:160px;max-height:160px;border-radius:8px;display:block;margin-bottom:.5rem;">';
+    }
     return '<div style="padding:1rem 1.1rem;border-bottom:1px solid var(--br);">' +
       '<div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem;"><span class="ll-type-badge">'+ty.ic+' '+(isAR?ty.ar:ty.fr)+'</span></div>' +
       '<div style="font-weight:700;font-size:.9rem;margin-bottom:.3rem;">'+lg.flag+' '+(isAR?lg.ar:lg.fr)+' — '+a.theme+'</div>' +
+      imgThumb +
       '<div style="font-size:.78rem;color:var(--ink2);margin-bottom:.5rem;">'+a.consigne+'</div>' +
       '<div style="font-size:.72rem;margin-bottom:.6rem;">'+statut+'</div>' +
       '<div style="display:flex;gap:.6rem;">' +
@@ -1928,6 +1992,10 @@ window.llOpenStudio = function(actId) {
   LL_ST.actId = actId; LL_ST.maxSec = act.dureeMaxSec || 120; LL_ST.seconds = 0; LL_ST.chunks = []; LL_ST.dataUrl = null;
   document.getElementById('llStudioLangue').textContent = lg.flag + ' ' + (isAR?lg.ar:lg.fr);
   document.getElementById('llStudioTheme').textContent = act.theme;
+  var studioImgEl = document.getElementById('llStudioImage');
+  var studioImgSrc = act.imageKey ? llImageGet(uid, act.imageKey) : null;
+  if (studioImgSrc) { studioImgEl.src = studioImgSrc; studioImgEl.style.display = 'block'; }
+  else { studioImgEl.style.display = 'none'; studioImgEl.src = ''; }
   document.getElementById('llStudioTimer').textContent = '00:00 / ' + llFormatDuree(LL_ST.maxSec);
   document.getElementById('llStudioStartBtn').style.display = 'block';
   document.getElementById('llStudioImportLbl').style.display = 'block';
