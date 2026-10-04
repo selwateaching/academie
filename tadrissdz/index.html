@@ -5952,6 +5952,11 @@ function openLaboLangues() {
 function fillClsSel() {
   var s = document.getElementById('eCls');
   s.innerHTML = D.cls.map(function(c) { return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  /* Par défaut (nouvel élève), présélectionne la classe actuellement active — sinon le menu
+     retombe sur la première classe de la liste, et l'élève créé n'apparaît jamais dans la
+     classe que le professeur est en train de consulter (= "la fiche ne se crée pas"). */
+  var ac = gAC();
+  if (ac) s.value = ac.id;
 }
 function rEl(flt) {
   var ce = gCE(), ac = gAC();
