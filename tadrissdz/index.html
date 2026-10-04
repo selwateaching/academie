@@ -6097,6 +6097,7 @@ function fillEl(id) {
   var e = D.el.find(function(x) { return x.id===id; }); if (!e) return;
   document.getElementById('mElT').textContent = '✏️ Modifier — '+e.pr+' '+e.no;
   document.getElementById('ePr').value = e.pr; document.getElementById('eNo').value = e.no;
+  document.getElementById('eCls').value = e.cid;
   document.getElementById('eTb').value = e.tb; document.getElementById('eDb').value = e.db;
   document.getElementById('eVi').value = e.vi||'';
   document.getElementById('r1N').value = e.r1n||''; document.getElementById('r1M').value = e.r1m||''; document.getElementById('r1T').value = e.r1t||'';
