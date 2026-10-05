@@ -812,7 +812,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <li>Un aperçu de toutes les fonctionnalités</li>
           <li>Cahier journal</li>
           <li>Fiches pédagogiques (aperçu)</li>
-          <li>Génération de cours et quiz par IA — 10/mois</li>
+          <li>Génération de cours et quiz par IA — 3/mois</li>
           <li>Classes et élèves illimités</li>
         </ul>
         <button class="plan-cta-btn outline" id="planCta0" onclick="toggleView()">Commencer gratuitement</button>
@@ -3756,7 +3756,7 @@ function switchLang() {
       ['Un aperçu de toutes les fonctionnalités','لمحة عن جميع الميزات'],
       ['Cahier journal','دفتر النصوص'],
       ['Fiches pédagogiques (aperçu)','أوراق تحضير (لمحة)'],
-      ['Génération de cours et quiz par IA — 10/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 10/شهريًا'],
+      ['Génération de cours et quiz par IA — 3/mois','إنشاء دروس واختبارات بالذكاء الاصطناعي — 3/شهريًا'],
       ['Classes et élèves illimités','أقسام وتلاميذ غير محدودين']
     ],
     planFeats1: [
@@ -11284,7 +11284,7 @@ window.pullFromCloud = pullFromCloud;
    document Firestore (jamais celui d'un autre) — protection simple, suffisante pour
    un usage interne. La vraie protection ultime reste le plafond de dépense fixé
    sur le compte Anthropic. */
-var QUOTAS_PAR_PLAN = { decouverte: 10, starter: 40, pro: 100 };
+var QUOTAS_PAR_PLAN = { decouverte: 3, starter: 40, pro: 100 };
 
 /* Nom du forfait tel qu'affiché dans la barre latérale ("Abonnement actif : X · matière").
    Avant ce correctif, le texte était codé en dur à "Pro" partout, même pour un compte
