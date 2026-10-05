@@ -116,8 +116,9 @@ const fdate=s=>{const d=new Date(s+'T12:00');return DAYS[d.getDay()]+' '+d.getDa
 /* ===================== état (localStorage) ===================== */
 let S;
 function load(){try{S=JSON.parse(localStorage.getItem('rosee_demo'))}catch(e){S=null}
- if(!S){S={appts:[],rules:RULES0.map(r=>({id:r.id,on:1})),stock:STOCK0.map(s=>s[1]),n:1};
+ if(!S){S={appts:[],rules:RULES0.map(r=>({id:r.id,on:1})),products:STOCK0.map(s=>({name:s[0],qty:s[1],min:s[2],unit:s[3]})),n:1};
   const t=new Date();[1,2,3].forEach((k,i)=>{const d=new Date(t);d.setDate(d.getDate()+k);if(d.getDay()===0||d.getDay()===1)d.setDate(d.getDate()+2);S.appts.push({id:S.n++,client:['Sofia Benali','Inès Lefèvre','Nadia Haddad'][i],svc:['semi','hyd','rep'][i],date:ymd(d),time:['10:00','14:30','11:00'][i],status:'confirme'})})}
+ if(!S.products)S.products=STOCK0.map((s,i)=>({name:s[0],qty:(S.stock||[])[i]??s[1],min:s[2],unit:s[3]}));
  save()}
 function save(){try{localStorage.setItem('rosee_demo',JSON.stringify(S))}catch(e){}}
 function resetDemo(){try{localStorage.removeItem('rosee_demo')}catch(e){}load();flow=null;go('home')}
@@ -204,12 +205,12 @@ const badge=s=>h('span',{class:LAB[s][1]},LAB[s][0]);
 function vPro(){const T=[['dash','Tableau de bord'],['plan','Planning'],['rules','Règles de diagnostic'],['stock','Stocks']];
  const body=({dash:pDash,plan:pPlan,rules:pRules,stock:pStock})[admTab]();
  mount(h('div',{class:'row',style:'margin-bottom:16px'},T.map(([k,l])=>h('button',{class:'btn sm'+(admTab===k?'':' ghost'),onclick:()=>{admTab=k;render()}},l))),body)}
-function pDash(){const t=ymd(new Date()),up=S.appts.filter(a=>a.date>=t&&a.status!=='annule'),req=S.appts.filter(a=>a.status==='demande'),low=STOCK0.filter((s,i)=>S.stock[i]<=s[2]);
+function pDash(){const t=ymd(new Date()),up=S.appts.filter(a=>a.date>=t&&a.status!=='annule'),req=S.appts.filter(a=>a.status==='demande'),low=S.products.filter(p=>p.qty<=p.min);
  const ca=S.appts.filter(a=>a.status==='termine').reduce((s,a)=>s+svc(a.svc).price,0);
  return h('div',{},h('h2',{},'Bonjour ✨'),h('div',{class:'kpis'},k(up.length,'Rendez-vous à venir'),k(req.length,'Demandes à valider'),k(low.length,'Produits en stock faible'),k(eur(ca),'Encaissé (terminés)')),
   req.length?h('div',{class:'card'},h('h3',{},'Demandes à valider'),req.map(a=>h('div',{class:'row between',style:'padding:8px 0'},h('span',{},a.client+' — '+svc(a.svc).name+', '+fdate(a.date)+' '+a.time),h('span',{class:'row'},h('button',{class:'btn sm',onclick:()=>{a.status='confirme';save();render()}},'Confirmer'),h('button',{class:'btn danger sm',onclick:()=>{a.status='annule';save();render()}},'Refuser'))))):null,
   h('div',{class:'card'},h('h3',{},'Prochains rendez-vous'),up.slice(0,6).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).map(evRow)),
-  low.length?h('div',{class:'card'},h('h3',{},'Stock à surveiller'),low.map(s=>h('div',{class:'row between small'},h('span',{},s[0]),badge2('Stock faible')))):null)}
+  low.length?h('div',{class:'card'},h('h3',{},'Stock à surveiller'),low.map(p=>h('div',{class:'row between small'},h('span',{},p.name+' ('+p.qty+' '+p.unit+')'),badge2('Stock faible')))):null)}
 const k=(v,l)=>h('div',{class:'kpi'},h('b',{},v),h('span',{class:'small muted'},l));
 const badge2=t=>h('span',{class:'badge bad'},t);
 const evRow=a=>h('div',{class:'ev '+a.status},h('div',{class:'row between'},h('span',{},h('b',{},a.time+' '+a.client),' — '+svc(a.svc).name),badge(a.status)));
@@ -219,10 +220,18 @@ function pPlan(){const days={};S.appts.forEach(a=>(days[a.date]=days[a.date]||[]
 function pRules(){return h('div',{},h('h2',{},'Règles de diagnostic'),h('p',{class:'muted'},'La professionnelle active, désactive et adapte ses règles. Essayez d\'en désactiver une puis refaites un diagnostic côté cliente : le résultat change aussitôt. (La version complète permet de créer ses propres règles et questions.)'),
  Object.keys(DIAGS).map(d=>h('div',{class:'card'},h('h3',{},DIAGS[d].name),RULES0.filter(r=>r.d===d).map(r=>{const st=S.rules.find(x=>x.id===r.id);return h('div',{class:'row between',style:'padding:9px 0;border-bottom:1px solid #f3eae6'},h('div',{},h('b',{},r.name),h('div',{class:'small muted'},r.txt+' → '+VT[r.v][0]+(r.val?' · validation pro':'')+(r.rec?' · propose : '+r.rec.map(x=>svc(x).name).join(', '):''))),
   h('label',{class:'row small'},h('input',{type:'checkbox',style:'width:auto;min-height:0',...(st.on?{checked:''}:{}),onchange:e=>{st.on=e.target.checked?1:0;save()}}),'Active'))}))))}
-function pStock(){return h('div',{},h('h2',{},'Stocks'),h('div',{class:'card'},h('table',{},h('thead',{},h('tr',{},h('th',{},'Produit'),h('th',{class:'num'},'Stock'),h('th',{class:'num'},'Seuil'),h('th',{},'État'),h('th',{}))),
- h('tbody',{},STOCK0.map((s,i)=>{const low=S.stock[i]<=s[2];return h('tr',{},h('td',{},s[0]),h('td',{class:'num'},+S.stock[i].toFixed(1)+' '+s[3]),h('td',{class:'num'},s[2]),h('td',{},low?h('span',{class:'badge bad'},'À réapprovisionner'):h('span',{class:'badge ok'},'OK')),
-  h('td',{class:'row'},h('button',{class:'btn ghost sm',onclick:()=>{S.stock[i]=Math.max(0,+(S.stock[i]-1).toFixed(2));save();render()}},'− 1'),h('button',{class:'btn ghost sm',onclick:()=>{S.stock[i]=+(S.stock[i]+1).toFixed(2);save();render()}},'+ 1')))})))),
- h('p',{class:'small muted'},'Dans la version complète, le stock est déduit automatiquement quand une prestation est terminée.'))}
+function pStock(){
+ const num=(el,fn)=>h('input',{type:'number',min:'0',step:'any',value:el,style:'width:90px;text-align:right',onchange:e=>{const v=parseFloat(e.target.value);if(isNaN(v)||v<0){e.target.value=el;return}fn(v);save();setTimeout(render,0)}});
+ const txt=(v,fn,w)=>h('input',{value:v,style:'min-width:'+(w||70)+'px',onchange:e=>{fn(e.target.value.trim()||v);save();setTimeout(render,0)}});
+ const nm=h('input',{placeholder:'Nom du produit'}),qt=h('input',{type:'number',min:'0',step:'any',placeholder:'Stock'}),mn=h('input',{type:'number',min:'0',step:'any',placeholder:'Seuil'}),un=h('input',{placeholder:'Unité (L, pots…)'});
+ return h('div',{},h('h2',{},'Stocks'),h('p',{class:'muted'},'Tout est modifiable : cliquez sur un nom, une quantité, un seuil ou une unité pour le changer. Les modifications sont enregistrées automatiquement.'),
+ h('div',{class:'card',style:'overflow-x:auto'},h('table',{},h('thead',{},h('tr',{},h('th',{},'Produit'),h('th',{},'Stock'),h('th',{},'Unité'),h('th',{},'Seuil d\'alerte'),h('th',{},'État'),h('th',{},''))),
+ h('tbody',{},S.products.map((p,i)=>{const low=p.qty<=p.min;return h('tr',{},h('td',{},txt(p.name,v=>p.name=v,170)),
+  h('td',{},h('div',{class:'row',style:'flex-wrap:nowrap;gap:4px'},h('button',{class:'btn ghost sm','aria-label':'Retirer 1',onclick:()=>{p.qty=Math.max(0,+(p.qty-1).toFixed(2));save();render()}},'−'),num(p.qty,v=>p.qty=v),h('button',{class:'btn ghost sm','aria-label':'Ajouter 1',onclick:()=>{p.qty=+(p.qty+1).toFixed(2);save();render()}},'+'))),
+  h('td',{},txt(p.unit,v=>p.unit=v,70)),h('td',{},num(p.min,v=>p.min=v)),h('td',{},low?h('span',{class:'badge bad'},'À réapprovisionner'):h('span',{class:'badge ok'},'OK')),
+  h('td',{},h('button',{class:'btn danger sm',onclick:()=>{if(confirm('Supprimer « '+p.name+' » ?')){S.products.splice(i,1);save();render()}}},'Supprimer')))})))),
+ h('div',{class:'card'},h('h3',{},'Ajouter un produit'),h('div',{class:'grid'},nm,qt,mn,un),h('div',{style:'margin-top:12px'},h('button',{class:'btn',onclick:()=>{if(!nm.value.trim())return alert('Donnez un nom au produit.');S.products.push({name:nm.value.trim(),qty:Math.max(0,parseFloat(qt.value)||0),min:Math.max(0,parseFloat(mn.value)||0),unit:un.value.trim()||'unité'});save();render()}},'Ajouter'))),
+ h('p',{class:'small muted'},'Dans la version complète, le stock est aussi déduit automatiquement quand une prestation est terminée.'))}
 
 load();render();
 </script>
