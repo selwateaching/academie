@@ -4716,7 +4716,24 @@ function OM(id) {
   e.classList.add('open');
   if (id === 'mClasse') rClsList();
   if (id === 'mGroupes') { curGroupes = null; document.getElementById('grpResult').innerHTML = ''; document.getElementById('grpResultActions').style.display = 'none'; rGroupesHistorique(); }
-  if (id === 'mEleve') { fillClsSel(); resetElPhotoUI(); var mElDelBtn0 = document.getElementById('mElDelBtn'); if (mElDelBtn0) mElDelBtn0.style.display = D._eId ? '' : 'none'; }
+  if (id === 'mEleve') {
+    /* Si la fiche précédente a été fermée en cliquant en dehors du formulaire (au lieu
+       d'Annuler ou ✕), CM('mEleve') ne s'exécute jamais et D._eId reste sur l'ancien élève
+       — pire, les champs texte du formulaire gardent aussi ses valeurs. Résultat : "+ Ajouter"
+       rouvrait un formulaire pré-rempli avec un élève existant, et "Enregistrer" modifiait cet
+       élève au lieu d'en créer un nouveau. On repart donc toujours d'un formulaire garanti
+       vierge ici ; fillEl(id), appelé juste après pour une vraie modification, re-remplit tout
+       correctement dans la foulée. */
+    D._eId = null;
+    ['ePr','eNo','eTb','eDb','eVi','r1N','r1M','r1T','r2N','r2M','r2T','eOb'].forEach(function(fid) {
+      var el = document.getElementById(fid); if (el) el.value = '';
+    });
+    var r1LEl = document.getElementById('r1L'); if (r1LEl) r1LEl.selectedIndex = 0;
+    var r2LEl = document.getElementById('r2L'); if (r2LEl) r2LEl.selectedIndex = 0;
+    var mElTEl = document.getElementById('mElT'); if (mElTEl) mElTEl.textContent = 'Fiche élève';
+    fillClsSel(); resetElPhotoUI();
+    var mElDelBtn0 = document.getElementById('mElDelBtn'); if (mElDelBtn0) mElDelBtn0.style.display = 'none';
+  }
   if (id === 'mNote') {
     var evEdit = D._evId ? D.ev.find(function(x){ return x.id===D._evId; }) : null;
     document.getElementById('mNoteT').textContent = evEdit ? 'Modifier l\'évaluation' : 'Nouvelle évaluation';
@@ -6107,6 +6124,8 @@ function fillEl(id) {
   document.getElementById('eVi').value = e.vi||'';
   document.getElementById('r1N').value = e.r1n||''; document.getElementById('r1M').value = e.r1m||''; document.getElementById('r1T').value = e.r1t||'';
   document.getElementById('r2N').value = e.r2n||''; document.getElementById('r2M').value = e.r2m||''; document.getElementById('r2T').value = e.r2t||'';
+  if (e.r1l) document.getElementById('r1L').value = e.r1l;
+  if (e.r2l) document.getElementById('r2L').value = e.r2l;
   document.getElementById('eOb').value = e.ob||'';
   resetElPhotoUI(e.photo);
   var mElDelBtn = document.getElementById('mElDelBtn'); if (mElDelBtn) mElDelBtn.style.display = '';
@@ -6119,7 +6138,7 @@ function saveEl() {
   if (D._eId) {
     var idx = D.el.findIndex(function(x) { return x.id===D._eId; });
     if (idx>=0) {
-      D.el[idx] = Object.assign(D.el[idx],{pr:pr,no:no,cid:cid,tb:parseInt(document.getElementById('eTb').value)||1,db:document.getElementById('eDb').value,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value});
+      D.el[idx] = Object.assign(D.el[idx],{pr:pr,no:no,cid:cid,tb:parseInt(document.getElementById('eTb').value)||1,db:document.getElementById('eDb').value,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1l:document.getElementById('r1L').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2l:document.getElementById('r2L').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value});
       if (_pendingElPhoto !== undefined) D.el[idx].photo = _pendingElPhoto;
     }
     D._eId = null;
