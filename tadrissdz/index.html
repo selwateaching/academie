@@ -11253,6 +11253,7 @@ function planLabelAffichage(planKey) {
   if (k === 'starter') return 'Starter';
   return 'Découverte';
 }
+window.planLabelAffichage = planLabelAffichage; /* appelée aussi depuis le <script> classique (saveP) qui n'a pas accès au scope de ce module */
 
 function moisActuelCle() {
   var d = new Date();
