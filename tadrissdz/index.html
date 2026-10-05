@@ -8961,7 +8961,8 @@ async function genCours(extraInstruction) {
   var dateStr = new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
   var enteteHTML = '<div class="pp-meta"><div><b>Établissement :</b> '+(D.s.et||'Établissement scolaire')+'</div><div><b>Enseignant(e) :</b> Prof. '+D.s.pre+' '+D.s.nom+'</div><div><b>Matière :</b> '+mat+'</div></div>';
   if (ty === 'fiche_peda') {
-    enteteHTML += '<div class="pp-meta"><div><b>Classe :</b> '+(acCls?acCls.nm:'')+(acCls&&acCls.nb?' ('+acCls.nb+' élèves)':'')+'</div><div><b>Date :</b> '+dateStr+'</div></div>';
+    var acClsNb = acCls ? D.el.filter(function(e){ return e.cid===acCls.id; }).length : 0;
+    enteteHTML += '<div class="pp-meta"><div><b>Classe :</b> '+(acCls?acCls.nm:'')+(acClsNb?' ('+acClsNb+' élèves)':'')+'</div><div><b>Date :</b> '+dateStr+'</div></div>';
     if (prereq) enteteHTML += '<div class="pp-meta"><div><b>Prérequis :</b> '+prereq+'</div></div>';
   }
   var prompt;
@@ -9631,7 +9632,13 @@ function editPr(id){var p=D.pr.find(function(x){return x.id===id;});if(!p)return
 function delPr(id){if(!confirm(T('suppr_collegue')))return;D.pr=D.pr.filter(function(x){return x.id!==id;});sv();rEq();}
 
 /* ===== CLASSES ===== */
-function rClsList(){document.getElementById('clsList').innerHTML=D.cls.map(function(c){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border:1.5px solid '+(c.on?'var(--t)':'var(--br)')+';border-radius:8px;margin-bottom:6px;background:'+(c.on?'var(--tp)':'var(--bg)')+'"><div style="flex:1;cursor:pointer;" onclick="setCls('+c.id+')"><div style="font-size:.85rem;font-weight:600">'+c.nm+' — '+c.mat+'</div><div style="font-size:.7rem;color:var(--ink3)">'+c.nb+' élèves</div></div>'+(c.on?'<span class="badge bt2" style="margin-right:8px;">'+T('active_badge')+'</span>':'')+'<button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);cursor:pointer;" onclick="event.stopPropagation();delCls('+c.id+')" title="Supprimer la classe">🗑</button></div>';}).join('');}
+function rClsList(){document.getElementById('clsList').innerHTML=D.cls.map(function(c){
+  /* Le nombre réel d'élèves (pas c.nb, qui n'est qu'une estimation saisie une seule fois à la
+     création de la classe et jamais mise à jour ensuite — elle finissait par afficher "0 élèves"
+     même pour une classe qui en contenait réellement, ce qui semblait être un bug de données). */
+  var nbReel = D.el.filter(function(e){ return e.cid===c.id; }).length;
+  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border:1.5px solid '+(c.on?'var(--t)':'var(--br)')+';border-radius:8px;margin-bottom:6px;background:'+(c.on?'var(--tp)':'var(--bg)')+'"><div style="flex:1;cursor:pointer;" onclick="setCls('+c.id+')"><div style="font-size:.85rem;font-weight:600">'+c.nm+' — '+c.mat+'</div><div style="font-size:.7rem;color:var(--ink3)">'+nbReel+' élèves</div></div>'+(c.on?'<span class="badge bt2" style="margin-right:8px;">'+T('active_badge')+'</span>':'')+'<button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);cursor:pointer;" onclick="event.stopPropagation();delCls('+c.id+')" title="Supprimer la classe">🗑</button></div>';
+}).join('');}
 function setCls(id){D.cls.forEach(function(c){c.on=c.id===id;});var c=D.cls.find(function(x){return x.id===id;});if(c)document.getElementById('clsAct').textContent=c.nm;sv();CM('mClasse');N('"'+c.nm+'"'+T('activee'),'ok');var pg=document.querySelector('.pg.on');if(pg){var pgId=pg.id.replace('pg-','');if(['eleves','notes','appel','bulletin','dash'].indexOf(pgId)>=0)go(pgId);}}
 function addCls(){var nm=document.getElementById('nCl').value.trim();if(!nm){N(T('nom_req'),'err');return;}var id=D.cls.length?Math.max.apply(null,D.cls.map(function(c){return c.id;}))+1:1;D.cls.push({id:id,nm:nm,mat:document.getElementById('nCM').value||'',nb:parseInt(document.getElementById('nCN').value)||0,on:false});sv();rClsList();N(T('classe_ajoute'),'ok');document.getElementById('nCl').value='';document.getElementById('nCN').value='';}
 function delCls(id){
