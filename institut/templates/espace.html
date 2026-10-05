@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Réserver & mon espace — {{ inst.name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/espace.css') }}">{% endblock %}
+{% block bodyclass %}espace{% endblock %}
+{% block body %}
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/">{{ inst.name }}</a>
+    <nav id="topnav" aria-label="Navigation principale"></nav>
+  </div>
+</header>
+<main id="view" class="wrap" tabindex="-1"><div class="spinner" role="status" aria-label="Chargement"></div></main>
+<nav id="tabbar" class="tabbar" aria-label="Espace cliente"></nav>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/espace.js') }}"></script>{% endblock %}

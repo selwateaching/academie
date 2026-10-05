@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Devis {{ q.number }} — {{ inst.name }}{% endblock %}
+{% block head %}<style>
+.q { max-width: 760px; margin: 32px auto; padding: 0 16px; }
+.q .card { padding: 32px; }
+.q .brand { font-family: var(--serif); font-style: italic; font-size: 2rem; color: var(--rose); }
+.q table { width: 100%; border-collapse: collapse; margin: 18px 0; }
+.q td, .q th { padding: 10px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.q th { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.q td:last-child, .q th:last-child { text-align: right; }
+.q .total td { font-weight: 600; font-size: 1.15rem; border-bottom: 0; }
+</style>{% endblock %}
+{% block body %}
+<div class="q">
+  <div class="card" id="quote">
+    <div class="row between"><div class="brand">{{ inst.name }}</div><div class="small muted" style="text-align:right">Devis {{ q.number }}<br>Émis le {{ q.created_at[:10] }}</div></div>
+    <p style="margin-top:20px">Bonjour {{ client.first_name }},</p>
+    {% if q.steps %}<h3>Recommandation</h3><ol>{% for s in q['steps'] %}<li>{{ s }}</li>{% endfor %}</ol>{% endif %}
+    <table>
+      <thead><tr><th>Désignation</th><th>Qté</th><th>Prix</th></tr></thead>
+      <tbody>
+      {% for i in q['items'] %}<tr><td>{{ i.label }}</td><td>{{ '%g'|format(i.qty or 1) }}</td><td>{{ '%.2f'|format(i.price * (i.qty or 1)) }} €</td></tr>{% endfor %}
+      <tr class="total"><td colspan="2">Total</td><td>{{ '%.2f'|format(q.total) }} €</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">Valable jusqu'au {{ q.valid_until }}. {{ disclaimer }}</p>
+    <div id="state" style="margin-top:18px"></div>
+    <div class="row no-print" id="actions" style="margin-top:18px">
+      {% if q.expired %}<span class="badge bad">Devis expiré</span>
+      {% elif q.status in ['draft', 'sent', 'accepted', 'refused'] %}
+        <button class="btn" data-a="accept">Accepter le devis</button>
+        <button class="btn danger" data-a="refuse">Refuser</button>
+      {% else %}<span class="badge neutral">Devis converti en rendez-vous</span>{% endif %}
+      <a class="btn ghost" href="/api/public/quotes/{{ q.token }}.pdf" target="_blank" rel="noopener">Télécharger en PDF</a>
+      <button class="btn ghost" onclick="window.print()">Imprimer</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+const st = {{ q.status|tojson }};
+const label = { accepted: 'Vous avez accepté ce devis. Connectez-vous à votre espace pour réserver votre rendez-vous.', refused: 'Vous avez refusé ce devis.' };
+const stateEl = document.getElementById('state');
+if (label[st]) stateEl.appendChild(UI.h('div.notice.' + (st === 'accepted' ? 'ok' : 'info'), label[st]));
+document.querySelectorAll('[data-a]').forEach(b => b.addEventListener('click', async () => {
+  try { const r = await UI.post('/api/public/quotes/{{ q.token }}/' + b.dataset.a);
+    UI.mount(stateEl, UI.h('div.notice.' + (r.quote.status === 'accepted' ? 'ok' : 'info'), label[r.quote.status]));
+    if (r.quote.status === 'accepted') stateEl.appendChild(UI.h('p', UI.h('a.btn', { href: '/reserver' }, 'Réserver mon rendez-vous')));
+  } catch (e) { UI.fail(e); }
+}));
+</script>{% endblock %}

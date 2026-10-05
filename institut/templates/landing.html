@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}{{ inst.name }} — {{ inst.tagline }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">{% endblock %}
+{% set DAYS = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'] %}
+{% set GRAD = {'Cheveux':'g-hair','Ongles':'g-nail','Cils':'g-lash','Pieds':'g-foot'} %}
+{% set ICON = {'Cheveux':'M5 21c0-7 2-10 3-14 .6-2.4 2-4 4-4s3.4 1.6 4 4c1 4 3 7 3 14M9 21c0-5 1-8 3-12 2 4 3 7 3 12','Ongles':'M8 21v-7l-1-5a2 2 0 014 0l1 5v7M15 21v-5M12 4V3','Cils':'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 100-6 3 3 0 000 6z','Pieds':'M8 21c-2 0-3-1.500-3-3.500 0-3 1.500-4 1.500-8C6.500 6 8 3 10.500 3S14 5 14 8c0 2-1 3-1 5 0 3 2.500 3 2.500 5S13 21 11 21z'} %}
+{% set INTRO = {'Cheveux':'Lissage & soins sur mesure','Ongles':'Manucure, semi-permanent, gel','Cils':'Rehaussement & extensions','Pieds':'Pédicure beauté & soins'} %}
+{% set imgs = marketing.category_images or {} %}
+
+{% macro art(cat) %}
+  {% if imgs.get(cat) %}<img src="{{ imgs.get(cat) }}" alt="" loading="lazy">
+  {% else %}<svg class="art {{ GRAD.get(cat, 'g-salon') }}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path d="{{ ICON.get(cat, '') }}" transform="translate(26 22) scale(2)" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.1" stroke-linecap="round"/></svg>{% endif %}
+{% endmacro %}
+
+{% block body %}
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="/">{{ inst.name }}<small>Institut</small></a>
+    <ul>
+      <li><a href="#univers">Nos univers</a></li>
+      <li><a href="#diagnostic">Diagnostic</a></li>
+      <li><a href="#prestations">Prestations</a></li>
+      <li><a href="#fidelite">Fidélité</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="actions">
+      <a class="btn ghost sm" href="/compte">Mon espace</a>
+      <a class="btn sm" href="/reserver">Prendre rendez-vous</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">Institut de beauté</p>
+      <h1>La beauté est une forme de <em>confiance</em>.</h1>
+      <p class="lead">Lissage, soins capillaires, onglerie, cils et pieds : un diagnostic personnalisé avant chaque prestation, pour un résultat beau, sûr et durable.</p>
+      <div class="cta">
+        <a class="btn lg" href="/reserver">Réserver en ligne</a>
+        <a class="btn lg ghost" href="/reserver#/diagnostic">Faire mon diagnostic</a>
+      </div>
+      <div class="proof">
+        <span><svg class="icon" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.500-3.200 8-8 9-4.800-1-8-4.500-8-9V6z"/></svg> Diagnostic personnalisé</span>
+        <span><svg class="icon" viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg> Réservation 24 h/24</span>
+        <span><svg class="icon" viewBox="0 0 24 24"><path d="M12 20.500s-8-4.800-8-11A4.500 4.500 0 0112 7a4.500 4.500 0 018 2.500c0 6.200-8 11-8 11z"/></svg> Programme fidélité</span>
+      </div>
+    </div>
+    <div class="mosaic" aria-hidden="true">
+      <div class="tile t1">{% if marketing.hero_image %}<img src="{{ marketing.hero_image }}" alt="">{% else %}{{ art('Cheveux') }}{% endif %}<span class="tag">Cheveux</span></div>
+      <div class="tile t2">{{ art('Ongles') }}<span class="tag">Ongles</span></div>
+      <div class="tile t3">{{ art('Cils') }}</div>
+      <div class="tile t4">{{ art('Pieds') }}<span class="tag">Soins</span></div>
+      <div class="tile t5"><span>Prenez soin de vous ♡</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="univers">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Nos univers</p>
+      <h2>Des soins pensés pour vous</h2>
+      <span class="rule"></span>
+      <p>Chaque prestation est réalisée avec des produits professionnels sélectionnés, dans un cadre apaisant.</p>
+    </div>
+    <div class="universes">
+      {% for cat in cats %}
+      <a class="universe" href="/reserver#/prestations/{{ cat|urlencode }}">
+        {{ art(cat) }}
+        <span class="big-icon"><svg class="icon" viewBox="0 0 24 24"><path d="{{ ICON.get(cat, '') }}"/></svg></span>
+        <div class="in"><h3>{{ cat }}</h3><p>{{ INTRO.get(cat, '') }}</p></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section alt" id="diagnostic">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Comment ça marche</p>
+      <h2>Le bon soin, au bon moment</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="ico"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3l1.800 5.200L19 10l-5.200 1.800L12 17l-1.800-5.200L5 10l5.200-1.800z"/></svg></div><h4>Diagnostic</h4><p>Quelques questions et photos pour comprendre l'état de vos cheveux, ongles ou cils.</p></div>
+      <div class="step"><div class="ico"><svg class="icon" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg></div><h4>Recommandations</h4><p>Une analyse claire : prestation possible, précautions, ou programme de préparation.</p></div>
+      <div class="step"><div class="ico"><svg class="icon" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8zM14 3v5h5M9 13h6M9 17h6"/></svg></div><h4>Devis</h4><p>Un devis transparent, à consulter, télécharger en PDF ou accepter en un clic.</p></div>
+      <div class="step"><div class="ico"><svg class="icon" viewBox="0 0 24 24"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg></div><h4>Rendez-vous</h4><p>Choisissez votre créneau, recevez la confirmation et des rappels automatiques.</p></div>
+    </div>
+    <div class="diag-band" style="margin-top:56px">
+      <div>
+        <p class="eyebrow">Diagnostic beauté</p>
+        <h2>Un lissage ? Commençons par votre chevelure.</h2>
+        <ul>
+          <li><svg class="icon" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg> Questionnaire intelligent adapté à votre situation</li>
+          <li><svg class="icon" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg> Photos de face, de dos, de profil et gros plan</li>
+          <li><svg class="icon" viewBox="0 0 24 24"><path d="M5 12.500l4.500 4.500L19 7.500"/></svg> Programme de préparation si vos cheveux en ont besoin</li>
+        </ul>
+        <a class="btn" href="/reserver#/diagnostic">Commencer mon diagnostic</a>
+        <p class="small muted" style="margin:16px 0 0">Les recommandations sont indicatives et ne constituent pas un avis médical.</p>
+      </div>
+      <div class="mock" aria-hidden="true">
+        <div class="bar"><i></i></div>
+        <b>Vos cheveux ont-ils déjà subi une décoloration ?</b>
+        <div class="opt on"><span>Oui</span><span>✓</span></div>
+        <div class="opt"><span>Non</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="prestations">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Carte des prestations</p>
+      <h2>Tarifs & durées</h2>
+      <span class="rule"></span>
+    </div>
+    <div class="menu">
+      {% for cat, items in cats.items() %}
+      <div>
+        <h3><svg class="icon" viewBox="0 0 24 24"><path d="{{ ICON.get(cat, '') }}"/></svg> {{ cat }}</h3>
+        {% for s in items %}
+        <div class="item">
+          <b>{{ s.name }}{% if s.diagnostic_required %} <span class="badge gold" title="Diagnostic obligatoire avant réservation">Diagnostic</span>{% endif %}</b>
+          <span class="price">{{ '%g'|format(s.price) }} €</span>
+          <span class="d">{{ s.description }}</span>
+          <span class="meta">{{ (s.duration // 60) ~ ' h ' ~ ('%02d'|format(s.duration % 60)) if s.duration >= 60 else (s.duration ~ ' min') }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    <p class="center" style="margin-top:40px"><a class="btn lg" href="/reserver">Réserver une prestation</a></p>
+  </div>
+</section>
+
+<section class="section alt" id="fidelite">
+  <div class="wrap loyalty">
+    <div>
+      <p class="eyebrow">Programme fidélité</p>
+      <h2>Chaque visite vous récompense</h2>
+      <p style="color:var(--ink-soft)">Gagnez {{ loyalty.points_per_euro }} point par euro dépensé. À {{ loyalty.reward_points }} points, bénéficiez de {{ '%g'|format(loyalty.reward_value) }} € de réduction sur votre prochaine prestation. Vos points sont visibles dans votre espace cliente.</p>
+      <a class="btn" href="/compte">Créer mon compte</a>
+    </div>
+    <div class="pass">
+      <div class="small" style="opacity:.85">Mes points fidélité</div>
+      <div class="pts">{{ (loyalty.reward_points * 0.64)|int }}</div>
+      <div class="bar"><i></i></div>
+      <div class="small">Plus que {{ (loyalty.reward_points * 0.36)|int }} points pour {{ '%g'|format(loyalty.reward_value) }} € de réduction</div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="contact">
+  <div class="wrap contact">
+    <div>
+      <p class="eyebrow">Nous trouver</p>
+      <h2>{{ inst.name }}</h2>
+      <p>{{ inst.address }}<br>{{ inst.phone }}<br>{{ inst.email }}</p>
+      <a class="btn" href="/reserver">Prendre rendez-vous</a>
+    </div>
+    <div>
+      <h3>Horaires</h3>
+      <table class="hours">
+        {% for i in range(7) %}
+        <tr><td>{{ DAYS[i] }}</td><td>{% if hours[i|string] %}{% for a, b in hours[i|string] %}{{ a }} – {{ b }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}Fermé{% endif %}</td></tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site">
+  <div class="wrap">© {{ inst.name }} · {{ inst.legal }} · <a href="/admin">Espace professionnel</a></div>
+</footer>
+{% endblock %}
