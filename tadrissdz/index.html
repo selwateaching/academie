@@ -4902,7 +4902,27 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-box{padding:10px;margin:10px 0;border-left:4px solid #3B82F6;background:#EFF6FF;} .tc-box-title{font-size:13pt;font-weight:bold;} .tc-remember{padding:8px;margin:8px 0;background:#FBF6E3;border:1px solid #D4AF37;}' +
     '.tc-cursive{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:18pt;} .tc-cursive-trace{color:#B9BFCC;}' +
     '.tc-seyes{height:40pt;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 12pt;}' +
-    '.tc-trace-line{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:28pt;color:#B9BFCC;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 6pt;}';
+    '.tc-trace-line{font-family:"Playwrite FR Moderne","Segoe Script","Comic Sans MS",cursive;font-size:28pt;color:#B9BFCC;border-bottom:1.5pt solid #6F8FCB;margin:4pt 0 6pt;}' +
+    /* Word (import HTML) ignore flexbox/grid : les composants visuels plus récents (étapes, arbre,
+       comparaison, flèche) n'avaient AUCUN style ici et arrivaient en texte brut non mis en forme.
+       On les reconstruit avec inline-block/bordures, que le moteur HTML de Word sait afficher. */
+    '.tc-def{background:#EFF6FF;border-left:4px solid #3B82F6;padding:10px;margin:10px 0;} .tc-def .tc-box-title{color:#3B82F6;}' +
+    '.tc-method{background:#E6F4EE;border-left:4px solid #006B3F;padding:10px;margin:10px 0;} .tc-method .tc-box-title{color:#006B3F;}' +
+    '.tc-warn{background:#FBF6E3;border-left:4px solid #D4AF37;padding:10px;margin:10px 0;} .tc-warn .tc-box-title{color:#8a6d00;}' +
+    '.tc-example{background:#F5F3FF;border-left:4px solid #8B5CF6;padding:10px;margin:10px 0;} .tc-example .tc-box-title{color:#8B5CF6;}' +
+    '.tc-info{background:#F0EEE9;border-left:4px solid #9090A0;padding:10px;margin:10px 0;} .tc-info .tc-box-title{color:#9090A0;}' +
+    '.tc-flow{margin:10px 0;} .tc-flow-step{margin:0 0 10px 0;}' +
+    '.tc-flow-num{display:inline-block;width:22pt;height:22pt;border-radius:11pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
+    '.tc-flow-body{display:inline-block;width:85%;vertical-align:top;margin-left:8px;}' +
+    '.tc-arrow-row{margin:10px 0;} .tc-arrow-cell{display:inline-block;width:42%;vertical-align:top;border:1px solid #999;background:#fff;padding:8px;margin-right:10px;}' +
+    '.tc-arrow-sep{display:inline-block;vertical-align:middle;font-weight:bold;color:#006B3F;font-size:14pt;}' +
+    '.tc-lbl{display:block;font-size:8pt;text-transform:uppercase;color:#9090A0;margin-bottom:4px;}' +
+    '.tc-tree{margin:10px 0;text-align:center;}' +
+    '.tc-tree-root{display:inline-block;background:#006B3F;color:#fff;border-radius:6px;padding:6px 14px;font-weight:bold;margin-bottom:8px;}' +
+    '.tc-tree-branch{display:inline-block;width:150px;vertical-align:top;border:1px solid #999;background:#fff;padding:8px;margin:4px;} .tc-tree-branch>b{display:block;color:#006B3F;margin-bottom:3px;}' +
+    '.tc-compare{margin:10px 0;} .tc-compare-card{display:inline-block;width:44%;vertical-align:top;border:1px solid #999;background:#fff;padding:8px;margin:4px 1%;}' +
+    '.tc-compare-card>h5{font-size:9pt;color:#006B3F;text-transform:uppercase;margin:0 0 5px;}' +
+    '.tc-diagram{text-align:center;margin:10px 0;}';
   var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">' +
     '<head><meta charset="utf-8"><title>' + titre + '</title><style>' + css + '</style></head>' +
     '<body' + (CURRENT_LANG==='ar' ? ' dir="rtl"' : '') + '>' + contenuHTML + '</body></html>';
