@@ -8546,10 +8546,43 @@ window.delProjet = function(id) {
 };
 
 function normalizeNiveauKey(niveau) {
-  var s = (niveau || '').toString().toUpperCase();
+  var raw = (niveau || '').toString().toLowerCase();
+  try { raw = raw.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+  /* 1) abréviation directe : "2AS", "4 AM", "5ap"... */
+  var mAbbrev = raw.match(/\b(\d)\s*(ap|am|as)\b/);
+  if (mAbbrev) return (mAbbrev[1] + mAbbrev[2]).toUpperCase();
+  /* 2) "terminale" = 3AS dans le système algérien */
+  if (/\bterminale\b/.test(raw)) return '3AS';
+  /* 3) texte naturel : "deuxième année secondaire", "2ème AM", "première primaire"... */
+  var ordinaux = [
+    [/\b(1|premiere|1ere|1er)\b/, '1'], [/\b(2|deuxieme|2eme|2e|seconde)\b/, '2'],
+    [/\b(3|troisieme|3eme|3e)\b/, '3'], [/\b(4|quatrieme|4eme|4e)\b/, '4'],
+    [/\b(5|cinquieme|5eme|5e)\b/, '5']
+  ];
+  var cycles = [[/secondaire/, 'AS'], [/moyen/, 'AM'], [/primaire/, 'AP']];
+  var num = null, cycle = null;
+  ordinaux.some(function(o){ if (o[0].test(raw)) { num = o[1]; return true; } return false; });
+  cycles.some(function(c){ if (c[0].test(raw)) { cycle = c[1]; return true; } return false; });
+  if (num && cycle) return num + cycle;
+  /* 4) repli : comme avant, on compacte le texte tel quel */
+  return raw.toUpperCase().replace(/\s+/g, '');
+}
+function extractFiliereFromText(niveauKey, texte) {
+  if (!/^[123]AS$/.test(niveauKey)) return '';
+  var s = (texte || '').toLowerCase();
   try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
-  var m = s.match(/(\d)\s*(AP|AM|AS)/);
-  return m ? (m[1] + m[2]) : s.replace(/\s+/g, '');
+  if (niveauKey === '1AS') {
+    if (/lettre|langue/.test(s)) return FILIERES_LABELS.tc_lettres;
+    if (/scien/.test(s)) return FILIERES_LABELS.tc_sciences;
+    return '';
+  }
+  if (/techniqu/.test(s) && /math/.test(s)) return FILIERES_LABELS.techniques_maths;
+  if (/math/.test(s)) return FILIERES_LABELS.mathematiques;
+  if (/scien|experiment/.test(s)) return FILIERES_LABELS.sciences_exp;
+  if (/gestion|economi/.test(s)) return FILIERES_LABELS.gestion_eco;
+  if (/lettre|philo/.test(s)) return FILIERES_LABELS.lettres_philo;
+  if (/langue/.test(s)) return FILIERES_LABELS.langues_etr;
+  return '';
 }
 function getChapitresOfficielsProgNat(niveauKey, mat) {
   var data = PROG[niveauKey];
@@ -8561,11 +8594,13 @@ function getChapitresOfficielsProgNat(niveauKey, mat) {
   return filtered.length ? filtered : null;
 }
 async function genProgaIA() {
-  var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟\n(مثال: 4AM, 5AP, 2AS...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ?\n(Ex: 4AM, 5AP, 2AS...)', '4AM');
+  var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟ (للثانوي، اذكر الشعبة أيضاً)\n(مثال: 4AM, 5AP, 2AS علوم تجريبية, Terminale آداب وفلسفة...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ? (pour le secondaire, précise aussi la filière)\n(Ex: 4AM, 5AP, 2AS Sciences expérimentales, Terminale Lettres et philosophie...)', '4AM');
   if (!niveau || !niveau.trim()) return;
   var niveauKey = normalizeNiveauKey(niveau);
-  var filiereIA = '';
-  if (/^[123]AS$/.test(niveauKey)) {
+  var filiereIA = extractFiliereFromText(niveauKey, niveau);
+  /* Filière pas détectée dans le texte déjà tapé : on redemande — seulement dans ce cas, pour éviter
+     une 2e fenêtre native à chaque fois (ces fenêtres ne s'affichent pas pendant un partage d'écran Zoom). */
+  if (/^[123]AS$/.test(niveauKey) && !filiereIA) {
     filiereIA = prompt(CURRENT_LANG==='ar'?'ما هي الشعبة ؟ (اختياري — مثال: علوم تجريبية، آداب وفلسفة، رياضيات، تقني رياضي، تسيير واقتصاد...)':'Quelle filière ? (optionnel — ex: Sciences expérimentales, Lettres et philosophie, Mathématiques, Techniques mathématiques, Gestion et économie...)', '') || '';
   }
   var q = { autorise: true };
@@ -8580,8 +8615,17 @@ async function genProgaIA() {
   btn.textContent = T('generation'); btn.disabled = true;
   startGenLoader('progaBox', 'btnGenProga', 'proga');
   var mat = D.s.mat;
-  var chapOfficiels = getChapitresOfficielsProgNat(niveauKey, mat);
-  if (!chapOfficiels) {
+  var filiereSpecifiee = !!(filiereIA && filiereIA.trim());
+  /* La base "Programme national" (PROG) n'est PAS encore détaillée par filière : ses chapitres sont
+     génériques pour un niveau donné, toutes filières confondues. Si on les imposait quand même ("Utilise
+     UNIQUEMENT ces chapitres") en même temps qu'on demande à l'IA d'adapter le contenu à une filière précise,
+     les deux consignes se contredisent et l'IA produit un résultat incohérent. Donc : dès qu'une filière est
+     précisée, on ne force PAS la liste générique — on laisse l'IA s'appuyer sur ses connaissances générales,
+     adaptées à cette filière. */
+  var chapOfficiels = filiereSpecifiee ? null : getChapitresOfficielsProgNat(niveauKey, mat);
+  if (filiereSpecifiee) {
+    N(CURRENT_LANG==='ar'?('الشعبة محددة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، مُكيّفة مع هذه الشعبة (قاعدة بيانات "البرنامج الوطني" ليست مفصّلة بعد حسب الشعبة)، تحقق منه قبل الاستعمال.'):('Une filière est précisée — la proposition est générée à partir des connaissances générales de l\'IA, adaptées à cette filière (la base "Programme national" de Tadriss n\'est pas encore détaillée par filière), à vérifier avant usage.'), 'info');
+  } else if (!chapOfficiels) {
     N(CURRENT_LANG==='ar'?('"'+niveau.trim()+'" غير موجود بعد في قاعدة بيانات "البرنامج الوطني" لهذه المادة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، تحقق منه قبل الاستعمال.'):('"'+niveau.trim()+'" n\'est pas encore dans la base "Programme national" de Tadriss pour cette matière — la proposition sera générée à partir des connaissances générales de l\'IA, à vérifier avant usage.'), 'info');
   }
   var schema, consignes;
