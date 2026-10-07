@@ -8685,7 +8685,7 @@ async function genProgaIA() {
   var schema, consignes;
   if (isL) {
     schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
-    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite. Prévois exactement 3 Projets pour l\'année, 2 séquences par projet. Reste très concis : 3 à 6 mots par champ, pas de phrases complètes.';
+    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite. Le nombre de Projets doit correspondre à la réalité du programme officiel MEN pour ce niveau précis (généralement un découpage proche des 3 trimestres, mais adapte-le au niveau réel — ne force pas un nombre arbitraire), avec 2 à 3 séquences par projet. Reste très concis : 3 à 6 mots par champ, pas de phrases complètes.';
   } else {
     schema = '{"projets":[{"nom":"Unité 1 : ...","tacheFinale":"","sequences":[{"nom":"Chapitre : ...","competences":"...","nbSeances":3,"periode":"Semaines 1-2"}]}]}';
     consignes = 'Structure par Unités/Chapitres du programme officiel, réparties sur l\'année scolaire algérienne (environ 30 semaines, découpées en 3 trimestres). Prévois 4 à 6 Unités, chacune avec 2 à 4 chapitres/séquences, en indiquant la période prévue (ex: "Semaines 3-4") et le nombre de séances.';
@@ -8715,13 +8715,14 @@ async function genProgaIA() {
         : 'Adapte impérativement la profondeur, les notions traitées et le volume horaire à cette filière précise.') +
       ' Le résultat doit être nettement reconnaissable comme spécifique à cette filière, et clairement différent de ce que tu produirais pour une autre filière du même niveau et de la même matière (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
   }
-  /* Rappel du nombre de projets/unités placé juste avant le format JSON (fin du prompt) : avec les
-     instructions de filière ajoutées entre les consignes et cette ligne, l'IA avait tendance à privilégier
-     la richesse thématique d'UN SEUL projet plutôt que de respecter le nombre demandé — un rappel en fin de
-     prompt pèse davantage que la même consigne donnée plus tôt. */
+  /* Rappel placé juste avant le format JSON (fin du prompt, qui pèse davantage sur l'IA que les consignes
+     données plus tôt) : avec les instructions de filière ajoutées entre les consignes et cette ligne, l'IA
+     avait tendance à privilégier la richesse thématique d'UN SEUL projet plutôt que de couvrir toute l'année.
+     On ne force volontairement PAS de nombre arbitraire (le programme officiel varie selon le niveau) —
+     seulement le principe : plusieurs projets/unités distincts, pas un seul bloc. */
   var nbRappel = isL
-    ? 'RAPPEL IMPORTANT : le JSON doit contenir EXACTEMENT 3 projets dans "projets" (ni plus, ni moins), chacun avec 2 séquences — pas un seul projet très détaillé, 3 projets distincts.'
-    : 'RAPPEL IMPORTANT : le JSON doit contenir ENTRE 4 ET 6 unités dans "projets" — pas une seule unité très détaillée, plusieurs unités distinctes couvrant toute l\'année.';
+    ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
+    : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.';
   var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
