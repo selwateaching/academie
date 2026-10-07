@@ -1,3 +1,4 @@
+import logging
 import os
 import smtplib
 from email.mime.application import MIMEApplication
@@ -8,6 +9,8 @@ import requests
 from flask import Flask, jsonify, request, send_from_directory
 
 app = Flask(__name__, static_folder=None)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 12 * 1024 * 1024  # 12 Mo par requête (message + pièces jointes)
 
 MODEL_ID = os.environ.get("TADRISSDZ_AI_MODEL", "claude-sonnet-5")
@@ -91,7 +94,9 @@ def generate():
         text = next((b.text for b in response.content if b.type == "text"), "")
         return jsonify({"content": [{"type": "text", "text": text}]})
     except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
-        return jsonify({"error": {"message": str(exc), "type": "api_error"}})
+        logger.exception("Erreur lors de l'appel à l'IA (/.netlify/functions/generate)")
+        message = str(exc) or exc.__class__.__name__ or "Erreur inconnue côté serveur"
+        return jsonify({"error": {"message": message, "type": "api_error"}})
 
 
 STABILITY_ENGINE_ID = "stable-diffusion-xl-1024-v1-0"  # le modèle le moins cher de Stability AI
