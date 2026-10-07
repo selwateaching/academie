@@ -2138,6 +2138,19 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   </div>
 </div>
 
+<div class="overlay" id="mConfirmGen">
+  <div class="modal" style="width:420px;text-align:center;">
+    <div class="mh" style="justify-content:flex-end;border:none;"><button class="mx" onclick="_confirmGenAnswer(false)">✕</button></div>
+    <div class="mb" style="padding-top:0;">
+      <div id="mConfirmGenMsg" style="font-size:.9rem;margin-bottom:1.1rem;"></div>
+      <div style="display:flex;gap:.6rem;">
+        <button class="btn bo" style="flex:1;" onclick="_confirmGenAnswer(false)">Annuler</button>
+        <button class="btn bt" style="flex:1;" onclick="_confirmGenAnswer(true)">Confirmer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="mSoon">
   <div class="modal" style="width:400px;text-align:center;">
     <div class="mh" style="justify-content:flex-end;border:none;"><button class="mx" onclick="CM('mSoon')">✕</button></div>
@@ -4783,6 +4796,22 @@ function OM(id) {
   }
 }
 function CM(id) { var e = document.getElementById(id); if (e) e.classList.remove('open'); if (id==='mSeance') { D._sId=null; _pendingProgLink=null; } if (id==='mNote') { D._evId=null; } if (id==='mEleve') { D._eId=null; } }
+var _confirmGenResolve = null;
+/* Remplace window.confirm() dans les flux critiques : la boîte de dialogue native du navigateur peut ne
+   pas s'afficher (et donc se comporter comme un "Annuler" silencieux) pendant un partage d'écran Zoom —
+   déjà constaté pour les menus déroulants et les sélecteurs de fichiers natifs dans cette appli. */
+function appConfirm(msg) {
+  return new Promise(function(resolve) {
+    _confirmGenResolve = resolve;
+    document.getElementById('mConfirmGenMsg').textContent = msg;
+    OM('mConfirmGen');
+  });
+}
+function _confirmGenAnswer(val) {
+  CM('mConfirmGen');
+  var r = _confirmGenResolve; _confirmGenResolve = null;
+  if (r) r(val);
+}
 document.addEventListener('click', function(e) { if (e.target.classList.contains('overlay')) e.target.classList.remove('open'); });
 
 /* ===== NOTIFS ===== */
@@ -8684,7 +8713,7 @@ async function genProgaIA() {
   var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
-    .then(function(data){
+    .then(async function(data){
       btn.innerHTML = GEN_ICON + ' ' + T('proga_gen_btn'); btn.disabled = false;
       if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ') + (data.error.message || data.error.type || 'inconnue'), 'err'); return; }
       var text = extractClaudeText(data);
@@ -8704,7 +8733,10 @@ async function genProgaIA() {
             })
           };
         });
-        if (D.progression.length && !confirm(CURRENT_LANG==='ar'?'استبدال التدرج الحالي بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle par cette proposition IA ?')) return;
+        if (D.progression.length) {
+          var remplace = await appConfirm(CURRENT_LANG==='ar'?'استبدال التدرج الحالي بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle par cette proposition IA ?');
+          if (!remplace) return;
+        }
         D.progression = projets;
         sv(); rProga();
         N(CURRENT_LANG==='ar'?'تم إنشاء الاقتراح ! عدّله حسب احتياجاتك.':'Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
