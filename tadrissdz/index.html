@@ -1531,7 +1531,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 <div class="pg" id="pg-programme">
   <div class="sh">
     <div><div class="sht">Programme national officiel</div><div style="font-size:.72rem;color:var(--ink3)">Ministère de l'Éducation Nationale · Algérie</div></div>
-    <select class="fi" style="width:220px;margin:0" id="progNiveau" onchange="rProg()">
+    <select class="fi" style="width:220px;margin:0" id="progNiveau" onchange="rProg();toggleFiliereSelect('progNiveau','progFiliere')">
       <option value="1AP">1ère année Primaire (1AP)</option>
       <option value="2AP">2ème année Primaire (2AP)</option>
       <option value="3AP">3ème année Primaire (3AP)</option>
@@ -1545,6 +1545,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <option value="2AS">2ème année Secondaire (2AS)</option>
       <option value="3AS">Terminale (3AS)</option>
     </select>
+    <select class="fi" style="width:220px;margin:0;display:none" id="progFiliere" onchange="rProg()"></select>
   </div>
   <div id="progGrid"></div>
 </div>
@@ -1558,7 +1559,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl">Sujet / Chapitre</label><input class="fi" id="qzS" placeholder="Ex: Équations du 2ème degré, La photosynthèse..."></div>
         <div class="fg2">
           <div class="fg"><label class="fl">Niveau</label>
-            <select class="fs" id="qzN">
+            <select class="fs" id="qzN" onchange="toggleFiliereSelect('qzN','qzFiliere','qzFiliereRow')">
               <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
               <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
               <option>1AS</option><option>2AS</option><option>3AS</option>
@@ -1566,6 +1567,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
           <div class="fg"><label class="fl">Nb questions</label><select class="fs" id="qzNb"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
         </div>
+        <div class="fg" id="qzFiliereRow" style="display:none"><label class="fl">Filière</label><select class="fs" id="qzFiliere"></select></div>
         <div class="fg2">
           <div class="fg"><label class="fl">Type</label><select class="fs" id="qzT"><option value="qcm">QCM</option><option value="vf">Vrai/Faux</option><option value="ouvert">Questions ouvertes</option><option value="mixte">Mixte</option></select></div>
           <div class="fg"><label class="fl">Difficulté</label><select class="fs" id="qzD"><option>Facile</option><option selected>Moyen</option><option>Difficile</option></select></div>
@@ -1601,7 +1603,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl" data-fl="titre">Titre du cours / Chapitre</label><input class="fi" id="crsT" placeholder="Ex: Les équations du 1er degré, La cellule vivante..."></div>
         <div class="fg2">
           <div class="fg"><label class="fl" data-fl="niveau">Niveau</label>
-            <select class="fs" id="crsN">
+            <select class="fs" id="crsN" onchange="toggleFiliereSelect('crsN','crsFiliere','crsFiliereRow')">
               <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
               <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
               <option>1AS</option><option>2AS</option><option>3AS</option>
@@ -1609,6 +1611,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
           <div class="fg"><label class="fl" data-fl="duree">Durée</label><select class="fs" id="crsDur"><option>30 min</option><option selected>1h</option><option>2h</option><option>3h</option></select></div>
         </div>
+        <div class="fg" id="crsFiliereRow" style="display:none"><label class="fl">Filière</label><select class="fs" id="crsFiliere"></select></div>
         <div class="fg" id="crsMatiereRow" style="display:none">
           <label class="fl" data-fl="matiere">Matière pour cette fiche</label>
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
@@ -7713,6 +7716,34 @@ var MATIERE_PROG_KEYS = {
     "espagnol"
   ]
 };
+var FILIERES_LABELS = {
+  tc_sciences: 'Tronc commun Sciences', tc_lettres: 'Tronc commun Lettres et langues étrangères',
+  sciences_exp: 'Sciences expérimentales', mathematiques: 'Mathématiques', techniques_maths: 'Techniques mathématiques',
+  gestion_eco: 'Gestion et économie', lettres_philo: 'Lettres et philosophie', langues_etr: 'Langues étrangères'
+};
+function filiereOptionsHtml(niveau) {
+  if (niveau === '1AS') return '<option value="tc_sciences">Tronc commun Sciences</option><option value="tc_lettres">Tronc commun Lettres et langues étrangères</option>';
+  if (niveau === '2AS' || niveau === '3AS') return '<option value="sciences_exp">Sciences expérimentales</option><option value="mathematiques">Mathématiques</option><option value="techniques_maths">Techniques mathématiques</option><option value="gestion_eco">Gestion et économie</option><option value="lettres_philo">Lettres et philosophie</option><option value="langues_etr">Langues étrangères</option>';
+  return null;
+}
+function toggleFiliereSelect(niveauSelId, filiereSelId, rowId) {
+  var nvEl = document.getElementById(niveauSelId), sel = document.getElementById(filiereSelId);
+  if (!nvEl || !sel) return;
+  var row = rowId ? document.getElementById(rowId) : sel;
+  var opts = filiereOptionsHtml(nvEl.value);
+  if (opts) {
+    sel.innerHTML = '<option value="">'+(CURRENT_LANG==='ar'?'الشعبة (اختياري)':'Filière (optionnel)')+'</option>' + opts;
+    if (row) row.style.display = '';
+  } else {
+    sel.innerHTML = ''; sel.value = '';
+    if (row) row.style.display = 'none';
+  }
+}
+function filiereInstructionTxt(filiereVal) {
+  if (!filiereVal) return '';
+  var label = FILIERES_LABELS[filiereVal] || filiereVal;
+  return '\n\nIMPORTANT — Filière : ' + label + '. En Algérie, le programme de cette matière diffère sensiblement selon la filière à partir de la 2AS (volume horaire, profondeur des notions, parfois absence de certaines notions selon la filière). Adapte impérativement le contenu — profondeur, notions traitées, exemples — à cette filière précise, et non à un contenu générique toutes filières confondues.';
+}
 function rProg() {
   var nv = document.getElementById('progNiveau').value;
   // Filter by prof's subject
@@ -7733,7 +7764,15 @@ function rProg() {
   }).join('');
 }
 function tgProg(el) { var b = el.nextElementSibling; b.classList.toggle('open'); }
-function useProg(chap) { go('cours_ia'); document.getElementById('crsT').value = chap; document.getElementById('crsN').value = document.getElementById('progNiveau').value; N(CURRENT_LANG==='ar'?'تم تحميل الفصل في دروس الذكاء الاصطناعي !':'Chapitre chargé dans Cours IA !','ok'); }
+function useProg(chap) {
+  go('cours_ia');
+  document.getElementById('crsT').value = chap;
+  document.getElementById('crsN').value = document.getElementById('progNiveau').value;
+  toggleFiliereSelect('crsN','crsFiliere','crsFiliereRow');
+  var pf = document.getElementById('progFiliere'), cf = document.getElementById('crsFiliere');
+  if (pf && cf && pf.style.display !== 'none' && pf.value) cf.value = pf.value;
+  N(CURRENT_LANG==='ar'?'تم تحميل الفصل في دروس الذكاء الاصطناعي !':'Chapitre chargé dans Cours IA !','ok');
+}
 
 /* ===== DOSSIERS ===== */
 function getMatIco() {
@@ -8524,6 +8563,11 @@ function getChapitresOfficielsProgNat(niveauKey, mat) {
 async function genProgaIA() {
   var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟\n(مثال: 4AM, 5AP, 2AS...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ?\n(Ex: 4AM, 5AP, 2AS...)', '4AM');
   if (!niveau || !niveau.trim()) return;
+  var niveauKey = normalizeNiveauKey(niveau);
+  var filiereIA = '';
+  if (/^[123]AS$/.test(niveauKey)) {
+    filiereIA = prompt(CURRENT_LANG==='ar'?'ما هي الشعبة ؟ (اختياري — مثال: علوم تجريبية، آداب وفلسفة، رياضيات، تقني رياضي، تسيير واقتصاد...)':'Quelle filière ? (optionnel — ex: Sciences expérimentales, Lettres et philosophie, Mathématiques, Techniques mathématiques, Gestion et économie...)', '') || '';
+  }
   var q = { autorise: true };
   try {
     if (typeof verifierEtIncrementerQuota === 'function') q = await verifierEtIncrementerQuota();
@@ -8536,7 +8580,6 @@ async function genProgaIA() {
   btn.textContent = T('generation'); btn.disabled = true;
   startGenLoader('progaBox', 'btnGenProga', 'proga');
   var mat = D.s.mat;
-  var niveauKey = normalizeNiveauKey(niveau);
   var chapOfficiels = getChapitresOfficielsProgNat(niveauKey, mat);
   if (!chapOfficiels) {
     N(CURRENT_LANG==='ar'?('"'+niveau.trim()+'" غير موجود بعد في قاعدة بيانات "البرنامج الوطني" لهذه المادة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، تحقق منه قبل الاستعمال.'):('"'+niveau.trim()+'" n\'est pas encore dans la base "Programme national" de Tadriss pour cette matière — la proposition sera générée à partir des connaissances générales de l\'IA, à vérifier avant usage.'), 'info');
@@ -8565,7 +8608,11 @@ async function genProgaIA() {
     chapOfficiels.forEach(function(m){ m.chapitres.forEach(function(c){ listeChap.push(c); }); });
     officielTxt = '\n\nIMPORTANT — Voici la liste EXACTE des chapitres du programme officiel MEN (base de données Tadriss DZ, onglet "Programme national") pour cette matière et ce niveau :\n- ' + listeChap.join('\n- ') + '\n\nUtilise UNIQUEMENT ces chapitres (regroupe-les en ' + (isL ? 'Projets/Séquences' : 'Unités/Chapitres') + ' et répartis-les sur l\'année scolaire), sans en inventer d\'autres ni en omettre aucun. Garde les intitulés tels quels autant que possible.';
   }
-  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
+  var filiereIATxt = '';
+  if (filiereIA && filiereIA.trim()) {
+    filiereIATxt = '\n\nIMPORTANT — Filière : ' + filiereIA.trim() + '. Adapte impérativement le contenu et la répartition des chapitres à cette filière précise (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
+  }
+  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(function(data){
@@ -8658,9 +8705,11 @@ async function genQuiz() {
   if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('qzN').value, nb=document.getElementById('qzNb').value, ty=document.getElementById('qzT').value, df=document.getElementById('qzD').value, ins=document.getElementById('qzI').value, lang=document.getElementById('qzLang').value, mat=D.s.mat;
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
+  var qzFiliereEl = document.getElementById('qzFiliere');
+  var qzFiliereVal = (qzFiliereEl && qzFiliereEl.style.display !== 'none') ? qzFiliereEl.value : '';
   var btn=document.getElementById('btnGQ'); btn.textContent=T('generation'); btn.disabled=true; startGenLoader('qzDis','btnGQ','quiz');
   var bk=String.fromCharCode(96);
-  var prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+(lang==='ar'?'arabe':'français')+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.';
+  var prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+(lang==='ar'?'arabe':'français')+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.'+filiereInstructionTxt(qzFiliereVal);
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
     btn.innerHTML=T('gen_quiz'); btn.disabled=false;
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('qzDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Réessaie dans quelques instants ; contacte l\'administrateur si ça persiste.')+'</div>'; return; }
@@ -8981,6 +9030,9 @@ async function genCours(extraInstruction) {
   if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
+  var crsFiliereEl = document.getElementById('crsFiliere');
+  var crsFiliereVal = (crsFiliereEl && crsFiliereEl.style.display !== 'none') ? crsFiliereEl.value : '';
+  var crsFiliereTxt = filiereInstructionTxt(crsFiliereVal);
   var btn=document.getElementById('btnGCrs'); btn.textContent=T('generation'); btn.disabled=true; startGenLoader('crsDis','btnGCrs','cours');
   /* "Régénérer" et "Simplifier" appellent aussi genCours(), mais restaient visuellement figés
      pendant la génération (seul btnGCrs, hors écran à ce moment, montrait un état de chargement) */
@@ -9014,7 +9066,7 @@ async function genCours(extraInstruction) {
     var activite = activiteRaw || (isOral ? "Compréhension de l'oral" : 'Grammaire');
     var totalMin = parseDureeMinutes(dur);
     var mo = computeMoments5(totalMin);
-    enteteHTML += '<div class="pp-meta"><div><b>Projet :</b> '+projet+'</div><div><b>Niveau :</b> '+nv+'</div><div><b>Séquence :</b> '+sequence+'</div><div><b>Durée :</b> '+dur+'</div>'+
+    enteteHTML += '<div class="pp-meta"><div><b>Projet :</b> '+projet+'</div><div><b>Niveau :</b> '+nv+(crsFiliereVal?' — '+(FILIERES_LABELS[crsFiliereVal]||crsFiliereVal):'')+'</div><div><b>Séquence :</b> '+sequence+'</div><div><b>Durée :</b> '+dur+'</div>'+
       (actePar?'<div><b>Acte de parole :</b> '+actePar+'</div>':'')+
       '<div><b>Activité :</b> '+activite+'</div></div>';
     var skeleton =
@@ -9048,7 +9100,7 @@ async function genCours(extraInstruction) {
       '\n\nExigences supplémentaires :\n- Reste TRÈS CONCIS partout, comme une vraie fiche pédagogique (jamais un cours rédigé) : chaque Moment fait quelques lignes maximum, avec des puces/questions/listes plutôt que des paragraphes narratifs\n- N\'écris JAMAIS "L\'enseignant commence par...", "Il explique ensuite que..." — donne directement les questions posées, les phrases observées, ou la consigne, sans récit du déroulement\n- La situation-problème doit être concrète et vraiment déclencher le besoin de la notion (pas juste une question d\'éveil générale)\n- La règle dans "Retiens" doit détailler la procédure de transformation si le sujet s\'y prête (ex: Actif → Passif étape par étape), pas juste une définition vague\n- Les phrases d\'exercice ne doivent jamais être syntaxiquement ambiguës (vérifie que la consigne appelle sans équivoque la transformation demandée)\n- Le "Moment d\'évaluation" doit vérifier TOUS les objectifs annoncés, pas seulement la reconnaissance — inclus toujours un exercice de production réelle en plus du QCM\n- Utilise des exemples et contextes algériens concrets (noms, lieux, monnaie DA), mais en une ligne, pas en histoire développée\n- Dans "Retiens", chaque règle tient sur 1-2 lignes maximum, et doit correspondre exactement aux expressions/notions utilisées dans le Moment 2 (Découverte)\n- Les exercices des Moments 4 et 5 doivent porter précisément sur le sujet "'+titre+'"\n- Aligne le contenu sur le programme officiel MEN algérien pour le niveau '+nv+'\n- Ne mets aucun texte avant le premier bloc tc-box, et rien après la Remédiation'+
       (isOral ? '\n- IMPORTANT, activité de COMPRÉHENSION ORALE (al-mantouq / الفهم الشفوي) : les élèves n\'ont AUCUN texte écrit sous les yeux à aucun moment de la séance — tout passe par l\'écoute du professeur qui lit ou raconte. N\'écris jamais "lire le texte", "le texte ci-dessus/ci-dessous" ou "texte distribué" : utilise toujours "le texte entendu", "ce qui a été raconté/lu" ou équivalent. À chaque étape où les élèves interviennent (Découverte, Observation, Réinvestissement, Évaluation), la consigne doit TOUJOURS faire répondre l\'élève à l\'oral EN PREMIER (il propose sa réponse spontanément), et seulement ENSUITE le professeur corrige, reformule ou donne la réponse/le modèle attendu — jamais l\'inverse. Les questions progressent du global (de quoi/qui parle-t-on ?) vers le détail (informations précises, vocabulaire), comme une vraie activité de compréhension de l\'oral.' : '');
   } else if (ty === 'fiche_peda') {
-    enteteHTML += '<div class="pp-meta"><div><b>Niveau :</b> '+nv+'</div></div>';
+    enteteHTML += '<div class="pp-meta"><div><b>Niveau :</b> '+nv+(crsFiliereVal?' — '+(FILIERES_LABELS[crsFiliereVal]||crsFiliereVal):'')+'</div></div>';
     var totalMinSci = parseDureeMinutes(dur);
     var moSci = computeMoments3(totalMinSci);
     var skeletonSci = '<p><strong>Évaluation :</strong> [complète en une ligne : diagnostique / formative / sommative]</p>\n'+
@@ -9126,7 +9178,7 @@ async function genCours(extraInstruction) {
       '- Écris TOUT le contenu (titre, texte, gestes, objectif) en '+compLangLabel+(compLang==='ar' ? ', en écriture arabe avec les voyelles courtes (tachkil) sur les mots importants si utile pour la prononciation' : '')+'\n'+
       '- Reste concis : c\'est une fiche d\'usage pratique en classe, pas un article';
   } else if (ty === 'vocabsci') {
-    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+(crsFiliereVal?' — '+(FILIERES_LABELS[crsFiliereVal]||crsFiliereVal):'')+'</div></div>';
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN). Crée un LEXIQUE DE VOCABULAIRE SCIENTIFIQUE EXPLICATIF pour aider les élèves de niveau '+nv+' à comprendre et utiliser correctement le registre du français scientifique nécessaire sur le sujet : "'+titre+'". CE N\'EST PAS une fiche d\'exercices ni un cours de maths/physique à résoudre : c\'est un texte qui explique le VOCABULAIRE, pour des élèves qui comprendraient la notion scientifique mais butent sur les mots français utilisés pour en parler.'+(obj?'\nObjectifs fournis par le professeur: '+obj:'')+
       '\n\nStructure attendue :\n'+
       '1. Une courte introduction (2-3 lignes) qui explique pourquoi ce vocabulaire est important à maîtriser pour ce sujet.\n'+
@@ -9192,6 +9244,7 @@ async function genCours(extraInstruction) {
       '\n\nRègles de base : aligne sur le programme officiel MEN algérien ; utilise des exemples et contextes algériens concrets (noms, lieux, monnaie DA) ; commence directement par le contenu, sans titre ni phrase d\'introduction générique du type "Voici un cours sur...".'+
       visualSystem;
   }
+  if (crsFiliereTxt) prompt += crsFiliereTxt;
   var maxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
   if (tcVeutCursive()) prompt += TC_CURSIVE_INSTRUCTION;
