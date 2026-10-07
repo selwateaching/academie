@@ -8506,6 +8506,21 @@ window.delProjet = function(id) {
   sv(); rProga();
 };
 
+function normalizeNiveauKey(niveau) {
+  var s = (niveau || '').toString().toUpperCase();
+  try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) {}
+  var m = s.match(/(\d)\s*(AP|AM|AS)/);
+  return m ? (m[1] + m[2]) : s.replace(/\s+/g, '');
+}
+function getChapitresOfficielsProgNat(niveauKey, mat) {
+  var data = PROG[niveauKey];
+  if (!data) return null;
+  var keys = MATIERE_PROG_KEYS[(mat || '').toLowerCase()];
+  var filtered = keys
+    ? data.filter(function(m){ var ml = m.mat.toLowerCase(); return keys.some(function(k){ return ml.indexOf(k) >= 0; }); })
+    : data.filter(function(m){ return m.mat.toLowerCase().indexOf((mat||'').toLowerCase().split(' ')[0]) >= 0 || (mat||'').toLowerCase().indexOf(m.mat.toLowerCase().split(' ')[0]) >= 0; });
+  return filtered.length ? filtered : null;
+}
 async function genProgaIA() {
   var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟\n(مثال: 4AM, 5AP, 2AS...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ?\n(Ex: 4AM, 5AP, 2AS...)', '4AM');
   if (!niveau || !niveau.trim()) return;
@@ -8521,6 +8536,11 @@ async function genProgaIA() {
   btn.textContent = T('generation'); btn.disabled = true;
   startGenLoader('progaBox', 'btnGenProga', 'proga');
   var mat = D.s.mat;
+  var niveauKey = normalizeNiveauKey(niveau);
+  var chapOfficiels = getChapitresOfficielsProgNat(niveauKey, mat);
+  if (!chapOfficiels) {
+    N(CURRENT_LANG==='ar'?('"'+niveau.trim()+'" غير موجود بعد في قاعدة بيانات "البرنامج الوطني" لهذه المادة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، تحقق منه قبل الاستعمال.'):('"'+niveau.trim()+'" n\'est pas encore dans la base "Programme national" de Tadriss pour cette matière — la proposition sera générée à partir des connaissances générales de l\'IA, à vérifier avant usage.'), 'info');
+  }
   var schema, consignes;
   if (isL) {
     schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
@@ -8539,7 +8559,13 @@ async function genProgaIA() {
   } else {
     langueInstruction = ' IMPORTANT : rédige tout le CONTENU (noms des projets et séquences, et tous les champs de contenu) en LANGUE ARABE (écriture arabe), car dans le système éducatif algérien, l\'arabe est la langue d\'enseignement de cette matière (Primaire et Moyen). Seuls les noms des clés JSON restent tels quels (nom, tacheFinale, sequences, actes...), mais leurs valeurs doivent être en arabe.';
   }
-  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
+  var officielTxt = '';
+  if (chapOfficiels) {
+    var listeChap = [];
+    chapOfficiels.forEach(function(m){ m.chapitres.forEach(function(c){ listeChap.push(c); }); });
+    officielTxt = '\n\nIMPORTANT — Voici la liste EXACTE des chapitres du programme officiel MEN (base de données Tadriss DZ, onglet "Programme national") pour cette matière et ce niveau :\n- ' + listeChap.join('\n- ') + '\n\nUtilise UNIQUEMENT ces chapitres (regroupe-les en ' + (isL ? 'Projets/Séquences' : 'Unités/Chapitres') + ' et répartis-les sur l\'année scolaire), sans en inventer d\'autres ni en omettre aucun. Garde les intitulés tels quels autant que possible.';
+  }
+  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(function(data){
