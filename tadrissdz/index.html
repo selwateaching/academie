@@ -8652,17 +8652,20 @@ async function genProgaIA() {
   var filiereSel = document.getElementById('progaFiliere');
   var filiereVal = (filiereSel && filiereSel.style.display !== 'none') ? filiereSel.value : '';
   var filiereIA = filiereVal ? (FILIERES_LABELS[filiereVal] || filiereVal) : '';
+  /* Retour visuel IMMÉDIAT au clic — avant même la vérification de quota (un appel réseau vers
+     Firestore), pour que le professeur ne voie jamais un bouton qui "ne fait rien" pendant ce délai. */
+  var btn = document.getElementById('btnGenProga');
+  var btnInitialHTML = btn.innerHTML;
+  btn.textContent = T('generation'); btn.disabled = true;
+  startGenLoader('progaBox', 'btnGenProga', 'proga');
   var q = { autorise: true };
   try {
     if (typeof verifierEtIncrementerQuota === 'function') q = await verifierEtIncrementerQuota();
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
+  if (!q.autorise) { btn.innerHTML = btnInitialHTML; btn.disabled = false; N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var isL = progaIsLangue();
-  var btn = document.getElementById('btnGenProga');
-  btn.textContent = T('generation'); btn.disabled = true;
-  startGenLoader('progaBox', 'btnGenProga', 'proga');
   var mat = D.s.mat;
   var filiereSpecifiee = !!(filiereIA && filiereIA.trim());
   /* La base "Programme national" (PROG) n'est PAS encore détaillée par filière : ses chapitres sont
