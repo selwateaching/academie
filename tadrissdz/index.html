@@ -1480,7 +1480,13 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 <div class="pg" id="pg-proga">
   <div class="sh">
     <div><div class="sht">Progression annuelle</div><div style="font-size:.72rem;color:var(--ink3)" id="progaSub">Plan de l'année — pilote le Cahier journal et les Fiches pédagogiques</div></div>
-    <div style="display:flex;gap:.7rem;">
+    <div style="display:flex;gap:.7rem;align-items:center;">
+      <select class="fs" id="progaNiveau" style="width:170px" onchange="toggleFiliereSelect('progaNiveau','progaFiliere')" title="Niveau pour la génération IA">
+        <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
+        <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
+        <option>1AS</option><option>2AS</option><option>3AS</option>
+      </select>
+      <select class="fs" id="progaFiliere" style="width:190px;display:none" title="Filière pour la génération IA"></select>
       <button class="btn bo bsm" onclick="printProga()">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="OM('mProjet')">+ Projet / Unité</button>
       <button class="btn bt" id="btnGenProga" onclick="genProgaIA()"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulb1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulb1)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> Générer une proposition (IA)</button>
@@ -8594,15 +8600,15 @@ function getChapitresOfficielsProgNat(niveauKey, mat) {
   return filtered.length ? filtered : null;
 }
 async function genProgaIA() {
-  var niveau = prompt(CURRENT_LANG==='ar'?'لأي مستوى تريد إنشاء اقتراح تدرج سنوي ؟ (للثانوي، اذكر الشعبة أيضاً)\n(مثال: 4AM, 5AP, 2AS علوم تجريبية, Terminale آداب وفلسفة...)':'Pour quel niveau veux-tu générer une proposition de progression annuelle ? (pour le secondaire, précise aussi la filière)\n(Ex: 4AM, 5AP, 2AS Sciences expérimentales, Terminale Lettres et philosophie...)', '4AM');
-  if (!niveau || !niveau.trim()) return;
-  var niveauKey = normalizeNiveauKey(niveau);
-  var filiereIA = extractFiliereFromText(niveauKey, niveau);
-  /* Filière pas détectée dans le texte déjà tapé : on redemande — seulement dans ce cas, pour éviter
-     une 2e fenêtre native à chaque fois (ces fenêtres ne s'affichent pas pendant un partage d'écran Zoom). */
-  if (/^[123]AS$/.test(niveauKey) && !filiereIA) {
-    filiereIA = prompt(CURRENT_LANG==='ar'?'ما هي الشعبة ؟ (اختياري — مثال: علوم تجريبية، آداب وفلسفة، رياضيات، تقني رياضي، تسيير واقتصاد...)':'Quelle filière ? (optionnel — ex: Sciences expérimentales, Lettres et philosophie, Mathématiques, Techniques mathématiques, Gestion et économie...)', '') || '';
-  }
+  /* Niveau et filière viennent des listes déroulantes de la page (plus de fenêtre native prompt() :
+     en plus d'être plus pratique, ça évite le souci des fenêtres natives invisibles pendant un partage
+     d'écran Zoom). */
+  var niveauSel = document.getElementById('progaNiveau');
+  var niveau = niveauSel ? niveauSel.value : '4AM';
+  var niveauKey = niveau;
+  var filiereSel = document.getElementById('progaFiliere');
+  var filiereVal = (filiereSel && filiereSel.style.display !== 'none') ? filiereSel.value : '';
+  var filiereIA = filiereVal ? (FILIERES_LABELS[filiereVal] || filiereVal) : '';
   var q = { autorise: true };
   try {
     if (typeof verifierEtIncrementerQuota === 'function') q = await verifierEtIncrementerQuota();
