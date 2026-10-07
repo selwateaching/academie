@@ -2410,6 +2410,11 @@ function tcRenderDiagrams(container) {
       var wrap = document.createElement('div');
       wrap.className = 'tc-diagram';
       wrap.innerHTML = res.svg;
+      /* Certains diagrammes Mermaid (notamment le type "timeline") posent une largeur fixe en pixels sur
+         le <svg> lui-même, qui peut l'emporter sur le CSS max-width:100% et faire déborder/couper le
+         diagramme de son cadre. On retire ces attributs figés pour que le CSS garde toujours la main. */
+      var svgEl = wrap.querySelector('svg');
+      if (svgEl) { svgEl.removeAttribute('width'); svgEl.removeAttribute('height'); svgEl.style.maxWidth = '100%'; svgEl.style.height = 'auto'; }
       el.replaceWith(wrap);
     }).catch(function() {
       /* Diagramme invalide généré par l'IA : on masque juste le bloc brut plutôt que de casser l'affichage */
@@ -9340,9 +9345,9 @@ async function genCours(extraInstruction) {
       '<div class="tc-tree"><div class="tc-tree-root">Notion générale</div><div class="tc-tree-branches"><div class="tc-tree-branch"><b>Branche 1</b>texte</div><div class="tc-tree-branch"><b>Branche 2</b>texte</div></div></div>\n\n'+
       '=== COMPARAISON ===\n'+
       '<div class="tc-compare"><div class="tc-compare-card"><h5>Cas 1</h5>texte</div><div class="tc-compare-card"><h5>Cas 2</h5>texte</div></div>\n\n'+
-      '=== DIAGRAMME COMPLEXE (cycle, frise chronologique, organigramme, circuit, schéma à plusieurs niveaux) — syntaxe Mermaid valide ===\n'+
+      '=== DIAGRAMME COMPLEXE (cycle, organigramme, circuit, schéma à plusieurs niveaux) — syntaxe Mermaid valide ===\n'+
       '<pre class="mermaid">\ngraph TD\n  A[Étape 1] --> B[Étape 2]\n  B --> C[Étape 3]\n</pre>\n'+
-      '(utilise "graph TD" ou "graph LR" pour organigrammes/arbres complexes, "timeline" pour une frise chronologique historique)\n\n'+
+      '(utilise "graph TD" ou "graph LR" pour organigrammes/arbres complexes/cycles — JAMAIS le type Mermaid "timeline", son rendu déborde souvent de son cadre et coupe le texte : pour une frise chronologique, utilise toujours tc-flow ci-dessus, un step par date/événement, avec la date en gras dans le titre, ex: <b>1954</b> — Déclenchement de la guerre)\n\n'+
       '=== RÈGLE DE PERTINENCE (la plus importante) ===\n'+
       'Avant chaque élément visuel, demande-toi : "cette représentation aide-t-elle vraiment à comprendre CETTE notion précise ?" Si non, garde un paragraphe <p> normal et clair. Ne mets JAMAIS un schéma pour décorer — 2-3 éléments visuels bien choisis valent mieux que dix inutiles.\n\n'+
       '=== INTERDICTIONS ===\n'+
@@ -9351,7 +9356,7 @@ async function genCours(extraInstruction) {
       '- Le schéma apparaît exactement au moment où il aide à comprendre, jamais regroupé à la fin.\n'+
       '- Pas de balises <style> ni <script>.\n\n'+
       '=== ADAPTATION À "'+mat+'" ===\n'+
-      'Choisis les représentations les plus naturelles pour cette matière : mathématiques → schémas/figures/étapes de résolution ; français/langues → tableaux de conjugaison, structures de phrase, cartes de vocabulaire ; histoire → frise chronologique (Mermaid timeline), cause→conséquence ; géographie → tc-tree/tc-compare pour organisations spatiales et flux ; sciences/physique/chimie → cycles et processus (Mermaid graph), tc-flow pour une expérience ; informatique → organigramme (Mermaid graph TD). Pour toute autre matière, choisis automatiquement la représentation la plus pédagogique.\n\n'+
+      'Choisis les représentations les plus naturelles pour cette matière : mathématiques → schémas/figures/étapes de résolution ; français/langues → tableaux de conjugaison, structures de phrase, cartes de vocabulaire ; histoire → frise chronologique en tc-flow (jamais en Mermaid timeline), cause→conséquence ; géographie → tc-tree/tc-compare pour organisations spatiales et flux ; sciences/physique/chimie → cycles et processus (Mermaid graph), tc-flow pour une expérience ; informatique → organigramme (Mermaid graph TD). Pour toute autre matière, choisis automatiquement la représentation la plus pédagogique.\n\n'+
       '=== ADAPTATION AU NIVEAU "'+nv+'" ===\n'+
       'Le vocabulaire, la longueur des explications, la complexité des schémas et le nombre d\'exemples doivent correspondre au niveau '+nv+' — un support pour le primaire est beaucoup plus simple (peu de texte, schémas très concrets) qu\'un support pour le secondaire.\n\n'+
       (estExercice ? '=== FORMAT EXERCICES/EXAMEN ===\nStructure par exercices numérotés avec barème. Un rappel de cours court en tc-def en introduction est utile ; les corrigés/indications utilisent tc-example. Pas de progression "je découvre" ici, ce n\'est pas une leçon.\n\n' : '') +
