@@ -83,6 +83,10 @@ def generate():
     prompt = body.get("prompt") or ""
     max_tokens = body.get("max_tokens") or 2000
     model = body.get("model") or MODEL_ID
+    # Ne logue que le début (niveau/filière apparaissent dans les 300 premiers caractères du prompt) :
+    # utile pour vérifier, en cas de contenu généré qui ne correspond pas à ce que le prof a demandé,
+    # si c'est le frontend qui a envoyé la mauvaise consigne ou si l'IA n'a pas suivi une consigne correcte.
+    logger.info("generate() prompt[:300] = %r", prompt[:300])
 
     try:
         client = get_client()
