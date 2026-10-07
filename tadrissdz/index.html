@@ -2256,6 +2256,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="mb">
       <div class="fg"><label class="fl">Nom de la séquence</label><input class="fi" id="sqNom" placeholder="Ex: Séquence 1 — Présenter un animal sauvage"></div>
       <div class="fg"><label class="fl">Statut</label><select class="fs" id="sqStatut"><option value="a_venir">⚪ À venir</option><option value="en_cours">🟡 En cours</option><option value="termine">🟢 Terminée</option></select></div>
+      <div class="fg"><label class="fl">Période prévue</label><input class="fi" id="sqPeriode" placeholder="Ex: Semaines 3-4"></div>
       <div id="sqLangueFields" style="display:none">
         <div class="fg2"><div class="fg"><label class="fl">Actes de parole</label><input class="fi" id="sqActes" placeholder=""></div><div class="fg"><label class="fl">Lecture compréhension</label><input class="fi" id="sqLecture" placeholder=""></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Lexique</label><input class="fi" id="sqLexique" placeholder=""></div><div class="fg"><label class="fl">Grammaire</label><input class="fi" id="sqGrammaire" placeholder=""></div></div>
@@ -2265,7 +2266,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       </div>
       <div id="sqSciFields" style="display:none">
         <div class="fg"><label class="fl">Compétences visées</label><textarea class="fta" id="sqCompetences" style="min-height:55px"></textarea></div>
-        <div class="fg2"><div class="fg"><label class="fl">Nb de séances</label><input type="number" class="fi" id="sqNbSeances" min="1" value="3"></div><div class="fg"><label class="fl">Période prévue</label><input class="fi" id="sqPeriode" placeholder="Ex: Semaines 3-4"></div></div>
+        <div class="fg"><label class="fl">Nb de séances</label><input type="number" class="fi" id="sqNbSeances" min="1" value="3"></div>
       </div>
     </div>
     <div class="mf">
@@ -8519,6 +8520,7 @@ function rProga() {
         h += '</div>';
         if (progaIsLangue()) {
           var chips = [];
+          if (sq.periode) chips.push('🗓 ' + sq.periode);
           if (sq.actes) chips.push(T('proga_actes_lbl') + sq.actes);
           if (sq.grammaire) chips.push(T('proga_grammaire_lbl') + sq.grammaire);
           if (sq.conjugaison) chips.push(T('proga_conjugaison_lbl') + sq.conjugaison);
@@ -8703,6 +8705,14 @@ async function genProgaIA() {
   if (!q.autorise) { btn.innerHTML = btnInitialHTML; btn.disabled = false; N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
   var isL = progaIsLangue();
   var mat = D.s.mat;
+  /* Répartition réaliste des périodes : s'appuie sur le nombre réel de séances hebdomadaires de la
+     classe active dans l'Emploi du temps déjà rempli par le professeur, plutôt que de deviner un
+     volume horaire générique. */
+  var acClsProga = gAC();
+  var nbSeancesSemaine = acClsProga ? Object.keys(D.edt).filter(function(k){ return D.edt[k] && D.edt[k].cid === acClsProga.id; }).length : 0;
+  var edtTxt = nbSeancesSemaine > 0
+    ? ('\n\nIMPORTANT — Emploi du temps : d\'après l\'emploi du temps déjà renseigné, le professeur a ' + nbSeancesSemaine + ' séance(s) par semaine pour la classe active sur cette matière. Répartis les "periode" en conséquence (avec peu de séances/semaine, chaque séquence doit couvrir plus de semaines).')
+    : '';
   var filiereSpecifiee = !!(filiereIA && filiereIA.trim());
   /* La base "Programme national" (PROG) donne les VRAIS intitulés officiels de Projets/Unités — identiques
      pour toutes les filières d'un même niveau (vérifié avec le professeur sur des données officielles
@@ -8716,8 +8726,8 @@ async function genProgaIA() {
   }
   var schema, consignes;
   if (isL) {
-    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
-    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite. Le nombre de Projets doit correspondre à la réalité du programme officiel MEN pour ce niveau précis (généralement un découpage proche des 3 trimestres, mais adapte-le au niveau réel — ne force pas un nombre arbitraire), avec 2 à 3 séquences par projet. Reste très concis : 3 à 6 mots par champ, pas de phrases complètes.';
+    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","periode":"Semaines 1-2","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
+    consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite, ET une "periode" indicative (ex: "Semaines 1-2") qui répartit TOUTES les séquences sur l\'année scolaire algérienne (environ 30 semaines, 3 trimestres, sans chevauchement entre séquences). Le nombre de Projets doit correspondre à la réalité du programme officiel MEN pour ce niveau précis (généralement un découpage proche des 3 trimestres, mais adapte-le au niveau réel — ne force pas un nombre arbitraire), avec 2 à 3 séquences par projet. Reste très concis : 3 à 6 mots par champ (la periode peut faire une exception courte), pas de phrases complètes.';
   } else {
     schema = '{"projets":[{"nom":"Unité 1 : ...","tacheFinale":"","sequences":[{"nom":"Chapitre : ...","competences":"...","nbSeances":3,"periode":"Semaines 1-2"}]}]}';
     consignes = 'Structure par Unités/Chapitres du programme officiel, réparties sur l\'année scolaire algérienne (environ 30 semaines, découpées en 3 trimestres). Prévois 4 à 6 Unités, chacune avec 2 à 4 chapitres/séquences, en indiquant la période prévue (ex: "Semaines 3-4") et le nombre de séances.';
@@ -8762,7 +8772,7 @@ async function genProgaIA() {
     : (isL
       ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
       : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.');
-  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
+  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + edtTxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   /* max_tokens relevé de 2000 à 4000 : avec le nombre de projets maintenant imposé EXACTEMENT par les
      vraies données officielles (jusqu'à 4 projets x plusieurs séquences x ~10 champs chacun pour le
      français), 2000 pouvait couper la réponse avant la fin — le modèle s'arrêtait alors avec moins de
