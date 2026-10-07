@@ -8879,10 +8879,10 @@ function printProga() {
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
     html += '<div class="pp-section">📋 '+T('proga_eval_diag')+'</div>';
-    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
     D.progression.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
-        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
+        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.periode||'')+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
     });
   } else {
