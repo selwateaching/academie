@@ -1508,9 +1508,16 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div><div class="sht">Cahier journal</div><div style="font-size:.72rem;color:var(--ink3)">Plan de leçon, progression et suivi jour par jour</div></div>
     <div style="display:flex;align-items:center;gap:.7rem">
       <select class="fs" id="cjClsFilter" style="width:170px" onchange="rCahier()" title="Filtrer par classe"></select>
-      <button class="btn bo bsm" onclick="cjWeekP()">←</button>
-      <span style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem" id="cjWeekL">Semaine du ...</span>
-      <button class="btn bo bsm" onclick="cjWeekN()">→</button>
+      <select class="fs" id="cjVue" style="width:150px" onchange="cjSetVue(this.value)" title="Période affichée">
+        <option value="semaine">📅 Semaine</option>
+        <option value="mois">🗓️ Mois</option>
+        <option value="annee">📚 Historique complet</option>
+      </select>
+      <span id="cjWeekNav" style="display:flex;align-items:center;gap:.7rem">
+        <button class="btn bo bsm" onclick="cjWeekP()">←</button>
+        <span style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem" id="cjWeekL">Semaine du ...</span>
+        <button class="btn bo bsm" onclick="cjWeekN()">→</button>
+      </span>
       <button class="btn bo bsm" onclick="cjPrint()">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="seanceDepuisProga()">🗺️ Depuis la progression</button>
       <button class="btn bt" onclick="OM('mSeance')">+ Séance</button>
@@ -8146,9 +8153,13 @@ function saveEv() { var t=document.getElementById('evT').value.trim(),d=document
 function delEv(id) { D.evt=D.evt.filter(function(e){return e.id!==id;}); sv(); rCal(); }
 
 /* ===== CAHIER JOURNAL ===== */
-var JOURS_CJ = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi'];
-var JOURS_CJ_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس'];
+var JOURS_CJ = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+var JOURS_CJ_AR = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 function jourCjLbl(i) { return CURRENT_LANG==='ar' ? JOURS_CJ_AR[i] : JOURS_CJ[i]; }
+/* Jour de la semaine à partir d'une vraie date (Vue "Mois"/"Historique" : contrairement à la Vue
+   "Semaine" qui ne montre que Dimanche-Jeudi, ces vues listent TOUTES les séances enregistrées,
+   même celles tombées un Vendredi/Samedi par erreur — d'où l'extension de JOURS_CJ à 7 jours. */
+function jourLblDate(d) { return jourCjLbl(d.getDay()); }
 function getWeekStart(d) { var x=new Date(d); x.setHours(0,0,0,0); var day=x.getDay(); x.setDate(x.getDate()-day); return x; }
 /* Date locale AAAA-MM-JJ. toISOString() donne la date UTC : en Algérie (UTC+1), minuit local
    devient la veille, et chaque séance s'affichait un jour trop tard. */
@@ -8178,8 +8189,13 @@ function formatPeriodeSemaines(semaineDebut, nbSemaines) {
   return numero + ' (' + formatJourMois(debut) + (CURRENT_LANG === 'ar' ? ' - ' : ' – ') + formatJourMois(fin) + ')';
 }
 var cjWeek = getWeekStart(new Date());
-function cjWeekP() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()-7); rCahier(); }
-function cjWeekN() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+7); rCahier(); }
+function cjVueMode() { var sel = document.getElementById('cjVue'); return sel ? sel.value : 'semaine'; }
+function cjSetVue(v) {
+  if (v === 'semaine') cjWeek = getWeekStart(cjWeek); /* réaligne sur Dimanche après un passage en Vue "Mois" */
+  rCahier();
+}
+function cjWeekP() { var v=cjVueMode(); cjWeek = (v==='mois') ? new Date(cjWeek.getFullYear(),cjWeek.getMonth()-1,cjWeek.getDate()) : new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()-7); rCahier(); }
+function cjWeekN() { var v=cjVueMode(); cjWeek = (v==='mois') ? new Date(cjWeek.getFullYear(),cjWeek.getMonth()+1,cjWeek.getDate()) : new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+7); rCahier(); }
 
 /* Filtre "Classe" du Cahier journal : par défaut sur la classe active (pour ne pas mélanger les
    classes dans le registre), mais garde le choix du professeur s'il a explicitement sélectionné
@@ -8188,9 +8204,20 @@ function cjClsFilterCid() {
   var sel = document.getElementById('cjClsFilter');
   return (sel && sel.value) ? parseInt(sel.value) : null;
 }
+var MOIS_COMPLET_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+var MOIS_COMPLET_AR = ['جانفي','فيفري','مارس','أفريل','ماي','جوان','جويلية','أوت','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 function rCahier() {
-  var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
-  document.getElementById('cjWeekL').textContent = T('cj_semaine_du')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth());
+  var vue = cjVueMode();
+  var navEl = document.getElementById('cjWeekNav');
+  if (navEl) navEl.style.display = (vue === 'annee') ? 'none' : 'flex'; /* pas de navigation en Historique complet : tout s'affiche d'un coup */
+  if (vue === 'mois') {
+    document.getElementById('cjWeekL').textContent = (CURRENT_LANG==='ar' ? MOIS_COMPLET_AR : MOIS_COMPLET_FR)[cjWeek.getMonth()] + ' ' + cjWeek.getFullYear();
+  } else if (vue === 'annee') {
+    document.getElementById('cjWeekL').textContent = '';
+  } else {
+    var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
+    document.getElementById('cjWeekL').textContent = T('cj_semaine_du')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth());
+  }
   var filterSel = document.getElementById('cjClsFilter');
   if (filterSel) {
     var prevVal = filterSel.options.length ? filterSel.value : null;
@@ -8236,12 +8263,29 @@ function cjContenuCourt(txt) {
 }
 function renderCjWeek() {
   var cidFiltre = cjClsFilterCid();
+  var vue = cjVueMode();
   var rows = [];
-  for (var i=0;i<5;i++) {
-    var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
-    var ds = ymdLocal(d);
-    var seances = D.cj.filter(function(s){ return s.date===ds && (cidFiltre===null || s.cid===cidFiltre); }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
-    seances.forEach(function(s){ rows.push({s:s, jour:jourCjLbl(i), jourDate:d}); });
+  if (vue === 'mois' || vue === 'annee') {
+    /* Vues "Mois"/"Historique complet" : on liste directement les séances enregistrées (triées par
+       date), sans se limiter à la grille Dimanche-Jeudi de la Vue "Semaine" — une séance tombée un
+       autre jour par erreur reste ainsi visible ici même si elle n'apparaît dans aucune semaine. */
+    var moisCible = cjWeek.getMonth(), anCible = cjWeek.getFullYear();
+    var seancesFiltrees = D.cj.filter(function(s) {
+      if (cidFiltre !== null && s.cid !== cidFiltre) return false;
+      if (vue === 'mois') { var d = new Date(s.date+'T00:00:00'); return d.getMonth()===moisCible && d.getFullYear()===anCible; }
+      return true;
+    }).sort(function(a,b){ return (a.date+' '+(a.heure||'')).localeCompare(b.date+' '+(b.heure||'')); });
+    seancesFiltrees.forEach(function(s) {
+      var d = new Date(s.date+'T00:00:00');
+      rows.push({s:s, jour:jourLblDate(d), jourDate:d});
+    });
+  } else {
+    for (var i=0;i<5;i++) {
+      var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
+      var ds = ymdLocal(d);
+      var seances = D.cj.filter(function(s){ return s.date===ds && (cidFiltre===null || s.cid===cidFiltre); }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
+      seances.forEach(function(s){ rows.push({s:s, jour:jourCjLbl(i), jourDate:d}); });
+    }
   }
   if (!rows.length) {
     document.getElementById('cjWeekBox').innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--ink3);padding:2rem;">'+T('cj_aucune_seance')+'</td></tr>';
@@ -8252,7 +8296,7 @@ function renderCjWeek() {
     var cls = D.cls.find(function(c){ return c.id===s.cid; });
     var badge = s.statut==='acheve' ? '<span class="badge bg2">'+T('cj_acheve_badge')+'</span>' : '<span class="badge ba2">'+T('cj_inacheve_badge')+'</span>';
     return '<tr>'+
-      '<td style="white-space:nowrap;"><strong>'+r.jour+'</strong><br><span style="font-size:.7rem;color:var(--ink3)">'+r.jourDate.getDate()+' '+moLbl(r.jourDate.getMonth())+'</span></td>'+
+      '<td style="white-space:nowrap;"><strong>'+r.jour+'</strong><br><span style="font-size:.7rem;color:var(--ink3)">'+r.jourDate.getDate()+' '+moLbl(r.jourDate.getMonth())+(vue==='annee'?' '+r.jourDate.getFullYear():'')+'</span></td>'+
       '<td style="white-space:nowrap;">'+(s.heure||'--:--')+'<br><span style="font-size:.7rem;color:var(--ink3)">'+(s.duree||'')+'</span></td>'+
       '<td>'+(cls?cls.nm:'')+'<br><span style="font-size:.7rem;color:var(--ink3)">'+(s.mat||'')+'</span></td>'+
       '<td style="min-width:180px;"><strong>'+s.titre+'</strong>'+cjContenuCourt(s.contenu)+'</td>'+
@@ -8388,7 +8432,7 @@ function saveSeance() {
   sv(); CM('mSeance'); rCahier();
   var jourSemaine = new Date(d + 'T00:00:00').getDay(); /* 0=Dimanche ... 5=Vendredi, 6=Samedi */
   if (jourSemaine === 5 || jourSemaine === 6) {
-    N(CURRENT_LANG==='ar'?('تم حفظ الحصة، لكن انتبه: هذا التاريخ يصادف يوم ' + (jourSemaine===5?'الجمعة':'السبت') + '، خارج الأسبوع الدراسي (الأحد-الخميس) — لن تظهر في أي عرض من دفتر النصوص. تحقق من التاريخ إن لم يكن ذلك مقصودًا.'):('Séance enregistrée, mais attention : cette date tombe un ' + (jourSemaine===5?'Vendredi':'Samedi') + ', en dehors de la semaine scolaire (Dimanche-Jeudi) — elle n\'apparaîtra dans aucune vue du Cahier journal. Vérifie la date si ce n\'était pas voulu.'), 'err');
+    N(CURRENT_LANG==='ar'?('تم حفظ الحصة، لكن انتبه: هذا التاريخ يصادف يوم ' + (jourSemaine===5?'الجمعة':'السبت') + '، خارج الأسبوع الدراسي (الأحد-الخميس) — لن تظهر في عرض "الأسبوع" (فقط في "الشهر" أو "السجل الكامل"). تحقق من التاريخ إن لم يكن ذلك مقصودًا.'):('Séance enregistrée, mais attention : cette date tombe un ' + (jourSemaine===5?'Vendredi':'Samedi') + ', en dehors de la semaine scolaire (Dimanche-Jeudi) — elle n\'apparaîtra pas en Vue "Semaine" (visible seulement en Vue "Mois" ou "Historique complet"). Vérifie la date si ce n\'était pas voulu.'), 'err');
   } else {
     N(CURRENT_LANG==='ar'?'تم حفظ الحصة !':'Séance enregistrée !','ok');
   }
@@ -8405,22 +8449,40 @@ function cjPrint() {
   var isARcp = CURRENT_LANG==='ar';
   var cidFiltre = cjClsFilterCid();
   var clsFiltree = cidFiltre!==null ? D.cls.find(function(c){ return c.id===cidFiltre; }) : null;
-  var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
-  var title = T('cj_print_titre')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth()) + (clsFiltree ? ' — '+clsFiltree.nm : '');
+  var vue = cjVueMode();
+  var title;
+  if (vue === 'mois') {
+    title = (CURRENT_LANG==='ar' ? MOIS_COMPLET_AR : MOIS_COMPLET_FR)[cjWeek.getMonth()] + ' ' + cjWeek.getFullYear() + (clsFiltree ? ' — '+clsFiltree.nm : '');
+  } else if (vue === 'annee') {
+    title = (isARcp ? 'دفتر النصوص الكامل' : 'Cahier journal — Historique complet') + (clsFiltree ? ' — '+clsFiltree.nm : '');
+  } else {
+    var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
+    title = T('cj_print_titre')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth()) + (clsFiltree ? ' — '+clsFiltree.nm : '');
+  }
   var html = '<div class="pp-banner"><div class="pp-banner-top">🇩🇿 '+(isARcp?'دفتر النصوص':'Cahier journal')+'</div><div class="pp-banner-theme">'+title+'</div></div>';
   html += '<div class="pp-meta"><div><b>'+T('cj_etablissement_lbl')+'</b> '+(D.s.et||(isARcp?'مؤسسة تعليمية':'Établissement scolaire'))+'</div><div><b>'+T('cj_enseignant_lbl')+'</b> '+T('prof')+' '+D.s.pre+' '+D.s.nom+'</div><div><b>'+T('cj_matiere_lbl2')+'</b> '+D.s.mat+'</div></div>';
   html += '<table><thead><tr><th>'+T('cj_th_date')+'</th><th>'+T('cj_th_horaire')+'</th><th>'+T('cj_th_classe')+'</th><th>'+T('cj_th_themes')+'</th><th>'+T('cj_th_objectifs')+'</th><th>'+T('cj_th_supports')+'</th><th>'+T('cj_th_statut')+'</th><th>'+T('cj_th_remarque')+'</th></tr></thead><tbody>';
-  var any = false;
-  for (var i=0;i<5;i++) {
-    var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
-    var ds = ymdLocal(d);
-    var seances = D.cj.filter(function(s){ return s.date===ds && (cidFiltre===null || s.cid===cidFiltre); }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
-    seances.forEach(function(s) {
-      any = true;
-      var cls = D.cls.find(function(c){ return c.id===s.cid; });
-      var statutBadge = s.statut==='acheve' ? '<span class="badge bg2">'+T('cj_acheve_badge')+'</span>' : '<span class="badge ba2">'+T('cj_inacheve_badge')+'</span>';
-      html += '<tr><td><strong>'+jourCjLbl(i)+'</strong><br>'+d.getDate()+' '+moLbl(d.getMonth())+'</td><td>'+(s.heure||'')+' ('+s.duree+')</td><td>'+(cls?cls.nm:'')+'</td><td><strong>'+s.titre+'</strong>'+(s.contenu?'<br><span style="font-size:11px;color:#4A4A52;">'+s.contenu.replace(/\n/g,'<br>')+'</span>':'')+'</td><td style="font-size:11px;">'+(s.objectifs?s.objectifs.replace(/\n/g,'<br>'):'—')+'</td><td style="font-size:11px;">'+(s.supports||'—')+'</td><td>'+statutBadge+'</td><td style="font-size:11px;">'+(s.reste||'—')+'</td></tr>';
-    });
+  function ligneSeance(s, jourLbl, d) {
+    var cls = D.cls.find(function(c){ return c.id===s.cid; });
+    var statutBadge = s.statut==='acheve' ? '<span class="badge bg2">'+T('cj_acheve_badge')+'</span>' : '<span class="badge ba2">'+T('cj_inacheve_badge')+'</span>';
+    var dateTxt = d.getDate()+' '+moLbl(d.getMonth())+(vue==='annee'?' '+d.getFullYear():'');
+    return '<tr><td><strong>'+jourLbl+'</strong><br>'+dateTxt+'</td><td>'+(s.heure||'')+' ('+s.duree+')</td><td>'+(cls?cls.nm:'')+'</td><td><strong>'+s.titre+'</strong>'+(s.contenu?'<br><span style="font-size:11px;color:#4A4A52;">'+s.contenu.replace(/\n/g,'<br>')+'</span>':'')+'</td><td style="font-size:11px;">'+(s.objectifs?s.objectifs.replace(/\n/g,'<br>'):'—')+'</td><td style="font-size:11px;">'+(s.supports||'—')+'</td><td>'+statutBadge+'</td><td style="font-size:11px;">'+(s.reste||'—')+'</td></tr>';
+  }
+  if (vue === 'mois' || vue === 'annee') {
+    var moisCible = cjWeek.getMonth(), anCible = cjWeek.getFullYear();
+    var seancesFiltrees = D.cj.filter(function(s) {
+      if (cidFiltre !== null && s.cid !== cidFiltre) return false;
+      if (vue === 'mois') { var d = new Date(s.date+'T00:00:00'); return d.getMonth()===moisCible && d.getFullYear()===anCible; }
+      return true;
+    }).sort(function(a,b){ return (a.date+' '+(a.heure||'')).localeCompare(b.date+' '+(b.heure||'')); });
+    seancesFiltrees.forEach(function(s) { html += ligneSeance(s, jourLblDate(new Date(s.date+'T00:00:00')), new Date(s.date+'T00:00:00')); });
+  } else {
+    for (var i=0;i<5;i++) {
+      var d = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+i);
+      var ds = ymdLocal(d);
+      var seances = D.cj.filter(function(s){ return s.date===ds && (cidFiltre===null || s.cid===cidFiltre); }).sort(function(a,b){ return (a.heure||'').localeCompare(b.heure||''); });
+      seances.forEach(function(s) { html += ligneSeance(s, jourCjLbl(i), d); });
+    }
   }
   html += '</tbody></table>';
   printCleanPage(title, html);
