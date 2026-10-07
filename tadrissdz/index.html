@@ -9363,7 +9363,14 @@ async function genCours(extraInstruction) {
       visualSystem;
   }
   if (crsFiliereTxt) prompt += crsFiliereTxt;
-  var maxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
+  /* La durée demandée (30min/1h/2h/3h) ne changeait jamais la limite de longueur de réponse de l'IA,
+     fixe quel que soit le "Durée" choisi — un cours de "2h" demandait donc autant de contenu qu'un cours
+     de "1h" dans le même budget de tokens, et se faisait couper net ("3 lignes" pour un cours de 2h sur
+     un sujet d'histoire). On multiplie maintenant la limite de base par la durée (plafonné à 8000, la
+     limite de sortie déjà utilisée sans souci pour le squelette "langue"). */
+  var baseMaxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
+  var dureeMultiplier = Math.min(2, Math.max(1, parseDureeMinutes(dur) / 60));
+  var maxTok = Math.min(8000, Math.round(baseMaxTok * dureeMultiplier));
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
   if (tcVeutCursive()) prompt += TC_CURSIVE_INSTRUCTION;
   var crsComptineImgEl = document.getElementById('crsComptineImg');
