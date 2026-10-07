@@ -550,6 +550,12 @@ tr:hover td{background:var(--tp);}
 .tc-example>.tc-box-title{color:var(--p);}
 .tc-info{background:var(--bg);border-left-color:var(--ink3);}
 .tc-info>.tc-box-title{color:var(--ink3);}
+/* Texte à lire par l'élève (texte support, extrait, passage) : pas de fond coloré — juste un cadre
+   simple, avec plus d'air que les autres blocs, pour une lecture confortable sur un long passage. */
+.tc-passage{background:var(--w);border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:1.15rem 1.3rem;margin:1.1rem 0;font-size:.85rem;line-height:2;box-shadow:0 2px 10px rgba(16,27,77,.03);}
+.tc-passage>.tc-box-title{display:flex;align-items:center;gap:.5rem;font-weight:800;font-size:.92rem;margin-bottom:.6rem;color:var(--ink2);}
+.tc-passage p{margin:0 0 .8rem;} .tc-passage p:last-child{margin-bottom:0;}
+[dir="rtl"] .tc-passage{font-size:1.05rem;line-height:2.1;font-family:'Amiri',serif;}
 .tc-remember{background:linear-gradient(135deg,var(--a),#e8c15a);color:#3d2f00;border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:0 4px 14px rgba(212,175,55,.25);}
 .tc-remember>.tc-box-title{color:#3d2f00;font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -4917,6 +4923,7 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-warn{background:#FBF6E3;border-left:4px solid #D4AF37;padding:14pt 16pt;margin:16pt 0;} .tc-warn .tc-box-title{color:#8a6d00;}' +
     '.tc-example{background:#F5F3FF;border-left:4px solid #8B5CF6;padding:14pt 16pt;margin:16pt 0;} .tc-example .tc-box-title{color:#8B5CF6;}' +
     '.tc-info{background:#F0EEE9;border-left:4px solid #9090A0;padding:14pt 16pt;margin:16pt 0;} .tc-info .tc-box-title{color:#9090A0;}' +
+    '.tc-passage{background:#fff;border:1px solid #E2DDD5;border-left:4px solid #9090A0;padding:16pt 18pt;margin:18pt 0;line-height:2;} .tc-passage .tc-box-title{color:#4A4A52;font-weight:bold;margin-bottom:8pt;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -4997,6 +5004,7 @@ function printCleanPage(title, contentHTML) {
     '.tc-warn{background:var(--ap);border-left-color:var(--a);} .tc-warn>.tc-box-title{color:#8a6d00;}' +
     '.tc-example{background:var(--pp);border-left-color:var(--p);} .tc-example>.tc-box-title{color:var(--p);}' +
     '.tc-info{background:var(--bg);border-left-color:var(--ink3);} .tc-info>.tc-box-title{color:var(--ink3);}' +
+    '.tc-passage{background:#fff;border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:14px 18px;margin:14px 0;line-height:1.9;page-break-inside:avoid;} .tc-passage>.tc-box-title{color:var(--ink2);font-weight:800;margin-bottom:8px;}' +
     '.tc-remember{background:#F8ECC4;color:#3d2f00;border:1px solid var(--a);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:#3d2f00;font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -9362,7 +9370,8 @@ async function genCours(extraInstruction) {
       '<div class="tc-box tc-warn"><div class="tc-box-title">⚠️ Attention</div>texte</div> → erreur fréquente ou astuce (jaune)\n'+
       '<div class="tc-box tc-example"><div class="tc-box-title">💡 Exemple</div>texte</div> → exemple concret algérien (violet)\n'+
       '<div class="tc-box tc-info"><div class="tc-box-title">ℹ️ Le sais-tu ?</div>texte</div> → info complémentaire (gris) — rare, seulement si vraiment utile\n'+
-      '<div class="tc-remember"><div class="tc-box-title">⭐ À retenir</div>texte très court, l\'essentiel</div> → une seule fois en fin de chaque notion importante, jamais plus\n\n'+
+      '<div class="tc-remember"><div class="tc-box-title">⭐ À retenir</div>texte très court, l\'essentiel</div> → une seule fois en fin de chaque notion importante, jamais plus\n'+
+      '<div class="tc-passage"><div class="tc-box-title">🔑 Texte support</div>le texte à lire, en plusieurs <p>...</p> si plusieurs paragraphes</div> → UNIQUEMENT pour un texte à LIRE par l\'élève (texte support, extrait, passage, article, lettre...) de plusieurs phrases ou paragraphes : JAMAIS de fond coloré dessus, c\'est le seul bloc volontairement neutre, pour une lecture confortable sur un texte long — ne mets jamais un texte à lire dans tc-example (réservé aux exemples courts d\'1-2 phrases)\n\n'+
       '=== ÉTAPES NUMÉROTÉES (processus, démarche, résolution) ===\n'+
       '<div class="tc-flow"><div class="tc-flow-step"><div class="tc-flow-num">1</div><div class="tc-flow-body"><b>Titre court</b><br>explication</div></div><div class="tc-flow-step"><div class="tc-flow-num">2</div><div class="tc-flow-body">...</div></div></div>\n\n'+
       '=== RELATION LOGIQUE (cause→conséquence, notion→exemple, avant→après) ===\n'+
@@ -9382,7 +9391,7 @@ async function genCours(extraInstruction) {
       '- Le schéma apparaît exactement au moment où il aide à comprendre, jamais regroupé à la fin.\n'+
       '- Pas de balises <style> ni <script>.\n\n'+
       '=== ADAPTATION À "'+mat+'" ===\n'+
-      'Choisis les représentations les plus naturelles pour cette matière : mathématiques → schémas/figures/étapes de résolution ; français/langues → tableaux de conjugaison, structures de phrase, cartes de vocabulaire ; histoire → frise chronologique en tc-flow (jamais en Mermaid timeline), cause→conséquence ; géographie → tc-tree/tc-compare pour organisations spatiales et flux ; sciences/physique/chimie → cycles et processus (Mermaid graph), tc-flow pour une expérience ; informatique → organigramme (Mermaid graph TD). Pour toute autre matière, choisis automatiquement la représentation la plus pédagogique.\n\n'+
+      'Choisis les représentations les plus naturelles pour cette matière : mathématiques → schémas/figures/étapes de résolution ; français/langues → tableaux de conjugaison, structures de phrase, cartes de vocabulaire, et tc-passage pour tout texte/extrait à lire ; histoire → frise chronologique en tc-flow (jamais en Mermaid timeline), cause→conséquence, tc-passage pour un extrait de document historique ; géographie → tc-tree/tc-compare pour organisations spatiales et flux ; sciences/physique/chimie → cycles et processus (Mermaid graph), tc-flow pour une expérience ; informatique → organigramme (Mermaid graph TD). Pour toute autre matière, choisis automatiquement la représentation la plus pédagogique.\n\n'+
       '=== ADAPTATION AU NIVEAU "'+nv+'" ===\n'+
       'Le vocabulaire, la longueur des explications, la complexité des schémas et le nombre d\'exemples doivent correspondre au niveau '+nv+' — un support pour le primaire est beaucoup plus simple (peu de texte, schémas très concrets) qu\'un support pour le secondaire.\n\n'+
       (estExercice ? '=== FORMAT EXERCICES/EXAMEN ===\nStructure par exercices numérotés avec barème. Un rappel de cours court en tc-def en introduction est utile ; les corrigés/indications utilisent tc-example. Pas de progression "je découvre" ici, ce n\'est pas une leçon.\n\n' : '') +
