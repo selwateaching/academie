@@ -6528,14 +6528,6 @@ var PROG = {
       ]
     },
     {
-      "mat": "Langue française 📖",
-      "chapitres": [
-        "Séquence 1 : Se présenter et présenter sa famille",
-        "Séquence 2 : Décrire un objet ou un animal",
-        "Séquence 3 : Raconter une activité quotidienne"
-      ]
-    },
-    {
       "mat": "Éveil scientifique 🔬",
       "chapitres": [
         "الفصل 1 : جسم الإنسان — الأعضاء",
@@ -6631,9 +6623,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Raconter un événement vécu",
-        "Séquence 2 : Décrire un lieu",
-        "Séquence 3 : Écrire une carte postale ou une invitation"
+        "Projet 1 : C'est notre quartier !",
+        "Projet 2 : C'est la fête !",
+        "Projet 3 : À la mer !"
       ]
     },
     {
@@ -6733,9 +6725,10 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Lecture de récits courts",
-        "Séquence 2 : La phrase et la ponctuation",
-        "Séquence 3 : Production d'écrits simples"
+        "Projet 1 : Au zoo !",
+        "Projet 2 : C'est un lieu exceptionnel !",
+        "Projet 3 : Qu'est-ce qu'une catastrophe naturelle ?",
+        "Projet 4 : Protégeons la nature !"
       ]
     },
     {
@@ -6826,9 +6819,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Se présenter et présenter autrui",
-        "Séquence 2 : Raconter un souvenir d'enfance",
-        "Séquence 3 : Décrire une personne ou un lieu"
+        "Projet 1 : Vivre sainement",
+        "Projet 2 : Progrès de la science et conséquences",
+        "Projet 3 : Pour une vie meilleure / éco-citoyen"
       ]
     },
     {
@@ -6943,9 +6936,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Raconter un fait divers",
-        "Séquence 2 : Décrire une scène",
-        "Séquence 3 : Le dialogue dans le récit"
+        "Projet 1 : Dire et jouer un conte",
+        "Projet 2 : Animer une fable",
+        "Projet 3 : Dire une légende"
       ]
     },
     {
@@ -7061,9 +7054,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Argumenter — donner son avis",
-        "Séquence 2 : Le texte explicatif",
-        "Séquence 3 : Correspondance formelle"
+        "Projet 1 : Rédiger des faits divers",
+        "Projet 2 : Récits historiques / patrimoine",
+        "Projet 3 : Cahier de classe / biographies"
       ]
     },
     {
@@ -7180,11 +7173,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Séquence 1 : Raconter un souvenir",
-        "Séquence 2 : Décrire un lieu ou un personnage",
-        "Séquence 3 : Rédiger un texte argumentatif",
-        "Séquence 4 : Correspondance — Lettre formelle",
-        "Séquence 5 : Prise de position — Article de presse"
+        "Projet 1 : Bienvenue dans ma région !",
+        "Projet 2 : Vivons en harmonie !",
+        "Projet 3 : Protégeons la nature !"
       ]
     },
     {
@@ -7307,9 +7298,10 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Thème 1 : Le texte narratif et ses formes",
-        "Thème 2 : L'argumentation",
-        "Thème 3 : Le discours rapporté"
+        "Projet 1 : Campagne d'information sur un thème scientifique",
+        "Projet 2 : Lettre ouverte à une autorité compétente",
+        "Projet 3 : Petite biographie romancée",
+        "Projet 4 : Événement fictif / récit"
       ]
     },
     {
@@ -7439,9 +7431,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Thème 1 : Littérature et société",
-        "Thème 2 : L'essai et la réflexion critique",
-        "Thème 3 : Le texte poétique"
+        "Projet 1 : Dossier documentaire scientifique/technique",
+        "Projet 2 : Petite pièce théâtrale",
+        "Projet 3 : Production littéraire / nouvelles / récit"
       ]
     },
     {
@@ -7572,10 +7564,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Thème 1 : Sciences et progrès",
-        "Thème 2 : Engagement et militantisme",
-        "Thème 3 : Civilisation et culture",
-        "Thème 4 : Prospective et société de demain"
+        "Projet 1 : Textes et documents d'Histoire",
+        "Projet 2 : Le débat d'idées",
+        "Projet 3 : L'appel"
       ]
     },
     {
@@ -8670,16 +8661,14 @@ async function genProgaIA() {
   var isL = progaIsLangue();
   var mat = D.s.mat;
   var filiereSpecifiee = !!(filiereIA && filiereIA.trim());
-  /* La base "Programme national" (PROG) n'est PAS encore détaillée par filière : ses chapitres sont
-     génériques pour un niveau donné, toutes filières confondues. Si on les imposait quand même ("Utilise
-     UNIQUEMENT ces chapitres") en même temps qu'on demande à l'IA d'adapter le contenu à une filière précise,
-     les deux consignes se contredisent et l'IA produit un résultat incohérent. Donc : dès qu'une filière est
-     précisée, on ne force PAS la liste générique — on laisse l'IA s'appuyer sur ses connaissances générales,
-     adaptées à cette filière. */
-  var chapOfficiels = filiereSpecifiee ? null : getChapitresOfficielsProgNat(niveauKey, mat);
-  if (filiereSpecifiee) {
-    N(CURRENT_LANG==='ar'?('الشعبة محددة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، مُكيّفة مع هذه الشعبة (قاعدة بيانات "البرنامج الوطني" ليست مفصّلة بعد حسب الشعبة)، تحقق منه قبل الاستعمال.'):('Une filière est précisée — la proposition est générée à partir des connaissances générales de l\'IA, adaptées à cette filière (la base "Programme national" de Tadriss n\'est pas encore détaillée par filière), à vérifier avant usage.'), 'info');
-  } else if (!chapOfficiels) {
+  /* La base "Programme national" (PROG) donne les VRAIS intitulés officiels de Projets/Unités — identiques
+     pour toutes les filières d'un même niveau (vérifié avec le professeur sur des données officielles
+     2026-2027). On s'en sert donc TOUJOURS comme base, même quand une filière est précisée : dans ce cas,
+     l'IA garde les intitulés officiels mais adapte la profondeur et les thèmes à l'intérieur de chaque
+     projet à la filière (voir filiereIATxt plus bas) — ce n'est plus contradictoire puisqu'on ne lui
+     demande pas d'inventer d'autres titres de projets, seulement d'adapter leur traitement. */
+  var chapOfficiels = getChapitresOfficielsProgNat(niveauKey, mat);
+  if (!chapOfficiels) {
     N(CURRENT_LANG==='ar'?('"'+niveau.trim()+'" غير موجود بعد في قاعدة بيانات "البرنامج الوطني" لهذه المادة — سيُبنى الاقتراح على المعرفة العامة للذكاء الاصطناعي، تحقق منه قبل الاستعمال.'):('"'+niveau.trim()+'" n\'est pas encore dans la base "Programme national" de Tadriss pour cette matière — la proposition sera générée à partir des connaissances générales de l\'IA, à vérifier avant usage.'), 'info');
   }
   var schema, consignes;
@@ -8704,25 +8693,32 @@ async function genProgaIA() {
   if (chapOfficiels) {
     var listeChap = [];
     chapOfficiels.forEach(function(m){ m.chapitres.forEach(function(c){ listeChap.push(c); }); });
-    officielTxt = '\n\nIMPORTANT — Voici la liste EXACTE des chapitres du programme officiel MEN (base de données Tadriss DZ, onglet "Programme national") pour cette matière et ce niveau :\n- ' + listeChap.join('\n- ') + '\n\nUtilise UNIQUEMENT ces chapitres (regroupe-les en ' + (isL ? 'Projets/Séquences' : 'Unités/Chapitres') + ' et répartis-les sur l\'année scolaire), sans en inventer d\'autres ni en omettre aucun. Garde les intitulés tels quels autant que possible.';
+    officielTxt = filiereSpecifiee
+      ? ('\n\nIMPORTANT — Voici la liste EXACTE des ' + (isL ? 'Projets' : 'Unités') + ' du programme officiel MEN (base de données Tadriss DZ, onglet "Programme national") pour cette matière et ce niveau, VALABLE POUR TOUTES LES FILIÈRES (mêmes intitulés quelle que soit la filière) :\n- ' + listeChap.join('\n- ') + '\n\nUtilise ces intitulés EXACTS tels quels pour les ' + (isL ? 'Projets' : 'Unités') + ' (ne les invente pas, ne les remplace pas par d\'autres titres) — c\'est le CONTENU à l\'intérieur de chacun (séquences/chapitres, thèmes, supports) qui doit être adapté à la filière indiquée ci-dessous.')
+      : ('\n\nIMPORTANT — Voici la liste EXACTE des chapitres du programme officiel MEN (base de données Tadriss DZ, onglet "Programme national") pour cette matière et ce niveau :\n- ' + listeChap.join('\n- ') + '\n\nUtilise UNIQUEMENT ces chapitres (regroupe-les en ' + (isL ? 'Projets/Séquences' : 'Unités/Chapitres') + ' et répartis-les sur l\'année scolaire), sans en inventer d\'autres ni en omettre aucun. Garde les intitulés tels quels autant que possible.');
   }
   var filiereIATxt = '';
-  if (filiereIA && filiereIA.trim()) {
+  if (filiereSpecifiee) {
     var themeHint = FILIERE_THEMES_LANGUE[filiereVal];
     filiereIATxt = '\n\nIMPORTANT — Filière : ' + filiereIA.trim() + '. ' +
       (isL
-        ? ('Pour une matière de LANGUE, la grammaire de base reste commune à toutes les filières — ce qui doit concrètement changer, c\'est le CHOIX DES THÈMES et des supports de lecture/production dans chaque Projet et Séquence : privilégie des ' + (themeHint || 'thèmes adaptés à cette filière') + '. Les noms des Projets, des Séquences et la "tacheFinale" doivent refléter clairement cette orientation thématique (pas des intitulés génériques comme "Découvrir le conte" qui iraient pour n\'importe quelle filière).')
+        ? (chapOfficiels
+            ? ('La grammaire de base et les intitulés des Projets restent ceux donnés ci-dessus (identiques pour toutes les filières) — ce qui doit concrètement changer, c\'est le CHOIX DES THÈMES et des supports de lecture/production À L\'INTÉRIEUR de chaque Projet et Séquence : privilégie des ' + (themeHint || 'thèmes adaptés à cette filière') + '.')
+            : ('Pour une matière de LANGUE, la grammaire de base reste commune à toutes les filières — ce qui doit concrètement changer, c\'est le CHOIX DES THÈMES et des supports de lecture/production dans chaque Projet et Séquence : privilégie des ' + (themeHint || 'thèmes adaptés à cette filière') + '. Les noms des Projets, des Séquences et la "tacheFinale" doivent refléter clairement cette orientation thématique (pas des intitulés génériques comme "Découvrir le conte" qui iraient pour n\'importe quelle filière).'))
         : 'Adapte impérativement la profondeur, les notions traitées et le volume horaire à cette filière précise.') +
-      ' Le résultat doit être nettement reconnaissable comme spécifique à cette filière, et clairement différent de ce que tu produirais pour une autre filière du même niveau et de la même matière (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
+      ' Le résultat doit être nettement reconnaissable comme spécifique à cette filière' + (chapOfficiels ? ' dans le traitement de chaque projet' : '') + ', et clairement différent de ce que tu produirais pour une autre filière du même niveau et de la même matière (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
   }
   /* Rappel placé juste avant le format JSON (fin du prompt, qui pèse davantage sur l'IA que les consignes
      données plus tôt) : avec les instructions de filière ajoutées entre les consignes et cette ligne, l'IA
      avait tendance à privilégier la richesse thématique d'UN SEUL projet plutôt que de couvrir toute l'année.
      On ne force volontairement PAS de nombre arbitraire (le programme officiel varie selon le niveau) —
      seulement le principe : plusieurs projets/unités distincts, pas un seul bloc. */
-  var nbRappel = isL
-    ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
-    : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.';
+  var nbProjetsOfficiel = chapOfficiels ? chapOfficiels.reduce(function(n,m){ return n + m.chapitres.length; }, 0) : null;
+  var nbRappel = nbProjetsOfficiel
+    ? ('RAPPEL IMPORTANT : le JSON doit contenir EXACTEMENT ' + nbProjetsOfficiel + ' ' + (isL ? 'projets' : 'unités') + ' dans "projets" — ni plus, ni moins, un par intitulé officiel donné ci-dessus.')
+    : (isL
+      ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
+      : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.');
   var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
