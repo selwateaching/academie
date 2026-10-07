@@ -7727,6 +7727,20 @@ var FILIERES_LABELS = {
   sciences_exp: 'Sciences expérimentales', mathematiques: 'Mathématiques', techniques_maths: 'Techniques mathématiques',
   gestion_eco: 'Gestion et économie', lettres_philo: 'Lettres et philosophie', langues_etr: 'Langues étrangères'
 };
+/* Pour une matière de LANGUE (français, arabe, anglais...), la grammaire de base est commune à toutes les
+   filières — ce qui change vraiment, c'est le choix des THÈMES et des SUPPORTS de lecture/production. Sans
+   cette précision, l'IA tend à produire des intitulés génériques ("Découvrir le conte"...) identiques quelle
+   que soit la filière choisie. */
+var FILIERE_THEMES_LANGUE = {
+  tc_sciences: 'thèmes à orientation scientifique simple (nature, corps humain, découvertes, environnement)',
+  tc_lettres: 'thèmes littéraires et culturels (récits, société, culture générale)',
+  sciences_exp: 'thèmes scientifiques (expérimentation, nature, environnement, santé, découvertes)',
+  mathematiques: 'thèmes scientifiques et logiques (raisonnement, sciences, technologie, innovation)',
+  techniques_maths: 'thèmes techniques et technologiques (industrie, ingénierie, innovation, technique)',
+  gestion_eco: 'thèmes économiques et commerciaux (entreprise, commerce, gestion, consommation, société)',
+  lettres_philo: 'thèmes littéraires et philosophiques approfondis (littérature, pensée, société, arts)',
+  langues_etr: 'thèmes interculturels et linguistiques (communication, médias, cultures du monde)'
+};
 function filiereOptionsHtml(niveau) {
   if (niveau === '1AS') return '<option value="tc_sciences">Tronc commun Sciences</option><option value="tc_lettres">Tronc commun Lettres et langues étrangères</option>';
   if (niveau === '2AS' || niveau === '3AS') return '<option value="sciences_exp">Sciences expérimentales</option><option value="mathematiques">Mathématiques</option><option value="techniques_maths">Techniques mathématiques</option><option value="gestion_eco">Gestion et économie</option><option value="lettres_philo">Lettres et philosophie</option><option value="langues_etr">Langues étrangères</option>';
@@ -8660,7 +8674,12 @@ async function genProgaIA() {
   }
   var filiereIATxt = '';
   if (filiereIA && filiereIA.trim()) {
-    filiereIATxt = '\n\nIMPORTANT — Filière : ' + filiereIA.trim() + '. Adapte impérativement le contenu et la répartition des chapitres à cette filière précise (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
+    var themeHint = FILIERE_THEMES_LANGUE[filiereVal];
+    filiereIATxt = '\n\nIMPORTANT — Filière : ' + filiereIA.trim() + '. ' +
+      (isL
+        ? ('Pour une matière de LANGUE, la grammaire de base reste commune à toutes les filières — ce qui doit concrètement changer, c\'est le CHOIX DES THÈMES et des supports de lecture/production dans chaque Projet et Séquence : privilégie des ' + (themeHint || 'thèmes adaptés à cette filière') + '. Les noms des Projets, des Séquences et la "tacheFinale" doivent refléter clairement cette orientation thématique (pas des intitulés génériques comme "Découvrir le conte" qui iraient pour n\'importe quelle filière).')
+        : 'Adapte impérativement la profondeur, les notions traitées et le volume horaire à cette filière précise.') +
+      ' Le résultat doit être nettement reconnaissable comme spécifique à cette filière, et clairement différent de ce que tu produirais pour une autre filière du même niveau et de la même matière (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
   }
   var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
