@@ -8724,7 +8724,11 @@ async function genProgaIA() {
       ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
       : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.');
   var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
-  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
+  /* max_tokens relevé de 2000 à 4000 : avec le nombre de projets maintenant imposé EXACTEMENT par les
+     vraies données officielles (jusqu'à 4 projets x plusieurs séquences x ~10 champs chacun pour le
+     français), 2000 pouvait couper la réponse avant la fin — le modèle s'arrêtait alors avec moins de
+     projets que demandé (ex: 1AS demande 4 projets, seuls 2 arrivaient complets). */
+  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:4000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(async function(data){
       btn.innerHTML = GEN_ICON + ' ' + T('proga_gen_btn'); btn.disabled = false;
