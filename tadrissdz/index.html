@@ -8715,7 +8715,14 @@ async function genProgaIA() {
         : 'Adapte impérativement la profondeur, les notions traitées et le volume horaire à cette filière précise.') +
       ' Le résultat doit être nettement reconnaissable comme spécifique à cette filière, et clairement différent de ce que tu produirais pour une autre filière du même niveau et de la même matière (le programme diffère sensiblement selon la filière à partir de la 2AS en Algérie).';
   }
-  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
+  /* Rappel du nombre de projets/unités placé juste avant le format JSON (fin du prompt) : avec les
+     instructions de filière ajoutées entre les consignes et cette ligne, l'IA avait tendance à privilégier
+     la richesse thématique d'UN SEUL projet plutôt que de respecter le nombre demandé — un rappel en fin de
+     prompt pèse davantage que la même consigne donnée plus tôt. */
+  var nbRappel = isL
+    ? 'RAPPEL IMPORTANT : le JSON doit contenir EXACTEMENT 3 projets dans "projets" (ni plus, ni moins), chacun avec 2 séquences — pas un seul projet très détaillé, 3 projets distincts.'
+    : 'RAPPEL IMPORTANT : le JSON doit contenir ENTRE 4 ET 6 unités dans "projets" — pas une seule unité très détaillée, plusieurs unités distinctes couvrant toute l\'année.';
+  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt2, max_tokens:2000, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(async function(data){
