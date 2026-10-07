@@ -83,10 +83,11 @@ def generate():
     prompt = body.get("prompt") or ""
     max_tokens = body.get("max_tokens") or 2000
     model = body.get("model") or MODEL_ID
-    # Ne logue que le début (niveau/filière apparaissent dans les 300 premiers caractères du prompt) :
-    # utile pour vérifier, en cas de contenu généré qui ne correspond pas à ce que le prof a demandé,
-    # si c'est le frontend qui a envoyé la mauvaise consigne ou si l'IA n'a pas suivi une consigne correcte.
+    # Logue le début ET la fin du prompt (les rappels les plus importants, comme le nombre de
+    # projets exigé, sont placés en fin de prompt) ainsi qu'un extrait de la réponse, pour vérifier
+    # si un écart entre ce qui est demandé et ce qui est généré vient du frontend ou de l'IA.
     logger.info("generate() prompt[:300] = %r", prompt[:300])
+    logger.info("generate() prompt[-500:] = %r", prompt[-500:])
 
     try:
         client = get_client()
@@ -96,6 +97,10 @@ def generate():
             messages=[{"role": "user", "content": prompt}],
         )
         text = next((b.text for b in response.content if b.type == "text"), "")
+        logger.info(
+            "generate() stop_reason=%s text_len=%d text[:400]=%r",
+            getattr(response, "stop_reason", None), len(text), text[:400],
+        )
         return jsonify({"content": [{"type": "text", "text": text}]})
     except Exception as exc:  # noqa: BLE001 - renvoie l'erreur au frontend au lieu de planter
         logger.exception("Erreur lors de l'appel à l'IA (/.netlify/functions/generate)")
