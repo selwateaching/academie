@@ -1892,6 +1892,11 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           </div>
         </div>
         <div class="fg"><label class="fl">Année scolaire</label><input class="fi" id="pAn" placeholder="2025-2026"></div>
+        <div class="fg">
+          <label class="fl">Date de rentrée scolaire</label>
+          <input type="date" class="fi" id="pRentree">
+          <div style="font-size:.68rem;color:var(--ink3);margin-top:4px">À renseigner une seule fois : permet à la Progression annuelle d'afficher de vraies dates (ex: "6–10 oct.") au lieu de simples numéros de semaine.</div>
+        </div>
         <div class="fg2">
           <div class="fg"><label class="fl">Circonscription pédagogique</label><input class="fi" id="pCirc" placeholder="Ex: Circonscription de..."></div>
           <div class="fg"><label class="fl">Inspection (primaire/moyen/secondaire)</label><input class="fi" id="pInsp" placeholder="Ex: Inspection de l'enseignement primaire"></div>
@@ -8147,6 +8152,30 @@ function getWeekStart(d) { var x=new Date(d); x.setHours(0,0,0,0); var day=x.get
 /* Date locale AAAA-MM-JJ. toISOString() donne la date UTC : en Algérie (UTC+1), minuit local
    devient la veille, et chaque séance s'affichait un jour trop tard. */
 function ymdLocal(d) { var m=d.getMonth()+1, j=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(j<10?'0':'')+j; }
+
+/* ===== Vraies dates pour la Progression annuelle, à partir de la date de rentrée scolaire (Paramètres) =====
+   Semaine 1 = semaine (Dimanche-Jeudi, même convention que le Cahier journal) qui contient la rentrée.
+   But : remplacer les "periode" en texte libre deviné par l'IA par de vraies dates calendaires. */
+function dateRentreeBase() {
+  if (!D.s.rentree) return null;
+  var d = new Date(D.s.rentree + 'T00:00:00');
+  if (isNaN(d.getTime())) return null;
+  return getWeekStart(d);
+}
+function formatJourMois(d) { return d.getDate() + ' ' + moLbl(d.getMonth()); }
+/* semaineDebut (1-based) et nbSemaines (durée) -> ex: "Semaines 5-6 (3 - 10 Oct)". Retourne null si la
+   date de rentrée n'est pas renseignée (dans ce cas on garde le texte libre proposé par l'IA). */
+function formatPeriodeSemaines(semaineDebut, nbSemaines) {
+  var base = dateRentreeBase();
+  if (!base || !semaineDebut || semaineDebut < 1) return null;
+  nbSemaines = (nbSemaines && nbSemaines > 0) ? nbSemaines : 1;
+  var debut = new Date(base.getFullYear(), base.getMonth(), base.getDate() + (semaineDebut - 1) * 7);
+  var fin = new Date(debut.getFullYear(), debut.getMonth(), debut.getDate() + (nbSemaines - 1) * 7 + 4); /* Jeudi de la dernière semaine */
+  var semLbl = (CURRENT_LANG === 'ar') ? 'الأسبوع ' : 'Semaine ';
+  var semLblPlur = (CURRENT_LANG === 'ar') ? 'الأسابيع ' : 'Semaines ';
+  var numero = nbSemaines > 1 ? (semLblPlur + semaineDebut + '-' + (semaineDebut + nbSemaines - 1)) : (semLbl + semaineDebut);
+  return numero + ' (' + formatJourMois(debut) + (CURRENT_LANG === 'ar' ? ' - ' : ' – ') + formatJourMois(fin) + ')';
+}
 var cjWeek = getWeekStart(new Date());
 function cjWeekP() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()-7); rCahier(); }
 function cjWeekN() { cjWeek=new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+7); rCahier(); }
@@ -8711,7 +8740,14 @@ async function genProgaIA() {
   var acClsProga = gAC();
   var nbSeancesSemaine = acClsProga ? Object.keys(D.edt).filter(function(k){ return D.edt[k] && D.edt[k].cid === acClsProga.id; }).length : 0;
   var edtTxt = nbSeancesSemaine > 0
-    ? ('\n\nIMPORTANT — Emploi du temps : d\'après l\'emploi du temps déjà renseigné, le professeur a ' + nbSeancesSemaine + ' séance(s) par semaine pour la classe active sur cette matière. Répartis les "periode" en conséquence (avec peu de séances/semaine, chaque séquence doit couvrir plus de semaines).')
+    ? ('\n\nIMPORTANT — Emploi du temps : d\'après l\'emploi du temps déjà renseigné, le professeur a ' + nbSeancesSemaine + ' séance(s) par semaine pour la classe active sur cette matière. Fixe "dureeSemaines" en conséquence (avec peu de séances/semaine, chaque séquence doit couvrir plus de semaines).')
+    : '';
+  /* Vraies dates calendaires (si la date de rentrée scolaire est renseignée dans Paramètres) : on ne demande
+     plus à l'IA un numéro de semaine absolu (peu fiable, l'IA perd le compte sur un long document) — seulement
+     une DURÉE en semaines par séquence. Le numéro de semaine réel de chaque séquence est ensuite calculé
+     côté app en cumulant ces durées dans l'ordre, puis converti en vraies dates (ex: "6 – 10 Oct"). */
+  var rentreeTxt = dateRentreeBase()
+    ? '\n\nIMPORTANT — Durée : pour chaque séquence, indique "dureeSemaines" (nombre entier de semaines, ex: 2), de façon réaliste et cohérente avec l\'emploi du temps ci-dessus. La somme de toutes les "dureeSemaines" de l\'année doit avoisiner 28 à 32 semaines (année scolaire algérienne, hors vacances), sans trou ni chevauchement — l\'app calculera ensuite les vraies dates à partir de la date de rentrée scolaire.'
     : '';
   var filiereSpecifiee = !!(filiereIA && filiereIA.trim());
   /* La base "Programme national" (PROG) donne les VRAIS intitulés officiels de Projets/Unités — identiques
@@ -8726,10 +8762,10 @@ async function genProgaIA() {
   }
   var schema, consignes;
   if (isL) {
-    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","periode":"Semaines 1-2","actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
+    schema = '{"projets":[{"nom":"Projet 1 : ...","tacheFinale":"...","sequences":[{"nom":"Séquence 1 : ...","periode":"Semaines 1-2","dureeSemaines":2,"actes":"...","lecture":"...","lexique":"...","grammaire":"...","conjugaison":"...","orthographe":"...","lectureSyst":"...","dictee":"...","comptine":"...","production":"..."}]}]}';
     consignes = 'Structure typique du français langue en Algérie (approche par compétences, IEF) : Projets → Séquences, chaque séquence couvrant Actes de parole, Lecture compréhension, Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique, Dictée, Comptine, Production orale/écrite, ET une "periode" indicative (ex: "Semaines 1-2") qui répartit TOUTES les séquences sur l\'année scolaire algérienne (environ 30 semaines, 3 trimestres, sans chevauchement entre séquences). Le nombre de Projets doit correspondre à la réalité du programme officiel MEN pour ce niveau précis (généralement un découpage proche des 3 trimestres, mais adapte-le au niveau réel — ne force pas un nombre arbitraire), avec 2 à 3 séquences par projet. Reste très concis : 3 à 6 mots par champ (la periode peut faire une exception courte), pas de phrases complètes.';
   } else {
-    schema = '{"projets":[{"nom":"Unité 1 : ...","tacheFinale":"","sequences":[{"nom":"Chapitre : ...","competences":"...","nbSeances":3,"periode":"Semaines 1-2"}]}]}';
+    schema = '{"projets":[{"nom":"Unité 1 : ...","tacheFinale":"","sequences":[{"nom":"Chapitre : ...","competences":"...","nbSeances":3,"periode":"Semaines 1-2","dureeSemaines":2}]}]}';
     consignes = 'Structure par Unités/Chapitres du programme officiel, réparties sur l\'année scolaire algérienne (environ 30 semaines, découpées en 3 trimestres). Prévois 4 à 6 Unités, chacune avec 2 à 4 chapitres/séquences, en indiquant la période prévue (ex: "Semaines 3-4") et le nombre de séances.';
   }
   var matLower = mat.toLowerCase();
@@ -8772,7 +8808,7 @@ async function genProgaIA() {
     : (isL
       ? 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS projets distincts dans "projets" (pas un seul projet très détaillé) — adapte le nombre exact au programme officiel réel de ce niveau.'
       : 'RAPPEL IMPORTANT : le JSON doit couvrir TOUTE l\'année avec PLUSIEURS unités distinctes dans "projets" (pas une seule unité très détaillée) — adapte le nombre exact au programme officiel réel de ce niveau.');
-  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + edtTxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
+  var prompt2 = 'Tu es professeur de ' + mat + ' dans le système éducatif algérien (MEN — Ministère de l\'Éducation Nationale). Propose une PROGRESSION ANNUELLE complète pour le niveau ' + niveau.trim() + ', alignée sur le programme officiel MEN.\n\n' + consignes + langueInstruction + officielTxt + filiereIATxt + edtTxt + rentreeTxt + '\n\n' + nbRappel + '\n\nRéponds UNIQUEMENT avec un objet JSON valide, structure EXACTE suivante (pas de texte avant/après, pas de ```):\n' + schema;
   /* max_tokens relevé de 2000 à 4000 : avec le nombre de projets maintenant imposé EXACTEMENT par les
      vraies données officielles (jusqu'à 4 projets x plusieurs séquences x ~10 champs chacun pour le
      français), 2000 pouvait couper la réponse avant la fin — le modèle s'arrêtait alors avec moins de
@@ -8788,6 +8824,12 @@ async function genProgaIA() {
       try {
         var parsed = JSON.parse(clean);
         var nextId = 1;
+        /* Si la date de rentrée scolaire est renseignée (Paramètres), on remplace la "periode" en texte libre
+           de l'IA par de VRAIES dates calendaires : on cumule les "dureeSemaines" de chaque séquence, dans
+           l'ordre du JSON (donc dans l'ordre de l'année), pour obtenir le numéro de semaine réel de chacune —
+           plus fiable que de demander à l'IA de suivre elle-même un numéro de semaine absolu sur tout un document. */
+        var baseRentreeProga = dateRentreeBase();
+        var semaineCursorProga = 1;
         var projets = (parsed.projets || []).filter(function(pj) {
           return pj && pj.nom && String(pj.nom).trim() && pj.sequences && pj.sequences.length;
         }).map(function(pj) {
@@ -8795,7 +8837,15 @@ async function genProgaIA() {
           return {
             id: pjId, nom: pj.nom || 'Projet', tacheFinale: pj.tacheFinale || '',
             sequences: (pj.sequences || []).map(function(sq) {
-              return Object.assign({ id: Date.now() + Math.floor(Math.random()*10000), statut: 'a_venir' }, sq);
+              var duree = parseInt(sq.dureeSemaines) || 2;
+              var obj = Object.assign({ id: Date.now() + Math.floor(Math.random()*10000), statut: 'a_venir' }, sq);
+              if (baseRentreeProga) {
+                var realPeriode = formatPeriodeSemaines(semaineCursorProga, duree);
+                if (realPeriode) obj.periode = realPeriode;
+              }
+              semaineCursorProga += duree;
+              delete obj.dureeSemaines; /* champ technique interne, pas affiché/édité directement */
+              return obj;
             })
           };
         });
@@ -8806,6 +8856,9 @@ async function genProgaIA() {
         D.progression = projets;
         sv(); rProga();
         N(CURRENT_LANG==='ar'?'تم إنشاء الاقتراح ! عدّله حسب احتياجاتك.':'Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
+        if (!baseRentreeProga) {
+          N(CURRENT_LANG==='ar'?'نصيحة : أضف تاريخ بداية السنة الدراسية في "الإعدادات" لعرض تواريخ حقيقية بدل الأسابيع التقريبية.':'Astuce : renseigne ta date de rentrée scolaire dans Paramètres pour afficher de vraies dates au lieu de semaines approximatives.', 'info');
+        }
       } catch (e) {
         N(CURRENT_LANG==='ar'?'خطأ في تنسيق استجابة الذكاء الاصطناعي. أعد المحاولة.':'Erreur de format dans la réponse IA. Réessaie.', 'err');
       }
@@ -10345,6 +10398,7 @@ function rParams(){
   document.getElementById('pEm').value=s.em||'';
   document.getElementById('pEt').value=s.et||'';
   document.getElementById('pAn').value=s.an||'2025-2026';
+  document.getElementById('pRentree').value=s.rentree||'';
   document.getElementById('pCirc').value=s.circ||'';
   document.getElementById('pInsp').value=s.insp||'';
   document.getElementById('pMatCustom').value=s.matCustom||'';
@@ -10386,7 +10440,7 @@ function saveP(){
     var matCustom=document.getElementById('pMatCustom').value.trim();
     mat=(selMat==='Autre'&&matCustom)?matCustom:selMat||D.s.mat;
   }
-  D.s={pre:p,nom:n,mat:mat,matCustom:document.getElementById('pMatCustom').value.trim(),em:document.getElementById('pEm').value,et:document.getElementById('pEt').value,wil:document.getElementById('pWil').value,cycle:document.getElementById('pCycle').value,type:document.getElementById('pType').value,an:document.getElementById('pAn').value,circ:document.getElementById('pCirc').value,insp:document.getElementById('pInsp').value};
+  D.s={pre:p,nom:n,mat:mat,matCustom:document.getElementById('pMatCustom').value.trim(),em:document.getElementById('pEm').value,et:document.getElementById('pEt').value,wil:document.getElementById('pWil').value,cycle:document.getElementById('pCycle').value,type:document.getElementById('pType').value,an:document.getElementById('pAn').value,rentree:document.getElementById('pRentree').value,circ:document.getElementById('pCirc').value,insp:document.getElementById('pInsp').value};
   sv();
   document.getElementById('sbNm').textContent=T('prof')+' '+p+' '+n;
   document.getElementById('sbMat').textContent=mat;
