@@ -8642,6 +8642,10 @@ async function genProgaIA() {
   var niveauSel = document.getElementById('progaNiveau');
   var niveau = niveauSel ? niveauSel.value : '4AM';
   var niveauKey = niveau;
+  /* Resynchronise toujours la liste Filière sur le niveau actuel juste avant de lire sa valeur, au lieu de
+     compter uniquement sur l'évènement "change" du menu Niveau (qui peut dans de rares cas ne pas s'être
+     déclenché correctement) — évite qu'une filière déjà choisie "disparaisse" silencieusement au clic. */
+  toggleFiliereSelect('progaNiveau', 'progaFiliere');
   var filiereSel = document.getElementById('progaFiliere');
   var filiereVal = (filiereSel && filiereSel.style.display !== 'none') ? filiereSel.value : '';
   var filiereIA = filiereVal ? (FILIERES_LABELS[filiereVal] || filiereVal) : '';
