@@ -7780,8 +7780,10 @@ function toggleFiliereSelect(niveauSelId, filiereSelId, rowId) {
   if (!nvEl || !sel) return;
   var row = rowId ? document.getElementById(rowId) : sel;
   var opts = filiereOptionsHtml(nvEl.value);
+  var prevVal = sel.value; /* ex: 2AS <-> 3AS partagent les mêmes filières : on garde le choix du prof au lieu de le réinitialiser inutilement */
   if (opts) {
     sel.innerHTML = '<option value="">'+(CURRENT_LANG==='ar'?'الشعبة (اختياري)':'Filière (optionnel)')+'</option>' + opts;
+    if (prevVal && sel.querySelector('option[value="'+prevVal+'"]')) sel.value = prevVal;
     if (row) row.style.display = '';
   } else {
     sel.innerHTML = ''; sel.value = '';
