@@ -88,6 +88,7 @@ Le micro du navigateur exige HTTPS (fourni par Render).
 
 - Une traduction automatique peut se tromper : pour les situations sensibles (santé, justice), à faire confirmer.
 - Les dialectes arabes sont compris de façon variable par la reconnaissance vocale.
+- Une phrase = une traduction : le micro se met en pause pendant que l'appli lit une traduction à voix haute (sur l'appareil, et sur l'autre téléphone en mode « deux téléphones », d'après une durée estimée), pour ne pas se réentendre et retraduire en boucle. Deux micros ouverts dans la même pièce captent quand même la voix des personnes : un seul micro à la fois.
 - Un appel téléphonique n'est pas capté directement par le navigateur : haut-parleur + micro de l'appareil.
 
 ## Proposer l'outil à une association

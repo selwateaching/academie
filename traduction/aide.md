@@ -33,6 +33,7 @@ Darija algérienne, tunisienne, marocaine ; arabe standard ; anglais ; dari ; pa
 1. Appuyer sur **🎤 Je parle (français)** et parler, ou écrire dans la zone « Ou écrivez en français… » puis **Envoyer** (ou Entrée).
 2. La traduction apparaît en gros, avec le français d'origine en petit dessous. Elle est lue à voix haute si la case « Lire à voix haute » est cochée. Le bouton **🔊 Écouter** la rejoue.
 3. Appuyer de nouveau sur le micro pour l'arrêter.
+- **Une phrase = une traduction.** Le micro reste ouvert (bouton rouge) jusqu'au nouvel appui. Pendant que l'appli lit la traduction à voix haute, le micro se met en pause (message « 🔊 Lecture de la traduction : le micro reprend juste après ») puis reprend tout seul : il ne doit pas entendre la voix de l'appli, sinon elle serait retraduite. Dire une phrase, attendre la traduction, puis continuer.
 - Parler lentement, par phrases courtes, une idée à la fois.
 - **⇄ Inverser** passe à « langue → français » en un clic (cela recommence une conversation vide).
 
@@ -53,8 +54,8 @@ Chacun parle dans son téléphone, dans sa langue ; le message de l'un s'affiche
 2. La personne scanne le QR code avec son téléphone (appareil photo), ou le bénévole appuie sur **📤 Envoyer le lien** (par exemple par WhatsApp). Elle n'a rien à installer et n'a pas de code d'accès à saisir.
 3. Sur son téléphone la personne choisit sa langue dans la liste (écrite dans sa propre langue) puis appuie sur **OK**.
 4. Le bénévole voit « ✅ Personne connectée : [langue] » ; la conversation peut commencer.
-5. Chacun appuie sur son 🎤 et parle, ou écrit dans la zone de texte puis ➤. Les messages arrivent en quelques secondes. Sur chaque message reçu, 🔊 permet de l'écouter. La case 🔊 en bas lit automatiquement les messages reçus (cochée par défaut chez la personne, décochée chez le bénévole).
-6. **📺 Mode écran** (côté bénévole) ouvre une page en très grand texte (français + langue de la personne), pour une télévision en salle d'accueil, en lecture seule.
+5. Chacun appuie sur son 🎤 et parle, ou écrit dans la zone de texte puis ➤. Les messages arrivent en quelques secondes. Sur chaque message reçu, 🔊 permet de l'écouter. La case 🔊 en bas lit automatiquement les messages reçus (cochée par défaut chez la personne, décochée chez le bénévole). Pendant qu'un téléphone lit un message à voix haute, son micro et celui de l'autre téléphone se mettent en pause quelques secondes, puis reprennent tout seuls : parler chacun son tour, une phrase à la fois. Dans la même pièce, si des traductions arrivent toutes seules, n'ouvrir qu'un micro à la fois ou éloigner les téléphones.
+6. **📺 Mode écran** (côté bénévole) ouvre une page en très grand texte (français + langue de la personne), pour une télévision en salle d'accueil, en lecture seule. En attendant le premier message, l'écran affiche le QR code et le code de la session ; en haut, un voyant indique si la session est active (🟢), si la connexion est perdue (🔴) ou si la session est terminée (⚪).
 7. À la fin : **🧹 Nouvelle personne** ferme et supprime la session. Elle s'efface aussi seule après 3 heures. Ne pas diffuser le lien ou le code. Si le message « Session introuvable ou expirée » apparaît, recréer une session. « La personne n'a pas encore rejoint la session » : attendre qu'elle ait validé sa langue.
 - Sur iPhone la voix demande Safari ; Chrome sur iPhone ne gère pas la reconnaissance vocale : écrire.
 
@@ -106,6 +107,9 @@ Dans **Dossiers et courriers**, trois onglets en haut : **👥 Candidats**, **�
 
 ## Problèmes fréquents
 - **Le micro ne démarre pas / « Micro refusé »** : autoriser le micro dans le navigateur (cadenas à côté de l'adresse), utiliser Chrome ou Edge (Safari sur iPhone), ou écrire.
+- **Une traduction se répète, ou arrive toute seule** : un micro ouvert entend une autre voix (autre téléphone, télévision, conversation voisine). Appuyer sur le micro pour l'arrêter. À deux téléphones dans la même pièce : un seul micro ouvert à la fois, ou les éloigner. Au besoin, décocher « Lire à voix haute » (🔊) ou mettre des écouteurs.
+- **« Lecture de la traduction : le micro reprend juste après »** (ou 🔊 ⏳ chez la personne) : normal, le micro est en pause pendant que l'appli parle ; attendre la fin puis parler.
+- **« Je n'ai pas compris »** (ou ❓ chez la personne) : la phrase n'a pas été reconnue ; répéter plus lentement, plus près du micro, ou écrire. Rien n'est affiché ni lu à l'autre personne.
 - **« Ce navigateur ne gère pas la voix »** : changer de navigateur ou écrire.
 - **« Langue non reconnue à la voix »** : le dari, le pashto et certaines langues ne sont pas reconnus : écrire, ou importer un message vocal.
 - **Rien ne s'affiche / « Erreur »** : vérifier Internet ; réessayer.

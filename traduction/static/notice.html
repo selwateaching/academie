@@ -43,15 +43,25 @@ td:first-child{white-space:nowrap;font-weight:700;width:1%}
 .pstep .ic{font-size:22mm;line-height:1}
 .poster .small{font-size:15px;color:var(--mut);margin-top:6mm}
 @media print{
-  body{background:#fff}.bar{display:none}
-  .page{margin:0;box-shadow:none;width:auto;min-height:0;height:267mm;padding:0;overflow:hidden}
+  body{background:#fff;font-size:11.5px;line-height:1.4}.bar{display:none}
+  .page{margin:0;box-shadow:none;width:auto;min-height:0;padding:0}
+  .foot{position:static;margin-top:8px}
+  table{font-size:11px}td,th{padding:3px 7px}p,li{margin:2px 0}
+  h2{font-size:15px;margin:8px 0 4px;break-after:avoid}
+  .top{padding-bottom:6px;margin-bottom:4px}.top>img{width:52px;height:52px}.url img{width:60px;height:60px}
+  .steps{margin:4px 0}.steps li{margin:3px 0;padding-left:26px;min-height:18px}
+  .steps li::before{width:18px;height:18px;font-size:11px}
+  .box{font-size:11.5px;margin:5px 0;padding:5px 10px}
+  li,tr,.box,.pstep,.top{break-inside:avoid}
+  .poster h1{font-size:42px}.poster .big{font-size:26px;margin:4mm 0 5mm}
+  .poster .pstep{margin:4mm 0;padding:4mm 8mm}.poster .small{margin-top:4mm}
   @page{size:A4;margin:15mm}
 }
-@media(max-width:800px){.page{width:auto;margin:0;min-height:0;padding:16px}.cols{grid-template-columns:1fr}.foot{position:static;margin-top:14px}}
+@media screen and (max-width:800px){.page{width:auto;margin:0;min-height:0;padding:16px}.cols{grid-template-columns:1fr}.foot{position:static;margin-top:14px}}
 </style>
 </head>
 <body>
-<div class="bar"><b>Notice Tarjam</b><button onclick="print()">🖨️ Imprimer (2 pages)</button></div>
+<div class="bar"><b>Notice Tarjam</b><button onclick="print()">🖨️ Imprimer</button></div>
 
 <!-- PAGE 1 : NOTICE BÉNÉVOLES -->
 <section class="page">
@@ -98,7 +108,8 @@ td:first-child{white-space:nowrap;font-weight:700;width:1%}
       <li>Accueil → <b>Deux téléphones</b> : un QR code s'affiche.</li>
       <li>La personne le <b>scanne</b>, choisit sa langue, appuie sur <b>OK</b>.</li>
       <li>Chacun appuie sur son 🎤 et parle : le message arrive traduit sur l'autre écran.</li>
-      <li><b>📺 Mode écran</b> : texte géant pour une télé.</li>
+      <li>Pendant qu'un téléphone lit la traduction, le micro de l'autre se met <b>en pause</b> quelques secondes.</li>
+      <li><b>📺 Mode écran</b> : texte géant pour une télé (QR code et code de session affichés en attendant).</li>
     </ol>
   </div>
   <div>
@@ -119,9 +130,10 @@ td:first-child{white-space:nowrap;font-weight:700;width:1%}
   </div>
   </div>
 
+  <div class="box"><b>🎤 Une phrase = une traduction.</b> Le micro reste ouvert (bouton rouge) jusqu'à ce qu'on rappuie dessus. Pendant que l'appli lit la traduction à voix haute, il se met <b>en pause</b> pour ne pas s'entendre, puis reprend : dire une phrase, attendre la traduction, continuer.</div>
   <div class="box"><b>🧹 Entre deux personnes</b> : appuyer sur <b>« Nouvelle personne »</b> (en haut). Tout est effacé : conversation, photos, session. Cela se fait aussi seul après 10 minutes sans activité. Les dossiers ne sont pas supprimés.</div>
   <div class="box warn"><b>⚠️ Traduction automatique.</b> Elle peut se tromper, surtout pour les dialectes et les sujets graves (santé, justice, papiers) : faire vérifier. Parler lentement, par phrases courtes, une idée à la fois.</div>
-  <div class="foot"><span>Besoin d'aide ? Appuyez sur le bouton <b>?</b> en haut de l'appli.</span><span>Page 1/3</span></div>
+  <div class="foot"><span>Besoin d'aide ? Appuyez sur le bouton <b>?</b> en haut de l'appli.</span><span>Notice bénévoles</span></div>
 </section>
 
 <!-- PAGE 2 : PROBLÈMES + CONFIDENTIALITÉ -->
@@ -137,17 +149,21 @@ td:first-child{white-space:nowrap;font-weight:700;width:1%}
     <tr><td>« Code d'accès incorrect »</td><td>Ressaisir le code. Après 10 erreurs : attendre 15 minutes.</td></tr>
     <tr><td>Rien ne s'affiche, « Erreur »</td><td>Vérifier Internet (bandeau rouge « Pas de connexion »), réessayer. Premier lancement : patienter 30 secondes.</td></tr>
     <tr><td>Pas de son</td><td>Monter le volume, cocher « Lire à voix haute », appuyer sur 🔊. Sur iPhone : désactiver le mode silencieux.</td></tr>
+    <tr><td>Une traduction revient,<br>ou arrive toute seule</td><td>Un micro ouvert entend une autre voix (autre téléphone, télé, conversation voisine). Appuyer sur le micro pour l'arrêter. À deux téléphones dans la même pièce : un seul micro ouvert à la fois, ou les éloigner. Au besoin, décocher « Lire à voix haute » (🔊) ou mettre des écouteurs.</td></tr>
+    <tr><td>« Lecture de la traduction :<br>le micro reprend juste après »</td><td>Normal : le micro est en pause pendant que l'appli parle. Attendre la fin, puis parler.</td></tr>
+    <tr><td>« Je n'ai pas compris »</td><td>La phrase n'a pas été reconnue : répéter plus lentement, plus près du micro, ou écrire.</td></tr>
     <tr><td>Traduction étrange</td><td>Reformuler avec une phrase plus courte. En darija, éviter de trop mélanger les langues.</td></tr>
     <tr><td>La personne ne trouve pas sa langue</td><td>Choisir la plus proche (arabe standard…) ou passer par l'écriture.</td></tr>
     <tr><td>« Session introuvable ou expirée »</td><td>Recréer une session « Deux téléphones » (elles durent 3 heures).</td></tr>
     <tr><td>« La personne n'a pas encore rejoint »</td><td>Attendre qu'elle ait choisi sa langue et appuyé sur OK.</td></tr>
+    <tr><td>Mode écran : « Session terminée »</td><td>Recréer une session « Deux téléphones », puis rouvrir « 📺 Mode écran ».</td></tr>
     <tr><td>Photo de courrier illisible</td><td>Refaire avec plus de lumière, document à plat, texte net ; ou coller le texte.</td></tr>
     <tr><td>« Dossiers non activés », « clé API »</td><td>Problème de réglage : prévenir le responsable de l'application.</td></tr>
   </table>
 
   <h2>Bonnes pratiques</h2>
   <ul>
-    <li>Parler <b>lentement</b>, <b>phrases courtes</b>, faire des pauses.</li>
+    <li>Parler <b>lentement</b>, <b>phrases courtes</b> ; <b>attendre la fin de la traduction</b> avant de continuer.</li>
     <li>Demander « <b>Avez-vous compris ?</b> » (dans Phrases utiles) et laisser la personne reformuler.</li>
     <li>Pour la santé, la justice, les papiers importants : faire vérifier par un interprète professionnel ou une personne de confiance.</li>
     <li>Un courrier traduit se <b>joint</b> au courrier en français, qui seul fait foi.</li>
@@ -160,7 +176,7 @@ td:first-child{white-space:nowrap;font-weight:700;width:1%}
     <li>La personne peut demander la <b>suppression</b> de son dossier (bouton 🗑 dans le dossier).</li>
     <li>Le code d'accès est partagé : ne pas le communiquer aux personnes accueillies ; le changer quand un bénévole part.</li>
   </ul>
-  <div class="foot"><span>Tarjam · Interprète pour l'association</span><span>Page 2/3</span></div>
+  <div class="foot"><span>Tarjam · Interprète pour l'association</span><span>Problèmes · Confidentialité</span></div>
 </section>
 
 <!-- PAGE 3 : AFFICHE POUR LES PERSONNES ACCUEILLIES -->
