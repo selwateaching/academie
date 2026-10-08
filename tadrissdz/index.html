@@ -8856,11 +8856,20 @@ async function genProgaIA() {
   }
   var matLower = mat.toLowerCase();
   try { matLower = matLower.normalize('NFD').replace(/[\u0300-\u036f]/g,''); } catch(e) {} /* retire les accents ("français"/"française" doivent matcher tous les deux) */
+  /* Langue du CONTENU généré : à ne pas confondre avec isL (progaIsLangue/isLangueMatiere), qui dit
+     seulement si la matière suit la structure "Projets/Séquences" (vrai pour arabe/français/anglais/
+     espagnol/tamazight). Ici on choisit DANS QUELLE LANGUE écrire — un cours d'espagnol ou de tamazight
+     n'est ni en français ni en arabe, donc il ne doit pas tomber dans le "sinon" prévu pour les matières
+     non-langue (maths, sciences...) réellement enseignées en arabe en Algérie. */
   var langueInstruction = '';
   if (matLower.indexOf('francais') >= 0) {
     /* déjà en français par défaut (langue du prompt) — aucune consigne supplémentaire nécessaire */
   } else if (matLower.indexOf('anglais') >= 0) {
     langueInstruction = ' IMPORTANT : rédige tout le CONTENU en ANGLAIS, car c\'est une progression de cours d\'anglais.';
+  } else if (matLower.indexOf('espagnol') >= 0) {
+    langueInstruction = ' IMPORTANT : rédige tout le CONTENU en ESPAGNOL, car c\'est une progression de cours d\'espagnol.';
+  } else if (matLower.indexOf('arabe') >= 0 || matLower.indexOf('tamazight') >= 0) {
+    langueInstruction = ' IMPORTANT : rédige tout le CONTENU (noms des projets et séquences, et tous les champs de contenu) en LANGUE ARABE (écriture arabe), car c\'est une progression de cours de langue arabe/tamazight. Seuls les noms des clés JSON restent tels quels (nom, tacheFinale, sequences, actes...), mais leurs valeurs doivent être en arabe.';
   } else {
     langueInstruction = ' IMPORTANT : rédige tout le CONTENU (noms des projets et séquences, et tous les champs de contenu) en LANGUE ARABE (écriture arabe), car dans le système éducatif algérien, l\'arabe est la langue d\'enseignement de cette matière (Primaire et Moyen). Seuls les noms des clés JSON restent tels quels (nom, tacheFinale, sequences, actes...), mais leurs valeurs doivent être en arabe.';
   }
