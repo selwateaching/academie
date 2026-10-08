@@ -202,6 +202,14 @@ textarea{width:100%;min-height:90px}
 #tv .fr{font-size:clamp(28px,5vw,58px);font-weight:700;line-height:1.25}
 #tv .lg{font-size:clamp(28px,5vw,58px);font-weight:700;color:#7fd6ea;margin-top:10px;line-height:1.35}
 #tv .who{font-size:16px;color:#93a8b0;margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
+#tv .tvwait{margin:auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
+#tv .tvwait .qr{background:#fff;padding:12px;border-radius:16px;line-height:0}
+#tv .tvwait .qr:empty{display:none}
+#tv .tvwait .code{font-size:clamp(40px,8vw,96px);font-weight:800;letter-spacing:.12em;text-indent:.12em;color:#7fd6ea;line-height:1.1}
+#tv .tvwait .t{font-size:clamp(20px,3vw,34px);font-weight:600}
+#tv .tvwait .s{font-size:clamp(16px,2vw,22px);color:#93a8b0}
+#tvConn{font-size:16px;font-weight:600;white-space:nowrap}
+#code{-webkit-text-security:disc}
 </style>
 </head>
 <body>
@@ -211,7 +219,7 @@ textarea{width:100%;min-height:90px}
   <h1>Tarjam<small>Interprète · Association</small></h1>
   <button class="back" id="helpBtn" aria-label="Aide : poser une question à l'assistant" title="Aide"><img src="/aide-face.png" alt="" width="30" height="30"><span>Aide</span></button>
   <button class="back hide" id="wipe" aria-label="Nouvelle personne : tout effacer" title="Efface tout et revient à l'accueil"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg> Nouvelle personne</button>
-  <input type="password" id="code" placeholder="Code d'accès" aria-label="Code d'accès" style="width:130px;display:none">
+  <input type="text" id="code" placeholder="Code d'accès" aria-label="Code d'accès" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="width:130px;display:none">
 </header>
 
 <div id="offline" role="status">Pas de connexion : la traduction a besoin d'Internet.</div>
@@ -247,7 +255,7 @@ textarea{width:100%;min-height:90px}
       <button class="mic me" id="micMe">🎤 Je parle (français)</button>
     </div>
     <div class="row" id="txtRow">
-      <input type="text" id="txt" placeholder="Ou écrivez en français…">
+      <input type="text" id="txt" placeholder="Ou écrivez en français…" autocomplete="off">
       <button class="send" id="send">Envoyer</button>
     </div>
     <div class="row" style="justify-content:space-between;align-items:center">
@@ -316,8 +324,8 @@ textarea{width:100%;min-height:90px}
     <label for="eNom">Nom de l'entreprise</label><input type="text" id="eNom" autocomplete="off">
     <label for="eSecteur">Secteur</label><input type="text" id="eSecteur" autocomplete="off" placeholder="ex. BTP, restauration, santé, agriculture">
     <label for="eContactNom">Personne à contacter</label><input type="text" id="eContactNom" autocomplete="off">
-    <div class="row"><div style="flex:1"><label for="eContactTel">Téléphone</label><input type="text" id="eContactTel" inputmode="tel"></div>
-      <div style="flex:1"><label for="eContactEmail">E-mail</label><input type="text" id="eContactEmail" inputmode="email"></div></div>
+    <div class="row"><div style="flex:1"><label for="eContactTel">Téléphone</label><input type="text" id="eContactTel" inputmode="tel" autocomplete="off"></div>
+      <div style="flex:1"><label for="eContactEmail">E-mail</label><input type="text" id="eContactEmail" inputmode="email" autocomplete="off"></div></div>
     <label for="eAdresse">Adresse</label><input type="text" id="eAdresse" autocomplete="off">
     <label for="eNotes">Notes</label><textarea id="eNotes"></textarea>
     <div class="row" style="margin-top:12px"><button class="btn sec" id="eCancel" style="flex:1">Annuler</button><button class="btn" id="eSave" style="flex:1">Enregistrer</button></div>
@@ -382,7 +390,7 @@ textarea{width:100%;min-height:90px}
     <div class="hhead"><img src="/aide-face.png" alt="" width="40" height="40"><b>Assistant Tarjam<small style="display:block;font-weight:400;font-size:12px;opacity:.85">Je vous explique l'application</small></b><a href="/notice" target="_blank" rel="noopener">📄 Notice à imprimer</a><button id="helpClose" aria-label="Fermer">✕</button></div>
     <div id="helpMsgs"></div>
     <div id="helpChips"></div>
-    <div class="row hrow"><input type="text" id="helpIn" placeholder="Posez votre question…" aria-label="Votre question"><button class="send" id="helpSend">➤</button></div>
+    <div class="row hrow"><input type="text" id="helpIn" placeholder="Posez votre question…" aria-label="Votre question" autocomplete="off"><button class="send" id="helpSend">➤</button></div>
   </div>
 </div>
 
@@ -443,7 +451,7 @@ textarea{width:100%;min-height:90px}
   <footer>
     <div id="rstatus" style="font-size:13px;color:var(--mut);min-height:18px"></div>
     <div class="row"><button class="mic me" id="rmic">🎤</button></div>
-    <div class="row"><input type="text" id="rtxt"><button class="send" id="rsend">➤</button></div>
+    <div class="row"><input type="text" id="rtxt" autocomplete="off"><button class="send" id="rsend">➤</button></div>
     <label style="font-size:13px;color:var(--mut)"><input type="checkbox" id="rspeak"> 🔊</label>
     <div class="warn">⚠️ Traduction automatique : à faire vérifier pour toute décision importante.</div>
   </footer>
@@ -724,18 +732,24 @@ const rbox = $("rlog");
 const rStatus = t => $("rstatus").textContent = t || "";
 const nativeName = e => e[1].split(" — ")[0];
 
-function startPoll(onMsgs){
+function startPoll(onMsgs, onState){
   clearInterval(R.timer);
+  const state = s => { if(onState) onState(s); };
   const tick = async ()=>{
     if(!R.code) return;
     try{
       const r = await fetch(`/api/room/${R.code}?since=${R.last}`);
-      if(!r.ok){ if(r.status===404){ clearInterval(R.timer); rStatus("Session terminée."); } return; }
+      if(!r.ok){
+        if(r.status===404){ clearInterval(R.timer); rStatus("Session terminée."); state("ended"); }
+        else state("lost");
+        return;
+      }
       const j = await r.json();
       R.guestName = j.guest_name; R.guestCode = j.guest_code;
+      state("ok");
       onMsgs(j);
       for(const m of j.msgs) R.last = Math.max(R.last, m.id);
-    }catch(e){}
+    }catch(e){ state("lost"); }
   };
   tick(); R.timer = setInterval(tick, 1200);
 }
@@ -860,8 +874,22 @@ $("joinBtn").onclick = async ()=>{
 // mode écran TV
 function startTv(){
   const box = $("tv"); show("tv");
+  const mk = (cls, txt)=>{ const e = document.createElement("div"); e.className = cls; e.textContent = txt || ""; return e; };
+  // état de la connexion, affiché dans l'en-tête
+  const conn = document.createElement("span"); conn.id = "tvConn"; conn.setAttribute("role","status");
+  document.querySelector("header").append(conn);
+  // écran d'attente : QR code, code de la session, état
+  const wait = mk("tvwait"), qr = mk("qr"), msg = mk("t","En attente de la conversation…"), sub = mk("s");
+  const img = new Image(); img.alt = "QR code pour rejoindre la session"; img.width = img.height = 220;
+  img.onerror = ()=>qr.replaceChildren();
+  img.src = "/qr.svg?text=" + encodeURIComponent(location.origin + "/?room=" + R.code); qr.append(img);
+  wait.append(qr, mk("code", R.code), msg, sub);
+  box.replaceChildren(wait);
+  let lost = 0;
   startPoll(j=>{
+    sub.textContent = j.guest_name ? "✅ Personne connectée : " + j.guest_name : "⏳ En attente de la personne…";
     for(const m of j.msgs){
+      wait.remove();
       const fr = m.side==="host" ? m.text : m.tr;
       const lg = m.side==="host" ? m.tr : m.text;
       const d = document.createElement("div"); d.className="pair";
@@ -870,6 +898,15 @@ function startTv(){
       d.querySelector(".fr").textContent = fr; d.querySelector(".lg").textContent = lg; d.querySelector(".fr").dir="auto";
       box.append(d); window.scrollTo(0,document.body.scrollHeight); box.scrollTop = box.scrollHeight;
     }
+  }, s=>{
+    if(s==="ok"){ lost = 0; conn.textContent = "🟢 Session " + R.code; }
+    else if(s==="ended"){
+      conn.textContent = "⚪ Session terminée";
+      msg.textContent = "Session terminée ou code inconnu";
+      sub.textContent = "Ouvrez une nouvelle session depuis « Deux téléphones ».";
+      qr.replaceChildren();
+    }
+    else if(++lost >= 3) conn.textContent = "🔴 Connexion perdue, nouvelle tentative…";
   });
 }
 
@@ -878,8 +915,9 @@ function startTv(){
   const q = new URLSearchParams(location.search), code = (q.get("room")||"").toUpperCase();
   if(!code) return;
   R.code = code;
-  $("back").classList.add("hide"); $("back").onclick = null;
   if(q.get("tv")) startTv(); else show("join");
+  $("back").classList.add("hide"); $("back").onclick = null;
+  $("code").classList.add("hide"); // le code d'accès ne sert ni à la personne ni à l'écran
   document.querySelector("header h1").textContent = "🌍";
 })();
 
