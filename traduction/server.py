@@ -212,7 +212,7 @@ def room_create():
         if len(rooms) >= ROOM_MAX_ROOMS:
             return error("Trop de sessions ouvertes, réessayez plus tard.", 429)
         code = "".join(secrets.choice(ALPHABET) for _ in range(6))
-        rooms[code] = {"created": time.time(), "guest_code": "", "guest_name": "", "msgs": []}
+        rooms[code] = {"created": time.time(), "guest_code": "", "guest_name": "", "msgs": [], "spk": {}}
     return jsonify({"code": code})
 
 
@@ -252,10 +252,14 @@ def room_say(code):
         tr = translate_text(text, src, dst, context)
     except anthropic.APIError as e:
         return error(f"Erreur de traduction : {getattr(e, 'message', e)}", 502)
+    # Rien de compréhensible (bruit, voix de synthèse réentendue par le micro) : le message
+    # n'est ni affiché ni lu chez l'autre, sinon il serait réentendu et retraduit en boucle.
+    if tr.strip(" .[]()«»\"'").lower() in ("incompréhensible", "incomprehensible"):
+        return error("Message non compris.", 422)
     with rooms_lock:
         mid = (r["msgs"][-1]["id"] + 1) if r["msgs"] else 1
         r["msgs"].append({"id": mid, "side": side, "text": text, "tr": tr})
-    return jsonify({"id": mid})
+    return jsonify({"id": mid, "tr": tr})
 
 
 @app.delete("/api/room/<code>")
@@ -271,9 +275,15 @@ def room_poll(code):
     if not r:
         return error("Session introuvable ou expirée.", 404)
     since = request.args.get("since", 0, type=int)
+    # Chaque téléphone indique s'il lit les messages reçus à voix haute ; l'autre s'en sert
+    # pour couper son micro pendant cette lecture. None = inconnu.
+    side, spk = request.args.get("side"), r.setdefault("spk", {})
+    if side in ("host", "guest") and "spk" in request.args:
+        spk[side] = request.args.get("spk") == "1"
     return jsonify({
         "guest_code": r["guest_code"],
         "guest_name": r["guest_name"],
+        "peer_spk": spk.get("guest" if side == "host" else "host") if side in ("host", "guest") else None,
         "msgs": [m for m in r["msgs"] if m["id"] > since],
     })
 

@@ -527,12 +527,22 @@ function translate(text, from, to){
   return api("/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({text,from,to,context})}).then(j=>j.translation);
 }
+let speakEnd = null;
+// Coupe la lecture en cours (et prévient ceux qui en attendaient la fin).
+function hush(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  if(speakEnd) speakEnd();
+}
 function speak(text, lang){
   if(!("speechSynthesis" in window)) return Promise.resolve();
+  hush();
   return new Promise(res=>{
-    speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang; u.onend = u.onerror = res;
+    // certains navigateurs n'annoncent jamais la fin de la lecture : on ne l'attend pas indéfiniment
+    const t = setTimeout(done, 5000 + Math.min(text.length * 200, 85000));
+    function done(){ if(speakEnd === done) speakEnd = null; clearTimeout(t); res(); }
+    speakEnd = done; speak.u = u; // la référence gardée évite que la fin de lecture se perde
+    u.lang = lang; u.onend = u.onerror = done;
     speechSynthesis.speak(u);
   });
 }
@@ -548,7 +558,7 @@ const HINTS = {
   conv:"Appuyez sur « Ils parlent » quand la personne parle, sur « Je parle » quand vous répondez."
 };
 function go(m){
-  stopRec(); speechSynthesis.cancel(); setStatus("");
+  stopRec(); hush(); epoch++; setStatus("");
   if(m==="doc"){ show("doc"); return; }
   if(m==="pair"){ hostStart(); return; }
   if(m==="phrases"){ openPhrases(); return; }
@@ -565,7 +575,7 @@ function go(m){
   show("talk");
 }
 document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
-$("back").onclick = ()=>{ stopRec(); speechSynthesis.cancel(); leaveRoom(); show("home"); };
+$("back").onclick = ()=>{ stopRec(); hush(); epoch++; leaveRoom(); show("home"); };
 
 function addMsg(who, big, small, speakLang){
   $("empty")?.remove();
@@ -576,7 +586,7 @@ function addMsg(who, big, small, speakLang){
   d.append(a,b);
   if(speakLang){
     const btn = document.createElement("button"); btn.textContent="🔊 Écouter";
-    btn.onclick = ()=>speak(big, speakLang);
+    btn.onclick = ()=>speakMuted(big, speakLang);
     d.append(btn);
   }
   log.append(d); log.scrollTop = log.scrollHeight;
@@ -590,16 +600,51 @@ async function handleThem(text){
     setStatus("");
   }catch(e){ setStatus("⚠️ "+e.message); }
 }
-async function handleMe(text){
+async function handleMe(text, ep){
   setStatus("Traduction…");
   try{
     const lang = $("lang").value;
     const out = await translate(text, "français", langName());
+    if(ep !== epoch) return; // on a quitté cette conversation entre-temps
+    if(UNCLEAR.test(out)){ setStatus("Je n'ai pas compris « " + text.slice(0,60) + " » : répétez ou écrivez."); return; }
     history.push({who:"me",orig:text});
     addMsg("me", out, text, lang);
     setStatus("");
-    if($("autospeak").checked) await speak(out, lang);
+    if($("autospeak").checked) await speakMuted(out, lang);
   }catch(e){ setStatus("⚠️ "+e.message); }
+}
+// Une phrase à la fois, dans l'ordre : la lecture d'une traduction n'est pas coupée par la suivante.
+function queueMe(text){
+  const ep = epoch;
+  meQ = meQ.then(()=> ep === epoch ? handleMe(text, ep) : null);
+}
+
+// ------- une phrase = une traduction
+// Le micro ne doit pas entendre la voix de l'appli, sinon il la retranscrit et elle est
+// retraduite en boucle : l'écoute est coupée pendant la lecture, puis reprend toute seule.
+const ANDROID = /Android/i.test(navigator.userAgent); // y redonne les mêmes phrases en écoute continue
+const UNCLEAR = /^\W*incompr[ée]hensible\W*$/i;      // réponse du traducteur quand il n'a rien compris
+const PAUSED = "🔊 Lecture de la traduction : le micro reprend juste après.";
+let talking = 0, epoch = 0, meQ = Promise.resolve();
+const heard = {k:"", at:0};
+// Faux si le micro redonne la même phrase coup sur coup : elle n'est traduite qu'une fois.
+function fresh(mem, text){
+  const k = text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu," ").trim(), now = Date.now();
+  const dup = !!k && k === mem.k && now - mem.at < 3000;
+  mem.k = k; mem.at = now;
+  return !dup;
+}
+async function speakMuted(text, lang){
+  talking++;
+  if(rec){ try{rec.abort()}catch(e){} setStatus(PAUSED); }
+  try{ await speak(text, lang); }
+  finally{
+    setTimeout(()=>{
+      if(--talking > 0) return;
+      if(statusEl.textContent === PAUSED) setStatus("");
+      if(rec){ try{rec.start()}catch(e){} }
+    }, 500);
+  }
 }
 
 // ------- reconnaissance vocale
@@ -619,20 +664,21 @@ function startRec(who){
   const wasSame = recWho === who;
   stopRec();
   if(wasSame){ setStatus(""); return; }
-  speechSynthesis.cancel();
+  hush();
   const r = new SR();
   r.lang = who==="them" ? $("lang").value : "fr-FR";
-  r.continuous = true; r.interimResults = true;
+  r.continuous = !ANDROID; r.interimResults = true;
   recWho = who; rec = r;
   const btn = who==="them" ? $("micThem") : $("micMe");
   btn.classList.add("on"); btn.textContent = "⏹️ J'écoute… (appuyer pour arrêter)";
   r.onresult = ev=>{
+    if(talking) return; // l'appli lit une traduction : ce n'est pas quelqu'un qui parle
     let interim = "";
     for(let i=ev.resultIndex;i<ev.results.length;i++){
       const res = ev.results[i];
       if(res.isFinal){
         const t = res[0].transcript.trim();
-        if(t) (who==="them"?handleThem:handleMe)(t);
+        if(t && fresh(heard, t)) (who==="them"?handleThem:queueMe)(t);
       } else interim += res[0].transcript;
     }
     if(interim) setStatus("… "+interim);
@@ -641,7 +687,7 @@ function startRec(who){
     if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ setStatus("Micro refusé : autorisez-le dans le navigateur."); stopRec(); }
     else if(ev.error==="language-not-supported"){ setStatus("Cette langue n'est pas reconnue à la voix par ce navigateur : utilisez l'import de message vocal ou écrivez."); stopRec(); }
   };
-  r.onend = ()=>{ if(rec===r){ try{r.start()}catch(e){ stopRec(); } } };
+  r.onend = ()=>{ if(rec===r && !talking){ try{r.start()}catch(e){ stopRec(); } } };
   r.start();
 }
 $("micThem").onclick = ()=>startRec("them");
@@ -649,7 +695,7 @@ $("micMe").onclick = ()=>startRec("me");
 
 function sendText(){
   const t = $("txt").value.trim(); if(!t) return;
-  $("txt").value = ""; handleMe(t);
+  $("txt").value = ""; queueMe(t);
 }
 $("send").onclick = sendText;
 $("txt").onkeydown = e=>{ if(e.key==="Enter") sendText(); };
@@ -727,7 +773,8 @@ $("docSpeak").onclick = ()=>speak($("docOut").textContent, docLangCode);
 $("docCopy").onclick = ()=>{ navigator.clipboard?.writeText($("docOut").textContent); $("docStatus").textContent = "Copié."; };
 
 // ------- deux téléphones : salles
-const R = {code:null, side:null, myCode:"fr-FR", last:0, timer:null, guestName:"", guestCode:"", speaking:0, spokenQ:Promise.resolve(), rec:null, recOn:false};
+const R = {code:null, side:null, myCode:"fr-FR", last:0, timer:null, guestName:"", guestCode:"", spokenQ:Promise.resolve(), rec:null, recOn:false,
+  hold:0, until:0, wake:null, peerSpk:null, heard:{k:"", at:0}};
 const rbox = $("rlog");
 const rStatus = t => $("rstatus").textContent = t || "";
 const nativeName = e => e[1].split(" — ")[0];
@@ -738,14 +785,16 @@ function startPoll(onMsgs, onState){
   const tick = async ()=>{
     if(!R.code) return;
     try{
-      const r = await fetch(`/api/room/${R.code}?since=${R.last}`);
+      // chaque téléphone dit s'il lit les messages à voix haute, pour que l'autre mette son micro en pause
+      const me = R.side ? `&side=${R.side}&spk=${$("rspeak").checked ? 1 : 0}` : "";
+      const r = await fetch(`/api/room/${R.code}?since=${R.last}${me}`);
       if(!r.ok){
         if(r.status===404){ clearInterval(R.timer); rStatus("Session terminée."); state("ended"); }
         else state("lost");
         return;
       }
       const j = await r.json();
-      R.guestName = j.guest_name; R.guestCode = j.guest_code;
+      R.guestName = j.guest_name; R.guestCode = j.guest_code; R.peerSpk = j.peer_spk;
       state("ok");
       onMsgs(j);
       for(const m of j.msgs) R.last = Math.max(R.last, m.id);
@@ -754,12 +803,35 @@ function startPoll(onMsgs, onState){
   tick(); R.timer = setInterval(tick, 1200);
 }
 function leaveRoom(){
-  clearInterval(R.timer); R.code = null; R.recOn = false;
+  clearInterval(R.timer); clearTimeout(R.wake); R.code = null; R.recOn = false; R.until = 0;
   if(R.rec){ try{R.rec.onend=null;R.rec.stop()}catch(e){} R.rec=null; }
 }
 
-function speakQueued(text, lang){
-  R.spokenQ = R.spokenQ.then(async ()=>{ R.speaking++; await speak(text, lang); setTimeout(()=>R.speaking--, 400); });
+// Le micro se coupe pendant qu'une traduction est lue à voix haute, sur ce téléphone ou sur
+// l'autre, puis reprend tout seul : sinon il réentend la voix et la renvoie à traduire en boucle.
+const roomQuiet = ()=> R.hold > 0 || Date.now() < R.until;
+const roomPausedMsg = ()=> R.side==="host" ? PAUSED : "🔊 ⏳";
+function roomPause(){
+  if(R.recOn && R.rec){ try{R.rec.abort()}catch(e){} rStatus(roomPausedMsg()); }
+}
+function roomResume(){
+  if(roomQuiet()) return;
+  if($("rstatus").textContent === roomPausedMsg()) rStatus("");
+  if(R.recOn && R.rec){ try{R.rec.start()}catch(e){} }
+}
+// L'autre téléphone va lire ma phrase traduite : mon micro attend la fin (durée estimée).
+function roomWait(ms){
+  R.until = Math.max(R.until, Date.now() + ms);
+  roomPause();
+  clearTimeout(R.wake); R.wake = setTimeout(roomResume, R.until - Date.now() + 50);
+}
+async function roomSpeak(text){
+  R.hold++; roomPause();
+  try{ await speak(text, R.myCode); }
+  finally{ setTimeout(()=>{ R.hold--; roomResume(); }, 500); }
+}
+function speakQueued(text){
+  R.spokenQ = R.spokenQ.then(()=>roomSpeak(text));
 }
 function roomBubble(m){
   const mine = m.side === R.side;
@@ -772,7 +844,7 @@ function roomBubble(m){
   d.append(a,b);
   if(!mine){
     const btn = document.createElement("button"); btn.textContent = "🔊";
-    btn.onclick = ()=>speak(m.tr, R.myCode);
+    btn.onclick = ()=>roomSpeak(m.tr);
     d.append(btn);
   }
   rbox.append(d); rbox.scrollTop = rbox.scrollHeight;
@@ -783,7 +855,7 @@ function onRoomData(j){
   }
   for(const m of j.msgs){
     roomBubble(m);
-    if(m.side !== R.side && $("rspeak").checked) speakQueued(m.tr, R.myCode);
+    if(m.side !== R.side && $("rspeak").checked) speakQueued(m.tr);
   }
 }
 
@@ -793,22 +865,24 @@ async function roomSay(text){
     const r = await fetch(`/api/room/${R.code}/say`,{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({side:R.side,text})});
     const j = await r.json().catch(()=>({}));
+    if(r.status===422){ rStatus(R.side==="host" ? "Je n'ai pas compris : répétez ou écrivez." : "❓ 🔁"); return; }
     if(!r.ok) throw new Error(j.error || ("Erreur "+r.status));
     rStatus("");
+    if(j.tr && R.peerSpk !== false) roomWait(2500 + Math.min(j.tr.length * 110, 30000));
   }catch(e){ rStatus("⚠️ "+e.message); }
 }
 function roomMic(){
   if(!SR){ rStatus("Utilisez Chrome (Android) ou Safari (iPhone), ou écrivez."); return; }
   if(R.recOn){ R.recOn=false; if(R.rec){ try{R.rec.onend=null;R.rec.stop()}catch(e){} R.rec=null; } $("rmic").classList.remove("on"); rStatus(""); return; }
-  speechSynthesis.cancel();
-  const r = new SR(); r.lang = R.myCode; r.continuous = true; r.interimResults = true;
+  hush();
+  const r = new SR(); r.lang = R.myCode; r.continuous = !ANDROID; r.interimResults = true;
   R.rec = r; R.recOn = true; $("rmic").classList.add("on");
   r.onresult = ev=>{
-    if(R.speaking) return; // ne pas retranscrire la voix de synthèse
+    if(roomQuiet()) return; // ne pas retranscrire la voix de synthèse
     let interim = "";
     for(let i=ev.resultIndex;i<ev.results.length;i++){
       const res = ev.results[i];
-      if(res.isFinal){ const t = res[0].transcript.trim(); if(t) roomSay(t); }
+      if(res.isFinal){ const t = res[0].transcript.trim(); if(t && fresh(R.heard, t)) roomSay(t); }
       else interim += res[0].transcript;
     }
     if(interim) rStatus("… "+interim);
@@ -817,8 +891,8 @@ function roomMic(){
     if(ev.error==="not-allowed"||ev.error==="service-not-allowed"){ rStatus("Micro refusé."); R.recOn=false; $("rmic").classList.remove("on"); }
     else if(ev.error==="language-not-supported"){ rStatus("Langue non reconnue à la voix : écrivez."); R.recOn=false; $("rmic").classList.remove("on"); }
   };
-  r.onend = ()=>{ if(R.recOn && R.rec===r){ try{r.start()}catch(e){} } };
-  r.start();
+  r.onend = ()=>{ if(R.recOn && R.rec===r && !roomQuiet()){ try{r.start()}catch(e){} } };
+  if(roomQuiet()) rStatus(roomPausedMsg()); else r.start();
 }
 $("rmic").onclick = roomMic;
 function rSend(){ const t=$("rtxt").value.trim(); if(!t) return; $("rtxt").value=""; roomSay(t); }
@@ -826,7 +900,7 @@ $("rsend").onclick = rSend; $("rtxt").onkeydown = e=>{ if(e.key==="Enter") rSend
 $("rspeak").onchange = ()=>save("rspeak_"+R.side, $("rspeak").checked?"1":"0");
 
 function enterRoom(side, myCode){
-  R.side = side; R.myCode = myCode; R.last = 0; rbox.innerHTML = "";
+  R.side = side; R.myCode = myCode; R.last = 0; R.until = 0; R.peerSpk = null; rbox.innerHTML = "";
   $("rspeak").checked = (load("rspeak_"+side) ?? (side==="guest" ? "1" : "0")) === "1";
   $("rmic").textContent = side==="host" ? "🎤 Je parle (français)" : "🎤";
   $("rtxt").placeholder = side==="host" ? "Ou écrivez en français…" : "✍️";
@@ -959,7 +1033,7 @@ setTimeout(prefetchPhrases, 1500);
 // ------- inverser, nouvelle personne (effacement), inactivité, hors connexion
 $("swap").onclick = ()=>go(mode==="fr2l" ? "l2fr" : "fr2l");
 async function wipeAll(){
-  stopRec(); speechSynthesis.cancel();
+  stopRec(); hush(); epoch++;
   if(R.code && R.side==="host") fetch("/api/room/"+R.code,{method:"DELETE"}).catch(()=>{});
   leaveRoom();
   history = []; log.innerHTML = ""; rbox.innerHTML = "";
