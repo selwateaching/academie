@@ -274,3 +274,9 @@ def test_reviews_flow_requires_completed_visit_and_moderation(pro, client, anon)
     assert pub and pub[0]["text"] == "Merci !" and pub[0]["display_name"].startswith("Léa")
     assert b"Merci !" in anon.get("/").data
     assert anon.post("/api/admin/reviews/1/status", json={"status": "published"}, headers=H).status_code == 401
+
+
+def test_landing_has_photo_viewer(anon):
+    page = anon.get("/").get_data(as_text=True)
+    assert "js/landing.js" in page and "class=\"gallery\"" in page
+    assert anon.get("/static/js/landing.js").status_code == 200
