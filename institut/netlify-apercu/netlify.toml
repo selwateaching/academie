@@ -1,0 +1,3 @@
+# Site statique : aucune compilation nécessaire
+[build]
+  publish = "."
