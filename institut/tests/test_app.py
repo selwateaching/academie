@@ -280,3 +280,12 @@ def test_landing_has_photo_viewer(anon):
     page = anon.get("/").get_data(as_text=True)
     assert "js/landing.js" in page and "class=\"gallery\"" in page
     assert anon.get("/static/js/landing.js").status_code == 200
+
+
+def test_landing_photos_link_to_services(anon):
+    import json, re
+    page = anon.get("/").get_data(as_text=True)
+    data = json.loads(re.search(r'id="svc-data">(.*?)</script>', page, re.S).group(1))
+    assert {"Cheveux", "Ongles", "Cils", "Pieds", "Épilation", "Visage"} <= set(data)
+    assert all({"id", "name", "price", "duration"} <= set(s) for v in data.values() for s in v)
+    assert 'data-cat="Cheveux"' in page and 'data-cat="Épilation"' in page

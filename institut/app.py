@@ -124,7 +124,8 @@ def create_app():
         stat = row(conn, "SELECT COUNT(*) AS n, AVG(rating) AS avg FROM reviews WHERE status='published'")
         return render_template("landing.html", cats=cats, loyalty=core.setting(conn, "loyalty", {}),
                                hours=core.setting(conn, "opening_hours", {}), reviews=reviews,
-                               rating={"n": stat["n"], "avg": round(stat["avg"], 1) if stat["avg"] else None}, **brand())
+                               rating={"n": stat["n"], "avg": round(stat["avg"], 1) if stat["avg"] else None},
+                               svcdata={c: [{"id": s["id"], "name": s["name"], "price": s["price"], "duration": s["duration"], "diag": bool(s["diagnostic_required"])} for s in v] for c, v in cats.items()}, **brand())
 
     @app.route("/reserver")
     @app.route("/compte")

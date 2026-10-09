@@ -40,7 +40,7 @@
       <div class="note-card"><span style="font-size:1.6rem">🦋</span><span>Chaque rendez-vous est unique, tout comme vous.</span></div>
     </div>
     <div class="hero-visual">
-      <div class="arch"><img src="{{ marketing.hero_image or url_for('static', filename='img/hero-cabine.jpg') }}" alt="Cabine de soins aux tons rose et mauve, bougies et fleurs"></div>
+      <div class="arch"><img src="{{ marketing.hero_image or url_for('static', filename='img/hero-cabine.jpg') }}" alt="Cabine de soins aux tons rose et mauve, bougies et fleurs" data-cat=""></div>
       <img class="deco f1" src="{{ F }}" alt="" aria-hidden="true">
       <img class="deco f2" src="{{ F }}" alt="" aria-hidden="true">
       <div class="float-card">
@@ -73,7 +73,7 @@
     <div class="universes">
       {% for cat, items in cats.items() %}
       <a class="univ" href="/reserver#/prestations/{{ cat|urlencode }}">
-        <div class="ph"><img src="{{ photo(cat, cimg, IMG) }}" alt="{{ cat }}" loading="lazy"></div>
+        <div class="ph"><img src="{{ photo(cat, cimg, IMG) }}" alt="{{ cat }}" data-cat="{{ cat }}" loading="lazy"></div>
         <h3>{{ cat }}</h3>
         <p>{{ INTRO.get(cat, '') }}</p>
         <div class="from"><span>à partir de</span><b>{{ '%g'|format(items|map(attribute='price')|min) }} €</b></div>
@@ -133,14 +133,14 @@
 
 <section class="section" id="galerie">
   <div class="wrap">
-    <div class="section-head"><p class="eyebrow">Galerie</p><h2>L'univers {{ inst.name }}</h2><span class="rule"></span></div>
+    <div class="section-head"><p class="eyebrow">Galerie</p><h2>L'univers {{ inst.name }}</h2><span class="rule"></span><p>Cliquez sur une photo pour découvrir la prestation et la réserver.</p></div>
     <div class="gallery">
       {% set gal = marketing.gallery or [] %}
       {% if gal %}
-        {% for g in gal %}<figure><img src="{{ g.url if g is mapping else g }}" alt="{{ g.caption if g is mapping else 'Réalisation' }}" loading="lazy">{% if g is mapping and g.caption %}<figcaption>{{ g.caption }}</figcaption>{% endif %}</figure>{% endfor %}
+        {% for g in gal %}<figure><img src="{{ g.url if g is mapping else g }}" alt="{{ g.caption if g is mapping else 'Réalisation' }}" data-cat="{{ g.cat if g is mapping and g.cat else '' }}" loading="lazy">{% if g is mapping and g.caption %}<figcaption>{{ g.caption }}</figcaption>{% endif %}</figure>{% endfor %}
       {% else %}
-        {% for f, cap in [('hero-cabine.jpg','Notre cabine'),('cheveux.jpg','Lissage'),('ongles.jpg','Ongles'),('cils.jpg','Regard'),('soin-visage.jpg','Soin du visage'),('pieds.jpg','Pédicure'),('epilation.jpg','Épilation'),('pieds2.jpg','Bien-être')] %}
-        <figure><img src="{{ url_for('static', filename='img/' ~ f) }}" alt="{{ cap }}" loading="lazy"><figcaption>{{ cap }}</figcaption></figure>
+        {% for f, cap, gcat in [('hero-cabine.jpg','Notre cabine',''),('cheveux.jpg','Lissage','Cheveux'),('ongles.jpg','Ongles','Ongles'),('cils.jpg','Regard','Cils'),('soin-visage.jpg','Soin du visage','Visage'),('pieds.jpg','Pédicure','Pieds'),('epilation.jpg','Épilation','Épilation'),('pieds2.jpg','Bien-être','Pieds')] %}
+        <figure><img src="{{ url_for('static', filename='img/' ~ f) }}" alt="{{ cap }}" data-cat="{{ gcat }}" loading="lazy"><figcaption>{{ cap }}</figcaption></figure>
         {% endfor %}
       {% endif %}
     </div>
@@ -149,7 +149,7 @@
 
 <section class="section alt" id="apropos">
   <div class="wrap about">
-    <div class="arch"><img src="{{ url_for('static', filename='img/soin-visage.jpg') }}" alt="Soin du visage en cabine" loading="lazy"></div>
+    <div class="arch"><img src="{{ url_for('static', filename='img/soin-visage.jpg') }}" alt="Soin du visage en cabine" data-cat="Visage" loading="lazy"></div>
     <div>
       <p class="eyebrow">À propos</p>
       <h2>Prendre soin de vous, tout simplement</h2>
@@ -238,4 +238,4 @@
   </div>
 </footer>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}
+{% block scripts %}<script type="application/json" id="svc-data">{{ svcdata|tojson }}</script><script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}

@@ -59,7 +59,7 @@
     mount(view, h('div.spinner'));
     try {
       const fn = {
-        '': viewHome, prestations: () => viewServices(arg), diagnostic: () => viewDiagnostic(arg), resultat: viewResult, creneau: viewSlots,
+        '': viewHome, prestations: () => viewServices(arg), service: () => viewService(arg), diagnostic: () => viewDiagnostic(arg), resultat: viewResult, creneau: viewSlots,
         connexion: viewAuth, recap: viewRecap, confirmation: () => viewConfirmation(arg), rdv: viewAppointments, devis: () => (arg ? viewQuote(arg) : viewQuotes()),
         historique: viewHistory, avis: viewReviews, factures: viewInvoices, profil: viewProfile, fidelite: viewLoyalty, notifications: viewNotifications,
       }[seg || ''];
@@ -114,6 +114,13 @@
     const drawTabs = (c) => mount(tabs, cats.map(x => h('button.chip', { role: 'tab', class: x === c ? 'on' : '', onclick: () => { drawTabs(x); draw(x); } }, icon(CAT_ICON[x] || 'sparkle'), x)));
     drawTabs(active); draw(active);
     return h('div', stepper(0), h('h1.page-title', 'Quelle prestation souhaitez-vous ?'), h('p.page-sub', 'Pour certaines prestations, un court diagnostic nous permet de vous conseiller au mieux.'), tabs, list);
+  }
+
+  async function viewService(id) {
+    const s = svcById(id);
+    if (!s) { location.hash = '#/prestations'; return h('div'); }
+    startFlow(s);   // diagnostic si la prestation en a un, sinon choix du créneau
+    return h('div.spinner');
   }
 
   function initFlow(svc) {
