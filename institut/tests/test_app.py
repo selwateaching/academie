@@ -289,3 +289,12 @@ def test_landing_photos_link_to_services(anon):
     assert {"Cheveux", "Ongles", "Cils", "Pieds", "Épilation", "Visage"} <= set(data)
     assert all({"id", "name", "price", "duration"} <= set(s) for v in data.values() for s in v)
     assert 'data-cat="Cheveux"' in page and 'data-cat="Épilation"' in page
+
+
+def test_client_space_vs_pro_account(pro, client, anon):
+    # la session professionnelle est bien identifiée comme « pro » (l'interface cliente la redirige vers /admin)
+    assert j(pro.get("/api/auth/me"))["user"]["role"] == "pro"
+    assert j(client.get("/api/auth/me"))["user"]["role"] == "client"
+    # une cliente retrouve ses factures ; sans connexion, accès refusé
+    assert client.get("/api/client/invoices").status_code == 200
+    assert anon.get("/api/client/invoices").status_code == 401

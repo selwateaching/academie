@@ -273,7 +273,9 @@
         const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
         try {
           const body = mode === 'login' ? { email: fd.email, password: fd.password } : { ...fd, consent_data: !!fd.consent_data, consent_marketing: !!fd.consent_marketing, consent_photos: !!fd.consent_photos };
-          const r = await post('/api/auth/' + mode, body); afterLogin(r.user);
+          const r = await post('/api/auth/' + mode, body);
+          if (r.user.role === 'pro') { await post('/api/auth/logout'); S.isPro = false; mount(box, proNotice()); return; }   // compte professionnel : pas d'espace cliente
+          afterLogin(r.user);
           if (S.flow && S.flow.afterAuth === 'saveQuote') { delete S.flow.afterAuth; saveFlow(); }
         } catch (er) { mount(err, h('div.notice.bad', icon('alert'), er.message)); btn.disabled = false; }
       } },
@@ -288,7 +290,9 @@
         err, h('button.btn.block.lg', { type: 'submit' }, mode === 'login' ? 'Me connecter' : 'Créer mon compte'));
       mount(box, h('div.auth-tabs', { role: 'tablist' }, h('button', { type: 'button', class: mode === 'login' ? 'on' : '', onclick: () => { mode = 'login'; draw(); } }, 'Connexion'), h('button', { type: 'button', class: mode === 'register' ? 'on' : '', onclick: () => { mode = 'register'; draw(); } }, 'Créer un compte')), f);
     }
-    draw();
+    const proNotice = () => h('div.stack', h('div.notice.info', icon('info'), h('div', h('b', 'Ce compte est celui de la professionnelle.'), h('div.small', 'L\'espace cliente est réservé aux clientes (rendez-vous, devis, factures). Votre tableau de bord se trouve dans l\'espace professionnel.'))),
+      h('div.row', h('a.btn', { href: '/admin' }, 'Aller à l\'espace professionnel'), h('button.btn.ghost', { onclick: async () => { await post('/api/auth/logout'); S.isPro = false; draw(); } }, 'Me déconnecter pour créer un compte cliente')));
+    if (S.isPro) mount(box, proNotice()); else draw();
     view.classList.add('narrow');
     return h('div', { style: { maxWidth: '520px', margin: '0 auto' } }, S.flow && S.flow.slot ? stepper(4) : null, h('h1.page-title', 'Votre compte'),
       h('p.page-sub', S.flow && S.flow.slot ? 'Connectez-vous ou créez votre compte pour finaliser votre réservation.' : 'Accédez à vos rendez-vous, devis et factures.'), h('div.card', box));
@@ -431,7 +435,7 @@
     needLogin();
     const { invoices } = await get('/api/client/invoices');
     const lab = { due: ['À régler', 'warn'], partial: ['Partiellement réglée', 'info'], paid: ['Payée', 'ok'], void: ['Annulée', 'neutral'] };
-    return h('div', h('h1.page-title', 'Mes factures'), h('div.card', invoices.length ? invoices.map(i => h('div.list-item', h('div.main', h('b', i.number), h('div.small.muted', shortDate(i.created_at) + ' · ' + i.items.map(x => x.label).join(', '))), h('b', eur(i.total)), h('span.badge.' + lab[i.status][1], lab[i.status][0]), h('a.btn.ghost.sm', { href: `/api/client/invoices/${i.id}.pdf`, target: '_blank', rel: 'noopener' }, icon('download'), 'PDF'))) : h('div.empty', icon('receipt'), h('p', 'Aucune facture.'))));
+    return h('div', h('h1.page-title', 'Mes factures'), h('div.card', invoices.length ? invoices.map(i => h('div.list-item', h('div.main', h('b', i.number), h('div.small.muted', shortDate(i.created_at) + ' · ' + i.items.map(x => x.label).join(', '))), h('b', eur(i.total)), h('span.badge.' + lab[i.status][1], lab[i.status][0]), h('a.btn.ghost.sm', { href: `/api/client/invoices/${i.id}.pdf`, target: '_blank', rel: 'noopener' }, icon('download'), 'PDF'))) : h('div.empty', icon('receipt'), h('p', 'Aucune facture pour le moment. Elles apparaissent ici après chaque prestation réalisée.'))));
   }
   async function viewLoyalty() {
     needLogin();
@@ -485,7 +489,7 @@
     loadFlow();
     try {
       const [info, svcs, me] = await Promise.all([get('/api/public/info'), get('/api/public/services'), get('/api/auth/me')]);
-      S.info = info; S.services = svcs.services; S.user = me.user && me.user.role === 'client' ? me.user : null;
+      S.info = info; S.services = svcs.services; S.user = me.user && me.user.role === 'client' ? me.user : null; S.isPro = !!(me.user && me.user.role === 'pro');
       if (S.flow && S.flow.service) S.flow.service = svcById(S.flow.service.id) || S.flow.service;
     } catch (e) { return mount(view, h('div.notice.bad', icon('alert'), e.message)); }
     if (location.pathname === '/compte' && !location.hash) location.hash = S.user ? '#/' : '#/connexion';
