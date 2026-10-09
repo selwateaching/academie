@@ -23,14 +23,14 @@ python app.py                       # http://localhost:5050
 
 Au premier lancement, la base est créée avec des prestations, 4 diagnostics (lissage, onglerie, pédicure, cils), des
 stocks et des **données de démonstration** ; le mot de passe du compte professionnel (`pro@institut.local`) est affiché
-dans la console. Comptes de démo des clientes : mot de passe `demo-cliente-2026`.
+dans la console. Pour essayer avec des clientes et rendez-vous fictifs : `INSTITUT_SEED_DEMO=1` (comptes de démo, mot de passe `demo-cliente-2026`).
 
 **Pour la mise en production**, définir avant le premier lancement :
 
 | Variable | Rôle |
 |---|---|
 | `INSTITUT_ADMIN_EMAIL`, `INSTITUT_ADMIN_PASSWORD` | compte professionnel |
-| `INSTITUT_SEED_DEMO=0` | ne pas créer de clientes/rendez-vous fictifs |
+| `INSTITUT_SEED_DEMO` | `1` crée des clientes/rendez-vous fictifs (défaut `0` = aucune donnée fictive) |
 | `INSTITUT_SECRET` | clé de signature des sessions (sinon générée dans `instance/`) |
 | `INSTITUT_HTTPS=1` | cookies `Secure` derrière HTTPS |
 | `INSTITUT_INSTANCE` | dossier de la base et des photos (à sauvegarder !) |
@@ -39,6 +39,18 @@ dans la console. Comptes de démo des clientes : mot de passe `demo-cliente-2026
 ```bash
 gunicorn wsgi:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT   # 1 seul worker : il envoie les rappels
 ```
+
+## Mise en ligne
+
+L'application a besoin d'un **serveur Python** : elle ne peut pas être hébergée sur un hébergeur de sites statiques
+(Netlify, GitHub Pages…). Le fichier `render.yaml` à la racine du dépôt décrit le service pour [Render](https://render.com) :
+
+1. Render → *New* → *Blueprint*, choisir ce dépôt (service `eclat-de-reve`).
+2. Renseigner `INSTITUT_ADMIN_EMAIL` et `INSTITUT_ADMIN_PASSWORD` (compte de la professionnelle).
+3. Ouvrir l'adresse fournie : `/` (site), `/compte` (cliente), `/admin` (professionnelle).
+
+⚠️ L'offre gratuite **efface la base et les photos à chaque redémarrage** : à réserver aux essais. Pour un usage réel,
+prendre une offre payante avec un **disque persistant** monté sur `INSTITUT_INSTANCE` (ex. `/var/data`).
 
 ## Fonctionnalités
 

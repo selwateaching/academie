@@ -46,7 +46,7 @@ def bootstrap():
         if not password:
             password, generated = secrets.token_urlsafe(9), True
         seed.seed_all(conn, email, generate_password_hash(password))
-        if os.environ.get("INSTITUT_SEED_DEMO", "1") == "1":
+        if os.environ.get("INSTITUT_SEED_DEMO", "0") == "1":
             seed.seed_demo(conn)
             seed.seed_demo_diagnostic(conn)
             conn.execute("UPDATE outbox SET status='cancelled' WHERE status='pending' AND send_at<?", (db.now_iso(),))

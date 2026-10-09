@@ -8,9 +8,12 @@ body { background: radial-gradient(1100px 600px at 100% -5%, #fbdfe9, transparen
 .nav ul { display: flex; gap: 30px; list-style: none; margin: 0; padding: 0; }
 .nav ul a { color: var(--ink); font-size: .95rem; padding: 6px 0; border-bottom: 2px solid transparent; }
 .nav ul a:hover { border-color: var(--rose-300); text-decoration: none; }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.nav .acct { color: var(--rose-deep); border: 1.5px solid var(--rose-300); border-radius: 999px; padding: .62em 1.3em; font-weight: 500; white-space: nowrap; background: rgba(255, 255, 255, .6); }
+.nav .acct:hover { background: var(--rose-100); text-decoration: none; }
 .nav .cta { background: linear-gradient(135deg, #a63a78, #c2587f); color: #fff; border-radius: 999px; padding: .75em 1.5em; font-weight: 500; box-shadow: 0 8px 20px -10px rgba(143, 47, 100, .8); white-space: nowrap; }
 .nav .cta:hover { text-decoration: none; filter: brightness(1.06); }
-@media (max-width: 900px) { .nav ul { display: none; } .brand b { font-size: 1.9rem; white-space: nowrap; } .brand small { font-size: .5rem; letter-spacing: .22em; white-space: nowrap; } .nav .wrap { height: 72px; } .nav .cta { padding: .6em 1.1em; font-size: .88rem; } }
+@media (max-width: 900px) { .nav ul { display: none; } .brand b { font-size: 1.9rem; white-space: nowrap; } .brand small { font-size: .5rem; letter-spacing: .22em; white-space: nowrap; } .nav .wrap { height: 72px; } .nav .cta { padding: .6em 1em; font-size: .85rem; } .nav .acct { padding: .55em .9em; font-size: .85rem; } .nav-actions { gap: 6px; } }
 
 .sparkle::after { content: " ✦"; color: var(--gold); font-size: .8em; }
 .deco { position: absolute; pointer-events: none; z-index: 3; user-select: none; }
@@ -167,3 +170,12 @@ footer.site small { color: var(--muted); }
 .lb.single .lb-p, .lb.single .lb-n, .lb.single .lb-t { display: none; }
 .lb-t { position: absolute; bottom: 18px; left: 0; right: 0; text-align: center; color: #fff; font-size: .9rem; letter-spacing: .1em; }
 @media (max-width: 640px) { .lb { padding: 56px 12px 60px; } .lb-p, .lb-n { top: auto; bottom: 8px; transform: none; } .lb-p { left: 16px; } .lb-n { right: 16px; } }
+
+/* petits écrans : en-tête resserré pour que « Mon compte » et « Prendre RDV » tiennent */
+@media (max-width: 520px) {
+  .nav .wrap { gap: 8px; width: calc(100% - 24px); }
+  .brand b { font-size: 1.55rem; }
+  .brand small { display: none; }
+  .nav .acct, .nav .cta { font-size: .8rem; padding: .55em .85em; }
+  .nav-actions { gap: 6px; }
+}
