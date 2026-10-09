@@ -5,7 +5,7 @@
   const NAV = [
     ['', 'Tableau de bord', 'home'], ['planning', 'Planning', 'calendar'], ['clientes', 'Clientes', 'users'], ['diagnostics', 'Diagnostics', 'sparkle'],
     ['prestations', 'Prestations', 'scissors'], ['produits', 'Produits', 'box'], ['stocks', 'Stocks', 'layers'], ['devis', 'Devis', 'file'],
-    ['factures', 'Factures', 'receipt'], ['stats', 'Statistiques', 'chart'], ['messages', 'Communications', 'mail'], ['parametres', 'Paramètres', 'gear'],
+    ['factures', 'Factures', 'receipt'], ['avis', 'Avis', 'star'], ['stats', 'Statistiques', 'chart'], ['messages', 'Communications', 'mail'], ['parametres', 'Paramètres', 'gear'],
   ];
   const app = document.getElementById('app');
   const LS = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ignoré */ } } };

@@ -936,6 +936,29 @@ def register(app):
         return jsonify(photos=rows(conn_(), "SELECT b.id,b.kind,b.taken_on,b.comment,b.appointment_id,sv.name AS service FROM ba_photos b JOIN users u ON u.id=b.client_id "
                                               "LEFT JOIN services sv ON sv.id=b.service_id WHERE b.marketing_ok=1 AND u.consent_photos=1 ORDER BY b.taken_on DESC"))
 
+    # ======================================================================= avis
+    @app.get(P + "/reviews")
+    @web.pro_required
+    def a_reviews():
+        return jsonify(reviews=rows(conn_(), "SELECT r.*, sv.name AS service FROM reviews r LEFT JOIN services sv ON sv.id=r.service_id ORDER BY (r.status='pending') DESC, r.id DESC LIMIT 300"))
+
+    @app.post(P + "/reviews/<int:rid>/status")
+    @web.pro_required
+    def a_review_status(rid):
+        conn, d = conn_(), web.body()
+        if d.get("status") not in ("published", "hidden", "pending"):
+            abort(400, "Statut invalide.")
+        conn.execute("UPDATE reviews SET status=? WHERE id=?", (d["status"], rid))
+        conn.commit()
+        return jsonify(ok=True)
+
+    @app.delete(P + "/reviews/<int:rid>")
+    @web.pro_required
+    def a_review_delete(rid):
+        conn_().execute("DELETE FROM reviews WHERE id=?", (rid,))
+        conn_().commit()
+        return jsonify(ok=True)
+
     # =================================================================== statistiques
     @app.get(P + "/stats")
     @web.pro_required

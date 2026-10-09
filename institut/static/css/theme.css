@@ -1,21 +1,21 @@
 /* Design system — institut de beauté : rose poudré, nude, or léger */
 :root {
-  --cream: #fbf6f2;
-  --paper: #fffdfb;
-  --rose-50: #fdf4f2;
-  --rose-100: #f8e6e3;
-  --rose-200: #f2d3cf;
-  --rose-300: #e7bbb7;
-  --nude: #ead6ca;
-  --nude-deep: #d9bba9;
-  --rose: #c4707f;
-  --rose-deep: #a95868;
-  --gold: #b8975a;
+  --cream: #fdf3f4;
+  --paper: #fffafb;
+  --rose-50: #fdf0f4;
+  --rose-100: #f9e1ea;
+  --rose-200: #f3cbdb;
+  --rose-300: #e8aec8;
+  --nude: #efd9d8;
+  --nude-deep: #dcb9bf;
+  --rose: #b24a80;
+  --rose-deep: #8f2f64;
+  --gold: #c4a064;
   --gold-soft: #e6d3a8;
-  --ink: #3a3435;
-  --ink-soft: #5d5354;
-  --muted: #8b7f80;
-  --line: #eadcd7;
+  --ink: #3a2f38;
+  --ink-soft: #5f5160;
+  --muted: #8d7f8e;
+  --line: #efdce3;
   --ok: #5f8f72;
   --ok-bg: #e7f1ea;
   --warn: #b7791f;
@@ -28,7 +28,10 @@
   --radius-sm: 12px;
   --shadow: 0 1px 2px rgba(120, 80, 80, .05), 0 12px 32px -12px rgba(150, 90, 100, .18);
   --shadow-sm: 0 1px 2px rgba(120, 80, 80, .06), 0 4px 14px -6px rgba(150, 90, 100, .14);
-  --serif: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
+  --serif: "Playfair Display", "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --script: "Cormorant Garamond", Georgia, serif;
+  --logo: "Great Vibes", "Cormorant Garamond", cursive;
+  --plum: #6f2158;
   --sans: "Jost", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -37,13 +40,13 @@ body { margin: 0; background: var(--cream); color: var(--ink); font-family: var(
 img { max-width: 100%; display: block; }
 a { color: var(--rose-deep); text-decoration: none; }
 a:hover { text-decoration: underline; }
-h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; line-height: 1.12; margin: 0 0 .4em; letter-spacing: .005em; }
+h1, h2, h3, h4 { font-family: var(--serif); font-weight: 600; color: var(--plum); line-height: 1.12; margin: 0 0 .4em; letter-spacing: .005em; }
 h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); }
 h2 { font-size: clamp(1.8rem, 4vw, 2.7rem); }
 h3 { font-size: 1.45rem; }
 h4 { font-size: 1.15rem; }
 p { margin: 0 0 1em; }
-.script { font-family: var(--serif); font-style: italic; color: var(--rose); }
+.script { font-family: var(--script); font-style: italic; font-weight: 500; color: var(--rose); }
 .eyebrow { font-size: .74rem; letter-spacing: .24em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
 .muted { color: var(--muted); }
 .small { font-size: .88rem; }

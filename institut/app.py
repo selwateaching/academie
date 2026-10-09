@@ -120,8 +120,11 @@ def create_app():
         cats = {}
         for s in services:
             cats.setdefault(s["category"], []).append(s)
+        reviews = rows(conn, "SELECT r.*, sv.name AS service FROM reviews r LEFT JOIN services sv ON sv.id=r.service_id WHERE r.status='published' ORDER BY r.id DESC LIMIT 6")
+        stat = row(conn, "SELECT COUNT(*) AS n, AVG(rating) AS avg FROM reviews WHERE status='published'")
         return render_template("landing.html", cats=cats, loyalty=core.setting(conn, "loyalty", {}),
-                               hours=core.setting(conn, "opening_hours", {}), **brand())
+                               hours=core.setting(conn, "opening_hours", {}), reviews=reviews,
+                               rating={"n": stat["n"], "avg": round(stat["avg"], 1) if stat["avg"] else None}, **brand())
 
     @app.route("/reserver")
     @app.route("/compte")
@@ -190,6 +193,13 @@ def create_app():
                          "LEFT JOIN diagnostics d ON d.id=s.diagnostic_id AND d.active=1 "
                          "WHERE s.active=1 AND s.online_bookable=1 ORDER BY s.position, s.id")
         return jsonify(services=out)
+
+    @app.get("/api/public/reviews")
+    def api_reviews():
+        conn = web.get_db()
+        out = rows(conn, "SELECT r.id, r.rating, r.text, r.display_name, r.created_at, sv.name AS service FROM reviews r "
+                         "LEFT JOIN services sv ON sv.id=r.service_id WHERE r.status='published' ORDER BY r.id DESC LIMIT 50")
+        return jsonify(reviews=out)
 
     @app.get("/api/public/diagnostics/<slug>")
     def api_diag(slug):

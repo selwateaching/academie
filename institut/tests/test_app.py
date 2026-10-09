@@ -253,3 +253,24 @@ def test_stats_and_settings(pro):
     assert j(pro.get("/api/admin/stats"))["months"]
     assert pro.put("/api/admin/settings/opening_hours", json={"value": {"1": [["18:00", "09:00"]]}}, headers=H).status_code == 400
     assert pro.put("/api/admin/settings/loyalty", json={"value": {"reward_points": 50}}, headers=H).status_code == 200
+
+
+def test_reviews_flow_requires_completed_visit_and_moderation(pro, client, anon):
+    soin = services(anon)["soin-hydratant"]
+    # pas d'avis sans prestation terminée
+    assert client.post("/api/client/reviews", json={"appointment_id": 1, "rating": 5}, headers=H).status_code == 409
+    aid = j(client.post("/api/client/bookings", json={"service_id": soin["id"], "start": next_slot(anon, soin["id"], 30)}, headers=H))["appointment"]["id"]
+    assert client.post("/api/client/reviews", json={"appointment_id": aid, "rating": 5}, headers=H).status_code == 409  # pas encore terminée
+    pro.post(f"/api/admin/appointments/{aid}/status", json={"status": "termine"}, headers=H)
+    assert j(client.get("/api/client/reviews"))["eligible"][0]["id"] == aid
+    assert client.post("/api/client/reviews", json={"appointment_id": aid, "rating": 9}, headers=H).status_code == 400
+    assert client.post("/api/client/reviews", json={"appointment_id": aid, "rating": 5, "text": "Merci !"}, headers=H).status_code == 201
+    assert client.post("/api/client/reviews", json={"appointment_id": aid, "rating": 5}, headers=H).status_code == 409  # un seul avis
+    # en attente : invisible du public
+    assert j(anon.get("/api/public/reviews"))["reviews"] == []
+    rid = [r for r in j(pro.get("/api/admin/reviews"))["reviews"] if r["client_id"] == client.uid][0]["id"]
+    assert pro.post(f"/api/admin/reviews/{rid}/status", json={"status": "published"}, headers=H).status_code == 200
+    pub = j(anon.get("/api/public/reviews"))["reviews"]
+    assert pub and pub[0]["text"] == "Merci !" and pub[0]["display_name"].startswith("Léa")
+    assert b"Merci !" in anon.get("/").data
+    assert anon.post("/api/admin/reviews/1/status", json={"status": "published"}, headers=H).status_code == 401

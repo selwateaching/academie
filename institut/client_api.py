@@ -145,6 +145,39 @@ def register(app):
         conn.commit()
         return jsonify(appointment=appt_out(conn, row(conn, "SELECT * FROM appointments WHERE id=?", (aid,)))), 201
 
+    # ---------------------------------------------------------------- avis
+    @app.get("/api/client/reviews")
+    @web.login_required
+    def c_reviews():
+        """Prestations terminées pouvant recevoir un avis + avis déjà donnés."""
+        conn, u = web.get_db(), web.current_user()
+        todo = rows(conn, "SELECT a.id, a.start, sv.name AS service_name FROM appointments a JOIN services sv ON sv.id=a.service_id "
+                          "WHERE a.client_id=? AND a.status='termine' AND a.id NOT IN (SELECT appointment_id FROM reviews WHERE appointment_id IS NOT NULL) ORDER BY a.start DESC", (u["id"],))
+        done = rows(conn, "SELECT r.id, r.rating, r.text, r.status, r.created_at, sv.name AS service FROM reviews r LEFT JOIN services sv ON sv.id=r.service_id WHERE r.client_id=? ORDER BY r.id DESC", (u["id"],))
+        return jsonify(eligible=todo, reviews=done)
+
+    @app.post("/api/client/reviews")
+    @web.login_required
+    def c_review_create():
+        conn, u = web.get_db(), web.current_user()
+        d = web.body()
+        a = row(conn, "SELECT * FROM appointments WHERE id=? AND client_id=? AND status='termine'", (d.get("appointment_id"), u["id"]))
+        if not a:
+            abort(409, "Vous pouvez donner votre avis après une prestation réalisée.")
+        if row(conn, "SELECT 1 AS x FROM reviews WHERE appointment_id=?", (a["id"],)):
+            abort(409, "Vous avez déjà donné votre avis sur cette prestation.")
+        try:
+            rating = int(d.get("rating"))
+        except (TypeError, ValueError):
+            abort(400, "Note invalide.")
+        if not 1 <= rating <= 5:
+            abort(400, "La note doit être comprise entre 1 et 5.")
+        name = f"{u['first_name']} {u['last_name'][:1]}." if u["last_name"] else u["first_name"]
+        conn.execute("INSERT INTO reviews(client_id,appointment_id,service_id,rating,text,display_name,status,created_at) VALUES (?,?,?,?,?,?,'pending',?)",
+                     (u["id"], a["id"], a["service_id"], rating, web.clean(d.get("text"), 800), name, db.now_iso()))
+        conn.commit()
+        return jsonify(ok=True), 201
+
     # --------------------------------------------------------------- devis
     @app.get("/api/client/quotes")
     @web.login_required

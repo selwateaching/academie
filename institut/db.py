@@ -236,6 +236,18 @@ CREATE TABLE IF NOT EXISTS loyalty_ledger (
   created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL REFERENCES users(id),
+  appointment_id INTEGER UNIQUE REFERENCES appointments(id) ON DELETE SET NULL,
+  service_id INTEGER REFERENCES services(id) ON DELETE SET NULL,
+  rating INTEGER NOT NULL,
+  text TEXT NOT NULL DEFAULT '',
+  display_name TEXT NOT NULL DEFAULT '',
+  status TEXT NOT NULL DEFAULT 'pending',     -- pending | published | hidden
+  created_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS outbox (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   client_id INTEGER REFERENCES users(id),

@@ -70,6 +70,18 @@
     modal(`Facture ${i.number}`, body, [!['paid', 'void'].includes(i.status) ? { label: 'Encaisser…', keep: true, onclick: () => { document.querySelectorAll('.modal-bg').forEach(m => m.remove()); modal('Encaisser', h('div.stack', field('Montant (€)', amount), field('Mode de règlement', method)), [{ label: 'Annuler', cls: 'ghost' }, { label: 'Enregistrer le paiement', onclick: async () => { await post(`/api/admin/invoices/${i.id}/payments`, { amount: +amount.value, method: method.value }); toast('Paiement enregistré.', 'ok'); A.route(); } }]); return false; } } : null, { label: 'Fermer', cls: 'ghost' }].filter(Boolean));
   }
 
+  // ===================================================================== avis
+  A.register('avis', async () => {
+    const { reviews } = await get('/api/admin/reviews');
+    const LAB = { pending: ['À relire', 'info'], published: ['Publié', 'ok'], hidden: ['Masqué', 'neutral'] };
+    const set = async (id, status) => { await post(`/api/admin/reviews/${id}/status`, { status }); toast(status === 'published' ? 'Avis publié sur le site.' : 'Avis mis à jour.', 'ok'); A.route(); };
+    return h('div', A.header('Avis', 'Les avis des clientes (réservés aux prestations réalisées). Rien n\'est publié sans votre accord.'),
+      reviews.length ? reviews.map(r => h('div.card', h('div.row.between', h('div', h('b', r.display_name), h('span.small.muted', ' · ' + (r.service || '') + ' · ' + shortDate(r.created_at))), h('span.badge.' + LAB[r.status][1], LAB[r.status][0])),
+        h('div', { style: { color: 'var(--gold)' } }, '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)), r.text ? h('p', r.text) : h('p.muted', 'Sans commentaire.'),
+        h('div.row', r.status !== 'published' ? h('button.btn.sm', { onclick: () => set(r.id, 'published') }, 'Publier') : h('button.btn.ghost.sm', { onclick: () => set(r.id, 'hidden') }, 'Masquer'),
+          h('button.btn.danger.sm', { onclick: async () => { if (await confirmBox('Supprimer cet avis ?', '', 'Supprimer', true)) { await del('/api/admin/reviews/' + r.id); A.route(); } } }, 'Supprimer')))) : h('div.card', h('div.empty', icon('star'), h('p', 'Aucun avis pour le moment. Les clientes peuvent en donner depuis leur espace après une prestation terminée.'))));
+  });
+
   // ============================================================== statistiques
   const C = { rose: '#c4707f', gold: '#b8975a', nude: '#d9bba9', soft: '#f2d3cf', ok: '#5f8f72', bad: '#b5495b', info: '#5a7fa3', warn: '#d99a2b', ink: '#6e6260' };
   const svg = (w, hgt, ...kids) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', `0 0 ${w} ${hgt}`); s.setAttribute('class', 'chart'); s.setAttribute('role', 'img'); kids.flat().forEach(k => k && s.appendChild(k)); return s; };

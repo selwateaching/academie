@@ -36,7 +36,7 @@
   function nav() {
     const u = S.user, cur = location.hash || '#/';
     const links = [['#/', 'Accueil', 'home'], ['#/prestations', 'Réserver', 'calendar']];
-    if (u) links.push(['#/rdv', 'Mes rendez-vous', 'clock'], ['#/devis', 'Devis', 'file'], ['#/historique', 'Historique', 'sparkle'], ['#/factures', 'Factures', 'receipt'], ['#/fidelite', 'Fidélité', 'heart'], ['#/profil', 'Profil', 'user']);
+    if (u) links.push(['#/rdv', 'Mes rendez-vous', 'clock'], ['#/devis', 'Devis', 'file'], ['#/historique', 'Historique', 'sparkle'], ['#/avis', 'Avis', 'heart'], ['#/factures', 'Factures', 'receipt'], ['#/fidelite', 'Fidélité', 'heart'], ['#/profil', 'Profil', 'user']);
     const top = document.getElementById('topnav');
     mount(top, links.map(([href, label]) => h('a', { href, class: cur === href || (href !== '#/' && cur.startsWith(href)) ? 'on' : '' }, label)),
       u ? h('button.btn.ghost.sm', { onclick: logout }, 'Déconnexion') : h('a.btn.sm', { href: '#/connexion' }, 'Connexion'));
@@ -61,7 +61,7 @@
       const fn = {
         '': viewHome, prestations: () => viewServices(arg), diagnostic: () => viewDiagnostic(arg), resultat: viewResult, creneau: viewSlots,
         connexion: viewAuth, recap: viewRecap, confirmation: () => viewConfirmation(arg), rdv: viewAppointments, devis: () => (arg ? viewQuote(arg) : viewQuotes()),
-        historique: viewHistory, factures: viewInvoices, profil: viewProfile, fidelite: viewLoyalty, notifications: viewNotifications,
+        historique: viewHistory, avis: viewReviews, factures: viewInvoices, profil: viewProfile, fidelite: viewLoyalty, notifications: viewNotifications,
       }[seg || ''];
       if (!fn) return mount(view, h('div.empty', 'Page introuvable.'));
       const node = await fn();
@@ -404,6 +404,21 @@
         d.photos.length ? h('div.photos-row', d.photos.map(p => h('a', { href: '/media/private/' + p.file, target: '_blank', rel: 'noopener' }, h('img', { src: '/media/private/' + p.file, alt: p.label, loading: 'lazy' })))) : null),
         d.validation === 'pending' ? h('span.badge.info', 'En cours de validation') : d.validation === 'approved' ? h('span.badge.ok', 'Validé') : d.validation === 'declined' ? h('span.badge.bad', 'Non retenu') : null)) : h('div.empty', 'Aucun diagnostic.')),
       h('div.card', { style: { marginTop: '20px' } }, h('h3', 'Prestations réalisées'), appointments.length ? appointments.map(a => h('div.list-item', h('div.main', appointmentRow(a)), h('b', eur(a.price)))) : h('div.empty', 'Aucune prestation réalisée pour le moment.')));
+  }
+  async function viewReviews() {
+    needLogin();
+    const { eligible, reviews } = await get('/api/client/reviews');
+    const forms = eligible.map(a => {
+      let rating = 5; const stars = h('div.row', { style: { gap: '4px' } }), txt = h('textarea', { placeholder: 'Racontez votre expérience (facultatif)…', maxlength: 800 });
+      const draw = () => mount(stars, [1, 2, 3, 4, 5].map(n => h('button.chip', { type: 'button', class: n <= rating ? 'on' : '', 'aria-label': n + ' sur 5', onclick: () => { rating = n; draw(); } }, '★')));
+      draw();
+      return h('div.card', h('b', a.service_name), h('div.small.muted', cap(longDate(parse(a.start)))), h('div', { style: { margin: '10px 0' } }, stars), txt,
+        h('div.row', { style: { marginTop: '10px' } }, h('button.btn', { onclick: async () => { try { await post('/api/client/reviews', { appointment_id: a.id, rating, text: txt.value }); toast('Merci ! Votre avis sera publié après relecture.', 'ok'); route(); } catch (e) { fail(e); } } }, 'Envoyer mon avis')));
+    });
+    const lab = { pending: ['En relecture', 'info'], published: ['Publié', 'ok'], hidden: ['Non publié', 'neutral'] };
+    return h('div', { style: { maxWidth: '640px', margin: '0 auto' } }, h('h1.page-title', 'Mes avis'), h('p.page-sub', 'Après chaque prestation, partagez votre expérience. Votre prénom et l\'initiale de votre nom seront affichés, après relecture par l\'institut.'),
+      forms.length ? forms : h('div.card', h('div.empty', icon('heart'), h('p', 'Aucune prestation en attente d\'avis.'))),
+      reviews.length ? h('div.card', h('h3', 'Mes avis donnés'), reviews.map(r => h('div.list-item', h('div.main', h('b', r.service || 'Prestation'), h('div.small', '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating)), r.text ? h('div.small.muted', r.text) : null), h('span.badge.' + lab[r.status][1], lab[r.status][0])))) : null);
   }
   async function viewInvoices() {
     needLogin();
