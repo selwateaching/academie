@@ -118,6 +118,7 @@ let S;
 function load(){try{S=JSON.parse(localStorage.getItem('rosee_demo'))}catch(e){S=null}
  if(!S){S={appts:[],rules:RULES0.map(r=>({id:r.id,on:1})),products:STOCK0.map(s=>({name:s[0],qty:s[1],min:s[2],unit:s[3]})),n:1};
   const t=new Date();[1,2,3].forEach((k,i)=>{const d=new Date(t);d.setDate(d.getDate()+k);if(d.getDay()===0||d.getDay()===1)d.setDate(d.getDate()+2);S.appts.push({id:S.n++,client:['Sofia Benali','Inès Lefèvre','Nadia Haddad'][i],svc:['semi','hyd','rep'][i],date:ymd(d),time:['10:00','14:30','11:00'][i],status:'confirme'})})}
+ if(S.user===undefined)S.user=null;
  if(!S.products)S.products=STOCK0.map((s,i)=>({name:s[0],qty:(S.stock||[])[i]??s[1],min:s[2],unit:s[3]}));
  save()}
 function save(){try{localStorage.setItem('rosee_demo',JSON.stringify(S))}catch(e){}}
@@ -144,10 +145,10 @@ function evaluate(diag,answers,requested){
 
 /* ===================== navigation ===================== */
 let page='home',flow=null,admTab='dash';
-const NAV=[['home','Accueil'],['book','Réserver'],['mine','Mes rendez-vous'],['pro','Espace pro']];
+const NAV=[['home','Accueil'],['book','Réserver'],['mine','Mes rendez-vous'],['account','Mon compte'],['pro','Espace pro']];
 function go(p){page=p;if(p==='book'&&!flow)flow={step:'svc'};render()}
 function render(){document.getElementById('nav').replaceChildren(...NAV.map(([k,l])=>h('button',{class:page===k?'on':'',onclick:()=>go(k)},l)));window.scrollTo(0,0);
- ({home:vHome,book:vBook,mine:vMine,pro:vPro})[page]()}
+ ({home:vHome,book:vBook,mine:vMine,account:vAccount,pro:vPro})[page]()}
 
 function vHome(){mount(
  h('div',{class:'card tint'},h('p',{class:'small muted'},'INSTITUT DE BEAUTÉ'),h('h1',{},'La beauté est une ',h('span',{class:'script'},'forme de confiance.')),
@@ -181,7 +182,7 @@ function vBook(){const f=flow;
    h('h3',{},fdate(f.day)),h('div',{class:'times'},slots(f.day,s).map(t=>h('button',{class:'time'+(f.time===t?' on':''),onclick:()=>{f.time=t;draw()}},t))),
    h('div',{class:'row',style:'margin-top:18px'},h('button',{class:'btn ghost',onclick:()=>{f.step=f.result?'result':'svc';render()}},'Retour'),h('button',{class:'btn',disabled:!f.time,onclick:()=>{f.step='account';render()}},'Continuer')))};
   draw();return mount(h('h2',{},'Choisissez votre créneau'),h('p',{class:'muted'},s.name+' · '+s.dur+' min · '+eur(s.price)),box)}
- if(f.step==='account'){const s=f.book;const nm=h('input',{placeholder:'Prénom et nom',value:f.name||''}),em=h('input',{type:'email',placeholder:'Email',value:f.email||''});const needVal=f.result&&f.result.valid;
+ if(f.step==='account'){const s=f.book;const nm=h('input',{placeholder:'Prénom et nom',value:f.name||(S.user?S.user.name:'')}),em=h('input',{type:'email',placeholder:'Email',value:f.email||(S.user?S.user.email:'')});const needVal=f.result&&f.result.valid;
   return mount(h('h2',{},'Récapitulatif'),h('div',{class:'card'},h('div',{class:'row between'},h('div',{},h('b',{},s.name),h('div',{class:'small muted'},fdate(f.day)+' à '+f.time)),h('span',{class:'price'},eur(s.price))),
    (f.result?f.result.alerts:[]).map(a=>h('div',{class:'notice warn'},'⚠ '+a)),needVal?h('div',{class:'notice info'},'Demande soumise à validation de la professionnelle.'):null,
    s.deposit&&!needVal?h('div',{class:'notice info'},'Acompte de '+eur(s.deposit)+' pour garantir le créneau (démo : aucun paiement réel).'):null,
@@ -195,8 +196,41 @@ function slots(day,s){const out=[],taken=S.appts.filter(a=>a.date===day&&a.statu
  for(let m=9*60+30;m+s.dur<=end;m+=30){if(m>=12*60+30&&m<13*60+30)continue;if(m<13*60+30&&m+s.dur>12*60+30)continue;
   const ok=!taken.some(a=>{const a0=+a.time.slice(0,2)*60+ +a.time.slice(3),a1=a0+svc(a.svc).dur;return m<a1&&m+s.dur>a0});if(ok)out.push(String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0'))}return out}
 
+
+/* ===================== mon compte (démo : stocké dans ce navigateur) ===================== */
+function vAccount(){
+ if(!S.user){let mode='register';const box=h('div');
+  const draw=()=>{const err=h('div');
+   const nm=h('input',{placeholder:'Prénom et nom'}),em=h('input',{type:'email',placeholder:'Email'}),ph=h('input',{type:'tel',placeholder:'Téléphone (facultatif)'}),pw=h('input',{type:'password',placeholder:'Mot de passe (8 caractères minimum)'}),cs=h('input',{type:'checkbox',style:'width:auto;min-height:0'});
+   const submit=()=>{err.replaceChildren();
+    if(!em.value.includes('@'))return err.appendChild(h('div',{class:'notice warn'},'Merci de saisir un email valide.'));
+    if(pw.value.length<8)return err.appendChild(h('div',{class:'notice warn'},'Le mot de passe doit contenir au moins 8 caractères.'));
+    if(mode==='register'){if(!nm.value.trim())return err.appendChild(h('div',{class:'notice warn'},'Merci de saisir votre nom.'));
+     if(!cs.checked)return err.appendChild(h('div',{class:'notice warn'},'Votre accord sur le traitement de vos données est nécessaire.'));
+     S.user={name:nm.value.trim(),email:em.value.trim().toLowerCase(),phone:ph.value.trim()};S.known=S.known||[];if(!S.known.find(k=>k.email===S.user.email))S.known.push(S.user);save();render()}
+    else{const k=(S.known||[]).find(x=>x.email===em.value.trim().toLowerCase());if(!k)return err.appendChild(h('div',{class:'notice warn'},'Aucun compte avec cet email dans cette démo : créez-en un.'));S.user=k;save();render()}};
+   box.replaceChildren(h('div',{class:'row',style:'margin-bottom:14px'},h('button',{class:'btn sm'+(mode==='register'?'':' ghost'),onclick:()=>{mode='register';draw()}},'Créer un compte'),h('button',{class:'btn sm'+(mode==='login'?'':' ghost'),onclick:()=>{mode='login';draw()}},'Connexion')),
+    mode==='register'?h('label',{class:'f'},'Nom',nm):null,h('label',{class:'f'},'Email',em),mode==='register'?h('label',{class:'f'},'Téléphone',ph):null,h('label',{class:'f'},'Mot de passe',pw),
+    mode==='register'?h('label',{class:'row small',style:'margin-bottom:12px;flex-wrap:nowrap'},cs,h('span',{},'J\'accepte que mes données soient traitées par l\'institut pour gérer mes rendez-vous (je peux les exporter ou les supprimer à tout moment).')):null,
+    err,h('button',{class:'btn',onclick:submit},mode==='register'?'Créer mon compte':'Me connecter'),
+    h('p',{class:'small muted',style:'margin-top:12px'},'Démo : le compte reste dans ce navigateur et le mot de passe n\'est pas conservé.'))};
+  draw();return mount(h('h2',{},'Mon compte'),h('p',{class:'muted'},'Retrouvez vos rendez-vous, vos devis et vos points fidélité.'),h('div',{class:'card'},box))}
+ const u=S.user,mine=S.appts.filter(a=>a.email===u.email),today=ymd(new Date());
+ const next=mine.filter(a=>a.date>=today&&a.status!=='annule').sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];
+ const pts=Math.round(mine.filter(a=>a.status==='termine').reduce((t,a)=>t+svc(a.svc).price,0)),need=100;
+ const nm=h('input',{value:u.name}),ph=h('input',{value:u.phone||''});
+ mount(h('div',{class:'row between'},h('div',{},h('p',{class:'small muted'},'MON ESPACE'),h('h2',{},'Bonjour ',h('span',{class:'script'},u.name.split(' ')[0]),' ✨')),h('button',{class:'btn',onclick:()=>{flow={step:'svc'};go('book')}},'Prendre rendez-vous')),
+  h('div',{class:'grid'},
+   h('div',{class:'card'},h('h3',{},'Prochain rendez-vous'),next?h('div',{},h('b',{},svc(next.svc).name),h('div',{class:'small muted'},fdate(next.date)+' à '+next.time),h('div',{style:'margin-top:8px'},badge(next.status))):h('p',{class:'muted'},'Aucun rendez-vous à venir.'),h('button',{class:'btn ghost sm',style:'margin-top:10px',onclick:()=>go('mine')},'Voir tous mes rendez-vous')),
+   h('div',{class:'card',style:'background:linear-gradient(135deg,#a63a78,#d27aa0);color:#fff;border:0'},h('div',{class:'small',style:'opacity:.85'},'Mes points fidélité'),h('div',{style:'font:2.8rem var(--serif);line-height:1.1'},pts),h('div',{class:'small'},pts>=need?'🎁 5 € de réduction disponibles':'Plus que '+(need-pts)+' points pour 5 € de réduction'))),
+  h('div',{class:'card'},h('h3',{},'Mon profil'),h('label',{class:'f'},'Nom',nm),h('label',{class:'f'},'Email',h('input',{value:u.email,disabled:''})),h('label',{class:'f'},'Téléphone',ph),
+   h('div',{class:'row'},h('button',{class:'btn sm',onclick:()=>{u.name=nm.value.trim()||u.name;u.phone=ph.value.trim();save();render()}},'Enregistrer'),
+    h('button',{class:'btn ghost sm',onclick:()=>{const b=new Blob([JSON.stringify({profil:u,rendez_vous:mine},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='mes-donnees.json';a.click()}},'Exporter mes données'),
+    h('button',{class:'btn ghost sm',onclick:()=>{S.user=null;save();render()}},'Déconnexion'),
+    h('button',{class:'btn danger sm',onclick:()=>{if(confirm('Supprimer mon compte et mes rendez-vous ?')){S.appts=S.appts.filter(a=>a.email!==u.email);S.known=(S.known||[]).filter(k=>k.email!==u.email);S.user=null;save();render()}}},'Supprimer mon compte'))))}
+
 /* ===================== mes rendez-vous ===================== */
-function vMine(){const list=[...S.appts].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).filter(a=>a.email);
+function vMine(){const list=[...S.appts].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).filter(a=>a.email&&(!S.user||a.email===S.user.email));
  mount(h('h2',{},'Mes rendez-vous'),list.length?list.map(a=>h('div',{class:'card'},h('div',{class:'row between'},h('div',{},h('b',{},svc(a.svc).name),h('div',{class:'small muted'},fdate(a.date)+' à '+a.time+' · '+a.client)),h('div',{class:'row'},badge(a.status),a.status!=='annule'&&a.status!=='termine'?h('button',{class:'btn danger sm',onclick:()=>{a.status='annule';save();render()}},'Annuler'):null)))):h('div',{class:'card muted'},'Aucun rendez-vous. Réservez-en un depuis « Réserver ».'))}
 const LAB={demande:['Demande','badge'],confirme:['Confirmé','badge ok'],en_attente:['En attente','badge warn'],arrive:['Arrivé','badge warn'],termine:['Terminé','badge gray'],annule:['Annulé','badge bad']};
 const badge=s=>h('span',{class:LAB[s][1]},LAB[s][0]);
@@ -233,7 +267,9 @@ function pStock(){
  h('div',{class:'card'},h('h3',{},'Ajouter un produit'),h('div',{class:'grid'},nm,qt,mn,un),h('div',{style:'margin-top:12px'},h('button',{class:'btn',onclick:()=>{if(!nm.value.trim())return alert('Donnez un nom au produit.');S.products.push({name:nm.value.trim(),qty:Math.max(0,parseFloat(qt.value)||0),min:Math.max(0,parseFloat(mn.value)||0),unit:un.value.trim()||'unité'});save();render()}},'Ajouter'))),
  h('p',{class:'small muted'},'Dans la version complète, le stock est aussi déduit automatiquement quand une prestation est terminée.'))}
 
-load();render();
+load();
+{const hh=location.hash.slice(1);if(hh==='compte')page='account';else if(hh==='reserver'){page='book';flow={step:'svc'}}else if(hh==='pro')page='pro'}
+render();
 </script>
 </body>
 </html>
