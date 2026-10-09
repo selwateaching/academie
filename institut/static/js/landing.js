@@ -38,10 +38,9 @@
     }
     p.append(el('p', 'lb-eyebrow', 'Prestations'), el('h3', '', cat));
     svcs.forEach(s => {
-      const row = el('div', 'lb-svc');
+      const row = el('a', 'lb-svc'); row.href = '/reserver#/service/' + s.id; row.title = 'Réserver : ' + s.name;   // toute la ligne est cliquable
       const info = el('div', 'lb-info'); info.append(el('b', '', s.name), el('span', 'lb-muted', dur(s.duration) + (s.diag ? ' · diagnostic' : '')));
-      const side = el('div', 'lb-side'); side.append(el('span', 'lb-price', eur(s.price)));
-      const a = el('a', 'lb-btn sm', 'Réserver'); a.href = '/reserver#/service/' + s.id; side.append(a);
+      const side = el('div', 'lb-side'); side.append(el('span', 'lb-price', eur(s.price)), el('span', 'lb-btn sm', 'Réserver'));
       row.append(info, side); p.append(row);
     });
     const all = el('a', 'lb-link', 'Toutes les prestations →'); all.href = '/reserver#/prestations/' + encodeURIComponent(cat); p.append(all);
