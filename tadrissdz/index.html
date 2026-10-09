@@ -9566,7 +9566,13 @@ async function genCours(extraInstruction) {
      de "1h" dans le même budget de tokens, et se faisait couper net ("3 lignes" pour un cours de 2h sur
      un sujet d'histoire). On multiplie maintenant la limite de base par la durée (plafonné à 8000, la
      limite de sortie déjà utilisée sans souci pour le squelette "langue"). */
-  var baseMaxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 4000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
+  /* Tous les types sauf "Fiche pédagogique" (squelette à blancs dédié, plus court) utilisent le même
+     prompt "visualSystem" très détaillé (palette tc-*, règles de progression, auto-vérification avant
+     de répondre) — tout aussi long à produire correctement que le squelette "langue" qui avait déjà
+     besoin de 8000. Avec seulement 4000, "Cours complet" (et fiche/exos/intro/synthese/bem/bac/
+     positionnement/vocabsci) se faisait couper en plein milieu même pour une durée d'1h (ex: un cours
+     sur "phonème et graphème" en 4AM s'arrêtait après 539 caractères, en pleine balise HTML). */
+  var baseMaxTok = isLangue ? 8000 : (ty === 'fiche_peda') ? 3200 : 8000; /* le squelette Fiche pédagogique (5 moments + remédiation, ou 3 moments) est long : 2000 tronquait la réponse avant la fin. Le squelette "langue" (Acte de parole, 5 moments détaillés) est encore plus long : 4000 le tronquait aussi, d'où 8000. */
   var dureeMultiplier = Math.min(2, Math.max(1, parseDureeMinutes(dur) / 60));
   var maxTok = Math.min(8000, Math.round(baseMaxTok * dureeMultiplier));
   if (extraInstruction) prompt += '\n\n=== DEMANDE SPÉCIFIQUE DE L\'ENSEIGNANT POUR CETTE VERSION ===\n' + extraInstruction;
