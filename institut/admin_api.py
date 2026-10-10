@@ -234,6 +234,35 @@ def register(app):
         conn_().commit()
         return jsonify(ok=True)
 
+    @app.get(P + "/clients/<int:cid>/passport")
+    @web.pro_required
+    def a_client_passport(cid):
+        return jsonify(passport=core.passport(conn_(), cid))
+
+    @app.post(P + "/clients/<int:cid>/stamps")
+    @web.pro_required
+    def a_client_stamps(cid):
+        """Ajoute ou retire un éclat à la main (geste commercial, correction)."""
+        conn, d = conn_(), web.body()
+        delta = -1 if num(d.get("delta"), 1, -1) < 0 else 1
+        p = core.passport(conn, cid)
+        if delta < 0 and (p["current"] <= 0 or p["bonus"] + len(p["history"]) <= 0):
+            abort(409, "Aucun éclat à retirer.")
+        conn.execute("UPDATE users SET stamps_bonus=stamps_bonus+? WHERE id=? AND role='client' AND deleted=0", (delta, cid))
+        conn.commit()
+        return jsonify(passport=core.passport(conn, cid))
+
+    @app.post(P + "/clients/<int:cid>/reward")
+    @web.pro_required
+    def a_client_reward(cid):
+        """Marque la surprise comme remise : le papillon repart de zéro."""
+        conn = conn_()
+        if core.passport(conn, cid)["pending_rewards"] < 1:
+            abort(409, "Le papillon de cette cliente n'est pas encore complet.")
+        conn.execute("UPDATE users SET rewards_given=rewards_given+1 WHERE id=?", (cid,))
+        conn.commit()
+        return jsonify(passport=core.passport(conn, cid))
+
     @app.post(P + "/clients/<int:cid>/loyalty")
     @web.pro_required
     def a_client_loyalty(cid):
@@ -1061,7 +1090,19 @@ def register(app):
             val["slot_step"] = int(num(val["slot_step"], 30, 5))
             if val["slot_step"] not in (5, 10, 15, 20, 30, 45, 60):
                 abort(400, "Pas de créneau invalide.")
-        elif key in ("institute", "loyalty", "reminders", "marketing"):
+        elif key == "loyalty":
+            cur = core.setting(conn, key, {})
+            allowed = {"points_per_euro", "reward_points", "reward_value", "stamps_target", "reward_name", "milestones"}
+            val = {**cur, **{k: v for k, v in (val or {}).items() if k in allowed}}
+            val["stamps_target"] = int(max(2, min(30, num(val.get("stamps_target"), 10))))
+            val["reward_name"] = web.clean(val.get("reward_name"), 80) or "Surprise"
+            ms = []
+            for m in val.get("milestones") or []:
+                at = int(num(m.get("at"), 0))
+                if 0 < at < val["stamps_target"]:
+                    ms.append({"at": at, "label": web.clean(m.get("label"), 60), "msg": web.clean(m.get("msg"), 120)})
+            val["milestones"] = sorted(ms, key=lambda m: m["at"])
+        elif key in ("institute", "reminders", "marketing"):
             cur = core.setting(conn, key, {})
             val = {**cur, **{k: val[k] for k in cur if k in (val or {})}}
         core.set_setting(conn, key, val)

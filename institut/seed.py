@@ -40,7 +40,15 @@ DEFAULT_SETTINGS = {
         "cancel_hours": 24,
         "quote_validity_days": 30,
     },
-    "loyalty": {"points_per_euro": 1, "reward_points": 100, "reward_value": 5},
+    "loyalty": {
+        "points_per_euro": 1, "reward_points": 100, "reward_value": 5,
+        "stamps_target": 10, "reward_name": "Surprise Éclat de Rêve",
+        "milestones": [
+            {"at": 3, "label": "Mini attention", "msg": "Merci pour votre fidélité !"},
+            {"at": 6, "label": "Belle attention", "msg": "Vous êtes sur la bonne voie !"},
+            {"at": 9, "label": "Très belle attention", "msg": "Presque la récompense !"},
+        ],
+    },
     "reminders": {"confirmation": True, "h48": True, "h24": True, "thanks": True, "thanks_delay_hours": 3},
     "marketing": {"hero_image": "", "gallery": [], "category_images": {}},
 }

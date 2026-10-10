@@ -82,14 +82,14 @@
     const o = await get('/api/client/overview');
     S.user = o.user;
     const nxt = o.next[0];
-    const loy = o.loyalty, need = loy.reward_points || 100, pts = o.user.loyalty_points, pct = Math.min(100, pts / need * 100);
+    const { passport: stamps } = await get('/api/client/passport');
     return h('div',
       h('div.hello', h('div', h('p.eyebrow', 'Mon espace'), h('h1.page-title', 'Bonjour ', h('em.script', o.user.first_name), ' ✨')), h('a.btn', { href: '#/prestations' }, icon('plus'), 'Prendre rendez-vous')),
       h('div.grid', { style: { gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))' } },
         h('div.card', h('h3', 'Prochain rendez-vous'),
           nxt ? appointmentRow(nxt, true) : h('div.empty', icon('calendar'), h('p', 'Aucun rendez-vous à venir.'), h('a.btn.sm', { href: '#/prestations' }, 'Réserver'))),
-        h('div.card.points', h('div.small', { style: { opacity: .85 } }, 'Mes points fidélité'), h('div.big', pts), h('div.bar', h('i', { style: { width: pct + '%' } })),
-          h('div.small', pts >= need ? `🎁 Vous avez droit à ${loy.reward_value} € de réduction !` : `Plus que ${need - pts} points pour ${loy.reward_value} € de réduction`))),
+        h('a.card.points.pp-home', { href: '#/fidelite', style: { color: '#fff', textDecoration: 'none' } }, h('div.small', { style: { opacity: .9 } }, 'Mon Passeport Beauté'), h('div.big', stamps.current + ' / ' + stamps.target), h('div.small', 'éclats'), h('div.bar', h('i', { style: { width: Math.min(100, stamps.current / stamps.target * 100) + '%' } })),
+          h('div.small', stamps.pending_rewards > 0 ? '🎁 ' + stamps.reward_name + ' vous attend !' : `Encore ${stamps.target - stamps.current} éclats avant votre surprise`))),
       o.quotes.length ? h('div.card', { style: { marginTop: '20px' } }, h('h3', 'Devis en attente'), o.quotes.map(q => h('div.list-item', h('div.main', h('b', q.number), h('div.small.muted', 'Valable jusqu\'au ' + shortDate(q.valid_until))), h('b', eur(q.total)), h('a.btn.sm', { href: '#/devis/' + q.id }, 'Consulter')))) : null,
       o.reminders.length ? h('div.card.flat', { style: { marginTop: '20px' } }, h('h4', icon('clock'), ' Prochains rappels'), o.reminders.map(r => h('div.list-item', h('span', r.subject), h('span.small.muted', shortDate(r.send_at))))) : null);
   }
@@ -169,10 +169,11 @@
     }
     function input(q) {
       if (q.type === 'text') { const t = h('textarea', { maxlength: 1000, placeholder: 'Votre réponse…', oninput: () => { A[q.id] = t.value; saveFlow(); const b = box.querySelector('.nav-row .btn:last-child'); if (b && q.required) b.disabled = !t.value.trim(); } }); t.value = A[q.id] || ''; return h('div.opts', t); }
-      if (q.type === 'multi') return h('div.opts', q.options.map(o => { const on = (A[q.id] || []).includes(o.value); const b = h('button.opt.multi', { class: on ? 'on' : '', type: 'button', 'aria-pressed': on, onclick: () => { const cur = new Set(A[q.id] || []); cur.has(o.value) ? cur.delete(o.value) : cur.add(o.value); A[q.id] = [...cur]; saveFlow(); draw(); } }, h('span.dot', icon('check')), o.label); return b; }));
+      const ill = window.Illus && window.Illus.forQuestion(q);
+      if (q.type === 'multi') return h('div.opts' + (ill ? '.illus-grid' : ''), q.options.map(o => { const on = (A[q.id] || []).includes(o.value); const b = h('button.opt.multi', { class: on ? 'on' : '', type: 'button', 'aria-pressed': on, onclick: () => { const cur = new Set(A[q.id] || []); cur.has(o.value) ? cur.delete(o.value) : cur.add(o.value); A[q.id] = [...cur]; saveFlow(); draw(); } }, h('span.dot', icon('check')), ill ? h('span.ill', ill[q.options.indexOf(o)].cloneNode(true)) : null, o.label); return b; }));
       const pick = (o) => { A[q.id] = o.value; saveFlow(); setTimeout(advance, 160); draw(); };
       if (q.type === 'scale') return h('div', h('div.scale', q.options.map(o => h('button.opt', { type: 'button', class: A[q.id] === o.value ? 'on' : '', 'aria-label': o.label, onclick: () => pick(o) }, o.value))), h('div.scale-legend', h('span', q.options[0].label.replace(/^\d\s*—\s*/, '')), h('span', q.options[q.options.length - 1].label.replace(/^\d\s*—\s*/, ''))));
-      return h('div.opts' + (q.type === 'yesno' ? '.two' : ''), q.options.map(o => h('button.opt', { type: 'button', class: A[q.id] === o.value ? 'on' : '', 'aria-pressed': A[q.id] === o.value, onclick: () => pick(o) }, h('span.dot', icon('check')), o.label)));
+      return h('div.opts' + (q.type === 'yesno' ? '.two' : '') + (ill ? '.illus-grid' : ''), q.options.map((o, i) => h('button.opt', { type: 'button', class: A[q.id] === o.value ? 'on' : '', 'aria-pressed': A[q.id] === o.value, onclick: () => pick(o) }, h('span.dot', icon('check')), ill ? h('span.ill', ill[i].cloneNode(true)) : null, o.label)));
     }
     function drawPhotos(prog) {
       if (!diag.photo_slots.length) return submit();
@@ -439,11 +440,34 @@
   }
   async function viewLoyalty() {
     needLogin();
-    const l = await get('/api/client/loyalty'), need = l.config.reward_points, pct = Math.min(100, l.points / need * 100);
-    return h('div', { style: { maxWidth: '640px', margin: '0 auto' } }, h('h1.page-title', 'Mes points fidélité'),
-      h('div.card.points', h('div.big', l.points), h('div.small', 'points'), h('div.bar', h('i', { style: { width: pct + '%' } })), h('div.small', l.points >= need ? `🎁 ${l.config.reward_value} € de réduction disponible : présentez-vous à l'institut, elle sera appliquée sur votre prochaine facture.` : `Plus que ${need - l.points} points pour ${l.config.reward_value} € de réduction.`)),
-      h('div.card', { style: { marginTop: '20px' } }, h('h3', 'Comment ça marche ?'), h('p', `${l.config.points_per_euro} point par euro dépensé. Tous les ${need} points, ${l.config.reward_value} € de réduction.`),
-        h('h4', 'Mouvements'), l.ledger.length ? l.ledger.map(m => h('div.list-item', h('div.main', m.reason, h('div.small.muted', shortDate(m.created_at))), h('b', { style: { color: m.points > 0 ? 'var(--ok)' : 'var(--rose-deep)' } }, (m.points > 0 ? '+' : '') + m.points))) : h('div.empty', 'Aucun mouvement.')));
+    const [{ passport: pp }, l] = await Promise.all([get('/api/client/passport'), get('/api/client/loyalty')]);
+    const left = Math.max(0, pp.target - pp.current);
+    const bf = h('div.pp-bf', { 'data-butterfly': '', 'data-got': pp.current, 'data-total': pp.target });
+    const since = pp.since ? new Date(pp.since.replace(' ', 'T')) : null;
+    const msTxt = (m) => m.reached ? 'Atteint ✓' : 'À ' + m.at + ' éclats';
+    const view = h('div.passport',
+      h('p.eyebrow', 'Programme fidélité'),
+      h('h1.page-title', 'Mon Passeport ', h('em.script', 'Beauté')),
+      h('div.pp-grid',
+        h('div.card.pp-main', h('h3', 'Mes éclats'), h('p.muted', 'Chaque prestation réalisée fait briller un éclat sur votre papillon.'),
+          bf,
+          h('div.pp-count', h('b', pp.current), ' / ' + pp.target + ' éclats'),
+          pp.pending_rewards > 0
+            ? h('div.pp-gift', '🎁 ', h('b', pp.reward_name), ' vous attend ! Présentez-vous à l\'institut pour la recevoir.')
+            : h('p.small.muted', left === 1 ? 'Plus qu\'un éclat avant votre surprise ✨' : `Encore ${left} éclats avant votre surprise.`)),
+        h('div.card', h('h3', 'Mes petites attentions'),
+          h('div.pp-ms', pp.milestones.map(m => h('div.pp-m' + (m.reached ? '.on' : ''),
+            h('span.dot', m.final ? '🎁' : String(m.at)), h('div', h('b', m.label), h('div.small.muted', m.msg || ''), h('div.small', msTxt(m))))))),
+        h('div.card', h('h3', 'Historique de mes éclats'),
+          pp.history.length || pp.bonus ? [
+            ...pp.history.slice(0, 10).map(v => h('div.list-item', h('span.pp-spark', '✦'), h('div.main', v.service, h('div.small.muted', shortDate(v.start))), h('b', { style: { color: 'var(--ok)' } }, '+1'))),
+            pp.bonus ? h('div.list-item', h('span.pp-spark', '✦'), h('div.main', 'Éclats offerts par l\'institut'), h('b', { style: { color: 'var(--ok)' } }, '+' + pp.bonus)) : null,
+          ] : h('div.empty', 'Votre premier éclat vous attend après votre prochaine prestation.')),
+        h('div.card.tint', h('h3', 'Mes avantages'),
+          h('ul.pp-adv', h('li', '1 prestation réalisée = 1 éclat'), h('li', `${pp.target} éclats = ${pp.reward_name}`), h('li', 'Petites attentions aux étapes ' + pp.milestones.filter(m => !m.final).map(m => m.at).join(', ')), l.points ? h('li', `Mes points : ${l.points}`) : null),
+          h('div.pp-since', h('b', S.user.first_name + ' ' + (S.user.last_name || '')), h('div.small.muted', since ? 'Cliente depuis ' + since.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : '')))));
+    window.Butterfly && window.Butterfly.draw(bf, pp.current, pp.target);
+    return view;
   }
   async function viewNotifications() {
     needLogin();

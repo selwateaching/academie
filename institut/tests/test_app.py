@@ -298,3 +298,20 @@ def test_client_space_vs_pro_account(pro, client, anon):
     # une cliente retrouve ses factures ; sans connexion, accès refusé
     assert client.get("/api/client/invoices").status_code == 200
     assert anon.get("/api/client/invoices").status_code == 401
+
+
+def test_passport_stamps_and_reward(client, pro):
+    pp = j(client.get("/api/client/passport"))["passport"]
+    assert pp["current"] == 0 and pp["target"] >= 2
+    cid = client.uid
+    base = f"/api/admin/clients/{cid}"
+    assert pro.post(base + "/reward", headers=H).status_code == 409
+    assert pro.post(base + "/stamps", json={"delta": -1}, headers=H).status_code == 409
+    for _ in range(pp["target"]):
+        assert pro.post(base + "/stamps", json={"delta": 1}, headers=H).status_code == 200
+    pp = j(client.get("/api/client/passport"))["passport"]
+    assert pp["current"] == pp["target"] and pp["pending_rewards"] == 1
+    assert pro.post(base + "/reward", headers=H).status_code == 200
+    pp = j(client.get("/api/client/passport"))["passport"]
+    assert pp["current"] == 0 and pp["pending_rewards"] == 0 and pp["rewards_given"] == 1
+    assert client.post(base + "/stamps", json={"delta": 1}, headers=H).status_code in (401, 403)

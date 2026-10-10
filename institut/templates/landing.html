@@ -196,16 +196,14 @@
 <section class="section alt" id="fidelite">
   <div class="wrap loyalty">
     <div>
-      <p class="eyebrow">Programme fidélité</p>
-      <h2>Chaque visite vous récompense</h2>
-      <p style="color:var(--ink-soft)">Gagnez {{ loyalty.points_per_euro }} point par euro dépensé. À {{ loyalty.reward_points }} points, bénéficiez de {{ '%g'|format(loyalty.reward_value) }} € de réduction sur votre prochaine prestation. Vos points sont visibles dans votre espace cliente.</p>
+      <p class="eyebrow">Mon Passeport Beauté</p>
+      <h2>Chaque visite fait briller un éclat</h2>
+      <p style="color:var(--ink-soft)">Une prestation réalisée = un éclat sur votre papillon. À {{ (loyalty.stamps_target|default(10)) }} éclats, « {{ loyalty.reward_name|default('Surprise Éclat de Rêve') }} » vous est offerte, avec de petites attentions en chemin. Suivez votre papillon dans votre espace cliente.</p>
       <a class="btn" href="/compte">Créer mon compte ✦</a>
     </div>
-    <div class="pass">
-      <div class="small" style="opacity:.85">Mes points fidélité</div>
-      <div class="pts">{{ (loyalty.reward_points * 0.64)|int }}</div>
-      <div class="bar"><i></i></div>
-      <div class="small">Plus que {{ (loyalty.reward_points * 0.36)|int }} points pour {{ '%g'|format(loyalty.reward_value) }} € de réduction</div>
+    <div class="pass pass-bf">
+      <div data-butterfly data-got="6" data-total="{{ (loyalty.stamps_target|default(10)) }}" style="max-width:260px;margin:0 auto"></div>
+      <div class="small" style="text-align:center">Exemple : 6 / {{ (loyalty.stamps_target|default(10)) }} éclats</div>
     </div>
   </div>
 </section>
@@ -238,4 +236,4 @@
   </div>
 </footer>
 {% endblock %}
-{% block scripts %}<script type="application/json" id="svc-data">{{ svcdata|tojson }}</script><script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/butterfly.js') }}"></script><script type="application/json" id="svc-data">{{ svcdata|tojson }}</script><script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}

@@ -282,6 +282,10 @@ def connect(path=None):
 
 def init_db(conn):
     conn.executescript(SCHEMA)
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
+    for col in ("stamps_bonus", "rewards_given"):   # Passeport Beauté : éclats offerts à la main, surprises remises
+        if col not in cols:
+            conn.execute(f"ALTER TABLE users ADD COLUMN {col} INTEGER NOT NULL DEFAULT 0")
     conn.commit()
 
 

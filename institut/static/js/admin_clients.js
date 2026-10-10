@@ -39,7 +39,8 @@
     return h('div.card', d.timeline.length ? h('div.timeline', d.timeline.slice(0, 80).map(e => h('div.tl', h('span.dot', icon(TL_ICON[e.type] || 'info')), h('div.when', shortDate(e.at.slice(0, 10)) + (e.at.length > 10 && e.at.slice(11, 16) !== '00:00' ? ' · ' + e.at.slice(11, 16) : '')), h('b', e.title), e.detail ? h('div.small.muted', e.detail) : null))) : h('div.empty', 'Aucun historique pour le moment.'));
   }
 
-  function infos(d, c, reload) {
+  async function infos(d, c, reload) {
+    const { passport: pp } = await get(`/api/admin/clients/${c.id}/passport`);
     const f = h('form.stack', { onsubmit: async (e) => {
       e.preventDefault(); const fd = new FormData(f), b = Object.fromEntries(fd);
       ['consent_data', 'consent_marketing', 'consent_photos'].forEach(k => b[k] = fd.has(k));
@@ -55,7 +56,11 @@
       h('label.check', h('input', { type: 'checkbox', name: 'consent_photos', checked: !!c.consent_photos }), h('span', 'Utilisation marketing des photos avant/après (retirer ce consentement désactive toutes ses photos publiées)')),
       h('div.row', h('button.btn', { type: 'submit' }, 'Enregistrer')));
     return h('div.grid', { style: { gridTemplateColumns: 'repeat(auto-fit,minmax(320px,1fr))' } }, h('div.card', f),
-      h('div.stack', h('div.card', h('h3', 'Fidélité'), h('p', `${c.loyalty_points} points`), d.loyalty_ledger.slice(0, 6).map(m => h('div.item-row', h('div.grow', m.reason, h('div.small.muted', shortDate(m.created_at))), h('b', (m.points > 0 ? '+' : '') + m.points))),
+      h('div.stack', h('div.card', h('h3', 'Passeport Beauté'), h('p', h('b', `${pp.current} / ${pp.target} éclats`), pp.pending_rewards > 0 ? h('span.badge.gold', { style: { marginLeft: '8px' } }, '🎁 ' + pp.reward_name + ' à remettre') : null), h('p.small.muted', `${pp.total} prestations/éclats au total · ${pp.rewards_given} surprise(s) remise(s)`),
+          h('div.row', h('button.btn.soft.sm', { onclick: async () => { try { await post(`/api/admin/clients/${c.id}/stamps`, { delta: 1 }); toast('+1 éclat.', 'ok'); reload(); } catch (e) { toast(e.message, 'err'); } } }, '+1 éclat'),
+            h('button.btn.ghost.sm', { onclick: async () => { try { await post(`/api/admin/clients/${c.id}/stamps`, { delta: -1 }); toast('-1 éclat.', 'ok'); reload(); } catch (e) { toast(e.message, 'err'); } } }, '−1'),
+            pp.pending_rewards > 0 ? h('button.btn.sm', { onclick: async () => { if (await confirmBox('Surprise remise ?', 'Confirmez que la cliente a reçu : ' + pp.reward_name, 'Oui, remise')) { try { await post(`/api/admin/clients/${c.id}/reward`); toast('Surprise enregistrée.', 'ok'); reload(); } catch (e) { toast(e.message, 'err'); } } } }, '🎁 Surprise remise') : null)),
+        h('div.card', h('h3', 'Points'), h('p', `${c.loyalty_points} points`), d.loyalty_ledger.slice(0, 6).map(m => h('div.item-row', h('div.grow', m.reason, h('div.small.muted', shortDate(m.created_at))), h('b', (m.points > 0 ? '+' : '') + m.points))),
         h('button.btn.soft.sm', { onclick: () => pointsModal(c, reload) }, 'Ajuster les points')),
         h('div.card', h('h3', 'Accès au compte'), h('p.small.muted', 'La cliente se connecte avec son email. En cas d\'oubli, générez un mot de passe temporaire à lui communiquer.'),
           h('button.btn.ghost.sm', { onclick: async () => { if (await confirmBox('Générer un mot de passe temporaire ?', 'L\'ancien mot de passe ne fonctionnera plus.', 'Générer')) { const r = await post(`/api/admin/clients/${c.id}/reset-password`); modal('Mot de passe temporaire', h('div.stack', h('p', 'À transmettre à la cliente (affiché une seule fois) :'), h('input', { readonly: true, value: r.temporary_password, onfocus: (e) => e.target.select() })), [{ label: 'Fermer' }]); } } }, icon('lock'), 'Mot de passe temporaire'))));

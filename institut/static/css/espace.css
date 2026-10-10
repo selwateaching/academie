@@ -112,3 +112,29 @@ table.quote tr.total td { border: 0; border-top: 1px solid var(--gold); font-wei
 .confirm-hero .ok-ic .icon { width: 36px; height: 36px; stroke-width: 2; }
 .disclaimer { font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; margin-top: 18px; }
 @media (max-width: 520px) { .opts.two { grid-template-columns: 1fr; } .card { padding: 18px; } }
+
+/* Passeport Beauté */
+.pp-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.pp-main { text-align: center; grid-column: 1 / -1; background: linear-gradient(180deg, #fff, #fbeef3); }
+.pp-bf { max-width: 300px; margin: 8px auto; }
+.pp-bf svg { width: 100%; height: auto; }
+.pp-count { font-family: var(--serif); font-size: 1.4rem; color: var(--plum); }
+.pp-count b { font-size: 2.2rem; }
+.pp-gift { margin-top: 12px; padding: 12px 16px; border-radius: 14px; background: #fff; border: 1px dashed #d8a35f; color: var(--plum); }
+.pp-ms { display: grid; gap: 14px; }
+.pp-m { display: flex; gap: 12px; align-items: center; opacity: .55; }
+.pp-m.on { opacity: 1; }
+.pp-m .dot { flex: 0 0 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #f3e3ea; color: var(--plum); font-weight: 700; }
+.pp-m.on .dot { background: linear-gradient(135deg, #e58fb0, #a56bc7); color: #fff; }
+.pp-spark { color: #d8a35f; margin-right: 8px; }
+.pp-adv { padding-left: 18px; line-height: 1.8; }
+.pp-since { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(111, 33, 88, .15); }
+.pp-home .big { font-size: 2.6rem; }
+
+/* Diagnostic illustré */
+.opts.illus-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.illus-grid .opt { flex-direction: column; text-align: center; padding: 16px 10px; position: relative; justify-content: flex-start; }
+.illus-grid .opt .dot { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; }
+.illus-grid .opt .ill { width: 64px; height: 64px; border-radius: 50%; background: var(--rose-50); color: var(--plum); display: grid; place-items: center; }
+.illus-grid .opt.on .ill { background: #fff; color: var(--rose-deep, var(--plum)); }
+.illus-grid .opt .illus { width: 40px; height: 40px; }

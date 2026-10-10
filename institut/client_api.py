@@ -273,6 +273,12 @@ def register(app):
             abort(404)
         return invoice_pdf(conn, inv)
 
+    @app.get("/api/client/passport")
+    @web.login_required
+    def c_passport():
+        conn, u = web.get_db(), web.current_user()
+        return jsonify(passport=core.passport(conn, u["id"]), user=web.public_user(u))
+
     @app.get("/api/client/loyalty")
     @web.login_required
     def c_loyalty():

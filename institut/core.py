@@ -305,3 +305,28 @@ def sanitize_answers(diagnostic, answers):
         elif str(v) in allowed:
             out[q["id"]] = str(v)
     return out
+
+
+# ------------------------------------------------------------ Passeport Beauté
+DEFAULT_MILESTONES = [
+    {"at": 3, "label": "Mini attention", "msg": "Merci pour votre fidélité !"},
+    {"at": 6, "label": "Belle attention", "msg": "Vous êtes sur la bonne voie !"},
+    {"at": 9, "label": "Très belle attention", "msg": "Presque la récompense !"},
+]
+
+
+def passport(conn, client_id):
+    """Éclats de la cliente : 1 prestation réalisée = 1 éclat ; une surprise à chaque cycle complet."""
+    cfg = setting(conn, "loyalty", {})
+    target = max(1, int(cfg.get("stamps_target", 10)))
+    u = row(conn, "SELECT stamps_bonus, rewards_given, created_at FROM users WHERE id=?", (client_id,))
+    visits = rows(conn, "SELECT a.id, a.start, sv.name AS service, sv.category FROM appointments a "
+                        "JOIN services sv ON sv.id=a.service_id WHERE a.client_id=? AND a.status='termine' ORDER BY a.start DESC", (client_id,))
+    total = len(visits) + u["stamps_bonus"]
+    pending = max(0, total // target - u["rewards_given"])
+    current = min(target, max(0, total - u["rewards_given"] * target))
+    milestones = [{**m, "reached": current >= m["at"]} for m in (cfg.get("milestones") or DEFAULT_MILESTONES) if 0 < m.get("at", 0) < target]
+    milestones.append({"at": target, "label": cfg.get("reward_name", "Surprise"), "msg": "Votre papillon est complet !", "reached": current >= target, "final": True})
+    return {"target": target, "current": current, "total": total, "bonus": u["stamps_bonus"], "pending_rewards": pending,
+            "rewards_given": u["rewards_given"], "reward_name": cfg.get("reward_name", "Surprise"), "milestones": milestones,
+            "history": visits[:30], "since": u["created_at"][:10]}

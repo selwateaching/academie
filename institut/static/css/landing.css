@@ -198,3 +198,6 @@ footer.site small { color: var(--muted); }
   .nav .acct, .nav .cta { font-size: .8rem; padding: .55em .85em; }
   .nav-actions { gap: 6px; }
 }
+
+.pass-bf { background: #fff; border-radius: 24px; padding: 24px; box-shadow: 0 10px 30px rgba(111, 33, 88, .12); }
+.pass-bf svg { width: 100%; height: auto; }
