@@ -2,3 +2,4 @@ Flask>=3.0
 anthropic>=0.40
 gunicorn>=23.0
 requests>=2.31
+firebase-admin>=6.5

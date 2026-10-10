@@ -1,6 +1,11 @@
+import base64
+import hashlib
+import hmac
+import json
 import logging
 import os
 import smtplib
+import time
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -25,6 +30,70 @@ def get_client():
 
         _client = anthropic.Anthropic()
     return _client
+
+
+# ===== Accès réservé aux comptes Pro pour l'outil externe "Assistant pédagogique"
+# (tadriss-fiches.onrender.com, dépôt séparé) =====
+# Vérifie côté serveur (Firebase Admin, jamais le client) le statut Pro du prof, puis délivre un
+# jeton signé de courte durée que ce second service vérifie avant de générer quoi que ce soit — un
+# simple bouton caché dans l'interface ne suffirait pas, un lien direct resterait utilisable par
+# n'importe qui.
+FICHES_ACCESS_SECRET = os.environ.get("FICHES_ACCESS_SECRET", "")
+FICHES_TOKEN_TTL_SECONDS = 4 * 60 * 60  # 4h : le temps d'une session de travail, pas juste d'ouvrir l'onglet
+
+_firebase_app = None
+
+
+def get_firebase_app():
+    global _firebase_app
+    if _firebase_app is None:
+        import firebase_admin
+        from firebase_admin import credentials
+
+        service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+        if not service_account_json:
+            raise RuntimeError("FIREBASE_SERVICE_ACCOUNT_JSON manquant côté serveur.")
+        cred = credentials.Certificate(json.loads(service_account_json))
+        _firebase_app = firebase_admin.initialize_app(cred)
+    return _firebase_app
+
+
+def _sign_fiches_token(uid, exp):
+    payload = f"{uid}:{exp}"
+    payload_b64 = base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=")
+    sig = hmac.new(FICHES_ACCESS_SECRET.encode(), payload_b64.encode(), hashlib.sha256).hexdigest()
+    return f"{payload_b64}.{sig}"
+
+
+@app.post("/api/fiches-access")
+def fiches_access():
+    """Vérifie que le prof connecté (jeton Firebase envoyé par le frontend) est sur le forfait Pro,
+    et renvoie un jeton signé de courte durée à transmettre à tadriss-fiches.onrender.com."""
+    if not FICHES_ACCESS_SECRET:
+        return jsonify({"error": {"message": "Accès à l'Assistant pédagogique non configuré côté serveur."}}), 500
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+    id_token = auth_header[len("Bearer "):]
+    try:
+        from firebase_admin import auth as fb_auth, firestore
+
+        get_firebase_app()
+        decoded = fb_auth.verify_id_token(id_token)
+        uid = decoded["uid"]
+        db = firestore.client()
+        snap = db.collection("profs").document(uid).get()
+        plan = (snap.to_dict() or {}).get("plan") if snap.exists else None
+        # Même règle de repli que côté client (authApplyProfile) : un compte validé avant l'ajout
+        # des forfaits, sans champ "plan" du tout, reste considéré Pro.
+        plan = (plan or "pro").strip().lower()
+        if plan != "pro":
+            return jsonify({"error": {"message": "L'Assistant pédagogique est réservé aux comptes Pro."}}), 403
+        exp = int(time.time()) + FICHES_TOKEN_TTL_SECONDS
+        return jsonify({"token": _sign_fiches_token(uid, exp), "exp": exp})
+    except Exception as exc:  # noqa: BLE001 - message générique, jamais de détail d'auth au client
+        logger.exception("Erreur de vérification d'accès Assistant pédagogique")
+        return jsonify({"error": {"message": "Impossible de vérifier ton accès pour le moment. Réessaie."}}), 401
 
 
 @app.get("/")
