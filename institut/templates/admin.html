@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Espace professionnel — {{ inst.name }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}"><meta name="robots" content="noindex">{% endblock %}
+{% block bodyclass %}admin{% endblock %}
+{% block body %}
+<div id="app"><div class="spinner"></div></div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_clients.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_diag.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_catalog.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_business.js') }}"></script>
+<script>ADM.start();</script>
+{% endblock %}

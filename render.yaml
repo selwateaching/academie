@@ -14,3 +14,26 @@ services:
         sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
+
+  # --- Éclat de Rêve : logiciel d'institut de beauté (dossier institut/) ---
+  - type: web
+    name: eclat-de-reve
+    runtime: python
+    rootDir: institut
+    plan: free            # gratuit = base remise à zéro à chaque redémarrage (test). Pour un usage réel : plan payant + disque (voir institut/README.md)
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: INSTITUT_ADMIN_EMAIL
+        sync: false
+      - key: INSTITUT_ADMIN_PASSWORD
+        sync: false
+      - key: INSTITUT_SECRET
+        generateValue: true
+      - key: INSTITUT_HTTPS
+        value: "1"
+      - key: INSTITUT_SEED_DEMO
+        value: "0"
+      - key: PYTHON_VERSION
+        value: 3.12.7
