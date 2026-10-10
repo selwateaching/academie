@@ -236,4 +236,4 @@
   </div>
 </footer>
 {% endblock %}
-{% block scripts %}<script src="{{ url_for('static', filename='js/butterfly.js') }}"></script><script type="application/json" id="svc-data">{{ svcdata|tojson }}</script><script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/chatbot.js') }}" defer></script><script src="{{ url_for('static', filename='js/butterfly.js') }}"></script><script type="application/json" id="svc-data">{{ svcdata|tojson }}</script><script src="{{ url_for('static', filename='js/landing.js') }}"></script>{% endblock %}

@@ -315,3 +315,8 @@ def test_passport_stamps_and_reward(client, pro):
     pp = j(client.get("/api/client/passport"))["passport"]
     assert pp["current"] == 0 and pp["pending_rewards"] == 0 and pp["rewards_given"] == 1
     assert client.post(base + "/stamps", json={"delta": 1}, headers=H).status_code in (401, 403)
+
+
+def test_chatbot_loaded_on_public_pages(anon):
+    for url in ("/", "/reserver"):
+        assert b"js/chatbot.js" in anon.get(url).data
