@@ -1984,7 +1984,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div style="display:flex;gap:.6rem;margin-top:.8rem;">
           <button class="btn bo bsm" style="flex:1;" onclick="shareAllByWhatsapp()">📱 Partager via WhatsApp</button>
-          <button class="btn bo bsm" style="flex:1;" onclick="N(CURRENT_LANG==='ar'?'تصدير الرموز بصيغة PDF...':'Export PDF des codes...','info')">📄 Exporter les codes</button>
+          <button class="btn bo bsm" style="flex:1;" onclick="exportCodes()">📄 Exporter les codes</button>
         </div>
       </div>
     </div>
@@ -10709,6 +10709,20 @@ async function genPasswords(){
   if(r.erreur) N((CURRENT_LANG==='ar'?'تعذر إرسال بعض كلمات المرور. أعد المحاولة.':'Certains mots de passe n\'ont pas pu être enregistrés. Réessayez dans un instant.'),'err');
   else if(r.attente) N((CURRENT_LANG==='ar'?'المزامنة جارية — أعد النقر بعد لحظات.':'Synchronisation en cours pour certains élèves : cliquez de nouveau dans quelques secondes.'),'info');
   else N((CURRENT_LANG==='ar'?'تم إنشاء كلمات المرور وتسجيلها ✓':'Mots de passe créés et enregistrés ✓ — pensez à imprimer la liste.'),'ok');
+}
+/* Exporte la classe active en CSV (Excel / Google Sheets) : Élève ; Classe ; Code ; Mot de passe. */
+function exportCodes(){
+  var ce=gCE(); if(!ce.length){ N(T('aucun_eleve_classe'),'err'); return; }
+  var ac=gAC(), cl=ac?ac.nm:'';
+  var cell=function(v){ var t=String(v==null?'':v); if(/^[=+\-@\t\r]/.test(t)) t="'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
+  var rows=[['Élève','Classe','Code','Mot de passe']];
+  ce.forEach(function(e){ rows.push([e.pr+' '+e.no, cl, e.code||genCode(e.id), e.pw||'']); });
+  var csv='﻿'+rows.map(function(r){ return r.map(cell).join(';'); }).join('\r\n');
+  var url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  var a=document.createElement('a'); a.href=url; a.download='codes-eleves-'+(cl||'classe').replace(/[^A-Za-z0-9_-]+/g,'-')+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); },2000);
+  var sansPw=ce.filter(function(e){return !e.pw;}).length;
+  N(sansPw ? (CURRENT_LANG==='ar'?'تم تنزيل الملف — بعض التلاميذ بدون كلمة مرور بعد.':'Fichier téléchargé — certains élèves n\'ont pas encore de mot de passe.') : (CURRENT_LANG==='ar'?'تم تنزيل الملف ✓':'Fichier téléchargé ✓'), sansPw?'info':'ok');
 }
 function printPasswordList(){
   var ce=gCE(); if(!ce.length){ N(T('aucun_eleve_classe'),'err'); return; }
