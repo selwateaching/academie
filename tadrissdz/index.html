@@ -9119,6 +9119,10 @@ var curCrs=null;
    les matières sont donc incluses d'office dans l'abonnement, sans verrouillage ni add-on payant.
    Moyen/Lycée : profs spécialisés dans une matière — 1 matière incluse, add-on payant pour en ajouter. */
 var PRIMAIRE_MATIERES = ['Anglais','Arts plastiques','Éducation civique','Éducation islamique','Éducation physique','Histoire-Géographie','Langue arabe','Langue française','Mathématiques','Musique','Sciences de la nature (SVT)','Tamazight'];
+/* Liste complète (toutes matières, tous cycles confondus — identique aux options du <select id="pMat">
+   de Paramètres, hors "Autre") : utilisée pour donner à un compte admin un accès test à tout, comme un
+   prof de primaire qui a déjà toutes les matières d'office. */
+var ALL_MATIERES_LISTE = ['Anglais','Arts plastiques','Éducation civique','Éducation islamique','Éducation physique','Espagnol','Histoire-Géographie','Informatique/TIC','Langue arabe','Langue française','Mathématiques','Musique','Philosophie','Physique-Chimie','Sciences de la nature (SVT)','Tamazight'];
 function isPrimaire() {
   var c = ((D.s.cycle||'') + ' ' + (D.s.type||'')).toLowerCase();
   return c.indexOf('primaire') >= 0 || c.indexOf('ابتدائي') >= 0;
@@ -11799,12 +11803,17 @@ function authApplyProfile(p, uid) {
   window.D.s.et = p.etablissement || window.D.s.et;
   window.D.s.cycle = p.cycle || window.D.s.cycle;
   window.D.s.type = p.type || window.D.s.type;
-  window._matiereLocked = true; /* verrouillage : toute matière validée par l'admin ne se change plus depuis Paramètres */
+  /* Verrouillage de la matière après validation — sauf pour un compte admin (présence d'un
+     document admins/{uid}, vérifié juste avant l'appel à authApplyProfile) : un admin doit
+     pouvoir tester toutes les matières sans passer par la demande de changement prévue pour
+     les profs normaux. */
+  window._matiereLocked = !window._isAdminAccount;
   window._matiereDemandee = p.matiereDemandee || null; /* demande de changement en attente, n'affecte pas l'accès en cours */
   window._matiereAddonDemandee = p.matiereAddonDemandee || null; /* demande d'ajout de matière (add-on payant) en attente */
   /* Primaire : toutes les matières incluses d'office. Moyen/Lycée : matière(s) validée(s) par l'admin
-     (matieresActives), avec repli sur la matière principale seule si aucun add-on n'a encore été validé. */
-  window._matieresActives = isPrimaire() ? PRIMAIRE_MATIERES.slice() : (Array.isArray(p.matieresActives) && p.matieresActives.length ? p.matieresActives : [window.D.s.mat]);
+     (matieresActives), avec repli sur la matière principale seule si aucun add-on n'a encore été validé.
+     Admin : toutes les matières, comme en primaire. */
+  window._matieresActives = (isPrimaire() || window._isAdminAccount) ? ALL_MATIERES_LISTE.slice() : (Array.isArray(p.matieresActives) && p.matieresActives.length ? p.matieresActives : [window.D.s.mat]);
   window._matiereRequests = [];
   window._historiquePaiements = p.historiquePaiements || [];
   window._paiementsMois = p.paiementsMois || {}; /* suivi mensuel des virements pointés par l'admin — {"2026-01":true,...} */
@@ -12201,14 +12210,18 @@ async function handleAuthUser(user) {
       if (site) site.classList.add('hidden');
       gate.style.display = 'none';
       app.style.display = 'flex';
+      /* Vérifié AVANT authApplyProfile (pas en fire-and-forget comme avant) : ce dernier lit
+         window._isAdminAccount pour décider s'il verrouille la matière — un compte admin doit
+         pouvoir tester toutes les matières/tous les boutons sans passer par la demande de
+         changement prévue pour les profs normaux. */
+      var adminSnapEarly = await getDoc(doc(dbFs, 'admins', user.uid)).catch(function() { return null; });
+      window._isAdminAccount = !!(adminSnapEarly && adminSnapEarly.exists());
       authApplyProfile(p, user.uid);
       window._joursAvantExpiration = joursRestants;
       /* Lien "Administration" dans le menu, visible uniquement pour les comptes admin
-         (présence d'un document admins/{uid}) — vérification silencieuse, non bloquante. */
-      getDoc(doc(dbFs, 'admins', user.uid)).then(function(adminSnap) {
-        var siAdmin = document.getElementById('siAdmin');
-        if (siAdmin) siAdmin.style.display = adminSnap.exists() ? '' : 'none';
-      }).catch(function() {});
+         (présence d'un document admins/{uid}) */
+      var siAdmin = document.getElementById('siAdmin');
+      if (siAdmin) siAdmin.style.display = window._isAdminAccount ? '' : 'none';
       if (typeof window.showPaymentWarningBanner === 'function') window.showPaymentWarningBanner(joursRestants);
     } else if (p.status === 'suspended') {
       app.style.display = 'none';
