@@ -4745,6 +4745,15 @@ function toggleView() {
   var icon = document.getElementById('toggleIcon');
   var label = document.getElementById('toggleLabel');
   if (siteVisible) {
+    /* L'espace élève est un calque plein écran : sans le fermer, la page d'accueil s'afficherait
+       derrière lui, donc « Voir le Site » semblerait ne rien faire. */
+    var spEl = document.getElementById('studentPortal');
+    if (spEl && spEl.classList.contains('open')) {
+      /* Session élève venue d'un autre appareil : on repart d'une page neuve, sans aucune donnée d'élève en mémoire. */
+      if (window._spDistant) { location.reload(); return; }
+      spEl.classList.remove('open'); spCurrentEleve = null; _spOuvertDepuisConnexion = false;
+      var gateEl = document.getElementById('authGate'); if (gateEl) gateEl.style.display = 'none';
+    }
     site.classList.remove('hidden');
     icon.textContent = '📱';
     label.textContent = CURRENT_LANG === 'ar' ? "فتح التطبيق" : "Ouvrir l'App";
