@@ -96,6 +96,151 @@ def fiches_access():
         return jsonify({"error": {"message": "Impossible de vérifier ton accès pour le moment. Réessaie."}}), 401
 
 
+# ===== Espace élève : code (identifiant) + mot de passe =====
+# Le code à 6 chiffres n'est plus un secret : il peut figurer sur la copie de l'élève. L'accès aux
+# données se fait par ce code ET un mot de passe, vérifiés ici côté serveur. Le mot de passe n'est
+# jamais stocké en clair : seul un hachage salé (scrypt) est conservé, dans la collection
+# "eleveAuth", que personne ne peut lire depuis un navigateur (collection non listée dans les
+# règles Firestore = refusée par défaut ; seul ce serveur y accède, via Firebase Admin).
+#   ELEVE_PASSWORD_REQUIRED=1 : plus aucun accès sans mot de passe (à activer une fois tous les
+#   mots de passe distribués). Sinon, un élève sans mot de passe peut encore entrer avec son code.
+ELEVE_PASSWORD_REQUIRED = os.environ.get("ELEVE_PASSWORD_REQUIRED", "") == "1"
+ELEVE_MAX_FAILS = 5  # essais faux avant blocage
+ELEVE_LOCK_BASE_SECONDS = 15 * 60  # 15 min, doublé à chaque blocage successif (max 24 h)
+ELEVE_LOCK_MAX_SECONDS = 24 * 60 * 60
+_SCRYPT = {"n": 2**14, "r": 8, "p": 1, "dklen": 32}
+
+
+def _scrypt_hash(password, salt):
+    return hashlib.scrypt(password.encode("utf-8"), salt=salt, **_SCRYPT)
+
+
+def _public_payload(doc):
+    """Document de l'élève sans aucun secret (défense en profondeur : « pw » ne doit jamais y figurer)."""
+    d = dict(doc or {})
+    d["el"] = [{k: v for k, v in (e or {}).items() if k not in ("pw", "pwFor")} for e in d.get("el", [])]
+    return d
+
+
+def _valid_code(code):
+    return isinstance(code, str) and len(code) == 6 and code.isdigit()
+
+
+@app.post("/api/eleve-passwords")
+def eleve_passwords():
+    """Le professeur (connecté) enregistre les mots de passe de SES élèves. Corps :
+    {"items": [{"code": "123456", "password": "soleil47"}, ...]}. Renvoie l'état de chaque code :
+    "ok", "absent" (le document de l'élève n'est pas encore synchronisé : réessayer plus tard),
+    "refuse" (ce code appartient à un autre professeur) ou "invalide"."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+    try:
+        from firebase_admin import auth as fb_auth, firestore
+
+        get_firebase_app()
+        uid = fb_auth.verify_id_token(auth_header[len("Bearer "):])["uid"]
+        db = firestore.client()
+    except Exception:  # noqa: BLE001
+        logger.exception("Erreur de vérification du professeur (mots de passe élèves)")
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+
+    body = request.get_json(silent=True) or {}
+    items = body.get("items")
+    if not isinstance(items, list) or not items or len(items) > 300:
+        return jsonify({"error": {"message": "Liste de mots de passe invalide."}}), 400
+
+    results = {}
+    for it in items:
+        code = it.get("code") if isinstance(it, dict) else None
+        password = it.get("password") if isinstance(it, dict) else None
+        if not _valid_code(code) or not isinstance(password, str) or not (4 <= len(password) <= 64):
+            results[str(code)[:12]] = "invalide"
+            continue
+        try:
+            acces = db.collection("eleveAcces").document(code).get()
+            if not acces.exists:
+                results[code] = "absent"
+                continue
+            if (acces.to_dict() or {}).get("profUid") != uid:
+                results[code] = "refuse"
+                continue
+            salt = os.urandom(16)
+            db.collection("eleveAuth").document(code).set(
+                {
+                    "profUid": uid,
+                    "salt": base64.b64encode(salt).decode(),
+                    "hash": base64.b64encode(_scrypt_hash(password, salt)).decode(),
+                    "fails": 0,
+                    "lockCount": 0,
+                    "lockUntil": 0,
+                    "updatedAt": int(time.time()),
+                }
+            )
+            results[code] = "ok"
+        except Exception:  # noqa: BLE001
+            logger.exception("Enregistrement du mot de passe élève échoué")
+            results[code] = "erreur"
+    return jsonify({"results": results})
+
+
+@app.post("/api/eleve-login")
+def eleve_login():
+    """Connexion d'un élève : code + mot de passe. Renvoie le document de l'élève (sans aucun
+    secret) si tout est correct. Message d'erreur identique pour un code inconnu et un mauvais mot
+    de passe, pour ne rien révéler ; blocage progressif après plusieurs essais faux."""
+    body = request.get_json(silent=True) or {}
+    code = body.get("code")
+    password = body.get("password") or ""
+    generic = (jsonify({"error": {"message": "Code ou mot de passe incorrect."}}), 401)
+    if not _valid_code(code) or not isinstance(password, str) or len(password) > 64:
+        return generic
+    try:
+        from firebase_admin import firestore
+
+        get_firebase_app()
+        db = firestore.client()
+        auth_ref = db.collection("eleveAuth").document(code)
+        auth_snap = auth_ref.get()
+        acces_snap = db.collection("eleveAcces").document(code).get()
+        if not acces_snap.exists:
+            return generic
+
+        if not auth_snap.exists:
+            # Élève sans mot de passe : accepté seulement pendant la période de transition.
+            if ELEVE_PASSWORD_REQUIRED:
+                return generic
+            return jsonify({"payload": _public_payload(acces_snap.to_dict()), "passwordSet": False})
+
+        auth = auth_snap.to_dict() or {}
+        now = int(time.time())
+        if int(auth.get("lockUntil") or 0) > now:
+            wait = max(1, (int(auth["lockUntil"]) - now + 59) // 60)
+            return jsonify({"error": {"message": f"Trop d'essais. Réessaie dans {wait} min."}}), 429
+
+        expected = base64.b64decode(auth["hash"])
+        given = _scrypt_hash(password, base64.b64decode(auth["salt"]))
+        if not hmac.compare_digest(expected, given):
+            fails = int(auth.get("fails") or 0) + 1
+            update = {"fails": fails}
+            if fails >= ELEVE_MAX_FAILS:
+                lock_count = int(auth.get("lockCount") or 0)
+                update = {
+                    "fails": 0,
+                    "lockCount": lock_count + 1,
+                    "lockUntil": now + min(ELEVE_LOCK_BASE_SECONDS * (2**lock_count), ELEVE_LOCK_MAX_SECONDS),
+                }
+            auth_ref.update(update)
+            return generic
+
+        if auth.get("fails") or auth.get("lockCount"):
+            auth_ref.update({"fails": 0, "lockCount": 0, "lockUntil": 0})
+        return jsonify({"payload": _public_payload(acces_snap.to_dict()), "passwordSet": True})
+    except Exception:  # noqa: BLE001
+        logger.exception("Erreur de connexion élève")
+        return jsonify({"error": {"message": "Connexion impossible pour le moment. Réessaie."}}), 503
+
+
 @app.get("/")
 def index():
     return send_from_directory(os.path.dirname(__file__), "index.html")
