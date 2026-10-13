@@ -1950,9 +1950,11 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
 <!-- ===== ESPACE ÉLÈVE ===== -->
 <div class="pg" id="pg-eleve_acces">
   <div class="sh">
-    <div><div class="sht">Espace élève privé — Gestion des accès</div><div style="font-size:.72rem;color:var(--ink3)">Chaque élève a un code personnel unique. Il ne voit que ses propres données.</div></div>
+    <div><div class="sht">Espace élève privé — Gestion des accès</div><div style="font-size:.72rem;color:var(--ink3)">Chaque élève a un code personnel et un mot de passe. Il ne voit que ses propres données.</div></div>
     <div style="display:flex;gap:.7rem;">
       <button class="btn bo bsm" onclick="openStudentPortal()">👁 Tester l'espace élève</button>
+      <button class="btn bo bsm" onclick="printPasswordList()">🖨 Imprimer la liste</button>
+      <button class="btn bt bsm" onclick="genPasswords()">🔑 Générer les mots de passe</button>
       <button class="btn bt" onclick="genAllCodes()">🔄 Régénérer les codes</button>
     </div>
   </div>
@@ -1969,14 +1971,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <div style="display:flex;align-items:center;gap:.8rem;padding:.65rem;background:var(--tp);border-radius:8px;font-size:.82rem;"><span>📚</span><span>Les <strong>cours et ressources</strong> partagés par le prof</span></div>
         </div>
         <div style="background:var(--ap);border-radius:8px;padding:.8rem 1rem;font-size:.78rem;color:var(--ink2);">
-          💡 Le prof donne le code à chaque élève individuellement. Sans code valide, aucun accès n'est possible.
+          💡 Le prof donne le code et le mot de passe à chaque élève (liste imprimable). Sans les deux, aucun accès n'est possible.
         </div>
       </div>
     </div>
     <div class="card">
       <div class="ch"><div class="ct">📱 Comment partager l'accès</div></div>
       <div class="cb">
-        <div style="font-size:.82rem;color:var(--ink2);margin-bottom:1rem;">Le prof ouvre l'espace élève (bouton "Tester"), donne le code à l'élève, et l'élève saisit son code pour accéder à son espace privé.</div>
+        <div style="font-size:.82rem;color:var(--ink2);margin-bottom:1rem;">Le prof ouvre l'espace élève (bouton "Tester"), donne le code à l'élève, et l'élève saisit son code et son mot de passe pour accéder à son espace privé.</div>
         <div style="background:var(--bg);border:2px dashed var(--t);border-radius:10px;padding:1.2rem;text-align:center;cursor:pointer;" onclick="openStudentPortal()">
           <div style="font-size:2rem;margin-bottom:.4rem;">🎓</div>
           <div style="font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem;color:var(--t);">Ouvrir l'espace élève</div>
@@ -1984,7 +1986,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div style="display:flex;gap:.6rem;margin-top:.8rem;">
           <button class="btn bo bsm" style="flex:1;" onclick="shareAllByWhatsapp()">📱 Partager via WhatsApp</button>
-          <button class="btn bo bsm" style="flex:1;" onclick="N(CURRENT_LANG==='ar'?'تصدير الرموز بصيغة PDF...':'Export PDF des codes...','info')">📄 Exporter les codes</button>
+          <button class="btn bo bsm" style="flex:1;" onclick="exportCodes()">📄 Exporter les codes</button>
         </div>
       </div>
     </div>
@@ -1994,7 +1996,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div class="ch">
       <div class="ct">Codes d'accès par élève — <span id="eleveClsNm" style="color:var(--t);"></span></div>
     </div>
-    <div style="overflow-x:auto"><table><thead><tr><th>Élève</th><th>Code privé</th><th>Moyenne</th><th>Accès</th><th>Actions</th></tr></thead><tbody id="eleveCodeTable"></tbody></table></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Élève</th><th>Code privé</th><th>Mot de passe</th><th>Moyenne</th><th>Accès</th><th>Actions</th></tr></thead><tbody id="eleveCodeTable"></tbody></table></div>
   </div>
 </div>
 
@@ -2501,10 +2503,10 @@ var LANG = {
     /* Topbar */
     tb_search: 'Rechercher...',
     /* Student portal */
-    sp_sub: "Espace élève privé · Saisissez votre code personnel",
+    sp_sub: "Espace élève privé · Saisissez votre code et votre mot de passe",
     sp_label: "Votre code d'accès (6 chiffres)",
     sp_btn: "Accéder à mon espace →",
-    sp_hint: "Code fourni par votre professeur · Données 100% privées",
+    sp_hint: "Code et mot de passe fournis par votre professeur · Données 100% privées",
     sp_back: '← Retour (professeur)',
     sp_back_prof: '👩\u200d🏫 Retour espace prof',
     sp_change_eleve: '🔒 Changer d\'élève',
@@ -2578,10 +2580,10 @@ var LANG = {
     si_params: 'الإعدادات',
     sb_cls_lbl: 'القسم النشط',
     tb_search: 'البحث...',
-    sp_sub: 'الفضاء الخاص بالتلميذ · أدخل رمزك الشخصي',
+    sp_sub: 'الفضاء الخاص بالتلميذ · أدخل رمزك وكلمة المرور',
     sp_label: 'رمز الوصول الخاص بك (6 أرقام)',
     sp_btn: 'الوصول إلى فضائي ←',
-    sp_hint: 'الرمز يُوفّره أستاذك · البيانات خاصة 100%',
+    sp_hint: 'الرمز وكلمة المرور يُوفّرهما أستاذك · البيانات خاصة 100%',
     sp_back: '← رجوع (الأستاذ)',
     sp_back_prof: '👩\u200d🏫 العودة لفضاء الأستاذ',
     sp_change_eleve: '🔒 تغيير التلميذ',
@@ -3206,7 +3208,7 @@ var LANG_JS = {
     copier_code_tooltip: 'Copier le code',
     partager_tooltip: 'Partager',
     aucun_eleve_classe: 'Aucun élève dans cette classe',
-    code_incorrect_msg: 'Code incorrect. Vérifiez avec votre professeur.',
+    code_incorrect_msg: 'Code ou mot de passe incorrect. Vérifiez avec votre professeur.',
     guide_title: "Guide d'utilisation",
     guide_subtitle: 'Pas à pas, pour bien démarrer avec Tadriss DZ',
     guide_print_btn: '🖨 Imprimer le guide',
@@ -3509,7 +3511,7 @@ var LANG_JS = {
     copier_code_tooltip: 'نسخ الرمز',
     partager_tooltip: 'مشاركة',
     aucun_eleve_classe: 'لا يوجد تلاميذ في هذا القسم',
-    code_incorrect_msg: 'رمز غير صحيح. تحقق مع أستاذك.',
+    code_incorrect_msg: 'الرمز أو كلمة المرور غير صحيحة. تحقق مع أستاذك.',
     guide_title: 'دليل الاستخدام',
     guide_subtitle: 'خطوة بخطوة، لبدء استخدام Tadriss DZ بسهولة',
     guide_print_btn: '🖨 طباعة الدليل',
@@ -3672,6 +3674,8 @@ function switchLang() {
   if (spSub) spSub.textContent = LANG[CURRENT_LANG].sp_sub;
   var spLbl = document.querySelector('.sp-label');
   if (spLbl) spLbl.textContent = LANG[CURRENT_LANG].sp_label;
+  var spPwL = document.getElementById('spPwLabel');
+  if (spPwL) spPwL.textContent = CURRENT_LANG==='ar' ? 'كلمة المرور' : 'Votre mot de passe';
   var spBtn = document.querySelector('.sp-btn');
   if (spBtn) spBtn.textContent = LANG[CURRENT_LANG].sp_btn;
   var spHint = document.querySelector('.sp-hint');
@@ -4527,7 +4531,7 @@ function switchLang() {
   var pgEA = document.getElementById('pg-eleve_acces');
   if (pgEA) {
     var shEA = pgEA.querySelector('.sht'); if (shEA) shEA.textContent = isAR ? 'فضاء التلميذ الخاص — إدارة الوصول' : 'Espace élève privé — Gestion des accès';
-    var subEA = pgEA.querySelector('.sh > div > div:last-child'); if (subEA && subEA !== shEA) subEA.textContent = isAR ? 'لكل تلميذ رمز شخصي فريد. لا يرى إلا بياناته الخاصة.' : 'Chaque élève a un code personnel unique. Il ne voit que ses propres données.';
+    var subEA = pgEA.querySelector('.sh > div > div:last-child'); if (subEA && subEA !== shEA) subEA.textContent = isAR ? 'لكل تلميذ رمز شخصي فريد. لا يرى إلا بياناته الخاصة.' : 'Chaque élève a un code personnel et un mot de passe. Il ne voit que ses propres données.';
     var eaTestBtn = pgEA.querySelector('.btn.bo.bsm'); if (eaTestBtn) eaTestBtn.textContent = isAR ? '👁 اختبار فضاء التلميذ' : '👁 Tester l\'espace élève';
     var eaRegenBtn = pgEA.querySelector('.btn.bt'); if (eaRegenBtn) eaRegenBtn.textContent = isAR ? '🔄 إعادة توليد الرموز' : '🔄 Régénérer les codes';
     var eaCards = pgEA.querySelectorAll('.card');
@@ -4744,6 +4748,15 @@ function toggleView() {
   var icon = document.getElementById('toggleIcon');
   var label = document.getElementById('toggleLabel');
   if (siteVisible) {
+    /* L'espace élève est un calque plein écran : sans le fermer, la page d'accueil s'afficherait
+       derrière lui, donc « Voir le Site » semblerait ne rien faire. */
+    var spEl = document.getElementById('studentPortal');
+    if (spEl && spEl.classList.contains('open')) {
+      /* Session élève venue d'un autre appareil : on repart d'une page neuve, sans aucune donnée d'élève en mémoire. */
+      if (window._spDistant) { location.reload(); return; }
+      spEl.classList.remove('open'); spCurrentEleve = null; _spOuvertDepuisConnexion = false;
+      var gateEl = document.getElementById('authGate'); if (gateEl) gateEl.style.display = 'none';
+    }
     site.classList.remove('hidden');
     icon.textContent = '📱';
     label.textContent = CURRENT_LANG === 'ar' ? "فتح التطبيق" : "Ouvrir l'App";
@@ -10712,15 +10725,94 @@ function rEleveAcces() {
     var cl=m!==null?(m>=10?'bg2':'bc2'):'';
     return '<tr><td><div style="display:flex;align-items:center;gap:7px"><div style="width:26px;height:26px;border-radius:50%;background:'+e.c+';display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff">'+e.pr[0]+'</div>'+e.pr+' '+e.no+'</div></td>'
       +'<td><code style="background:var(--bg);border:1px solid var(--br);border-radius:5px;padding:3px 9px;font-size:.85rem;font-weight:700;letter-spacing:.1em;">'+code+'</code></td>'
+      +'<td>'+pwCell(e,code)+'</td>'
       +'<td><span class="badge '+cl+'">'+mv+'/20</span></td>'
       +'<td><span class="badge bg2">'+T('code_actif_badge')+'</span></td>'
       +'<td style="display:flex;gap:5px;"><button class="btn bxs bt" onclick="copyCode(&quot;'+code+'&quot;)" title="'+T('copier_code_tooltip')+'">📋</button><button class="btn bxs bo" onclick="shareCode(&quot;'+e.pr+'&quot;,&quot;'+code+'&quot;)" title="'+T('partager_tooltip')+'">📱</button></td>'
       +'</tr>';
-  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:1.5rem;">'+T('aucun_eleve_classe')+'</td></tr>';
+  }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--ink3);padding:1.5rem;">'+T('aucun_eleve_classe')+'</td></tr>';
   sv();
 }
+/* ===== MOTS DE PASSE ÉLÈVES (code = identifiant, mot de passe = secret) ===== */
+/* Mots courts, courants, sans accent ni ambiguïté d'orthographe : « soleil47 », « pomme08 »… */
+var PW_WORDS = ['soleil','pomme','lune','chat','livre','arbre','fleur','stylo','table','porte','nuage','plage','jardin','bonbon','cheval','oiseau','mouton','raisin','citron','banane','orange','poire','fraise','tigre','lion','zebre','singe','koala','panda','robot','avion','bateau','train','velo','moto','ballon','jouet','piano','tambour','cirque','montre','lampe','chaise','bureau','cahier','crayon','gomme','regle','craie','dessin','bleu','rouge','vert','jaune','rose','sable','vague','foret','colline','pluie','neige','vent','etoile','fusee','planete','miel','gateau','tarte','pain','lait','sucre','menthe','olive','datte','figue','noix','prune','melon','cerise','canard','poule','lapin','souris','renard','loup','ours','girafe','dauphin','requin','tortue','abeille','papillon','fourmi','escargot','grenouille','salade','tomate','carotte','radis','maison','balcon','fenetre','tapis','miroir','cuisine','valise','chapeau','manteau','bottes','gants','ecole','classe','sourire','cadeau','musique','danse','chanson','histoire','conte','reve','voyage','chemin','pont','tour','ile','lac','riviere','source','nuit','matin','soir','ete','hiver','mars','avril','juin','mai'];
+function pwRandInt(n){ var a=new Uint32Array(1); window.crypto.getRandomValues(a); return a[0]%n; }
+function genPassword(){
+  var w=PW_WORDS[pwRandInt(PW_WORDS.length)], d=String(pwRandInt(90)+10);
+  return w+d;
+}
+function pwCell(e,code){
+  if(!e.pw) return '<span style="color:var(--ink3);font-size:.78rem;">— non défini</span>';
+  var sync = e.pwFor===code
+    ? '<span title="Enregistré sur le serveur" style="color:#16a34a;font-size:.7rem;font-weight:700;"> ✓</span>'
+    : '<span title="Pas encore envoyé au serveur : cliquez sur « Générer les mots de passe »" style="color:#d97706;font-size:.7rem;font-weight:700;"> ⏳</span>';
+  return '<code style="background:var(--bg);border:1px solid var(--br);border-radius:5px;padding:3px 9px;font-size:.85rem;font-weight:700;">'+e.pw.replace(/[<>&"]/g,'')+'</code>'+sync;
+}
+async function pushPasswords(){
+  var items=[]; (D.el||[]).forEach(function(e){ if(e.pw){ var c=e.code||genCode(e.id); if(e.pwFor!==c) items.push({code:c,password:e.pw}); } });
+  if(!items.length) return {ok:0,attente:0,erreur:0};
+  var res={ok:0,attente:0,erreur:0};
+  try{
+    var idToken=await window._fbGetIdToken();
+    var r=await fetch('/api/eleve-passwords',{method:'POST',headers:{'Authorization':'Bearer '+idToken,'Content-Type':'application/json'},body:JSON.stringify({items:items})});
+    var data=await r.json();
+    if(!r.ok) throw new Error((data.error&&data.error.message)||'Erreur');
+    (D.el||[]).forEach(function(e){ var c=e.code||genCode(e.id); var st=data.results[c];
+      if(st==='ok'){ e.pwFor=c; res.ok++; } else if(st==='absent'){ res.attente++; } else if(st){ res.erreur++; } });
+  }catch(err){ res.erreur=items.length; }
+  sv(); return res;
+}
+async function genPasswords(){
+  var ce=gCE(); if(!ce.length){ N(T('aucun_eleve_classe'),'err'); return; }
+  var deja=ce.filter(function(e){return e.pw;}).length, refaire=false;
+  if(deja){
+    refaire=confirm(CURRENT_LANG==='ar'?'بعض التلاميذ لديهم كلمة مرور. هل تريد إنشاء كلمات جديدة للجميع ؟ (سيتعين توزيعها من جديد)':'Certains élèves ont déjà un mot de passe.\n\nOK = en créer de NOUVEAUX pour toute la classe (à redistribuer)\nAnnuler = ne compléter que ceux qui n\'en ont pas');
+  }
+  var utilises={}; (D.el||[]).forEach(function(e){ if(e.pw) utilises[e.pw]=1; });
+  ce.forEach(function(e){
+    if(e.pw && !refaire) return;
+    var pw, n=0; do{ pw=genPassword(); n++; }while(utilises[pw] && n<50);
+    utilises[pw]=1; e.pw=pw; e.pwFor=null;
+  });
+  sv(); rEleveAcces();
+  var r=await pushPasswords(); rEleveAcces();
+  if(r.erreur) N((CURRENT_LANG==='ar'?'تعذر إرسال بعض كلمات المرور. أعد المحاولة.':'Certains mots de passe n\'ont pas pu être enregistrés. Réessayez dans un instant.'),'err');
+  else if(r.attente) N((CURRENT_LANG==='ar'?'المزامنة جارية — أعد النقر بعد لحظات.':'Synchronisation en cours pour certains élèves : cliquez de nouveau dans quelques secondes.'),'info');
+  else N((CURRENT_LANG==='ar'?'تم إنشاء كلمات المرور وتسجيلها ✓':'Mots de passe créés et enregistrés ✓ — pensez à imprimer la liste.'),'ok');
+}
+/* Exporte la classe active en CSV (Excel / Google Sheets) : Élève ; Classe ; Code ; Mot de passe. */
+function exportCodes(){
+  var ce=gCE(); if(!ce.length){ N(T('aucun_eleve_classe'),'err'); return; }
+  var ac=gAC(), cl=ac?ac.nm:'';
+  var cell=function(v){ var t=String(v==null?'':v); if(/^[=+\-@\t\r]/.test(t)) t="'"+t; return '"'+t.replace(/"/g,'""')+'"'; };
+  var rows=[['Élève','Classe','Code','Mot de passe']];
+  ce.forEach(function(e){ rows.push([e.pr+' '+e.no, cl, e.code||genCode(e.id), e.pw||'']); });
+  var csv='﻿'+rows.map(function(r){ return r.map(cell).join(';'); }).join('\r\n');
+  var url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  var a=document.createElement('a'); a.href=url; a.download='codes-eleves-'+(cl||'classe').replace(/[^A-Za-z0-9_-]+/g,'-')+'.csv';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); },2000);
+  var sansPw=ce.filter(function(e){return !e.pw;}).length;
+  N(sansPw ? (CURRENT_LANG==='ar'?'تم تنزيل الملف — بعض التلاميذ بدون كلمة مرور بعد.':'Fichier téléchargé — certains élèves n\'ont pas encore de mot de passe.') : (CURRENT_LANG==='ar'?'تم تنزيل الملف ✓':'Fichier téléchargé ✓'), sansPw?'info':'ok');
+}
+function printPasswordList(){
+  var ce=gCE(); if(!ce.length){ N(T('aucun_eleve_classe'),'err'); return; }
+  if(!ce.some(function(e){return e.pw;})){ N(CURRENT_LANG==='ar'?'أنشئ كلمات المرور أولاً.':'Créez d\'abord les mots de passe.','err'); return; }
+  var esc=function(t){ return String(t==null?'':t).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); };
+  var ac=gAC(), cl=ac?ac.nm:'';
+  var rows=ce.map(function(e){ var c=e.code||genCode(e.id);
+    return '<tr><td>'+esc(e.pr+' '+e.no)+'</td><td class="m">'+esc(c)+'</td><td class="m">'+esc(e.pw||'—')+'</td></tr>'; }).join('');
+  var w=window.open('','_blank'); if(!w){ N('Autorisez les fenêtres pop-up pour imprimer.','err'); return; }
+  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Accès élèves — '+esc(cl)+'</title><style>'
+    +'body{font-family:Arial,sans-serif;margin:24px;color:#111}h1{font-size:18px;margin:0 0 4px}p{font-size:12px;color:#444;margin:0 0 14px}'
+    +'table{border-collapse:collapse;width:100%}th,td{border:1px solid #888;padding:8px 10px;font-size:14px;text-align:left}th{background:#eee}.m{font-family:monospace;font-size:16px;font-weight:700}'
+    +'tr{break-inside:avoid}</style></head><body><h1>Accès à l\'espace élève — '+esc(cl)+'</h1>'
+    +'<p>Chaque élève se connecte avec son <b>code</b> ET son <b>mot de passe</b>. Le code peut être écrit sur la copie ; le mot de passe reste personnel. Découper ou distribuer ligne par ligne.</p>'
+    +'<table><thead><tr><th>Élève</th><th>Code</th><th>Mot de passe</th></tr></thead><tbody>'+rows+'</tbody></table>'
+    +'<script>window.onload=function(){window.print();}<\/script></body></html>');
+  w.document.close();
+}
 function genCode(id){ return String(Math.floor(100000+Math.abs(Math.sin(id*9999))*900000)).slice(0,6); }
-function genAllCodes(){ D.el.forEach(function(e){e.code=String(Math.floor(100000+Math.random()*900000));}); sv(); rEleveAcces(); N(T('codes_regen'),'ok'); }
+function genAllCodes(){ D.el.forEach(function(e){e.code=String(Math.floor(100000+Math.random()*900000)); e.pwFor=null;}); sv(); rEleveAcces(); N(T('codes_regen'),'ok'); if((D.el||[]).some(function(e){return e.pw;})) setTimeout(function(){ N(CURRENT_LANG==='ar'?'الرموز تغيّرت : انقر على «إنشاء كلمات المرور» لتسجيلها من جديد.':'Les codes ont changé : cliquez sur « Générer les mots de passe » pour les enregistrer de nouveau.','info'); },1800); }
 function copyCode(code){ N((CURRENT_LANG==='ar'?'تم نسخ الرمز ':'Code ')+code+(CURRENT_LANG==='ar'?' !':' copié !'),'ok'); }
 function shareCode(nom,code){ N((CURRENT_LANG==='ar'?'رسالة واتساب جاهزة لـ ':'Message WhatsApp prêt pour ')+nom+(CURRENT_LANG==='ar'?' — الرمز: ':' — Code: ')+code,'info'); }
 
@@ -10739,7 +10831,7 @@ function openStudentPortal() {
   document.getElementById('studentPortal').classList.add('open');
   document.getElementById('spLogin').style.display = 'flex';
   document.getElementById('spDash').style.display = 'none';
-  document.getElementById('spCodeInput').value = '';
+  document.getElementById('spCodeInput').value = ''; var _pwR = document.getElementById('spPwInput'); if (_pwR) _pwR.value = '';
   document.getElementById('spErr').textContent = '';
   setTimeout(function(){ document.getElementById('spCodeInput').focus(); }, 200);
 }
@@ -10768,7 +10860,9 @@ function closeStudentPortal() {
 
 async function spLogin() {
   var code = document.getElementById('spCodeInput').value.trim();
+  var pw = (document.getElementById('spPwInput') || {}).value || '';
   if (code.length < 4) { document.getElementById('spErr').textContent = T('code_invalide'); return; }
+  var serveurMsg = '';
   // Search all students for matching code (parcours local : le prof qui teste depuis son propre appareil)
   var found = null;
   D.el.forEach(function(e) {
@@ -10776,14 +10870,20 @@ async function spLogin() {
     if (!e.code) e.code = ec;
     if (ec === code) found = e;
   });
+  /* Élève qui arrive depuis l'écran de connexion sur un appareil où les données du prof sont déjà
+     présentes : le mot de passe est exigé. (Le prof qui teste depuis son tableau de bord n'en a pas besoin.) */
+  if (found && _spOuvertDepuisConnexion && found.pw && pw !== found.pw) found = null, serveurMsg = 'local';
   if (!found) {
     /* Repli distant : cet appareil n'a jamais vu ce prof se connecter (cas normal d'un élève sur
        son propre téléphone). On va chercher directement le document public de cet élève. */
     document.getElementById('spErr').textContent = CURRENT_LANG === 'ar' ? 'جارٍ التحقق...' : 'Vérification...';
     try {
-      var snap = await window._fbGetDoc(window._fbDoc(window._fbDbFs, 'eleveAcces', code));
-      if (snap.exists()) {
-        var payload = snap.data();
+      /* Connexion vérifiée par le serveur (code + mot de passe) : le document de l'élève n'est plus lu directement. */
+      var resp = await fetch('/api/eleve-login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code, password: pw }) });
+      var rdata = {}; try { rdata = await resp.json(); } catch (_) {}
+      if (resp.status === 429 || resp.status === 503) serveurMsg = (rdata.error && rdata.error.message) || '';
+      if (resp.ok && rdata.payload) {
+        var payload = rdata.payload;
         D.s = Object.assign({}, D.s, payload.s);
         D.cls = payload.cls || [];
         D.el = payload.el || [];
@@ -10798,8 +10898,8 @@ async function spLogin() {
     } catch (e) {}
   }
   if (!found) {
-    document.getElementById('spErr').textContent = '❌ ' + T('code_incorrect_msg');
-    document.getElementById('spCodeInput').select();
+    document.getElementById('spErr').textContent = '❌ ' + (serveurMsg && serveurMsg !== 'local' ? serveurMsg : T('code_incorrect_msg'));
+    var pwEl = document.getElementById('spPwInput'); if (pwEl) { pwEl.value = ''; pwEl.focus(); }
     return;
   }
   spCurrentEleve = found;
@@ -10820,7 +10920,7 @@ function spLogout() {
   spCurrentEleve = null;
   document.getElementById('spDash').style.display = 'none';
   document.getElementById('spLogin').style.display = 'flex';
-  document.getElementById('spCodeInput').value = '';
+  document.getElementById('spCodeInput').value = ''; var _pwR = document.getElementById('spPwInput'); if (_pwR) _pwR.value = '';
   document.getElementById('spErr').textContent = '';
 }
 
@@ -10830,7 +10930,7 @@ function spGoToCodeList() {
     /* Élève arrivé directement (pas de prof connecté) : jamais accès au tableau de bord prof — juste ré-afficher la saisie du code */
     document.getElementById('spLogin').style.display = 'flex';
     document.getElementById('spDash').style.display = 'none';
-    document.getElementById('spCodeInput').value = '';
+    document.getElementById('spCodeInput').value = ''; var _pwR = document.getElementById('spPwInput'); if (_pwR) _pwR.value = '';
     document.getElementById('spErr').textContent = '';
     return;
   }
@@ -11269,14 +11369,18 @@ function exportNotesPDF() {
   <div class="sp-login" id="spLogin">
     <div class="sp-login-box">
       <div class="sp-logo">Tadriss<span>DZ</span></div>
-      <div class="sp-sub">Espace élève privé · Saisissez votre code personnel</div>
+      <div class="sp-sub">Espace élève privé · Saisissez votre code et votre mot de passe</div>
       <label class="sp-label">Votre code d'accès (6 chiffres)</label>
       <input class="sp-code-input" id="spCodeInput" type="text" maxlength="6" placeholder="000000"
         oninput="this.value=this.value.replace(/[^0-9]/g,'')"
         onkeydown="if(event.key==='Enter')spLogin()">
+      <label class="sp-label" id="spPwLabel" style="margin-top:14px;">Votre mot de passe</label>
+      <input class="sp-code-input" id="spPwInput" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" maxlength="64" placeholder="••••••••"
+        style="font-size:1.15rem;letter-spacing:.08em;padding:12px;"
+        onkeydown="if(event.key==='Enter')spLogin()">
       <div class="sp-err" id="spErr"></div>
       <button class="sp-btn" onclick="spLogin()">Accéder à mon espace →</button>
-      <div class="sp-hint">Code fourni par votre professeur · Données 100% privées</div>
+      <div class="sp-hint">Code et mot de passe fournis par votre professeur · Données 100% privées</div>
       <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--br);">
         <button onclick="closeStudentPortal()" style="background:none;border:none;color:var(--ink3);font-size:.78rem;cursor:pointer;">← Retour (professeur)</button>
       </div>
@@ -11708,7 +11812,7 @@ function buildEleveAccesPayload(e, uid) {
       })
     };
   });
-  var eCopy = Object.assign({}, e); delete eCopy.photo;
+  var eCopy = Object.assign({}, e); delete eCopy.photo; delete eCopy.pw; delete eCopy.pwFor; /* le mot de passe n'est jamais publié */
   return {
     profUid: uid,
     s: { et: (D.s || {}).et || '', mat: (D.s || {}).mat || '', an: (D.s || {}).an || '' },
