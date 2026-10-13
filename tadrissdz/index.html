@@ -1487,6 +1487,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   <div class="sh">
     <div><div class="sht">Progression annuelle</div><div style="font-size:.72rem;color:var(--ink3)" id="progaSub">Plan de l'année — pilote le Cahier journal et les Fiches pédagogiques</div></div>
     <div style="display:flex;gap:.7rem;align-items:center;">
+      <select class="fs" id="progaClasseSel" style="width:200px" onchange="onProgaClasseChange()" title="Classe"></select>
       <select class="fs" id="progaNiveau" style="width:170px" onchange="toggleFiliereSelect('progaNiveau','progaFiliere')" title="Niveau pour la génération IA">
         <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
         <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
@@ -2339,7 +2340,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl">Horaire</label><input type="time" class="fi" id="sjH" value="08:00"></div>
       </div>
       <div class="fg2">
-        <div class="fg"><label class="fl">Classe</label><select class="fs" id="sjCls"></select></div>
+        <div class="fg"><label class="fl">Classe</label><select class="fs" id="sjCls" onchange="onSjClsChange()"></select></div>
         <div class="fg"><label class="fl">Durée</label><select class="fs" id="sjDur"><option>30 min</option><option selected>1h</option><option>2h</option></select></div>
       </div>
       <div class="fg"><label class="fl">Lier à une séquence (Progression annuelle)</label><select class="fs" id="sjProgSeq" onchange="onSjProgSeqChange()"><option value="">— Aucune / saisie libre —</option></select></div>
@@ -5175,6 +5176,7 @@ var ACTS = ACTS_FR;
 var NO_BTN = ['params','abonnement','programme','bulletin','appel','eleve_acces','edt','proga','guide','contact','recommandations','progression_eleves','bibliotheque'];
 
 function go(pg) {
+  if (typeof migrerProgressionParClasse === 'function') migrerProgressionParClasse();
   document.querySelectorAll('.pg').forEach(function(p) { p.classList.remove('on'); });
   var e = document.getElementById('pg-' + pg); if (e) e.classList.add('on');
   document.querySelectorAll('.si').forEach(function(i) { i.classList.remove('on'); });
@@ -8355,18 +8357,15 @@ function renderCjWeek() {
       '</tr>';
   }).join('');
 }
-function prepSeanceModal() {
-  document.getElementById('mSeanceT').textContent = D._sId ? T('cj_modifier_seance') : T('cj_nouvelle_seance');
-  var sel = document.getElementById('sjCls');
-  sel.innerHTML = D.cls.map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
-  var dl = document.getElementById('sjProgList');
-  var opts = [];
-  Object.keys(PROG).forEach(function(nv){ PROG[nv].forEach(function(m){ m.chapitres.forEach(function(c){ opts.push(c); }); }); });
-  dl.innerHTML = opts.map(function(o){ return '<option value="'+o.replace(/"/g,'&quot;')+'">'; }).join('');
+/* Les séquences proposées dans "Lier à une séquence" dépendent de la classe choisie pour CETTE séance
+   (chaque classe a sa propre progression) — pas de la classe active globale, pour pouvoir créer une
+   séance pour une autre classe directement depuis cette fenêtre. */
+function populateSjProgSeq(cid, valeurVoulue) {
+  if (typeof migrerProgressionParClasse === 'function') migrerProgressionParClasse();
   var isAR = CURRENT_LANG==='ar';
-  var progSel = document.getElementById('sjProgSeq');
+  var progSel = document.getElementById('sjProgSeq'); if (!progSel) return;
   var progHtml = '<option value="">' + (isAR ? '— بدون / إدخال حر —' : '— Aucune / saisie libre —') + '</option>';
-  D.progression.forEach(function(pj) {
+  D.progression.filter(function(pj){ return pj.cid === cid; }).forEach(function(pj) {
     if (!pj.sequences.length) return;
     progHtml += '<optgroup label="' + pj.nom.replace(/"/g,'&quot;') + '">';
     pj.sequences.forEach(function(sq) {
@@ -8375,6 +8374,21 @@ function prepSeanceModal() {
     progHtml += '</optgroup>';
   });
   progSel.innerHTML = progHtml;
+  progSel.value = valeurVoulue || '';
+}
+function onSjClsChange() {
+  var sel = document.getElementById('sjCls'); if (!sel) return;
+  populateSjProgSeq(parseInt(sel.value) || null, '');
+  _pendingProgLink = null;
+}
+function prepSeanceModal() {
+  document.getElementById('mSeanceT').textContent = D._sId ? T('cj_modifier_seance') : T('cj_nouvelle_seance');
+  var sel = document.getElementById('sjCls');
+  sel.innerHTML = D.cls.map(function(c){ return '<option value="'+c.id+'">'+c.nm+'</option>'; }).join('');
+  var dl = document.getElementById('sjProgList');
+  var opts = [];
+  Object.keys(PROG).forEach(function(nv){ PROG[nv].forEach(function(m){ m.chapitres.forEach(function(c){ opts.push(c); }); }); });
+  dl.innerHTML = opts.map(function(o){ return '<option value="'+o.replace(/"/g,'&quot;')+'">'; }).join('');
   if (D._sId) {
     var s = D.cj.find(function(x){ return x.id===D._sId; });
     if (s) {
@@ -8382,7 +8396,7 @@ function prepSeanceModal() {
       document.getElementById('sjH').value = s.heure||'08:00';
       document.getElementById('sjCls').value = s.cid;
       document.getElementById('sjDur').value = s.duree||'1h';
-      progSel.value = s.progLink ? (s.progLink.projetId + ':' + s.progLink.seqId) : '';
+      populateSjProgSeq(s.cid, s.progLink ? (s.progLink.projetId + ':' + s.progLink.seqId) : '');
       document.getElementById('sjTitre').value = s.titre||'';
       document.getElementById('sjContenu').value = s.contenu||'';
       document.getElementById('sjObjectifs').value = s.objectifs||'';
@@ -8400,7 +8414,6 @@ function prepSeanceModal() {
     document.getElementById('sjD').valueAsDate = dateParDefaut;
     document.getElementById('sjH').value = '08:00';
     document.getElementById('sjDur').value = '1h';
-    progSel.value = '';
     document.getElementById('sjTitre').value = '';
     document.getElementById('sjContenu').value = '';
     document.getElementById('sjObjectifs').value = '';
@@ -8410,6 +8423,7 @@ function prepSeanceModal() {
     document.getElementById('sjMat').value = D.s.mat||'';
     document.getElementById('sjReste').value = '';
     var ac = gAC(); if (ac) document.getElementById('sjCls').value = ac.id;
+    populateSjProgSeq(ac ? ac.id : null, '');
   }
 }
 var _pendingProgLink = null; /* lien vers une séquence de la Progression annuelle, pour suivi automatique */
@@ -8446,10 +8460,13 @@ function onSjProgSeqChange() {
 }
 
 function seanceDepuisProga() {
+  if (typeof migrerProgressionParClasse === 'function') migrerProgressionParClasse();
+  var ac = gAC();
+  var projetsClasseAc = D.progression.filter(function(p){ return p.cid === (ac ? ac.id : null); });
   var found = null;
   /* 1) une séquence déjà marquée "en_cours" */
-  for (var i=0;i<D.progression.length && !found;i++) {
-    var pj = D.progression[i];
+  for (var i=0;i<projetsClasseAc.length && !found;i++) {
+    var pj = projetsClasseAc[i];
     for (var j=0;j<pj.sequences.length;j++) {
       if (pj.sequences[j].statut === 'en_cours') { found = {pj:pj, sq:pj.sequences[j]}; break; }
     }
@@ -8457,8 +8474,8 @@ function seanceDepuisProga() {
   /* 2) sinon, la première séquence pas encore terminée (dans l'ordre du plan) — permet d'avancer
      dans la progression au lieu de rester bloqué sur la toute première séquence */
   if (!found) {
-    for (var i=0;i<D.progression.length && !found;i++) {
-      var pj = D.progression[i];
+    for (var i=0;i<projetsClasseAc.length && !found;i++) {
+      var pj = projetsClasseAc[i];
       for (var j=0;j<pj.sequences.length;j++) {
         if (pj.sequences[j].statut !== 'termine') { found = {pj:pj, sq:pj.sequences[j]}; break; }
       }
@@ -8466,12 +8483,12 @@ function seanceDepuisProga() {
   }
   /* 3) sinon (tout est déjà terminé), reprend la toute première séquence du plan */
   if (!found) {
-    for (var i=0;i<D.progression.length && !found;i++) {
-      var pj = D.progression[i];
+    for (var i=0;i<projetsClasseAc.length && !found;i++) {
+      var pj = projetsClasseAc[i];
       if (pj.sequences.length) found = {pj:pj, sq:pj.sequences[0]};
     }
   }
-  if (!found) { N(CURRENT_LANG==='ar'?'لا توجد أي حصة في التدرج السنوي. أضف واحدة أولاً.':'Aucune séquence dans la Progression annuelle. Ajoute-en une d\'abord.', 'err'); return; }
+  if (!found) { N(CURRENT_LANG==='ar'?'لا توجد أي حصة في تدرج هذا القسم. أضف واحدة أولاً.':'Aucune séquence dans la progression de cette classe. Ajoute-en une d\'abord.', 'err'); return; }
   D._sId = null;
   OM('mSeance');
   var sel = document.getElementById('sjProgSeq'); if (sel) sel.value = found.pj.id + ':' + found.sq.id;
@@ -8675,19 +8692,72 @@ function printEdt() {
   printCleanPage(title, html);
 }
 
-/* ===== PROGRESSION ANNUELLE (pilote le Cahier journal et les Fiches pédagogiques) ===== */
+/* ===== PROGRESSION ANNUELLE (pilote le Cahier journal et les Fiches pédagogiques) =====
+   Chaque classe créée a sa propre progression (ex: 3AS Sciences ≠ 3AS Technique ≠ 3AS2 même
+   niveau) : chaque "projet" de D.progression porte un champ cid (id de la classe), et toutes
+   les lectures/écritures filtrent sur la classe actuellement choisie sur cette page. */
 var _pjEditId = null;
 var _sqEditProjetId = null, _sqEditId = null;
+var PROGA_CLASSE_ID = null; /* classe choisie sur la page Progression annuelle (indépendant de la "classe active" globale) */
 
 function progaIsLangue() { return isLangueMatiere(D.s.mat); }
 
+/* Anciennes données (avant l'ajout du cid) : un projet sans cid est rattaché, une seule fois,
+   à la classe active du moment — pour ne rien perdre lors de la mise à jour. */
+function migrerProgressionParClasse() {
+  if (!D.progression || !D.progression.length) return;
+  var ac = gAC();
+  var changed = false;
+  D.progression.forEach(function(pj) { if (pj.cid === undefined) { pj.cid = ac ? ac.id : null; changed = true; } });
+  if (changed) sv();
+}
+
+function progaClasseId() {
+  if (PROGA_CLASSE_ID !== null && D.cls.some(function(c){ return c.id === PROGA_CLASSE_ID; })) return PROGA_CLASSE_ID;
+  var ac = gAC();
+  return ac ? ac.id : null;
+}
+
+function progaProjetsClasse() {
+  var cid = progaClasseId();
+  return D.progression.filter(function(p){ return p.cid === cid; });
+}
+
+function rProgaClasseSel() {
+  var sel = document.getElementById('progaClasseSel'); if (!sel) return;
+  if (!D.cls.length) { sel.innerHTML = '<option value="">'+(CURRENT_LANG==='ar'?'— لا توجد أقسام —':'— Aucune classe —')+'</option>'; return; }
+  var curId = progaClasseId();
+  sel.innerHTML = D.cls.map(function(c){ return '<option value="'+c.id+'"'+(c.id===curId?' selected':'')+'>'+c.nm+'</option>'; }).join('');
+  PROGA_CLASSE_ID = curId;
+}
+
+function onProgaClasseChange() {
+  var sel = document.getElementById('progaClasseSel'); if (!sel || !sel.value) return;
+  PROGA_CLASSE_ID = parseInt(sel.value);
+  /* pratique : si le nom de la classe contient un niveau reconnaissable (ex: "3AS2 Sciences"),
+     on pré-sélectionne aussi "Niveau" pour la génération IA, sans empêcher de le changer ensuite */
+  var cls = D.cls.find(function(c){ return c.id === PROGA_CLASSE_ID; });
+  var niveauSel = document.getElementById('progaNiveau');
+  if (cls && niveauSel) {
+    var m = cls.nm.match(/(\d(?:AP|AM|AS))/i);
+    if (m && Array.prototype.some.call(niveauSel.options, function(o){ return o.value === m[1].toUpperCase(); })) {
+      niveauSel.value = m[1].toUpperCase();
+      toggleFiliereSelect('progaNiveau','progaFiliere');
+    }
+  }
+  rProga();
+}
+
 function rProga() {
+  migrerProgressionParClasse();
+  rProgaClasseSel();
   var isL = progaIsLangue();
   var sub = document.getElementById('progaSub');
   if (sub) sub.textContent = T('proga_sub_prefix') + (isL ? T('proga_sub_langue') : T('proga_sub_sci')) + T('proga_sub_suffix');
 
+  var projetsClasse = progaProjetsClasse();
   var totalSeq = 0, termine = 0, enCours = 0, aVenir = 0;
-  D.progression.forEach(function(pj) {
+  projetsClasse.forEach(function(pj) {
     pj.sequences.forEach(function(sq) {
       totalSeq++;
       if (sq.statut === 'termine') termine++;
@@ -8697,17 +8767,21 @@ function rProga() {
   });
   var pct = totalSeq ? Math.round(termine / totalSeq * 100) : 0;
   document.getElementById('progaStats').innerHTML =
-    '<div class="stat stt"><div>📚</div><div class="sv">' + D.progression.length + '</div><div class="sl">' + T('proga_projets_lbl') + '</div></div>' +
+    '<div class="stat stt"><div>📚</div><div class="sv">' + projetsClasse.length + '</div><div class="sl">' + T('proga_projets_lbl') + '</div></div>' +
     '<div class="stat stp"><div>📊</div><div class="sv">' + pct + '%</div><div class="sl">' + T('proga_progression_lbl') + '</div></div>' +
     '<div class="stat sta"><div>🟡</div><div class="sv">' + enCours + '</div><div class="sl">' + T('proga_seq_encours_lbl') + '</div></div>' +
     '<div class="stat str"><div>⚪</div><div class="sv">' + aVenir + '</div><div class="sl">' + T('proga_seq_avenir_lbl') + '</div></div>';
 
   var box = document.getElementById('progaBox');
-  if (!D.progression.length) {
+  if (!D.cls.length) {
+    box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2.5rem">🏫</div><div style="margin-top:.75rem">' + (CURRENT_LANG==='ar'?'أنشئ قسمًا أولاً (من القائمة الجانبية « القسم النشط ») — لكل قسم تدرجه السنوي الخاص.':'Crée d\'abord une classe (menu « Classe active ») — chaque classe a sa propre progression annuelle.') + '</div></div></div>';
+    return;
+  }
+  if (!projetsClasse.length) {
     box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2.5rem">🗺️</div><div style="margin-top:.75rem">' + T('proga_aucun_projet') + '</div></div></div>';
     return;
   }
-  box.innerHTML = D.progression.map(function(pj) {
+  box.innerHTML = projetsClasse.map(function(pj) {
     var h = '<div class="card" id="proj-' + pj.id + '" style="margin-bottom:1rem"><div class="ch"><div class="ct">' + pj.nom + '</div><div style="display:flex;gap:5px;"><button class="btn bxs bt" onclick="addSequenceTo(' + pj.id + ')">' + T('proga_seq_btn') + '</button><button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);" onclick="delProjet(' + pj.id + ')">🗑</button></div></div><div class="cb">';
     if (pj.tacheFinale) h += '<div style="background:var(--tp);border-radius:8px;padding:.6rem .9rem;font-size:.78rem;color:var(--t);margin-bottom:.8rem;"><strong>' + T('proga_tache_finale') + '</strong> ' + pj.tacheFinale + '</div>';
     if (!pj.sequences.length) {
@@ -8764,14 +8838,15 @@ function rProgaTable() {
   var box = document.getElementById('progaTableBox');
   if (!box) return;
   var isL = progaIsLangue();
-  if (!D.progression.length) {
+  var projetsClasse = progaProjetsClasse();
+  if (!projetsClasse.length) {
     box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2.5rem">🗺️</div><div style="margin-top:.75rem">' + T('proga_aucun_projet') + '</div></div></div>';
     return;
   }
   var lignes = isL
     ? [['periode','🗓 Période'],['actes',T('proga_actes_lbl').replace(':','')],['lecture','Lecture compréhension'],['lexique','Lexique'],['grammaire',T('proga_grammaire_lbl').replace(':','')],['conjugaison',T('proga_conjugaison_lbl').replace(':','')],['orthographe','Orthographe'],['lectureSyst','Lecture systématique'],['dictee','Dictée'],['comptine','Comptine'],['production','Production orale / écrite'],['pages','📖 Pages']]
     : [['periode','🗓 Période'],['competences','Compétences visées'],['nbSeances','Nb de séances'],['pages','📖 Pages']];
-  box.innerHTML = D.progression.map(function(pj) {
+  box.innerHTML = projetsClasse.map(function(pj) {
     if (!pj.sequences.length) return '';
     var h = '<div class="card" style="margin-bottom:1rem"><div class="ch"><div class="ct">' + pj.nom + '</div></div><div class="cb" style="overflow-x:auto;padding:0;">';
     h += '<table style="min-width:100%;"><thead><tr><th style="position:sticky;left:0;background:var(--bg);min-width:160px;">' + (CURRENT_LANG==='ar'?'':'') + '</th>';
@@ -8876,8 +8951,9 @@ window.cycleSeqStatut = function(projetId, seqId) {
 function saveProjet() {
   var nom = document.getElementById('pjNom').value.trim();
   if (!nom) { N(CURRENT_LANG==='ar'?'الاسم مطلوب':'Nom requis', 'err'); return; }
+  if (!D.cls.length) { N(CURRENT_LANG==='ar'?'أنشئ قسمًا أولاً.':'Crée d\'abord une classe.', 'err'); return; }
   var id = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
-  D.progression.push({ id: id, nom: nom, tacheFinale: document.getElementById('pjTache').value.trim(), sequences: [] });
+  D.progression.push({ id: id, cid: progaClasseId(), nom: nom, tacheFinale: document.getElementById('pjTache').value.trim(), sequences: [] });
   sv(); CM('mProjet'); rProga();
   document.getElementById('pjNom').value=''; document.getElementById('pjTache').value='';
   N(CURRENT_LANG==='ar'?'تم إنشاء المشروع !':'Projet créé !', 'ok');
@@ -8937,6 +9013,7 @@ function getChapitresOfficielsProgNat(niveauKey, mat) {
   return filtered.length ? filtered : null;
 }
 async function genProgaIA() {
+  if (!D.cls.length) { N(CURRENT_LANG==='ar'?'أنشئ قسمًا أولاً (« القسم النشط »).':'Crée d\'abord une classe (menu « Classe active »).', 'err'); return; }
   /* Niveau et filière viennent des listes déroulantes de la page (plus de fenêtre native prompt() :
      en plus d'être plus pratique, ça évite le souci des fenêtres natives invisibles pendant un partage
      d'écran Zoom). */
@@ -8968,7 +9045,7 @@ async function genProgaIA() {
   /* Répartition réaliste des périodes : s'appuie sur le nombre réel de séances hebdomadaires de la
      classe active dans l'Emploi du temps déjà rempli par le professeur, plutôt que de deviner un
      volume horaire générique. */
-  var acClsProga = gAC();
+  var acClsProga = D.cls.find(function(c){ return c.id === progaClasseId(); });
   var nbSeancesSemaine = acClsProga ? Object.keys(D.edt).filter(function(k){ return D.edt[k] && D.edt[k].cid === acClsProga.id; }).length : 0;
   var edtTxt = nbSeancesSemaine > 0
     ? ('\n\nIMPORTANT — Emploi du temps : d\'après l\'emploi du temps déjà renseigné, le professeur a ' + nbSeancesSemaine + ' séance(s) par semaine pour la classe active sur cette matière. Fixe "dureeSemaines" en conséquence (avec peu de séances/semaine, chaque séquence doit couvrir plus de semaines).')
@@ -9065,7 +9142,11 @@ async function genProgaIA() {
       var clean = text.replace(/```json/g,'').replace(/```/g,'').trim();
       try {
         var parsed = JSON.parse(clean);
-        var nextId = 1;
+        /* Les id des projets doivent rester uniques sur TOUTE la base (plusieurs classes partagent le même
+           tableau D.progression), pas seulement au sein de cette génération — sinon deux classes générées
+           séparément se retrouveraient avec les mêmes id et se marcheraient dessus. */
+        var nextId = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
+        var cidCible = progaClasseId();
         /* Si la date de rentrée scolaire est renseignée (Paramètres), on remplace la "periode" en texte libre
            de l'IA par de VRAIES dates calendaires : on cumule les "dureeSemaines" de chaque séquence, dans
            l'ordre du JSON (donc dans l'ordre de l'année), pour obtenir le numéro de semaine réel de chacune —
@@ -9077,7 +9158,7 @@ async function genProgaIA() {
         }).map(function(pj) {
           var pjId = nextId++;
           return {
-            id: pjId, nom: pj.nom || 'Projet', tacheFinale: pj.tacheFinale || '',
+            id: pjId, cid: cidCible, nom: pj.nom || 'Projet', tacheFinale: pj.tacheFinale || '',
             sequences: (pj.sequences || []).map(function(sq) {
               var duree = parseInt(sq.dureeSemaines) || 2;
               var obj = Object.assign({ id: Date.now() + Math.floor(Math.random()*10000), statut: 'a_venir' }, sq);
@@ -9091,11 +9172,12 @@ async function genProgaIA() {
             })
           };
         });
-        if (D.progression.length) {
-          var remplace = await appConfirm(CURRENT_LANG==='ar'?'استبدال التدرج الحالي بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle par cette proposition IA ?');
+        var ancienProjetsClasse = D.progression.filter(function(p){ return p.cid === cidCible; });
+        if (ancienProjetsClasse.length) {
+          var remplace = await appConfirm(CURRENT_LANG==='ar'?'استبدال تدرج هذا القسم بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle de cette classe par cette proposition IA ?');
           if (!remplace) return;
         }
-        D.progression = projets;
+        D.progression = D.progression.filter(function(p){ return p.cid !== cidCible; }).concat(projets);
         sv(); rProga();
         N(CURRENT_LANG==='ar'?'تم إنشاء الاقتراح ! عدّله حسب احتياجاتك.':'Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
         if (!baseRentreeProga) {
@@ -9110,26 +9192,28 @@ async function genProgaIA() {
 
 function printProga() {
   var isL = progaIsLangue();
-  var title = T('proga_title') + ' — ' + D.s.mat;
+  var projetsClasse = progaProjetsClasse();
+  var clsImp = D.cls.find(function(c){ return c.id === progaClasseId(); });
+  var title = T('proga_title') + ' — ' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '');
   var html = '<h3 style="text-align:center;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;margin-bottom:14px;">'+T('min_edu_nat')+'</h3>';
   /* En-tête administratif officiel (wilaya / circonscription / inspection / établissement),
      pour que le document puisse être imprimé et transmis tel quel à la direction. */
   html += '<div class="pp-meta"><div><b>'+T('proga_wilaya_lbl')+'</b> ' + (D.s.wil||'') + '</div><div><b>'+T('proga_circ_lbl')+'</b> ' + (D.s.circ||'') + '</div></div>';
   html += '<div class="pp-meta"><div><b>'+T('proga_insp_lbl')+'</b> ' + (D.s.insp||'') + '</div><div><b>'+T('cj_etablissement_lbl')+'</b> ' + (D.s.et||'') + '</div></div>';
-  html += '<div class="pp-banner"><div class="pp-banner-top">📊 '+T('proga_title')+'</div><div class="pp-banner-theme">' + D.s.mat + '</div></div>';
+  html += '<div class="pp-banner"><div class="pp-banner-top">📊 '+T('proga_title')+'</div><div class="pp-banner-theme">' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '') + '</div></div>';
   html += '<div class="pp-meta"><div><b>'+T('cj_enseignant_lbl')+'</b> ' + D.s.pre + ' ' + D.s.nom + '</div><div><b>'+T('annee_scolaire_lbl')+'</b> ' + (D.s.an||'') + '</div></div>';
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
     html += '<div class="pp-section">📋 '+T('proga_eval_diag')+'</div>';
     html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('th_pages')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
-    D.progression.forEach(function(pj) {
+    projetsClasse.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
         html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.periode||'')+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td style="font-size:10px;">'+(sq.pages||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
     });
   } else {
     html += '<table><thead><tr><th>'+T('th_unite')+'</th><th>'+T('th_chapitre_seq')+'</th><th>'+T('th_competences')+'</th><th>'+T('th_nb_seances')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_pages')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
-    D.progression.forEach(function(pj) {
+    projetsClasse.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
         html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong></td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.competences||'')+'</td><td>'+(sq.nbSeances||'')+'</td><td>'+(sq.periode||'')+'</td><td style="font-size:10px;">'+(sq.pages||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
@@ -9378,7 +9462,8 @@ function rCrsDeroulSeqOptions() {
   var sel = document.getElementById('crsDeroulSeq'); if (!sel) return;
   var cur = sel.value;
   var html = '<option value="">— Choisir une séquence —</option>';
-  (D.progression || []).forEach(function(pj) {
+  var ac = gAC();
+  (D.progression || []).filter(function(pj){ return pj.cid === (ac ? ac.id : null); }).forEach(function(pj) {
     (pj.sequences || []).forEach(function(sq) {
       html += '<option value="' + pj.id + ':' + sq.id + '">' + pj.nom + ' — ' + sq.nom + '</option>';
     });
@@ -9430,18 +9515,21 @@ function tgProgaSeqMenu() {
   menu.style.display = opening ? 'block' : 'none';
 }
 function renderProgaSeqMenu(menu) {
-  if (!D.progression || !D.progression.length) {
+  if (typeof migrerProgressionParClasse === 'function') migrerProgressionParClasse();
+  var ac = gAC();
+  var projetsClasseAc = (D.progression || []).filter(function(pj){ return pj.cid === (ac ? ac.id : null); });
+  if (!projetsClasseAc.length) {
     menu.innerHTML = '<div style="padding:.9rem;font-size:.8rem;color:var(--ink3);text-align:center;">'+T('proga_menu_aucune')+'</div>';
     return;
   }
   var html = '';
-  D.progression.forEach(function (pj, pi) {
+  projetsClasseAc.forEach(function (pj) {
     if (!pj.sequences || !pj.sequences.length) return;
     html += '<div style="font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink3);padding:.5rem .5rem .2rem;">' + tiaEsc(pj.nom) + '</div>';
-    pj.sequences.forEach(function (sq, si) {
+    pj.sequences.forEach(function (sq) {
       var statutTxt = sq.statut === 'termine' ? T('statut_termine_txt') : sq.statut === 'en_cours' ? T('statut_encours_txt') : T('statut_avenir_txt');
       var statutCls = sq.statut === 'termine' ? 'bg2' : sq.statut === 'en_cours' ? 'bb2' : 'ba2';
-      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem;border-radius:8px;cursor:pointer;" onmouseover="this.style.background=\'var(--tp)\'" onmouseout="this.style.background=\'\'" onclick="choisirSequenceProga(' + pi + ',' + si + ')">' +
+      html += '<div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;padding:.5rem;border-radius:8px;cursor:pointer;" onmouseover="this.style.background=\'var(--tp)\'" onmouseout="this.style.background=\'\'" onclick="choisirSequenceProga(' + pj.id + ',' + sq.id + ')">' +
         '<span style="font-size:.8rem;">' + tiaEsc(sq.nom) + '</span>' +
         '<span class="badge ' + statutCls + '" style="flex-shrink:0;">' + statutTxt + '</span>' +
         '</div>';
@@ -9449,9 +9537,9 @@ function renderProgaSeqMenu(menu) {
   });
   menu.innerHTML = html || '<div style="padding:.9rem;font-size:.8rem;color:var(--ink3);text-align:center;">'+T('proga_menu_aucune')+'</div>';
 }
-function choisirSequenceProga(pi, si) {
-  var pj = D.progression[pi]; if (!pj) return;
-  var sq = pj.sequences[si]; if (!sq) return;
+function choisirSequenceProga(pjId, sqId) {
+  var pj = D.progression.find(function(p){ return p.id===pjId; }); if (!pj) return;
+  var sq = pj.sequences.find(function(s){ return s.id===sqId; }); if (!sq) return;
   document.getElementById('crsT').value = sq.nom;
   document.getElementById('crsType').value = 'fiche_peda';
   if (progaIsLangue()) {
