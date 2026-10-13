@@ -2342,11 +2342,13 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl">Classe</label><select class="fs" id="sjCls"></select></div>
         <div class="fg"><label class="fl">Durée</label><select class="fs" id="sjDur"><option>30 min</option><option selected>1h</option><option>2h</option></select></div>
       </div>
+      <div class="fg"><label class="fl">Lier à une séquence (Progression annuelle)</label><select class="fs" id="sjProgSeq" onchange="onSjProgSeqChange()"><option value="">— Aucune / saisie libre —</option></select></div>
       <div class="fg"><label class="fl">Thèmes et activités pédagogiques</label><input class="fi" id="sjTitre" placeholder="Ex: Les équations du 1er degré" list="sjProgList"><datalist id="sjProgList"></datalist></div>
       <div class="fg"><label class="fl">Détail des activités / Plan de la leçon</label><textarea class="fta" id="sjContenu" style="min-height:70px" placeholder="Ex: Activité 1 · Activité 2 · Application..."></textarea></div>
       <div class="fg"><label class="fl">Objectifs de compétences / d'apprentissage</label><textarea class="fta" id="sjObjectifs" style="min-height:60px" placeholder="Ex: Compétence visée : ... · Objectif : ..."></textarea></div>
-      <div class="fg2">
+      <div class="fg3">
         <div class="fg"><label class="fl">Supports</label><input class="fi" id="sjSupports" placeholder="Ex: Manuel, ardoise, affiches..."></div>
+        <div class="fg"><label class="fl">Pages</label><input class="fi" id="sjPages" placeholder="Ex: Actes: M S P83"></div>
         <div class="fg"><label class="fl">Matière</label><input class="fi" id="sjMat" placeholder="Mathématiques"></div>
       </div>
       <div class="fg"><label class="fl">Statut</label><select class="fs" id="sjStatut"><option value="inacheve">Inachevé</option><option value="acheve">Achevé</option></select></div>
@@ -4041,7 +4043,7 @@ function switchLang() {
   /* ===== mSeance ===== */
   var mSeanceT = document.getElementById('mSeanceT'); if (mSeanceT) mSeanceT.textContent = isAR ? 'حصة جديدة' : 'Nouvelle séance';
   var mSjLbls = document.querySelectorAll('#mSeance .fl');
-  var mSjLblPairs = [['Date','التاريخ'],['Horaire','التوقيت'],['Classe','القسم'],['Durée','المدة'],['Thèmes et activités pédagogiques','المواضيع والأنشطة التربوية'],['Détail des activités / Plan de la leçon','تفاصيل الأنشطة / مخطط الدرس'],["Objectifs de compétences / d'apprentissage",'أهداف الكفاءات / التعلم'],['Supports','الوسائل'],['Matière','المادة'],['Statut','الحالة'],['Remarque','ملاحظة']];
+  var mSjLblPairs = [['Date','التاريخ'],['Horaire','التوقيت'],['Classe','القسم'],['Durée','المدة'],['Lier à une séquence (Progression annuelle)','ربط بحصة (التدرج السنوي)'],['Thèmes et activités pédagogiques','المواضيع والأنشطة التربوية'],['Détail des activités / Plan de la leçon','تفاصيل الأنشطة / مخطط الدرس'],["Objectifs de compétences / d'apprentissage",'أهداف الكفاءات / التعلم'],['Supports','الوسائل'],['Pages','الصفحات'],['Matière','المادة'],['Statut','الحالة'],['Remarque','ملاحظة']];
   mSjLbls.forEach(function(lb,i){ if(mSjLblPairs[i]) lb.textContent = isAR?mSjLblPairs[i][1]:mSjLblPairs[i][0]; });
   var sjDurSel = document.getElementById('sjDur');
   if (sjDurSel && sjDurSel.options.length >= 3) {
@@ -4049,10 +4051,12 @@ function switchLang() {
     var sjDurFR = ['30 min','1h','2h'];
     for(var sdi=0;sdi<3;sdi++) sjDurSel.options[sdi].text = isAR ? sjDurAR[sdi] : sjDurFR[sdi];
   }
+  var sjProgSeqSel = document.getElementById('sjProgSeq'); if (sjProgSeqSel && sjProgSeqSel.options[0]) sjProgSeqSel.options[0].text = isAR ? '— بدون / إدخال حر —' : '— Aucune / saisie libre —';
   var sjTitreInput = document.getElementById('sjTitre'); if (sjTitreInput) sjTitreInput.placeholder = isAR ? 'مثال: معادلات الدرجة الأولى' : 'Ex: Les équations du 1er degré';
   var sjContenuInput = document.getElementById('sjContenu'); if (sjContenuInput) sjContenuInput.placeholder = isAR ? 'مثال: النشاط 1 · النشاط 2 · التطبيق...' : 'Ex: Activité 1 · Activité 2 · Application...';
   var sjObjectifsInput = document.getElementById('sjObjectifs'); if (sjObjectifsInput) sjObjectifsInput.placeholder = isAR ? 'مثال: الكفاءة المستهدفة : ... · الهدف : ...' : 'Ex: Compétence visée : ... · Objectif : ...';
   var sjSupportsInput = document.getElementById('sjSupports'); if (sjSupportsInput) sjSupportsInput.placeholder = isAR ? 'مثال: الكتاب المدرسي، اللوحة، الملصقات...' : 'Ex: Manuel, ardoise, affiches...';
+  var sjPagesInput = document.getElementById('sjPages'); if (sjPagesInput) sjPagesInput.placeholder = isAR ? 'مثال: الصفحة 83' : 'Ex: Actes: M S P83';
   var sjMatInput = document.getElementById('sjMat'); if (sjMatInput) sjMatInput.placeholder = isAR ? 'الرياضيات' : 'Mathématiques';
   var sjResteInput = document.getElementById('sjReste'); if (sjResteInput) sjResteInput.placeholder = isAR ? 'ملاحظات، ما تبقى معالجته...' : "Observations, ce qu'il reste à traiter...";
   var sjStatutSel = document.getElementById('sjStatut');
@@ -8344,7 +8348,7 @@ function renderCjWeek() {
       '<td>'+(cls?cls.nm:'')+'<br><span style="font-size:.7rem;color:var(--ink3)">'+(s.mat||'')+'</span></td>'+
       '<td style="min-width:180px;"><strong>'+s.titre+'</strong>'+cjContenuCourt(s.contenu)+'</td>'+
       '<td style="min-width:160px;font-size:.78rem;white-space:pre-wrap;">'+(s.objectifs||'—')+'</td>'+
-      '<td style="font-size:.78rem;">'+(s.supports||'—')+'</td>'+
+      '<td style="font-size:.78rem;">'+(s.supports||'—')+(s.pages?'<br><span style="font-size:.7rem;color:var(--ink3)">📖 '+s.pages+'</span>':'')+'</td>'+
       '<td>'+badge+'</td>'+
       '<td style="min-width:120px;font-size:.78rem;white-space:pre-wrap;">'+(s.reste||'—')+'</td>'+
       '<td style="white-space:nowrap;"><div style="display:flex;gap:4px;"><button class="btn bxs bo" onclick="toggleSeanceStatut('+s.id+')" title="'+T('changer_statut_lbl')+'">🔁</button><button class="btn bxs bo" onclick="editSeance('+s.id+')" title="'+T('modifier_lbl')+'">✏️</button><button class="btn bxs" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);" onclick="delSeance('+s.id+')" title="'+T('supprimer_lbl')+'">🗑</button></div></td>'+
@@ -8359,6 +8363,18 @@ function prepSeanceModal() {
   var opts = [];
   Object.keys(PROG).forEach(function(nv){ PROG[nv].forEach(function(m){ m.chapitres.forEach(function(c){ opts.push(c); }); }); });
   dl.innerHTML = opts.map(function(o){ return '<option value="'+o.replace(/"/g,'&quot;')+'">'; }).join('');
+  var isAR = CURRENT_LANG==='ar';
+  var progSel = document.getElementById('sjProgSeq');
+  var progHtml = '<option value="">' + (isAR ? '— بدون / إدخال حر —' : '— Aucune / saisie libre —') + '</option>';
+  D.progression.forEach(function(pj) {
+    if (!pj.sequences.length) return;
+    progHtml += '<optgroup label="' + pj.nom.replace(/"/g,'&quot;') + '">';
+    pj.sequences.forEach(function(sq) {
+      progHtml += '<option value="' + pj.id + ':' + sq.id + '">' + sq.nom.replace(/</g,'&lt;') + '</option>';
+    });
+    progHtml += '</optgroup>';
+  });
+  progSel.innerHTML = progHtml;
   if (D._sId) {
     var s = D.cj.find(function(x){ return x.id===D._sId; });
     if (s) {
@@ -8366,10 +8382,12 @@ function prepSeanceModal() {
       document.getElementById('sjH').value = s.heure||'08:00';
       document.getElementById('sjCls').value = s.cid;
       document.getElementById('sjDur').value = s.duree||'1h';
+      progSel.value = s.progLink ? (s.progLink.projetId + ':' + s.progLink.seqId) : '';
       document.getElementById('sjTitre').value = s.titre||'';
       document.getElementById('sjContenu').value = s.contenu||'';
       document.getElementById('sjObjectifs').value = s.objectifs||'';
       document.getElementById('sjSupports').value = s.supports||'';
+      document.getElementById('sjPages').value = s.pages||'';
       document.getElementById('sjStatut').value = s.statut||'inacheve';
       document.getElementById('sjMat').value = s.mat||D.s.mat;
       document.getElementById('sjReste').value = s.reste||'';
@@ -8382,10 +8400,12 @@ function prepSeanceModal() {
     document.getElementById('sjD').valueAsDate = dateParDefaut;
     document.getElementById('sjH').value = '08:00';
     document.getElementById('sjDur').value = '1h';
+    progSel.value = '';
     document.getElementById('sjTitre').value = '';
     document.getElementById('sjContenu').value = '';
     document.getElementById('sjObjectifs').value = '';
     document.getElementById('sjSupports').value = '';
+    document.getElementById('sjPages').value = '';
     document.getElementById('sjStatut').value = 'inacheve';
     document.getElementById('sjMat').value = D.s.mat||'';
     document.getElementById('sjReste').value = '';
@@ -8393,6 +8413,37 @@ function prepSeanceModal() {
   }
 }
 var _pendingProgLink = null; /* lien vers une séquence de la Progression annuelle, pour suivi automatique */
+
+function remplirSeanceDepuisSequence(pj, sq) {
+  _pendingProgLink = { projetId: pj.id, seqId: sq.id };
+  document.getElementById('sjTitre').value = sq.nom;
+  var contenu = [];
+  if (sq.actes) contenu.push('Actes de parole : ' + sq.actes);
+  if (sq.grammaire) contenu.push('Grammaire : ' + sq.grammaire);
+  if (sq.conjugaison) contenu.push('Conjugaison : ' + sq.conjugaison);
+  if (sq.lexique) contenu.push('Lexique : ' + sq.lexique);
+  if (sq.competences) contenu.push('Compétences : ' + sq.competences);
+  if (sq.nbSeances) contenu.push('Nombre de séances prévues : ' + sq.nbSeances);
+  if (sq.periode) contenu.push('Période prévue : ' + sq.periode);
+  if (!contenu.length) contenu.push('(Cette séquence n\'a pas encore de détail renseigné dans la Progression annuelle — ajoute-le directement ici, ou complète-le dans Progression annuelle pour la prochaine fois.)');
+  document.getElementById('sjContenu').value = contenu.join('\n');
+  document.getElementById('sjMat').value = D.s.mat;
+  document.getElementById('sjPages').value = sq.pages || '';
+  var objectifs = [];
+  if (pj.tacheFinale) objectifs.push('Tâche finale du projet : ' + pj.tacheFinale);
+  if (sq.production) objectifs.push('Production attendue : ' + sq.production);
+  document.getElementById('sjObjectifs').value = objectifs.join('\n');
+}
+
+function onSjProgSeqChange() {
+  var sel = document.getElementById('sjProgSeq'); if (!sel) return;
+  if (!sel.value) { _pendingProgLink = null; return; }
+  var parts = sel.value.split(':');
+  var pj = D.progression.find(function(p){ return p.id===parseInt(parts[0]); }); if (!pj) return;
+  var sq = pj.sequences.find(function(s){ return s.id===parseInt(parts[1]); }); if (!sq) return;
+  remplirSeanceDepuisSequence(pj, sq);
+  N((CURRENT_LANG==='ar'?'تمت التعبئة المسبقة من "':'Pré-rempli depuis "') + sq.nom + '"', 'ok');
+}
 
 function seanceDepuisProga() {
   var found = null;
@@ -8421,25 +8472,10 @@ function seanceDepuisProga() {
     }
   }
   if (!found) { N(CURRENT_LANG==='ar'?'لا توجد أي حصة في التدرج السنوي. أضف واحدة أولاً.':'Aucune séquence dans la Progression annuelle. Ajoute-en une d\'abord.', 'err'); return; }
-  _pendingProgLink = { projetId: found.pj.id, seqId: found.sq.id };
   D._sId = null;
   OM('mSeance');
-  document.getElementById('sjTitre').value = found.sq.nom;
-  var contenu = [];
-  if (found.sq.actes) contenu.push('Actes de parole : ' + found.sq.actes);
-  if (found.sq.grammaire) contenu.push('Grammaire : ' + found.sq.grammaire);
-  if (found.sq.conjugaison) contenu.push('Conjugaison : ' + found.sq.conjugaison);
-  if (found.sq.lexique) contenu.push('Lexique : ' + found.sq.lexique);
-  if (found.sq.competences) contenu.push('Compétences : ' + found.sq.competences);
-  if (found.sq.nbSeances) contenu.push('Nombre de séances prévues : ' + found.sq.nbSeances);
-  if (found.sq.periode) contenu.push('Période prévue : ' + found.sq.periode);
-  if (!contenu.length) contenu.push('(Cette séquence n\'a pas encore de détail renseigné dans la Progression annuelle — ajoute-le directement ici, ou complète-le dans Progression annuelle pour la prochaine fois.)');
-  document.getElementById('sjContenu').value = contenu.join('\n');
-  document.getElementById('sjMat').value = D.s.mat;
-  var objectifs = [];
-  if (found.pj.tacheFinale) objectifs.push('Tâche finale du projet : ' + found.pj.tacheFinale);
-  if (found.sq.production) objectifs.push('Production attendue : ' + found.sq.production);
-  document.getElementById('sjObjectifs').value = objectifs.join('\n');
+  var sel = document.getElementById('sjProgSeq'); if (sel) sel.value = found.pj.id + ':' + found.sq.id;
+  remplirSeanceDepuisSequence(found.pj, found.sq);
   N((CURRENT_LANG==='ar'?'تمت التعبئة المسبقة من "':'Pré-rempli depuis "') + found.sq.nom + '"', 'ok');
 }
 window.seanceDepuisProga = seanceDepuisProga;
@@ -8459,16 +8495,24 @@ function saveSeance() {
     date:d, heure:document.getElementById('sjH').value, cid:parseInt(document.getElementById('sjCls').value)||null,
     duree:document.getElementById('sjDur').value, titre:titre, contenu:document.getElementById('sjContenu').value,
     objectifs:document.getElementById('sjObjectifs').value, supports:document.getElementById('sjSupports').value,
+    pages:document.getElementById('sjPages').value,
     statut:document.getElementById('sjStatut').value, mat:document.getElementById('sjMat').value.trim()||D.s.mat,
     reste:document.getElementById('sjReste').value
   };
+  var sjProgSeqSel = document.getElementById('sjProgSeq');
+  if (sjProgSeqSel && sjProgSeqSel.value) {
+    var pgParts = sjProgSeqSel.value.split(':');
+    obj.progLink = { projetId: parseInt(pgParts[0]), seqId: parseInt(pgParts[1]) };
+  } else {
+    obj.progLink = null;
+  }
+  _pendingProgLink = null;
   if (D._sId) {
     var idx = D.cj.findIndex(function(x){ return x.id===D._sId; });
     if (idx>=0) D.cj[idx] = Object.assign(D.cj[idx], obj);
     D._sId = null;
   } else {
     obj.id = D.cj.length ? Math.max.apply(null,D.cj.map(function(x){ return x.id; }))+1 : 1;
-    if (_pendingProgLink) { obj.progLink = _pendingProgLink; _pendingProgLink = null; }
     D.cj.push(obj);
   }
   cjWeek = getWeekStart(new Date(d + 'T00:00:00')); /* affiche automatiquement la semaine de la séance enregistrée, pour qu'elle ne semble pas "disparaître" si on était sur une autre semaine */
@@ -8509,7 +8553,7 @@ function cjPrint() {
     var cls = D.cls.find(function(c){ return c.id===s.cid; });
     var statutBadge = s.statut==='acheve' ? '<span class="badge bg2">'+T('cj_acheve_badge')+'</span>' : '<span class="badge ba2">'+T('cj_inacheve_badge')+'</span>';
     var dateTxt = d.getDate()+' '+moLbl(d.getMonth())+(vue==='annee'?' '+d.getFullYear():'');
-    return '<tr><td><strong>'+jourLbl+'</strong><br>'+dateTxt+'</td><td>'+(s.heure||'')+' ('+s.duree+')</td><td>'+(cls?cls.nm:'')+'</td><td><strong>'+s.titre+'</strong>'+(s.contenu?'<br><span style="font-size:11px;color:#4A4A52;">'+s.contenu.replace(/\n/g,'<br>')+'</span>':'')+'</td><td style="font-size:11px;">'+(s.objectifs?s.objectifs.replace(/\n/g,'<br>'):'—')+'</td><td style="font-size:11px;">'+(s.supports||'—')+'</td><td>'+statutBadge+'</td><td style="font-size:11px;">'+(s.reste||'—')+'</td></tr>';
+    return '<tr><td><strong>'+jourLbl+'</strong><br>'+dateTxt+'</td><td>'+(s.heure||'')+' ('+s.duree+')</td><td>'+(cls?cls.nm:'')+'</td><td><strong>'+s.titre+'</strong>'+(s.contenu?'<br><span style="font-size:11px;color:#4A4A52;">'+s.contenu.replace(/\n/g,'<br>')+'</span>':'')+'</td><td style="font-size:11px;">'+(s.objectifs?s.objectifs.replace(/\n/g,'<br>'):'—')+'</td><td style="font-size:11px;">'+(s.supports||'—')+(s.pages?'<br><span style="font-size:10px;">📖 '+s.pages+'</span>':'')+'</td><td>'+statutBadge+'</td><td style="font-size:11px;">'+(s.reste||'—')+'</td></tr>';
   }
   if (vue === 'mois' || vue === 'annee') {
     var moisCible = cjWeek.getMonth(), anCible = cjWeek.getFullYear();
