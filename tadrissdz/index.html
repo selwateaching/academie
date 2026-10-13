@@ -1493,6 +1493,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <option>1AS</option><option>2AS</option><option>3AS</option>
       </select>
       <select class="fs" id="progaFiliere" style="width:190px;display:none" title="Filière pour la génération IA"></select>
+      <button class="btn bo bsm" id="btnProgaVue" onclick="toggleProgaVue()">📊 Vue tableau</button>
       <button class="btn bo bsm" onclick="printProga()">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="OM('mProjet')">+ Projet / Unité</button>
       <button class="btn bt" id="btnGenProga" onclick="genProgaIA()"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulb1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulb1)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> Générer une proposition (IA)</button>
@@ -1500,6 +1501,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
   </div>
   <div class="g4" style="margin-bottom:1.2rem" id="progaStats"></div>
   <div id="progaBox"></div>
+  <div id="progaTableBox" style="display:none"></div>
 </div>
 
 <!-- ===== CAHIER JOURNAL ===== -->
@@ -2270,6 +2272,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <div class="fg"><label class="fl">Nom de la séquence</label><input class="fi" id="sqNom" placeholder="Ex: Séquence 1 — Présenter un animal sauvage"></div>
       <div class="fg"><label class="fl">Statut</label><select class="fs" id="sqStatut"><option value="a_venir">⚪ À venir</option><option value="en_cours">🟡 En cours</option><option value="termine">🟢 Terminée</option></select></div>
       <div class="fg"><label class="fl">Période prévue</label><input class="fi" id="sqPeriode" placeholder="Ex: Semaines 3-4"></div>
+      <div class="fg"><label class="fl">Pages (manuel / cahier d'activités)</label><input class="fi" id="sqPages" placeholder="Ex: Actes: M S P83 · Lecture: M S P85 · Dictée: C A P88"></div>
       <div id="sqLangueFields" style="display:none">
         <div class="fg2"><div class="fg"><label class="fl">Actes de parole</label><input class="fi" id="sqActes" placeholder=""></div><div class="fg"><label class="fl">Lecture compréhension</label><input class="fi" id="sqLecture" placeholder=""></div></div>
         <div class="fg2"><div class="fg"><label class="fl">Lexique</label><input class="fi" id="sqLexique" placeholder=""></div><div class="fg"><label class="fl">Grammaire</label><input class="fi" id="sqGrammaire" placeholder=""></div></div>
@@ -3186,7 +3189,7 @@ var LANG_JS = {
     th_lecture: 'Lecture', th_lexique: 'Lexique', th_grammaire: 'Grammaire',
     th_conjugaison: 'Conjugaison', th_orthographe: 'Orthographe', th_comptine: 'Comptine',
     th_unite: 'Unité', th_chapitre_seq: 'Chapitre / Séquence',
-    th_competences: 'Compétences', th_nb_seances: 'Nb séances', th_periode: 'Période',
+    th_competences: 'Compétences', th_nb_seances: 'Nb séances', th_periode: 'Période', th_pages: 'Pages',
     proga_eval_diag: 'Évaluation diagnostique prévue en deux semaines',
     proga_wilaya_lbl: "Direction de l'Éducation de la wilaya :", proga_circ_lbl: 'Circonscription pédagogique :',
     proga_insp_lbl: "Inspection de l'enseignement :", proga_sig_ens: 'Enseignant(e)', proga_sig_dir: 'Directeur(trice)', proga_sig_insp: 'Inspecteur(trice)',
@@ -3492,7 +3495,7 @@ var LANG_JS = {
     proga_eval_diag: 'التقويم التشخيصي المبرمج في أسبوعين',
     proga_wilaya_lbl: 'مديرية التربية لولاية :', proga_circ_lbl: 'المقاطعة التربوية :',
     proga_insp_lbl: 'مفتشية التعليم :', proga_sig_ens: 'الأستاذ(ة)', proga_sig_dir: 'المدير(ة)', proga_sig_insp: 'المفتش(ة)',
-    th_competences: 'الكفاءات', th_nb_seances: 'عدد الحصص', th_periode: 'الفترة',
+    th_competences: 'الكفاءات', th_nb_seances: 'عدد الحصص', th_periode: 'الفترة', th_pages: 'الصفحات',
     vue_tableau_btn: '📊 عرض جدول',
     vue_fiche_btn: '📋 عرض بطاقة',
     aucun_cours_dossier: 'لا دروس في هذا المجلد',
@@ -8666,14 +8669,69 @@ function rProga() {
           if (sq.actes) chips.push(T('proga_actes_lbl') + sq.actes);
           if (sq.grammaire) chips.push(T('proga_grammaire_lbl') + sq.grammaire);
           if (sq.conjugaison) chips.push(T('proga_conjugaison_lbl') + sq.conjugaison);
+          if (sq.pages) chips.push('📖 ' + sq.pages);
           if (chips.length) h += '<div style="font-size:.72rem;color:var(--ink3);margin-top:4px;">' + chips.join(' · ') + '</div>';
         } else {
-          if (sq.competences) h += '<div style="font-size:.72rem;color:var(--ink3);margin-top:4px;">' + sq.competences + (sq.nbSeances ? ' · ' + sq.nbSeances + T('proga_seance_suffix') : '') + (sq.periode ? ' · ' + sq.periode : '') + '</div>';
+          if (sq.competences || sq.pages) h += '<div style="font-size:.72rem;color:var(--ink3);margin-top:4px;">' + sq.competences + (sq.nbSeances ? ' · ' + sq.nbSeances + T('proga_seance_suffix') : '') + (sq.periode ? ' · ' + sq.periode : '') + (sq.pages ? ' · 📖 ' + sq.pages : '') + '</div>';
         }
         h += '</div>';
       });
     }
     h += '</div></div>';
+    return h;
+  }).join('');
+  if (PROGA_VUE_MODE === 'tableau') rProgaTable();
+}
+
+/* ===== Vue tableau : séquences en colonnes, compétences en lignes (format grille officielle) =====
+   Alternative à la vue "cartes" ci-dessus — même donnée, juste une autre lecture, plus proche des
+   documents de progression habituels (une colonne par séquence, un intitulé de compétence par ligne). */
+var PROGA_VUE_MODE = 'cartes';
+function toggleProgaVue() {
+  PROGA_VUE_MODE = (PROGA_VUE_MODE === 'cartes') ? 'tableau' : 'cartes';
+  var btn = document.getElementById('btnProgaVue');
+  var boxCartes = document.getElementById('progaBox');
+  var boxTableau = document.getElementById('progaTableBox');
+  if (PROGA_VUE_MODE === 'tableau') {
+    if (btn) btn.innerHTML = CURRENT_LANG==='ar' ? '🗂️ عرض البطاقات' : '🗂️ Vue cartes';
+    if (boxCartes) boxCartes.style.display = 'none';
+    if (boxTableau) boxTableau.style.display = 'block';
+    rProgaTable();
+  } else {
+    if (btn) btn.innerHTML = CURRENT_LANG==='ar' ? '📊 عرض الجدول' : '📊 Vue tableau';
+    if (boxCartes) boxCartes.style.display = 'block';
+    if (boxTableau) boxTableau.style.display = 'none';
+  }
+}
+function rProgaTable() {
+  var box = document.getElementById('progaTableBox');
+  if (!box) return;
+  var isL = progaIsLangue();
+  if (!D.progression.length) {
+    box.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:3rem;color:var(--ink3)"><div style="font-size:2.5rem">🗺️</div><div style="margin-top:.75rem">' + T('proga_aucun_projet') + '</div></div></div>';
+    return;
+  }
+  var lignes = isL
+    ? [['periode','🗓 Période'],['actes',T('proga_actes_lbl').replace(':','')],['lecture','Lecture compréhension'],['lexique','Lexique'],['grammaire',T('proga_grammaire_lbl').replace(':','')],['conjugaison',T('proga_conjugaison_lbl').replace(':','')],['orthographe','Orthographe'],['lectureSyst','Lecture systématique'],['dictee','Dictée'],['comptine','Comptine'],['production','Production orale / écrite'],['pages','📖 Pages']]
+    : [['periode','🗓 Période'],['competences','Compétences visées'],['nbSeances','Nb de séances'],['pages','📖 Pages']];
+  box.innerHTML = D.progression.map(function(pj) {
+    if (!pj.sequences.length) return '';
+    var h = '<div class="card" style="margin-bottom:1rem"><div class="ch"><div class="ct">' + pj.nom + '</div></div><div class="cb" style="overflow-x:auto;padding:0;">';
+    h += '<table style="min-width:100%;"><thead><tr><th style="position:sticky;left:0;background:var(--bg);min-width:160px;">' + (CURRENT_LANG==='ar'?'':'') + '</th>';
+    pj.sequences.forEach(function(sq) {
+      var badge = sq.statut === 'termine' ? '🟢' : sq.statut === 'en_cours' ? '🟡' : '⚪';
+      h += '<th style="min-width:170px;cursor:pointer;" onclick="editSequence(' + pj.id + ',' + sq.id + ')" title="' + T('modifier_lbl') + '">' + badge + ' ' + sq.nom + '</th>';
+    });
+    h += '</tr></thead><tbody>';
+    lignes.forEach(function(l) {
+      h += '<tr><td style="position:sticky;left:0;background:var(--w);font-weight:700;font-size:.76rem;color:var(--ink3);white-space:nowrap;">' + l[1] + '</td>';
+      pj.sequences.forEach(function(sq) {
+        var v = sq[l[0]];
+        h += '<td style="font-size:.78rem;">' + (v != null && v !== '' ? v : '—') + '</td>';
+      });
+      h += '</tr>';
+    });
+    h += '</tbody></table></div></div>';
     return h;
   }).join('');
 }
@@ -8687,6 +8745,7 @@ window.addSequenceTo = function(projetId) {
   document.getElementById('sqCompetences').value = '';
   document.getElementById('sqNbSeances').value = 3;
   document.getElementById('sqPeriode').value = '';
+  document.getElementById('sqPages').value = '';
   document.getElementById('sqLangueFields').style.display = progaIsLangue() ? 'block' : 'none';
   document.getElementById('sqSciFields').style.display = progaIsLangue() ? 'none' : 'block';
   document.getElementById('sqDelBtn').style.display = 'none';
@@ -8712,6 +8771,7 @@ window.editSequence = function(projetId, seqId) {
   document.getElementById('sqCompetences').value = sq.competences || '';
   document.getElementById('sqNbSeances').value = sq.nbSeances || 3;
   document.getElementById('sqPeriode').value = sq.periode || '';
+  document.getElementById('sqPages').value = sq.pages || '';
   document.getElementById('sqLangueFields').style.display = progaIsLangue() ? 'block' : 'none';
   document.getElementById('sqSciFields').style.display = progaIsLangue() ? 'none' : 'block';
   document.getElementById('sqDelBtn').style.display = 'inline-flex';
@@ -8731,7 +8791,8 @@ function saveSequence() {
     production: document.getElementById('sqProduction').value,
     competences: document.getElementById('sqCompetences').value,
     nbSeances: parseInt(document.getElementById('sqNbSeances').value) || 1,
-    periode: document.getElementById('sqPeriode').value
+    periode: document.getElementById('sqPeriode').value,
+    pages: document.getElementById('sqPages').value
   };
   if (_sqEditId) {
     var idx = pj.sequences.findIndex(function(s){ return s.id===_sqEditId; });
@@ -9003,17 +9064,17 @@ function printProga() {
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
     html += '<div class="pp-section">📋 '+T('proga_eval_diag')+'</div>';
-    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>'+T('th_projet')+'</th><th>'+T('th_sequence')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_actes_parole')+'</th><th>'+T('th_lecture')+'</th><th>'+T('th_lexique')+'</th><th>'+T('th_grammaire')+'</th><th>'+T('th_conjugaison')+'</th><th>'+T('th_orthographe')+'</th><th>'+T('th_comptine')+'</th><th>'+T('th_pages')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
     D.progression.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
-        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.periode||'')+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
+        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong>'+(pj.tacheFinale?'<br><span style="font-size:10px;">'+pj.tacheFinale+'</span>':'')+'</td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.periode||'')+'</td><td>'+(sq.actes||'')+'</td><td>'+(sq.lecture||'')+'</td><td>'+(sq.lexique||'')+'</td><td>'+(sq.grammaire||'')+'</td><td>'+(sq.conjugaison||'')+'</td><td>'+(sq.orthographe||'')+'</td><td>'+(sq.comptine||'')+'</td><td style="font-size:10px;">'+(sq.pages||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
     });
   } else {
-    html += '<table><thead><tr><th>'+T('th_unite')+'</th><th>'+T('th_chapitre_seq')+'</th><th>'+T('th_competences')+'</th><th>'+T('th_nb_seances')+'</th><th>'+T('th_periode')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>'+T('th_unite')+'</th><th>'+T('th_chapitre_seq')+'</th><th>'+T('th_competences')+'</th><th>'+T('th_nb_seances')+'</th><th>'+T('th_periode')+'</th><th>'+T('th_pages')+'</th><th>'+T('cj_th_statut')+'</th></tr></thead><tbody>';
     D.progression.forEach(function(pj) {
       pj.sequences.forEach(function(sq, i) {
-        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong></td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.competences||'')+'</td><td>'+(sq.nbSeances||'')+'</td><td>'+(sq.periode||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
+        html += '<tr>' + (i===0 ? '<td rowspan="'+pj.sequences.length+'"><strong>'+pj.nom+'</strong></td>' : '') + '<td>'+sq.nom+'</td><td>'+(sq.competences||'')+'</td><td>'+(sq.nbSeances||'')+'</td><td>'+(sq.periode||'')+'</td><td style="font-size:10px;">'+(sq.pages||'')+'</td><td>'+statutBadge(sq.statut)+'</td></tr>';
       });
     });
   }
