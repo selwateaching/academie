@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 3000;
 
 initSchema()
   .then(() => {
-    app.listen(PORT, () => console.log(`MedIA Campus backend listening on ${PORT}`));
+    app.listen(PORT, () => console.log(`VeloraMED backend listening on ${PORT}`));
   })
   .catch((err) => {
     console.error('Échec initialisation base de données', err);

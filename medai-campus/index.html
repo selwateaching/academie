@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
-<title>MedIA Campus – Plateforme IA pour l'enseignement médical</title>
-<meta name="description" content="MedIA Campus — plateforme pédagogique IA pour l'enseignement médical, toutes spécialités : suivi des étudiants, stages hospitaliers, cas cliniques, examens et correction de copies assistée par IA.">
-<meta property="og:title" content="MedIA Campus – Plateforme IA pour l'enseignement médical">
+<title>VeloraMED – Plateforme IA pour l'enseignement médical</title>
+<meta name="description" content="VeloraMED — plateforme pédagogique IA pour l'enseignement médical, toutes spécialités : suivi des étudiants, stages hospitaliers, cas cliniques, examens et correction de copies assistée par IA.">
+<meta property="og:title" content="VeloraMED – Plateforme IA pour l'enseignement médical">
 <meta property="og:description" content="Plateforme pédagogique IA pour l'enseignement médical, toutes spécialités confondues.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://medeval.netlify.app/">
@@ -293,7 +293,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 <div id="loginScreen">
   <div class="login-box" style="width:420px">
     <div class="login-logo" style="justify-content:center;margin-bottom:20px;">
-      <h1>MedIA <span>Campus</span></h1>
+      <h1>Velora<span>MED</span></h1>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:22px">
       <button type="button" class="btn btn-full" id="authTabLogin" onclick="showAuthTab('login')">Connexion</button>
@@ -336,7 +336,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 <!-- SIDEBAR -->
 <div id="sidebar" role="navigation" aria-label="Navigation principale">
   <div class="sb-logo" id="sbLogoWrap" style="padding:14px 16px;display:flex;align-items:center;justify-content:center;">
-    <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">MedIA <span style="color:#B52550">Campus</span></div>
+    <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">Velora<span style="color:#B52550">MED</span></div>
   </div>
 
   <div class="nav-group">Vue générale</div>
@@ -960,7 +960,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
             <div style="padding:14px">
               <div style="background:#fff;border-radius:8px;overflow:hidden;font-family:Arial,sans-serif">
                 <div style="background:#8B1A3A;padding:18px 24px;text-align:center">
-                  <div style="color:#fff;font-size:17px;font-weight:700;letter-spacing:.5px">🏥 MedIA Campus</div>
+                  <div style="color:#fff;font-size:17px;font-weight:700;letter-spacing:.5px">🏥 VeloraMED</div>
                   <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:3px" class="js-specialty-label">Gynécologie-Obstétrique</div>
                 </div>
                 <div style="padding:20px 24px">
@@ -984,7 +984,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
                   </div>
                 </div>
                 <div style="background:#f5f5f5;padding:10px 24px;text-align:center;font-size:10px;color:#999">
-                  MedIA Campus · Université de Médecine · Ne pas répondre à cet email automatique
+                  VeloraMED · Université de Médecine · Ne pas répondre à cet email automatique
                 </div>
               </div>
             </div>
@@ -1300,12 +1300,12 @@ const API_VERSION = '2023-06-01';
 const API_MAX_TOKENS = 3000;
 
 const log = {
-  info:  (...a) => console.log(`%c[MedIA Campus] ℹ️`,  'color:#4B9EFF', ...a),
-  ok:    (...a) => console.log(`%c[MedIA Campus] ✅`, 'color:#2DCA8C', ...a),
-  warn:  (...a) => console.warn(`%c[MedIA Campus] ⚠️`, 'color:#F5A623', ...a),
-  error: (...a) => console.error(`%c[MedIA Campus] ❌`, 'color:#FF8FAB', ...a),
+  info:  (...a) => console.log(`%c[VeloraMED] ℹ️`,  'color:#4B9EFF', ...a),
+  ok:    (...a) => console.log(`%c[VeloraMED] ✅`, 'color:#2DCA8C', ...a),
+  warn:  (...a) => console.warn(`%c[VeloraMED] ⚠️`, 'color:#F5A623', ...a),
+  error: (...a) => console.error(`%c[VeloraMED] ❌`, 'color:#FF8FAB', ...a),
 };
-log.info(`MedIA Campus v${APP_VERSION} démarré`);
+log.info(`VeloraMED v${APP_VERSION} démarré`);
 
 async function callAnthropicAPI(messages, system='', extraBody={}) {
   const apiKey = getApiKey();
@@ -1363,7 +1363,7 @@ const LS = {
   set:(k,v)=>{
     try{ localStorage.setItem(k,JSON.stringify(v)); return true; }
     catch(e){
-      console.error('[MedIA Campus] Échec de sauvegarde locale ("'+k+'") :', e);
+      console.error('[VeloraMED] Échec de sauvegarde locale ("'+k+'") :', e);
       if(typeof toast === 'function') toast('❌ Échec de la sauvegarde locale (stockage navigateur plein) — exportez vos données et videz l\'historique ancien.');
       return false;
     }
@@ -1701,7 +1701,7 @@ function applyProfessorBranding(professor) {
   if (logoWrap && professor.logo_base64) {
     logoWrap.innerHTML = `<img src="${professor.logo_base64}" alt="logo" style="max-height:38px;max-width:140px;object-fit:contain">`;
   }
-  document.title = (professor.etablissement ? professor.etablissement + ' — ' : '') + 'MedIA Campus';
+  document.title = (professor.etablissement ? professor.etablissement + ' — ' : '') + 'VeloraMED';
 }
 
 async function restoreSession() {
@@ -2045,7 +2045,7 @@ function downloadExamPDF() {
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>MedIA Campus – ${getSpecialty()}</title>
+<title>VeloraMED – ${getSpecialty()}</title>
 <style>
   body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1a1a1a;line-height:1.7}
   .header{background:#8B1A3A;color:white;padding:20px 28px;border-radius:8px;margin-bottom:24px}
@@ -2061,7 +2061,7 @@ function downloadExamPDF() {
 <body>
 <div class="header">
   <h1>📑 ${topic}</h1>
-  <p>MedIA Campus · ${getSpecialty()}</p>
+  <p>VeloraMED · ${getSpecialty()}</p>
 </div>
 <div class="info">
   <span><b>Nom</b> ___________________________</span>
@@ -2070,7 +2070,7 @@ function downloadExamPDF() {
   <span><b>Date</b> ________________________</span>
 </div>
 <pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
-<div class="footer">MedIA Campus · Document généré automatiquement · Usage pédagogique</div>
+<div class="footer">VeloraMED · Document généré automatiquement · Usage pédagogique</div>
 </body></html>`;
   const win = window.open('', '_blank');
   win.document.write(html);
@@ -2109,7 +2109,7 @@ function printAnswerSheets() {
     return '<div style="page-break-after:' + (isLast ? 'auto' : 'always') + ';padding:28px 36px;max-width:800px;margin:0 auto">'
       + '<div style="background:#8B1A3A;color:white;padding:16px 22px;border-radius:8px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">'
       + '<div><div style="font-size:18px;font-weight:700">📑 ' + topic + '</div>'
-      + '<div style="font-size:12px;opacity:.85;margin-top:2px">MedIA Campus · ' + getSpecialty() + '</div></div>'
+      + '<div style="font-size:12px;opacity:.85;margin-top:2px">VeloraMED · ' + getSpecialty() + '</div></div>'
       + '<div style="font-size:11px;opacity:.8;text-align:right">Date : ' + today + '<br>Promotion : ' + (st.promo||promo||'—') + '</div>'
       + '</div>'
       + '<div style="border:2px solid #8B1A3A;border-radius:8px;padding:14px 18px;margin-bottom:20px;background:#fdf5f7">'
@@ -2127,7 +2127,7 @@ function printAnswerSheets() {
       + 'Répondez uniquement dans cet espace · Ne recopiez pas le sujet · ' + numQ + ' question(s) · ' + (cfg.total||20) + ' point(s) au total'
       + '</div></div>';
   });
-  const html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>MedIA Campus – ' + getSpecialty() + '</title>'
+  const html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>VeloraMED – ' + getSpecialty() + '</title>'
     + '<style>body{margin:0;font-family:Arial,sans-serif}@media print{@page{margin:0.5cm}}</style>'
     + '</head><body>' + pages.join('') + '</body></html>';
   const win = window.open('', '_blank');
@@ -2843,7 +2843,7 @@ async function sendResultsToSecretariat() {
     SEP, 'ÉTUDIANTS EN ÉCHEC (< ' + (total/2) + ' pts)', SEP,
     failList || '  Aucun étudiant en échec',
   ].concat([
-    '', SEP, 'Message généré par MedIA Campus — Usage pédagogique', SEP
+    '', SEP, 'Message généré par VeloraMED — Usage pédagogique', SEP
   ]).join(NL);
   const subject = encodeURIComponent(`Résultats ${examTitle} — ${promo} — ${today}`);
   const encodedBody = encodeURIComponent(body);
@@ -3708,7 +3708,7 @@ function showStudentForm() {
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:42px;height:42px;background:linear-gradient(135deg,#8B1A3A,#B52550);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏥</div>
           <div>
-            <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">MedIA <span style="color:#B52550">Campus</span></div>
+            <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">Velora<span style="color:#B52550">MED</span></div>
             <div style="font-size:11px;color:#9089B0">Formulaire de soumission de copie</div>
           </div>
         </div>
@@ -4056,7 +4056,7 @@ function printQr() {
   const win = window.open('','_blank');
   const cfg = state.examConfig;
   const examName = cfg ? cfg.title : 'Examen';
-  win.document.write('<!DOCTYPE html><html><head><title>MedIA Campus – ' + getSpecialty() + '</title><style>'
+  win.document.write('<!DOCTYPE html><html><head><title>VeloraMED – ' + getSpecialty() + '</title><style>'
     + 'body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#1a1a1a}'
     + 'h2{color:#8B1A3A;font-size:22px;margin-bottom:4px}'
     + '.sub{font-size:14px;color:#666;margin-bottom:24px}'
@@ -4065,7 +4065,7 @@ function printQr() {
     + '.instr{font-size:13px;color:#333;margin-top:20px;padding:14px;background:#fdf5f7;border-radius:8px;border:1px solid #f0d0d8}'
     + '@media print{body{padding:20px}}'
     + '</style></head><body>'
-    + '<h2>🏥 MedIA Campus</h2>'
+    + '<h2>🏥 VeloraMED</h2>'
     + '<div class="sub">Examen : ' + examName + ' &mdash; Scannez pour soumettre votre copie</div>'
     + '<img src="' + qrUrl + '" width="280" height="280">'
     + '<div class="url">' + link + '</div>'
