@@ -241,14 +241,26 @@ def eleve_login():
         return jsonify({"error": {"message": "Connexion impossible pour le moment. Réessaie."}}), 503
 
 
+def _no_cache_html_response():
+    """index.html est l'app entière (un seul gros fichier) : sans cet en-tête, certains
+    navigateurs/proxys la gardent en cache plusieurs jours, et un prof continue de voir une
+    ancienne version après une mise à jour même en rechargeant la page (déjà vu plusieurs fois
+    en test : seul un rechargement forcé Ctrl+Maj+R débloquait). "no-cache" ne veut pas dire
+    "jamais de cache" : le navigateur revalide à chaque chargement (requête conditionnelle très
+    légère) au lieu de réutiliser aveuglément une copie locale obsolète."""
+    resp = send_from_directory(os.path.dirname(__file__), "index.html")
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 @app.get("/")
 def index():
-    return send_from_directory(os.path.dirname(__file__), "index.html")
+    return _no_cache_html_response()
 
 
 @app.get("/index.html")
 def index_html():
-    return send_from_directory(os.path.dirname(__file__), "index.html")
+    return _no_cache_html_response()
 
 
 @app.get("/labolangues.html")

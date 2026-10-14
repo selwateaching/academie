@@ -10035,12 +10035,20 @@ function tpRenderTable(parsed) {
   }
   return out;
 }
-/* Extrait Compétence visée / Composante / Support(matériel) / Objectifs d'apprentissage du corps
-   généré par l'IA (avant la première étape), pour les reprendre dans la grille d'en-tête de la
-   Vue tableau — ces champs ne sont pas saisis par le prof, ils sortent du squelette imposé à l'IA. */
-function tpExtractEnteteFields(beforeHtml) {
-  var h = beforeHtml || '';
+/* Extrait Projet/Séquence/Acte de parole/Durée/Activité (déjà affichés dans l'en-tête "liste"
+   existant) ET Compétence visée/Composante/Support(matériel)/Objectifs d'apprentissage (générés
+   par l'IA, jamais saisis par le prof) depuis le HTML de la fiche, pour reconstruire la grille de
+   la Vue tableau à partir de ce qui s'affiche déjà correctement — plutôt que de dépendre d'un
+   champ séparé transmis en parallèle (source d'un bug où l'en-tête ne changeait jamais malgré un
+   contenu généré correctement). */
+function tpExtractEnteteFields(fullHtml) {
+  var h = fullHtml || '';
   function grab(re) { var m = h.match(re); return m ? m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : ''; }
+  var projet = grab(/<b>Projet\s*:<\/b>\s*([\s\S]*?)<\/div>/);
+  var sequence = grab(/<b>Séquence\s*:<\/b>\s*([\s\S]*?)<\/div>/);
+  var duree = grab(/<b>Durée\s*:<\/b>\s*([\s\S]*?)<\/div>/);
+  var actePar = grab(/<b>Acte de parole\s*:<\/b>\s*([\s\S]*?)<\/div>/);
+  var activite = grab(/<b>Activité\s*:<\/b>\s*([\s\S]*?)<\/div>/);
   var competence = grab(/<div class="tc-box-title">🎯 Compétence visée<\/div>([\s\S]*?)<\/div>/);
   var composante = grab(/<strong>Composante de la compétence\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
   var materiel = grab(/<strong>Support\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
@@ -10050,7 +10058,8 @@ function tpExtractEnteteFields(beforeHtml) {
     var liRe = /<li>([\s\S]*?)<\/li>/g, lm;
     while ((lm = liRe.exec(objMatch[1]))) objectifs.push(lm[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
   }
-  return { competence: competence, composante: composante, materiel: materiel, objectifs: objectifs };
+  return { projet: projet, sequence: sequence, duree: duree, actePar: actePar, activite: activite,
+    competence: competence, composante: composante, materiel: materiel, objectifs: objectifs };
 }
 /* Grille d'en-tête "canevas officiel" (Niveau/Projet/Acte de parole/Enseignant(e) · Durée/Séquence/
    Composante/Titre · Compétence/Activité/Matériel), pour une fiche pédagogique de langue affichée
@@ -10061,17 +10070,17 @@ function renderEnteteTableLangue(crs, fields) {
   var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;font-size:.8rem;">';
   h += '<tr>'
     + '<td style="'+td+'width:22%;"><b>Niveau :</b> ' + (crs.niveau||'') + '</td>'
-    + '<td style="'+td+'width:28%;"><b>Projet :</b> ' + (crs.projet||'') + '</td>'
-    + '<td style="'+td+'width:30%;"><b>Acte de parole :</b> ' + (crs.actePar||'—') + '</td>'
+    + '<td style="'+td+'width:28%;"><b>Projet :</b> ' + (fields.projet||'') + '</td>'
+    + '<td style="'+td+'width:30%;"><b>Acte de parole :</b> ' + (fields.actePar||'—') + '</td>'
     + '<td style="'+td+'width:20%;"><b>Enseignant(e) :</b> ' + ens + '</td>'
     + '</tr><tr>'
-    + '<td style="'+td+'"><b>Durée :</b> ' + (crs.duree||'') + '</td>'
-    + '<td style="'+td+'"><b>Séquence :</b> ' + (crs.sequence||'') + '</td>'
+    + '<td style="'+td+'"><b>Durée :</b> ' + (fields.duree||'') + '</td>'
+    + '<td style="'+td+'"><b>Séquence :</b> ' + (fields.sequence||'') + '</td>'
     + '<td style="'+td+'"><b>Composante :</b> ' + (fields.composante||'—') + '</td>'
     + '<td style="'+td+'"><b>Titre :</b> ' + (crs.titre||'') + '</td>'
     + '</tr><tr>'
     + '<td colspan="2" style="'+td+'"><b>Compétence :</b> ' + (fields.competence||'—') + '</td>'
-    + '<td style="'+td+'"><b>Activité :</b> ' + (crs.activite||'') + '</td>'
+    + '<td style="'+td+'"><b>Activité :</b> ' + (fields.activite||'') + '</td>'
     + '<td style="'+td+'"><b>Matériel :</b> ' + (fields.materiel||'—') + '</td>'
     + '</tr></table>';
   if (fields.objectifs && fields.objectifs.length) {
@@ -10192,12 +10201,13 @@ function dispCrs(crs, keepMode){
     : "font-size:.85rem;line-height:1.8;color:var(--ink);";
   var corpsDirAttr = corpsArabe ? ' dir="rtl"' : '';
   var matDocEntete = crs.mat || D.s.mat;
-  /* Vue tableau d'une fiche pédagogique de langue (générée avec les champs Projet/Séquence) :
-     grille d'en-tête façon canevas officiel papier, au lieu de la simple ligne Niveau/Matière. */
+  /* Vue tableau d'une fiche pédagogique de langue (repère : "Projet :" présent dans l'en-tête déjà
+     affiché, signe qu'elle a été générée avec le squelette langue) : grille d'en-tête façon
+     canevas officiel papier, au lieu de la simple ligne Niveau/Matière. */
   var enteteBlock;
-  if (TP_VIEW_MODE === 'table' && crs.type === 'fiche_peda' && crs.projet !== undefined && isLangueMatiere(matDocEntete)) {
-    var fields = tpExtractEnteteFields((typeof parsed !== 'undefined' && parsed) ? parsed.before : '');
-    enteteBlock = renderEnteteTableLangue(crs, fields);
+  var enteteFields = tpExtractEnteteFields(crs.contenu || '');
+  if (TP_VIEW_MODE === 'table' && crs.type === 'fiche_peda' && enteteFields.projet && isLangueMatiere(matDocEntete)) {
+    enteteBlock = renderEnteteTableLangue(crs, enteteFields);
   } else {
     enteteBlock = '<div class="pp-meta"><div><b>Niveau :</b> '+crs.niveau+'</div><div><b>Matière :</b> '+matDocEntete+'</div><div>🇩🇿 MEN</div></div>';
   }
