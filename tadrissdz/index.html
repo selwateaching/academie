@@ -9020,7 +9020,7 @@ async function genProgaIA() {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { btn.innerHTML = btnInitialHTML; btn.disabled = false; N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
+  if (!q.autorise) { btn.innerHTML = btnInitialHTML; btn.disabled = false; N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err'); return; }
   var isL = progaIsLangue();
   var mat = D.s.mat;
   /* Répartition réaliste des périodes : s'appuie sur le nombre réel de séances hebdomadaires de la
@@ -9242,7 +9242,7 @@ async function genQuiz() {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('qzN').value, nb=document.getElementById('qzNb').value, ty=document.getElementById('qzT').value, df=document.getElementById('qzD').value, ins=document.getElementById('qzI').value, lang=document.getElementById('qzLang').value, mat=D.s.mat;
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   var qzFiliereEl = document.getElementById('qzFiliere');
@@ -9597,7 +9597,7 @@ async function genCours(extraInstruction) {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
-  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مدير مؤسستك لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement pour en savoir plus.'), 'err'); return; }
+  if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
   /* Si la matière est elle-même une langue, le contenu se rédige dans CETTE langue — jamais dans
@@ -10442,7 +10442,7 @@ var GUIDE_SECTIONS = [
     '<li>Prépare bien ta demande avant de générer (bon titre, bon niveau, objectifs clairs) — ça évite de devoir régénérer plusieurs fois pour ajuster.</li>'+
     '<li>Relis et adapte toi-même le résultat obtenu plutôt que de tout régénérer pour un petit détail à changer.</li>'+
     '<li>Utilise l\'IA pour de vrais besoins de préparation (une séance, un contrôle, un quiz) plutôt que par simple curiosité.</li>'+
-    '<li>Chaque forfait donne un nombre de générations par mois, largement suffisant pour un usage régulier — si tu sens que ça ne te suffit pas, parles-en à l\'administrateur de ton établissement.</li>'+
+    '<li>Chaque forfait donne un nombre de générations par mois, largement suffisant pour un usage régulier — si tu sens que ça ne te suffit pas, parles-en à l\'administrateur de Tadriss.</li>'+
     '</ul>'+
     '<p style="background:#E6F4EE;border-radius:8px;padding:.8rem 1rem;font-size:.85rem;color:#004D2C;margin-top:.8rem;">Merci d\'en prendre soin — un bon usage de tous permet à Tadriss DZ de continuer à offrir cette aide à tous les enseignants qui en ont besoin.</p>'
   },
@@ -10469,7 +10469,7 @@ var TIA_HELP_OPEN = false;
 var TIA_FAQ = [
   { q: "Le chatbot reste bloqué sur « Tadriss IA réfléchit… » sans jamais répondre", r: "Une génération peut prendre jusqu'à 30 secondes. Si rien ne s'affiche après 1 minute, vérifie ta connexion internet puis recharge la page (Ctrl+Maj+R). Le message n'est pas perdu : ta question reste visible dans l'historique." },
   { q: "« Réponse vide de l'IA »", r: "L'intelligence artificielle est incluse dans ton abonnement, tu n'as aucune clé à configurer. C'est en général un souci temporaire de connexion : réessaie dans quelques instants. Si ça persiste, contacte l'administrateur de ton établissement." },
-  { q: "« Limite mensuelle de générations IA atteinte »", r: "Ce quota est partagé entre Tadriss IA, Quiz IA et Cours IA. Il se réinitialise chaque mois. En attendant, contacte l'administrateur de ton établissement si tu penses avoir besoin d'un quota plus élevé." },
+  { q: "« Limite mensuelle de générations IA atteinte »", r: "Ce quota est partagé entre Tadriss IA, Quiz IA et Cours IA. Il se réinitialise chaque mois. En attendant, contacte l'administrateur de Tadriss si tu penses avoir besoin d'un quota plus élevé." },
   { q: "« Erreur API : … »", r: "C'est en général un souci temporaire côté serveur. Réessaie dans quelques instants ; si l'erreur persiste, contacte l'administrateur de ton établissement." },
   { q: "Le contenu généré ne correspond pas du tout à ma demande", r: "Sois le plus précis possible : sujet, niveau/classe, durée (ex. « Fractions, CE2, 45 min »). Si tu poses une question du type « comment… » ou « pourquoi… », Tadriss IA répond par une explication plutôt que de générer un contenu — c'est normal." },
   { q: "Le bouton ✨ Tadriss IA n'apparaît pas du tout", r: "Vérifie que tu es bien connecté <strong>dans l'application</strong> (pas sur la page d'accueil publique). Recharge ensuite la page (Ctrl+Maj+R). Le bouton se trouve toujours en bas à droite, au-dessus des boutons de langue et « Ouvrir l'App »." },
@@ -10603,7 +10603,7 @@ function tiaAskAI(text, mode) {
   Promise.resolve(typeof verifierEtIncrementerQuota === 'function' ? verifierEtIncrementerQuota() : { autorise: true })
     .catch(function () { return { autorise: true }; })
     .then(function (q) {
-      if (!q.autorise) { var typ0 = document.getElementById('tiaTypingNode'); if (typ0) typ0.remove(); if (sendBtn) sendBtn.disabled = false; tiaPush('bot', 'Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de ton établissement.'); return; }
+      if (!q.autorise) { var typ0 = document.getElementById('tiaTypingNode'); if (typ0) typ0.remove(); if (sendBtn) sendBtn.disabled = false; tiaPush('bot', 'Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss.'); return; }
       var mat = D.s.mat || 'la matière', niveauCtx = D.s.cycle || '';
       var prompt;
       if (mode === 'seance') {
