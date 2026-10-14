@@ -141,6 +141,9 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .btn-full{width:100%;justify-content:center}
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--w9);
   border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes indeterminate{0%{left:-40%;width:40%}50%{left:20%;width:60%}100%{left:100%;width:40%}}
+.ai-progress-track{height:6px;background:var(--w6);border-radius:3px;overflow:hidden;position:relative;margin:16px auto 0}
+.ai-progress-fill{position:absolute;top:0;height:100%;background:linear-gradient(90deg,var(--cr),var(--crl));border-radius:3px;animation:indeterminate 1.6s ease-in-out infinite}
 
 /* GRID HELPERS */
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -1903,6 +1906,25 @@ function setBtn(id, loading, text) {
 }
 
 function resultBox(html) { return `<div class="result-box">${html}</div>`; }
+
+function aiLoadingHtml(msgId, firstMessage) {
+  return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 16px;text-align:center">
+    <span class="spinner" style="width:32px;height:32px;border-width:3px;border-color:rgba(139,26,58,.25);border-top-color:var(--crl);margin-bottom:18px"></span>
+    <div id="${msgId}" style="font-size:14.5px;color:var(--t2);font-weight:500">${esc(firstMessage)}</div>
+    <div class="ai-progress-track" style="width:220px">
+      <div class="ai-progress-fill"></div>
+    </div>
+  </div>`;
+}
+
+function startAiLoadingMessages(msgId, messages) {
+  let i = 0;
+  return setInterval(() => {
+    i = (i + 1) % messages.length;
+    const el = document.getElementById(msgId);
+    if(el) el.textContent = messages[i];
+  }, 2200);
+}
 function badge(text, color) { return `<span class="badge bg-${color}">${text}</span>`; }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -2709,7 +2731,13 @@ async function generateExam() {
   if(document.getElementById('examTypeEcos').checked) types.push('ECOS (examen clinique objectif)');
   if(!types.length){ alert('Cochez au moins un type de questions'); return; }
   setBtn('btnExam', true, 'Génération en cours...');
-  document.getElementById('examResult').innerHTML = '<div style="color:var(--t3)">Génération de l\'examen...</div>';
+  document.getElementById('examResult').innerHTML = aiLoadingHtml('examLoadMsg', 'Analyse du thème...');
+  const examLoadInterval = startAiLoadingMessages('examLoadMsg', [
+    'Analyse du thème...',
+    'Rédaction des questions...',
+    'Préparation du corrigé type...',
+    'Mise en forme de l\'examen...'
+  ]);
   const nb = document.getElementById('examNb').value;
   const level = document.getElementById('examLevel').value;
   const prompt = `Génère un examen complet en ${getSpecialty()}, composé d'une section par type de questions ci-dessous (un titre de section clair pour chacune) :
@@ -2721,6 +2749,7 @@ Pour chaque question : énoncé, options (si QCM), bonne réponse clairement ind
 Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié.`;
   try {
     const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale, ${getSpecialty()}, enseignant en Algérie. Génère des examens de qualité en français.`);
+    clearInterval(examLoadInterval);
     window._lastExamText = r;
     window._lastExamTopic = topic;
     document.getElementById('examResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
@@ -2745,6 +2774,7 @@ Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié
     renderExamLibrary();
     toast('✅ Examen généré — fiche de correction créée automatiquement dans "Correction copies"');
   } catch(e) {
+    clearInterval(examLoadInterval);
     document.getElementById('examResult').innerHTML = `<div style="color:var(--amber)">❌ ${esc(e.message)}</div>`;
   }
   setBtn('btnExam', false, '📑 Générer l\'examen');
