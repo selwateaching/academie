@@ -1543,7 +1543,115 @@ const SPECIALTIES = [
   'Pneumologie','Urologie','Rhumatologie','Médecine générale'
 ];
 
+// Pathologies proposées dans le simulateur de patient virtuel, par spécialité
+const PATHOLOGIES_BY_SPECIALTY = {
+  'Gynécologie-Obstétrique': ['Grossesse extra-utérine','Pré-éclampsie','Endométriose','Cancer du col','Fausse couche',"Menace d'accouchement prématuré",'Hémorragie du post-partum','Kyste ovarien rompu'],
+  'Cardiologie': ['Syndrome coronarien aigu','Insuffisance cardiaque aiguë','Fibrillation auriculaire','Embolie pulmonaire','Péricardite aiguë','Crise hypertensive','Endocardite infectieuse','Dissection aortique'],
+  'Pédiatrie': ['Bronchiolite aiguë','Déshydratation aiguë du nourrisson','Convulsions fébriles','Méningite bactérienne','Invagination intestinale aiguë','Diabète de type 1 révélé','Purpura fulminans','Asthme aigu grave'],
+  'Dermatologie': ['Mélanome suspect','Psoriasis en poussée','Dermatite atopique sévère','Zona ophtalmique','Urticaire aiguë géante','Pemphigus vulgaire','Cellulite infectieuse','Syndrome de Stevens-Johnson'],
+  'Neurologie': ['Accident vasculaire cérébral ischémique','État de mal épileptique','Syndrome de Guillain-Barré','Migraine avec aura atypique','Myasthénie en poussée','Sclérose en plaques - poussée','Méningite virale','Compression médullaire aiguë'],
+  'Chirurgie générale': ['Appendicite aiguë','Occlusion intestinale','Péritonite aiguë','Cholécystite aiguë','Hernie étranglée','Pancréatite aiguë','Hémorragie digestive','Traumatisme abdominal'],
+  'Médecine interne': ['Fièvre prolongée inexpliquée','Déséquilibre diabétique aigu','Insuffisance rénale aiguë','Anémie sévère à explorer','Hyponatrémie sévère','Pathologie thromboembolique','Choc septique','Polyarthrite inflammatoire'],
+  'Psychiatrie': ['Épisode dépressif sévère','Crise suicidaire','Épisode maniaque aigu','Trouble psychotique aigu','Trouble anxieux sévère','Sevrage alcoolique compliqué','Anorexie mentale sévère','État de stress post-traumatique'],
+  'Anesthésie-Réanimation': ['Choc hémorragique','Détresse respiratoire aiguë','Choc anaphylactique','Arrêt cardio-respiratoire','Polytraumatisme','Syndrome de détresse respiratoire aiguë','Sepsis sévère','Intoxication aiguë grave'],
+  'Radiologie': ['Masse pulmonaire suspecte','Lésion hépatique à caractériser','Fracture complexe','AVC à la phase aiguë','Embolie pulmonaire au scanner','Masse pelvienne',"Appendicite à l'échographie",'Hémorragie intracrânienne'],
+  'Ophtalmologie': ["Glaucome aigu par fermeture de l'angle",'Décollement de rétine','Uvéite aiguë',"Occlusion de l'artère centrale de la rétine",'Traumatisme oculaire perforant','Kératite aiguë','Névrite optique','Rétinopathie diabétique évoluée'],
+  'ORL': ['Épiglottite aiguë','Otite moyenne aiguë compliquée','Sinusite aiguë compliquée','Épistaxis sévère','Angine compliquée (phlegmon)','Vertige aigu périphérique','Surdité brusque','Corps étranger des voies aériennes'],
+  'Endocrinologie': ['Acidocétose diabétique','Crise thyrotoxique','Insuffisance surrénalienne aiguë','Hypoglycémie sévère','Coma hyperosmolaire','Hypercalcémie maligne','Phéochromocytome en crise','Thyroïdite aiguë'],
+  'Gastro-entérologie': ['Hémorragie digestive haute','Pancréatite aiguë','Poussée de maladie de Crohn','Cirrhose décompensée','Colite aiguë grave','Angiocholite aiguë','Occlusion sur cancer colique','Hépatite aiguë sévère'],
+  'Pneumologie': ['Exacerbation de BPCO','Asthme aigu grave','Embolie pulmonaire','Pneumopathie aiguë grave','Pneumothorax spontané','Tuberculose évolutive','Détresse respiratoire aiguë','Épanchement pleural abondant'],
+  'Urologie': ['Colique néphrétique compliquée',"Rétention aiguë d'urine",'Torsion testiculaire','Pyélonéphrite aiguë compliquée','Hématurie macroscopique','Traumatisme rénal','Priapisme','Sepsis urinaire'],
+  'Rhumatologie': ['Polyarthrite rhumatoïde en poussée','Spondylarthrite ankylosante évolutive','Goutte aiguë','Lupus en poussée','Arthrite septique','Lombalgie aiguë avec signes de gravité','Pseudo-polyarthrite rhizomélique','Ostéoporose fracturaire'],
+  'Médecine générale': ['Syndrome grippal compliqué','Hypertension artérielle mal contrôlée','Lombalgie aiguë','Douleur thoracique à trier','Fièvre chez l\'adulte','Diabète de type 2 déséquilibré','Infection urinaire','Dépression légère à modérée'],
+};
+
+// Patient virtuel par défaut proposé à l'ouverture, par spécialité
+const DEFAULT_PATIENT_BY_SPECIALTY = {
+  'Gynécologie-Obstétrique': { name:'Madame Benali, 31 ans', chief:'Douleurs pelviennes aiguës + aménorrhée 6 semaines', tags:['G1P0','DIU en place','Douleur EVA 7/10','Métrorragies'], patho:'Grossesse extra-utérine',
+    greeting:"*grimace de douleur* Bonjour docteur... j'ai très mal depuis ce matin dans le bas du ventre, à droite surtout. Et mes règles sont en retard depuis 6 semaines... j'ai très peur." },
+  'Cardiologie': { name:'Monsieur Cherif, 58 ans', chief:'Douleur thoracique oppressive depuis 2 heures', tags:['Tabagique 30 PA','HTA connue','Douleur EVA 8/10','Sueurs profuses'], patho:'Syndrome coronarien aigu',
+    greeting:"*main sur la poitrine, pâle* Docteur... j'ai une douleur qui serre très fort dans la poitrine depuis deux heures, ça descend dans mon bras gauche. Je transpire beaucoup, j'ai peur que ce soit le cœur." },
+  'Pédiatrie': { name:'Le petit Yanis, 14 mois (accompagné de sa mère)', chief:'Toux et difficultés respiratoires depuis 2 jours', tags:['Fièvre 38.5°C','Tirage sous-costal','Sibilants bilatéraux','Refus de boire'], patho:'Bronchiolite aiguë',
+    greeting:"*la mère, inquiète, berce son bébé* Docteur, mon fils tousse beaucoup depuis deux jours et il respire bizarrement, on voit son ventre se creuser. Il a de la fièvre et il refuse de boire son lait depuis ce matin." },
+  'Dermatologie': { name:'Madame Khelifi, 45 ans', chief:"Lésion cutanée pigmentée qui a changé d'aspect", tags:["Antécédent d'exposition solaire",'Bords irréguliers','Diamètre 8mm','Changement de couleur récent'], patho:'Mélanome suspect',
+    greeting:"Bonjour docteur, je viens pour un grain de beauté sur mon dos. Ma fille m'a dit qu'il avait beaucoup changé ces derniers mois, il est plus grand et les bords ne sont plus réguliers. Je suis inquiète." },
+  'Neurologie': { name:'Monsieur Boumediene, 67 ans', chief:'Faiblesse brutale du bras et de la jambe droits', tags:['HTA mal équilibrée','Début il y a 1 heure','Trouble de la parole','Asymétrie faciale'], patho:'Accident vasculaire cérébral ischémique',
+    greeting:"*parole un peu confuse* Docteur... mon bras et ma jambe du côté droit... je n'arrive plus bien à les bouger depuis une heure. Ma femme dit que ma bouche est tordue d'un côté." },
+  'Chirurgie générale': { name:'Monsieur Haddad, 29 ans', chief:'Douleur abdominale droite depuis 12 heures', tags:['Défense en fosse iliaque droite','Fièvre 38.2°C','Anorexie','Nausées'], patho:'Appendicite aiguë',
+    greeting:"*recroquevillé, main sur le ventre* Docteur, j'ai une douleur au ventre depuis hier soir, surtout du côté droit en bas. Ça fait très mal quand on appuie, et j'ai un peu de fièvre. Je n'ai pas pu manger." },
+  'Médecine interne': { name:'Madame Mansouri, 52 ans', chief:'Fièvre inexpliquée depuis 10 jours', tags:['Amaigrissement 4kg','Sueurs nocturnes',"Pas de point d'appel infectieux clair",'Asthénie marquée'], patho:'Fièvre prolongée inexpliquée',
+    greeting:"Bonjour docteur, j'ai de la fièvre depuis dix jours, ça ne passe pas malgré les médicaments. Je transpire beaucoup la nuit et j'ai perdu du poids sans faire de régime. Je suis très fatiguée." },
+  'Psychiatrie': { name:'Monsieur Belkacem, 34 ans', chief:'Tristesse profonde et idées noires depuis 3 semaines', tags:['Insomnie sévère','Anhédonie','Idées suicidaires passives','Isolement social'], patho:'Épisode dépressif sévère',
+    greeting:"*voix basse, regard fuyant* Bonjour docteur... depuis trois semaines je n'arrive plus à dormir, je n'ai plus goût à rien. Parfois je me dis que ce serait plus simple si je n'étais plus là." },
+  'Anesthésie-Réanimation': { name:'Monsieur Ferhat, 41 ans', chief:'Polytraumatisé, accident de la route', tags:['TA 80/50 mmHg','FC 130/min','Pâleur marquée','Douleur abdominale diffuse'], patho:'Choc hémorragique',
+    greeting:"*voix faible, confus* J'ai eu un accident de voiture... j'ai mal partout, surtout au ventre... j'ai froid... je me sens faible docteur..." },
+  'Radiologie': { name:'Madame Zerrouki, 61 ans', chief:'Masse pulmonaire découverte sur radiographie systématique', tags:['Tabagisme 40 PA','Toux chronique','Amaigrissement','Asymptomatique par ailleurs'], patho:'Masse pulmonaire suspecte',
+    greeting:"Bonjour docteur, mon médecin m'a envoyée vous voir après une radio des poumons faite pour un bilan. Il a vu quelque chose d'anormal. Je fume depuis longtemps, je suis inquiète de ce que ça peut être." },
+  'Ophtalmologie': { name:'Monsieur Bouchama, 55 ans', chief:'Douleur oculaire brutale avec baisse de vision', tags:['Œil rouge douloureux','Vision trouble','Nausées associées','Pupille semi-dilatée'], patho:"Glaucome aigu par fermeture de l'angle",
+    greeting:"*se tient l'œil, grimaçant* Docteur, j'ai une douleur très forte à l'œil droit depuis ce soir, ma vue est trouble et j'ai mal au cœur. L'œil est tout rouge." },
+  'ORL': { name:'La petite Lina, 6 ans (accompagnée de son père)', chief:'Difficulté à respirer et à avaler depuis quelques heures', tags:['Fièvre 39°C','Voix étouffée','Position assise penchée en avant','Hypersalivation'], patho:'Épiglottite aiguë',
+    greeting:"*le père, très inquiet* Docteur, ma fille a de la fièvre et depuis ce soir elle a du mal à respirer et à avaler sa salive, sa voix est toute étouffée. Elle ne veut rester que penchée en avant." },
+  'Endocrinologie': { name:'Monsieur Amrani, 22 ans', chief:'Diabétique connu, confusion et douleurs abdominales', tags:['Glycémie élevée','Haleine cétonique','Polyurie-polydipsie','Déshydratation'], patho:'Acidocétose diabétique',
+    greeting:"*respiration rapide, un peu confus* Docteur... je suis diabétique... j'ai très mal au ventre et j'ai énormément soif et envie d'uriner depuis deux jours... je ne me sens pas bien du tout." },
+  'Gastro-entérologie': { name:'Monsieur Saidi, 48 ans', chief:'Vomissements de sang depuis ce matin', tags:['Antécédent de cirrhose','Hématémèse abondante','Pâleur','Tachycardie'], patho:'Hémorragie digestive haute',
+    greeting:"*pâle, voix faible* Docteur, j'ai vomi du sang ce matin, beaucoup de sang... j'ai une maladie du foie connue. Je me sens très faible et j'ai la tête qui tourne." },
+  'Pneumologie': { name:'Madame Brahimi, 70 ans', chief:'Essoufflement majoré depuis 2 jours', tags:['BPCO connue','Encombrement bronchique','Cyanose des lèvres','Toux productive'], patho:'Exacerbation de BPCO',
+    greeting:"*essoufflée entre chaque phrase* Docteur... j'ai de plus en plus de mal à respirer depuis deux jours... je tousse beaucoup avec des crachats... j'ai l'habitude d'être essoufflée mais là c'est pire." },
+  'Urologie': { name:'Monsieur Tahri, 39 ans', chief:'Douleur lombaire droite brutale et intense', tags:['Douleur irradiant vers les organes génitaux','Agitation','Hématurie','Nausées'], patho:'Colique néphrétique compliquée',
+    greeting:"*agité, ne tient pas en place* Docteur, j'ai une douleur terrible dans le dos à droite depuis ce matin, ça descend vers le bas-ventre. Je n'arrive pas à rester immobile, j'ai mal au cœur aussi." },
+  'Rhumatologie': { name:'Madame Ouali, 63 ans', chief:'Douleurs et gonflement des petites articulations des mains', tags:['Raideur matinale > 1h','Atteinte symétrique','Évolution depuis 6 semaines','Fatigue associée'], patho:'Polyarthrite rhumatoïde en poussée',
+    greeting:"Bonjour docteur, depuis six semaines mes mains sont douloureuses et gonflées des deux côtés, surtout le matin où elles sont très raides pendant plus d'une heure. Je suis très fatiguée aussi." },
+  'Médecine générale': { name:'Madame Hamidi, 36 ans', chief:'Fatigue persistante et maux de tête depuis 2 semaines', tags:['Stress professionnel','Tension artérielle limite','Sommeil perturbé',"Pas d'antécédent notable"], patho:'Syndrome grippal compliqué',
+    greeting:"Bonjour docteur, je suis très fatiguée depuis deux semaines et j'ai souvent mal à la tête. Je dors mal et j'ai beaucoup de stress au travail. Je voulais un avis avant que ça empire." },
+};
+
 function getSpecialty() { return state.specialty || 'Gynécologie-Obstétrique'; }
+
+function getPathologiesForSpecialty() {
+  return PATHOLOGIES_BY_SPECIALTY[getSpecialty()] || PATHOLOGIES_BY_SPECIALTY['Médecine générale'];
+}
+
+function getDefaultPatientForSpecialty() {
+  return DEFAULT_PATIENT_BY_SPECIALTY[getSpecialty()] || DEFAULT_PATIENT_BY_SPECIALTY['Médecine générale'];
+}
+
+function renderPathoOptions() {
+  const sel = document.getElementById('pathoSelect');
+  if(!sel) return;
+  sel.innerHTML = getPathologiesForSpecialty().map(p=>`<option>${esc(p)}</option>`).join('');
+}
+
+// Services hospitaliers proposés pour l'attribution des stages, par spécialité
+const SERVICES_BY_SPECIALTY = {
+  'Gynécologie-Obstétrique': ['Maternité','Urgences obstétricales','Chirurgie gynécologique','Oncologie gynécologique','Consultations externes','Néonatologie','PMA / Fertilité'],
+  'Cardiologie': ['Cardiologie - Unité de soins intensifs','Cardiologie - Hospitalisation','Consultations externes','Explorations fonctionnelles cardiaques','Chirurgie cardiaque','Réadaptation cardiaque'],
+  'Pédiatrie': ['Pédiatrie générale','Néonatologie','Urgences pédiatriques','Réanimation pédiatrique','Consultations externes','Pédiatrie - Maladies infectieuses'],
+  'Dermatologie': ['Dermatologie - Consultations externes','Dermatologie - Hospitalisation','Chirurgie dermatologique','Unité de photothérapie'],
+  'Neurologie': ['Neurologie - Hospitalisation','Unité neurovasculaire (AVC)','Consultations externes','Explorations neurophysiologiques (EEG/EMG)','Réanimation neurologique'],
+  'Chirurgie générale': ['Chirurgie générale - Hospitalisation','Urgences chirurgicales','Bloc opératoire','Consultations externes','Chirurgie ambulatoire'],
+  'Médecine interne': ['Médecine interne - Hospitalisation','Consultations externes','Urgences médicales','Unité de médecine polyvalente'],
+  'Psychiatrie': ['Psychiatrie - Hospitalisation','Urgences psychiatriques','Consultations externes','Pédopsychiatrie','Hôpital de jour psychiatrique'],
+  'Anesthésie-Réanimation': ['Bloc opératoire','Réanimation polyvalente','Unité de soins intensifs','Consultation pré-anesthésique','Salle de réveil'],
+  'Radiologie': ['Radiologie conventionnelle','Échographie','Scanner (TDM)','IRM','Radiologie interventionnelle'],
+  'Ophtalmologie': ['Ophtalmologie - Consultations externes','Bloc opératoire ophtalmologique','Urgences ophtalmologiques'],
+  'ORL': ['ORL - Consultations externes','Bloc opératoire ORL','Urgences ORL','Audiométrie'],
+  'Endocrinologie': ['Endocrinologie - Hospitalisation','Consultations externes','Diabétologie',"Unité d'éducation thérapeutique"],
+  'Gastro-entérologie': ['Gastro-entérologie - Hospitalisation',"Unité d'endoscopie digestive",'Consultations externes','Hépatologie'],
+  'Pneumologie': ['Pneumologie - Hospitalisation','Unité de soins intensifs respiratoires','Consultations externes','Explorations fonctionnelles respiratoires','Unité de tuberculose'],
+  'Urologie': ['Urologie - Hospitalisation','Bloc opératoire urologique','Consultations externes','Urgences urologiques'],
+  'Rhumatologie': ['Rhumatologie - Hospitalisation','Consultations externes','Unité de rééducation fonctionnelle'],
+  'Médecine générale': ['Médecine générale - Consultations externes','Urgences générales','Centre de santé','Unité de médecine polyvalente'],
+};
+
+function getServicesForSpecialty() {
+  return SERVICES_BY_SPECIALTY[getSpecialty()] || SERVICES_BY_SPECIALTY['Médecine générale'];
+}
+
+function renderStageServiceOptions() {
+  const sel = document.getElementById('stageService');
+  if(!sel) return;
+  sel.innerHTML = getServicesForSpecialty().map(s=>`<option>${esc(s)}</option>`).join('');
+}
 
 function applySpecialtyToUI() {
   const sp = getSpecialty();
@@ -1551,6 +1659,9 @@ function applySpecialtyToUI() {
   document.querySelectorAll('.js-specialty-label-lc').forEach(el => el.textContent = sp.toLowerCase());
   const chip = document.getElementById('specialtyStatus');
   if(chip) chip.textContent = '🩺 ' + sp;
+  renderPathoOptions();
+  renderStageServiceOptions();
+  resetVirtualPatientToDefault();
 }
 
 function showSpecialtyModal() {
@@ -1592,6 +1703,7 @@ function saveSpecialty() {
   if(!value) { alert('Veuillez indiquer une spécialité.'); return; }
   state.specialty = value;
   LS.set('medai_specialty', value);
+  LS.set('medai_specialty_manual', true);
   document.getElementById('specialtyModal').remove();
   applySpecialtyToUI();
   toast('Spécialité définie : ' + value);
@@ -1781,6 +1893,10 @@ async function doProfRegister() {
 
 function applyProfessorBranding(professor) {
   if (!professor) return;
+  if (professor.specialty && !LS.get('medai_specialty_manual', false)) {
+    state.specialty = professor.specialty;
+    LS.set('medai_specialty', professor.specialty);
+  }
   const initials = (professor.nom_complet || 'P').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'P';
   const nameEl = document.getElementById('userNameDisplay');
   if (nameEl) nameEl.textContent = professor.nom_complet || 'Professeur';
@@ -3871,17 +3987,38 @@ Style académique, rigoureux, en français.`;
 //  PATIENT VIRTUEL
 // ═══════════════════════════════════════════════
 function initPatient() {
+  renderPathoOptions();
+  resetVirtualPatientToDefault();
+}
+
+function resetVirtualPatientToDefault() {
+  const nameEl = document.getElementById('patientName');
+  const chiefEl = document.getElementById('patientChief');
+  const tagsEl = document.getElementById('patientTags');
+  const msgsEl = document.getElementById('patientMessages');
+  const actionsEl = document.getElementById('patientActions');
+  if(!nameEl || !chiefEl || !tagsEl || !msgsEl || !actionsEl) return;
+
+  const dp = getDefaultPatientForSpecialty();
+  state.patientInfo = {...dp};
+  state.patientHistory = [];
+
+  nameEl.textContent = dp.name;
+  chiefEl.textContent = 'Motif : ' + dp.chief;
+  tagsEl.innerHTML = dp.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  msgsEl.innerHTML = '';
+
   const actions = [
-    'Décrivez exactement où vous avez mal ?',
-    'Je demande un bêta-HCG sanguin en urgence.',
-    'Je vais faire une échographie pelvienne maintenant.',
-    'Parlez-moi de vos antécédents gynécologiques.',
-    'Avez-vous des nausées ou vomissements ?',
-    'Je pose le diagnostic de grossesse extra-utérine.',
+    'Décrivez-moi exactement vos symptômes.',
+    'Depuis quand ressentez-vous cela ?',
+    'Avez-vous des antécédents médicaux particuliers ?',
+    'Je vais réaliser un examen clinique complet.',
+    'Je demande les examens complémentaires appropriés.',
+    'Je vous explique le diagnostic probable.',
   ];
-  document.getElementById('patientActions').innerHTML = actions.map(a=>`
+  actionsEl.innerHTML = actions.map(a=>`
     <div class="suggestion" onclick="document.getElementById('patientInput').value=${JSON.stringify(a)}">${esc(a)}</div>`).join('');
-  addPatientMsg('ai', '*grimace de douleur* Bonjour docteur... j\'ai très mal depuis ce matin dans le bas du ventre, à droite surtout. Et mes règles sont en retard depuis 6 semaines... j\'ai très peur.');
+  addPatientMsg('ai', dp.greeting);
 }
 
 function addPatientMsg(role, text) {
