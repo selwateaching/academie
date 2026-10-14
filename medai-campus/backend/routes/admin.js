@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { signAdminToken, requireAdmin } = require('../auth');
+const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
 const AI_QUOTA = Number(process.env.AI_MONTHLY_QUOTA || 200);
@@ -18,7 +19,7 @@ router.post('/login', (req, res) => {
   res.json({ token: signAdminToken() });
 });
 
-router.get('/professors', requireAdmin, async (req, res) => {
+router.get('/professors', requireAdmin, asyncHandler(async (req, res) => {
   const result = await pool.query(
     `SELECT id, email, nom_complet, etablissement, logo_base64, specialty,
             is_active, payment_status, payment_date, payment_notes,
@@ -31,9 +32,9 @@ router.get('/professors', requireAdmin, async (req, res) => {
     ai_calls_count: p.ai_calls_month === month ? p.ai_calls_count : 0,
   }));
   res.json({ professors, ai_quota: AI_QUOTA });
-});
+}));
 
-router.put('/professors/:id', requireAdmin, async (req, res) => {
+router.put('/professors/:id', requireAdmin, asyncHandler(async (req, res) => {
   const { is_active, payment_status, payment_notes, reset_ai_quota } = req.body || {};
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ error: 'Identifiant invalide' });
@@ -52,6 +53,6 @@ router.put('/professors/:id', requireAdmin, async (req, res) => {
   );
   if (!result.rows[0]) return res.status(404).json({ error: 'Professeur introuvable' });
   res.json({ professor: result.rows[0] });
-});
+}));
 
 module.exports = router;

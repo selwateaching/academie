@@ -5,6 +5,9 @@ const { initSchema } = require('./db');
 const professorsRouter = require('./routes/professors');
 const adminRouter = require('./routes/admin');
 const aiRouter = require('./routes/ai');
+const studentsRouter = require('./routes/students');
+const coursesRouter = require('./routes/courses');
+const studentSpaceRouter = require('./routes/student-space');
 
 const app = express();
 app.use(cors());
@@ -14,6 +17,9 @@ app.get('/api/health', (req, res) => res.json({ ok: true }));
 app.use('/api/professors', professorsRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/students', studentsRouter);
+app.use('/api/courses', coursesRouter);
+app.use('/api/student-space', studentSpaceRouter);
 
 app.use((err, req, res, next) => {
   console.error(err);

@@ -641,6 +641,10 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <div id="courseResult" style="color:var(--t3);font-size:13.5px">Renseignez les paramètres et cliquez sur "Générer le cours".</div>
     </div>
   </div>
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">📤 Cours publiés aux étudiants</div>
+    <div id="publishedCoursesList" style="color:var(--t3);font-size:13.5px">Chargement...</div>
+  </div>
 </div>
 
 <!-- ═══════════════ CAS CLINIQUE ═══════════════ -->
@@ -2025,6 +2029,7 @@ function initApp() {
   renderPlanning();
   renderAgenda();
   loadStudentsFromBackend();
+  loadPublishedCourses();
   renderNoteSelect();
   renderStages();
   renderInbox();
@@ -2354,23 +2359,100 @@ Structure à utiliser :
       ? `Tu es expert en ${getSpecialty()} et pédagogie médicale. Tu réponds en français, EXCLUSIVEMENT avec le fragment HTML demandé, sans texte avant ni après, sans balises html/head/body/script/style, sans backticks.`
       : `Tu es expert en ${getSpecialty()} et pédagogie médicale. Réponds en français, structuré et complet.`);
 
+    const publishBtnHtml = '<button class="btn btn-primary btn-sm" style="margin-top:14px" onclick="openPublishCourseModal()">📤 Publier aux étudiants</button>';
     if(incIllustrations) {
       const clean = r.replace(/```html|```/g,'').trim();
       const safeHtml = sanitizeAiHtml(clean);
+      window._lastCourseContent = { title: topic, subject: getSpecialty(), html: safeHtml };
       document.getElementById('courseResult').innerHTML =
         '<div class="course-illustrated">'
         + '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.3);border-radius:8px;font-size:12.5px;color:var(--amber)">⏳ Cours généré par IA — relisez le contenu et vérifiez les schémas/chiffres avant de le diffuser aux étudiants.</div>'
         + safeHtml
         + '</div>'
         + '<button class="btn btn-ghost btn-sm" style="margin-top:10px" onclick="toggleCourseRaw()">🔎 Voir la réponse brute de l\'IA</button>'
-        + '<div id="courseRaw" class="course-raw-toggle">' + esc(r) + '</div>';
+        + '<div id="courseRaw" class="course-raw-toggle">' + esc(r) + '</div>'
+        + publishBtnHtml;
     } else {
-      document.getElementById('courseResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
+      const plainHtml = '<p>' + esc(r).replace(/\n/g,'<br>') + '</p>';
+      window._lastCourseContent = { title: topic, subject: getSpecialty(), html: plainHtml };
+      document.getElementById('courseResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>')) + publishBtnHtml;
     }
   } catch(e) {
     document.getElementById('courseResult').innerHTML = `<div style="color:var(--amber)">❌ ${esc(e.message)}</div>`;
   }
   setBtn('btnCourse', false, '🧠 Générer le cours');
+}
+
+function openPublishCourseModal() {
+  if(!window._lastCourseContent) { toast('Générez d\'abord un cours'); return; }
+  const promoOptions = ['1ère année médecine','2ème année médecine','3ème année médecine','4ème année médecine','5ème année médecine',
+    '6ème année médecine (Externat)','7ème année médecine (Internat)','Résidanat 1','Résidanat 2','Résidanat 3','Résidanat 4','Résidanat 5']
+    .map(p=>`<option>${p}</option>`).join('');
+  const modal = document.createElement('div');
+  modal.id = 'publishCourseModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = '<div style="background:var(--s);border:1px solid rgba(139,26,58,.4);border-radius:16px;padding:24px;max-width:420px;width:90%">'
+    + '<div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:14px">📤 Publier ce cours</div>'
+    + '<label class="form-label">Titre</label><input class="form-input" id="pubCourseTitle" value="' + esc(window._lastCourseContent.title) + '">'
+    + '<label class="form-label">Promotion destinataire</label><select class="form-select" id="pubCoursePromo">' + promoOptions + '</select>'
+    + '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:18px">'
+    + '<button class="btn btn-ghost" onclick="document.getElementById(\'publishCourseModal\').remove()">Annuler</button>'
+    + '<button class="btn btn-primary" id="btnPublishCourseConfirm" onclick="publishCourseToStudents()">Publier</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+async function publishCourseToStudents() {
+  const title = document.getElementById('pubCourseTitle').value.trim();
+  const promo = document.getElementById('pubCoursePromo').value;
+  if(!title){ alert('Titre requis'); return; }
+  setBtn('btnPublishCourseConfirm', true, 'Publication...');
+  try {
+    const res = await fetch(AUTH_API_BASE + '/courses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ title, subject: window._lastCourseContent.subject, promo, content_html: window._lastCourseContent.html })
+    });
+    const data = await res.json();
+    if(!res.ok) { toast(data.error || 'Erreur lors de la publication'); setBtn('btnPublishCourseConfirm', false, 'Publier'); return; }
+    document.getElementById('publishCourseModal').remove();
+    toast('✅ Cours publié pour ' + promo);
+    loadPublishedCourses();
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+    setBtn('btnPublishCourseConfirm', false, 'Publier');
+  }
+}
+
+async function loadPublishedCourses() {
+  const el = document.getElementById('publishedCoursesList');
+  if(!el) return;
+  try {
+    const res = await fetch(AUTH_API_BASE + '/courses', { headers: { Authorization: 'Bearer ' + getAuthToken() } });
+    const data = await res.json();
+    const courses = data.courses || [];
+    if(!courses.length) { el.innerHTML = '<div style="color:var(--t3);font-size:13.5px">Aucun cours publié pour le moment.</div>'; return; }
+    el.innerHTML = courses.map(c => '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--w1)">'
+      + '<div><div style="font-weight:600;color:var(--t);font-size:13.5px">' + esc(c.title) + '</div>'
+      + '<div style="font-size:11.5px;color:var(--t3)">' + esc(c.promo) + ' · publié le ' + new Date(c.created_at).toLocaleDateString('fr-FR') + '</div></div>'
+      + '<button class="btn btn-ghost btn-sm" onclick="unpublishCourse(' + c.id + ')">Retirer</button>'
+      + '</div>').join('');
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--amber);font-size:13.5px">❌ Impossible de charger les cours publiés</div>';
+  }
+}
+
+async function unpublishCourse(id) {
+  if(!confirm('Retirer ce cours de l\'espace étudiant ?')) return;
+  try {
+    const res = await fetch(AUTH_API_BASE + '/courses/' + id, { method: 'DELETE', headers: { Authorization: 'Bearer ' + getAuthToken() } });
+    if(!res.ok) { toast('Erreur lors du retrait'); return; }
+    toast('Cours retiré');
+    loadPublishedCourses();
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -2787,13 +2869,38 @@ function aiValidateBannerHtml(corrObj) {
     + '</div>';
 }
 
-function validateCorrById(id) {
+async function validateCorrById(id) {
   const idx = state.corrections.findIndex(c => c.id === id);
   if(idx < 0) return;
   state.corrections[idx].validated = true;
   LS.set('medai_corrections', state.corrections);
-  toast('✅ Note validée');
   const c = state.corrections[idx];
+
+  const matches = state.students.filter(s => (s.prenom+' '+s.nom).trim().toLowerCase() === c.student.trim().toLowerCase());
+  let synced = false;
+  if(matches.length === 1) {
+    try {
+      const resResult = await fetch(AUTH_API_BASE + '/students/' + matches[0].id + '/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+        body: JSON.stringify({
+          exam_title: c.examTitle, note: c.note, total: c.total,
+          mention: c.mention, appreciation: c.appreciation, commentaire: c.commentaire, result_date: c.date
+        })
+      });
+      if(resResult.ok) {
+        await fetch(AUTH_API_BASE + '/students/' + matches[0].id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+          body: JSON.stringify({ moyenne: c.note.toFixed(1) + '/' + c.total })
+        });
+        synced = true;
+        loadStudentsFromBackend();
+      }
+    } catch(e) { /* pas de connexion — on garde la validation locale */ }
+  }
+  toast(synced ? '✅ Note validée et synchronisée dans l\'espace étudiant de ' + c.student : '✅ Note validée');
+
   const panel = document.getElementById('corrResult');
   if(panel && panel.innerHTML) panel.innerHTML = buildCorrResultHtml(c, Math.round(c.note/c.total*100), noteClass(c.note, c.total));
   const detailPanel = document.getElementById('corrDetailPanel');
@@ -3245,31 +3352,92 @@ En français, 200-250 mots, style professionnel.`;
 // ═══════════════════════════════════════════════
 //  ÉTUDIANTS
 // ═══════════════════════════════════════════════
-function addStudent() {
+async function loadStudentsFromBackend() {
+  try {
+    const res = await fetch(AUTH_API_BASE + '/students', { headers: { Authorization: 'Bearer ' + getAuthToken() } });
+    if(!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    state.students = data.students || [];
+
+    const legacy = LS.get('medai_students', []);
+    if(!state.students.length && legacy.length) {
+      const importRes = await fetch(AUTH_API_BASE + '/students/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+        body: JSON.stringify({ students: legacy })
+      });
+      if(importRes.ok) {
+        const importData = await importRes.json();
+        state.students = importData.students || [];
+        localStorage.removeItem('medai_students');
+        toast(`${state.students.length} étudiant(s) importé(s) depuis votre ancien stockage local`);
+      }
+    }
+  } catch(e) {
+    toast('❌ Impossible de charger la liste des étudiants (connexion au serveur)');
+  }
+  renderStudents();
+  renderNoteSelect();
+  renderCorrStudSelect();
+  renderDashStats();
+  if(typeof renderSendStudentList === 'function') renderSendStudentList();
+}
+
+async function addStudent() {
   const nom = document.getElementById('studNom').value.trim();
   const prenom = document.getElementById('studPrenom').value.trim();
   const email = document.getElementById('studEmail').value.trim();
+  const promo = document.getElementById('studPromo').value;
   if(!nom||!prenom){ alert('Nom et prénom requis'); return; }
-  state.students.unshift({nom, prenom, email, promo: document.getElementById('studPromo').value, moyenne:'—', statut:'En cours'});
-  LS.set('medai_students', state.students);
-  document.getElementById('studNom').value='';
-  document.getElementById('studPrenom').value='';
-  document.getElementById('studEmail').value='';
-  toast(prenom + ' ' + nom + ' ajouté(e)' + (email?' – email enregistré':''));
-  renderStudents(); renderNoteSelect(); renderCorrStudSelect(); renderDashStats();
+  try {
+    const res = await fetch(AUTH_API_BASE + '/students', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ nom, prenom, email, promo })
+    });
+    const data = await res.json();
+    if(!res.ok) { toast(data.error || "Erreur lors de l'ajout"); return; }
+    state.students.unshift(data.student);
+    document.getElementById('studNom').value='';
+    document.getElementById('studPrenom').value='';
+    document.getElementById('studEmail').value='';
+    toast(prenom + ' ' + nom + ' ajouté(e) — code d\'accès : ' + data.student.access_code);
+    renderStudents(); renderNoteSelect(); renderCorrStudSelect(); renderDashStats();
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+  }
 }
 
-function removeStudent(i) {
-  state.students.splice(i,1); LS.set('medai_students', state.students);
-  renderStudents(); renderNoteSelect(); renderCorrStudSelect(); renderDashStats();
+async function removeStudent(id) {
+  if(!confirm('Supprimer cet étudiant et toutes ses notes enregistrées ?')) return;
+  try {
+    const res = await fetch(AUTH_API_BASE + '/students/' + id, { method:'DELETE', headers: { Authorization: 'Bearer ' + getAuthToken() } });
+    if(!res.ok) { toast('Erreur lors de la suppression'); return; }
+    state.students = state.students.filter(s => s.id !== id);
+    renderStudents(); renderNoteSelect(); renderCorrStudSelect(); renderDashStats();
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+  }
 }
 
-function updateStudentEmail(i, email) {
-  state.students[i].email = email.trim();
-  LS.set('medai_students', state.students);
-  renderStudents();
-  renderSendStudentList && renderSendStudentList();
-  toast(email ? 'Email mis à jour : ' + email : 'Email supprimé');
+async function updateStudentEmail(id, email) {
+  email = email.trim();
+  try {
+    const res = await fetch(AUTH_API_BASE + '/students/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if(!res.ok) { toast(data.error || 'Erreur lors de la mise à jour'); return; }
+    const s = state.students.find(s => s.id === id);
+    if(s) s.email = data.student.email;
+    renderStudents();
+    if(typeof renderSendStudentList === 'function') renderSendStudentList();
+    toast(email ? 'Email mis à jour : ' + email : 'Email supprimé');
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+  }
 }
 
 function filterStudents() { renderStudents(document.getElementById('studSearch').value.toLowerCase()); }
@@ -3280,9 +3448,8 @@ function renderStudents(filter='') {
   const el = document.getElementById('studTable');
   if(!filtered.length){ el.innerHTML='<div style="color:var(--t3);font-size:13.5px">Aucun étudiant'+(filter?' trouvé':'. Utilisez l\'onglet "Ajouter".')+'</div>'; return; }
   el.innerHTML = `<table class="tbl">
-    <thead><tr><th>Nom</th><th>Prénom</th><th>Email</th><th>Promotion</th><th>Moyenne</th><th>Statut</th><th>Action</th></tr></thead>
+    <thead><tr><th>Nom</th><th>Prénom</th><th>Email</th><th>Promotion</th><th>Code accès</th><th>Moyenne</th><th>Statut</th><th>Action</th></tr></thead>
     <tbody>${filtered.map(s=>{
-      const i = state.students.indexOf(s);
       return `<tr>
         <td style="color:var(--t);font-weight:500">${esc(s.nom)}</td>
         <td>${esc(s.prenom)}</td>
@@ -3290,15 +3457,20 @@ function renderStudents(filter='') {
           <div style="display:flex;align-items:center;gap:6px">
             <input type="email" value="${esc(s.email||'')}" placeholder="email@univ.dz"
               style="background:transparent;border:1px solid ${s.email?'rgba(45,202,140,.3)':'rgba(245,166,35,.4)'};border-radius:6px;padding:4px 8px;font-size:12px;color:var(--t);width:100%;font-family:inherit;outline:none"
-              onchange="updateStudentEmail(${i}, this.value)"
+              onchange="updateStudentEmail(${s.id}, this.value)"
               onfocus="this.style.borderColor='var(--crl)'"
               onblur="this.style.borderColor='${s.email?'rgba(45,202,140,.3)':'rgba(245,166,35,.4)'}'">
             ${s.email?'<span style="color:var(--green);font-size:14px" title="Email enregistré">✓</span>':'<span style="color:var(--amber);font-size:14px" title="Email manquant">!</span>'}
           </div>
         </td>
-        <td>${s.promo}</td><td>${s.moyenne}</td>
+        <td>${s.promo}</td>
+        <td style="white-space:nowrap">
+          <span style="font-family:monospace;color:var(--t2);letter-spacing:.5px">${esc(s.access_code||'')}</span>
+          <button class="btn btn-ghost btn-sm" style="padding:2px 7px;font-size:11px;margin-left:4px" onclick="showStudentQrCode(${s.id})" title="QR code personnel de l'étudiant">📱</button>
+        </td>
+        <td>${s.moyenne}</td>
         <td>${badge(s.statut,'green')}</td>
-        <td><button class="btn btn-ghost btn-sm" onclick="removeStudent(${i})">Supprimer</button></td>
+        <td><button class="btn btn-ghost btn-sm" onclick="removeStudent(${s.id})">Supprimer</button></td>
       </tr>`;
     }).join('')}</tbody></table>`;
 }
@@ -3306,19 +3478,65 @@ function renderStudents(filter='') {
 function renderNoteSelect() {
   const sel = document.getElementById('noteStudSelect');
   sel.innerHTML = '<option value="">-- Sélectionner --</option>' +
-    state.students.map((s,i)=>`<option value="${i}">${esc(s.prenom+' '+s.nom)} – ${s.promo}</option>`).join('');
+    state.students.map(s=>`<option value="${s.id}">${esc(s.prenom+' '+s.nom)} – ${s.promo}</option>`).join('');
 }
 
-function saveNote() {
-  const idx = document.getElementById('noteStudSelect').value;
+async function saveNote() {
+  const id = document.getElementById('noteStudSelect').value;
   const val = document.getElementById('noteVal').value;
-  if(idx===''||!val){ alert('Remplissez tous les champs'); return; }
-  state.students[parseInt(idx)].moyenne = parseFloat(val).toFixed(1)+'/20';
-  LS.set('medai_students', state.students);
-  toast('Note enregistrée');
-  document.getElementById('noteVal').value='';
-  document.getElementById('noteExam').value='';
-  renderStudents();
+  const examTitle = document.getElementById('noteExam').value.trim();
+  if(!id||!val){ alert('Remplissez tous les champs'); return; }
+  const moyenne = parseFloat(val).toFixed(1)+'/20';
+  try {
+    const resResult = await fetch(AUTH_API_BASE + '/students/' + id + '/results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ exam_title: examTitle, note: parseFloat(val), total: 20, result_date: new Date().toLocaleDateString('fr-FR') })
+    });
+    if(!resResult.ok) { const d = await resResult.json().catch(()=>({})); toast(d.error || "Erreur lors de l'enregistrement"); return; }
+
+    const resStudent = await fetch(AUTH_API_BASE + '/students/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ moyenne })
+    });
+    const data = await resStudent.json();
+    if(resStudent.ok) {
+      const s = state.students.find(s => s.id === Number(id));
+      if(s) s.moyenne = data.student.moyenne;
+    }
+    toast('Note enregistrée — visible dans l\'espace étudiant');
+    document.getElementById('noteVal').value='';
+    document.getElementById('noteExam').value='';
+    renderStudents();
+  } catch(e) {
+    toast('❌ Impossible de contacter le serveur');
+  }
+}
+
+function showStudentQrCode(id) {
+  const s = state.students.find(s => s.id === id);
+  if(!s) return;
+  const link = window.location.href.split('?')[0].split('#')[0] + '?etudiant&code=' + s.access_code;
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(link);
+  const modal = document.createElement('div');
+  modal.id = 'studentQrModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = '<div style="background:var(--s);border:1px solid rgba(139,26,58,.4);border-radius:16px;padding:28px;text-align:center;max-width:380px;width:90%">'
+    + '<div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:2px">📱 Code personnel</div>'
+    + '<div style="font-size:13px;color:var(--t2);margin-bottom:18px">' + esc(s.prenom + ' ' + s.nom) + '</div>'
+    + '<div style="background:#FFFFFF;border-radius:12px;padding:12px;display:inline-block;margin-bottom:14px">'
+    + '<img src="' + qrUrl + '" width="240" height="240" alt="QR Code" style="display:block">'
+    + '</div>'
+    + '<div style="font-family:monospace;font-size:20px;letter-spacing:2px;color:var(--t);margin-bottom:6px">' + esc(s.access_code) + '</div>'
+    + '<div style="font-size:11px;color:var(--t3);margin-bottom:16px">L\'étudiant scanne ce code (ou saisit le numéro) sur la page de connexion pour voir ses notes et ses cours</div>'
+    + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
+    + '<a href="' + qrUrl + '" download="qrcode_' + s.access_code + '.png" target="_blank" style="background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit">⬇️ Télécharger</a>'
+    + '<button onclick="printQrWindow(' + JSON.stringify(link) + ',' + JSON.stringify(qrUrl) + ',' + JSON.stringify('Espace étudiant — ' + (s.prenom + ' ' + s.nom)) + ',' + JSON.stringify('📱 Scannez ce QR code pour accéder à vos notes et vos cours. Code : ' + s.access_code) + ')" style="background:var(--green);color:#000;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🖨️ Imprimer</button>'
+    + '<button onclick="document.getElementById(\'studentQrModal\').remove()" style="background:var(--w5);color:var(--t2);border:1px solid var(--w6);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">✕ Fermer</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
 }
 
 function sendStudMsg() {
@@ -4078,11 +4296,119 @@ function checkStudentMode() {
   if(!window.location.search.includes('etudiant') && !window.location.hash.includes('etudiant')) return false;
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appWrap').style.display='none';
-  showStudentForm();
+  const code = new URLSearchParams(window.location.search).get('code');
+  if(code) showStudentSpace(code);
+  else showStudentForm();
   return true;
 }
 
+async function showStudentSpace(code) {
+  document.getElementById('studentFormScreen')?.remove();
+  document.getElementById('studentSpaceScreen')?.remove();
+  const div = document.createElement('div');
+  div.id = 'studentSpaceScreen';
+  div.style.cssText = 'min-height:100vh;background:radial-gradient(ellipse at 20% 10%,#2A0A1A,#0C0A0E 60%);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px';
+  div.innerHTML = `
+    <div style="width:100%;max-width:680px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:42px;height:42px;background:linear-gradient(135deg,#8B1A3A,#B52550);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🎓</div>
+          <div>
+            <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">Velora<span style="color:#B52550">MED</span></div>
+            <div style="font-size:11px;color:#9089B0">Espace étudiant</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="showStudentForm()"
+            style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#A89EC0;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap">📝 Soumettre une copie</button>
+          <button onclick="window.location.href=window.location.href.split('?')[0]"
+            style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#A89EC0;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap">← Espace professeur</button>
+        </div>
+      </div>
+      <div id="ssContent"></div>
+    </div>`;
+  document.body.appendChild(div);
+
+  if(!code || !/^\d{6}$/.test(code)) { renderStudentSpaceCodeEntry(); return; }
+  document.getElementById('ssContent').innerHTML = '<div style="text-align:center;padding:40px;color:#A89EC0">⏳ Chargement...</div>';
+  try {
+    const res = await fetch(AUTH_API_BASE + '/student-space/' + code);
+    const data = await res.json();
+    if(!res.ok) { renderStudentSpaceCodeEntry(data.error || 'Code introuvable'); return; }
+    renderStudentSpaceContent(data);
+  } catch(e) {
+    renderStudentSpaceCodeEntry('Impossible de contacter le serveur');
+  }
+}
+
+function renderStudentSpaceCodeEntry(errorMsg) {
+  const el = document.getElementById('ssContent');
+  if(!el) return;
+  el.innerHTML = `
+    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.3);border-radius:12px;padding:28px;text-align:center">
+      <div style="font-size:15px;font-weight:600;color:#EDE9F4;margin-bottom:6px">📱 Saisissez votre code d'accès</div>
+      <div style="font-size:12.5px;color:#A89EC0;margin-bottom:18px">Le code à 6 chiffres remis par votre professeur (ou scannez votre QR code personnel)</div>
+      ${errorMsg ? '<div style="background:rgba(139,26,58,.1);border:1px solid rgba(139,26,58,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#FF8FAB;margin-bottom:14px">❌ ' + String(errorMsg).replace(/</g,'&lt;') + '</div>' : ''}
+      <input id="ssCodeInput" maxlength="6" inputmode="numeric" placeholder="000000" style="width:100%;text-align:center;letter-spacing:6px;font-size:22px;font-family:monospace;background:#0C0A0E;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:14px;color:#EDE9F4;outline:none;margin-bottom:14px" onkeydown="if(event.key==='Enter')submitStudentSpaceCode()">
+      <button onclick="submitStudentSpaceCode()" style="width:100%;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer">Accéder à mon espace</button>
+    </div>`;
+  document.getElementById('ssCodeInput')?.focus();
+}
+
+function submitStudentSpaceCode() {
+  const code = document.getElementById('ssCodeInput').value.trim();
+  if(!/^\d{6}$/.test(code)) { renderStudentSpaceCodeEntry('Le code doit comporter 6 chiffres'); return; }
+  const url = new URL(window.location.href);
+  url.searchParams.set('etudiant', '');
+  url.searchParams.set('code', code);
+  window.history.replaceState({}, '', url);
+  showStudentSpace(code);
+}
+
+function renderStudentSpaceContent(data) {
+  const { student, professor, results, courses } = data;
+  const resultsHtml = results.length ? results.map(r => `
+    <div style="background:#1A1525;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-weight:600;color:#EDE9F4;font-size:13.5px">${(r.exam_title||'Examen').replace(/</g,'&lt;')}</div>
+        <div style="font-size:11.5px;color:#A89EC0;margin-top:2px">${(r.mention||'').replace(/</g,'&lt;')}${r.result_date?' · '+r.result_date.replace(/</g,'&lt;'):''}</div>
+        ${r.appreciation ? '<div style="font-size:12px;color:#8078A0;margin-top:6px">'+r.appreciation.replace(/</g,'&lt;')+'</div>' : ''}
+      </div>
+      <div style="font-size:20px;font-weight:800;color:#B52550;white-space:nowrap">${r.note}<span style="font-size:12px;color:#6B6085">/${r.total}</span></div>
+    </div>`).join('') : '<div style="color:#6B6085;font-size:13px;text-align:center;padding:20px">Aucune note enregistrée pour le moment.</div>';
+
+  const coursesHtml = courses.length ? courses.map(c => `
+    <div style="background:#1A1525;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer" onclick="toggleStudentCourse(${c.id})">
+        <div>
+          <div style="font-weight:600;color:#EDE9F4;font-size:13.5px">${c.title.replace(/</g,'&lt;')}</div>
+          <div style="font-size:11.5px;color:#A89EC0;margin-top:2px">${(c.subject||'').replace(/</g,'&lt;')} · ${new Date(c.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+        <span style="color:#A89EC0">▾</span>
+      </div>
+      <div id="ssCourse${c.id}" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06);color:#C8C2DC;font-size:13.5px;line-height:1.7">${c.content_html}</div>
+    </div>`).join('') : '<div style="color:#6B6085;font-size:13px;text-align:center;padding:20px">Aucun cours publié pour le moment.</div>';
+
+  document.getElementById('ssContent').innerHTML = `
+    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.3);border-radius:12px;padding:18px 20px;margin-bottom:22px">
+      <div style="font-size:17px;font-weight:700;color:#EDE9F4;margin-bottom:4px">👋 Bonjour ${student.prenom.replace(/</g,'&lt;')} ${student.nom.replace(/</g,'&lt;')}</div>
+      <div style="font-size:13px;color:#A89EC0">${student.promo.replace(/</g,'&lt;')}${professor ? ' · ' + professor.nom_complet.replace(/</g,'&lt;') + (professor.etablissement ? ' — ' + professor.etablissement.replace(/</g,'&lt;') : '') : ''}</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6B6085;margin-bottom:10px">📊 Mes notes</div>
+    ${resultsHtml}
+    <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6B6085;margin:22px 0 10px">📚 Mes cours</div>
+    ${coursesHtml}
+  `;
+}
+
+function toggleStudentCourse(id) {
+  const el = document.getElementById('ssCourse' + id);
+  if(el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
 function showStudentForm() {
+  document.getElementById('studentFormScreen')?.remove();
+  document.getElementById('studentSpaceScreen')?.remove();
   const cfg = LS.get('medai_exam_config', null);
   const div = document.createElement('div');
   div.id = 'studentFormScreen';
@@ -4097,12 +4423,20 @@ function showStudentForm() {
             <div style="font-size:11px;color:#9089B0">Formulaire de soumission de copie</div>
           </div>
         </div>
-        <button onclick="window.location.href=window.location.href.split('?')[0]"
-          style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#A89EC0;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap"
-          onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#EDE9F4'"
-          onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='#A89EC0'">
-          ← Espace professeur
-        </button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="showStudentSpace()"
+            style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#A89EC0;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap"
+            onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#EDE9F4'"
+            onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='#A89EC0'">
+            📱 Mes notes & cours
+          </button>
+          <button onclick="window.location.href=window.location.href.split('?')[0]"
+            style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#A89EC0;border-radius:8px;padding:8px 14px;font-family:inherit;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.2s;white-space:nowrap"
+            onmouseover="this.style.background='rgba(255,255,255,.1)';this.style.color='#EDE9F4'"
+            onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='#A89EC0'">
+            ← Espace professeur
+          </button>
+        </div>
       </div>
       <div style="background:#1A1525;border:1px solid rgba(139,26,58,.3);border-radius:12px;padding:18px 20px;margin-bottom:22px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9089B0;margin-bottom:6px">Examen</div>

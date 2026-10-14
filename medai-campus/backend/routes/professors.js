@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { signProfessorToken, requireProfessor } = require('../auth');
+const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
 
@@ -28,7 +29,7 @@ function publicProfessor(row) {
   };
 }
 
-router.post('/register', async (req, res) => {
+router.post('/register', asyncHandler(async (req, res) => {
   const { email, password, nom_complet, etablissement, specialty } = req.body || {};
   if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: 'Email invalide' });
   if (!password || password.length < 8) return res.status(400).json({ error: 'Mot de passe trop court (8 caractères minimum)' });
@@ -49,9 +50,9 @@ router.post('/register', async (req, res) => {
     if (err.code === '23505') return res.status(409).json({ error: 'Cet email est déjà inscrit' });
     throw err;
   }
-});
+}));
 
-router.post('/login', async (req, res) => {
+router.post('/login', asyncHandler(async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' });
 
@@ -68,16 +69,16 @@ router.post('/login', async (req, res) => {
 
   const token = signProfessorToken(professor);
   res.json({ token, professor: publicProfessor(professor) });
-});
+}));
 
-router.get('/me', requireProfessor, async (req, res) => {
+router.get('/me', requireProfessor, asyncHandler(async (req, res) => {
   const result = await pool.query('SELECT * FROM professors WHERE id = $1', [req.professorId]);
   const professor = result.rows[0];
   if (!professor) return res.status(404).json({ error: 'Professeur introuvable' });
   res.json({ professor: publicProfessor(professor) });
-});
+}));
 
-router.put('/me', requireProfessor, async (req, res) => {
+router.put('/me', requireProfessor, asyncHandler(async (req, res) => {
   const { etablissement, logo_base64 } = req.body || {};
   if (logo_base64 && logo_base64.length > 2_000_000) {
     return res.status(400).json({ error: 'Logo trop volumineux' });
@@ -90,6 +91,6 @@ router.put('/me', requireProfessor, async (req, res) => {
     [etablissement ?? null, logo_base64 ?? null, req.professorId]
   );
   res.json({ professor: publicProfessor(result.rows[0]) });
-});
+}));
 
 module.exports = router;

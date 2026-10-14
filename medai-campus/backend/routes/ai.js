@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { requireProfessor } = require('../auth');
+const asyncHandler = require('../asyncHandler');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ function currentMonthKey() {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
-router.post('/generate', requireProfessor, async (req, res) => {
+router.post('/generate', requireProfessor, asyncHandler(async (req, res) => {
   const { messages, system } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) {
     return res.status(400).json({ error: 'Messages manquants' });
@@ -83,6 +84,6 @@ router.post('/generate', requireProfessor, async (req, res) => {
   );
 
   res.json({ text, usage: { used: newCount, quota: MONTHLY_QUOTA } });
-});
+}));
 
 module.exports = router;
