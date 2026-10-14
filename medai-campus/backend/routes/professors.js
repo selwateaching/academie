@@ -6,6 +6,12 @@ const { signProfessorToken, requireProfessor } = require('../auth');
 const router = express.Router();
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const AI_QUOTA = Number(process.env.AI_MONTHLY_QUOTA || 200);
+
+function currentMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
 
 function publicProfessor(row) {
   return {
@@ -16,7 +22,9 @@ function publicProfessor(row) {
     logo_base64: row.logo_base64,
     specialty: row.specialty,
     is_active: row.is_active,
-    payment_status: row.payment_status
+    payment_status: row.payment_status,
+    ai_calls_count: row.ai_calls_month === currentMonthKey() ? row.ai_calls_count : 0,
+    ai_quota: AI_QUOTA
   };
 }
 

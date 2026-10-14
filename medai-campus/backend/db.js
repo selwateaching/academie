@@ -21,9 +21,13 @@ async function initSchema() {
       payment_status TEXT NOT NULL DEFAULT 'pending',
       payment_date TIMESTAMPTZ,
       payment_notes TEXT NOT NULL DEFAULT '',
+      ai_calls_count INTEGER NOT NULL DEFAULT 0,
+      ai_calls_month TEXT NOT NULL DEFAULT '',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
   `);
+  await pool.query(`ALTER TABLE professors ADD COLUMN IF NOT EXISTS ai_calls_count INTEGER NOT NULL DEFAULT 0;`);
+  await pool.query(`ALTER TABLE professors ADD COLUMN IF NOT EXISTS ai_calls_month TEXT NOT NULL DEFAULT '';`);
 }
 
 module.exports = { pool, initSchema };

@@ -72,6 +72,7 @@ select.pill, input.pill{background:#0C0A0E;border:1px solid rgba(255,255,255,.12
     <div class="stat-card"><div class="n" id="statTotal">0</div><div class="l">Professeurs inscrits</div></div>
     <div class="stat-card"><div class="n" id="statActive">0</div><div class="l">Comptes actifs</div></div>
     <div class="stat-card"><div class="n" id="statPending">0</div><div class="l">En attente de paiement</div></div>
+    <div class="stat-card"><div class="n" id="statAiUsage">0</div><div class="l">Appels IA ce mois-ci</div></div>
   </div>
 
   <input class="form-input pill" id="searchBox" placeholder="🔎 Rechercher par nom, email, établissement...">
@@ -85,6 +86,7 @@ select.pill, input.pill{background:#0C0A0E;border:1px solid rgba(255,255,255,.12
         <th>Spécialité</th>
         <th>Compte actif</th>
         <th>Paiement</th>
+        <th>Usage IA</th>
         <th>Notes</th>
         <th>Inscrit le</th>
         <th></th>
@@ -100,6 +102,7 @@ select.pill, input.pill{background:#0C0A0E;border:1px solid rgba(255,255,255,.12
 <script>
 const API_BASE = 'https://medai-campus-backend.onrender.com/api';
 let professors = [];
+let aiQuota = 200;
 
 function getAdminToken() { return sessionStorage.getItem('medai_admin_token') || ''; }
 function setAdminToken(t) { t ? sessionStorage.setItem('medai_admin_token', t) : sessionStorage.removeItem('medai_admin_token'); }
@@ -151,6 +154,7 @@ async function loadProfessors() {
     if (res.status === 401 || res.status === 403) { setAdminToken(null); location.reload(); return; }
     const data = await res.json();
     professors = data.professors || [];
+    aiQuota = data.ai_quota || 200;
     renderStats();
     renderTable();
   } catch (e) {
@@ -162,6 +166,7 @@ function renderStats() {
   document.getElementById('statTotal').textContent = professors.length;
   document.getElementById('statActive').textContent = professors.filter(p => p.is_active).length;
   document.getElementById('statPending').textContent = professors.filter(p => p.payment_status !== 'payé').length;
+  document.getElementById('statAiUsage').textContent = professors.reduce((sum, p) => sum + (p.ai_calls_count || 0), 0);
 }
 
 function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -188,6 +193,10 @@ function renderTable() {
           ${['pending','payé','en retard','annulé'].map(s => `<option value="${s}" ${p.payment_status===s?'selected':''}>${s}</option>`).join('')}
         </select>
       </td>
+      <td>
+        <span style="${p.ai_calls_count >= aiQuota ? 'color:#e07090;font-weight:600' : ''}">${p.ai_calls_count}/${aiQuota}</span>
+        <button type="button" class="row-save" style="margin-left:6px;padding:3px 7px;font-size:10px" onclick="resetAiQuota(${p.id})" title="Réinitialiser le quota IA">↺</button>
+      </td>
       <td><input class="pill notes-input" data-field="payment_notes" value="${esc(p.payment_notes)}" placeholder="note..."></td>
       <td class="muted">${date}</td>
       <td><button class="row-save" onclick="saveProfessor(${p.id})">✓ Enregistrer</button></td>
@@ -198,6 +207,26 @@ function renderTable() {
 async function toggleActive(btn, id) {
   btn.classList.toggle('on');
   await saveProfessor(id);
+}
+
+async function resetAiQuota(id) {
+  if (!confirm('Réinitialiser le quota IA de ce professeur pour ce mois-ci ?')) return;
+  try {
+    const res = await fetch(API_BASE + '/admin/professors/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAdminToken() },
+      body: JSON.stringify({ reset_ai_quota: true })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Erreur lors de la réinitialisation'); return; }
+    const idx = professors.findIndex(p => p.id === id);
+    if (idx >= 0) professors[idx] = data.professor;
+    renderStats();
+    renderTable();
+    showToast('Quota IA réinitialisé');
+  } catch (e) {
+    showToast('Impossible de contacter le serveur');
+  }
 }
 
 async function saveProfessor(id) {
