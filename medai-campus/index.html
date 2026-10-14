@@ -2063,7 +2063,9 @@ function initApp() {
     document.getElementById('apiKeyStatus').textContent = '🔑 Clé API configurée';
     document.getElementById('apiKeyStatus').style.color = 'var(--green)';
   } else {
-    setTimeout(showApiKeyModal, 600);
+    document.getElementById('apiKeyStatus').textContent = '🔑 Configurer clé API';
+    document.getElementById('apiKeyStatus').style.color = 'var(--amber)';
+    document.getElementById('apiKeyStatus').style.borderColor = 'rgba(245,166,35,.4)';
   }
   const now = new Date();
   document.getElementById('dashDate').textContent =
