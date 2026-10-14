@@ -1671,6 +1671,10 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
         <div class="fg"><label class="fl" data-fl="prerequis">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
         <button class="btn bt" style="width:100%" id="btnGCrs" onclick="genCours()"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulb2)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> Générer le cours</button>
+        <div id="crsQuotaInfo" style="display:none;align-items:center;gap:.5rem;margin-top:.6rem;font-size:.72rem;color:var(--ink3);">
+          <div class="quota-bar" style="flex:1;max-width:120px;"><div class="quota-fill" id="crsQuotaBar" style="width:0%"></div></div>
+          <span id="crsQuotaTxt">Chargement du quota…</span>
+        </div>
       </div></div>
       <div class="card"><div class="ch"><div class="ct">Cours sauvegardés</div><button class="btn bo bsm" onclick="clearCours()">Vider</button></div>
         <div style="padding:.8rem;border-bottom:1px solid var(--br);display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;" id="crsFolderBar"></div>
@@ -9461,6 +9465,7 @@ function onCrsDeroulSeqChange() {
 }
 function rCrsIA(){
   renderSC();document.getElementById('btnSCrs').style.display='none';
+  if (typeof window.rCrsQuota === 'function') window.rCrsQuota();
   var crsNSel = document.getElementById('crsN');
   if (crsNSel) {
     var acCls = gAC();
@@ -9597,6 +9602,7 @@ async function genCours(extraInstruction) {
   } catch (eQuota) {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
+  if (typeof window.rCrsQuota === 'function' && q.quota) window.rCrsQuota({ utilise: q.compteActuel, quotaTotal: q.quota });
   if (!q.autorise) { N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err'); return; }
   var nv=document.getElementById('crsN').value, dur=document.getElementById('crsDur').value, ty=document.getElementById('crsType').value, obj=document.getElementById('crsObj').value, prereq=document.getElementById('crsPrereq').value, lang=document.getElementById('crsLang').value, mat=getCrsMatiereSelectionnee();
   if (!mat) { N(CURRENT_LANG==='ar'?'تعذر العثور على مادة الحساب — أعد تحميل الصفحة (Ctrl+Shift+R) وأعد المحاولة.':'Matière du compte introuvable — recharge la page (Ctrl+Shift+R) et réessaie.', 'err'); return; }
@@ -12090,6 +12096,35 @@ async function verifierEtIncrementerQuota() {
   }
 }
 window.verifierEtIncrementerQuota = verifierEtIncrementerQuota;
+
+/* Décompte des générations IA affiché directement dans Cours IA (demande cliente : le prof doit
+   le voir sans sortir de l'outil, pas seulement dans "Mon abonnement"). Appelée à l'ouverture de
+   la page (lecture Firestore) et juste après chaque génération, avec le résultat déjà connu de
+   verifierEtIncrementerQuota() (pas de lecture réseau supplémentaire). */
+window.rCrsQuota = function(prefetched) {
+  var box = document.getElementById('crsQuotaInfo');
+  if (!box) return;
+  if (!authCurrentUid) { box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+  function appliquer(utilise, quotaTotal) {
+    var restant = Math.max(0, quotaTotal - utilise);
+    var pct = Math.min(100, Math.round((utilise / quotaTotal) * 100));
+    var elBar = document.getElementById('crsQuotaBar'); if (elBar) elBar.style.width = pct + '%';
+    var elTxt = document.getElementById('crsQuotaTxt'); if (elTxt) elTxt.textContent = restant + T('abo_quota_restant_suffix');
+  }
+  if (prefetched && prefetched.quotaTotal) { appliquer(prefetched.utilise, prefetched.quotaTotal); return; }
+  if (typeof getDoc !== 'function') return;
+  var planKey = (window._planProf || 'pro').toLowerCase();
+  var quotaTotal = QUOTAS_PAR_PLAN[planKey] !== undefined ? QUOTAS_PAR_PLAN[planKey] : QUOTAS_PAR_PLAN.pro;
+  var moisCle = (typeof moisActuelCle === 'function') ? moisActuelCle() : null;
+  if (!moisCle) return;
+  getDoc(doc(dbFs, 'profs', authCurrentUid, 'usage', moisCle)).then(function(snap) {
+    var utilise = (snap.exists() && snap.data().count) ? snap.data().count : 0;
+    appliquer(utilise, quotaTotal);
+  }).catch(function() {
+    var elTxt = document.getElementById('crsQuotaTxt'); if (elTxt) elTxt.textContent = T('abo_quota_indispo');
+  });
+};
 
 function authApplyProfile(p, uid) {
   if (typeof window.D === 'undefined') return;
