@@ -145,6 +145,40 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .sched-title{font-size:13.5px;color:var(--t);font-weight:500}
 .sched-loc{font-size:12px;color:var(--t3);margin-top:2px}
 
+/* CALENDAR : WEEK VIEW */
+.cal-grid-week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-day-col{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:8px;min-height:160px}
+.cal-day-col.today{border-color:var(--crl)}
+.cal-day-head{font-size:10.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em;text-align:center;margin-bottom:6px}
+.cal-day-head b{display:block;font-size:15px;color:var(--t);font-weight:600;margin-top:1px}
+.cal-ev{background:var(--s);border-left:3px solid var(--crl);border-radius:6px;padding:5px 7px;margin-bottom:6px;font-size:11.5px;cursor:pointer}
+.cal-ev.done{opacity:.5}
+.cal-ev.done .cal-ev-title{text-decoration:line-through}
+.cal-ev-time{font-family:monospace;color:var(--gold);font-size:10.5px}
+.cal-ev-title{color:var(--t);font-weight:500;margin-top:1px;overflow-wrap:break-word}
+.cal-day-empty{font-size:10.5px;color:var(--t3);text-align:center;margin-top:10px}
+
+/* CALENDAR : MONTH VIEW */
+.cal-grid-month{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-month-head{font-size:10px;color:var(--t3);text-transform:uppercase;text-align:center;padding-bottom:4px}
+.cal-month-cell{background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:6px;min-height:82px}
+.cal-month-cell.other-month{opacity:.35}
+.cal-month-cell.today{border-color:var(--crl)}
+.cal-month-daynum{font-size:11.5px;color:var(--t2);font-weight:600;margin-bottom:4px}
+.cal-month-ev{background:var(--s);border-radius:4px;padding:2px 4px;margin-bottom:2px;font-size:10px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.cal-month-ev.done{opacity:.5;text-decoration:line-through}
+.cal-month-more{font-size:10px;color:var(--t3);cursor:pointer}
+
+/* TASKS (AGENDA) */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.task-item:last-child{border-bottom:none}
+.task-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bd);flex-shrink:0;cursor:pointer;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;background:var(--s2);font-size:12px;color:#fff}
+.task-check.checked{background:var(--crl);border-color:var(--crl)}
+.task-title{font-size:13.5px;color:var(--t);font-weight:500}
+.task-title.done{color:var(--t3);text-decoration:line-through}
+.task-meta{font-size:11.5px;color:var(--t3);margin-top:2px}
+
 /* QUICK ACTIONS */
 .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .quick-card{background:var(--s2);border:1px solid rgba(139,26,58,.2);border-radius:10px;
@@ -279,6 +313,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   #topbar{left:72px;padding:0 14px}
   #main{margin-left:72px;padding:18px}
   .grid-2{grid-template-columns:1fr}
+  .cal-grid-week{grid-template-columns:repeat(7,110px);overflow-x:auto;padding-bottom:4px}
 }
 @media (max-width:480px){
   #sidebar{width:56px}
@@ -348,6 +383,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 
   <div class="nav-group">Enseignement</div>
   <button class="nav-btn" data-page="planning"><span>📅</span>Planning</button>
+  <button class="nav-btn" data-page="agenda"><span>📓</span>Agenda</button>
   <button class="nav-btn" data-page="courses"><span>📚</span>Cours IA</button>
   <button class="nav-btn" data-page="clinical"><span>🧪</span>Cas cliniques</button>
   <button class="nav-btn" data-page="exam"><span>📑</span>Examens</button>
@@ -499,8 +535,54 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Événements enregistrés (<span id="planCount">0</span>)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div class="card-title" style="margin:0">Événements enregistrés (<span id="planCount">0</span>)</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" id="planViewListBtn" onclick="setPlanningView('list')">☰ Liste</button>
+          <button class="btn btn-ghost btn-sm" id="planViewWeekBtn" onclick="setPlanningView('week')">📆 Semaine</button>
+          <button class="btn btn-ghost btn-sm" id="planViewMonthBtn" onclick="setPlanningView('month')">🗓 Mois</button>
+        </div>
+      </div>
+      <div id="planCalNav" style="display:none;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <button class="btn btn-ghost btn-sm" onclick="planNavPrev()">←</button>
+        <div id="planCalLabel" style="font-size:13.5px;font-weight:600;color:var(--t)"></div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="planNavToday()">Aujourd'hui</button>
+          <button class="btn btn-ghost btn-sm" onclick="planNavNext()">→</button>
+        </div>
+      </div>
       <div id="planningList"><div style="color:var(--t3);font-size:13.5px">Aucun événement. Ajoutez-en un depuis le formulaire.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ AGENDA ═══════════════ -->
+<div class="page" id="page-agenda">
+  <div class="page-title">📓 Agenda professionnel</div>
+  <div class="page-sub">Réunions, démarches administratives et tâches à suivre</div>
+  <div style="display:grid;grid-template-columns:380px 1fr;gap:18px">
+    <div class="card">
+      <div class="card-title">Ajouter une tâche / réunion</div>
+      <label class="form-label">Titre</label>
+      <input class="form-input" id="agTitle" placeholder="Ex : Réunion conseil scientifique">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label class="form-label">Date</label><input class="form-input" type="date" id="agDate"></div>
+        <div><label class="form-label">Heure</label><input class="form-input" type="time" id="agTime"></div>
+      </div>
+      <label class="form-label">Lieu / Participants</label>
+      <input class="form-input" id="agLieu" placeholder="Ex : Bureau du Doyen, avec le Pr. Khelifi">
+      <label class="form-label">Note</label>
+      <textarea class="form-textarea" id="agNote" rows="3" placeholder="Détails, ordre du jour..."></textarea>
+      <button class="btn btn-primary btn-full" onclick="addAgenda()">📓 Ajouter à l'agenda</button>
+    </div>
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="card-title" style="margin:0">Tâches et réunions (<span id="agCount">0</span>)</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3);cursor:pointer">
+          <input type="checkbox" id="agHideDone" onchange="renderAgenda()"> Masquer les tâches faites
+        </label>
+      </div>
+      <div id="agendaList"><div style="color:var(--t3);font-size:13.5px">Aucune tâche. Ajoutez-en une depuis le formulaire.</div></div>
     </div>
   </div>
 </div>
@@ -1382,6 +1464,7 @@ let state = {
   specialty: LS.get('medai_specialty', 'Gynécologie-Obstétrique'),
   students: LS.get('medai_students', []),
   planning: LS.get('medai_planning', []),
+  agenda:   LS.get('medai_agenda', []),
   stages:   LS.get('medai_stages', [
     {etudiant:'Bencheikh Yanis', service:'Chirurgie gynécologique', debut:'2026-02-01', fin:'2026-05-31', responsable:'Dr. Haddad', statut:'En cours'},
     {etudiant:'Boumediene Imane', service:'Oncologie gynécologique', debut:'2026-01-06', fin:'2026-04-30', responsable:'Dr. Khelifi', statut:'En cours'},
@@ -1744,7 +1827,7 @@ function doLogout() {
 //  NAVIGATION
 // ═══════════════════════════════════════════════
 const pageTitles = {
-  dashboard:'Dashboard', planning:'Planning', courses:'Cours IA', clinical:'Cas cliniques',
+  dashboard:'Dashboard', planning:'Planning', agenda:'Agenda', courses:'Cours IA', clinical:'Cas cliniques',
   exam:'Examens', correction:'Correction des copies', students:'Étudiants', stages:'Stages',
   mail:'Courriers', secretariat:'Secrétariat', ai:'Assistant IA', research:'Recherche', patient:'Patient virtuel'
 };
@@ -1834,6 +1917,7 @@ function initApp() {
   renderDashPlanning();
   renderDashMails();
   renderPlanning();
+  renderAgenda();
   renderStudents();
   renderNoteSelect();
   renderStages();
@@ -1876,7 +1960,7 @@ function renderDashPlanning() {
     <div class="sched-item">
       <span class="sched-time">${e.time||'--:--'}</span>
       <div class="sched-dot"></div>
-      <div><div class="sched-title">${esc(e.subject)}</div><div class="sched-loc">${esc(e.lieu||'')} · ${esc(e.type||'')}</div></div>
+      <div><div class="sched-title" style="${e.done?'text-decoration:line-through;color:var(--t3)':''}">${esc(e.subject)}</div><div class="sched-loc">${esc(e.lieu||'')} · ${esc(e.type||'')}</div></div>
     </div>`).join('');
 }
 
@@ -1896,6 +1980,20 @@ function renderDashMails() {
 // ═══════════════════════════════════════════════
 //  PLANNING
 // ═══════════════════════════════════════════════
+let planView = 'list';
+let planRefDate = new Date();
+
+function fmtDateLocal(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function startOfWeek(d) {
+  const x = new Date(d);
+  const day = (x.getDay()+6)%7; // Monday = 0
+  x.setDate(x.getDate()-day);
+  x.setHours(0,0,0,0);
+  return x;
+}
+
 function addPlanning() {
   const subj = document.getElementById('planSubject').value.trim();
   if(!subj){ alert('Veuillez saisir un sujet'); return; }
@@ -1905,6 +2003,7 @@ function addPlanning() {
     subject: subj,
     lieu: document.getElementById('planLieu').value,
     type: document.getElementById('planType').value,
+    done: false,
   };
   state.planning.unshift(ev);
   LS.set('medai_planning', state.planning);
@@ -1915,25 +2014,176 @@ function addPlanning() {
   renderPlanning(); renderDashStats(); renderDashPlanning();
 }
 
+function setPlanningView(v) {
+  planView = v;
+  renderPlanning();
+}
+
+function planNavPrev() {
+  if(planView==='week') planRefDate.setDate(planRefDate.getDate()-7);
+  else planRefDate.setMonth(planRefDate.getMonth()-1);
+  renderPlanning();
+}
+function planNavNext() {
+  if(planView==='week') planRefDate.setDate(planRefDate.getDate()+7);
+  else planRefDate.setMonth(planRefDate.getMonth()+1);
+  renderPlanning();
+}
+function planNavToday() {
+  planRefDate = new Date();
+  renderPlanning();
+}
+
 function renderPlanning() {
   document.getElementById('planCount').textContent = state.planning.length;
+  ['list','week','month'].forEach(v=>{
+    document.getElementById('planView'+v[0].toUpperCase()+v.slice(1)+'Btn').classList.toggle('btn-primary', planView===v);
+  });
+  document.getElementById('planCalNav').style.display = planView==='list' ? 'none' : 'flex';
   const el = document.getElementById('planningList');
+
+  if(planView==='week') { el.innerHTML = buildPlanningWeekHtml(); updateCalLabel(); return; }
+  if(planView==='month') { el.innerHTML = buildPlanningMonthHtml(); updateCalLabel(); return; }
+
   if(!state.planning.length){ el.innerHTML='<div style="color:var(--t3);font-size:13.5px">Aucun événement.</div>'; return; }
   el.innerHTML = state.planning.map((e,i)=>`
     <div class="sched-item">
+      <div class="task-check ${e.done?'checked':''}" onclick="togglePlanningDone(${i})">${e.done?'✓':''}</div>
       <span class="sched-time">${e.time||'--:--'}</span>
       <div class="sched-dot"></div>
       <div style="flex:1">
-        <div class="sched-title">${esc(e.subject)}</div>
+        <div class="sched-title" style="${e.done?'text-decoration:line-through;color:var(--t3)':''}">${esc(e.subject)}</div>
         <div class="sched-loc">${e.date||''} · ${esc(e.lieu||'')} · ${badge(e.type,'blue')}</div>
       </div>
       <button onclick="removePlanning(${i})" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px">×</button>
     </div>`).join('');
 }
 
+function updateCalLabel() {
+  const label = document.getElementById('planCalLabel');
+  if(!label) return;
+  if(planView==='week') {
+    const start = startOfWeek(planRefDate);
+    const end = new Date(start); end.setDate(start.getDate()+6);
+    const fmt = d=>d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    label.textContent = fmt(start) + ' – ' + fmt(end);
+  } else if(planView==='month') {
+    label.textContent = planRefDate.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  }
+}
+
+function buildPlanningWeekHtml() {
+  const start = startOfWeek(planRefDate);
+  const days = [...Array(7)].map((_,i)=>{ const d=new Date(start); d.setDate(start.getDate()+i); return d; });
+  const todayStr = fmtDateLocal(new Date());
+  const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  return '<div class="cal-grid-week">' + days.map((d,i)=>{
+    const ds = fmtDateLocal(d);
+    const evs = state.planning.filter(e=>e.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    return `<div class="cal-day-col ${ds===todayStr?'today':''}">
+      <div class="cal-day-head">${dayNames[i]}<b>${d.getDate()}</b></div>
+      ${evs.length ? evs.map(e=>{
+        const idx = state.planning.indexOf(e);
+        return `<div class="cal-ev ${e.done?'done':''}" onclick="togglePlanningDone(${idx})" title="${esc(e.subject)}">
+          <div class="cal-ev-time">${e.time||'--:--'}</div>
+          <div class="cal-ev-title">${esc(e.subject)}</div>
+        </div>`;
+      }).join('') : '<div class="cal-day-empty">—</div>'}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function buildPlanningMonthHtml() {
+  const year = planRefDate.getFullYear(), month = planRefDate.getMonth();
+  const firstOfMonth = new Date(year, month, 1);
+  const startDay = (firstOfMonth.getDay()+6)%7; // Monday = 0
+  const gridStart = new Date(firstOfMonth); gridStart.setDate(1-startDay);
+  const todayStr = fmtDateLocal(new Date());
+  const dayNames = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  let cells = '';
+  for(let i=0;i<42;i++){
+    const d = new Date(gridStart); d.setDate(gridStart.getDate()+i);
+    const ds = fmtDateLocal(d);
+    const inMonth = d.getMonth()===month;
+    const evs = state.planning.filter(e=>e.date===ds).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+    const shown = evs.slice(0,3);
+    cells += `<div class="cal-month-cell ${inMonth?'':'other-month'} ${ds===todayStr?'today':''}">
+      <div class="cal-month-daynum">${d.getDate()}</div>
+      ${shown.map(e=>{
+        const idx = state.planning.indexOf(e);
+        return `<div class="cal-month-ev ${e.done?'done':''}" onclick="togglePlanningDone(${idx})" title="${esc(e.subject)}">${e.time?e.time+' ':''}${esc(e.subject)}</div>`;
+      }).join('')}
+      ${evs.length>3 ? `<div class="cal-month-more">+${evs.length-3}</div>` : ''}
+    </div>`;
+  }
+  return '<div class="cal-grid-month">' + dayNames.map(n=>`<div class="cal-month-head">${n}</div>`).join('') + cells + '</div>';
+}
+
+function togglePlanningDone(i) {
+  state.planning[i].done = !state.planning[i].done;
+  LS.set('medai_planning', state.planning);
+  renderPlanning(); renderDashPlanning();
+}
+
 function removePlanning(i) {
   state.planning.splice(i,1); LS.set('medai_planning', state.planning);
   renderPlanning(); renderDashPlanning(); renderDashStats();
+}
+
+// ═══════════════════════════════════════════════
+//  AGENDA (réunions & tâches)
+// ═══════════════════════════════════════════════
+function addAgenda() {
+  const title = document.getElementById('agTitle').value.trim();
+  if(!title){ alert('Veuillez saisir un titre'); return; }
+  const task = {
+    title,
+    date: document.getElementById('agDate').value,
+    time: document.getElementById('agTime').value,
+    lieu: document.getElementById('agLieu').value,
+    note: document.getElementById('agNote').value,
+    done: false,
+  };
+  state.agenda.unshift(task);
+  LS.set('medai_agenda', state.agenda);
+  document.getElementById('agTitle').value='';
+  document.getElementById('agLieu').value='';
+  document.getElementById('agNote').value='';
+  toast('Ajouté à l\'agenda');
+  renderAgenda();
+}
+
+function renderAgenda() {
+  document.getElementById('agCount').textContent = state.agenda.length;
+  const hideDone = document.getElementById('agHideDone')?.checked;
+  const el = document.getElementById('agendaList');
+  const items = state.agenda
+    .map((t,i)=>({...t, _i:i}))
+    .filter(t=> !hideDone || !t.done)
+    .sort((a,b)=> (a.date||'9999').localeCompare(b.date||'9999') || (a.time||'').localeCompare(b.time||''));
+  if(!items.length){ el.innerHTML='<div style="color:var(--t3);font-size:13.5px">Aucune tâche.</div>'; return; }
+  el.innerHTML = items.map(t=>`
+    <div class="task-item">
+      <div class="task-check ${t.done?'checked':''}" onclick="toggleAgendaDone(${t._i})">${t.done?'✓':''}</div>
+      <div style="flex:1">
+        <div class="task-title ${t.done?'done':''}">${esc(t.title)}</div>
+        <div class="task-meta">${t.date||'Sans date'}${t.time?' · '+t.time:''}${t.lieu?' · '+esc(t.lieu):''}</div>
+        ${t.note?`<div class="task-meta" style="margin-top:3px">${esc(t.note)}</div>`:''}
+      </div>
+      <button onclick="removeAgenda(${t._i})" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:18px">×</button>
+    </div>`).join('');
+}
+
+function toggleAgendaDone(i) {
+  state.agenda[i].done = !state.agenda[i].done;
+  LS.set('medai_agenda', state.agenda);
+  renderAgenda();
+}
+
+function removeAgenda(i) {
+  state.agenda.splice(i,1);
+  LS.set('medai_agenda', state.agenda);
+  renderAgenda();
 }
 
 // ═══════════════════════════════════════════════
