@@ -2076,7 +2076,7 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 function showTab(tabId) {
   log.info('showTab:', tabId);
   if(tabId === 'results') {
-    goPage('corrections');
+    goPage('correction');
     setTimeout(() => {
       const bt = document.querySelector('[onclick*="ct-results"]');
       if(bt) bt.click();
@@ -4998,6 +4998,15 @@ async function handleBatchFiles(fileList) {
       + '</div></div>'
       + batchLog;
   };
+  const batchVisionPrompt = 'Tu es un professeur de '+getSpecialty()+'. '
+    + 'Regarde cette feuille de réponses manuscrite scannée. '
+    + 'Titre examen: ' + cfg.title + '. Note max: ' + cfg.total + ' points. '
+    + 'Bareme: ' + cfg.correction + '. '
+    + 'Lis le NOM et PRENOM imprimé sur la feuille, et les réponses manuscrites. '
+    + "Si un code personnel à 6 chiffres est visible sur la copie (en haut ou en en-tête), lis-le aussi. "
+    + 'Retourne UNIQUEMENT ce JSON valide (sans backticks): '
+    + '{"nom_etudiant":"Prénom NOM","code_etudiant":"123456 ou vide si absent","note":X,"mention":"Bien","appreciation_generale":"...","points_forts":["..."],"points_ameliorer":["..."],"commentaire_detaille":"...","conseils":["..."],"transcription":"..."}';
+
   for(let i = 0; i < files.length; i++) {
     const file = files[i];
     renderProgress();
@@ -5005,31 +5014,72 @@ async function handleBatchFiles(fileList) {
       + '⏳ Traitement : <b>' + esc(file.name) + '</b> (' + (i+1) + '/' + files.length + ')...</div>';
     renderProgress();
     try {
-      const base64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = e => res(e.target.result.split(',')[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-      const mediaType = file.type.startsWith('image/') ? file.type : 'image/jpeg';
-      const visionPrompt = 'Tu es un professeur de '+getSpecialty()+'. '
-        + 'Regarde cette feuille de réponses manuscrite scannée. '
-        + 'Titre examen: ' + cfg.title + '. Note max: ' + cfg.total + ' points. '
-        + 'Bareme: ' + cfg.correction + '. '
-        + 'Lis le NOM et PRENOM imprimé sur la feuille, et les réponses manuscrites. '
-        + "Si un code personnel à 6 chiffres est visible sur la copie (en haut ou en en-tête), lis-le aussi. "
-        + 'Retourne UNIQUEMENT ce JSON valide (sans backticks): '
-        + '{"nom_etudiant":"Prénom NOM","code_etudiant":"123456 ou vide si absent","note":X,"mention":"Bien","appreciation_generale":"...","points_forts":["..."],"points_ameliorer":["..."],"commentaire_detaille":"...","conseils":["..."],"transcription":"..."}';
       log.info(`Correction lot — fichier ${i+1}/${files.length}: ${file.name}`);
-      const raw = await callAnthropicAPI(
-        [{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-          {type:'text',text:visionPrompt}
-        ]}],
-        ''
-      );
-      const cleanRaw = raw.replace(/```json|```/g,'').trim();
-      const parsed = JSON.parse(cleanRaw);
+      let parsed, isScanned = true, copyTextPrefix = '[Scan] ';
+
+      if(file.type === 'application/pdf') {
+        await loadPdfJs();
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        const totalPages = pdf.numPages;
+        let pdfText = '';
+        for(let p = 1; p <= totalPages; p++) {
+          const page = await pdf.getPage(p);
+          const tc = await page.getTextContent();
+          pdfText += tc.items.map(it => it.str).join(' ') + '\n';
+        }
+        pdfText = pdfText.replace(/\s+/g,' ').trim();
+
+        if(pdfText.length > 50) {
+          // PDF numérique — correction par le texte extrait
+          isScanned = false; copyTextPrefix = '';
+          const textPrompt = `Tu es un professeur de ${getSpecialty()}. Corrige cette copie d'étudiant (PDF numérique). `
+            + 'Titre examen: ' + cfg.title + '. Note max: ' + cfg.total + ' points. '
+            + 'Bareme et corrigé type: ' + cfg.correction + '. '
+            + "Cherche dans le texte le nom de l'étudiant et un éventuel code personnel à 6 chiffres. "
+            + 'Copie :\n' + pdfText + '\n\n'
+            + 'Retourne UNIQUEMENT ce JSON valide (sans backticks): '
+            + '{"nom_etudiant":"Prénom NOM ou vide si absent","code_etudiant":"123456 ou vide si absent","note":X,"mention":"Bien","appreciation_generale":"...","points_forts":["..."],"points_ameliorer":["..."],"commentaire_detaille":"...","conseils":["..."]}';
+          const raw = await callAnthropicAPI([{role:'user',content:textPrompt}], '');
+          parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+          parsed.transcription = pdfText.slice(0, 3000);
+        } else {
+          // PDF scanné — conversion des pages en images pour analyse vision
+          const images = [];
+          for(let p = 1; p <= Math.min(totalPages, 6); p++) {
+            const page = await pdf.getPage(p);
+            const viewport = page.getViewport({ scale: 1.8 });
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width; canvas.height = viewport.height;
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            images.push(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+          }
+          const imageContent = images.map(b64 => ({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:b64 } }));
+          const raw = await callAnthropicAPI(
+            [{role:'user',content:[...imageContent, {type:'text', text: batchVisionPrompt}]}],
+            ''
+          );
+          parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        }
+      } else {
+        // image JPG/PNG — analyse vision directe
+        const base64 = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = e => res(e.target.result.split(',')[1]);
+          r.onerror = rej;
+          r.readAsDataURL(file);
+        });
+        const raw = await callAnthropicAPI(
+          [{role:'user',content:[
+            {type:'image',source:{type:'base64',media_type:file.type,data:base64}},
+            {type:'text',text:batchVisionPrompt}
+          ]}],
+          ''
+        );
+        parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+      }
+
       const note = parseFloat(parsed.note)||0;
       const matchedStudent = matchStudentByCode(parsed.code_etudiant);
       const name = matchedStudent ? (matchedStudent.prenom+' '+matchedStudent.nom) : (parsed.nom_etudiant || file.name.replace(/\.[^.]+$/,''));
@@ -5045,10 +5095,10 @@ async function handleBatchFiles(fileList) {
         pointsAmeliorer: parsed.points_ameliorer||[],
         commentaire: parsed.commentaire_detaille||'',
         conseils: parsed.conseils||[],
-        copyText: '[Scan] ' + (parsed.transcription||''),
+        copyText: copyTextPrefix + (parsed.transcription||''),
         date: new Date().toLocaleDateString('fr-FR'),
         promo: cfg.promo,
-        isScanned: true,
+        isScanned,
         validated: false
       };
       state.corrections.unshift(corrObj);
