@@ -681,12 +681,14 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <div class="card-title">Paramètres</div>
       <label class="form-label">Thème</label>
       <input class="form-input" id="examTopic" placeholder="Ex : Cancer du col de l'utérus">
-      <label class="form-label">Type d'examen</label>
-      <select class="form-select" id="examType">
-        <option>QCM (questions à choix multiples)</option><option>Dossier clinique progressif</option>
-        <option>ECOS (examen clinique objectif)</option><option>Questions ouvertes courtes</option>
-      </select>
-      <label class="form-label">Nombre de questions</label>
+      <label class="form-label">Type(s) de questions (plusieurs possibles)</label>
+      <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:14.5px;color:var(--t2)"><input type="checkbox" id="examTypeQcm" checked=""> QCM (questions à choix multiples)</label>
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:14.5px;color:var(--t2)"><input type="checkbox" id="examTypeOuvertes"> Questions ouvertes / réponses libres</label>
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:14.5px;color:var(--t2)"><input type="checkbox" id="examTypeDossier"> Dossier clinique progressif</label>
+        <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:14.5px;color:var(--t2)"><input type="checkbox" id="examTypeEcos"> ECOS (examen clinique objectif)</label>
+      </div>
+      <label class="form-label">Nombre de questions (par type coché)</label>
       <input class="form-input" type="number" id="examNb" value="10" min="3" max="30">
       <label class="form-label">Niveau</label>
       <select class="form-select" id="examLevel">
@@ -2700,16 +2702,22 @@ function sendExamToStudents() {
 async function generateExam() {
   const topic = document.getElementById('examTopic').value.trim();
   if(!topic){ alert('Veuillez saisir un thème'); return; }
+  const types = [];
+  if(document.getElementById('examTypeQcm').checked) types.push('QCM (questions à choix multiples)');
+  if(document.getElementById('examTypeOuvertes').checked) types.push('Questions ouvertes / réponses libres');
+  if(document.getElementById('examTypeDossier').checked) types.push('Dossier clinique progressif');
+  if(document.getElementById('examTypeEcos').checked) types.push('ECOS (examen clinique objectif)');
+  if(!types.length){ alert('Cochez au moins un type de questions'); return; }
   setBtn('btnExam', true, 'Génération en cours...');
   document.getElementById('examResult').innerHTML = '<div style="color:var(--t3)">Génération de l\'examen...</div>';
-  const type = document.getElementById('examType').value;
   const nb = document.getElementById('examNb').value;
   const level = document.getElementById('examLevel').value;
-  const prompt = `Génère un examen complet de type "${type}" en ${getSpecialty()}.
+  const prompt = `Génère un examen complet en ${getSpecialty()}, composé d'une section par type de questions ci-dessous (un titre de section clair pour chacune) :
+${types.map(t => '- ' + t + ' : ' + nb + ' question(s)').join('\n')}
+
 Thème : ${topic}
 Niveau : ${level}
-Nombre de questions : ${nb}
-Pour chaque question : énoncé, options (si QCM), bonne réponse clairement indiquée, explication.
+Pour chaque question : énoncé, options (si QCM), bonne réponse clairement indiquée, explication/éléments de réponse attendus.
 Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié.`;
   try {
     const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale, ${getSpecialty()}, enseignant en Algérie. Génère des examens de qualité en français.`);
@@ -2718,6 +2726,24 @@ Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié
     document.getElementById('examResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
     const actions = document.getElementById('examActions');
     if(actions) actions.style.display = 'flex';
+
+    // Crée/actualise automatiquement la fiche de correction correspondante
+    const examData = {
+      id: 'exam_gen_' + Date.now(),
+      title: topic + ' (' + level + ')',
+      subject: getSpecialty(),
+      promo: level,
+      total: 20,
+      correction: r,
+      secretariat: (state.examConfig && state.examConfig.secretariat) || '',
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+    state.examConfigs.unshift(examData);
+    state.examConfig = examData;
+    LS.set('medai_exam_configs', state.examConfigs);
+    LS.set('medai_exam_config', state.examConfig);
+    renderExamLibrary();
+    toast('✅ Examen généré — fiche de correction créée automatiquement dans "Correction copies"');
   } catch(e) {
     document.getElementById('examResult').innerHTML = `<div style="color:var(--amber)">❌ ${esc(e.message)}</div>`;
   }
