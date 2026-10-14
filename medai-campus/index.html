@@ -1407,7 +1407,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 // ═══════════════════════════════════════════════
 const APP_VERSION = '2.1.0';
 const API_URL = 'https://api.anthropic.com/v1/messages';
-const API_MODEL = 'claude-sonnet-4-6';
+const API_MODEL = 'claude-sonnet-5-5';
 const API_VERSION = '2023-06-01';
 const API_MAX_TOKENS = 3000;
 
@@ -1429,6 +1429,7 @@ async function callAnthropicAPI(messages, system='', extraBody={}) {
   const body = {
     model: API_MODEL,
     max_tokens: API_MAX_TOKENS,
+    output_config: { effort: 'low' },
     messages,
     ...extraBody
   };
