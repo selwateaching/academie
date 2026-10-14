@@ -182,7 +182,7 @@ function renderTable() {
       <td>${esc(p.email)}</td>
       <td>${esc(p.etablissement)}</td>
       <td>${esc(p.specialty)}</td>
-      <td><button class="toggle ${p.is_active ? 'on' : ''}" onclick="this.classList.toggle('on')" data-field="is_active"></button></td>
+      <td><button class="toggle ${p.is_active ? 'on' : ''}" onclick="toggleActive(this, ${p.id})" data-field="is_active"></button></td>
       <td>
         <select class="pill" data-field="payment_status">
           ${['pending','payé','en retard','annulé'].map(s => `<option value="${s}" ${p.payment_status===s?'selected':''}>${s}</option>`).join('')}
@@ -193,6 +193,11 @@ function renderTable() {
       <td><button class="row-save" onclick="saveProfessor(${p.id})">✓ Enregistrer</button></td>
     </tr>`;
   }).join('');
+}
+
+async function toggleActive(btn, id) {
+  btn.classList.toggle('on');
+  await saveProfessor(id);
 }
 
 async function saveProfessor(id) {
