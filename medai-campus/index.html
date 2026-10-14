@@ -44,7 +44,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .login-back-link:hover{color:var(--crl);}
 .login-success-msg{background:rgba(40,167,69,.12);border:1px solid rgba(40,167,69,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#5cb85c;display:none;margin-bottom:12px;}
 .login-error-msg{background:rgba(181,37,80,.12);border:1px solid rgba(181,37,80,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#e07090;display:none;margin-bottom:12px;}
-#loginScreen{position:fixed;inset:0;display:none;align-items:center;justify-content:center;
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   background:radial-gradient(ellipse at 30% 20%,#3A0A1A,var(--bg) 60%);z-index:1000}
 .login-box{background:var(--s);border:1px solid var(--bd);border-radius:20px;padding:46px 42px;
   width:400px;box-shadow:0 32px 80px rgba(0,0,0,.6)}
@@ -289,32 +289,53 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 </head>
 <body>
 
-<!-- LOGIN (désactivé — appWrap s'affiche directement, voir CSS #loginScreen display:none) -->
+<!-- LOGIN / INSCRIPTION -->
 <div id="loginScreen">
-  <form class="login-box" onsubmit="event.preventDefault();doLogin();">
+  <div class="login-box" style="width:420px">
     <div class="login-logo" style="justify-content:center;margin-bottom:20px;">
       <h1>MedIA <span>Campus</span></h1>
     </div>
-    <label class="form-label">Email universitaire</label>
-    <input class="form-input" id="loginEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.fr">
-    <label class="form-label">Mot de passe</label>
-    <div style="position:relative;">
-      <input class="form-input" id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••" style="padding-right:42px;">
+    <div style="display:flex;gap:8px;margin-bottom:22px">
+      <button type="button" class="btn btn-full" id="authTabLogin" onclick="showAuthTab('login')">Connexion</button>
+      <button type="button" class="btn btn-full" id="authTabRegister" onclick="showAuthTab('register')">Inscription</button>
     </div>
-    <button type="submit" class="btn btn-primary btn-full" style="margin-top:8px;padding:13px;font-size:15px">Accéder à la plateforme →</button>
-    <div id="loginErrorMsg" class="login-error-msg" style="margin-top: 10px;"></div>
-  </form>
+
+    <form id="loginForm" onsubmit="event.preventDefault();doProfLogin();">
+      <label class="form-label">Email universitaire</label>
+      <input class="form-input" id="loginEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.fr">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
+      <button type="submit" class="btn btn-primary btn-full" id="loginSubmitBtn" style="margin-top:8px;padding:13px;font-size:15px">Accéder à la plateforme →</button>
+      <div id="loginErrorMsg" class="login-error-msg" style="margin-top:10px"></div>
+    </form>
+
+    <form id="registerForm" style="display:none" onsubmit="event.preventDefault();doProfRegister();">
+      <label class="form-label">Nom complet</label>
+      <input class="form-input" id="regNom" placeholder="Pr. Nom Prénom">
+      <label class="form-label">Spécialité</label>
+      <input class="form-input" id="regSpecialty" placeholder="ex: Gynécologie-Obstétrique">
+      <label class="form-label">Établissement</label>
+      <input class="form-input" id="regEtab" placeholder="ex: Faculté de Médecine d'Alger">
+      <label class="form-label">Email universitaire</label>
+      <input class="form-input" id="regEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.fr">
+      <label class="form-label">Mot de passe</label>
+      <input class="form-input" id="regPwd" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
+      <button type="submit" class="btn btn-primary btn-full" id="registerSubmitBtn" style="margin-top:8px;padding:13px;font-size:15px">Créer mon compte →</button>
+      <div id="registerErrorMsg" class="login-error-msg" style="margin-top:10px"></div>
+      <div id="registerSuccessMsg" class="login-success-msg" style="margin-top:10px"></div>
+    </form>
+  </div>
 </div>
 <div id="forgotScreen"></div>
 <div id="resetScreen"></div>
 <div id="setupSecretScreen"></div>
 
 <!-- APP -->
-<div id="appWrap" style="display:block">
+<div id="appWrap" style="display:none">
 
 <!-- SIDEBAR -->
 <div id="sidebar" role="navigation" aria-label="Navigation principale">
-  <div class="sb-logo" style="padding:14px 16px;display:flex;align-items:center;justify-content:center;">
+  <div class="sb-logo" id="sbLogoWrap" style="padding:14px 16px;display:flex;align-items:center;justify-content:center;">
     <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">MedIA <span style="color:#B52550">Campus</span></div>
   </div>
 
@@ -346,10 +367,12 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   <div class="sb-user">
     <div class="sb-user-inner">
       <div class="user-av" id="userAv">P</div>
-      <div>
+      <div style="flex:1;min-width:0">
         <div style="font-size:12.5px;color:var(--t);font-weight:500" id="userNameDisplay">Professeur</div>
         <div style="font-size:10px;color:var(--t3)" class="js-specialty-label">Gynécologie-Obstétrique</div>
+        <div style="font-size:9.5px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="sbEtablissement"></div>
       </div>
+      <button type="button" onclick="doLogout()" title="Se déconnecter" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:15px;padding:4px">⏻</button>
     </div>
   </div>
 </div>
@@ -358,6 +381,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 <div id="topbar">
   <span style="font-family:Georgia,serif;font-size:16px;color:var(--t)" id="topbarTitle">Dashboard</span>
   <div style="display:flex;align-items:center;gap:14px">
+    <span id="brandingStatus" onclick="showBrandingModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🏷️ Personnaliser ma page</span>
     <span id="specialtyStatus" onclick="showSpecialtyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🩺 Gynécologie-Obstétrique</span>
     <span id="apiKeyStatus" onclick="showApiKeyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🔑 Configurer clé API</span>
     <div class="ai-status"><div class="ai-dot"></div> IA prête</div>
@@ -1483,6 +1507,87 @@ function saveSpecialty() {
 }
 
 // ═══════════════════════════════════════════════
+//  PERSONNALISATION (logo / établissement)
+// ═══════════════════════════════════════════════
+function showBrandingModal() {
+  if(document.getElementById('brandingModal')) return;
+  const professor = getProfessorProfile() || {};
+  const modal = document.createElement('div');
+  modal.id = 'brandingModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `
+    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:440px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
+      <div style="font-family:Georgia,serif;font-size:20px;color:#EDE9F4;margin-bottom:8px">🏷️ Personnaliser ma page</div>
+      <div style="font-size:13px;color:#9089B0;margin-bottom:18px;line-height:1.6">
+        Votre logo et le nom de votre établissement apparaissent dans le menu latéral et sur vos courriers envoyés aux étudiants.
+      </div>
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Établissement</label>
+      <input id="brandingEtab" type="text" value="${esc(professor.etablissement||'')}" placeholder="ex: Faculté de Médecine d'Alger"
+        style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Logo (image, 2 Mo max)</label>
+      <input id="brandingLogoFile" type="file" accept="image/*"
+        style="width:100%;color:#A89EC0;font-size:12.5px;margin-bottom:10px">
+      <div id="brandingLogoPreviewWrap" style="margin-bottom:14px;${professor.logo_base64?'':'display:none'}">
+        <img id="brandingLogoPreview" src="${professor.logo_base64||''}" style="max-height:50px;max-width:200px;object-fit:contain;background:#fff;border-radius:6px;padding:4px">
+        <button type="button" onclick="clearBrandingLogo()" style="margin-left:10px;background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">Retirer</button>
+      </div>
+      <div id="brandingErrorMsg" class="login-error-msg" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:10px">
+        <button id="brandingSaveBtn" onclick="saveBranding()" style="flex:1;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer</button>
+        <button onclick="document.getElementById('brandingModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal._logoBase64 = professor.logo_base64 || '';
+  document.getElementById('brandingLogoFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 2_000_000) { document.getElementById('brandingErrorMsg').textContent = 'Image trop volumineuse (2 Mo max)'; document.getElementById('brandingErrorMsg').style.display = 'block'; return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      modal._logoBase64 = reader.result;
+      document.getElementById('brandingLogoPreview').src = reader.result;
+      document.getElementById('brandingLogoPreviewWrap').style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function clearBrandingLogo() {
+  const modal = document.getElementById('brandingModal');
+  if(!modal) return;
+  modal._logoBase64 = '';
+  document.getElementById('brandingLogoPreviewWrap').style.display = 'none';
+}
+
+async function saveBranding() {
+  const modal = document.getElementById('brandingModal');
+  const etablissement = document.getElementById('brandingEtab').value.trim();
+  const logo_base64 = modal._logoBase64 || '';
+  const errBox = document.getElementById('brandingErrorMsg');
+  errBox.style.display = 'none';
+  setBtn('brandingSaveBtn', true, 'Enregistrement...');
+  try {
+    const res = await fetch(AUTH_API_BASE + '/professors/me', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAuthToken() },
+      body: JSON.stringify({ etablissement, logo_base64 })
+    });
+    const data = await res.json();
+    if(!res.ok) { errBox.textContent = data.error || 'Erreur lors de l\'enregistrement'; errBox.style.display = 'block'; return; }
+    setProfessorProfile(data.professor);
+    applyProfessorBranding(data.professor);
+    modal.remove();
+    toast('Personnalisation enregistrée');
+  } catch(e) {
+    errBox.textContent = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+    errBox.style.display = 'block';
+  } finally {
+    setBtn('brandingSaveBtn', false, '✓ Enregistrer');
+  }
+}
+
+// ═══════════════════════════════════════════════
 //  UTILS
 // ═══════════════════════════════════════════════
 function toast(msg) {
@@ -1504,20 +1609,126 @@ function badge(text, color) { return `<span class="badge bg-${color}">${text}</s
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ═══════════════════════════════════════════════
-//  LOGIN (désactivé — ces fonctions ne sont plus appelées,
-//  l'app démarre directement via initApp() dans le BOOT)
+//  AUTHENTIFICATION PROFESSEUR (compte SaaS, API backend)
 // ═══════════════════════════════════════════════
+const AUTH_API_BASE = 'https://medai-campus-backend.onrender.com/api';
+
 function toggleFieldType(id) {
   const el = document.getElementById(id);
   if (el) el.type = el.type === 'password' ? 'text' : 'password';
 }
-function doLogin() { launchApp(); }
+
+function getAuthToken() { return localStorage.getItem('medai_prof_token') || ''; }
+function setAuthToken(t) { t ? localStorage.setItem('medai_prof_token', t) : localStorage.removeItem('medai_prof_token'); }
+function getProfessorProfile() { try { return JSON.parse(localStorage.getItem('medai_prof_profile') || 'null'); } catch { return null; } }
+function setProfessorProfile(p) { p ? localStorage.setItem('medai_prof_profile', JSON.stringify(p)) : localStorage.removeItem('medai_prof_profile'); }
+
+function showAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('loginForm').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('authTabLogin').classList.toggle('btn-primary', isLogin);
+  document.getElementById('authTabRegister').classList.toggle('btn-primary', !isLogin);
+}
+showAuthTab('login');
+
+async function doProfLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPwd').value;
+  const errBox = document.getElementById('loginErrorMsg');
+  errBox.style.display = 'none';
+  if (!email || !password) { errBox.textContent = 'Email et mot de passe requis'; errBox.style.display = 'block'; return; }
+  setBtn('loginSubmitBtn', true, 'Connexion...');
+  try {
+    const res = await fetch(AUTH_API_BASE + '/professors/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { errBox.textContent = data.error || 'Erreur de connexion'; errBox.style.display = 'block'; return; }
+    setAuthToken(data.token);
+    setProfessorProfile(data.professor);
+    launchApp();
+  } catch (e) {
+    errBox.textContent = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+    errBox.style.display = 'block';
+  } finally {
+    setBtn('loginSubmitBtn', false, 'Accéder à la plateforme →');
+  }
+}
+
+function doLogin() { doProfLogin(); }
+
+async function doProfRegister() {
+  const nom_complet = document.getElementById('regNom').value.trim();
+  const specialty = document.getElementById('regSpecialty').value.trim();
+  const etablissement = document.getElementById('regEtab').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPwd').value;
+  const errBox = document.getElementById('registerErrorMsg');
+  const okBox = document.getElementById('registerSuccessMsg');
+  errBox.style.display = 'none'; okBox.style.display = 'none';
+  if (!nom_complet || !email || !password) { errBox.textContent = 'Nom, email et mot de passe sont requis'; errBox.style.display = 'block'; return; }
+  setBtn('registerSubmitBtn', true, 'Création...');
+  try {
+    const res = await fetch(AUTH_API_BASE + '/professors/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, nom_complet, etablissement, specialty })
+    });
+    const data = await res.json();
+    if (!res.ok) { errBox.textContent = data.error || "Erreur lors de l'inscription"; errBox.style.display = 'block'; return; }
+    okBox.textContent = data.message || 'Compte créé. En attente d\'activation.';
+    okBox.style.display = 'block';
+    document.getElementById('registerForm').reset();
+  } catch (e) {
+    errBox.textContent = 'Impossible de contacter le serveur. Vérifiez votre connexion.';
+    errBox.style.display = 'block';
+  } finally {
+    setBtn('registerSubmitBtn', false, 'Créer mon compte →');
+  }
+}
+
+function applyProfessorBranding(professor) {
+  if (!professor) return;
+  const initials = (professor.nom_complet || 'P').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'P';
+  const nameEl = document.getElementById('userNameDisplay');
+  if (nameEl) nameEl.textContent = professor.nom_complet || 'Professeur';
+  const avEl = document.getElementById('userAv');
+  if (avEl) avEl.textContent = initials;
+  const etabEl = document.getElementById('sbEtablissement');
+  if (etabEl) etabEl.textContent = professor.etablissement || '';
+  const logoWrap = document.getElementById('sbLogoWrap');
+  if (logoWrap && professor.logo_base64) {
+    logoWrap.innerHTML = `<img src="${professor.logo_base64}" alt="logo" style="max-height:38px;max-width:140px;object-fit:contain">`;
+  }
+  document.title = (professor.etablissement ? professor.etablissement + ' — ' : '') + 'MedIA Campus';
+}
+
+async function restoreSession() {
+  const token = getAuthToken();
+  if (!token) return false;
+  try {
+    const res = await fetch(AUTH_API_BASE + '/professors/me', { headers: { Authorization: 'Bearer ' + token } });
+    if (!res.ok) { setAuthToken(null); setProfessorProfile(null); return false; }
+    const data = await res.json();
+    setProfessorProfile(data.professor);
+    return true;
+  } catch (e) {
+    return !!getProfessorProfile();
+  }
+}
+
 function launchApp() {
+  document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('appWrap').style.display = 'block';
+  applyProfessorBranding(getProfessorProfile());
   initApp();
 }
+
 function doLogout() {
-  if (!confirm('Recharger la page ?')) return;
+  if (!confirm('Se déconnecter ?')) return;
+  setAuthToken(null);
+  setProfessorProfile(null);
   location.reload();
 }
 
@@ -3870,7 +4081,9 @@ function printQr() {
 // ═══════════════════════════════════════════════
 (function() {
   if(checkStudentMode()) return;
-  initApp();
+  restoreSession().then(ok => {
+    if(ok) { launchApp(); } else { document.getElementById('loginScreen').style.display = 'flex'; }
+  });
   setTimeout(()=>{
     const subs = LS.get('medai_submissions', []);
     const pending = subs.filter(s=>s.status==='pending').length;

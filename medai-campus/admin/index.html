@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>MedIA Campus — Administration</title>
+<style>
+:root{--bg:#0C0A0E;--s:#1A1525;--bd:rgba(139,26,58,.3);--t:#EDE9F4;--t2:#C7BFDA;--t3:#9089B0;--cr:#8B1A3A;--crl:#B52550}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 30% 20%,#3A0A1A,var(--bg) 60%);z-index:1000}
+.login-box{background:var(--s);border:1px solid var(--bd);border-radius:20px;padding:46px 42px;width:380px;box-shadow:0 32px 80px rgba(0,0,0,.6)}
+.login-box h1{font-family:Georgia,serif;font-size:20px;text-align:center;margin:0 0 28px}
+.login-box h1 span{color:var(--crl)}
+.form-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px}
+.form-input{width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:var(--t);outline:none;margin-bottom:16px}
+.form-input:focus{border-color:var(--crl)}
+.btn{background:transparent;border:1px solid var(--bd);color:var(--t2);border-radius:8px;padding:11px 16px;font-family:inherit;font-size:14px;cursor:pointer}
+.btn-primary{background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;border:none;font-weight:600}
+.btn-full{width:100%}
+.err-msg{background:rgba(181,37,80,.12);border:1px solid rgba(181,37,80,.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#e07090;display:none;margin-top:10px}
+
+#adminWrap{display:none;max-width:1200px;margin:0 auto;padding:28px 20px}
+#adminTop{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+#adminTop h1{font-family:Georgia,serif;font-size:22px;margin:0}
+#adminTop h1 span{color:var(--crl)}
+.stat-row{display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.stat-card{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:14px 18px;min-width:140px}
+.stat-card .n{font-size:22px;font-weight:700;color:var(--t)}
+.stat-card .l{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em}
+#searchBox{width:100%;max-width:340px;margin-bottom:16px}
+table{width:100%;border-collapse:collapse;background:var(--s);border-radius:12px;overflow:hidden}
+th,td{padding:11px 13px;text-align:left;font-size:12.5px;border-bottom:1px solid rgba(255,255,255,.06)}
+th{color:var(--t3);text-transform:uppercase;font-size:10.5px;letter-spacing:.05em;font-weight:600}
+td{color:var(--t2)}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(92,184,92,.15);color:#5cb85c}
+.badge-inactive{background:rgba(255,193,7,.15);color:#ffc107}
+select.pill, input.pill{background:#0C0A0E;border:1px solid rgba(255,255,255,.12);color:var(--t);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit}
+.toggle{position:relative;width:40px;height:22px;background:rgba(255,255,255,.15);border-radius:20px;cursor:pointer;border:none;flex-shrink:0}
+.toggle.on{background:#5cb85c}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.15s}
+.toggle.on::after{left:20px}
+.row-save{background:transparent;border:1px solid var(--bd);color:var(--t2);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer}
+.row-save:hover{border-color:var(--crl)}
+.notes-input{width:140px}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s);border:1px solid var(--bd);color:var(--t);padding:12px 18px;border-radius:10px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:2000;display:none}
+.muted{color:var(--t3);font-size:12px}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <form class="login-box" onsubmit="event.preventDefault();doAdminLogin();">
+    <h1>MedIA <span>Campus</span> — Admin</h1>
+    <label class="form-label">Mot de passe administrateur</label>
+    <input class="form-input" id="adminPwd" type="password" autocomplete="current-password" placeholder="••••••••">
+    <button type="submit" class="btn btn-primary btn-full" id="adminLoginBtn">Se connecter →</button>
+    <div id="adminLoginErr" class="err-msg"></div>
+  </form>
+</div>
+
+<div id="adminWrap">
+  <div id="adminTop">
+    <h1>MedIA <span>Campus</span> — Administration</h1>
+    <button class="btn" onclick="adminLogout()">⏻ Déconnexion</button>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat-card"><div class="n" id="statTotal">0</div><div class="l">Professeurs inscrits</div></div>
+    <div class="stat-card"><div class="n" id="statActive">0</div><div class="l">Comptes actifs</div></div>
+    <div class="stat-card"><div class="n" id="statPending">0</div><div class="l">En attente de paiement</div></div>
+  </div>
+
+  <input class="form-input pill" id="searchBox" placeholder="🔎 Rechercher par nom, email, établissement...">
+
+  <table>
+    <thead>
+      <tr>
+        <th>Professeur</th>
+        <th>Email</th>
+        <th>Établissement</th>
+        <th>Spécialité</th>
+        <th>Compte actif</th>
+        <th>Paiement</th>
+        <th>Notes</th>
+        <th>Inscrit le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="profTableBody"></tbody>
+  </table>
+  <div id="emptyMsg" class="muted" style="margin-top:16px;display:none">Aucun professeur ne correspond à la recherche.</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API_BASE = 'https://medai-campus-backend.onrender.com/api';
+let professors = [];
+
+function getAdminToken() { return sessionStorage.getItem('medai_admin_token') || ''; }
+function setAdminToken(t) { t ? sessionStorage.setItem('medai_admin_token', t) : sessionStorage.removeItem('medai_admin_token'); }
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2500);
+}
+
+async function doAdminLogin() {
+  const password = document.getElementById('adminPwd').value;
+  const errBox = document.getElementById('adminLoginErr');
+  errBox.style.display = 'none';
+  if (!password) return;
+  document.getElementById('adminLoginBtn').textContent = 'Connexion...';
+  try {
+    const res = await fetch(API_BASE + '/admin/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password })
+    });
+    const data = await res.json();
+    if (!res.ok) { errBox.textContent = data.error || 'Mot de passe incorrect'; errBox.style.display = 'block'; return; }
+    setAdminToken(data.token);
+    enterAdmin();
+  } catch (e) {
+    errBox.textContent = 'Impossible de contacter le serveur.';
+    errBox.style.display = 'block';
+  } finally {
+    document.getElementById('adminLoginBtn').textContent = 'Se connecter →';
+  }
+}
+
+function adminLogout() {
+  setAdminToken(null);
+  location.reload();
+}
+
+function enterAdmin() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminWrap').style.display = 'block';
+  loadProfessors();
+}
+
+async function loadProfessors() {
+  try {
+    const res = await fetch(API_BASE + '/admin/professors', { headers: { Authorization: 'Bearer ' + getAdminToken() } });
+    if (res.status === 401 || res.status === 403) { setAdminToken(null); location.reload(); return; }
+    const data = await res.json();
+    professors = data.professors || [];
+    renderStats();
+    renderTable();
+  } catch (e) {
+    showToast('Erreur de connexion au serveur');
+  }
+}
+
+function renderStats() {
+  document.getElementById('statTotal').textContent = professors.length;
+  document.getElementById('statActive').textContent = professors.filter(p => p.is_active).length;
+  document.getElementById('statPending').textContent = professors.filter(p => p.payment_status !== 'payé').length;
+}
+
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderTable() {
+  const q = (document.getElementById('searchBox').value || '').toLowerCase().trim();
+  const filtered = professors.filter(p =>
+    !q || [p.nom_complet, p.email, p.etablissement, p.specialty].some(f => (f || '').toLowerCase().includes(q))
+  );
+  document.getElementById('emptyMsg').style.display = filtered.length ? 'none' : 'block';
+
+  const body = document.getElementById('profTableBody');
+  body.innerHTML = filtered.map(p => {
+    const date = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR') : '';
+    return `
+    <tr data-id="${p.id}">
+      <td>${esc(p.nom_complet)}</td>
+      <td>${esc(p.email)}</td>
+      <td>${esc(p.etablissement)}</td>
+      <td>${esc(p.specialty)}</td>
+      <td><button class="toggle ${p.is_active ? 'on' : ''}" onclick="this.classList.toggle('on')" data-field="is_active"></button></td>
+      <td>
+        <select class="pill" data-field="payment_status">
+          ${['pending','payé','en retard','annulé'].map(s => `<option value="${s}" ${p.payment_status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+      <td><input class="pill notes-input" data-field="payment_notes" value="${esc(p.payment_notes)}" placeholder="note..."></td>
+      <td class="muted">${date}</td>
+      <td><button class="row-save" onclick="saveProfessor(${p.id})">✓ Enregistrer</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function saveProfessor(id) {
+  const row = document.querySelector(`tr[data-id="${id}"]`);
+  const is_active = row.querySelector('[data-field="is_active"]').classList.contains('on');
+  const payment_status = row.querySelector('[data-field="payment_status"]').value;
+  const payment_notes = row.querySelector('[data-field="payment_notes"]').value;
+  try {
+    const res = await fetch(API_BASE + '/admin/professors/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getAdminToken() },
+      body: JSON.stringify({ is_active, payment_status, payment_notes })
+    });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Erreur lors de la sauvegarde'); return; }
+    const idx = professors.findIndex(p => p.id === id);
+    if (idx >= 0) professors[idx] = data.professor;
+    renderStats();
+    showToast('Modifications enregistrées');
+  } catch (e) {
+    showToast('Impossible de contacter le serveur');
+  }
+}
+
+document.getElementById('searchBox').addEventListener('input', renderTable);
+
+if (getAdminToken()) enterAdmin();
+</script>
+</body>
+</html>
