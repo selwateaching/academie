@@ -1402,6 +1402,23 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 </div>
 
 </div><!-- end main -->
+
+<!-- AIDE / CHATBOT ASSISTANT -->
+<div id="helpChatBtn" onclick="toggleHelpChat()" title="Besoin d'aide ?" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--cr),var(--crl));display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(139,26,58,.4);z-index:9000">💬</div>
+
+<div id="helpChatPanel" style="display:none;flex-direction:column;position:fixed;bottom:92px;right:24px;width:360px;max-width:90vw;height:480px;max-height:70vh;background:var(--s);border:1px solid var(--bd);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:9000;overflow:hidden">
+  <div style="padding:14px 16px;background:linear-gradient(135deg,var(--cr),var(--crl));display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div style="color:#fff;font-weight:700;font-size:14.5px">🤖 Aide VeloraMED</div>
+    <button onclick="toggleHelpChat()" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;padding:0 4px">✕</button>
+  </div>
+  <div id="helpChatMsgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px"></div>
+  <div id="helpChatSuggestions" style="padding:0 14px 10px;display:flex;flex-wrap:wrap;gap:6px;flex-shrink:0"></div>
+  <div style="padding:12px;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0">
+    <input id="helpChatInput" placeholder="Posez votre question..." style="flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:20px;padding:10px 14px;font-size:13px;color:var(--t);outline:none;font-family:inherit" onkeydown="if(event.key==='Enter')sendHelpChat()">
+    <button onclick="sendHelpChat()" style="background:var(--cr);color:#fff;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;font-size:15px;flex-shrink:0">➤</button>
+  </div>
+</div>
+
 </div><!-- end appWrap -->
 
 <script>
@@ -1529,6 +1546,84 @@ async function refreshAiUsageStatus() {
       chip.textContent = `🧠 IA : ${data.professor.ai_calls_count}/${data.professor.ai_quota ?? 200}`;
     }
   } catch {}
+}
+
+// ═══════════════════════════════════════════════
+//  AIDE / CHATBOT ASSISTANT (guide d'utilisation)
+// ═══════════════════════════════════════════════
+let helpChatHistory = [];
+let helpChatOpen = false;
+
+const HELP_SUGGESTIONS = [
+  "Comment ajouter un étudiant ?",
+  "Comment corriger une copie avec l'IA ?",
+  "Comment générer un cours ?",
+  "Comment créer un examen ?",
+  "Comment publier un cours aux étudiants ?",
+];
+
+const HELP_SYSTEM_PROMPT = `Tu es l'assistant d'aide intégré à VeloraMED, une plateforme web pour professeurs de médecine en Algérie. Beaucoup d'utilisateurs sont novices en informatique. Explique en français simple, étape par étape (ex: "Cliquez sur... dans le menu de gauche"), sans jargon technique. Reste bref (5 à 8 lignes maximum). Voici les fonctionnalités de VeloraMED :
+- Dashboard : vue d'ensemble (statistiques, planning du jour, messages non lus)
+- Étudiants : ajouter/gérer les étudiants, voir leur code d'accès personnel à 6 chiffres et leur QR code, qui leur donne accès à leur propre espace (notes et cours)
+- Stages hospitaliers : suivi des stages des étudiants
+- Planning / Agenda : calendrier des cours (vue semaine/mois) et des réunions, avec des tâches à cocher
+- Cours IA : générer un cours complet avec l'IA (menu "Cours IA" → remplir le sujet → bouton "Générer le cours"), puis le publier à une promotion d'étudiants avec le bouton "Publier aux étudiants"
+- Cas cliniques : générer des cas cliniques avec corrigé grâce à l'IA
+- Examens : créer un examen (titre, barème, corrigé type) pour pouvoir corriger des copies dessus ensuite
+- Correction copies : coller le texte d'une copie (ou scanner une copie manuscrite), l'IA la corrige et propose une note ; il faut cliquer sur "Valider cette note" pour qu'elle soit définitive et transmise à l'étudiant
+- Courriers / Secrétariat : messagerie interne de la plateforme
+- Assistant IA : poser des questions médicales à l'IA
+- Patient virtuel : simuler une consultation avec un patient fictif généré par l'IA, utile pour l'entraînement
+- Le bouton "Personnaliser ma page" (en haut) permet de changer son logo et ses couleurs
+- Le bouton clair/sombre (en haut) change l'affichage de l'écran
+Si la question sort du cadre de l'utilisation du logiciel (ex: une question médicale), réponds poliment que tu es là uniquement pour aider à utiliser VeloraMED et renvoie vers "Assistant IA" pour les questions médicales.`;
+
+function toggleHelpChat() {
+  helpChatOpen = !helpChatOpen;
+  document.getElementById('helpChatPanel').style.display = helpChatOpen ? 'flex' : 'none';
+  if(helpChatOpen && !helpChatHistory.length) renderHelpWelcome();
+}
+
+function renderHelpWelcome() {
+  const msgs = document.getElementById('helpChatMsgs');
+  msgs.innerHTML = '<div style="background:var(--s2);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--t2);line-height:1.6">👋 Bonjour ! Je suis là pour vous expliquer comment utiliser VeloraMED, étape par étape. Posez-moi une question, ou choisissez-en une ci-dessous.</div>';
+  const sugg = document.getElementById('helpChatSuggestions');
+  sugg.innerHTML = HELP_SUGGESTIONS.map(q => `<button onclick='askHelpChat(${JSON.stringify(q)})' style="background:var(--s2);border:1px solid var(--bd);border-radius:14px;padding:6px 12px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit">${esc(q)}</button>`).join('');
+}
+
+function appendHelpMsg(role, text) {
+  const msgs = document.getElementById('helpChatMsgs');
+  const isUser = role === 'user';
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `align-self:${isUser ? 'flex-end' : 'flex-start'};max-width:85%;background:${isUser ? 'var(--cr)' : 'var(--s2)'};color:${isUser ? '#fff' : 'var(--t2)'};border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap`;
+  bubble.textContent = text;
+  msgs.appendChild(bubble);
+  msgs.scrollTop = msgs.scrollHeight;
+  return bubble;
+}
+
+async function askHelpChat(question) {
+  document.getElementById('helpChatSuggestions').innerHTML = '';
+  appendHelpMsg('user', question);
+  helpChatHistory.push({ role: 'user', content: question });
+  const loadingBubble = appendHelpMsg('assistant', '...');
+
+  try {
+    const reply = await askClaude(helpChatHistory, HELP_SYSTEM_PROMPT);
+    loadingBubble.textContent = reply;
+    helpChatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    loadingBubble.textContent = "Désolé, je n'ai pas pu répondre (" + e.message + "). Réessayez dans un instant.";
+    helpChatHistory.pop();
+  }
+}
+
+function sendHelpChat() {
+  const input = document.getElementById('helpChatInput');
+  const val = input.value.trim();
+  if(!val) return;
+  input.value = '';
+  askHelpChat(val);
 }
 
 // ═══════════════════════════════════════════════
