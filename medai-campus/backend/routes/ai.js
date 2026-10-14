@@ -17,10 +17,11 @@ function currentMonthKey() {
 }
 
 router.post('/generate', requireProfessor, asyncHandler(async (req, res) => {
-  const { messages, system } = req.body || {};
+  const { messages, system, max_tokens } = req.body || {};
   if (!Array.isArray(messages) || !messages.length) {
     return res.status(400).json({ error: 'Messages manquants' });
   }
+  const effectiveMaxTokens = Math.min(8000, Math.max(256, Number(max_tokens) || AI_MAX_TOKENS));
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(503).json({ error: "Clé IA non configurée côté serveur. Contactez l'administrateur." });
   }
@@ -55,7 +56,7 @@ router.post('/generate', requireProfessor, asyncHandler(async (req, res) => {
       },
       body: JSON.stringify({
         model: AI_MODEL,
-        max_tokens: AI_MAX_TOKENS,
+        max_tokens: effectiveMaxTokens,
         output_config: { effort: 'low' },
         messages,
         ...(system ? { system } : {}),
@@ -83,7 +84,7 @@ router.post('/generate', requireProfessor, asyncHandler(async (req, res) => {
     [newCount, month, req.professorId]
   );
 
-  res.json({ text, usage: { used: newCount, quota: MONTHLY_QUOTA } });
+  res.json({ text, stop_reason: data.stop_reason || null, usage: { used: newCount, quota: MONTHLY_QUOTA } });
 }));
 
 module.exports = router;

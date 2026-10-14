@@ -1440,8 +1440,8 @@ const log = {
 };
 log.info(`VeloraMED v${APP_VERSION} démarré`);
 
-async function callAnthropicAPI(messages, system='') {
-  log.info('API call →', messages.length, 'message(s)', system ? '+ system' : '');
+async function callAnthropicAPI(messages, system='', maxTokens) {
+  log.info('API call →', messages.length, 'message(s)', system ? '+ system' : '', maxTokens ? `max_tokens=${maxTokens}` : '');
 
   let res;
   try {
@@ -1451,7 +1451,7 @@ async function callAnthropicAPI(messages, system='') {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + getAuthToken()
       },
-      body: JSON.stringify({ messages, system: system || undefined })
+      body: JSON.stringify({ messages, system: system || undefined, max_tokens: maxTokens || undefined })
     });
   } catch(networkErr) {
     log.error('Erreur réseau:', networkErr.message);
@@ -1468,6 +1468,8 @@ async function callAnthropicAPI(messages, system='') {
   }
 
   log.ok('API réponse reçue —', (data.text||'').length, 'caractères', data.usage ? `(${data.usage.used}/${data.usage.quota})` : '');
+  window._lastAiStopReason = data.stop_reason || null;
+  if(data.stop_reason === 'max_tokens') log.warn('Réponse IA tronquée (max_tokens atteint)');
   if(data.usage) {
     const chip = document.getElementById('aiUsageStatus');
     if(chip) chip.textContent = `🧠 IA : ${data.usage.used}/${data.usage.quota}`;
@@ -1536,8 +1538,8 @@ let state = {
 // ═══════════════════════════════════════════════
 //  API CLAUDE
 // ═══════════════════════════════════════════════
-async function askClaude(messages, system='') {
-  return callAnthropicAPI(messages, system);
+async function askClaude(messages, system='', maxTokens) {
+  return callAnthropicAPI(messages, system, maxTokens);
 }
 
 async function refreshAiUsageStatus() {
@@ -2738,21 +2740,27 @@ async function generateExam() {
     'Préparation du corrigé type...',
     'Mise en forme de l\'examen...'
   ]);
-  const nb = document.getElementById('examNb').value;
+  const nb = parseInt(document.getElementById('examNb').value) || 10;
   const level = document.getElementById('examLevel').value;
+  const totalQuestions = types.length * nb;
+  const examMaxTokens = Math.min(8000, Math.max(3000, totalQuestions * 180 + 500));
   const prompt = `Génère un examen complet en ${getSpecialty()}, composé d'une section par type de questions ci-dessous (un titre de section clair pour chacune) :
 ${types.map(t => '- ' + t + ' : ' + nb + ' question(s)').join('\n')}
 
 Thème : ${topic}
 Niveau : ${level}
 Pour chaque question : énoncé, options (si QCM), bonne réponse clairement indiquée, explication/éléments de réponse attendus.
+Reste concis dans les explications pour que l'examen complet tienne dans la réponse.
 Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié.`;
   try {
-    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale, ${getSpecialty()}, enseignant en Algérie. Génère des examens de qualité en français.`);
+    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale, ${getSpecialty()}, enseignant en Algérie. Génère des examens de qualité en français.`, examMaxTokens);
     clearInterval(examLoadInterval);
     window._lastExamText = r;
     window._lastExamTopic = topic;
-    document.getElementById('examResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
+    const truncated = window._lastAiStopReason === 'max_tokens';
+    document.getElementById('examResult').innerHTML =
+      (truncated ? '<div style="margin-bottom:14px;padding:10px 14px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:8px;font-size:14px;color:var(--amber)">⚠️ L\'examen semble incomplet (trop de contenu pour une seule génération). Réduisez le nombre de questions ou le nombre de types cochés, ou régénérez en plusieurs fois.</div>' : '')
+      + resultBox(esc(r).replace(/\n/g,'<br>'));
     const actions = document.getElementById('examActions');
     if(actions) actions.style.display = 'flex';
 
@@ -2772,7 +2780,7 @@ Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié
     LS.set('medai_exam_configs', state.examConfigs);
     LS.set('medai_exam_config', state.examConfig);
     renderExamLibrary();
-    toast('✅ Examen généré — fiche de correction créée automatiquement dans "Correction copies"');
+    toast(truncated ? '⚠️ Examen généré mais probablement incomplet — voir le message d\'avertissement' : '✅ Examen généré — fiche de correction créée automatiquement dans "Correction copies"');
   } catch(e) {
     clearInterval(examLoadInterval);
     document.getElementById('examResult').innerHTML = `<div style="color:var(--amber)">❌ ${esc(e.message)}</div>`;
