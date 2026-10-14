@@ -12,19 +12,40 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://medeval.netlify.app/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%238B1A3A'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23fff' font-family='Georgia,serif'%3EM%3C/text%3E%3C/svg%3E">
+<script>(function(){try{var t=JSON.parse(localStorage.getItem('medai_theme')||'null');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --cr:#8B1A3A;--crl:#B52550;--crd:#5C0F24;
   --gold:#C9995C;
   --bg:#0C0A0E;--bg2:#141018;
-  --s:#1A1525;--s2:#221D30;
+  --s:#1A1525;--s2:#221D30;--s3:#2A1F3D;
   --bd:rgba(139,26,58,.25);
   --t:#EDE9F4;--t2:#A89EC0;--t3:#9089B0;
-  --green:#2DCA8C;--blue:#4B9EFF;--amber:#F5A623;
+  --green:#2DCA8C;--blue:#4B9EFF;--amber:#F5A623;--red:#FF8FAB;
   --purple:#9B6EFF;
+  --w1:rgba(255,255,255,.04);--w2:rgba(255,255,255,.05);--w3:rgba(255,255,255,.06);
+  --w4:rgba(255,255,255,.07);--w5:rgba(255,255,255,.08);--w6:rgba(255,255,255,.1);
+  --w7:rgba(255,255,255,.2);--w8:rgba(255,255,255,.25);--w9:rgba(255,255,255,.3);
+  --w10:rgba(255,255,255,.35);--w11:rgba(255,255,255,.4);--w12:rgba(255,255,255,.6);
+  --w13:rgba(255,255,255,.7);
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+:root[data-theme="light"]{
+  --cr:#8B1A3A;--crl:#B52550;--crd:#5C0F24;
+  --gold:#A8743D;
+  --bg:#F7F5FA;--bg2:#FFFFFF;
+  --s:#FFFFFF;--s2:#F1EDF7;--s3:#E8E1F2;
+  --bd:rgba(139,26,58,.18);
+  --t:#241D2E;--t2:#5B5370;--t3:#766F8A;
+  --green:#1F9A6B;--blue:#2B7FD6;--amber:#B5740E;--red:#C23B5C;
+  --purple:#7C4FDB;
+  --w1:rgba(0,0,0,.04);--w2:rgba(0,0,0,.05);--w3:rgba(0,0,0,.06);
+  --w4:rgba(0,0,0,.07);--w5:rgba(0,0,0,.08);--w6:rgba(0,0,0,.1);
+  --w7:rgba(0,0,0,.14);--w8:rgba(0,0,0,.18);--w9:rgba(0,0,0,.2);
+  --w10:rgba(0,0,0,.22);--w11:rgba(0,0,0,.25);--w12:rgba(0,0,0,.4);
+  --w13:rgba(0,0,0,.5);
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh;transition:background .2s,color .2s}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:var(--bd);border-radius:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -63,7 +84,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--cr),var(--crl));
   border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .nav-group{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
-  color:#8078A0;padding:8px 18px 4px}
+  color:var(--t3);padding:8px 18px 4px}
 .nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 18px;
   background:none;border:none;border-left:3px solid transparent;
   color:var(--t3);cursor:pointer;font-family:inherit;font-size:13.5px;text-align:left;transition:.15s}
@@ -100,7 +121,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .form-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   color:var(--t3);margin-bottom:6px;display:block}
 .form-input,.form-select,.form-textarea{width:100%;background:var(--bg);
-  border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 13px;
+  border:1px solid var(--w5);border-radius:8px;padding:10px 13px;
   font-family:inherit;font-size:13.5px;color:var(--t);outline:none;
   transition:border-color .2s;margin-bottom:14px;resize:vertical}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--crl)}
@@ -118,7 +139,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .btn-ghost:hover:not(:disabled){background:var(--s2);color:var(--t)}
 .btn-sm{padding:7px 13px;font-size:12.5px}
 .btn-full{width:100%;justify-content:center}
-.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid var(--w9);
   border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 
 /* GRID HELPERS */
@@ -138,7 +159,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 
 /* SCHEDULE */
 .sched-item{display:flex;align-items:flex-start;gap:12px;padding-bottom:12px;
-  margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+  margin-bottom:12px;border-bottom:1px solid var(--w2)}
 .sched-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
 .sched-time{font-family:monospace;font-size:12px;color:var(--gold);width:40px;flex-shrink:0;padding-top:2px}
 .sched-dot{width:7px;height:7px;border-radius:50%;background:var(--crl);flex-shrink:0;margin-top:5px}
@@ -170,7 +191,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .cal-month-more{font-size:10px;color:var(--t3);cursor:pointer}
 
 /* TASKS (AGENDA) */
-.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--w2)}
 .task-item:last-child{border-bottom:none}
 .task-check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--bd);flex-shrink:0;cursor:pointer;margin-top:2px;
   display:flex;align-items:center;justify-content:center;background:var(--s2);font-size:12px;color:#fff}
@@ -183,13 +204,13 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .quick-card{background:var(--s2);border:1px solid rgba(139,26,58,.2);border-radius:10px;
   padding:14px 12px;cursor:pointer;text-align:center;transition:.18s}
-.quick-card:hover{border-color:var(--crl);background:#2A1F3D}
+.quick-card:hover{border-color:var(--crl);background:var(--s3)}
 .quick-icon{font-size:22px;margin-bottom:6px}
 .quick-label{font-size:12px;color:var(--t2)}
 
 /* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
-.tab-btn{padding:8px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.07);
+.tab-btn{padding:8px 16px;border-radius:8px;border:1px solid var(--w4);
   background:transparent;color:var(--t3);font-family:inherit;font-size:13px;cursor:pointer;transition:.15s}
 .tab-btn.active{border-color:rgba(139,26,58,.5);background:var(--s);color:var(--t)}
 .tab-pane{display:none}
@@ -199,7 +220,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .chat-wrap{display:flex;flex-direction:column;height:460px}
 .chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
 .msg{max-width:85%;padding:12px 15px;border-radius:12px;font-size:13.5px;line-height:1.7;white-space:pre-wrap}
-.msg-user{background:linear-gradient(135deg,#5C0F24,#8B1A3A);color:#fff;
+.msg-user{background:linear-gradient(135deg,var(--crd),var(--cr));color:#fff;
   align-self:flex-end;border-bottom-right-radius:4px}
 .msg-ai{background:var(--s2);border:1px solid var(--bd);color:var(--t);
   align-self:flex-start;border-bottom-left-radius:4px}
@@ -218,7 +239,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .send-btn:disabled{opacity:.4;cursor:default}
 
 /* SUGGESTION CHIPS */
-.suggestion{padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.06);
+.suggestion{padding:9px 12px;border-radius:8px;border:1px solid var(--w3);
   color:var(--t2);font-size:12.5px;cursor:pointer;margin-bottom:7px;transition:.15s}
 .suggestion:hover{border-color:var(--crl);color:var(--t)}
 
@@ -242,7 +263,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .tbl{width:100%;border-collapse:collapse;font-size:13.5px}
 .tbl th{text-align:left;padding:8px 12px;color:var(--t3);font-size:11px;text-transform:uppercase;
   letter-spacing:.07em;border-bottom:1px solid var(--bd)}
-.tbl td{padding:11px 12px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--t2)}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--w1);color:var(--t2)}
 .tbl tr:hover td{background:var(--s2);color:var(--t)}
 
 /* BADGE */
@@ -250,12 +271,12 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .bg-green{background:rgba(45,202,140,.15);color:var(--green)}
 .bg-amber{background:rgba(245,166,35,.15);color:var(--amber)}
 .bg-blue{background:rgba(75,158,255,.15);color:var(--blue)}
-.bg-red{background:rgba(139,26,58,.2);color:#FF8FAB}
+.bg-red{background:rgba(139,26,58,.2);color:var(--red)}
 .bg-purple{background:rgba(155,110,255,.15);color:var(--purple)}
 
 /* MAIL */
 .mail-item{display:flex;gap:12px;padding:12px 8px;border-radius:8px;cursor:pointer;
-  border-bottom:1px solid rgba(255,255,255,.04);transition:.15s}
+  border-bottom:1px solid var(--w1);transition:.15s}
 .mail-item:hover{background:var(--s2)}
 .mail-item.selected{background:var(--s2)}
 .mail-unread-dot{width:7px;height:7px;border-radius:50%;background:var(--crl);margin-top:16px;flex-shrink:0}
@@ -270,7 +291,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;
   border:2px solid var(--bd)}
 .tag{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--s);
-  border:1px solid rgba(255,255,255,.08);color:var(--t2)}
+  border:1px solid var(--w5);color:var(--t2)}
 
 /* TOAST */
 .toast{position:fixed;top:72px;right:20px;z-index:9999;background:var(--s);
@@ -285,7 +306,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .prog-row{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:0}
 
 /* ARCHIVE */
-.arch-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.arch-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--w1);font-size:13px}
 .arch-date{color:var(--t3);font-family:monospace;font-size:11px;flex-shrink:0;padding-top:2px;width:36px}
 
 /* CORRECTION MODULE */
@@ -296,8 +317,8 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 .note-circle.excellent{border-color:var(--green);color:var(--green);background:rgba(45,202,140,.1)}
 .note-circle.bien{border-color:var(--blue);color:var(--blue);background:rgba(75,158,255,.1)}
 .note-circle.passable{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.1)}
-.note-circle.insuffisant{border-color:#FF8FAB;color:#FF8FAB;background:rgba(139,26,58,.15)}
-.q-row{background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px;margin-bottom:10px}
+.note-circle.insuffisant{border-color:var(--red);color:var(--red);background:rgba(139,26,58,.15)}
+.q-row{background:var(--bg);border:1px solid var(--w3);border-radius:8px;padding:14px;margin-bottom:10px}
 .q-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .q-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3)}
 .q-pts{font-size:13px;font-weight:700;color:var(--gold)}
@@ -371,7 +392,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 <!-- SIDEBAR -->
 <div id="sidebar" role="navigation" aria-label="Navigation principale">
   <div class="sb-logo" id="sbLogoWrap" style="padding:14px 16px;display:flex;align-items:center;justify-content:center;">
-    <div style="font-family:Georgia,serif;font-size:18px;color:#EDE9F4">Velora<span style="color:#B52550">MED</span></div>
+    <div style="font-family:Georgia,serif;font-size:18px;color:var(--t)">Velora<span style="color:var(--crl)">MED</span></div>
   </div>
 
   <div class="nav-group">Vue générale</div>
@@ -417,9 +438,10 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 <div id="topbar">
   <span style="font-family:Georgia,serif;font-size:16px;color:var(--t)" id="topbarTitle">Dashboard</span>
   <div style="display:flex;align-items:center;gap:14px">
-    <span id="brandingStatus" onclick="showBrandingModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🏷️ Personnaliser ma page</span>
-    <span id="specialtyStatus" onclick="showSpecialtyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🩺 Gynécologie-Obstétrique</span>
-    <span id="apiKeyStatus" onclick="showApiKeyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='#B52550'" onmouseout="this.style.borderColor='var(--bd)'">🔑 Configurer clé API</span>
+    <button type="button" id="themeToggleBtn" onclick="toggleTheme()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s;background:none;font-family:inherit" onmouseover="this.style.borderColor='var(--crl)'" onmouseout="this.style.borderColor='var(--bd)'">🌙 Sombre</button>
+    <span id="brandingStatus" onclick="showBrandingModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='var(--crl)'" onmouseout="this.style.borderColor='var(--bd)'">🏷️ Personnaliser ma page</span>
+    <span id="specialtyStatus" onclick="showSpecialtyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='var(--crl)'" onmouseout="this.style.borderColor='var(--bd)'">🩺 Gynécologie-Obstétrique</span>
+    <span id="apiKeyStatus" onclick="showApiKeyModal()" style="font-size:12px;color:var(--t3);cursor:pointer;padding:5px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s" onmouseover="this.style.borderColor='var(--crl)'" onmouseout="this.style.borderColor='var(--bd)'">🔑 Configurer clé API</span>
     <div class="ai-status"><div class="ai-dot"></div> IA prête</div>
   </div>
 </div>
@@ -674,7 +696,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <div class="card-title" style="margin:0">Résultat</div>
         <div id="examActions" style="display:none;gap:8px;display:none">
           <button class="btn btn-ghost btn-sm" onclick="downloadExamPDF()">📄 Télécharger PDF</button>
-          <button class="btn btn-ghost btn-sm" onclick="printAnswerSheets()" style="background:rgba(45,202,140,.1);border-color:rgba(45,202,140,.3);color:#2DCA8C">🖨️ Feuilles de réponses</button>
+          <button class="btn btn-ghost btn-sm" onclick="printAnswerSheets()" style="background:rgba(45,202,140,.1);border-color:rgba(45,202,140,.3);color:var(--green)">🖨️ Feuilles de réponses</button>
           <button class="btn btn-primary btn-sm" onclick="sendExamToStudents()">📨 Envoyer aux étudiants</button>
         </div>
       </div>
@@ -704,7 +726,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-ghost btn-sm" onclick="refreshSubmissions()">🔄 Actualiser</button>
               <button class="btn btn-ghost btn-sm" onclick="importAllSubmissions()">⬇️ Tout importer</button>
-              <button class="btn btn-ghost btn-sm" onclick="clearSubmissions()" style="color:#FF8FAB;border-color:rgba(255,143,171,.3)">🗑 Tout effacer</button>
+              <button class="btn btn-ghost btn-sm" onclick="clearSubmissions()" style="color:var(--red);border-color:rgba(255,143,171,.3)">🗑 Tout effacer</button>
             </div>
           </div>
           <div id="submissionsList"><div style="color:var(--t3);font-size:13.5px">Aucune soumission reçue. Partagez le lien du formulaire étudiant ci-contre.</div></div>
@@ -721,11 +743,11 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-primary btn-sm" onclick="generateStudentLink()">🔗 Générer le lien</button>
               <button class="btn btn-ghost btn-sm" id="btnCopyLink" onclick="copyStudentLink()" style="display:none">📋 Copier</button>
-              <button class="btn btn-ghost btn-sm" id="btnQrCode" onclick="showQrCode()" style="display:none;background:rgba(45,202,140,.1);border-color:rgba(45,202,140,.3);color:#2DCA8C">📱 QR Code</button>
+              <button class="btn btn-ghost btn-sm" id="btnQrCode" onclick="showQrCode()" style="display:none;background:rgba(45,202,140,.1);border-color:rgba(45,202,140,.3);color:var(--green)">📱 QR Code</button>
             </div>
-            <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.06)">
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--w3)">
               <div class="card-title" style="font-size:11px;margin-bottom:8px">📋 Instructions à envoyer aux étudiants</div>
-              <div id="instrBox" style="font-size:12px;color:var(--t3);line-height:1.7;background:var(--bg);border-radius:6px;padding:10px;border:1px solid rgba(255,255,255,.05)">
+              <div id="instrBox" style="font-size:12px;color:var(--t3);line-height:1.7;background:var(--bg);border-radius:6px;padding:10px;border:1px solid var(--w2)">
                 Générez le lien pour voir les instructions.
               </div>
               <button class="btn btn-ghost btn-sm btn-full" onclick="copyInstructions()" style="margin-top:8px">📋 Copier les instructions</button>
@@ -781,7 +803,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           </div>
           <div id="examSelBar" style="display:none;padding:8px 14px;background:rgba(139,26,58,.15);border-bottom:1px solid rgba(139,26,58,.3);align-items:center;gap:10px">
             <span class="exam-sel-count" style="font-size:12px;color:var(--crl);font-weight:600;flex:1"></span>
-            <button onclick="deleteSelectedExams()" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:#FF8FAB;font-size:12px;padding:4px 12px">🗑 Supprimer</button>
+            <button onclick="deleteSelectedExams()" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:var(--red);font-size:12px;padding:4px 12px">🗑 Supprimer</button>
             <button onclick="_examSel.clear();renderExamLibrary()" class="btn btn-ghost btn-sm" style="font-size:11px">✕</button>
           </div>
           <div id="examLibList" style="max-height:480px;overflow-y:auto;padding:8px"></div>
@@ -812,11 +834,11 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           </select>
 
           <div style="background:linear-gradient(135deg,rgba(45,202,140,.08),rgba(75,158,255,.05));border:1px solid rgba(45,202,140,.3);border-radius:12px;padding:16px;margin-bottom:16px">
-            <div style="font-size:13px;font-weight:700;color:#2DCA8C;margin-bottom:8px">🚀 Correction en lot — toutes les copies d'un coup</div>
+            <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">🚀 Correction en lot — toutes les copies d'un coup</div>
             <div style="font-size:12px;color:var(--t3);margin-bottom:12px">Sélectionnez toutes les photos/scans en une fois. L'IA corrige automatiquement chaque copie à la chaîne.</div>
-            <div id="batchDropZone" style="border:2px dashed rgba(45,202,140,.4);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:.2s;background:rgba(45,202,140,.04)" onclick="document.getElementById('batchFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='#2DCA8C';this.style.background='rgba(45,202,140,.1)'" ondragleave="this.style.borderColor='rgba(45,202,140,.4)';this.style.background='rgba(45,202,140,.04)'" ondrop="event.preventDefault();this.style.borderColor='rgba(45,202,140,.4)';this.style.background='rgba(45,202,140,.04)';handleBatchDrop(event)">
+            <div id="batchDropZone" style="border:2px dashed rgba(45,202,140,.4);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:.2s;background:rgba(45,202,140,.04)" onclick="document.getElementById('batchFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--green)';this.style.background='rgba(45,202,140,.1)'" ondragleave="this.style.borderColor='rgba(45,202,140,.4)';this.style.background='rgba(45,202,140,.04)'" ondrop="event.preventDefault();this.style.borderColor='rgba(45,202,140,.4)';this.style.background='rgba(45,202,140,.04)';handleBatchDrop(event)">
               <div style="font-size:26px;margin-bottom:6px">📂</div>
-              <div style="font-size:13px;color:var(--t2);font-weight:500">Glissez <b>plusieurs fichiers</b> ici ou <span style="color:#2DCA8C">cliquez pour sélectionner</span></div>
+              <div style="font-size:13px;color:var(--t2);font-weight:500">Glissez <b>plusieurs fichiers</b> ici ou <span style="color:var(--green)">cliquez pour sélectionner</span></div>
               <div style="font-size:11px;color:var(--t3);margin-top:4px">JPG · PNG · PDF · Sélection multiple autorisée</div>
             </div>
             <input type="file" id="batchFileInput" accept="image/jpeg,image/png,image/jpg,application/pdf" multiple="" style="display:none" onchange="handleBatchFiles(this.files)">
@@ -841,7 +863,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
                 <button class="btn btn-ghost btn-sm" onclick="deselectAllPages()">Tout désélectionner</button>
               </div>
             </div>
-            <div id="pdfPagesList" style="max-height:200px;overflow-y:auto;background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:8px"></div>
+            <div id="pdfPagesList" style="max-height:200px;overflow-y:auto;background:var(--bg);border:1px solid var(--w3);border-radius:8px;padding:8px"></div>
             <button class="btn btn-primary btn-sm btn-full" onclick="insertSelectedPages()" style="margin-top:8px">📋 Insérer les pages sélectionnées dans la copie</button>
           </div>
 
@@ -903,10 +925,10 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           <div class="stat-icon">🏆</div>
         </div>
         <div class="stat-card">
-          <div class="stat-top" style="background:linear-gradient(90deg,#FF8FAB,transparent)"></div>
+          <div class="stat-top" style="background:linear-gradient(90deg,var(--red),transparent)"></div>
           <div class="stat-label">Note la plus basse</div>
           <div class="stat-val" id="sMin">—</div>
-          <div class="stat-sub" style="color:#FF8FAB">/20</div>
+          <div class="stat-sub" style="color:var(--red)">/20</div>
           <div class="stat-icon">📉</div>
         </div>
       </div>
@@ -1025,7 +1047,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
               <span id="sendSelectedCount" style="color:var(--t);font-weight:700">0</span> sélectionné(s) ·
               <span id="sendNoEmailCount" style="color:var(--amber)">0</span> sans email
             </div>
-            <div id="sendStudentList" style="max-height:380px;overflow-y:auto;background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:6px;margin-bottom:14px">
+            <div id="sendStudentList" style="max-height:380px;overflow-y:auto;background:var(--bg);border:1px solid var(--w3);border-radius:8px;padding:6px;margin-bottom:14px">
               <div style="color:var(--t3);font-size:13px;padding:12px">Chargement...</div>
             </div>
             <button class="btn btn-primary btn-full" id="btnSendForm" onclick="sendFormToStudents()">
@@ -1049,9 +1071,9 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
             </div>
             <div style="padding:14px">
               <div style="background:#fff;border-radius:8px;overflow:hidden;font-family:Arial,sans-serif">
-                <div style="background:#8B1A3A;padding:18px 24px;text-align:center">
+                <div style="background:var(--cr);padding:18px 24px;text-align:center">
                   <div style="color:#fff;font-size:17px;font-weight:700;letter-spacing:.5px">🏥 VeloraMED</div>
-                  <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:3px" class="js-specialty-label">Gynécologie-Obstétrique</div>
+                  <div style="color:var(--w13);font-size:11px;margin-top:3px" class="js-specialty-label">Gynécologie-Obstétrique</div>
                 </div>
                 <div style="padding:20px 24px">
                   <div style="font-size:14px;color:#1a1a1a;margin-bottom:14px;font-weight:600" id="epSubject">Soumission de copie – Examen</div>
@@ -1059,13 +1081,13 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
                   <div style="font-size:13px;color:#444;line-height:1.7;margin-bottom:16px" id="epCustom"></div>
                   <div style="font-size:13px;color:#333;line-height:1.7;margin-bottom:16px" id="epIntro">Vous êtes invité(e) à soumettre votre copie pour l'examen <b id="epExamName">—</b>.</div>
                   <div style="text-align:center;margin:20px 0">
-                    <a id="epBtn" href="https://medeval.netlify.app/#" style="display:inline-block;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px">
+                    <a id="epBtn" href="https://medeval.netlify.app/#" style="display:inline-block;background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;text-decoration:none;padding:13px 28px;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:.3px">
                       📝 Accéder au formulaire
                     </a>
                   </div>
-                  <div style="font-size:12px;color:#666;text-align:center;margin-bottom:16px" id="epLinkTxt">ou copiez ce lien dans votre navigateur :<br><span style="color:#8B1A3A;font-family:monospace;font-size:11px" id="epLinkSmall">—</span></div>
-                  <div style="background:#f8f4ff;border-left:3px solid #8B1A3A;border-radius:0 6px 6px 0;padding:12px 14px;margin-bottom:16px">
-                    <div style="font-size:12px;font-weight:700;color:#5C0F24;margin-bottom:6px">📋 Instructions</div>
+                  <div style="font-size:12px;color:#666;text-align:center;margin-bottom:16px" id="epLinkTxt">ou copiez ce lien dans votre navigateur :<br><span style="color:var(--cr);font-family:monospace;font-size:11px" id="epLinkSmall">—</span></div>
+                  <div style="background:#f8f4ff;border-left:3px solid var(--cr);border-radius:0 6px 6px 0;padding:12px 14px;margin-bottom:16px">
+                    <div style="font-size:12px;font-weight:700;color:var(--crd);margin-bottom:6px">📋 Instructions</div>
                     <div style="font-size:12px;color:#444;line-height:1.7">1. Cliquez le bouton ci-dessus<br>2. Saisissez votre nom et prénom<br>3. Rédigez votre copie<br>4. Cliquez <b>Soumettre</b></div>
                   </div>
                   <div id="epDeadline" style="font-size:13px;color:#c0392b;font-weight:700;text-align:center;margin-bottom:16px;display:none">⏰ Date limite : —</div>
@@ -1125,7 +1147,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
     <button class="tab-btn active" onclick="mailTab(this,'mt-inbox')">📥 Réception <span id="inboxBadge" style="background:var(--cr);color:#fff;font-size:10px;border-radius:10px;padding:1px 7px;margin-left:4px">3</span></button>
     <button class="tab-btn" onclick="mailTab(this,'mt-sent')">📤 Envoyés <span id="sentBadge" style="background:rgba(75,158,255,.3);color:var(--blue);font-size:10px;border-radius:10px;padding:1px 7px;margin-left:4px">0</span></button>
     <button class="tab-btn" onclick="mailTab(this,'mt-write')">✍️ Nouveau message</button>
-    <button class="tab-btn" onclick="mailTab(this,'mt-arch')">🗄 Archives <span id="archBadge" style="background:rgba(255,255,255,.08);color:var(--t3);font-size:10px;border-radius:10px;padding:1px 7px;margin-left:4px">0</span></button>
+    <button class="tab-btn" onclick="mailTab(this,'mt-arch')">🗄 Archives <span id="archBadge" style="background:var(--w5);color:var(--t3);font-size:10px;border-radius:10px;padding:1px 7px;margin-left:4px">0</span></button>
   </div>
   <div id="mailTabs">
     <div class="mail-pane active" id="mt-inbox">
@@ -1143,7 +1165,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           </div>
           <div id="inboxSelBar" style="display:none;padding:8px 12px;background:rgba(139,26,58,.15);border-bottom:1px solid rgba(139,26,58,.3);align-items:center;gap:10px">
             <span class="sel-count" style="font-size:12px;color:var(--crl);font-weight:600;flex:1"></span>
-            <button onclick="deleteSelectedMail('inbox')" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:#FF8FAB;font-size:12px;padding:4px 12px">🗑 Supprimer</button>
+            <button onclick="deleteSelectedMail('inbox')" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:var(--red);font-size:12px;padding:4px 12px">🗑 Supprimer</button>
             <button onclick="_mailSel.inbox.clear();updateMailSelBar('inbox');renderInbox()" class="btn btn-ghost btn-sm" style="font-size:11px">✕</button>
           </div>
           <div id="inboxList" style="max-height:540px;overflow-y:auto"></div>
@@ -1166,7 +1188,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           </div>
           <div id="sentSelBar" style="display:none;padding:8px 12px;background:rgba(139,26,58,.15);border-bottom:1px solid rgba(139,26,58,.3);align-items:center;gap:10px">
             <span class="sel-count" style="font-size:12px;color:var(--crl);font-weight:600;flex:1"></span>
-            <button onclick="deleteSelectedMail('sent')" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:#FF8FAB;font-size:12px;padding:4px 12px">🗑 Supprimer</button>
+            <button onclick="deleteSelectedMail('sent')" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:var(--red);font-size:12px;padding:4px 12px">🗑 Supprimer</button>
             <button onclick="_mailSel.sent.clear();updateMailSelBar('sent');renderSent()" class="btn btn-ghost btn-sm" style="font-size:11px">✕</button>
           </div>
           <div id="sentList" style="max-height:540px;overflow-y:auto;padding:4px 8px"></div>
@@ -1232,7 +1254,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   <div class="grid-2">
     <div class="card">
       <div class="card-title">Nouveau message</div>
-      <div id="secEmailBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:8px;font-size:13px;background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.25);color:#2DCA8C">
+      <div id="secEmailBanner" style="display:none;margin-bottom:14px;padding:10px 14px;border-radius:8px;font-size:13px;background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.25);color:var(--green)">
         📧 Destinataire : <span id="secEmailDisplay" style="font-weight:600"></span>
         <span style="font-size:11px;color:var(--t3);margin-left:8px">(configuré dans ⚙️ Configuration)</span>
       </div>
@@ -1256,12 +1278,12 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <div class="card-title" style="margin:0">Historique (<span id="secHistCount">0</span>)</div>
         <div style="display:flex;gap:6px">
           <button onclick="selectAllSecHist()" class="btn btn-ghost btn-sm" style="font-size:11px">☑️ Sélectionner</button>
-          <button onclick="clearAllSecHist()" class="btn btn-ghost btn-sm" style="font-size:11px;color:rgba(255,255,255,.35)">🗑 Tout effacer</button>
+          <button onclick="clearAllSecHist()" class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--w10)">🗑 Tout effacer</button>
         </div>
       </div>
       <div id="secSelBar" style="display:none;padding:8px 10px;margin-bottom:8px;background:rgba(139,26,58,.15);border:1px solid rgba(139,26,58,.3);border-radius:8px;align-items:center;gap:10px">
         <span class="sec-sel-count" style="font-size:12px;color:var(--crl);font-weight:600;flex:1"></span>
-        <button onclick="deleteSelectedSecHist()" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:#FF8FAB;font-size:12px;padding:4px 12px">🗑 Supprimer</button>
+        <button onclick="deleteSelectedSecHist()" class="btn btn-sm" style="background:rgba(255,80,80,.15);border-color:rgba(255,80,80,.4);color:var(--red);font-size:12px;padding:4px 12px">🗑 Supprimer</button>
         <button onclick="_secSel.clear();renderSecHist()" class="btn btn-ghost btn-sm" style="font-size:11px">✕ Annuler</button>
       </div>
       <div id="secHistList"><div style="color:var(--t3);font-size:13.5px">Aucune demande envoyée.</div></div>
@@ -1390,10 +1412,10 @@ const API_VERSION = '2023-06-01';
 const API_MAX_TOKENS = 3000;
 
 const log = {
-  info:  (...a) => console.log(`%c[VeloraMED] ℹ️`,  'color:#4B9EFF', ...a),
-  ok:    (...a) => console.log(`%c[VeloraMED] ✅`, 'color:#2DCA8C', ...a),
-  warn:  (...a) => console.warn(`%c[VeloraMED] ⚠️`, 'color:#F5A623', ...a),
-  error: (...a) => console.error(`%c[VeloraMED] ❌`, 'color:#FF8FAB', ...a),
+  info:  (...a) => console.log(`%c[VeloraMED] ℹ️`,  'color:var(--blue)', ...a),
+  ok:    (...a) => console.log(`%c[VeloraMED] ✅`, 'color:var(--green)', ...a),
+  warn:  (...a) => console.warn(`%c[VeloraMED] ⚠️`, 'color:var(--amber)', ...a),
+  error: (...a) => console.error(`%c[VeloraMED] ❌`, 'color:var(--red)', ...a),
 };
 log.info(`VeloraMED v${APP_VERSION} démarré`);
 
@@ -1460,6 +1482,23 @@ const LS = {
   }
 };
 
+// ═══════════════════════════════════════════════
+//  THÈME (sombre / clair)
+// ═══════════════════════════════════════════════
+function getTheme() { return LS.get('medai_theme', 'dark'); }
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggleBtn');
+  if(btn) btn.textContent = theme === 'light' ? '☀️ Clair' : '🌙 Sombre';
+}
+
+function toggleTheme() {
+  const next = getTheme() === 'light' ? 'dark' : 'light';
+  LS.set('medai_theme', next);
+  applyTheme(next);
+}
+
 let state = {
   specialty: LS.get('medai_specialty', 'Gynécologie-Obstétrique'),
   students: LS.get('medai_students', []),
@@ -1504,19 +1543,19 @@ function showApiKeyModal() {
   modal.id = 'apiKeyModal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
   modal.innerHTML = `
-    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:440px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
-      <div style="font-family:Georgia,serif;font-size:20px;color:#EDE9F4;margin-bottom:8px">🔑 Clé API Anthropic</div>
-      <div style="font-size:13px;color:#9089B0;margin-bottom:22px;line-height:1.6">
+    <div style="background:var(--s);border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:440px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
+      <div style="font-family:Georgia,serif;font-size:20px;color:var(--t);margin-bottom:8px">🔑 Clé API Anthropic</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:22px;line-height:1.6">
         Pour utiliser les fonctions IA, vous avez besoin d'une clé API Anthropic.<br>
-        Obtenez-la sur <a href="https://console.anthropic.com" target="_blank" style="color:#B52550">console.anthropic.com</a> → API Keys.
+        Obtenez-la sur <a href="https://console.anthropic.com" target="_blank" style="color:var(--crl)">console.anthropic.com</a> → API Keys.
       </div>
-      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Votre clé API</label>
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px">Votre clé API</label>
       <input id="apiKeyInput" type="password" placeholder="sk-ant-... ou sk-proj-..." autocomplete="off"
-        style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:6px">
-      <div style="font-size:11.5px;color:#F5A623;background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:8px 10px;margin-bottom:18px;line-height:1.5">⚠️ Stockée en clair dans ce navigateur (non chiffrée) et envoyée directement à l'API Anthropic depuis votre poste — jamais à un autre serveur. Ne l'utilisez pas sur un ordinateur partagé, et ne la communiquez à personne : elle est liée à votre facturation Anthropic.</div>
+        style="width:100%;background:var(--bg);border:1px solid var(--w6);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:var(--t);outline:none;margin-bottom:6px">
+      <div style="font-size:11.5px;color:var(--amber);background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:8px 10px;margin-bottom:18px;line-height:1.5">⚠️ Stockée en clair dans ce navigateur (non chiffrée) et envoyée directement à l'API Anthropic depuis votre poste — jamais à un autre serveur. Ne l'utilisez pas sur un ordinateur partagé, et ne la communiquez à personne : elle est liée à votre facturation Anthropic.</div>
       <div style="display:flex;gap:10px">
-        <button onclick="saveApiKey()" style="flex:1;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer et continuer</button>
-        <button onclick="document.getElementById('apiKeyModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
+        <button onclick="saveApiKey()" style="flex:1;background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer et continuer</button>
+        <button onclick="document.getElementById('apiKeyModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:var(--t2);border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -1672,21 +1711,21 @@ function showSpecialtyModal() {
   const current = getSpecialty();
   const isPreset = SPECIALTIES.includes(current);
   modal.innerHTML = `
-    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:420px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
-      <div style="font-family:Georgia,serif;font-size:20px;color:#EDE9F4;margin-bottom:8px">🩺 Spécialité médicale</div>
-      <div style="font-size:13px;color:#9089B0;margin-bottom:18px;line-height:1.6">
+    <div style="background:var(--s);border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:420px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
+      <div style="font-family:Georgia,serif;font-size:20px;color:var(--t);margin-bottom:8px">🩺 Spécialité médicale</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:18px;line-height:1.6">
         Cette spécialité est utilisée par l'IA pour générer cours, cas cliniques, examens et corrections adaptés à votre matière. Changez-la à tout moment.
       </div>
-      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Spécialité</label>
-      <select id="specialtySelect" style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:10px">
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px">Spécialité</label>
+      <select id="specialtySelect" style="width:100%;background:var(--bg);border:1px solid var(--w6);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:var(--t);outline:none;margin-bottom:10px">
         ${SPECIALTIES.map(s => `<option value="${esc(s)}" ${s===current?'selected':''}>${esc(s)}</option>`).join('')}
         <option value="__autre__" ${!isPreset?'selected':''}>Autre (préciser)…</option>
       </select>
       <input id="specialtyCustom" type="text" placeholder="Nom de la spécialité" value="${!isPreset?esc(current):''}"
-        style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:18px;display:${!isPreset?'block':'none'}">
+        style="width:100%;background:var(--bg);border:1px solid var(--w6);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:var(--t);outline:none;margin-bottom:18px;display:${!isPreset?'block':'none'}">
       <div style="display:flex;gap:10px">
-        <button onclick="saveSpecialty()" style="flex:1;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer</button>
-        <button onclick="document.getElementById('specialtyModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
+        <button onclick="saveSpecialty()" style="flex:1;background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer</button>
+        <button onclick="document.getElementById('specialtyModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:var(--t2);border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -1719,25 +1758,25 @@ function showBrandingModal() {
   modal.id = 'brandingModal';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
   modal.innerHTML = `
-    <div style="background:#1A1525;border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:440px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
-      <div style="font-family:Georgia,serif;font-size:20px;color:#EDE9F4;margin-bottom:8px">🏷️ Personnaliser ma page</div>
-      <div style="font-size:13px;color:#9089B0;margin-bottom:18px;line-height:1.6">
+    <div style="background:var(--s);border:1px solid rgba(139,26,58,.5);border-radius:16px;padding:36px;width:440px;box-shadow:0 32px 80px rgba(0,0,0,.7)">
+      <div style="font-family:Georgia,serif;font-size:20px;color:var(--t);margin-bottom:8px">🏷️ Personnaliser ma page</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:18px;line-height:1.6">
         Votre logo et le nom de votre établissement apparaissent dans le menu latéral et sur vos courriers envoyés aux étudiants.
       </div>
-      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Établissement</label>
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px">Établissement</label>
       <input id="brandingEtab" type="text" value="${esc(professor.etablissement||'')}" placeholder="ex: Faculté de Médecine d'Alger"
-        style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:14px">
-      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9089B0;display:block;margin-bottom:6px">Logo (image, 2 Mo max)</label>
+        style="width:100%;background:var(--bg);border:1px solid var(--w6);border-radius:8px;padding:11px 13px;font-family:inherit;font-size:13.5px;color:var(--t);outline:none;margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);display:block;margin-bottom:6px">Logo (image, 2 Mo max)</label>
       <input id="brandingLogoFile" type="file" accept="image/*"
-        style="width:100%;color:#A89EC0;font-size:12.5px;margin-bottom:10px">
+        style="width:100%;color:var(--t2);font-size:12.5px;margin-bottom:10px">
       <div id="brandingLogoPreviewWrap" style="margin-bottom:14px;${professor.logo_base64?'':'display:none'}">
         <img id="brandingLogoPreview" src="${professor.logo_base64||''}" style="max-height:50px;max-width:200px;object-fit:contain;background:#fff;border-radius:6px;padding:4px">
-        <button type="button" onclick="clearBrandingLogo()" style="margin-left:10px;background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">Retirer</button>
+        <button type="button" onclick="clearBrandingLogo()" style="margin-left:10px;background:transparent;border:1px solid rgba(139,26,58,.3);color:var(--t2);border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer">Retirer</button>
       </div>
       <div id="brandingErrorMsg" class="login-error-msg" style="margin-bottom:10px"></div>
       <div style="display:flex;gap:10px">
-        <button id="brandingSaveBtn" onclick="saveBranding()" style="flex:1;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer</button>
-        <button onclick="document.getElementById('brandingModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:#A89EC0;border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
+        <button id="brandingSaveBtn" onclick="saveBranding()" style="flex:1;background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;border:none;border-radius:8px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer">✓ Enregistrer</button>
+        <button onclick="document.getElementById('brandingModal').remove()" style="background:transparent;border:1px solid rgba(139,26,58,.3);color:var(--t2);border-radius:8px;padding:11px 16px;font-family:inherit;cursor:pointer">Annuler</button>
       </div>
     </div>`;
   document.body.appendChild(modal);
@@ -2009,6 +2048,7 @@ function switchTab(btn, containerId, paneId) {
 // ═══════════════════════════════════════════════
 function initApp() {
   log.info('initApp() — v' + APP_VERSION);
+  applyTheme(getTheme());
   applySpecialtyToUI();
   if(state.examConfig && state.examConfig.title && !state.examConfig.id) {
     state.examConfig.id = 'exam_migrated';
@@ -2083,7 +2123,7 @@ function renderDashPlanning() {
 function renderDashMails() {
   const el = document.getElementById('dashMails');
   el.innerHTML = state.inbox.slice(0,4).map(m=>`
-    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer" onclick="goPage('mail')">
+    <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--w1);cursor:pointer" onclick="goPage('mail')">
       ${m.unread?'<div style="width:6px;height:6px;border-radius:50%;background:var(--crl);margin-top:14px;flex-shrink:0"></div>':'<div style="width:6px;flex-shrink:0"></div>'}
       <div style="flex:1">
         <div style="font-size:12.5px;color:var(--t);font-weight:${m.unread?700:400}">${esc(m.from)}</div>
@@ -2422,7 +2462,7 @@ function downloadExamPDF() {
 <title>VeloraMED – ${getSpecialty()}</title>
 <style>
   body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1a1a1a;line-height:1.7}
-  .header{background:#8B1A3A;color:white;padding:20px 28px;border-radius:8px;margin-bottom:24px}
+  .header{background:var(--cr);color:white;padding:20px 28px;border-radius:8px;margin-bottom:24px}
   .header h1{margin:0;font-size:22px}
   .header p{margin:4px 0 0;opacity:.8;font-size:13px}
   .info{display:flex;gap:40px;background:#f5f5f5;padding:14px 20px;border-radius:6px;margin-bottom:24px;font-size:13px}
@@ -2473,7 +2513,7 @@ function printAnswerSheets() {
   let answerLines = '';
   for(let i = 1; i <= numQ; i++) {
     answerLines += '<div style="margin-bottom:10px;display:flex;align-items:baseline;gap:10px">'
-      + '<span style="font-weight:700;color:#8B1A3A;min-width:32px;font-size:14px">Q' + i + '</span>'
+      + '<span style="font-weight:700;color:var(--cr);min-width:32px;font-size:14px">Q' + i + '</span>'
       + '<span style="flex:1;border-bottom:1px solid #ccc;height:22px;display:block">&nbsp;</span>'
       + '</div>';
   }
@@ -2481,19 +2521,19 @@ function printAnswerSheets() {
     const fullName = (st.prenom + ' ' + st.nom).toUpperCase();
     const isLast = idx === students.length - 1;
     return '<div style="page-break-after:' + (isLast ? 'auto' : 'always') + ';padding:28px 36px;max-width:800px;margin:0 auto">'
-      + '<div style="background:#8B1A3A;color:white;padding:16px 22px;border-radius:8px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">'
+      + '<div style="background:var(--cr);color:white;padding:16px 22px;border-radius:8px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">'
       + '<div><div style="font-size:18px;font-weight:700">📑 ' + topic + '</div>'
       + '<div style="font-size:12px;opacity:.85;margin-top:2px">VeloraMED · ' + getSpecialty() + '</div></div>'
       + '<div style="font-size:11px;opacity:.8;text-align:right">Date : ' + today + '<br>Promotion : ' + (st.promo||promo||'—') + '</div>'
       + '</div>'
-      + '<div style="border:2px solid #8B1A3A;border-radius:8px;padding:14px 18px;margin-bottom:20px;background:#fdf5f7">'
+      + '<div style="border:2px solid var(--cr);border-radius:8px;padding:14px 18px;margin-bottom:20px;background:#fdf5f7">'
       + '<div style="display:flex;gap:32px;align-items:center">'
-      + '<div style="flex:1"><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Nom &amp; Prénom</div>'
+      + '<div style="flex:1"><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Nom &amp; Prénom</div>'
       + '<div style="font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:1px">' + fullName + '</div></div>'
-      + '<div><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Promotion</div>'
+      + '<div><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Promotion</div>'
       + '<div style="font-size:16px;font-weight:600;color:#1a1a1a">' + (st.promo||'—') + '</div></div>'
-      + '<div><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Note / ' + (cfg.total||20) + '</div>'
-      + '<div style="font-size:16px;border-bottom:1.5px solid #8B1A3A;min-width:50px;height:26px">&nbsp;</div></div>'
+      + '<div><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Note / ' + (cfg.total||20) + '</div>'
+      + '<div style="font-size:16px;border-bottom:1.5px solid var(--cr);min-width:50px;height:26px">&nbsp;</div></div>'
       + '</div></div>'
       + '<div style="font-size:13px;color:#444;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Zone de réponses</div>'
       + answerLines
@@ -2637,26 +2677,26 @@ function renderExamLibrary() {
     const isActive = state.examConfig && state.examConfig.id === cfg.id;
     const isSel = _examSel.has(cfg.id);
     const bg = isActive ? 'rgba(139,26,58,.2)' : isSel ? 'rgba(139,26,58,.12)' : 'var(--bg)';
-    const bdr = isActive ? 'rgba(139,26,58,.5)' : isSel ? 'rgba(139,26,58,.3)' : 'rgba(255,255,255,.06)';
+    const bdr = isActive ? 'rgba(139,26,58,.5)' : isSel ? 'rgba(139,26,58,.3)' : 'var(--w3)';
     return [
       '<div data-eid="'+i+'" style="border-radius:8px;padding:10px 12px;margin-bottom:6px;background:'+bg+';border:1px solid '+bdr+';transition:.15s">',
         '<div style="display:flex;align-items:center;gap:10px">',
-          '<div class="exam-cb" data-idx="'+i+'" style="cursor:pointer;flex-shrink:0;width:16px;height:16px;border-radius:4px;border:2px solid '+(isSel?'var(--cr)':'rgba(255,255,255,.2)')+';background:'+(isSel?'var(--cr)':'transparent')+';display:flex;align-items:center;justify-content:center">',
+          '<div class="exam-cb" data-idx="'+i+'" style="cursor:pointer;flex-shrink:0;width:16px;height:16px;border-radius:4px;border:2px solid '+(isSel?'var(--cr)':'var(--w7)')+';background:'+(isSel?'var(--cr)':'transparent')+';display:flex;align-items:center;justify-content:center">',
             isSel ? '<span style="color:#fff;font-size:10px">✓</span>' : '',
           '</div>',
           '<div style="background:linear-gradient(135deg,var(--purple),#6B3FA0);border-radius:8px;padding:6px 10px;text-align:center;flex-shrink:0">',
             '<div style="font-size:16px;font-weight:700;color:#fff">'+cfg.total+'</div>',
-            '<div style="font-size:9px;color:rgba(255,255,255,.6)">pts</div>',
+            '<div style="font-size:9px;color:var(--w12)">pts</div>',
           '</div>',
           '<div style="flex:1;min-width:0">',
             '<div style="font-size:13px;font-weight:'+(isActive?700:500)+';color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(cfg.title)+'</div>',
             '<div style="font-size:11px;color:var(--t3);margin-top:2px">'+esc(cfg.subject||'—')+' · '+cfg.promo+' · '+cfg.date+'</div>',
-            isActive ? '<span style="font-size:10px;background:rgba(45,202,140,.15);color:#2DCA8C;border:1px solid rgba(45,202,140,.3);border-radius:10px;padding:1px 8px;margin-top:4px;display:inline-block">● Actif</span>' : '',
+            isActive ? '<span style="font-size:10px;background:rgba(45,202,140,.15);color:var(--green);border:1px solid rgba(45,202,140,.3);border-radius:10px;padding:1px 8px;margin-top:4px;display:inline-block">● Actif</span>' : '',
           '</div>',
           '<div style="display:flex;gap:4px;flex-shrink:0">',
-            '<button class="exam-load" data-idx="'+i+'" title="Modifier" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:15px;padding:3px 6px;border-radius:4px">✏️</button>',
-            '<button class="exam-activate" data-idx="'+i+'" title="Activer pour correction" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:15px;padding:3px 6px;border-radius:4px">▶️</button>',
-            '<button class="exam-del" data-idx="'+i+'" title="Supprimer" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.25);font-size:15px;padding:3px 6px;border-radius:4px">🗑</button>',
+            '<button class="exam-load" data-idx="'+i+'" title="Modifier" style="background:none;border:none;cursor:pointer;color:var(--w11);font-size:15px;padding:3px 6px;border-radius:4px">✏️</button>',
+            '<button class="exam-activate" data-idx="'+i+'" title="Activer pour correction" style="background:none;border:none;cursor:pointer;color:var(--w11);font-size:15px;padding:3px 6px;border-radius:4px">▶️</button>',
+            '<button class="exam-del" data-idx="'+i+'" title="Supprimer" style="background:none;border:none;cursor:pointer;color:var(--w8);font-size:15px;padding:3px 6px;border-radius:4px">🗑</button>',
           '</div>',
         '</div>',
       '</div>'
@@ -2826,7 +2866,7 @@ function buildCorrResultHtml(corrObj, pct, nc) {
         ${badge(corrObj.mention||'—', noteBadgeColor(corrObj.note,corrObj.total))}
       </div>
       <div style="margin-left:auto;text-align:right">
-        <div class="grade-bar" style="width:140px"><div class="grade-fill" style="width:${pct}%;background:${nc==='excellent'?'var(--green)':nc==='bien'?'var(--blue)':nc==='passable'?'var(--amber)':'#FF8FAB'}"></div></div>
+        <div class="grade-bar" style="width:140px"><div class="grade-fill" style="width:${pct}%;background:${nc==='excellent'?'var(--green)':nc==='bien'?'var(--blue)':nc==='passable'?'var(--amber)':'var(--red)'}"></div></div>
         <div style="font-size:11px;color:var(--t3);margin-top:4px">${pct}%</div>
       </div>
     </div>
@@ -2857,7 +2897,7 @@ function buildCorrResultHtml(corrObj, pct, nc) {
       <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">💡 Conseils personnalisés</div>
       <div style="display:flex;flex-direction:column;gap:6px">
         ${(corrObj.conseils||[]).map((c,i)=>`
-          <div style="display:flex;gap:8px;align-items:flex-start;background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:10px 12px">
+          <div style="display:flex;gap:8px;align-items:flex-start;background:var(--bg);border:1px solid var(--w3);border-radius:6px;padding:10px 12px">
             <span style="background:var(--cr);color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</span>
             <span style="font-size:13px;color:var(--t2)">${esc(c)}</span>
           </div>`).join('')}
@@ -2933,7 +2973,7 @@ async function correctCopy() {
       setBtn('btnCorrect', false, '🧠 Corriger avec l\'IA');
       window._scanImageData = null;
       log.error('Correction image échouée:', err.message);
-      document.getElementById('corrResult').innerHTML = '<div style="color:#FF8FAB;padding:16px;background:rgba(139,26,58,.1);border-radius:8px">❌ Erreur correction image : ' + esc(err.message) + '</div>';
+      document.getElementById('corrResult').innerHTML = '<div style="color:var(--red);padding:16px;background:rgba(139,26,58,.1);border-radius:8px">❌ Erreur correction image : ' + esc(err.message) + '</div>';
     }
     return;
   }
@@ -3035,15 +3075,15 @@ function renderResults() {
           <td style="color:var(--t2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.examTitle)}</td>
           <td>${esc(c.promo||'—')}</td>
           <td>
-            <span style="font-weight:700;color:${c.note/c.total>=0.8?'var(--green)':c.note/c.total>=0.6?'var(--blue)':c.note/c.total>=0.5?'var(--amber)':'#FF8FAB'}">${c.note}/${c.total}</span>
-            <div class="grade-bar" style="width:80px"><div class="grade-fill" style="width:${Math.round(c.note/c.total*100)}%;background:${c.note/c.total>=0.8?'var(--green)':c.note/c.total>=0.6?'var(--blue)':c.note/c.total>=0.5?'var(--amber)':'#FF8FAB'}"></div></div>
+            <span style="font-weight:700;color:${c.note/c.total>=0.8?'var(--green)':c.note/c.total>=0.6?'var(--blue)':c.note/c.total>=0.5?'var(--amber)':'var(--red)'}">${c.note}/${c.total}</span>
+            <div class="grade-bar" style="width:80px"><div class="grade-fill" style="width:${Math.round(c.note/c.total*100)}%;background:${c.note/c.total>=0.8?'var(--green)':c.note/c.total>=0.6?'var(--blue)':c.note/c.total>=0.5?'var(--amber)':'var(--red)'}"></div></div>
           </td>
           <td>${badge(c.mention||'—', noteBadgeColor(c.note,c.total))}</td>
           <td>${c.validated ? '<span style="color:var(--green);font-size:12px;font-weight:600">✅ Validée</span>' : '<span style="color:var(--amber);font-size:12px;font-weight:600">⏳ À valider</span>'}</td>
           <td style="font-size:12px;color:var(--t3)">${c.date}</td>
           <td>
             <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();showCorrDetail(${state.corrections.indexOf(c)})">👁 Voir</button>
-            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteCorr(${state.corrections.indexOf(c)})" style="color:#FF8FAB;border-color:rgba(255,143,171,.3)">🗑</button>
+            <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();deleteCorr(${state.corrections.indexOf(c)})" style="color:var(--red);border-color:rgba(255,143,171,.3)">🗑</button>
           </td>
         </tr>`).join('')}
     </tbody>
@@ -3148,7 +3188,7 @@ function renderStats() {
   updateCorrStats();
   const el = document.getElementById('statsDistrib');
   if(!state.corrections.length){ el.innerHTML='<div style="color:var(--t3);font-size:13.5px">Aucune donnée disponible.</div>'; return; }
-  const buckets = [{label:'0–4',min:0,max:4,color:'#FF8FAB'},{label:'5–7',min:5,max:7,color:'var(--amber)'},{label:'8–9',min:8,max:9,color:'#FFD070'},{label:'10–11',min:10,max:11,color:'var(--blue)'},{label:'12–13',min:12,max:13,color:'#8BCEFF'},{label:'14–15',min:14,max:15,color:'var(--green)'},{label:'16–20',min:16,max:20,color:'#00FF88'}];
+  const buckets = [{label:'0–4',min:0,max:4,color:'var(--red)'},{label:'5–7',min:5,max:7,color:'var(--amber)'},{label:'8–9',min:8,max:9,color:'#FFD070'},{label:'10–11',min:10,max:11,color:'var(--blue)'},{label:'12–13',min:12,max:13,color:'#8BCEFF'},{label:'14–15',min:14,max:15,color:'var(--green)'},{label:'16–20',min:16,max:20,color:'#00FF88'}];
   const notes20 = state.corrections.map(c=>c.note/c.total*20);
   const counts = buckets.map(b=>notes20.filter(n=>n>=b.min&&n<=b.max).length);
   const maxCount = Math.max(...counts,1);
@@ -3367,7 +3407,7 @@ function sendStudMsg() {
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<div style="background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--t2)">'
       + '<div style="font-weight:700;color:var(--green);margin-bottom:8px">✅ Gmail ouvert avec ' + recipients.length + ' destinataire(s)</div>'
-      + recipients.map(s => '<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
+      + recipients.map(s => '<div style="padding:3px 0;border-bottom:1px solid var(--w1)">'
           + '<span style="color:var(--t);font-weight:600">' + esc(s.prenom+' '+s.nom) + '</span>'
           + ' <span style="color:var(--t3);font-size:11px">' + esc(s.email) + '</span>'
           + '</div>').join('')
@@ -3479,7 +3519,7 @@ function mailItemHTML(m, i, type) {
   return `<div class="mail-item${isOpen?' selected':''}" style="${isSelected?'background:rgba(139,26,58,.18);':''}"
     onclick="openMsg('${type}',${i})">
     <div onclick="toggleMailSelect('${type}',${i},event)" style="padding:0 6px 0 4px;display:flex;align-items:center;cursor:pointer;flex-shrink:0" title="Sélectionner">
-      <div style="width:16px;height:16px;border-radius:4px;border:2px solid ${isSelected?'var(--cr)':'rgba(255,255,255,.2)'};background:${isSelected?'var(--cr)':'transparent'};display:flex;align-items:center;justify-content:center;transition:.15s">
+      <div style="width:16px;height:16px;border-radius:4px;border:2px solid ${isSelected?'var(--cr)':'var(--w7)'};background:${isSelected?'var(--cr)':'transparent'};display:flex;align-items:center;justify-content:center;transition:.15s">
         ${isSelected?'<span style="color:#fff;font-size:10px;line-height:1">✓</span>':''}
       </div>
     </div>
@@ -3530,7 +3570,7 @@ function openMsg(type, i) {
   const detailId = type==='inbox'?'mailDetail': type==='sent'?'sentDetail':'archDetail';
   const replies = m.replies||[];
   const replyThread = replies.map(r=>`
-    <div style="margin-top:12px;padding:12px 14px;border-radius:8px;background:${r.mine?'rgba(139,26,58,.12)':'var(--bg)'};border:1px solid ${r.mine?'rgba(139,26,58,.3)':'rgba(255,255,255,.06)'}">
+    <div style="margin-top:12px;padding:12px 14px;border-radius:8px;background:${r.mine?'rgba(139,26,58,.12)':'var(--bg)'};border:1px solid ${r.mine?'rgba(139,26,58,.3)':'var(--w3)'}">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
         <span style="font-size:12px;font-weight:600;color:${r.mine?'var(--crl)':'var(--t2)'}">${r.mine?'Vous':esc(r.from||'')}</span>
         <span style="font-size:11px;color:var(--t3)">${fmtDate(r.date)}</span>
@@ -3552,7 +3592,7 @@ function openMsg(type, i) {
         · ${fmtDate(m.date)||m.time||''}
         ${replies.length?`· <span style="color:var(--green)">${replies.length} échange(s)</span>`:''}
       </div>
-      <div style="background:var(--bg);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px;font-size:13.5px;color:var(--t2);line-height:1.75;white-space:pre-wrap;margin-bottom:12px">${esc(m.body)}</div>
+      <div style="background:var(--bg);border:1px solid var(--w3);border-radius:8px;padding:14px;font-size:13.5px;color:var(--t2);line-height:1.75;white-space:pre-wrap;margin-bottom:12px">${esc(m.body)}</div>
       ${replyThread}
       ${type==='inbox'?`
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--bd)">
@@ -3730,7 +3770,7 @@ function updateComposePreview() {
     <div class="card-title">👁 Aperçu</div>
     <div style="font-size:12px;color:var(--t3);margin-bottom:4px">À : <b style="color:var(--t2)">${esc(to||'—')}</b></div>
     <div style="font-size:13px;font-weight:600;color:var(--t);margin-bottom:10px">${esc(subj||'(sans objet)')}</div>
-    <div style="font-size:13px;color:var(--t2);white-space:pre-wrap;line-height:1.7;background:var(--bg);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.06)">${esc(body)}</div>`;
+    <div style="font-size:13px;color:var(--t2);white-space:pre-wrap;line-height:1.7;background:var(--bg);padding:12px;border-radius:8px;border:1px solid var(--w3)">${esc(body)}</div>`;
 }
 
 function sendWriteMail() {
@@ -3830,7 +3870,7 @@ function renderSecHist() {
   el.innerHTML = state.secHist.map((h,i)=>{
     const sel = _secSel.has(i);
     return `<div class="arch-item" style="align-items:center;gap:10px;background:${sel?'rgba(139,26,58,.18)':'transparent'};border-radius:6px;padding:8px 4px;margin:2px 0">
-      <div onclick="toggleSecSel(${i})" style="cursor:pointer;flex-shrink:0;width:18px;height:18px;border-radius:4px;border:2px solid ${sel?'var(--cr)':'rgba(255,255,255,.2)'};background:${sel?'var(--cr)':'transparent'};display:flex;align-items:center;justify-content:center;transition:.15s">
+      <div onclick="toggleSecSel(${i})" style="cursor:pointer;flex-shrink:0;width:18px;height:18px;border-radius:4px;border:2px solid ${sel?'var(--cr)':'var(--w7)'};background:${sel?'var(--cr)':'transparent'};display:flex;align-items:center;justify-content:center;transition:.15s">
         ${sel?'<span style="color:#fff;font-size:11px">✓</span>':''}
       </div>
       <span class="arch-date" style="flex-shrink:0">${h.date}</span>
@@ -4189,7 +4229,7 @@ async function sfHandleFile(file) {
     return;
   }
   document.getElementById('sfDropIcon').textContent = '⏳';
-  document.getElementById('sfDropLabel').innerHTML = '<span style="color:#A89EC0">Lecture de <b>' + file.name + '</b>...</span>';
+  document.getElementById('sfDropLabel').innerHTML = '<span style="color:var(--t2)">Lecture de <b>' + file.name + '</b>...</span>';
   sfSetFileStatus('loading', 'Lecture du fichier...');
   try {
     const ext = file.name.split('.').pop().toLowerCase();
@@ -4229,13 +4269,13 @@ async function sfHandleFile(file) {
       }
     }
     document.getElementById('sfDropIcon').textContent = '✅';
-    document.getElementById('sfDropLabel').innerHTML = '<span style="color:#2DCA8C;font-weight:600">' + file.name + '</span>';
+    document.getElementById('sfDropLabel').innerHTML = '<span style="color:var(--green);font-weight:600">' + file.name + '</span>';
     const sizeStr = file.size > 1024*1024 ? (file.size/1024/1024).toFixed(1)+' Mo' : Math.round(file.size/1024)+' Ko';
     sfSetFileStatus('ok', '✅ ' + file.name + ' · ' + sizeStr
       + (extractedText && extractedText.length > 20 && !['png','jpg','jpeg'].includes(ext)
         ? ' · Texte extrait et inséré dans la copie'
         : ' · Fichier joint à la soumission')
-      + ' <button onclick="sfRemoveFile()" style="background:none;border:none;color:#FF8FAB;cursor:pointer;font-size:12px;margin-left:8px;font-family:inherit">✕ Retirer</button>');
+      + ' <button onclick="sfRemoveFile()" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;margin-left:8px;font-family:inherit">✕ Retirer</button>');
   } catch(e) {
     document.getElementById('sfDropIcon').textContent = '❌';
     document.getElementById('sfDropLabel').innerHTML = 'Erreur — réessayez';
@@ -4249,9 +4289,9 @@ function sfSetFileStatus(type, html) {
   if(!el) return;
   el.style.display = 'block';
   const styles = {
-    loading: 'background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.2);color:#4B9EFF',
-    ok:      'background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.2);color:#2DCA8C',
-    error:   'background:rgba(139,26,58,.1);border:1px solid rgba(139,26,58,.3);color:#FF8FAB',
+    loading: 'background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.2);color:var(--blue)',
+    ok:      'background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.2);color:var(--green)',
+    error:   'background:rgba(139,26,58,.1);border:1px solid rgba(139,26,58,.3);color:var(--red)',
   };
   el.style.cssText = 'display:block;margin-bottom:14px;padding:10px 14px;border-radius:8px;font-size:12.5px;' + styles[type];
   el.innerHTML = html;
@@ -4260,7 +4300,7 @@ function sfSetFileStatus(type, html) {
 function sfRemoveFile() {
   _sfAttachment = null;
   document.getElementById('sfDropIcon').textContent = '📎';
-  document.getElementById('sfDropLabel').innerHTML = 'Glissez un fichier ou <span style="color:#B52550">cliquez pour choisir</span>';
+  document.getElementById('sfDropLabel').innerHTML = 'Glissez un fichier ou <span style="color:var(--crl)">cliquez pour choisir</span>';
   document.getElementById('sfFileStatus').style.display = 'none';
   document.getElementById('sfFileInput').value = '';
 }
@@ -4335,7 +4375,7 @@ function renderSubmissions() {
     return;
   }
   el.innerHTML = subs.map((s,i)=>`
-    <div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;background:${s.status==='pending'?'var(--s2)':'var(--bg)'};border:1px solid ${s.status==='pending'?'rgba(139,26,58,.25)':'rgba(255,255,255,.05)'};margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:10px;background:${s.status==='pending'?'var(--s2)':'var(--bg)'};border:1px solid ${s.status==='pending'?'rgba(139,26,58,.25)':'var(--w2)'};margin-bottom:8px">
       <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:${s.status!=='pending'?'rgba(45,202,140,.15)':'rgba(139,26,58,.15)'};display:flex;align-items:center;justify-content:center;font-size:16px">
         ${s.status==='corrected'?'✅':s.status==='imported'?'📋':'📬'}
       </div>
@@ -4427,17 +4467,17 @@ function showQrCode() {
   const modal = document.createElement('div');
   modal.id = 'qrModal';
   modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center';
-  modal.innerHTML = '<div style="background:#1A1525;border:1px solid rgba(139,26,58,.4);border-radius:16px;padding:28px;text-align:center;max-width:380px;width:90%">'
-    + '<div style="font-size:16px;font-weight:700;color:#EDE9F4;margin-bottom:6px">📱 QR Code Formulaire</div>'
-    + '<div style="font-size:12px;color:#A89EC0;margin-bottom:18px">Les étudiants scannent avec leur téléphone pour accéder au formulaire</div>'
+  modal.innerHTML = '<div style="background:var(--s);border:1px solid rgba(139,26,58,.4);border-radius:16px;padding:28px;text-align:center;max-width:380px;width:90%">'
+    + '<div style="font-size:16px;font-weight:700;color:var(--t);margin-bottom:6px">📱 QR Code Formulaire</div>'
+    + '<div style="font-size:12px;color:var(--t2);margin-bottom:18px">Les étudiants scannent avec leur téléphone pour accéder au formulaire</div>'
     + '<div style="background:#FFFFFF;border-radius:12px;padding:12px;display:inline-block;margin-bottom:14px">'
     + '<img src="' + qrUrl + '" width="240" height="240" alt="QR Code" style="display:block">'
     + '</div>'
-    + '<div style="font-size:10px;color:#6B6085;margin-bottom:16px;word-break:break-all">' + link + '</div>'
+    + '<div style="font-size:10px;color:var(--t3);margin-bottom:16px;word-break:break-all">' + link + '</div>'
     + '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
-    + '<a href="' + qrUrl + '" download="qrcode_formulaire.png" target="_blank" style="background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit">⬇️ Télécharger</a>'
-    + '<button onclick="printQr()" style="background:#2DCA8C;color:#000;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🖨️ Imprimer</button>'
-    + '<button onclick="document.getElementById(\'qrModal\').remove()" style="background:rgba(255,255,255,.08);color:#A89EC0;border:1px solid rgba(255,255,255,.1);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">✕ Fermer</button>'
+    + '<a href="' + qrUrl + '" download="qrcode_formulaire.png" target="_blank" style="background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;text-decoration:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit">⬇️ Télécharger</a>'
+    + '<button onclick="printQr()" style="background:var(--green);color:#000;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🖨️ Imprimer</button>'
+    + '<button onclick="document.getElementById(\'qrModal\').remove()" style="background:var(--w5);color:var(--t2);border:1px solid var(--w6);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">✕ Fermer</button>'
     + '</div></div>';
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
@@ -4453,9 +4493,9 @@ function printQr() {
   const examName = cfg ? cfg.title : 'Examen';
   win.document.write('<!DOCTYPE html><html><head><title>VeloraMED – ' + getSpecialty() + '</title><style>'
     + 'body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#1a1a1a}'
-    + 'h2{color:#8B1A3A;font-size:22px;margin-bottom:4px}'
+    + 'h2{color:var(--cr);font-size:22px;margin-bottom:4px}'
     + '.sub{font-size:14px;color:#666;margin-bottom:24px}'
-    + 'img{border:3px solid #8B1A3A;border-radius:8px;padding:8px}'
+    + 'img{border:3px solid var(--cr);border-radius:8px;padding:8px}'
     + '.url{font-size:11px;color:#999;margin-top:14px;word-break:break-all}'
     + '.instr{font-size:13px;color:#333;margin-top:20px;padding:14px;background:#fdf5f7;border-radius:8px;border:1px solid #f0d0d8}'
     + '@media print{body{padding:20px}}'
@@ -4555,9 +4595,9 @@ async function handleBatchFiles(fileList) {
     batchStatus.innerHTML = '<div style="margin-bottom:10px">'
       + '<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t2);margin-bottom:6px">'
       + '<span>⚙️ Correction en cours... <b>' + (done+errors) + '/' + files.length + '</b></span>'
-      + '<span style="color:#2DCA8C">' + done + ' corrigée(s)</span></div>'
-      + '<div style="height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">'
-      + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#8B1A3A,#2DCA8C);border-radius:4px;transition:.3s"></div>'
+      + '<span style="color:var(--green)">' + done + ' corrigée(s)</span></div>'
+      + '<div style="height:8px;background:var(--w6);border-radius:4px;overflow:hidden">'
+      + '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--cr),var(--green));border-radius:4px;transition:.3s"></div>'
       + '</div></div>'
       + batchLog;
   };
@@ -4615,10 +4655,10 @@ async function handleBatchFiles(fileList) {
       LS.set('medai_corrections', state.corrections);
       updateCorrStats(); renderDashStats();
       done++;
-      batchLog = '<div style="font-size:11px;color:#2DCA8C">✅ <b>' + esc(name) + '</b> — ' + note + '/' + (cfg.total||20) + ' (' + (parsed.mention||'') + ')</div>';
+      batchLog = '<div style="font-size:11px;color:var(--green)">✅ <b>' + esc(name) + '</b> — ' + note + '/' + (cfg.total||20) + ' (' + (parsed.mention||'') + ')</div>';
     } catch(err) {
       errors++;
-      batchLog = '<div style="font-size:11px;color:#FF8FAB">❌ Erreur : <b>' + esc(file.name) + '</b> — ' + esc(err.message.slice(0,60)) + '</div>';
+      batchLog = '<div style="font-size:11px;color:var(--red)">❌ Erreur : <b>' + esc(file.name) + '</b> — ' + esc(err.message.slice(0,60)) + '</div>';
     }
     renderProgress();
     await new Promise(r => setTimeout(r, 400));
@@ -4626,9 +4666,9 @@ async function handleBatchFiles(fileList) {
   const batchCfg = state.examConfig || {};
   const hasSecretariat = !!(batchCfg.secretariat);
   batchStatus.innerHTML = '<div style="background:rgba(45,202,140,.1);border:1px solid rgba(45,202,140,.3);border-radius:10px;padding:14px">'
-    + '<div style="font-size:14px;font-weight:700;color:#2DCA8C;margin-bottom:6px">✅ Correction en lot terminée !</div>'
+    + '<div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:6px">✅ Correction en lot terminée !</div>'
     + '<div style="font-size:13px;color:var(--t2)"><b>' + done + '</b> copie(s) corrigée(s)'
-    + (errors > 0 ? ' · <span style="color:#FF8FAB">' + errors + ' erreur(s)</span>' : '') + '</div>'
+    + (errors > 0 ? ' · <span style="color:var(--red)">' + errors + ' erreur(s)</span>' : '') + '</div>'
     + '<div style="font-size:12px;color:var(--t3);margin-top:6px">Consultez les résultats dans l\'onglet 📊 Résultats</div>'
     + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'
     + '<button onclick="showTab(&quot;results&quot;)" class="btn btn-primary btn-sm">📊 Voir les résultats</button>'
@@ -4661,7 +4701,7 @@ async function handleImageFile(file) {
       const base64 = e.target.result.split(',')[1];
       window._scanImageData = { base64, mediaType: file.type, filename: file.name };
       dropIcon.textContent = '📷';
-      dropLabel.innerHTML = '<span style="color:#2DCA8C;font-weight:600">Image prête : ' + esc(file.name) + '</span>';
+      dropLabel.innerHTML = '<span style="color:var(--green);font-weight:600">Image prête : ' + esc(file.name) + '</span>';
       showPdfStatus('ok', '📷 Image chargée — cliquez <b>🧠 Corriger avec l\'IA</b> pour analyser l\'écriture manuscrite directement.');
       document.getElementById('corrCopyText').placeholder = 'Image chargée — l\'IA lira directement l\'écriture.\nVous pouvez aussi ajouter des notes complémentaires ici.';
       if(!document.getElementById('corrStudName').value) {
@@ -4747,7 +4787,7 @@ async function handlePdfFile(file) {
         }
         window._scanImageData = { base64: images[0], mediaType: 'image/jpeg', filename: file.name, allPages: images };
         dropIcon.textContent = '🖨️';
-        dropLabel.innerHTML = '<span style="color:#2DCA8C;font-weight:600">PDF scanné prêt : ' + esc(file.name) + ' (' + Math.min(totalPages,6) + ' page(s))</span>';
+        dropLabel.innerHTML = '<span style="color:var(--green);font-weight:600">PDF scanné prêt : ' + esc(file.name) + ' (' + Math.min(totalPages,6) + ' page(s))</span>';
         showPdfStatus('ok', '🖨️ PDF scanné converti en images (' + Math.min(totalPages,6) + ' page(s)) — cliquez <b>🧠 Corriger avec l\'IA</b> pour analyser l\'écriture.');
       } catch(err) {
         showPdfStatus('warn', '⚠️ PDF scanné — conversion partielle. Essayez une photo JPG pour de meilleurs résultats.');
@@ -4772,7 +4812,7 @@ function showPdfStatus(type, html) {
     loading: 'background:rgba(75,158,255,.08);border:1px solid rgba(75,158,255,.25);color:var(--blue)',
     ok:      'background:rgba(45,202,140,.08);border:1px solid rgba(45,202,140,.25);color:var(--green)',
     warn:    'background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);color:var(--amber)',
-    error:   'background:rgba(139,26,58,.1);border:1px solid rgba(139,26,58,.3);color:#FF8FAB',
+    error:   'background:rgba(139,26,58,.1);border:1px solid rgba(139,26,58,.3);color:var(--red)',
   };
   el.style.cssText = 'display:block;margin-bottom:14px;padding:10px 14px;border-radius:8px;font-size:13px;'+styles[type];
   el.innerHTML = html;
@@ -4782,7 +4822,7 @@ function renderPdfPages() {
   const list = document.getElementById('pdfPagesList');
   document.getElementById('pdfPageCount').textContent = _pdfExtractedPages.length;
   list.innerHTML = _pdfExtractedPages.map((p,i) => `
-    <label style="display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:6px;cursor:pointer;transition:.15s;border-bottom:1px solid rgba(255,255,255,.04)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+    <label style="display:flex;gap:10px;align-items:flex-start;padding:8px 6px;border-radius:6px;cursor:pointer;transition:.15s;border-bottom:1px solid var(--w1)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
       <input type="checkbox" id="pdfPage_${i}" ${p.selected?'checked':''} onchange="_pdfExtractedPages[${i}].selected=this.checked" style="margin-top:3px;flex-shrink:0;accent-color:var(--crl)">
       <div style="flex:1;min-width:0">
         <div style="display:flex;justify-content:space-between;margin-bottom:3px">
@@ -4790,7 +4830,7 @@ function renderPdfPages() {
           <span style="font-size:11px;color:var(--t3)">${p.charCount} car.</span>
         </div>
         <div style="font-size:12px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">
-          ${p.text ? esc(p.text.slice(0,120))+'…' : '<span style="color:rgba(255,255,255,.2)">Page vide ou non lisible</span>'}
+          ${p.text ? esc(p.text.slice(0,120))+'…' : '<span style="color:var(--w7)">Page vide ou non lisible</span>'}
         </div>
       </div>
     </label>`).join('');
@@ -5043,7 +5083,7 @@ function sendFormToStudents() {
   logEl.innerHTML = '<div style="background:var(--s2);border-radius:10px;padding:14px;margin-bottom:12px">'
     + '<div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:10px">📋 ' + selected.length + ' destinataire(s) prêt(s)</div>'
     + selected.map(s =>
-        '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
+        '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--w1)">'
         + '<span style="color:var(--green)">✓</span>'
         + '<div><div style="font-size:12.5px;font-weight:600;color:var(--t)">' + esc(s.prenom+' '+s.nom) + '</div>'
         + '<div style="font-size:11px;color:var(--t3)">' + esc(s.email) + '</div></div>'
@@ -5051,7 +5091,7 @@ function sendFormToStudents() {
       ).join('')
     + '</div>'
     + '<a href="' + gmailUrl + '" target="_blank" '
-    + 'style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(135deg,#8B1A3A,#B52550);color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;box-sizing:border-box;margin-bottom:10px">'
+    + 'style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:linear-gradient(135deg,var(--cr),var(--crl));color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-size:15px;font-weight:700;box-sizing:border-box;margin-bottom:10px">'
     + '📧 Ouvrir Gmail — envoyer à ' + selected.length + ' étudiant(s) →'
     + '</a>'
     + '<div style="background:rgba(45,202,140,.07);border:1px solid rgba(45,202,140,.2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--t2);line-height:1.7">'
@@ -5078,12 +5118,12 @@ function renderSendStats() {
     </div>
     <div style="max-height:160px;overflow-y:auto">
       ${history.slice(0, 15).map(h => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--w1);font-size:12px">
           <div>
             <span style="color:var(--t)">${esc(h.name)}</span>
             <span style="color:var(--t3);margin-left:6px;font-size:11px">${fmtDate(h.date)}</span>
           </div>
-          <span style="color:${h.status === 'envoyé' ? 'var(--green)' : '#FF8FAB'}">${h.status === 'envoyé' ? '✅' : '❌'}</span>
+          <span style="color:${h.status === 'envoyé' ? 'var(--green)' : 'var(--red)'}">${h.status === 'envoyé' ? '✅' : '❌'}</span>
         </div>`).join('')}
     </div>
     <button class="btn btn-ghost btn-sm btn-full" onclick="LS.set('medai_send_history',[]);renderSendStats();toast('Historique effacé')" style="margin-top:10px">🗑 Effacer l'historique</button>`;
