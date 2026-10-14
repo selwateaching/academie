@@ -302,7 +302,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 
     <form id="loginForm" onsubmit="event.preventDefault();doProfLogin();">
       <label class="form-label">Email universitaire</label>
-      <input class="form-input" id="loginEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.fr">
+      <input class="form-input" id="loginEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.dz">
       <label class="form-label">Mot de passe</label>
       <input class="form-input" id="loginPwd" type="password" autocomplete="current-password" placeholder="••••••••">
       <button type="submit" class="btn btn-primary btn-full" id="loginSubmitBtn" style="margin-top:8px;padding:13px;font-size:15px">Accéder à la plateforme →</button>
@@ -317,7 +317,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <label class="form-label">Établissement</label>
       <input class="form-input" id="regEtab" placeholder="ex: Faculté de Médecine d'Alger">
       <label class="form-label">Email universitaire</label>
-      <input class="form-input" id="regEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.fr">
+      <input class="form-input" id="regEmail" type="email" autocomplete="username" placeholder="prenom.nom@univ.dz">
       <label class="form-label">Mot de passe</label>
       <input class="form-input" id="regPwd" type="password" autocomplete="new-password" placeholder="8 caractères minimum">
       <button type="submit" class="btn btn-primary btn-full" id="registerSubmitBtn" style="margin-top:8px;padding:13px;font-size:15px">Créer mon compte →</button>
@@ -350,7 +350,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   <button class="nav-btn" data-page="planning"><span>📅</span>Planning</button>
   <button class="nav-btn" data-page="courses"><span>📚</span>Cours IA</button>
   <button class="nav-btn" data-page="clinical"><span>🧪</span>Cas cliniques</button>
-  <button class="nav-btn" data-page="exam"><span>📑</span>Examens ECN</button>
+  <button class="nav-btn" data-page="exam"><span>📑</span>Examens</button>
   <button class="nav-btn" data-page="correction"><span>✏️</span><span style="flex:1">Correction copies</span><span class="nav-badge" id="corrBadge" style="display:none">!</span></button>
 
   <div class="nav-group">Communication</div>
@@ -482,7 +482,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <label class="form-label">Sujet</label>
         <input class="form-input" id="planSubject" placeholder="Ex : Cours – Endométriose">
         <label class="form-label">Lieu</label>
-        <input class="form-input" id="planLieu" placeholder="Amphi Bichat">
+        <input class="form-input" id="planLieu" placeholder="Amphi CHU Mustapha Bacha">
         <label class="form-label">Type</label>
         <select class="form-select" id="planType">
           <option>Cours magistral</option><option>TD</option><option>Simulation clinique</option>
@@ -491,8 +491,8 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         </select>
         <label class="form-label">Notifier</label>
         <select class="form-select" id="planNotify">
-          <option>Ne pas notifier</option><option>Notifier DFASM1</option>
-          <option>Notifier DFASM2</option><option>Notifier les internes</option>
+          <option>Ne pas notifier</option><option>Notifier l'externat</option>
+          <option>Notifier l'internat</option><option>Notifier le résidanat</option>
           <option>Notifier tous les étudiants</option>
         </select>
         <button class="btn btn-primary btn-full" onclick="addPlanning()">📅 Ajouter au planning</button>
@@ -516,8 +516,8 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <input class="form-input" id="courseTopic" placeholder="Ex : Endométriose et fertilité">
       <label class="form-label">Niveau</label>
       <select class="form-select" id="courseLevel">
-        <option>Externes (DFASM1)</option><option selected="">Externes (DFASM2)</option>
-        <option>Internes (DES)</option><option>Master 2 recherche</option>
+        <option>Tronc commun (1ère-3ème année)</option><option selected="">Externat (4ème-6ème année)</option>
+        <option>Internat (7ème année)</option><option>Résidanat (spécialisation)</option>
       </select>
       <label class="form-label">Durée</label>
       <select class="form-select" id="courseDuration">
@@ -541,7 +541,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
 
 <!-- ═══════════════ CAS CLINIQUE ═══════════════ -->
 <div class="page" id="page-clinical">
-  <div class="page-title">🧪 Cas cliniques ECN</div>
+  <div class="page-title">🧪 Cas cliniques</div>
   <div class="page-sub">Cas complets avec corrigé générés par l'IA</div>
   <div class="grid-form">
     <div class="card">
@@ -550,7 +550,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <input class="form-input" id="caseTheme" placeholder="Ex : Grossesse extra-utérine">
       <label class="form-label">Difficulté</label>
       <select class="form-select" id="caseDiff">
-        <option>Simple (DFASM)</option><option selected="">Intermédiaire (Internat)</option><option>Complexe (DES)</option>
+        <option>Simple (Externat)</option><option selected="">Intermédiaire (Internat)</option><option>Complexe (Résidanat)</option>
       </select>
       <label class="form-label">Corrigé</label>
       <select class="form-select" id="caseCorr">
@@ -565,9 +565,9 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   </div>
 </div>
 
-<!-- ═══════════════ EXAMENS ECN ═══════════════ -->
+<!-- ═══════════════ EXAMENS ═══════════════ -->
 <div class="page" id="page-exam">
-  <div class="page-title">📑 Examens ECN</div>
+  <div class="page-title">📑 Examens</div>
   <div class="page-sub">QCM, dossiers progressifs et ECOS automatiques</div>
   <div class="grid-form">
     <div class="card">
@@ -576,14 +576,14 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <input class="form-input" id="examTopic" placeholder="Ex : Cancer du col de l'utérus">
       <label class="form-label">Type d'examen</label>
       <select class="form-select" id="examType">
-        <option>QCM (questions à choix multiples)</option><option>Dossier progressif ECN</option>
+        <option>QCM (questions à choix multiples)</option><option>Dossier clinique progressif</option>
         <option>ECOS (examen clinique objectif)</option><option>Questions ouvertes courtes</option>
       </select>
       <label class="form-label">Nombre de questions</label>
       <input class="form-input" type="number" id="examNb" value="10" min="3" max="30">
       <label class="form-label">Niveau</label>
       <select class="form-select" id="examLevel">
-        <option>Externe (DFASM)</option><option selected="">Interne (DES)</option><option>DES (spécialité)</option>
+        <option>Externat</option><option selected="">Internat</option><option>Résidanat (spécialité)</option>
       </select>
       <button class="btn btn-primary btn-full" id="btnExam" onclick="generateExam()">📑 Générer l'examen</button>
     </div>
@@ -676,7 +676,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           <input class="form-input" id="examSubject" placeholder="Ex : Pathologie obstétricale">
           <label class="form-label">Promotion</label>
           <select class="form-select" id="examPromo">
-            <option>DFASM1</option><option>DFASM2</option><option>DES</option><option>Master 2</option>
+            <option>1ère année médecine</option><option>2ème année médecine</option><option>3ème année médecine</option><option>4ème année médecine</option><option>5ème année médecine</option><option>6ème année médecine (Externat)</option><option>7ème année médecine (Internat)</option><option>Résidanat 1</option><option>Résidanat 2</option><option>Résidanat 3</option><option>Résidanat 4</option><option>Résidanat 5</option>
           </select>
           <label class="form-label">Barème total (/20)</label>
           <input class="form-input" type="number" id="examTotal" value="20" min="10" max="100">
@@ -684,7 +684,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
           <textarea class="form-textarea" id="examCorrection" rows="8" placeholder="Décrivez les questions et les éléments de réponse attendus par question."></textarea>
           <label class="form-label">📧 Email du secrétariat</label>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
-            <input class="form-input" id="examSecretariat" type="email" placeholder="Ex : secretariat.medecine@univ.fr" style="margin:0;flex:1">
+            <input class="form-input" id="examSecretariat" type="email" placeholder="Ex : secretariat.medecine@univ.dz" style="margin:0;flex:1">
             <button class="btn btn-ghost btn-sm" onclick="saveSecretariatEmail()" style="white-space:nowrap;background:rgba(75,158,255,.1);border-color:rgba(75,158,255,.3);color:var(--blue);flex-shrink:0">💾 Enregistrer l'email</button>
           </div>
           <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Utilisé pour l'envoi des résultats et les messages au secrétariat</div>
@@ -870,11 +870,11 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
     <div class="tab-pane" id="t-add">
       <div class="card" style="max-width:480px">
         <div class="card-title">Ajouter un étudiant</div>
-        <label class="form-label">Nom</label><input class="form-input" id="studNom" placeholder="Dupont">
+        <label class="form-label">Nom</label><input class="form-input" id="studNom" placeholder="Benali">
         <label class="form-label">Prénom</label><input class="form-input" id="studPrenom" placeholder="Marie">
-        <label class="form-label">Email universitaire</label><input class="form-input" id="studEmail" type="email" placeholder="marie.dupont@univ-medecine.fr">
+        <label class="form-label">Email universitaire</label><input class="form-input" id="studEmail" type="email" placeholder="amina.benali@univ.dz">
         <label class="form-label">Promotion</label>
-        <select class="form-select" id="studPromo"><option>DFASM1</option><option>DFASM2</option><option>DES</option><option>Master 2</option></select>
+        <select class="form-select" id="studPromo"><option>1ère année médecine</option><option>2ème année médecine</option><option>3ème année médecine</option><option>4ème année médecine</option><option>5ème année médecine</option><option>6ème année médecine (Externat)</option><option>7ème année médecine (Internat)</option><option>Résidanat 1</option><option>Résidanat 2</option><option>Résidanat 3</option><option>Résidanat 4</option><option>Résidanat 5</option></select>
         <button class="btn btn-primary btn-full" onclick="addStudent()">➕ Ajouter l'étudiant</button>
       </div>
     </div>
@@ -894,10 +894,18 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <label class="form-label">Destinataires</label>
         <select class="form-select" id="msgDest">
           <option value="all">Tous les étudiants</option>
-          <option value="DFASM1">DFASM1</option>
-          <option value="DFASM2">DFASM2</option>
-          <option value="DES">DES</option>
-          <option value="Master 2">Master 2</option>
+          <option value="1ère année médecine">1ère année médecine</option>
+          <option value="2ème année médecine">2ème année médecine</option>
+          <option value="3ème année médecine">3ème année médecine</option>
+          <option value="4ème année médecine">4ème année médecine</option>
+          <option value="5ème année médecine">5ème année médecine</option>
+          <option value="6ème année médecine (Externat)">6ème année médecine (Externat)</option>
+          <option value="7ème année médecine (Internat)">7ème année médecine (Internat)</option>
+          <option value="Résidanat 1">Résidanat 1</option>
+          <option value="Résidanat 2">Résidanat 2</option>
+          <option value="Résidanat 3">Résidanat 3</option>
+          <option value="Résidanat 4">Résidanat 4</option>
+          <option value="Résidanat 5">Résidanat 5</option>
         </select>
         <label class="form-label">Objet</label>
         <input class="form-input" id="msgSubj" placeholder="Ex : Sujet d'examen – Pathologie obstétricale">
@@ -926,7 +934,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
               <select class="form-select" id="sendPromoFilter" style="flex:1;margin:0" onchange="renderSendStudentList()">
                 <option value="">Toutes les promotions</option>
-                <option>DFASM1</option><option>DFASM2</option><option>DES</option><option>Master 2</option>
+                <option>1ère année médecine</option><option>2ème année médecine</option><option>3ème année médecine</option><option>4ème année médecine</option><option>5ème année médecine</option><option>6ème année médecine (Externat)</option><option>7ème année médecine (Internat)</option><option>Résidanat 1</option><option>Résidanat 2</option><option>Résidanat 3</option><option>Résidanat 4</option><option>Résidanat 5</option>
               </select>
               <button class="btn btn-ghost btn-sm" onclick="selectAllSendStudents()">Tout ✓</button>
               <button class="btn btn-ghost btn-sm" onclick="deselectAllSendStudents()">Aucun ✗</button>
@@ -1006,7 +1014,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
   <div style="display:grid;grid-template-columns:360px 1fr;gap:18px">
     <div class="card">
       <div class="card-title">Attribuer un stage</div>
-      <label class="form-label">Nom de l'étudiant</label><input class="form-input" id="stageEtud" placeholder="Dupont Marie">
+      <label class="form-label">Nom de l'étudiant</label><input class="form-input" id="stageEtud" placeholder="Benali Amina">
       <label class="form-label">Service hospitalier</label>
       <select class="form-select" id="stageService">
         <option>Maternité</option><option>Urgences obstétricales</option>
@@ -1092,11 +1100,11 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <div class="card">
           <div class="card-title">✍️ Nouveau message</div>
           <label class="form-label">Destinataire(s)</label>
-          <input class="form-input" id="writeTo" placeholder="Ex : secretariat@univ.fr, Sophie Martin…">
+          <input class="form-input" id="writeTo" placeholder="Ex : secretariat@univ.dz, Sophie Martin…">
           <label class="form-label">Objet</label>
-          <input class="form-input" id="writeSubj" placeholder="Ex : Absence le 14 mars – congrès CNGOF">
+          <input class="form-input" id="writeSubj" placeholder="Ex : Absence le 14 mars – congrès SAGO">
           <label class="form-label">Contexte pour l'IA (optionnel)</label>
-          <input class="form-input" id="writeCtx" placeholder="Ex : Absent pour congrès CNGOF à Paris">
+          <input class="form-input" id="writeCtx" placeholder="Ex : Absent pour congrès SAGO à Alger">
           <label class="form-label">Message</label>
           <textarea class="form-textarea" id="writeDraft" rows="9" placeholder="Rédigez ici, ou utilisez l'IA pour rédiger automatiquement…" oninput="updateComposePreview()"></textarea>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1154,7 +1162,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
         <option>Déclaration d'absence</option><option>Modification de planning</option>
         <option>Report de cours</option><option>Demande de salle</option><option>Autre</option>
       </select>
-      <label class="form-label">Objet</label><input class="form-input" id="secSubj" placeholder="Ex : Absence le 14 mars – congrès CNGOF">
+      <label class="form-label">Objet</label><input class="form-input" id="secSubj" placeholder="Ex : Absence le 14 mars – congrès SAGO">
       <label class="form-label">Message</label><textarea class="form-textarea" id="secBody" rows="6" placeholder="Rédigez votre message..."></textarea>
       <div style="display:flex;gap:10px">
         <button class="btn btn-primary btn-full" onclick="sendSec()">📧 Envoyer</button>
@@ -1245,7 +1253,7 @@ input[type=date],input[type=time],input[type=number]{color-scheme:dark}
       <div class="patient-header" id="patientHeader">
         <div class="patient-av">👩</div>
         <div>
-          <div style="font-size:17px;font-weight:600;color:var(--t);margin-bottom:4px" id="patientName">Madame Dupont, 31 ans</div>
+          <div style="font-size:17px;font-weight:600;color:var(--t);margin-bottom:4px" id="patientName">Madame Benali, 31 ans</div>
           <div style="font-size:13px;color:var(--t3);margin-bottom:10px" id="patientChief">Motif : Douleurs pelviennes aiguës + aménorrhée 6 semaines</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px" id="patientTags">
             <span class="tag">G1P0</span><span class="tag">DIU en place</span>
@@ -1375,21 +1383,21 @@ let state = {
   students: LS.get('medai_students', []),
   planning: LS.get('medai_planning', []),
   stages:   LS.get('medai_stages', [
-    {etudiant:'Bernard Lucas', service:'Chirurgie gynécologique', debut:'2026-02-01', fin:'2026-05-31', responsable:'Dr. Moreau', statut:'En cours'},
-    {etudiant:'Laurent Thomas', service:'Oncologie gynécologique', debut:'2026-01-06', fin:'2026-04-30', responsable:'Dr. Klein', statut:'En cours'},
-    {etudiant:'Moreau Jade', service:'Urgences obstétricales', debut:'2026-03-01', fin:'2026-06-30', responsable:'Dr. Fabre', statut:'En cours'},
+    {etudiant:'Bencheikh Yanis', service:'Chirurgie gynécologique', debut:'2026-02-01', fin:'2026-05-31', responsable:'Dr. Haddad', statut:'En cours'},
+    {etudiant:'Boumediene Imane', service:'Oncologie gynécologique', debut:'2026-01-06', fin:'2026-04-30', responsable:'Dr. Khelifi', statut:'En cours'},
+    {etudiant:'Cherif Lina', service:'Urgences obstétricales', debut:'2026-03-01', fin:'2026-06-30', responsable:'Dr. Mansouri', statut:'En cours'},
   ]),
   inbox: LS.get('medai_inbox', [
-    {from:'Secrétariat UFR', icon:'🏫', subj:'Modification planning – semaine 12', body:'Bonjour Professeur,\n\nSuite à la réunion du conseil pédagogique du 5 mars, le cours du mercredi 12 mars à 14h est déplacé au vendredi 14 mars à 10h, salle 204.\n\nMerci de confirmer votre disponibilité.\n\nCordialement,\nLe Secrétariat UFR Médecine', time:'09:14', unread:true},
-    {from:'Sophie Martin (DFASM2)', icon:'👩‍🎓', subj:'Demande de rendez-vous pédagogique', body:"Bonjour Professeur,\n\nJe me permets de vous contacter concernant des difficultés sur le module de pathologie obstétricale. Pourriez-vous m'accorder un rendez-vous ?\n\nCordialement,\nSophie Martin", time:'Hier', unread:true},
-    {from:'Doyen – UFR Médecine', icon:'🎓', subj:'Congrès CNGOF 2026 – inscription avant le 15/03', body:"Cher Professeur,\n\nLes inscriptions au CNGOF 2026 sont ouvertes jusqu'au 15 mars. Prise en charge possible auprès de la direction.\n\nBien cordialement,\nLe Décanat", time:'03/03', unread:true},
-    {from:'Commission Pédagogique', icon:'📋', subj:'Compte-rendu réunion DES Gynécologie', body:'Veuillez trouver ci-joint le compte-rendu de la réunion du DES Gynécologie-Obstétrique du 28 février 2026.\n\nVos retours sont attendus avant le 10 mars.\n\nLa Commission Pédagogique', time:'28/02', unread:false},
+    {from:'Secrétariat Faculté', icon:'🏫', subj:'Modification planning – semaine 12', body:'Bonjour Professeur,\n\nSuite à la réunion du conseil pédagogique du 5 mars, le cours du mercredi 12 mars à 14h est déplacé au vendredi 14 mars à 10h, salle 204.\n\nMerci de confirmer votre disponibilité.\n\nCordialement,\nLe Secrétariat Faculté de Médecine', time:'09:14', unread:true},
+    {from:'Sophie Martin (5ème année médecine)', icon:'👩‍🎓', subj:'Demande de rendez-vous pédagogique', body:"Bonjour Professeur,\n\nJe me permets de vous contacter concernant des difficultés sur le module de pathologie obstétricale. Pourriez-vous m'accorder un rendez-vous ?\n\nCordialement,\nSophie Martin", time:'Hier', unread:true},
+    {from:'Doyen – Faculté de Médecine', icon:'🎓', subj:'Congrès SAGO 2026 – inscription avant le 15/03', body:"Cher Professeur,\n\nLes inscriptions au SAGO 2026 sont ouvertes jusqu'au 15 mars. Prise en charge possible auprès de la direction.\n\nBien cordialement,\nLe Décanat", time:'03/03', unread:true},
+    {from:'Commission Pédagogique', icon:'📋', subj:'Compte-rendu réunion Résidanat Gynécologie', body:'Veuillez trouver ci-joint le compte-rendu de la réunion du Résidanat de Gynécologie-Obstétrique du 28 février 2026.\n\nVos retours sont attendus avant le 10 mars.\n\nLa Commission Pédagogique', time:'28/02', unread:false},
   ]),
   archives: LS.get('medai_archives', []),
   secHist:  LS.get('medai_sec_hist', []),
   sent:     LS.get('medai_sent', []),
   aiHistory:[], aiMsgCount:0,
-  patientInfo:{ name:'Madame Dupont, 31 ans', chief:'Douleurs pelviennes aiguës + aménorrhée 6 semaines', tags:['G1P0','DIU en place','Douleur EVA 7/10','Métrorragies'], patho:'Grossesse extra-utérine' },
+  patientInfo:{ name:'Madame Benali, 31 ans', chief:'Douleurs pelviennes aiguës + aménorrhée 6 semaines', tags:['G1P0','DIU en place','Douleur EVA 7/10','Métrorragies'], patho:'Grossesse extra-utérine' },
   patientHistory:[],
   selectedMail: null,
   examConfig: LS.get('medai_exam_config', null),
@@ -1737,7 +1745,7 @@ function doLogout() {
 // ═══════════════════════════════════════════════
 const pageTitles = {
   dashboard:'Dashboard', planning:'Planning', courses:'Cours IA', clinical:'Cas cliniques',
-  exam:'Examens ECN', correction:'Correction des copies', students:'Étudiants', stages:'Stages',
+  exam:'Examens', correction:'Correction des copies', students:'Étudiants', stages:'Stages',
   mail:'Courriers', secretariat:'Secrétariat', ai:'Assistant IA', research:'Recherche', patient:'Patient virtuel'
 };
 
@@ -2019,14 +2027,14 @@ async function generateCase() {
   document.getElementById('caseResult').innerHTML = '<div style="color:var(--t3)">Génération du cas clinique...</div>';
   const diff = document.getElementById('caseDiff').value;
   const corrOpt = document.getElementById('caseCorr').value;
-  const prompt = `Génère un cas clinique ECN COMPLET en ${getSpecialty()}.
+  const prompt = `Génère un cas clinique COMPLET en ${getSpecialty()}.
 Thème : ${theme}
 Niveau : ${diff}
 ${corrOpt.includes('Oui')?'Inclure le corrigé détaillé.':'Cas seul sans corrigé.'}
-Contenu : présentation clinique, antécédents, histoire de la maladie, examen clinique, 4-5 questions progressives ECN${corrOpt.includes('Oui')?', corrigé détaillé avec arguments':''}.
-Format ECN français. Sois rigoureux et réaliste.`;
+Contenu : présentation clinique, antécédents, histoire de la maladie, examen clinique, 4-5 questions progressives${corrOpt.includes('Oui')?', corrigé détaillé avec arguments':''}.
+Format utilisé dans l'enseignement médical algérien. Sois rigoureux et réaliste.`;
   try {
-    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en ${getSpecialty()} et préparation ECN. Génère des cas cliniques réalistes en français.`);
+    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en ${getSpecialty()} et pédagogie médicale en Algérie. Génère des cas cliniques réalistes en français.`);
     document.getElementById('caseResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
   } catch(e) {
     document.getElementById('caseResult').innerHTML = `<div style="color:var(--amber)">❌ ${esc(e.message)}</div>`;
@@ -2035,7 +2043,7 @@ Format ECN français. Sois rigoureux et réaliste.`;
 }
 
 // ═══════════════════════════════════════════════
-//  EXAMENS ECN
+//  EXAMENS
 // ═══════════════════════════════════════════════
 function downloadExamPDF() {
   const text = window._lastExamText;
@@ -2170,9 +2178,9 @@ Thème : ${topic}
 Niveau : ${level}
 Nombre de questions : ${nb}
 Pour chaque question : énoncé, options (si QCM), bonne réponse clairement indiquée, explication.
-Format ECN français. Sois rigoureux et varié.`;
+Format utilisé dans l'enseignement médical algérien. Sois rigoureux et varié.`;
   try {
-    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale ECN, ${getSpecialty()}. Génère des examens de qualité en français.`);
+    const r = await askClaude([{role:'user',content:prompt}], `Tu es expert en évaluation médicale, ${getSpecialty()}, enseignant en Algérie. Génère des examens de qualité en français.`);
     window._lastExamText = r;
     window._lastExamTopic = topic;
     document.getElementById('examResult').innerHTML = resultBox(esc(r).replace(/\n/g,'<br>'));
@@ -2190,7 +2198,7 @@ Format ECN français. Sois rigoureux et varié.`;
 function newExamForm() {
   document.getElementById('examTitle').value = '';
   document.getElementById('examSubject').value = '';
-  document.getElementById('examPromo').value = 'DFASM1';
+  document.getElementById('examPromo').value = '1ère année médecine';
   document.getElementById('examTotal').value = '20';
   document.getElementById('examCorrection').value = '';
   state.editingExamId = null;
@@ -2202,7 +2210,7 @@ function saveSecretariatEmail() {
   const email = document.getElementById('examSecretariat').value.trim();
   if(!email) { alert('Saisissez un email avant d\'enregistrer.'); return; }
   if(!state.examConfig) {
-    state.examConfig = { title:'', subject:'', promo:'DFASM1', total:20, correction:'', date: new Date().toLocaleDateString('fr-FR') };
+    state.examConfig = { title:'', subject:'', promo:'1ère année médecine', total:20, correction:'', date: new Date().toLocaleDateString('fr-FR') };
   }
   state.examConfig.secretariat = email;
   LS.set('medai_exam_config', state.examConfig);
@@ -2316,7 +2324,7 @@ function loadExamToForm(id) {
   if(!cfg) return;
   document.getElementById('examTitle').value = cfg.title || '';
   document.getElementById('examSubject').value = cfg.subject || '';
-  document.getElementById('examPromo').value = cfg.promo || 'DFASM1';
+  document.getElementById('examPromo').value = cfg.promo || '1ère année médecine';
   document.getElementById('examTotal').value = cfg.total || 20;
   document.getElementById('examCorrection').value = cfg.correction || '';
   document.getElementById('examSecretariat').value = cfg.secretariat || '';
@@ -2924,7 +2932,7 @@ function renderStudents(filter='') {
         <td>${esc(s.prenom)}</td>
         <td style="font-size:12px;min-width:200px">
           <div style="display:flex;align-items:center;gap:6px">
-            <input type="email" value="${esc(s.email||'')}" placeholder="email@univ.fr"
+            <input type="email" value="${esc(s.email||'')}" placeholder="email@univ.dz"
               style="background:transparent;border:1px solid ${s.email?'rgba(45,202,140,.3)':'rgba(245,166,35,.4)'};border-radius:6px;padding:4px 8px;font-size:12px;color:var(--t);width:100%;font-family:inherit;outline:none"
               onchange="updateStudentEmail(${i}, this.value)"
               onfocus="this.style.borderColor='var(--crl)'"
@@ -3380,10 +3388,10 @@ function clearCompose() {
 
 function renderTemplates() {
   const templates = [
-    {label:'Absence – congrès', to:'secretariat@univ.fr', subj:'Absence le [DATE] – congrès CNGOF', ctx:'Absent pour congrès CNGOF'},
-    {label:'Report de cours', to:'etudiants-dfasm2@univ.fr', subj:'Report du cours du [DATE]', ctx:'Report pour raison médicale'},
-    {label:'Convocation étudiant', to:'etudiant@univ.fr', subj:'Convocation – entretien pédagogique', ctx:'Difficultés académiques'},
-    {label:'Demande de salle', to:'secretariat@univ.fr', subj:'Demande de salle – [DATE]', ctx:"Besoin d'une salle pour simulation"},
+    {label:'Absence – congrès', to:'secretariat@univ.dz', subj:'Absence le [DATE] – congrès SAGO', ctx:'Absent pour congrès SAGO'},
+    {label:'Report de cours', to:'etudiants-5eme-annee@univ.dz', subj:'Report du cours du [DATE]', ctx:'Report pour raison médicale'},
+    {label:'Convocation étudiant', to:'etudiant@univ.dz', subj:'Convocation – entretien pédagogique', ctx:'Difficultés académiques'},
+    {label:'Demande de salle', to:'secretariat@univ.dz', subj:'Demande de salle – [DATE]', ctx:"Besoin d'une salle pour simulation"},
   ];
   const el = document.getElementById('mailTemplates');
   if(!el) return;
@@ -3521,7 +3529,7 @@ function clearAllSecHist() {
 function initAI() {
   const suggestions = [
     'Cours de 2h sur la pré-éclampsie pour des internes',
-    'Cas clinique ECN sur la grossesse extra-utérine avec corrigé',
+    'Cas clinique sur la grossesse extra-utérine avec corrigé',
     '10 QCM sur le cancer du col de l\'utérus',
     'Email pour annoncer mon absence le 14 mars',
     'Recommandations actuelles sur l\'endométriose',
@@ -3529,7 +3537,7 @@ function initAI() {
   ];
   document.getElementById('aiSuggestions').innerHTML = suggestions.map(s=>`
     <div class="suggestion" onclick="document.getElementById('aiInput').value=${JSON.stringify(s)}">${esc(s)}</div>`).join('');
-  addAIMsg('ai', 'Bonjour Professeur ! Je suis votre assistant IA spécialisé en '+getSpecialty()+'.\n\nJe peux vous aider à :\n• Générer des cours complets\n• Créer des cas cliniques ECN\n• Rédiger des emails professionnels\n• Répondre à des questions médicales\n\nComment puis-je vous aider ?');
+  addAIMsg('ai', 'Bonjour Professeur ! Je suis votre assistant IA spécialisé en '+getSpecialty()+'.\n\nJe peux vous aider à :\n• Générer des cours complets\n• Créer des cas cliniques\n• Rédiger des emails professionnels\n• Répondre à des questions médicales\n\nComment puis-je vous aider ?');
 }
 
 function addAIMsg(role, text) {
@@ -3753,7 +3761,7 @@ function showStudentForm() {
         </div>
         <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6085;display:block;margin-bottom:6px">Promotion *</label>
         <select id="sfPromo" style="width:100%;background:#0C0A0E;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px 13px;font-family:inherit;font-size:13.5px;color:#EDE9F4;outline:none;margin-bottom:14px">
-          <option>DFASM1</option><option>DFASM2</option><option>DES</option><option>Master 2</option>
+          <option>1ère année médecine</option><option>2ème année médecine</option><option>3ème année médecine</option><option>4ème année médecine</option><option>5ème année médecine</option><option>6ème année médecine (Externat)</option><option>7ème année médecine (Internat)</option><option>Résidanat 1</option><option>Résidanat 2</option><option>Résidanat 3</option><option>Résidanat 4</option><option>Résidanat 5</option>
         </select>
         <label style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6085;display:block;margin-bottom:6px">Fichier joint (optionnel)</label>
         <div id="sfDropZone" onclick="document.getElementById('sfFileInput').click()"
