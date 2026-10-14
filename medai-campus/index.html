@@ -1481,7 +1481,7 @@ function toggleTheme() {
 
 let state = {
   specialty: LS.get('medai_specialty', 'Gynécologie-Obstétrique'),
-  students: LS.get('medai_students', []),
+  students: [],
   planning: LS.get('medai_planning', []),
   agenda:   LS.get('medai_agenda', []),
   stages:   LS.get('medai_stages', [
@@ -2024,7 +2024,7 @@ function initApp() {
   renderDashMails();
   renderPlanning();
   renderAgenda();
-  renderStudents();
+  loadStudentsFromBackend();
   renderNoteSelect();
   renderStages();
   renderInbox();
@@ -2412,7 +2412,7 @@ function downloadExamPDF() {
 <title>VeloraMED – ${getSpecialty()}</title>
 <style>
   body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#1a1a1a;line-height:1.7}
-  .header{background:var(--cr);color:white;padding:20px 28px;border-radius:8px;margin-bottom:24px}
+  .header{background:#8B1A3A;color:white;padding:20px 28px;border-radius:8px;margin-bottom:24px}
   .header h1{margin:0;font-size:22px}
   .header p{margin:4px 0 0;opacity:.8;font-size:13px}
   .info{display:flex;gap:40px;background:#f5f5f5;padding:14px 20px;border-radius:6px;margin-bottom:24px;font-size:13px}
@@ -2463,7 +2463,7 @@ function printAnswerSheets() {
   let answerLines = '';
   for(let i = 1; i <= numQ; i++) {
     answerLines += '<div style="margin-bottom:10px;display:flex;align-items:baseline;gap:10px">'
-      + '<span style="font-weight:700;color:var(--cr);min-width:32px;font-size:14px">Q' + i + '</span>'
+      + '<span style="font-weight:700;color:#8B1A3A;min-width:32px;font-size:14px">Q' + i + '</span>'
       + '<span style="flex:1;border-bottom:1px solid #ccc;height:22px;display:block">&nbsp;</span>'
       + '</div>';
   }
@@ -2471,19 +2471,19 @@ function printAnswerSheets() {
     const fullName = (st.prenom + ' ' + st.nom).toUpperCase();
     const isLast = idx === students.length - 1;
     return '<div style="page-break-after:' + (isLast ? 'auto' : 'always') + ';padding:28px 36px;max-width:800px;margin:0 auto">'
-      + '<div style="background:var(--cr);color:white;padding:16px 22px;border-radius:8px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">'
+      + '<div style="background:#8B1A3A;color:white;padding:16px 22px;border-radius:8px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center">'
       + '<div><div style="font-size:18px;font-weight:700">📑 ' + topic + '</div>'
       + '<div style="font-size:12px;opacity:.85;margin-top:2px">VeloraMED · ' + getSpecialty() + '</div></div>'
       + '<div style="font-size:11px;opacity:.8;text-align:right">Date : ' + today + '<br>Promotion : ' + (st.promo||promo||'—') + '</div>'
       + '</div>'
-      + '<div style="border:2px solid var(--cr);border-radius:8px;padding:14px 18px;margin-bottom:20px;background:#fdf5f7">'
+      + '<div style="border:2px solid #8B1A3A;border-radius:8px;padding:14px 18px;margin-bottom:20px;background:#fdf5f7">'
       + '<div style="display:flex;gap:32px;align-items:center">'
-      + '<div style="flex:1"><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Nom &amp; Prénom</div>'
+      + '<div style="flex:1"><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Nom &amp; Prénom</div>'
       + '<div style="font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:1px">' + fullName + '</div></div>'
-      + '<div><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Promotion</div>'
+      + '<div><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Promotion</div>'
       + '<div style="font-size:16px;font-weight:600;color:#1a1a1a">' + (st.promo||'—') + '</div></div>'
-      + '<div><div style="font-size:10px;color:var(--cr);font-weight:700;text-transform:uppercase;margin-bottom:4px">Note / ' + (cfg.total||20) + '</div>'
-      + '<div style="font-size:16px;border-bottom:1.5px solid var(--cr);min-width:50px;height:26px">&nbsp;</div></div>'
+      + '<div><div style="font-size:10px;color:#8B1A3A;font-weight:700;text-transform:uppercase;margin-bottom:4px">Note / ' + (cfg.total||20) + '</div>'
+      + '<div style="font-size:16px;border-bottom:1.5px solid #8B1A3A;min-width:50px;height:26px">&nbsp;</div></div>'
       + '</div></div>'
       + '<div style="font-size:13px;color:#444;font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">Zone de réponses</div>'
       + answerLines
@@ -4438,23 +4438,28 @@ function showQrCode() {
 function printQr() {
   const link = window._qrLink || (window.location.href.split('?')[0].split('#')[0] + '?etudiant');
   const qrUrl = window._qrUrl || ('https://api.qrserver.com/v1/create-qr-code/?size=300x300&data='+encodeURIComponent(link));
-  const win = window.open('','_blank');
   const cfg = state.examConfig;
   const examName = cfg ? cfg.title : 'Examen';
+  printQrWindow(link, qrUrl, 'Examen : ' + examName + ' &mdash; Scannez pour soumettre votre copie',
+    '📱 Ouvrez l\'appareil photo &rarr; Pointez vers le QR Code &rarr; Cliquez le lien &rarr; Saisissez vos r&eacute;ponses &rarr; Soumettre');
+}
+
+function printQrWindow(link, qrUrl, subtitle, instructions) {
+  const win = window.open('','_blank');
   win.document.write('<!DOCTYPE html><html><head><title>VeloraMED – ' + getSpecialty() + '</title><style>'
     + 'body{font-family:Arial,sans-serif;text-align:center;padding:40px;color:#1a1a1a}'
-    + 'h2{color:var(--cr);font-size:22px;margin-bottom:4px}'
+    + 'h2{color:#8B1A3A;font-size:22px;margin-bottom:4px}'
     + '.sub{font-size:14px;color:#666;margin-bottom:24px}'
-    + 'img{border:3px solid var(--cr);border-radius:8px;padding:8px}'
+    + 'img{border:3px solid #8B1A3A;border-radius:8px;padding:8px}'
     + '.url{font-size:11px;color:#999;margin-top:14px;word-break:break-all}'
     + '.instr{font-size:13px;color:#333;margin-top:20px;padding:14px;background:#fdf5f7;border-radius:8px;border:1px solid #f0d0d8}'
     + '@media print{body{padding:20px}}'
     + '</style></head><body>'
     + '<h2>🏥 VeloraMED</h2>'
-    + '<div class="sub">Examen : ' + examName + ' &mdash; Scannez pour soumettre votre copie</div>'
+    + '<div class="sub">' + subtitle + '</div>'
     + '<img src="' + qrUrl + '" width="280" height="280">'
     + '<div class="url">' + link + '</div>'
-    + '<div class="instr">📱 Ouvrez l\'appareil photo &rarr; Pointez vers le QR Code &rarr; Cliquez le lien &rarr; Saisissez vos r&eacute;ponses &rarr; Soumettre</div>'
+    + '<div class="instr">' + instructions + '</div>'
     + '</body></html>');
   win.document.close();
   setTimeout(()=>win.print(), 600);
