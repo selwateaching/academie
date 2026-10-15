@@ -8548,8 +8548,13 @@ function cjPrint() {
     var endW = new Date(cjWeek.getFullYear(),cjWeek.getMonth(),cjWeek.getDate()+4);
     title = T('cj_print_titre')+cjWeek.getDate()+' '+moLbl(cjWeek.getMonth())+T('cj_au')+endW.getDate()+' '+moLbl(endW.getMonth()) + (clsFiltree ? ' — '+clsFiltree.nm : '');
   }
-  var html = '<div class="pp-banner"><div class="pp-banner-top">🇩🇿 '+(isARcp?'دفتر النصوص':'Cahier journal')+'</div><div class="pp-banner-theme">'+title+'</div></div>';
-  html += '<div class="pp-meta"><div><b>'+T('cj_etablissement_lbl')+'</b> '+(D.s.et||(isARcp?'مؤسسة تعليمية':'Établissement scolaire'))+'</div><div><b>'+T('cj_enseignant_lbl')+'</b> '+T('prof')+' '+D.s.pre+' '+D.s.nom+'</div><div><b>'+T('cj_matiere_lbl2')+'</b> '+D.s.mat+'</div></div>';
+  var nivMatchCj = clsFiltree && clsFiltree.nm ? clsFiltree.nm.match(/(\d(?:AP|AM|AS))/i) : null;
+  var niveauLongCj = nivMatchCj ? niveauLibelleLong(nivMatchCj[1].toUpperCase()) : (clsFiltree ? clsFiltree.nm : '');
+  var html = renderBandeauOfficielMEN(niveauLongCj);
+  html += '<div class="pp-banner"><div class="pp-banner-top">🇩🇿 '+(isARcp?'دفتر النصوص':'Cahier journal')+'</div><div class="pp-banner-theme">'+title+'</div></div>';
+  /* Établissement/Enseignant(e) déjà affichés par le bandeau officiel ci-dessus : ce bloc ne
+     garde que la Matière, pour ne pas répéter deux fois les mêmes informations. */
+  html += '<div class="pp-meta"><div><b>'+T('cj_matiere_lbl2')+'</b> '+D.s.mat+'</div></div>';
   html += '<table><thead><tr><th>'+T('cj_th_date')+'</th><th>'+T('cj_th_horaire')+'</th><th>'+T('cj_th_classe')+'</th><th>'+T('cj_th_themes')+'</th><th>'+T('cj_th_objectifs')+'</th><th>'+T('cj_th_supports')+'</th><th>'+T('cj_th_statut')+'</th><th>'+T('cj_th_remarque')+'</th></tr></thead><tbody>';
   function ligneSeance(s, jourLbl, d) {
     var cls = D.cls.find(function(c){ return c.id===s.cid; });
@@ -9203,6 +9208,14 @@ function renderEnteteOfficielProga(niveauLong) {
     + '</tr></table>';
   return h;
 }
+/* Bandeau complet (titre République algérienne / Ministère + grille d'identification) — demande
+   cliente : ce même bandeau doit figurer sur TOUS les documents générés/imprimés (Progression,
+   Fiche pédagogique/Cours IA, Cahier journal), pas seulement la Progression annuelle. */
+function renderBandeauOfficielMEN(niveauLong) {
+  var h = '<h3 style="text-align:center;color:var(--t);margin-bottom:.2rem;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;font-weight:600;margin-bottom:12px;">'+T('min_edu_nat')+'</h3><div style="border-top:3px double var(--t);margin-bottom:12px;"></div>';
+  h += renderEnteteOfficielProga(niveauLong);
+  return h;
+}
 function printProga() {
   var isL = progaIsLangue();
   var projetsClasse = progaProjetsClasse();
@@ -9210,11 +9223,7 @@ function printProga() {
   var title = T('proga_title') + ' — ' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '');
   var nivMatchProga = clsImp && clsImp.nm ? clsImp.nm.match(/(\d(?:AP|AM|AS))/i) : null;
   var niveauLongProga = nivMatchProga ? niveauLibelleLong(nivMatchProga[1].toUpperCase()) : (clsImp ? clsImp.nm : '');
-  /* En-tête officiel République algérienne / Ministère, même disposition en grille que le
-     canevas papier fourni par la cliente — remplace les anciens blocs .pp-meta empilés
-     (wilaya/circonscription retirés : absents du canevas officiel transmis). */
-  var html = '<h3 style="text-align:center;color:var(--t);margin-bottom:.2rem;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;font-weight:600;margin-bottom:12px;">'+T('min_edu_nat')+'</h3><div style="border-top:3px double var(--t);margin-bottom:12px;"></div>';
-  html += renderEnteteOfficielProga(niveauLongProga);
+  var html = renderBandeauOfficielMEN(niveauLongProga);
   html += '<div class="pp-banner"><div class="pp-banner-top">📊 '+T('proga_title')+'</div><div class="pp-banner-theme">' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '') + '</div></div>';
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
@@ -10178,7 +10187,8 @@ function dispCrs(crs, keepMode){
   /* Mise en page sobre et uniforme pour tous les niveaux : titre en police normale (pas de
      cursif), pas de vignette décorative dans la bannière — un document pédagogique destiné à
      l'inspection doit rester professionnel plutôt que stylé comme une appli. */
-  document.getElementById('crsDis').innerHTML='<div style="padding:.5rem"><div class="pp-banner"><div class="pp-banner-top">'+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div>'+enteteBlock+'<div'+corpsDirAttr+' style="'+corpsStyle+'">'+corps+'</div></div>';
+  var bandeauMEN = renderBandeauOfficielMEN(niveauLibelleLong(crs.niveau));
+  document.getElementById('crsDis').innerHTML='<div style="padding:.5rem">'+bandeauMEN+'<div class="pp-banner"><div class="pp-banner-top">'+(CRS_TYPE_LABELS[crs.type]||crs.type)+'</div><div class="pp-banner-theme">'+crs.titre+'</div></div>'+enteteBlock+'<div'+corpsDirAttr+' style="'+corpsStyle+'">'+corps+'</div></div>';
   tcRenderDiagrams(document.getElementById('crsDis'));
   var btn = document.getElementById('btnTpView');
   if (btn) {
