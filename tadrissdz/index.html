@@ -9564,7 +9564,14 @@ function choisirSequenceProga(pjId, sqId) {
   var sq = pj.sequences.find(function(s){ return s.id===sqId; }); if (!sq) return;
   document.getElementById('crsT').value = sq.nom;
   document.getElementById('crsType').value = 'fiche_peda';
-  if (progaIsLangue()) {
+  /* Doit utiliser la même matière que onCrsTypeChange() ci-dessous (celle choisie dans le
+     sélecteur "Matière pour cette fiche" quand le compte a plusieurs matières actives), pas
+     progaIsLangue() qui ne regarde que la matière PRINCIPALE du compte (D.s.mat) : sur un
+     compte multi-matières, un prof peut préparer une fiche de langue alors que sa matière
+     principale n'en est pas une — ça faisait remplir "Objectifs pédagogiques" avec la période
+     de la séquence au lieu de Projet/Séquence/Acte de parole/Activité, et les champs visibles
+     à l'écran (affichés par onCrsTypeChange sur ce même critère) restaient vides. */
+  if (isLangueMatiere(getCrsMatiereSelectionnee())) {
     document.getElementById('crsProjet').value = pj.nom;
     document.getElementById('crsSequence').value = sq.nom;
     if (sq.actes) document.getElementById('crsActeParole').value = sq.actes;
