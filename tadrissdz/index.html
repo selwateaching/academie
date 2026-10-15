@@ -5957,6 +5957,7 @@ function biblioLoad(cb) {
         motsCles: o['mots-clés'] || o['mots-cles'] || o.motscles || '',
         lien: o['lien drive'] || o.lien || o.link || '',
         image: o.image || o.illustration || o['lien image'] || '',
+        audio: o.audio || o['lien audio'] || o['audio drive'] || '',
         enCours: enCours,
         actif: enCours || !statutRaw || statutRaw === 'actif' || statutRaw === 'active',
       };
@@ -6082,16 +6083,12 @@ function biblioRenderResults() {
 
 /* ===== BIBLIOTHEQUE AUDIO =====
    Réutilise exactement la même source que la Bibliothèque pédagogique (même feuille Google Sheets
-   publiée en CSV, même BIBLIO_DATA/biblioLoad) : la cliente ajoute simplement des lignes avec
-   type = "Audio" (matière = la langue de l'audio — Français/Arabe/Anglais/Espagnol — et lien =
-   un lien Drive vers le fichier) pour qu'elles apparaissent ici, sans aucun changement de code. */
+   publiée en CSV, même BIBLIO_DATA/biblioLoad) : une ligne apparaît ici dès que sa colonne "audio"
+   contient un lien Drive (matière = la langue de l'audio — Français/Arabe/Anglais/Espagnol — image
+   = une colonne séparée pour l'illustration), sans aucun changement de code. */
 var BIBLIO_AUDIO_LANGUE = '';
 function biblioAudioRows() {
-  return (BIBLIO_DATA || []).filter(function(r) {
-    var t = (r.type || '').toLowerCase();
-    try { t = t.normalize('NFD').replace(/[̀-ͯ]/g,''); } catch(e) {}
-    return t.indexOf('audio') >= 0;
-  });
+  return (BIBLIO_DATA || []).filter(function(r) { return !!r.audio; });
 }
 function rBiblioAudio() {
   var box = document.getElementById('biblioAudioBox');
@@ -6134,10 +6131,10 @@ function biblioAudioRenderResults() {
   }
   results.innerHTML = '<div class="g3">' + filtered.map(function(r) {
     var actionsHtml;
-    if (!r.lien) {
+    if (!r.audio) {
       actionsHtml = '<span style="color:var(--ink3);font-size:.78rem">Lien manquant</span>';
     } else {
-      var links = biblioDriveLinks(r.lien);
+      var links = biblioDriveLinks(r.audio);
       actionsHtml = '<a class="btn bo bsm" href="'+links.voir+'" target="_blank" rel="noopener">▶ Écouter</a><a class="btn bt bsm" href="'+links.telecharger+'" target="_blank" rel="noopener">⬇ Télécharger</a>';
     }
     /* Contrairement aux fiches (où la vignette vient du fichier lui-même, un PDF/une image que
