@@ -9195,16 +9195,20 @@ function niveauLibelleLong(code) {
    retrouve exactement la même disposition que le document imposé par le Ministère. */
 function renderEnteteOfficielProga(niveauLong) {
   var ens = ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
-  var td = 'padding:4px 0;vertical-align:top;font-size:.85rem;';
-  var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;">';
+  /* Texte toujours aligné à gauche dans sa cellule (jamais text-align:right) : sur un contenu
+     court comme "2026-2027", le right-align forçait le libellé en gras et la valeur à se
+     retrouver sur deux lignes séparées dans l'export PDF au lieu de rester sur une seule ligne —
+     la position "à droite" vient uniquement de l'ordre des colonnes, pas d'un alignement de texte. */
+  var td = 'padding:4px 8px 4px 0;vertical-align:top;font-size:.85rem;line-height:1.5;';
+  var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;table-layout:fixed;">';
   h += '<tr>'
-    + '<td style="'+td+'width:42%;"><b>Établissement :</b> ' + (D.s.et||'') + '</td>'
-    + '<td style="'+td+'width:33%;"><b>Inspection :</b> ' + (D.s.insp||'') + '</td>'
-    + '<td style="'+td+'width:25%;text-align:right;"><b>Année scolaire :</b> ' + (D.s.an||'') + '</td>'
+    + '<td style="'+td+'width:36%;"><b>Établissement :</b> ' + (D.s.et||'') + '</td>'
+    + '<td style="'+td+'width:28%;"><b>Inspection :</b> ' + (D.s.insp||'') + '</td>'
+    + '<td style="'+td+'width:36%;padding-right:0;"><b>Année scolaire :</b> ' + (D.s.an||'') + '</td>'
     + '</tr><tr>'
     + '<td style="'+td+'"></td>'
     + '<td style="'+td+'"><b>Enseignant(e) :</b> ' + ens + '</td>'
-    + '<td style="'+td+'text-align:right;"><b>Niveau :</b> ' + niveauLong + '</td>'
+    + '<td style="'+td+'padding-right:0;"><b>Niveau :</b> ' + niveauLong + '</td>'
     + '</tr></table>';
   return h;
 }
@@ -9755,7 +9759,7 @@ async function genCours(extraInstruction) {
       (projetRaw ? '\nContexte précis à utiliser pour la situation-problème, les exemples et les exercices : "'+projetRaw+'".' : '')+
       (obj?'\nObjectifs fournis par le professeur: '+obj:'')+(prereq?'\nPrérequis: '+prereq:'')+
       '\n\nVoici le squelette HTML EXACT que tu dois utiliser pour LE CORPS de la fiche (l\'en-tête Projet/Séquence/Niveau/Classe/Date/etc. est déjà géré séparément, ne le reproduis pas). Remplace chaque texte entre crochets [ ] par un contenu réel, pertinent et détaillé. NE SUPPRIME AUCUNE RUBRIQUE, NE CHANGE PAS L\'ORDRE ni les durées entre parenthèses (déjà calculées), garde tous les intitulés et les balises <div class="tc-box ..."> / <div class="tc-remember"> strictement identiques (ne les retire pas, ne les remplace pas par des <p>). Ta réponse doit commencer par "<div class="tc-box tc-example">" et ne rien contenir avant :\n\n'+skeleton+
-      '\n\nExigences supplémentaires :\n- Reste TRÈS CONCIS partout, comme une vraie fiche pédagogique (jamais un cours rédigé) : chaque Moment fait quelques lignes maximum, avec des puces/questions/listes plutôt que des paragraphes narratifs\n- N\'écris JAMAIS "L\'enseignant commence par...", "Il explique ensuite que..." — donne directement les questions posées, les phrases observées, ou la consigne, sans récit du déroulement\n- La situation-problème doit être concrète et vraiment déclencher le besoin de la notion (pas juste une question d\'éveil générale)\n- La règle dans "Retiens" doit détailler la procédure de transformation si le sujet s\'y prête (ex: Actif → Passif étape par étape), pas juste une définition vague\n- Les phrases d\'exercice ne doivent jamais être syntaxiquement ambiguës (vérifie que la consigne appelle sans équivoque la transformation demandée)\n- Le "Moment d\'évaluation" doit vérifier TOUS les objectifs annoncés, pas seulement la reconnaissance — inclus toujours un exercice de production réelle en plus du QCM\n- Utilise des exemples et contextes algériens concrets (noms, lieux, monnaie DA), mais en une ligne, pas en histoire développée\n- Dans "Retiens", chaque règle tient sur 1-2 lignes maximum, et doit correspondre exactement aux expressions/notions utilisées dans le Moment 2 (Découverte)\n- Les exercices des Moments 4 et 5 doivent porter précisément sur le sujet "'+titre+'"\n- Aligne le contenu sur le programme officiel MEN algérien pour le niveau '+nv+'\n- Ne mets aucun texte avant le premier bloc tc-box, et rien après la Remédiation\n- Partout dans la fiche, si un dialogue entre personnages apparaît (situation-problème, exemple...), formate-le TOUJOURS dans un bloc <div class="tc-dialogue"> avec une réplique par <p> et le nom du personnage en gras — jamais fondu dans un paragraphe de prose. Un dialogue et un texte en prose doivent rester visuellement différenciables du premier coup d\'œil\n- Si "Objectifs fournis par le professeur" liste plusieurs points (ex: Lexique, Grammaire, Phonie/sons, Lecture...), la fiche doit couvrir CHACUN d\'eux quelque part dans le déroulement (pas seulement le premier) — répartis-les sur les différents Moments plutôt que de n\'en garder qu\'un seul'+
+      '\n\nExigences supplémentaires :\n- Reste TRÈS CONCIS partout, comme une vraie fiche pédagogique (jamais un cours rédigé) : chaque Moment fait quelques lignes maximum, avec des puces/questions/listes plutôt que des paragraphes narratifs\n- N\'écris JAMAIS "L\'enseignant commence par...", "Il explique ensuite que..." — donne directement les questions posées, les phrases observées, ou la consigne, sans récit du déroulement\n- La situation-problème doit être concrète et vraiment déclencher le besoin de la notion (pas juste une question d\'éveil générale)\n- La règle dans "Retiens" doit détailler la procédure de transformation si le sujet s\'y prête (ex: Actif → Passif étape par étape), pas juste une définition vague\n- Les phrases d\'exercice ne doivent jamais être syntaxiquement ambiguës (vérifie que la consigne appelle sans équivoque la transformation demandée)\n- Le "Moment d\'évaluation" doit vérifier TOUS les objectifs annoncés, pas seulement la reconnaissance — inclus toujours un exercice de production réelle en plus du QCM\n- Utilise des exemples et contextes algériens concrets (noms, lieux, monnaie DA), mais en une ligne, pas en histoire développée\n- Dans "Retiens", chaque règle tient sur 1-2 lignes maximum, et doit correspondre exactement aux expressions/notions utilisées dans le Moment 2 (Découverte)\n- Les exercices des Moments 4 et 5 doivent porter précisément sur le sujet "'+titre+'"\n- Aligne le contenu sur le programme officiel MEN algérien pour le niveau '+nv+'\n- Ne mets aucun texte avant le premier bloc tc-box, et rien après la Remédiation\n- Partout dans la fiche, si un dialogue entre personnages apparaît (situation-problème, exemple...), formate-le TOUJOURS dans un bloc <div class="tc-dialogue"> avec une réplique par <p> et le nom du personnage en gras — jamais fondu dans un paragraphe de prose. Un dialogue et un texte en prose doivent rester visuellement différenciables du premier coup d\'œil\n- Si "Objectifs fournis par le professeur" liste plusieurs points (ex: Lexique, Grammaire, Phonie/sons, Lecture...), la fiche doit couvrir CHACUN d\'eux quelque part dans le déroulement (pas seulement le premier) — répartis-les sur les différents Moments plutôt que de n\'en garder qu\'un seul\n- Pour mettre un mot en gras, utilise TOUJOURS la balise HTML <strong>mot</strong> — jamais la syntaxe markdown **mot**, qui ne s\'affiche pas comme du gras ici et laisse les astérisques visibles'+
       (isOral ? '\n- IMPORTANT, activité de COMPRÉHENSION ORALE (al-mantouq / الفهم الشفوي) : les élèves n\'ont AUCUN texte écrit sous les yeux à aucun moment de la séance — tout passe par l\'écoute du professeur qui lit ou raconte. N\'écris jamais "lire le texte", "le texte ci-dessus/ci-dessous" ou "texte distribué" : utilise toujours "le texte entendu", "ce qui a été raconté/lu" ou équivalent. À chaque étape où les élèves interviennent (Découverte, Observation, Réinvestissement, Évaluation), la consigne doit TOUJOURS faire répondre l\'élève à l\'oral EN PREMIER (il propose sa réponse spontanément), et seulement ENSUITE le professeur corrige, reformule ou donne la réponse/le modèle attendu — jamais l\'inverse. Les questions progressent du global (de quoi/qui parle-t-on ?) vers le détail (informations précises, vocabulaire), comme une vraie activité de compréhension de l\'oral.' : '');
   } else if (ty === 'fiche_peda') {
     enteteHTML += '<div class="pp-meta"><div><b>Niveau :</b> '+nv+(crsFiliereVal?' — '+(FILIERES_LABELS[crsFiliereVal]||crsFiliereVal):'')+'</div></div>';
@@ -9944,6 +9948,11 @@ async function genCours(extraInstruction) {
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('crsDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Réessaie dans quelques instants ; contacte l\'administrateur si ça persiste.')+'</div>'; return; }
     var text=extractClaudeText(data);
     if (!text) { N(CURRENT_LANG==='ar'?'استجابة فارغة من الذكاء الاصطناعي. أعد المحاولة بعد قليل.':'Réponse vide de l\'IA. Réessaie dans quelques instants.','err'); return; }
+    /* Filet de sécurité : l'IA glisse parfois un gras "markdown" (**texte**) au lieu de la balise
+       HTML <strong> demandée dans le squelette — les navigateurs n'interprètent pas cette
+       syntaxe, elle s'affichait donc telle quelle, astérisques visibles, au lieu d'un vrai gras.
+       Converti systématiquement plutôt que de compter uniquement sur la consigne donnée à l'IA. */
+    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     var imgHTML = '';
     if (imgResult && imgResult.base64) {
       imgHTML = '<div style="text-align:center;margin-bottom:14px;"><img src="data:image/png;base64,'+imgResult.base64+'" style="width:340px;max-width:75%;height:auto;border-radius:14px;" alt=""></div>';
@@ -10112,7 +10121,6 @@ function tpExtractEnteteFields(fullHtml) {
   var competence = grab(/<div class="tc-box-title">🎯 Compétence visée<\/div>([\s\S]*?)<\/div>/);
   var composante = grab(/<strong>Composante de la compétence\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
   var materiel = grab(/<strong>Support\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
-  var enseignant = grab(/<b>Enseignant\(e\)\s*:<\/b>\s*([\s\S]*?)<\/div>/).replace(/^Prof\.\s*/,'');
   var objectifs = [];
   var objMatch = h.match(/<strong>Objectifs d'apprentissage<\/strong><\/p>\s*<ol>([\s\S]*?)<\/ol>/);
   if (objMatch) {
@@ -10120,34 +10128,32 @@ function tpExtractEnteteFields(fullHtml) {
     while ((lm = liRe.exec(objMatch[1]))) objectifs.push(lm[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
   }
   return { projet: projet, sequence: sequence, duree: duree, actePar: actePar, activite: activite,
-    competence: competence, composante: composante, materiel: materiel, enseignant: enseignant, objectifs: objectifs };
+    competence: competence, composante: composante, materiel: materiel, objectifs: objectifs };
 }
-/* Grille d'en-tête "canevas officiel" (Niveau/Projet/Acte de parole/Enseignant(e) · Durée/Séquence/
-   Composante/Titre · Compétence/Activité/Matériel), pour une fiche pédagogique de langue affichée
-   en Vue tableau — reproduit la mise en page papier habituelle au lieu de la liste Niveau/Matière. */
+/* Grille d'en-tête "canevas officiel" (Projet/Acte de parole/Durée · Séquence/Composante/Titre ·
+   Compétence/Activité · Matériel), pour une fiche pédagogique de langue affichée en Vue tableau —
+   reproduit la mise en page papier habituelle. Niveau et Enseignant(e) ne figurent plus ici : ils
+   sont déjà dans le bandeau officiel MEN affiché juste au-dessus (voir renderEnteteTableLangue). */
 function renderEnteteTableLangue(crs, fields) {
-  /* Priorité au nom figé dans le contenu généré (même source que Projet/Séquence/etc., tous
-     extraits de crs.contenu) plutôt qu'à D.s.pre/D.s.nom lus en direct : plus fiable pour une
-     fiche sauvegardée rouverte plus tard, ou si le profil n'était pas encore chargé au moment
-     de l'affichage — repli sur D.s uniquement si le contenu n'a rien à offrir (anciennes fiches
-     générées avant l'ajout de ce champ dans le squelette). */
-  var ens = fields.enseignant || ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
+  /* Niveau et Enseignant(e) ne sont PLUS répétés ici : le bandeau officiel MEN affiché juste
+     au-dessus (renderBandeauOfficielMEN, appelé par dispCrs) les montre déjà — les garder aussi
+     dans cette grille affichait deux fois la même information ("deux fois le nom"), ce qui avait
+     déjà été signalé une fois sur un autre écran. Grille ramenée à 3 colonnes en conséquence. */
   var td = 'border:1px solid var(--br);padding:6px 10px;vertical-align:top;';
   var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;font-size:.8rem;">';
   h += '<tr>'
-    + '<td style="'+td+'width:22%;"><b>Niveau :</b> ' + (crs.niveau||'') + '</td>'
-    + '<td style="'+td+'width:28%;"><b>Projet :</b> ' + (fields.projet||'') + '</td>'
-    + '<td style="'+td+'width:30%;"><b>Acte de parole :</b> ' + (fields.actePar||'—') + '</td>'
-    + '<td style="'+td+'width:20%;"><b>Enseignant(e) :</b> ' + ens + '</td>'
+    + '<td style="'+td+'width:34%;"><b>Projet :</b> ' + (fields.projet||'') + '</td>'
+    + '<td style="'+td+'width:33%;"><b>Acte de parole :</b> ' + (fields.actePar||'—') + '</td>'
+    + '<td style="'+td+'width:33%;"><b>Durée :</b> ' + (fields.duree||'') + '</td>'
     + '</tr><tr>'
-    + '<td style="'+td+'"><b>Durée :</b> ' + (fields.duree||'') + '</td>'
     + '<td style="'+td+'"><b>Séquence :</b> ' + (fields.sequence||'') + '</td>'
     + '<td style="'+td+'"><b>Composante :</b> ' + (fields.composante||'—') + '</td>'
     + '<td style="'+td+'"><b>Titre :</b> ' + (crs.titre||'') + '</td>'
     + '</tr><tr>'
     + '<td colspan="2" style="'+td+'"><b>Compétence :</b> ' + (fields.competence||'—') + '</td>'
     + '<td style="'+td+'"><b>Activité :</b> ' + (fields.activite||'') + '</td>'
-    + '<td style="'+td+'"><b>Matériel :</b> ' + (fields.materiel||'—') + '</td>'
+    + '</tr><tr>'
+    + '<td colspan="3" style="'+td+'"><b>Matériel :</b> ' + (fields.materiel||'—') + '</td>'
     + '</tr></table>';
   if (fields.objectifs && fields.objectifs.length) {
     h += '<div style="font-size:.8rem;margin-bottom:.9rem;"><b>Objectifs d\'apprentissage :</b> l\'apprenant sera capable de'
