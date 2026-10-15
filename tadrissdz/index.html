@@ -5273,7 +5273,20 @@ function goCoursType(ty, el) {
   var sel = document.getElementById('crsType');
   if (sel) { sel.value = ty; onCrsTypeChange(); }
 }
-function tbA() { var m = { dash:'mEleve', eleves:'mEleve', notes:'mNote', dossiers:'mFolder', calendrier:'mEvent', cahier:'mSeance', mails:'mMail', equipe:'mProf', acquis:'mAcquis' }; if (m[CUR]) OM(m[CUR]); else if (CUR === 'params') saveP(); }
+function tbA() { var m = { dash:'mEleve', eleves:'mEleve', notes:'mNote', dossiers:'mFolder', calendrier:'mEvent', cahier:'mSeance', mails:'mMail', equipe:'mProf', acquis:'mAcquis' }; if (m[CUR]) OM(m[CUR]); else if (CUR === 'params') saveP(); else if (CUR === 'cours_ia') resetFormulaireCrs(); }
+/* Vide le formulaire Cours IA pour repartir en champ libre — demande cliente : pouvoir choisir
+   clairement entre "Depuis la progression" (pré-rempli) et un sujet libre, sans qu'un reste de
+   la dernière séquence choisie (ex: Objectifs pédagogiques) ne s'invite dans la génération suivante. */
+function resetFormulaireCrs() {
+  ['crsT','crsObj','crsPrereq','crsProjet','crsSequence','crsActeParole','crsActivite'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var typeEl = document.getElementById('crsType'); if (typeEl) typeEl.value = 'fiche_peda';
+  var oralEl = document.getElementById('crsOralMode'); if (oralEl) oralEl.checked = false;
+  onCrsTypeChange();
+  var th = document.getElementById('crsT'); if (th) th.focus();
+  N(CURRENT_LANG==='ar'?'نموذج جديد، حقل حر.':'Formulaire vidé — champ libre.', 'ok');
+}
 /* ===== RECHERCHE GLOBALE ===== */
 var GS_STATE = { q:'', cat:'all', results:[] };
 function gsNorm(s) { return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
@@ -9665,6 +9678,16 @@ function choisirSequenceProga(pjId, sqId) {
   var sq = pj.sequences.find(function(s){ return s.id===sqId; }); if (!sq) return;
   document.getElementById('crsT').value = sq.nom;
   document.getElementById('crsType').value = 'fiche_peda';
+  /* URGENT — cas client réel signalé par la cliente : chaque champ ci-dessous doit être vidé
+     AVANT d'être rempli par la nouvelle séquence. Avant ce correctif, un champ que la nouvelle
+     séquence ne renseignait pas gardait la valeur laissée par la séquence précédemment choisie
+     (ex: "Objectifs pédagogiques" gardait "Présenter son quartier" alors que la fiche demandée,
+     "Tu connais les animaux ?", n'avait rien à voir) — l'IA générait alors un contenu hors sujet. */
+  document.getElementById('crsProjet').value = '';
+  document.getElementById('crsSequence').value = '';
+  document.getElementById('crsActeParole').value = '';
+  document.getElementById('crsActivite').value = '';
+  document.getElementById('crsObj').value = '';
   /* Doit utiliser la même matière que onCrsTypeChange() ci-dessous (celle choisie dans le
      sélecteur "Matière pour cette fiche" quand le compte a plusieurs matières actives), pas
      progaIsLangue() qui ne regarde que la matière PRINCIPALE du compte (D.s.mat) : sur un
@@ -9697,7 +9720,7 @@ function choisirSequenceProga(pjId, sqId) {
     if (sq.dictee) detailProga.push('Dictée : ' + sq.dictee);
     if (sq.production) detailProga.push('Production orale/écrite : ' + sq.production);
     if (sq.comptine) detailProga.push('Comptine : ' + sq.comptine);
-    if (detailProga.length) document.getElementById('crsObj').value = detailProga.join('\n');
+    document.getElementById('crsObj').value = detailProga.join('\n');
   } else if (sq.competences || sq.nbSeances || sq.periode) {
     var objParts = [];
     if (sq.competences) objParts.push(sq.competences);
