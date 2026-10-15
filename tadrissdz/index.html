@@ -9175,18 +9175,47 @@ async function genProgaIA() {
     .catch(function(err){ btn.innerHTML = GEN_ICON + ' ' + T('proga_gen_btn'); btn.disabled = false; N(messageErreurGeneration(err), 'err'); });
 }
 
+/* "4AP" -> "4ème Année Primaire (4e A.P)" — libellé long utilisé sur l'en-tête officiel imprimé
+   (République algérienne / Ministère), repris du niveau détecté dans le nom de la classe. */
+function niveauLibelleLong(code) {
+  var m = (code || '').trim().match(/^(\d)(AP|AM|AS)$/i);
+  if (!m) return code || '';
+  var n = m[1], cycle = m[2].toUpperCase();
+  var cycleLabel = { AP: 'Primaire', AM: 'Moyenne', AS: 'Secondaire' }[cycle];
+  var ord = n === '1' ? '1ère' : n + 'ème';
+  return ord + ' Année ' + cycleLabel + ' (' + n + 'e ' + cycle.split('').join('.') + '.)';
+}
+/* En-tête officiel façon canevas MEN (Établissement/Inspection/Année scolaire — Enseignant(e)/Niveau),
+   grille à 3 colonnes plutôt que les blocs .pp-meta empilés — demande cliente : que l'enseignant
+   retrouve exactement la même disposition que le document imposé par le Ministère. */
+function renderEnteteOfficielProga(niveauLong) {
+  var ens = ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
+  var td = 'padding:4px 0;vertical-align:top;font-size:.85rem;';
+  var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;">';
+  h += '<tr>'
+    + '<td style="'+td+'width:42%;"><b>Établissement :</b> ' + (D.s.et||'') + '</td>'
+    + '<td style="'+td+'width:33%;"><b>Inspection :</b> ' + (D.s.insp||'') + '</td>'
+    + '<td style="'+td+'width:25%;text-align:right;"><b>Année scolaire :</b> ' + (D.s.an||'') + '</td>'
+    + '</tr><tr>'
+    + '<td style="'+td+'"></td>'
+    + '<td style="'+td+'"><b>Enseignant(e) :</b> ' + ens + '</td>'
+    + '<td style="'+td+'text-align:right;"><b>Niveau :</b> ' + niveauLong + '</td>'
+    + '</tr></table>';
+  return h;
+}
 function printProga() {
   var isL = progaIsLangue();
   var projetsClasse = progaProjetsClasse();
   var clsImp = D.cls.find(function(c){ return c.id === progaClasseId(); });
   var title = T('proga_title') + ' — ' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '');
-  var html = '<h3 style="text-align:center;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;margin-bottom:14px;">'+T('min_edu_nat')+'</h3>';
-  /* En-tête administratif officiel (wilaya / circonscription / inspection / établissement),
-     pour que le document puisse être imprimé et transmis tel quel à la direction. */
-  html += '<div class="pp-meta"><div><b>'+T('proga_wilaya_lbl')+'</b> ' + (D.s.wil||'') + '</div><div><b>'+T('proga_circ_lbl')+'</b> ' + (D.s.circ||'') + '</div></div>';
-  html += '<div class="pp-meta"><div><b>'+T('proga_insp_lbl')+'</b> ' + (D.s.insp||'') + '</div><div><b>'+T('cj_etablissement_lbl')+'</b> ' + (D.s.et||'') + '</div></div>';
+  var nivMatchProga = clsImp && clsImp.nm ? clsImp.nm.match(/(\d(?:AP|AM|AS))/i) : null;
+  var niveauLongProga = nivMatchProga ? niveauLibelleLong(nivMatchProga[1].toUpperCase()) : (clsImp ? clsImp.nm : '');
+  /* En-tête officiel République algérienne / Ministère, même disposition en grille que le
+     canevas papier fourni par la cliente — remplace les anciens blocs .pp-meta empilés
+     (wilaya/circonscription retirés : absents du canevas officiel transmis). */
+  var html = '<h3 style="text-align:center;color:var(--t);margin-bottom:.2rem;">'+T('rep_alg_dem_pop')+'</h3><h3 style="text-align:center;font-weight:600;margin-bottom:12px;">'+T('min_edu_nat')+'</h3><div style="border-top:3px double var(--t);margin-bottom:12px;"></div>';
+  html += renderEnteteOfficielProga(niveauLongProga);
   html += '<div class="pp-banner"><div class="pp-banner-top">📊 '+T('proga_title')+'</div><div class="pp-banner-theme">' + D.s.mat + (clsImp ? ' — ' + clsImp.nm : '') + '</div></div>';
-  html += '<div class="pp-meta"><div><b>'+T('cj_enseignant_lbl')+'</b> ' + D.s.pre + ' ' + D.s.nom + '</div><div><b>'+T('annee_scolaire_lbl')+'</b> ' + (D.s.an||'') + '</div></div>';
   function statutBadge(st){ return st==='termine' ? '<span class="badge bg2">'+T('proga_badge_termine_print')+'</span>' : st==='en_cours' ? '<span class="badge bb2">'+T('proga_badge_encours_print')+'</span>' : '<span class="badge ba2">'+T('statut_avenir_txt')+'</span>'; }
   if (isL) {
     html += '<div class="pp-section">📋 '+T('proga_eval_diag')+'</div>';
