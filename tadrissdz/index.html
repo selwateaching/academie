@@ -9534,7 +9534,14 @@ function renderProgaSeqMenu(menu) {
   var ac = gAC();
   var projetsClasseAc = (D.progression || []).filter(function(pj){ return pj.cid === (ac ? ac.id : null); });
   if (!projetsClasseAc.length) {
-    menu.innerHTML = '<div style="padding:.9rem;font-size:.8rem;color:var(--ink3);text-align:center;">'+T('proga_menu_aucune')+'</div>';
+    /* La Progression est scopée par classe : si le prof a des séquences mais pour une AUTRE
+       classe que la classe active, le message générique "ajoute-en une d'abord" est trompeur
+       (il en a déjà) — on précise alors que c'est la classe active qui n'en a pas. */
+    var aAilleurs = (D.progression || []).some(function(pj){ return (pj.sequences || []).length > 0; });
+    var msg = (aAilleurs && ac)
+      ? 'Aucune séquence dans la Progression annuelle pour la classe active (« ' + ac.nm + ' »). Change de classe active (en bas du menu) ou complète la Progression pour cette classe.'
+      : T('proga_menu_aucune');
+    menu.innerHTML = '<div style="padding:.9rem;font-size:.8rem;color:var(--ink3);text-align:center;">'+msg+'</div>';
     return;
   }
   var html = '';
