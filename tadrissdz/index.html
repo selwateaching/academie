@@ -10083,6 +10083,7 @@ function tpExtractEnteteFields(fullHtml) {
   var competence = grab(/<div class="tc-box-title">🎯 Compétence visée<\/div>([\s\S]*?)<\/div>/);
   var composante = grab(/<strong>Composante de la compétence\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
   var materiel = grab(/<strong>Support\s*:<\/strong>\s*([\s\S]*?)<\/p>/);
+  var enseignant = grab(/<b>Enseignant\(e\)\s*:<\/b>\s*([\s\S]*?)<\/div>/).replace(/^Prof\.\s*/,'');
   var objectifs = [];
   var objMatch = h.match(/<strong>Objectifs d'apprentissage<\/strong><\/p>\s*<ol>([\s\S]*?)<\/ol>/);
   if (objMatch) {
@@ -10090,13 +10091,18 @@ function tpExtractEnteteFields(fullHtml) {
     while ((lm = liRe.exec(objMatch[1]))) objectifs.push(lm[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
   }
   return { projet: projet, sequence: sequence, duree: duree, actePar: actePar, activite: activite,
-    competence: competence, composante: composante, materiel: materiel, objectifs: objectifs };
+    competence: competence, composante: composante, materiel: materiel, enseignant: enseignant, objectifs: objectifs };
 }
 /* Grille d'en-tête "canevas officiel" (Niveau/Projet/Acte de parole/Enseignant(e) · Durée/Séquence/
    Composante/Titre · Compétence/Activité/Matériel), pour une fiche pédagogique de langue affichée
    en Vue tableau — reproduit la mise en page papier habituelle au lieu de la liste Niveau/Matière. */
 function renderEnteteTableLangue(crs, fields) {
-  var ens = ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
+  /* Priorité au nom figé dans le contenu généré (même source que Projet/Séquence/etc., tous
+     extraits de crs.contenu) plutôt qu'à D.s.pre/D.s.nom lus en direct : plus fiable pour une
+     fiche sauvegardée rouverte plus tard, ou si le profil n'était pas encore chargé au moment
+     de l'affichage — repli sur D.s uniquement si le contenu n'a rien à offrir (anciennes fiches
+     générées avant l'ajout de ce champ dans le squelette). */
+  var ens = fields.enseignant || ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
   var td = 'border:1px solid var(--br);padding:6px 10px;vertical-align:top;';
   var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;font-size:.8rem;">';
   h += '<tr>'
