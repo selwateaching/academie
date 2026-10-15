@@ -9195,20 +9195,22 @@ function niveauLibelleLong(code) {
    retrouve exactement la même disposition que le document imposé par le Ministère. */
 function renderEnteteOfficielProga(niveauLong) {
   var ens = ((D.s.pre||'') + ' ' + (D.s.nom||'')).trim();
-  /* Texte toujours aligné à gauche dans sa cellule (jamais text-align:right) : sur un contenu
-     court comme "2026-2027", le right-align forçait le libellé en gras et la valeur à se
-     retrouver sur deux lignes séparées dans l'export PDF au lieu de rester sur une seule ligne —
-     la position "à droite" vient uniquement de l'ordre des colonnes, pas d'un alignement de texte. */
+  /* Le retrait de text-align:right n'a pas suffi : cette grille est aussi capturée telle quelle
+     par l'export PDF (html2canvas sur le DOM affiché à l'écran, dans une carte bien plus étroite
+     qu'une page A4), donc des colonnes en pourcentage pouvaient encore être trop étroites pour
+     "Année scolaire : 2026-2027" et faire passer la valeur sous le libellé. Chaque paire
+     libellé/valeur est maintenant dans un span "white-space:nowrap" : elle ne peut plus jamais se
+     couper en deux lignes, quelle que soit la largeur réelle du conteneur au moment de l'export. */
   var td = 'padding:4px 8px 4px 0;vertical-align:top;font-size:.85rem;line-height:1.5;';
-  var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;table-layout:fixed;">';
+  var h = '<table style="width:100%;border-collapse:collapse;margin-bottom:.9rem;">';
   h += '<tr>'
-    + '<td style="'+td+'width:36%;"><b>Établissement :</b> ' + (D.s.et||'') + '</td>'
-    + '<td style="'+td+'width:28%;"><b>Inspection :</b> ' + (D.s.insp||'') + '</td>'
-    + '<td style="'+td+'width:36%;padding-right:0;"><b>Année scolaire :</b> ' + (D.s.an||'') + '</td>'
+    + '<td style="'+td+'width:36%;"><span style="white-space:nowrap;"><b>Établissement :</b> ' + (D.s.et||'') + '</span></td>'
+    + '<td style="'+td+'width:28%;"><span style="white-space:nowrap;"><b>Inspection :</b> ' + (D.s.insp||'') + '</span></td>'
+    + '<td style="'+td+'width:36%;padding-right:0;"><span style="white-space:nowrap;"><b>Année scolaire :</b> ' + (D.s.an||'') + '</span></td>'
     + '</tr><tr>'
     + '<td style="'+td+'"></td>'
-    + '<td style="'+td+'"><b>Enseignant(e) :</b> ' + ens + '</td>'
-    + '<td style="'+td+'padding-right:0;"><b>Niveau :</b> ' + niveauLong + '</td>'
+    + '<td style="'+td+'"><span style="white-space:nowrap;"><b>Enseignant(e) :</b> ' + ens + '</span></td>'
+    + '<td style="'+td+'padding-right:0;"><span style="white-space:nowrap;"><b>Niveau :</b> ' + niveauLong + '</span></td>'
     + '</tr></table>';
   return h;
 }
