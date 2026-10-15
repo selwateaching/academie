@@ -424,6 +424,9 @@ window.aRenderComptes = function() {
         return '<select onchange="window.aSetPlan(\'' + p.id + '\', this.value)" style="padding:5px 8px;border:1px solid var(--br);border-radius:6px;font-family:\'Inter\',sans-serif;font-size:.78rem;">'
           + ['decouverte','starter','pro'].map(function(k) { return '<option value="' + k + '"' + (cur===k?' selected':'') + '>' + PLAN_LABELS[k] + '</option>'; }).join('')
           + '</select>';
+      } },
+    { label: 'Quota IA', render: function(p) {
+        return '<button class="btn" style="background:var(--bg);border:1px solid var(--br);color:var(--ink2);font-size:.72rem;padding:5px 10px;" onclick="window.aResetQuota(\'' + p.id + '\', this)">🔄 Réinitialiser (ce mois)</button>';
       } }
   ]) : '<div class="empty">Aucun compte trouvé</div>';
   var allChecked = rows.length > 0 && rows.every(function(p) { return COMPTE_SEL[p.id]; });
@@ -455,6 +458,25 @@ window.aSetPlan = async function(profId, plan) {
   var p = ALL_PROFS.find(function(x) { return x.id === profId; });
   if (p) p.plan = plan;
   window.aRenderComptes();
+};
+/* Remet à zéro le compteur de générations IA du mois en cours pour un prof — utile quand un
+   prof a légitimement besoin de plus que son quota un mois donné, ou pour débloquer un compte
+   de test (le tien, par exemple) pendant que tu vérifies une nouvelle fonctionnalité. Même clé
+   de mois (YYYY-MM) et même document Firestore que verifierEtIncrementerQuota() dans index.html —
+   profs/{profId}/usage/{moisCle}. */
+window.aResetQuota = async function(profId, btn) {
+  if (!confirm('Remettre à zéro le quota IA de ce mois pour ce compte ?')) return;
+  var d = new Date();
+  var moisCle = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  var prevLabel = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    await setDoc(doc(dbFs, 'profs', profId, 'usage', moisCle), { count: 0, updatedAt: Date.now() });
+    if (btn) { btn.textContent = '✅ Fait'; setTimeout(function() { btn.textContent = prevLabel; btn.disabled = false; }, 1500); }
+  } catch (e) {
+    alert('Erreur lors de la réinitialisation : ' + (e && e.message ? e.message : e));
+    if (btn) { btn.textContent = prevLabel; btn.disabled = false; }
+  }
 };
 window.aValidateProf = async function(profId, plan) {
   /* Validation manuelle après confirmation du paiement (CIB, Dahabia, BaridiMob, virement) —
