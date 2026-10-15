@@ -96,6 +96,39 @@ def fiches_access():
         return jsonify({"error": {"message": "Impossible de vérifier ton accès pour le moment. Réessaie."}}), 401
 
 
+@app.post("/api/admin/reset-quota")
+def admin_reset_quota():
+    """Remet à zéro le quota de générations IA du mois en cours pour un prof, depuis admin.html.
+    Passe par Firebase Admin (droits serveur complets) car les règles de sécurité Firestore
+    n'autorisent pas un admin à écrire, depuis le navigateur, dans la sous-collection
+    profs/{id}/usage/{mois} d'un AUTRE prof que lui-même — seul ce serveur peut le faire."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+    id_token = auth_header[len("Bearer "):]
+    body = request.get_json(silent=True) or {}
+    prof_id = (body.get("profId") or "").strip()
+    if not prof_id:
+        return jsonify({"error": {"message": "Compte prof manquant."}}), 400
+    try:
+        from firebase_admin import auth as fb_auth, firestore
+
+        get_firebase_app()
+        decoded = fb_auth.verify_id_token(id_token)
+        uid = decoded["uid"]
+        db = firestore.client()
+        if not db.collection("admins").document(uid).get().exists:
+            return jsonify({"error": {"message": "Accès réservé aux comptes administrateur."}}), 403
+        mois_cle = time.strftime("%Y-%m")
+        db.collection("profs").document(prof_id).collection("usage").document(mois_cle).set(
+            {"count": 0, "updatedAt": int(time.time() * 1000)}
+        )
+        return jsonify({"ok": True})
+    except Exception:  # noqa: BLE001 - message générique, jamais de détail d'auth au client
+        logger.exception("Erreur lors de la réinitialisation du quota IA (admin)")
+        return jsonify({"error": {"message": "Impossible de réinitialiser le quota pour le moment. Réessaie."}}), 500
+
+
 # ===== Espace élève : code (identifiant) + mot de passe =====
 # Le code à 6 chiffres n'est plus un secret : il peut figurer sur la copie de l'élève. L'accès aux
 # données se fait par ce code ET un mot de passe, vérifiés ici côté serveur. Le mot de passe n'est
