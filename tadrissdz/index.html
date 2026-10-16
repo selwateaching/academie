@@ -5873,7 +5873,7 @@ function remedHistItemHtml(r) {
   var isAR = CURRENT_LANG === 'ar';
   var rows = remedTableRowsHtml(r, isAR);
   return '<div class="card" style="margin-bottom:.8rem"><div class="cb" style="padding:1rem">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem"><b>'+tiaEsc(r.date)+'</b><button class="btn bxs bo" style="color:var(--r)" onclick="remedDelete('+r.id+')">🗑</button></div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem"><b>'+tiaEsc(r.date)+'</b><div style="display:flex;gap:.5rem"><button class="btn bo bsm" onclick="remedImprimer('+r.eid+','+r.id+')">🖨 '+(isAR?'طباعة':'Imprimer')+'</button><button class="btn bxs bo" style="color:var(--r)" onclick="remedDelete('+r.id+')">🗑</button></div></div>'
     + '<table class="acq-tbl"><thead><tr><th>'+(isAR?'الكفاءة':'Compétence')+'</th><th>'+(isAR?'المستوى':'Niveau')+'</th><th>'+(isAR?'الحل المقترح':'Solution proposée')+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
     + '</div></div>';
 }
@@ -5896,9 +5896,7 @@ function remedShowDetail(eid) {
     : '<div style="text-align:center;padding:1.5rem;color:var(--ink3)">'+(isAR?'لا يوجد تشخيص بعد لهذا التلميذ.':'Pas encore de diagnostic pour cet élève.')+'</div>';
   box.innerHTML = '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;align-items:center;gap:1rem">'
     + '<div style="width:52px;height:52px;border-radius:50%;background:'+e.c+';display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff">'+e.pr[0]+'</div>'
-    + '<div style="flex:1;font-size:1.1rem;font-weight:700">'+tiaEsc(e.pr+' '+e.no)+'</div>'
-    + (hist.length ? '<button class="btn bo bsm" onclick="remedImprimer('+eid+')">🖨 '+(isAR?'طباعة':'Imprimer')+'</button>' : '')
-    + '</div></div>'
+    + '<div style="font-size:1.1rem;font-weight:700">'+tiaEsc(e.pr+' '+e.no)+'</div></div></div>'
     + '<div class="card" style="margin-bottom:1.2rem"><div class="ch"><div class="ct">'+(isAR?'تقييم الكفاءات':'Évaluer les compétences')+'</div></div><div class="cb" style="padding:1.2rem">'
     + selectsHtml
     + '<button class="btn bt" style="margin-top:.6rem" onclick="remedGenerer('+eid+')" id="remedGenBtn">✨ '+(isAR?'إنشاء التشخيص':'Générer le diagnostic')+'</button>'
@@ -5982,11 +5980,12 @@ function remedDelete(id) {
   sv();
   if (REMED_CUR_EID) remedShowDetail(REMED_CUR_EID);
 }
-function remedImprimer(eid) {
+function remedImprimer(eid, rid) {
   var e = D.el.find(function(x){ return x.id===eid; });
   if (!e) return;
-  var hist = D.remediations.filter(function(r){ return r.eid===eid; }).sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
-  var r = hist[0];
+  var r = rid
+    ? D.remediations.find(function(x){ return x.id===rid; })
+    : D.remediations.filter(function(x){ return x.eid===eid; }).sort(function(a,b){ return new Date(b.date)-new Date(a.date); })[0];
   if (!r) return;
   var isAR = CURRENT_LANG === 'ar';
   var cls = D.cls.find(function(c){ return c.id===e.cid; });
