@@ -5926,12 +5926,9 @@ async function remedGenerer(eid) {
   var prompt = "Tu es un conseiller pédagogique dans le système éducatif algérien. Voici le niveau de l'élève " + e.pr + ' ' + e.no + " (classe : " + (gAC()?gAC().nm:'') + ", matière : " + D.s.mat + ") sur des compétences transversales évaluées par l'enseignant(e) :\n\n"
     + lignesPrompt.join('\n')
     + "\n\n(Échelle : 5 = compétence marquée, 4 = assurée, 3 = acceptable, 2 = peu développée, 1 = très peu développée.)\n\n"
-    + "Rédige un DIAGNOSTIC DE RÉMÉDIATION détaillé et concret pour cet élève, structuré ainsi :\n"
-    + "1. Résumé du profil (2-3 phrases)\n"
-    + "2. Pour CHAQUE compétence notée 3 ou moins : la difficulté précise probable, puis 2-3 activités de remédiation concrètes et réalisables en classe ou à la maison\n"
-    + "3. Une priorité claire (sur quoi travailler en premier)\n\n"
-    + "Sois concret et actionnable, pas générique. Réponds uniquement avec le diagnostic (pas de préambule)" + (isAR ? ', en langue arabe.' : ', en français.');
-  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt, max_tokens:2000, model:'claude-sonnet-5' }) })
+    + "Rédige un diagnostic de rémédiation TRÈS COURT : MAXIMUM 3 PHRASES au total, pour cerner rapidement l'élève. Un seul paragraphe, sans titre, sans liste, sans sections numérotées. Identifie en une phrase le profil global de l'élève, puis en une à deux phrases la priorité de rémédiation la plus utile (concrète, pas générique).\n\n"
+    + "Réponds UNIQUEMENT avec ce court paragraphe (pas de préambule, pas de titre)" + (isAR ? ', en langue arabe.' : ', en français.');
+  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt, max_tokens:400, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(function(data) {
       btn.innerHTML = btnInitialHTML; btn.disabled = false;
