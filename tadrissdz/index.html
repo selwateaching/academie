@@ -5881,7 +5881,9 @@ function remedShowDetail(eid) {
     : '<div style="text-align:center;padding:1.5rem;color:var(--ink3)">'+(isAR?'لا يوجد تشخيص بعد لهذا التلميذ.':'Pas encore de diagnostic pour cet élève.')+'</div>';
   box.innerHTML = '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;align-items:center;gap:1rem">'
     + '<div style="width:52px;height:52px;border-radius:50%;background:'+e.c+';display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff">'+e.pr[0]+'</div>'
-    + '<div style="font-size:1.1rem;font-weight:700">'+tiaEsc(e.pr+' '+e.no)+'</div></div></div>'
+    + '<div style="flex:1;font-size:1.1rem;font-weight:700">'+tiaEsc(e.pr+' '+e.no)+'</div>'
+    + (hist.length ? '<button class="btn bo bsm" onclick="remedImprimer('+eid+')">🖨 '+(isAR?'طباعة':'Imprimer')+'</button>' : '')
+    + '</div></div>'
     + '<div class="card" style="margin-bottom:1.2rem"><div class="ch"><div class="ct">'+(isAR?'تقييم الكفاءات':'Évaluer les compétences')+'</div></div><div class="cb" style="padding:1.2rem">'
     + selectsHtml
     + '<button class="btn bt" style="margin-top:.6rem" onclick="remedGenerer('+eid+')" id="remedGenBtn">✨ '+(isAR?'إنشاء التشخيص':'Générer le diagnostic')+'</button>'
@@ -5953,6 +5955,31 @@ function remedDelete(id) {
   D.remediations = D.remediations.filter(function(r){ return r.id!==id; });
   sv();
   if (REMED_CUR_EID) remedShowDetail(REMED_CUR_EID);
+}
+function remedImprimer(eid) {
+  var e = D.el.find(function(x){ return x.id===eid; });
+  if (!e) return;
+  var hist = D.remediations.filter(function(r){ return r.eid===eid; }).sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  var r = hist[0];
+  if (!r) return;
+  var isAR = CURRENT_LANG === 'ar';
+  var cls = D.cls.find(function(c){ return c.id===e.cid; });
+  var nivMatch = cls && cls.nm ? cls.nm.match(/(\d(?:AP|AM|AS))/i) : null;
+  var niveauLong = nivMatch ? niveauLibelleLong(nivMatch[1].toUpperCase()) : (cls ? cls.nm : '');
+  var html = renderBandeauOfficielMEN(niveauLong);
+  html += '<div class="pp-banner"><div class="pp-banner-top">🩺 '+(isAR?'بطاقة المعالجة':'Fiche de rémédiation')+'</div><div class="pp-banner-theme">'+tiaEsc(e.pr+' '+e.no)+(cls?' — '+tiaEsc(cls.nm):'')+'</div></div>';
+  html += '<div class="pp-meta"><span><b>'+(isAR?'التاريخ':'Date')+':</b> '+tiaEsc(r.date)+'</span><span><b>'+(isAR?'المادة':'Matière')+':</b> '+tiaEsc(D.s.mat)+'</span></div>';
+  html += '<div class="pp-section">📋 '+(isAR?'تقييم الكفاءات':'Évaluation des compétences')+'</div>';
+  html += '<table class="pp-tbl"><thead><tr><th>'+(isAR?'الكفاءة':'Compétence')+'</th><th>'+(isAR?'المستوى':'Niveau')+'</th></tr></thead><tbody>';
+  REMED_COMPETENCES.forEach(function(c) {
+    var v = r.niveaux[c.key];
+    var n = v ? REMED_NIVEAUX.find(function(x){ return x.val===v; }) : null;
+    html += '<tr><td>'+tiaEsc(isAR?c.ar:c.fr)+'</td><td>'+(n ? tiaEsc(isAR?n.ar:n.fr) : '<span style="color:var(--ink3)">—</span>')+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  html += '<div class="pp-section">🩺 '+(isAR?'التشخيص والمعالجة':'Diagnostic et rémédiation')+'</div>';
+  html += '<div class="tc-passage" style="white-space:pre-wrap">'+tiaEsc(r.texte)+'</div>';
+  printCleanPage((isAR?'بطاقة المعالجة':'Fiche de rémédiation')+' — '+e.pr+' '+e.no, html);
 }
 
 /* ===== PROGRESSION DES ELEVES ===== */
