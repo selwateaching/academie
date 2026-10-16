@@ -2156,6 +2156,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg2"><div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="r2M" placeholder=""></div><div class="fg"><label class="fl">Téléphone</label><input class="fi" id="r2T" placeholder=""></div></div>
       </div>
       <div class="fg"><label class="fl">Observations (PAP, PAI, santé, besoins spéciaux...)</label><textarea class="fta" id="eOb" style="min-height:55px"></textarea></div>
+      <div class="blk" id="mElRemarquesBlk" style="display:none;background:var(--bp);border-left:3px solid var(--b)">
+        <div style="font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;color:var(--b);margin-bottom:.7rem" id="mElRemarquesTtl">Remarques (évolution, comportement...)</div>
+        <div class="fg2" style="align-items:flex-end">
+          <div class="fg" style="flex:1"><textarea class="fta" id="eRemNouvelle" style="min-height:45px" placeholder="Ex: A bien participé aujourd'hui, a fait des efforts en lecture..."></textarea></div>
+          <button class="btn bt bsm" type="button" onclick="remarqueAjouter()" id="eRemAddBtn">+ Ajouter</button>
+        </div>
+        <div id="eRemListe" style="margin-top:.8rem"></div>
+      </div>
     </div>
     <div class="mf"><button class="btn bxs" id="mElDelBtn" style="background:var(--rp);color:var(--r);border:1px solid rgba(200,16,46,.3);display:none" onclick="delEl(D._eId)">🗑 Supprimer</button><button class="btn bo" onclick="CM('mEleve')">Annuler</button><button class="btn bt" id="eSaveBtn" onclick="saveEl()">Enregistrer</button></div>
   </div>
@@ -4665,8 +4673,12 @@ function switchLang() {
     if (ph==='parent@mail.com') inp.placeholder = 'parent@mail.com';
     if (ph.startsWith('06') || ph.startsWith('XX')) inp.placeholder = isAR?'XX XX XX XX 06':ph;
   });
-  var rep1Ttl = document.querySelector('#mEleve .blk:first-of-type > div:first-child'); if (rep1Ttl) rep1Ttl.textContent = isAR ? 'الممثل القانوني 1' : 'Représentant légal 1';
-  var rep2Ttl = document.querySelector('#mEleve .blk:last-of-type > div:first-child'); if (rep2Ttl) rep2Ttl.textContent = isAR ? 'الممثل القانوني 2 (اختياري)' : 'Représentant légal 2 (optionnel)';
+  var mElBlks = document.querySelectorAll('#mEleve .blk');
+  var rep1Ttl = mElBlks[0] ? mElBlks[0].querySelector(':scope > div:first-child') : null; if (rep1Ttl) rep1Ttl.textContent = isAR ? 'الممثل القانوني 1' : 'Représentant légal 1';
+  var rep2Ttl = mElBlks[1] ? mElBlks[1].querySelector(':scope > div:first-child') : null; if (rep2Ttl) rep2Ttl.textContent = isAR ? 'الممثل القانوني 2 (اختياري)' : 'Représentant légal 2 (optionnel)';
+  var remTtl = document.getElementById('mElRemarquesTtl'); if (remTtl) remTtl.textContent = isAR ? 'ملاحظات (تطور، سلوك...)' : 'Remarques (évolution, comportement...)';
+  var remAddBtn = document.getElementById('eRemAddBtn'); if (remAddBtn) remAddBtn.textContent = isAR ? '+ إضافة' : '+ Ajouter';
+  var remNewTa = document.getElementById('eRemNouvelle'); if (remNewTa) remNewTa.placeholder = isAR ? 'مثال: شارك جيدا اليوم، بذل جهدا في القراءة...' : 'Ex: A bien participé aujourd\'hui, a fait des efforts en lecture...';
   ['r1L','r2L'].forEach(function(selId) {
     var sel = document.getElementById(selId);
     if (sel && sel.options.length >= 5) {
@@ -4893,6 +4905,10 @@ function OM(id) {
     var mElTEl = document.getElementById('mElT'); if (mElTEl) mElTEl.textContent = 'Fiche élève';
     fillClsSel(); resetElPhotoUI();
     var mElDelBtn0 = document.getElementById('mElDelBtn'); if (mElDelBtn0) mElDelBtn0.style.display = 'none';
+    /* Les remarques se rattachent à un élève déjà enregistré (elles ont besoin de son id) —
+       invisibles tant qu'on crée une nouvelle fiche, réapparaissent via fillEl() en modification. */
+    var remBlk0 = document.getElementById('mElRemarquesBlk'); if (remBlk0) remBlk0.style.display = 'none';
+    var remNew0 = document.getElementById('eRemNouvelle'); if (remNew0) remNew0.value = '';
   }
   if (id === 'mNote') {
     var evEdit = D._evId ? D.ev.find(function(x){ return x.id===D._evId; }) : null;
@@ -5200,7 +5216,7 @@ var D = {
     { id:4, domaine:'Comportement & autonomie', libelle:'Je travaille de manière autonome et organisée' },
     { id:5, domaine:'Comportement & autonomie', libelle:'Je respecte les consignes et le matériel de classe' },
     { id:6, domaine:'Expression', libelle:"Je m'exprime clairement à l'oral devant la classe" }
-  ], acquis:[], groupes:[], remediations:[]
+  ], acquis:[], groupes:[], remediations:[], remarques:[]
 };
 
 /* état "vierge" utilisé à chaque changement de compte (resetToDefaults) — VRAIMENT vide, pas
@@ -5219,12 +5235,12 @@ var D_DEFAULTS = {
     { id:4, domaine:'Comportement & autonomie', libelle:'Je travaille de manière autonome et organisée' },
     { id:5, domaine:'Comportement & autonomie', libelle:'Je respecte les consignes et le matériel de classe' },
     { id:6, domaine:'Expression', libelle:"Je m'exprime clairement à l'oral devant la classe" }
-  ], acquis:[], groupes:[], remediations:[]
+  ], acquis:[], groupes:[], remediations:[], remarques:[]
 };
 
 var CURRENT_STORAGE_KEY = 'TADRISS_DZ'; /* clé par défaut avant identification du compte Firebase */
-function ld() { try { var x = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}'); ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes','remediations'].forEach(function(k) { if (x[k]!==undefined) D[k] = x[k]; }); } catch(e) {} }
-function sv() { try { var o = {}; ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes','remediations'].forEach(function(k) { o[k] = D[k]; }); localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(o)); } catch(e) {} if (typeof window.scheduleCloudSync === 'function') window.scheduleCloudSync(); }
+function ld() { try { var x = JSON.parse(localStorage.getItem(CURRENT_STORAGE_KEY) || '{}'); ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes','remediations','remarques'].forEach(function(k) { if (x[k]!==undefined) D[k] = x[k]; }); } catch(e) {} }
+function sv() { try { var o = {}; ['s','cls','el','ev','fo','evt','ml','pr','prM','ap','apDetails','qz','crs','cj','edt','progression','crsFolders','crsActiveFolder','subjectFolderInit','iaChat','apprPerso','acquisComp','acquis','groupes','remediations','remarques'].forEach(function(k) { o[k] = D[k]; }); localStorage.setItem(CURRENT_STORAGE_KEY, JSON.stringify(o)); } catch(e) {} if (typeof window.scheduleCloudSync === 'function') window.scheduleCloudSync(); }
 function resetToDefaults() { var fresh = JSON.parse(JSON.stringify(D_DEFAULTS)); Object.keys(fresh).forEach(function(k){ D[k] = fresh[k]; }); }
 /* Un autre onglet (ex: Labo Langues, ouvert séparément pour corriger une production orale)
    peut écrire directement dans ce même stockage local. Sans ceci, l'onglet Tadriss déjà
@@ -6610,6 +6626,8 @@ function fillEl(id) {
   document.getElementById('eOb').value = e.ob||'';
   resetElPhotoUI(e.photo);
   var mElDelBtn = document.getElementById('mElDelBtn'); if (mElDelBtn) mElDelBtn.style.display = '';
+  var remBlk = document.getElementById('mElRemarquesBlk'); if (remBlk) remBlk.style.display = '';
+  rRemarquesListe(id);
 }
 function saveEl() {
   var pr = document.getElementById('ePr').value.trim(), no = document.getElementById('eNo').value.trim();
@@ -6643,6 +6661,9 @@ function delEl(id) {
   (D.ev || []).forEach(function(v) { if (v.notes) delete v.notes[id]; });
   Object.keys(D.ap || {}).forEach(function(date) { if (D.ap[date]) delete D.ap[date][id]; });
   (D.fo || []).forEach(function(f) { if (f.partageElevesIds) f.partageElevesIds = f.partageElevesIds.filter(function(eid) { return eid !== id; }); });
+  D.acquis = (D.acquis || []).filter(function(a) { return a.eid !== id; });
+  D.remediations = (D.remediations || []).filter(function(r) { return r.eid !== id; });
+  D.remarques = (D.remarques || []).filter(function(r) { return r.eid !== id; });
   sv(); CM('mEleve'); rEl();
   N((CURRENT_LANG === 'ar' ? 'تم حذف ' : '') + e.pr + ' ' + e.no + (CURRENT_LANG === 'ar' ? '.' : ' supprimé(e).'), 'ok');
   try {
@@ -6650,6 +6671,44 @@ function delEl(id) {
       window._fbDeleteDoc(window._fbDoc(window._fbDbFs, 'eleveAcces', genCode(id))).catch(function() {});
     }
   } catch (err) {}
+}
+
+/* ===== REMARQUES (fiche élève) =====
+   Journal de suivi simple, daté, par élève : contrairement au champ "Observations" (une seule
+   note permanente, PAP/PAI/santé), chaque remarque est horodatée et s'additionne aux précédentes
+   — pour noter au fil de l'eau un comportement, un progrès, etc. */
+function rRemarquesListe(eid) {
+  var box = document.getElementById('eRemListe');
+  if (!box) return;
+  var isAR = CURRENT_LANG === 'ar';
+  var liste = (D.remarques || []).filter(function(r) { return r.eid===eid; }).sort(function(a,b) { return new Date(b.date)-new Date(a.date); });
+  if (!liste.length) {
+    box.innerHTML = '<div style="font-size:.78rem;color:var(--ink3);padding:.4rem 0">'+(isAR?'لا توجد ملاحظات بعد.':'Pas encore de remarque.')+'</div>';
+    return;
+  }
+  box.innerHTML = liste.map(function(r) {
+    return '<div style="display:flex;gap:.6rem;align-items:flex-start;padding:.5rem 0;border-bottom:1px solid var(--br)">'
+      + '<div style="flex:1"><div style="font-size:.7rem;color:var(--ink3);font-weight:600">'+tiaEsc(r.date)+'</div><div style="font-size:.84rem;white-space:pre-wrap">'+tiaEsc(r.texte)+'</div></div>'
+      + '<button class="btn bxs bo" style="color:var(--r)" type="button" onclick="remarqueSupprimer('+r.id+')">🗑</button>'
+      + '</div>';
+  }).join('');
+}
+function remarqueAjouter() {
+  var eid = D._eId;
+  if (!eid) return; /* bloc masqué pour une nouvelle fiche, ne devrait pas arriver */
+  var ta = document.getElementById('eRemNouvelle');
+  var texte = ta ? ta.value.trim() : '';
+  if (!texte) { N(CURRENT_LANG==='ar'?'اكتب ملاحظة أولا.':'Écris une remarque avant de l\'ajouter.', 'err'); return; }
+  var id = D.remarques.length ? Math.max.apply(null, D.remarques.map(function(r){return r.id;}))+1 : 1;
+  D.remarques.push({ id:id, eid:eid, date:new Date().toISOString().slice(0,10), texte:texte });
+  sv();
+  if (ta) ta.value = '';
+  rRemarquesListe(eid);
+}
+function remarqueSupprimer(id) {
+  D.remarques = D.remarques.filter(function(r) { return r.id!==id; });
+  sv();
+  if (D._eId) rRemarquesListe(D._eId);
 }
 
 /* ===== NOTES ===== */
