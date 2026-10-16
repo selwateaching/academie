@@ -5860,18 +5860,21 @@ function remedShowList() {
   document.getElementById('remedBtnBack').style.display = 'none';
 }
 var REMED_CUR_EID = null;
+function remedTableRowsHtml(r, isAR) {
+  return REMED_COMPETENCES.map(function(c) {
+    var sol = r.solutions ? r.solutions[c.key] : null;
+    if (!sol) return ''; /* seulement les compétences faibles, avec une solution reçue */
+    var v = r.niveaux[c.key];
+    var n = v ? REMED_NIVEAUX.find(function(x){ return x.val===v; }) : null;
+    return '<tr><td>'+tiaEsc(isAR?c.ar:c.fr)+'</td><td>'+(n?tiaEsc(isAR?n.ar:n.fr):'—')+'</td><td>'+tiaEsc(sol)+'</td></tr>';
+  }).filter(Boolean).join('');
+}
 function remedHistItemHtml(r) {
   var isAR = CURRENT_LANG === 'ar';
-  var lignes = REMED_COMPETENCES.map(function(c) {
-    var v = r.niveaux[c.key];
-    if (!v) return '';
-    var n = REMED_NIVEAUX.find(function(x){ return x.val===v; });
-    return '<li>'+tiaEsc(isAR?c.ar:c.fr)+' — '+tiaEsc(n?(isAR?n.ar:n.fr):String(v))+'</li>';
-  }).filter(Boolean).join('');
+  var rows = remedTableRowsHtml(r, isAR);
   return '<div class="card" style="margin-bottom:.8rem"><div class="cb" style="padding:1rem">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><b>'+tiaEsc(r.date)+'</b><button class="btn bxs bo" style="color:var(--r)" onclick="remedDelete('+r.id+')">🗑</button></div>'
-    + '<ul style="margin:0 0 .7rem;padding-inline-start:1.2rem;font-size:.8rem;color:var(--ink3)">'+lignes+'</ul>'
-    + '<div style="white-space:pre-wrap;font-size:.88rem">'+tiaEsc(r.texte)+'</div>'
+    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem"><b>'+tiaEsc(r.date)+'</b><button class="btn bxs bo" style="color:var(--r)" onclick="remedDelete('+r.id+')">🗑</button></div>'
+    + '<table class="acq-tbl"><thead><tr><th>'+(isAR?'الكفاءة':'Compétence')+'</th><th>'+(isAR?'المستوى':'Niveau')+'</th><th>'+(isAR?'الحل المقترح':'Solution proposée')+'</th></tr></thead><tbody>'+rows+'</tbody></table>'
     + '</div></div>';
 }
 function remedShowDetail(eid) {
@@ -5935,12 +5938,16 @@ async function remedGenerer(eid) {
     N(isAR?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err');
     return;
   }
+  var clesFaibles = Object.keys(niveaux).filter(function(k) { return niveaux[k] <= 3; });
+  if (!clesFaibles.length) { N(isAR?'لا توجد كفاءة بمستوى ضعيف أو مقبول — لا حاجة لمعالجة.':'Aucune compétence à 3/5 ou moins — pas besoin de rémédiation ici.', 'err'); btn.innerHTML = btnInitialHTML; btn.disabled = false; document.getElementById('remedResultBox').innerHTML = ''; return; }
+  var schema = '{"items":[{"competence":"'+clesFaibles[0]+'","solution":"..."}]}';
   var prompt = "Tu es un conseiller pédagogique dans le système éducatif algérien. Voici le niveau de l'élève " + e.pr + ' ' + e.no + " (classe : " + (gAC()?gAC().nm:'') + ", matière : " + D.s.mat + ") sur des compétences transversales évaluées par l'enseignant(e) :\n\n"
     + lignesPrompt.join('\n')
     + "\n\n(Échelle : 5 = compétence marquée, 4 = assurée, 3 = acceptable, 2 = peu développée, 1 = très peu développée.)\n\n"
-    + "Rédige un diagnostic de rémédiation TRÈS COURT : MAXIMUM 3 PHRASES au total, pour cerner rapidement l'élève. Un seul paragraphe, sans titre, sans liste, sans sections numérotées. Identifie en une phrase le profil global de l'élève, puis en une à deux phrases la priorité de rémédiation la plus utile (concrète, pas générique).\n\n"
-    + "Réponds UNIQUEMENT avec ce court paragraphe (pas de préambule, pas de titre)" + (isAR ? ', en langue arabe.' : ', en français.');
-  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt, max_tokens:400, model:'claude-sonnet-5' }) })
+    + "Pour CHACUNE de ces compétences précises (clés) : " + clesFaibles.join(', ') + ", propose UNE solution de rémédiation concrète et courte (1 phrase, pas de liste à puces à l'intérieur).\n\n"
+    + "Réponds UNIQUEMENT avec un objet JSON valide (pas de texte avant/après, pas de ```), structure EXACTE :\n" + schema
+    + "\n\n\"competence\" doit être EXACTEMENT une des clés données (" + clesFaibles.join(', ') + "), \"solution\" " + (isAR ? 'en langue arabe.' : 'en français.');
+  fetch('/.netlify/functions/generate', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt: prompt, max_tokens:600, model:'claude-sonnet-5' }) })
     .then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); })
     .then(function(data) {
       btn.innerHTML = btnInitialHTML; btn.disabled = false;
@@ -5948,8 +5955,18 @@ async function remedGenerer(eid) {
       if (data.error) { N((isAR?'خطأ في الواجهة البرمجية : ':'Erreur API : ') + (data.error.message || data.error.type || 'inconnue'), 'err'); return; }
       var text = extractClaudeText(data);
       if (!text) { N(isAR?'استجابة فارغة من الذكاء الاصطناعي.':'Réponse vide de l\'IA.', 'err'); return; }
+      var clean = text.replace(/```json/g,'').replace(/```/g,'').trim();
+      var solutions = {};
+      try {
+        var parsed = JSON.parse(clean);
+        (parsed.items || []).forEach(function(it) { if (it && it.competence && it.solution) solutions[it.competence] = it.solution; });
+      } catch (eParse) {
+        N(isAR?'خطأ في تنسيق استجابة الذكاء الاصطناعي. أعد المحاولة.':'Erreur de format dans la réponse IA. Réessaie.', 'err');
+        return;
+      }
+      if (!Object.keys(solutions).length) { N(isAR?'لم يتم استلام أي حل. أعد المحاولة.':'Aucune solution reçue. Réessaie.', 'err'); return; }
       var id = D.remediations.length ? Math.max.apply(null, D.remediations.map(function(r){return r.id;}))+1 : 1;
-      D.remediations.push({ id:id, eid:eid, cid:e.cid, date:new Date().toISOString().slice(0,10), niveaux:niveaux, texte:text.trim() });
+      D.remediations.push({ id:id, eid:eid, cid:e.cid, date:new Date().toISOString().slice(0,10), niveaux:niveaux, solutions:solutions });
       sv();
       remedShowDetail(eid);
       N(isAR?'تم إنشاء التشخيص !':'Diagnostic généré !', 'ok');
@@ -5986,8 +6003,8 @@ function remedImprimer(eid) {
     html += '<tr><td>'+tiaEsc(isAR?c.ar:c.fr)+'</td><td>'+(n ? tiaEsc(isAR?n.ar:n.fr) : '<span style="color:var(--ink3)">—</span>')+'</td></tr>';
   });
   html += '</tbody></table>';
-  html += '<div class="pp-section">🩺 '+(isAR?'التشخيص والمعالجة':'Diagnostic et rémédiation')+'</div>';
-  html += '<div class="tc-passage" style="white-space:pre-wrap">'+tiaEsc(r.texte)+'</div>';
+  html += '<div class="pp-section">🩺 '+(isAR?'الحلول المقترحة':'Solutions proposées')+'</div>';
+  html += '<table class="pp-tbl"><thead><tr><th>'+(isAR?'الكفاءة':'Compétence')+'</th><th>'+(isAR?'المستوى':'Niveau')+'</th><th>'+(isAR?'الحل المقترح':'Solution proposée')+'</th></tr></thead><tbody>'+remedTableRowsHtml(r, isAR)+'</tbody></table>';
   printCleanPage((isAR?'بطاقة المعالجة':'Fiche de rémédiation')+' — '+e.pr+' '+e.no, html);
 }
 
