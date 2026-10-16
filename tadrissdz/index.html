@@ -1579,12 +1579,15 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
     <div><div class="sht">Progression annuelle</div><div style="font-size:.72rem;color:var(--ink3)" id="progaSub">Plan de l'année — pilote le Cahier journal et les Fiches pédagogiques</div></div>
     <div style="display:flex;gap:.7rem;align-items:center;">
       <select class="fs" id="progaClasseSel" style="width:200px" onchange="onProgaClasseChange()" title="Classe"></select>
-      <select class="fs" id="progaNiveau" style="width:170px" onchange="toggleFiliereSelect('progaNiveau','progaFiliere')" title="Niveau pour la génération IA">
-        <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
-        <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
-        <option>1AS</option><option>2AS</option><option>3AS</option>
-      </select>
-      <select class="fs" id="progaFiliere" style="width:190px;display:none" title="Filière pour la génération IA"></select>
+      <button class="btn bo bsm" id="progaNivToggle" onclick="toggleProgaNivFiliereWrap()" title="Niveau utilisé pour la génération IA (deviné automatiquement depuis le nom de la classe)">⚙️ Niveau</button>
+      <span id="progaNivFiliereWrap" style="display:none;gap:.7rem;align-items:center">
+        <select class="fs" id="progaNiveau" style="width:170px" onchange="toggleFiliereSelect('progaNiveau','progaFiliere')" title="Niveau pour la génération IA">
+          <option>1AP</option><option>2AP</option><option>3AP</option><option>4AP</option><option>5AP</option>
+          <option>1AM</option><option>2AM</option><option>3AM</option><option selected>4AM</option>
+          <option>1AS</option><option>2AS</option><option>3AS</option>
+        </select>
+        <select class="fs" id="progaFiliere" style="width:190px;display:none" title="Filière pour la génération IA"></select>
+      </span>
       <button class="btn bo bsm" id="btnProgaVue" onclick="toggleProgaVue()">📊 Vue tableau</button>
       <button class="btn bo bsm" onclick="printProga()">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="OM('mProjet')">+ Projet / Unité</button>
@@ -3265,6 +3268,7 @@ var LANG_JS = {
     proga_title: 'Progression annuelle',
     proga_subtitle: "Plan de l'année — pilote le Cahier journal et les Fiches pédagogiques",
     proga_gen_btn: 'Générer une proposition (IA)',
+    proga_niveau_btn: '⚙️ Niveau',
     proga_projet_btn: '+ Projet / Unité',
     cahier_title: 'Cahier journal',
     cahier_subtitle: 'Plan de leçon, progression et suivi jour par jour',
@@ -3568,6 +3572,7 @@ var LANG_JS = {
     proga_title: 'التدرج السنوي',
     proga_subtitle: 'خطة السنة — يوجّه دفتر النصوص وأوراق التحضير',
     proga_gen_btn: 'توليد اقتراح (بالذكاء الاصطناعي)',
+    proga_niveau_btn: '⚙️ المستوى',
     proga_projet_btn: '+ مشروع / وحدة',
     cahier_title: 'دفتر النصوص',
     cahier_subtitle: 'تحضير الدروس والتدرج والمتابعة يوماً بيوم',
@@ -4214,6 +4219,7 @@ function switchLang() {
     var prgaSht = pgPrga.querySelector('.sht'); if (prgaSht) prgaSht.textContent = T('proga_title');
     var prgaPrintBtn = pgPrga.querySelector('[onclick="printProga()"]'); if (prgaPrintBtn) prgaPrintBtn.textContent = T('imprimer_lbl');
     var prgaProjetBtn = pgPrga.querySelector('[onclick="OM(\'mProjet\')"]'); if (prgaProjetBtn) prgaProjetBtn.textContent = T('proga_projet_btn');
+    var prgaNivBtn = document.getElementById('progaNivToggle'); if (prgaNivBtn) prgaNivBtn.textContent = T('proga_niveau_btn');
     var prgaGenBtn = document.getElementById('btnGenProga');
     if (prgaGenBtn) { var prgaGenSvg = prgaGenBtn.querySelector('svg'); prgaGenBtn.innerHTML = (prgaGenSvg?prgaGenSvg.outerHTML:'') + ' ' + T('proga_gen_btn'); }
   }
@@ -9292,22 +9298,38 @@ function rProgaClasseSel() {
   var curId = progaClasseId();
   sel.innerHTML = D.cls.map(function(c){ return '<option value="'+c.id+'"'+(c.id===curId?' selected':'')+'>'+c.nm+'</option>'; }).join('');
   PROGA_CLASSE_ID = curId;
+  progaAutoDetecterNiveau(curId);
+}
+
+/* Devine le "Niveau" (pour la génération IA / programme officiel détaillé) à partir du nom de la
+   classe (ex: "3AS2 Sciences" → 3AS), pour que l'enseignante n'ait normalement jamais besoin de
+   toucher cette liste elle-même — elle reste accessible (bouton "⚙️ Niveau") seulement pour les cas
+   où le nom de la classe ne suffit pas (filière au lycée, nom de classe inhabituel). */
+function progaAutoDetecterNiveau(clsId) {
+  var cls = D.cls.find(function(c){ return c.id === clsId; });
+  var niveauSel = document.getElementById('progaNiveau');
+  var filiereSel = document.getElementById('progaFiliere');
+  var wrap = document.getElementById('progaNivFiliereWrap');
+  if (!cls || !niveauSel) return false;
+  var m = cls.nm.match(/(\d(?:AP|AM|AS))/i);
+  var trouve = m && Array.prototype.some.call(niveauSel.options, function(o){ return o.value === m[1].toUpperCase(); });
+  if (trouve) niveauSel.value = m[1].toUpperCase();
+  toggleFiliereSelect('progaNiveau','progaFiliere');
+  /* Au lycée (filières), la liste reste visible même si le niveau est deviné : le choix de la filière
+     change sensiblement le contenu généré et ne peut pas être deviné depuis le nom de la classe. */
+  var aDesFilieres = filiereSel && filiereSel.style.display !== 'none';
+  if (wrap) wrap.style.display = (trouve && !aDesFilieres) ? 'none' : 'flex';
+  return !!trouve;
+}
+function toggleProgaNivFiliereWrap() {
+  var wrap = document.getElementById('progaNivFiliereWrap'); if (!wrap) return;
+  wrap.style.display = (wrap.style.display === 'none') ? 'flex' : 'none';
 }
 
 function onProgaClasseChange() {
   var sel = document.getElementById('progaClasseSel'); if (!sel || !sel.value) return;
   PROGA_CLASSE_ID = parseInt(sel.value);
-  /* pratique : si le nom de la classe contient un niveau reconnaissable (ex: "3AS2 Sciences"),
-     on pré-sélectionne aussi "Niveau" pour la génération IA, sans empêcher de le changer ensuite */
-  var cls = D.cls.find(function(c){ return c.id === PROGA_CLASSE_ID; });
-  var niveauSel = document.getElementById('progaNiveau');
-  if (cls && niveauSel) {
-    var m = cls.nm.match(/(\d(?:AP|AM|AS))/i);
-    if (m && Array.prototype.some.call(niveauSel.options, function(o){ return o.value === m[1].toUpperCase(); })) {
-      niveauSel.value = m[1].toUpperCase();
-      toggleFiliereSelect('progaNiveau','progaFiliere');
-    }
-  }
+  progaAutoDetecterNiveau(PROGA_CLASSE_ID);
   rProga();
 }
 
