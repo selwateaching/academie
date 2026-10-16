@@ -6910,7 +6910,7 @@ var PROG = {
       "chapitres": [
         "Projet 1 : Au zoo !",
         "Projet 2 : C'est un lieu exceptionnel !",
-        "Projet 3 : Qu'est-ce qu'une catastrophe naturelle ?",
+        "Projet 3 : Les catastrophes naturelles",
         "Projet 4 : Protégeons la nature !"
       ]
     },
@@ -9098,6 +9098,187 @@ function getChapitresOfficielsProgNat(niveauKey, mat) {
     : data.filter(function(m){ return m.mat.toLowerCase().indexOf((mat||'').toLowerCase().split(' ')[0]) >= 0 || (mat||'').toLowerCase().indexOf(m.mat.toLowerCase().split(' ')[0]) >= 0; });
   return filtered.length ? filtered : null;
 }
+/* ============================================================
+   Programme officiel MEN DÉTAILLÉ (séquence par séquence) — transcrit
+   depuis le canevas officiel du Ministère et vérifié ligne par ligne
+   avec l'enseignante (chaque champ comparé à son document scanné).
+   Contrairement à PROG (juste les intitulés de Projets), cette base
+   contient tout le détail d'une séquence (Actes de parole, Lecture,
+   Lexique, Grammaire, Conjugaison, Orthographe, Lecture systématique,
+   Dictée, Comptine, Production) : quand une entrée existe ici pour le
+   niveau/matière choisis, genProgaIA() l'utilise TELLE QUELLE au lieu
+   de passer par l'IA — fidélité garantie au programme officiel plutôt
+   que de dépendre d'une IA qui pourrait reformuler ou halluciner.
+   dureeSemaines : estimée depuis "Durée de la séquence : 11 heures"
+   et "Volume horaire hebdomadaire : 3 heures" du canevas (~4 semaines/
+   séquence) — ajustable ensuite par l'enseignante comme toute séquence. */
+var PROG_DETAIL = {
+  "5AP": {
+    "langue française": {
+      projets: [
+        {
+          nom: "Projet 1 : Au zoo !",
+          tacheFinale: "Réaliser une affiche sur un animal sauvage pour participer à un concours inter classes ou inter écoles.",
+          sequences: [
+            {
+              nom: "Séquence 1 : Présenter un animal (portrait physique, parties du corps, couleur, taille...)",
+              actes: "Décrire un animal (portrait physique, parties du corps, couleur, taille...) ; Pour protéger la terre (p.85)",
+              lecture: "La gazelle (p.15) ; Un animal sauvage (C.A p.8)",
+              lexique: "Lexique thématique (parties du corps, pelage...)",
+              grammaire: "1- Les adjectifs qualificatifs épithètes. 2- La pronominalisation (elle, ils/elles) (p.16)",
+              conjugaison: "Les verbes être/avoir au présent de l'indicatif (p.29)",
+              orthographe: "Accord de l'adjectif qualificatif avec le nom masculin/féminin (p.19)",
+              lectureSyst: "Les sons : ail, aille, eil, eille, ouil, ouille, euil, euille",
+              dictee: "Intégrer les ressources linguistiques, étudiées dans la dictée.",
+              comptine: "Mouette",
+              production: "Présenter un animal sauvage en évoquant son portrait physique. (N.B : un animal qui n'a pas fait l'objet d'étude.)",
+              dureeSemaines: 4
+            },
+            {
+              nom: "Séquence 2 : Présenter des informations supplémentaires sur l'animal (régime alimentaire, habitat, noms mâle/femelle/petit)",
+              actes: "L'inondation (p.71) ; L'eau (C.A p.96)",
+              lecture: "Le fennec (p.26) ; Un animal du désert (C.A p.21)",
+              lexique: "Lexique thématique (régime alimentaire, habitat, noms mâle/femelle/petit...)",
+              grammaire: "1- Les adjectifs qualificatifs attributs (p.27). 2- Le C.O.D et le C.C.I (p.17, p.28)",
+              conjugaison: "Les verbes se nourrir + vivre + au présent de l'indicatif.",
+              orthographe: "Accord de l'adjectif qualificatif avec le nom (singulier/pluriel).",
+              lectureSyst: "Les sons : qu / c – c – g / gn",
+              dictee: "Intégrer les ressources linguistiques, étudiées dans la dictée.",
+              comptine: "Le fennec (C.A p.19)",
+              production: "Présenter un animal sauvage en évoquant d'autres informations (régime alimentaire, habitat, noms mâle/femelle/petit...). (p.32)",
+              dureeSemaines: 4
+            }
+          ]
+        },
+        {
+          nom: "Projet 2 : C'est un lieu exceptionnel !",
+          tacheFinale: "Réaliser un dépliant ou une brochure sur la visite d'un lieu exceptionnel pour l'exposer.",
+          sequences: [
+            {
+              nom: "Séquence 1 : Nous allons (au musée) dans un site touristique, dans un parc d'attraction... Un lieu exceptionnel relevant de l'environnement de l'enfant ou qu'il a déjà visité.",
+              actes: "Raconter la visite d'un lieu exceptionnel. Lieu et moment de départ, destination, participants à la visite, moyen de transport...",
+              lecture: "Le musée du Moudjahid ; Notre visite du musée (C.A p.55)",
+              lexique: "Champ lexical de la visite (moyens de lieux, moyens de transport...) (p.57) ; Lexique thématique de la visite (objets vus...)",
+              grammaire: "Le C.C.L (p.40) ; Le C.C.T (p.54) ; Les prépositions (de, de, vers...) et les articles (les, un, une, du...)",
+              conjugaison: "1- Le passé composé (avec l'auxiliaire avoir). 2- Le passé composé (avec l'auxiliaire être). Verbes aller, partir, arriver... ; Participes passés des verbes être, découvrir...",
+              orthographe: "Raconter la visite - participe passé (genre et/ou) ; actions effectuées et caractéristiques du lieu visité (p.53)",
+              lectureSyst: "L'oasis ; Une épopée à la Casbah (C.A p.48)",
+              dureeSemaines: 4
+            },
+            {
+              nom: "Séquence 2 : Décrire le lieu exceptionnel.",
+              actes: "Raconter la visite d'un lieu exceptionnel. Actions effectuées et caractéristiques du lieu visité. (p.53)",
+              lecture: "L'oasis ; Une épopée à la Casbah (C.A p.48)",
+              lexique: "Lexique thématique de la visite (objets vus...)",
+              grammaire: "Le sifflement du train (p.55)",
+              conjugaison: "Décrire les actions effectuées et les caractéristiques du lieu visité.",
+              orthographe: "Suite. Accord du participe passé (genre et/ou nombre) (p.53)",
+              lectureSyst: "Les sons : qa / 'u /",
+              dictee: "Intégrer les ressources linguistiques, étudiées dans la dictée.",
+              comptine: "Le sifflement du train (p.55)",
+              production: "Décrire les actions effectuées et les caractéristiques du lieu visité.",
+              dureeSemaines: 4
+            }
+          ]
+        },
+        {
+          nom: "Projet 3 : Les catastrophes naturelles",
+          tacheFinale: "Réaliser une affiche contenant les actions des secouristes.",
+          sequences: [
+            {
+              nom: "Séquence 1 : Décrire les actions de secouristes en cas de catastrophes naturelles (tremblement de terre, inondations...)",
+              actes: "Citer les actions des secouristes. (p.70)",
+              lecture: "Les sauveteurs (p.71) ; C'est quoi un tremblement de terre ? (C.A p.62)",
+              lexique: "Le lexique thématique : noms des secouristes et leurs actions ; lexique relatif aux catastrophes naturelles.",
+              grammaire: "Le complément de manière. (p.72)",
+              conjugaison: "1- Les verbes du 1er groupe au présent de l'indicatif (sauver, soigner, aider...) + découvrir. 2- Le futur simple (verbes du 1er et du 2e groupe).",
+              dureeSemaines: 4
+            },
+            {
+              nom: "Séquence 2 : Décrire les actions à entreprendre en cas de catastrophes naturelles (tremblement de terre, inondations...)",
+              actes: "Évoquer les actions après une préposition / après un verbe conjugué. (p.53) ; L'emploi de l'infinitif après une préposition / après un verbe conjugué.",
+              lecture: "L'inondation (p.71) ; Je lis et je comprends (C.A p.73)",
+              lexique: "Formation des adverbes à partir des adjectifs qualificatifs (+ moins). (p.70)",
+              grammaire: "Le complément du but. (p.68) ; La forme négative (phrase déclarative). (p.73) ; Le complément du lieu. (p.77)",
+              conjugaison: "Emploi du mode infinitif pour donner des conseils en cas de catastrophe naturelle (forme affirmative et négative).",
+              orthographe: "Le féminin des noms d'agent (courage, peur, incendie). (p.73/74)",
+              lectureSyst: "Les sons : /é/ /è/ /ê/ /es/ /e/ /ë/ ; oeil/euil/ui (p.74)",
+              dictee: "Intégrer les ressources linguistiques, étudiées dans la dictée.",
+              comptine: "Quand je serai grand. (p.66)",
+              production: "Rédiger un court paragraphe pour citer les actions des secouristes. ; Rédiger un court paragraphe pour expliquer les actions à entreprendre en cas d'une catastrophe naturelle.",
+              dureeSemaines: 4
+            }
+          ]
+        },
+        {
+          nom: "Projet 4 : Protégeons la nature !",
+          tacheFinale: "Réaliser une affiche contenant les actions des secouristes et les actions pour protéger l'environnement (catastrophes naturelles : tremblement de terre, inondations...).",
+          sequences: [
+            {
+              nom: "Séquence 1 : Citer les dangers qui menacent l'environnement.",
+              actes: "Citer les dangers qui menacent l'environnement.",
+              lecture: "Pourquoi les déchets sont-ils dangereux ? (p.83) ; Je lis et je comprends (C.A p.85)",
+              lexique: "Le lexique relatif à la pollution et/ou à l'environnement. (p.87)",
+              grammaire: "La coordination et la subordination par l'emploi de « car » et « parce que ». (p.85)",
+              conjugaison: "1- Les verbes être/avoir au futur simple. (p.63) 2- Le futur simple (verbes du 1er et du 2e groupe).",
+              orthographe: "Le féminin des noms en « é / ère, ail... ». (p.98)",
+              dictee: "Intégrer les ressources linguistiques, étudiées dans la dictée. (p.88)",
+              production: "Produire un court énoncé pour citer les dangers qui menacent l'environnement (p.88) ; rédiger un court texte pour citer les dangers qui menacent l'environnement.",
+              dureeSemaines: 4
+            },
+            {
+              nom: "Séquence 2 : Donner des conseils pour protéger l'environnement et les catastrophes naturelles.",
+              actes: "Donner des conseils.",
+              grammaire: "Les pronoms personnels C.O.I (les, lui...) (p.95)",
+              conjugaison: "Le présent de l'impératif. (p.97)",
+              orthographe: "Emploi de l'infinitif après une préposition / après un verbe conjugué. (p.53)",
+              lectureSyst: "Je lis et je comprends (p.99, C.A p.96) ; les sons ou/eu/oi/u",
+              dictee: "Utiliser la structure : Il faut / Il ne faut pas. (p.96) ; Intégrer les ressources linguistiques, étudiées dans la dictée. (p.76)",
+              production: "Le complément du but (p.77) ; la forme négative (phrase déclarative) (p.73) ; rédiger un court paragraphe pour expliquer les actions à entreprendre en cas de catastrophe naturelle.",
+              dureeSemaines: 4
+            }
+          ]
+        }
+      ]
+    }
+  }
+};
+function getDetailOfficielProga(niveauKey, mat) {
+  var parNiveau = PROG_DETAIL[niveauKey];
+  if (!parNiveau) return null;
+  var keys = MATIERE_PROG_KEYS[(mat || '').toLowerCase()] || [(mat || '').toLowerCase()];
+  for (var i = 0; i < keys.length; i++) {
+    if (parNiveau[keys[i]]) return parNiveau[keys[i]];
+  }
+  return null;
+}
+/* Transforme les "sequences" (format PROG_DETAIL ou réponse IA, mêmes champs) en séquences prêtes
+   pour D.progression : id unique, statut initial, et "periode" réelle calculée à partir de la date
+   de rentrée (si renseignée) en cumulant les "dureeSemaines" dans l'ordre. Factorisé pour que le
+   programme officiel détaillé (ci-dessus) et la génération IA partagent exactement la même logique. */
+function construireProjetsProga(projetsSource, cidCible, nextId) {
+  var baseRentreeProga = dateRentreeBase();
+  var semaineCursorProga = 1;
+  return (projetsSource || []).filter(function(pj) {
+    return pj && pj.nom && String(pj.nom).trim() && pj.sequences && pj.sequences.length;
+  }).map(function(pj) {
+    var pjId = nextId++;
+    return {
+      id: pjId, cid: cidCible, nom: pj.nom || 'Projet', tacheFinale: pj.tacheFinale || '',
+      sequences: (pj.sequences || []).map(function(sq) {
+        var duree = parseInt(sq.dureeSemaines) || 2;
+        var obj = Object.assign({ id: Date.now() + Math.floor(Math.random()*10000), statut: 'a_venir' }, sq);
+        if (baseRentreeProga) {
+          var realPeriode = formatPeriodeSemaines(semaineCursorProga, duree);
+          if (realPeriode) obj.periode = realPeriode;
+        }
+        semaineCursorProga += duree;
+        delete obj.dureeSemaines;
+        return obj;
+      })
+    };
+  });
+}
 async function genProgaIA() {
   if (!D.cls.length) { N(CURRENT_LANG==='ar'?'أنشئ قسمًا أولاً (« القسم النشط »).':'Crée d\'abord une classe (menu « Classe active »).', 'err'); return; }
   /* Niveau et filière viennent des listes déroulantes de la page (plus de fenêtre native prompt() :
@@ -9113,6 +9294,27 @@ async function genProgaIA() {
   var filiereSel = document.getElementById('progaFiliere');
   var filiereVal = (filiereSel && filiereSel.style.display !== 'none') ? filiereSel.value : '';
   var filiereIA = filiereVal ? (FILIERES_LABELS[filiereVal] || filiereVal) : '';
+  var isL = progaIsLangue();
+  var mat = D.s.mat;
+  /* Programme officiel DÉTAILLÉ (séquence par séquence, transcrit et vérifié avec l'enseignante) :
+     quand il existe pour ce niveau/matière, on l'applique directement — sans passer par l'IA ni
+     consommer de quota — pour une fidélité garantie au document officiel plutôt qu'une génération
+     qui pourrait reformuler. */
+  var detailOfficiel = !filiereVal ? getDetailOfficielProga(niveauKey, mat) : null;
+  if (detailOfficiel) {
+    var cidCibleDetail = progaClasseId();
+    var ancienProjetsDetail = D.progression.filter(function(p){ return p.cid === cidCibleDetail; });
+    if (ancienProjetsDetail.length) {
+      var remplaceDetail = await appConfirm(CURRENT_LANG==='ar'?'استبدال تدرج هذا القسم ببرنامج 5AP الرسمي المفصل ؟':'Remplacer la progression actuelle de cette classe par le programme officiel 5AP détaillé ?');
+      if (!remplaceDetail) return;
+    }
+    var nextIdDetail = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
+    var projetsDetail = construireProjetsProga(detailOfficiel.projets, cidCibleDetail, nextIdDetail);
+    D.progression = D.progression.filter(function(p){ return p.cid !== cidCibleDetail; }).concat(projetsDetail);
+    sv(); rProga();
+    N(CURRENT_LANG==='ar'?'تم تحميل البرنامج الرسمي المفصل ! عدّله حسب احتياجاتك.':'Programme officiel détaillé chargé ! Ajuste-le selon tes besoins.', 'ok');
+    return;
+  }
   /* Retour visuel IMMÉDIAT au clic — avant même la vérification de quota (un appel réseau vers
      Firestore), pour que le professeur ne voie jamais un bouton qui "ne fait rien" pendant ce délai. */
   var btn = document.getElementById('btnGenProga');
@@ -9126,8 +9328,6 @@ async function genProgaIA() {
     console.warn('Vérification de quota indisponible, génération autorisée par défaut :', eQuota && eQuota.message);
   }
   if (!q.autorise) { btn.innerHTML = btnInitialHTML; btn.disabled = false; N(CURRENT_LANG==='ar'?('تم بلوغ الحد الشهري لعمليات إنشاء الذكاء الاصطناعي (' + q.compteActuel + '/' + q.quota + '). تواصل مع مسؤول Tadriss لمزيد من المعلومات.'):('Limite mensuelle de générations IA atteinte (' + q.compteActuel + '/' + q.quota + '). Contacte l\'administrateur de Tadriss pour en savoir plus.'), 'err'); return; }
-  var isL = progaIsLangue();
-  var mat = D.s.mat;
   /* Répartition réaliste des périodes : s'appuie sur le nombre réel de séances hebdomadaires de la
      classe active dans l'Emploi du temps déjà rempli par le professeur, plutôt que de deviner un
      volume horaire générique. */
@@ -9233,31 +9433,7 @@ async function genProgaIA() {
            séparément se retrouveraient avec les mêmes id et se marcheraient dessus. */
         var nextId = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
         var cidCible = progaClasseId();
-        /* Si la date de rentrée scolaire est renseignée (Paramètres), on remplace la "periode" en texte libre
-           de l'IA par de VRAIES dates calendaires : on cumule les "dureeSemaines" de chaque séquence, dans
-           l'ordre du JSON (donc dans l'ordre de l'année), pour obtenir le numéro de semaine réel de chacune —
-           plus fiable que de demander à l'IA de suivre elle-même un numéro de semaine absolu sur tout un document. */
-        var baseRentreeProga = dateRentreeBase();
-        var semaineCursorProga = 1;
-        var projets = (parsed.projets || []).filter(function(pj) {
-          return pj && pj.nom && String(pj.nom).trim() && pj.sequences && pj.sequences.length;
-        }).map(function(pj) {
-          var pjId = nextId++;
-          return {
-            id: pjId, cid: cidCible, nom: pj.nom || 'Projet', tacheFinale: pj.tacheFinale || '',
-            sequences: (pj.sequences || []).map(function(sq) {
-              var duree = parseInt(sq.dureeSemaines) || 2;
-              var obj = Object.assign({ id: Date.now() + Math.floor(Math.random()*10000), statut: 'a_venir' }, sq);
-              if (baseRentreeProga) {
-                var realPeriode = formatPeriodeSemaines(semaineCursorProga, duree);
-                if (realPeriode) obj.periode = realPeriode;
-              }
-              semaineCursorProga += duree;
-              delete obj.dureeSemaines; /* champ technique interne, pas affiché/édité directement */
-              return obj;
-            })
-          };
-        });
+        var projets = construireProjetsProga(parsed.projets, cidCible, nextId);
         var ancienProjetsClasse = D.progression.filter(function(p){ return p.cid === cidCible; });
         if (ancienProjetsClasse.length) {
           var remplace = await appConfirm(CURRENT_LANG==='ar'?'استبدال تدرج هذا القسم بهذا الاقتراح من الذكاء الاصطناعي ؟':'Remplacer la progression actuelle de cette classe par cette proposition IA ?');
@@ -9266,7 +9442,7 @@ async function genProgaIA() {
         D.progression = D.progression.filter(function(p){ return p.cid !== cidCible; }).concat(projets);
         sv(); rProga();
         N(CURRENT_LANG==='ar'?'تم إنشاء الاقتراح ! عدّله حسب احتياجاتك.':'Proposition générée ! Ajuste-la selon tes besoins.', 'ok');
-        if (!baseRentreeProga) {
+        if (!dateRentreeBase()) {
           N(CURRENT_LANG==='ar'?'نصيحة : أضف تاريخ بداية السنة الدراسية في "الإعدادات" لعرض تواريخ حقيقية بدل الأسابيع التقريبية.':'Astuce : renseigne ta date de rentrée scolaire dans Paramètres pour afficher de vraies dates au lieu de semaines approximatives.', 'info');
         }
       } catch (e) {
