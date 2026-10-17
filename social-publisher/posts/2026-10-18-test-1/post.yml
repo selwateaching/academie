@@ -1,0 +1,8 @@
+date: 2026-10-18 10:00        # mettez une heure proche (heure de Paris) pour le vrai test
+platforms: [instagram, facebook]
+status: draft                 # passez à "ready" quand tout est configuré
+images:
+  - 1.jpg
+caption: |
+  Test d'automatisation ✅
+  Ce post a été publié automatiquement.
