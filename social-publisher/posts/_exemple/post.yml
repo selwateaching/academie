@@ -1,0 +1,13 @@
+# Copiez ce dossier (ex. : 2026-10-25-lancement), puis modifiez ce fichier et ajoutez vos images .jpg.
+# Les dossiers qui commencent par "_" sont ignorés.
+
+date: 2026-10-25 09:00        # heure de Paris, format AAAA-MM-JJ HH:MM
+platforms: [instagram, facebook]
+status: draft                 # draft = brouillon | ready = à publier à la date indiquée
+images:                       # 1 image = post simple, 2 à 10 = carrousel (JPG uniquement)
+  - 1.jpg
+  - 2.jpg
+caption: |
+  Votre texte ici.
+
+  Ajoutez vos #hashtags à la fin.

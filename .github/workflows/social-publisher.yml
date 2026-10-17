@@ -1,0 +1,53 @@
+name: Publication Instagram & Facebook
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # toutes les 30 minutes
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Simulation (ne publie rien)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: social-publisher
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install requests==2.32.3 pyyaml==6.0.2
+
+      - name: Publier les posts prêts
+        env:
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_IG_USER_ID: ${{ secrets.META_IG_USER_ID }}
+          MEDIA_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/social-publisher/posts
+          TZ_NAME: Europe/Paris
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            python social-publisher/publish.py --dry-run
+          else
+            python social-publisher/publish.py
+          fi
+
+      - name: Enregistrer les résultats
+        if: always()
+        run: |
+          git config user.name "social-publisher[bot]"
+          git config user.email "social-publisher@users.noreply.github.com"
+          git add social-publisher/posts/*/result.json
+          git diff --cached --quiet || (git commit -m "social-publisher: posts publiés" && git push)
