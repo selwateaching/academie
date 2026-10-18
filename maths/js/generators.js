@@ -27,6 +27,8 @@
     return (i[0] === '-' ? '−' : '') + g + (d ? ',' + d : '');
   };
   const m = (s) => `<span class="m">${String(s).replace(/[\u0600-\u06FF]+/g, '\u2066$&\u2069')}</span>`;
+  // liste de nombres : lue de droite à gauche en arabe (séparateur « ، »), inchangée en français
+  const lst = (items) => `<span class="lst">${items.map(m).join(t('sep'))}</span>`;
   const frac = (n, d) => `<span class="frac"><span>${fmt(n)}</span><span>${fmt(d)}</span></span>`;
   const box = '<span class="box">?</span>';
   const sup = (d) => (d === 1 ? '' : `<sup>${d}</sup>`);
@@ -175,7 +177,7 @@
     const step = pick(p.steps), len = p.len || 4, dir = p.dir === 'down' ? -1 : 1;
     const start = dir === 1 ? R(p.min, p.max) : R(p.min, p.max) + step * len;
     const a = []; for (let i = 0; i <= len; i++) a.push(start + dir * step * i);
-    return { q: t('seq.q'), expr: m(a.slice(0, len).map(fmtBig).join(' ; ') + ' ; ' + box), kind: 'num', ans: a[len], exp: t(dir === 1 ? 'seq.up.exp' : 'seq.down.exp', { step: m(step), ans: m(a[len]) }) };
+    return { q: t('seq.q'), expr: lst([...a.slice(0, len).map(fmtBig), box]), kind: 'num', ans: a[len], exp: t(dir === 1 ? 'seq.up.exp' : 'seq.down.exp', { step: m(step), ans: m(a[len]) }) };
   };
   GEN.line = (p) => {
     const step = pick(p.steps), start = pick(p.starts || [0]), k = R(1, 9), W = 320, x0 = 20;
@@ -443,10 +445,10 @@
   /* ===== Statistiques et probabilités ===== */
   GEN.stat = (p) => {
     const k = pick(p.kinds);
-    if (k === 'mean') { const mu = R(5, 20), dev = [R(-4, 4), R(-4, 4), R(-4, 4)]; dev.push(-dev.reduce((a, b) => a + b, 0)); const arr = dev.map((d) => mu + d); return { q: t('stat.mean'), expr: m(shuf(arr).join(' ; ')), kind: 'num', ans: mu, exp: t('stat.mean.exp', { s: m(arr.reduce((a, b) => a + b, 0)), r: m(mu) }) }; }
-    if (k === 'median') { const arr = Array.from({ length: 5 }, () => R(1, 30)), s = arr.slice().sort((a, b) => a - b); return { q: t('stat.median'), expr: m(arr.join(' ; ')), kind: 'num', ans: s[2], exp: t('stat.median.exp', { s: m(s.join(' ; ')), r: m(s[2]) }) }; }
+    if (k === 'mean') { const mu = R(5, 20), dev = [R(-4, 4), R(-4, 4), R(-4, 4)]; dev.push(-dev.reduce((a, b) => a + b, 0)); const arr = dev.map((d) => mu + d); return { q: t('stat.mean'), expr: lst(shuf(arr)), kind: 'num', ans: mu, exp: t('stat.mean.exp', { s: m(arr.reduce((a, b) => a + b, 0)), r: m(mu) }) }; }
+    if (k === 'median') { const arr = Array.from({ length: 5 }, () => R(1, 30)), s = arr.slice().sort((a, b) => a - b); return { q: t('stat.median'), expr: lst(arr), kind: 'num', ans: s[2], exp: t('stat.median.exp', { s: lst(s), r: m(s[2]) }) }; }
     const arr = Array.from({ length: 5 }, () => R(1, 40)), M = Math.max(...arr), mn = Math.min(...arr);
-    return { q: t('stat.range'), expr: m(arr.join(' ; ')), kind: 'num', ans: M - mn, exp: t('stat.range.exp', { M: m(M), m: m(mn), r: m(M - mn) }) };
+    return { q: t('stat.range'), expr: lst(arr), kind: 'num', ans: M - mn, exp: t('stat.range.exp', { M: m(M), m: m(mn), r: m(M - mn) }) };
   };
   GEN.proba = () => {
     const r = R(1, 6), b = R(1, 6), g = R(0, 4), T = r + b + g, names = t('proba.cols'), cols = [[names[0], r], [names[1], b], [names[2], g]].filter((c) => c[1] > 0), c = pick(cols);

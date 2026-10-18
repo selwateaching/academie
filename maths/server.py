@@ -84,6 +84,8 @@ def create_app(database_url=None):
         resp.headers["Referrer-Policy"] = "same-origin"
         if request.path.startswith("/api/"):
             resp.headers["Cache-Control"] = "no-store"
+        elif request.path.endswith((".js", ".css", ".html")) or request.path == "/":
+            resp.headers["Cache-Control"] = "no-cache"  # le navigateur revérifie : une mise à jour du site s'affiche tout de suite
         return resp
 
     # ---------- session ----------
