@@ -73,7 +73,7 @@
   const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
   const subscribed = (lv) => !!auth.subscriptions[lv] && new Date(auth.subscriptions[lv]) > new Date();
   const canPlay = (sk) => auth.offline || isFree(sk) || subscribed(sk.level);
-  const price = (lv) => auth.config.prices[lv] || 400;
+  const price = (lv) => auth.config.prices[lv] || 200;
   const dateFr = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const prog = (id) => store.skills[id] || { score: 0, answered: 0, correct: 0, secs: 0 };
   const today = () => new Date().toISOString().slice(0, 10);
