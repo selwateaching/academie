@@ -214,5 +214,12 @@
 
     /* ---- interface ---- */
     'ui.correct': ['Bravo !', 'Excellent !', 'Très bien !', 'Parfait !', 'Bien joué !'],
+    'cur': '€',
+    /* unités affichées dans les conversions */
+    'u.km': 'km', 'u.m': 'm', 'u.cm': 'cm', 'u.mm': 'mm',
+    'u.kg': 'kg', 'u.g': 'g', 'u.t': 't',
+    'u.L': 'L', 'u.mL': 'mL', 'u.dL': 'dL',
+    'u.h': 'h', 'u.min': 'min', 'u.s': 's',
+    'u.m²': 'm²', 'u.cm²': 'cm²', 'u.mm²': 'mm²',
   };
 }(typeof window !== 'undefined' ? window : globalThis));
