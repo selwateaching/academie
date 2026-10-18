@@ -14,3 +14,36 @@ services:
         sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
+
+  - type: web
+    name: tadriss-maths
+    runtime: python
+    rootDir: maths
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tadriss-db
+          property: connectionString
+      - key: BASE_URL
+        sync: false
+      # "demo" = paiement simulé. Passer à "chargily" seulement quand les clés sont prêtes.
+      - key: PAYMENT_MODE
+        value: demo
+      - key: CHARGILY_SECRET_KEY
+        sync: false
+      # "test" = faux paiements. Passer à "live" uniquement pour de vrais paiements.
+      - key: CHARGILY_MODE
+        value: test
+
+databases:
+  - name: tadriss-db
+    plan: free
+    databaseName: tadriss
