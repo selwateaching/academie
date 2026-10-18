@@ -77,7 +77,9 @@
     try { const d = await api('/api/progress'); store = { skills: d.skills || {}, days: d.days || {} }; } catch (e) { store = emptyStore(); }
   }
   const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
-  const subscribed = (lv) => !!auth.subscriptions[lv] && new Date(auth.subscriptions[lv]) > new Date();
+  const valid = (k) => !!auth.subscriptions[k] && new Date(auth.subscriptions[k]) > new Date();
+  const subscribed = (lv) => valid(lv) || valid('fam');
+  const expiry = (lv) => auth.subscriptions[valid(lv) ? lv : 'fam'];
   const canPlay = (sk) => auth.offline || auth.config.open || isFree(sk) || subscribed(sk.level);
   const price = (lv) => auth.config.prices[lv] || 200;
   const dateFr = (iso) => new Date(iso).toLocaleDateString(lang === 'ar' ? 'ar-DZ-u-nu-latn' : 'fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -142,7 +144,7 @@
 
   function levelBanner(lv) {
     if (auth.offline || auth.config.open) return '';
-    if (subscribed(lv.id)) return `<div class="note ok">${T('Abonnement {lv} actif jusqu’au {date}. Tout le niveau est débloqué.', { lv: sh(lv), date: dateFr(auth.subscriptions[lv.id]) })}</div>`;
+    if (subscribed(lv.id)) return `<div class="note ok">${T('Abonnement {lv} actif jusqu’au {date}. Tout le niveau est débloqué.', { lv: sh(lv), date: dateFr(expiry(lv.id)) })}</div>`;
     return `<div class="note">${T('Tu peux essayer gratuitement 3 compétences du {lv}. Pour débloquer tout le niveau : <b>{price} DA par mois</b>.', { lv: sh(lv), price: price(lv.id) })} <a class="btn" style="margin-inline-start:8px;padding:7px 14px" href="#/tarifs">${T('Voir les tarifs')}</a></div>`;
   }
 
@@ -346,10 +348,14 @@
     const demo = auth.config.payment === 'demo';
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tarifs')}</h1><p>${T('Un abonnement par niveau, valable {days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.', { days: auth.config.days })}</p></div>
       ${demo ? `<div class="note">${T('Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.')}</div>` : ''}
+      ${auth.config.prices.fam ? `<div class="pcard fam"><div><h2>${T('Forfait Famille')}</h2><div class="pamount"><b>${price('fam')}</b> ${T('DA')} <span>${T('/ mois')}</span></div></div>
+        <p>${T('Tous les niveaux, de la grande section à la sixième, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.')}</p>
+        ${valid('fam') ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</p>` : ''}
+        <button class="btn" data-buy="fam">${valid('fam') ? T('Prolonger d’un mois') : T('Choisir le forfait Famille')}</button></div>` : ''}
       <div class="prices">${LEVELS.map((lv) => `<div class="pcard" style="--c:${lv.color}"><div class="pbadge" style="background:${lv.color}">${sh(lv)}</div><div class="pamount"><b>${price(lv.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
         <p>${T('{n} compétences avec exercices, correction immédiate, suivi et récompenses.', { n: implemented(lv).length })}</p>
-        ${subscribed(lv.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[lv.id]) })}</p>` : ''}
-        <button class="btn" style="background:${lv.color}" data-buy="${lv.id}">${subscribed(lv.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
+        ${valid(lv.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[lv.id]) })}</p>` : ''}
+        <button class="btn" style="background:${lv.color}" data-buy="${lv.id}">${valid(lv.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
       <div class="panel"><h2>${T('Ce qui est inclus')}</h2><p>${T('Tous les exercices du niveau choisi, sans limite de questions, avec explications après chaque erreur, score, récompenses et suivi des progrès sauvegardés sur ton compte. Trois compétences par niveau restent gratuites.')}</p>
       <p class="hint" style="margin-top:10px"><label>${T('Moyen de paiement')} <select id="method"><option value="">${T('Je choisis sur la page de paiement')}</option><option value="cib">${T('Carte CIB')}</option><option value="edahabia">${T('Carte Edahabia')}</option></select></label></p><p id="buyErr" class="errtxt"></p></div></div>`, 'tarifs');
     document.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', async () => {
@@ -403,14 +409,14 @@
   function pageAccount() {
     if (!auth.user) { returnTo = '#/compte'; return pageLogin(); }
     document.title = T('Mon compte — Tadriss-Maths');
-    const subs = LEVELS.filter((l) => subscribed(l.id));
+    const subs = LEVELS.filter((l) => valid(l.id));
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Mon compte')}</h1><p dir="ltr" style="text-align:start">${esc(auth.user.email)}</p></div>
       <div class="panel"><h2>${T('Profils des élèves')}</h2><div class="profs">${auth.profiles.map((p) => `<div class="prof ${p.id === auth.active ? 'on' : ''}"><b>${esc(p.name)}</b><span>${sh(lvOf(p.level))}</span>
         ${p.id === auth.active ? `<span class="soon-tag free">${T('profil actif')}</span>` : `<button class="btn ghost sm" data-sel="${p.id}">${T('Choisir')}</button>`}
         ${auth.profiles.length > 1 ? `<button class="btn ghost sm" data-del="${p.id}" aria-label="${T('Supprimer')} ${esc(p.name)}">${T('Supprimer')}</button>` : ''}</div>`).join('')}</div>
         ${auth.profiles.length < 5 ? `<form class="inl" id="fProf"><input id="pname" placeholder="${T('Prénom')}" maxlength="40" required aria-label="${T('Prénom du nouvel élève')}"><select id="plevel" aria-label="${T('Niveau')}">${LEVELS.map((l) => `<option value="${l.id}">${sh(l)}</option>`).join('')}</select><button class="btn" type="submit">${T('Ajouter un profil')}</button></form>` : ''}<p class="errtxt" id="err"></p></div>
-      <div class="panel"><h2>${T('Abonnements')}</h2>${subs.length ? subs.map((l) => `<div class="stat"><span>${sh(l)}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</b></div>`).join('') : `<p class="hint">${T('Aucun abonnement actif. Les compétences gratuites restent accessibles.')}</p>`}<p style="margin-top:12px"><a class="btn" href="#/tarifs">${T('Voir les tarifs')}</a></p></div>
-      <div class="panel"><h2>${T('Derniers paiements')}</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${sh(lvOf(x.level))} · ${x.amount} ${T('DA')} · ${dateFr(x.date)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}</div>
+      <div class="panel"><h2>${T('Abonnements')}</h2>${(subs.length || valid('fam')) ? (valid('fam') ? `<div class="stat"><span>${T('Forfait Famille')}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</b></div>` : '') + subs.map((l) => `<div class="stat"><span>${sh(l)}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</b></div>`).join('') : `<p class="hint">${T('Aucun abonnement actif. Les compétences gratuites restent accessibles.')}</p>`}<p style="margin-top:12px"><a class="btn" href="#/tarifs">${T('Voir les tarifs')}</a></p></div>
+      <div class="panel"><h2>${T('Derniers paiements')}</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${x.level === 'fam' ? T('Forfait Famille') : sh(lvOf(x.level))} · ${x.amount} ${T('DA')} · ${dateFr(x.date)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}</div>
       <p style="margin-bottom:30px"><button class="btn ghost" id="logout">${T('Me déconnecter')}</button></p></div>`, 'compte');
     const swap = async (fn) => { try { applyMe(await fn()); await loadProgress(); pageAccount(); } catch (e) { $('#err').textContent = e.message; } };
     document.querySelectorAll('[data-sel]').forEach((b) => b.addEventListener('click', () => { pushNow(false); swap(() => api(`/api/profiles/${b.dataset.sel}/select`, 'POST', {})); }));

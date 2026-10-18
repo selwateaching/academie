@@ -10,7 +10,9 @@ from sqlalchemy import (Column, DateTime, ForeignKey, Integer, MetaData, String,
 
 LEVELS = ["gs", "cp", "ce1", "ce2", "cm1", "cm2", "6e"]
 # Prix mensuels en dinars algériens (DA), par niveau.
-PRICES = {"gs": 200, "cp": 200, "ce1": 200, "ce2": 200, "cm1": 200, "cm2": 200, "6e": 400}
+PRICES = {"gs": 200, "cp": 200, "ce1": 200, "ce2": 200, "cm1": 200, "cm2": 200, "6e": 400,
+          "fam": 600}  # fam = forfait Famille : tous les niveaux, tous les profils du compte
+FAMILY = "fam"
 PLAN_DAYS = 30
 # Compétences gratuites (essai) : la 1re compétence des catégories A, B et C de chaque niveau.
 FREE_CODES = ("A1", "B1", "C1")
