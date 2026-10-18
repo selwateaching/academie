@@ -43,7 +43,7 @@
     },
     /* ------------------------------------------------------------ CP */
     {
-      id: 'cp', art: 'mon', short: 'CP', name: 'Cours préparatoire', color: '#7c4dcc', age: '6-7 ans',
+      id: 'cp', art: 'mon', short: 'CP', name: 'Cours préparatoire', color: '#d6409f', age: '6-7 ans',
       blurb: 'Les nombres jusqu’à 100, additions et soustractions, premières mesures et figures.',
       domains: [
         { name: 'Nombres et calculs', cats: [
@@ -138,7 +138,7 @@
     },
     /* ------------------------------------------------------------ CM1 */
     {
-      id: 'cm1', art: 'mon', short: 'CM1', name: 'Cours moyen 1', color: '#4f6df5', age: '9-10 ans',
+      id: 'cm1', art: 'mon', short: 'CM1', name: 'Cours moyen 1', color: '#0ea5e9', age: '9-10 ans',
       blurb: 'Grands nombres, fractions, premiers décimaux, multiplications et divisions, aires et angles.',
       domains: [
         { name: 'Nombres et calculs', cats: [

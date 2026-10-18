@@ -1,4 +1,4 @@
-# Académie Maths
+# Tadriss-Maths
 
 Site d'exercices de maths interactifs, de la GS à la 6ᵉ, inspiré de la structure d'IXL
 (niveaux, compétences codées A.1, B.2…, score, récompenses, suivi des progrès).

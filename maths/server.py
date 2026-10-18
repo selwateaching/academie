@@ -1,4 +1,4 @@
-"""Petit serveur statique pour Académie Maths (bibliothèque standard seulement).
+"""Petit serveur statique pour Tadriss-Maths (bibliothèque standard seulement).
 
 Lancer :  python3 server.py   (port 8000, ou la variable PORT)
 Sur Render, ce dossier peut aussi être déployé en « Static Site ».
@@ -31,5 +31,5 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "8000"))
     server = ThreadingHTTPServer(("0.0.0.0", port), partial(Handler, directory=ROOT))
-    print(f"Académie Maths : http://0.0.0.0:{port}")
+    print(f"Tadriss-Maths : http://0.0.0.0:{port}")
     server.serve_forever()

@@ -20,7 +20,7 @@
   };
 
   /* ---------- progression (localStorage) ---------- */
-  const KEY = 'academie-maths.v1';
+  const KEY = 'tadriss-maths.v1';
   let store = { skills: {}, days: {} };
   try { const raw = localStorage.getItem(KEY); if (raw) store = Object.assign(store, JSON.parse(raw)); } catch (e) { /* stockage indisponible */ }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignoré */ } };
@@ -39,7 +39,7 @@
 
   /* ---------- pages ---------- */
   function pageHome() {
-    document.title = 'Académie Maths — exercices de maths de la GS à la 6e';
+    document.title = 'Tadriss-Maths — exercices de maths de la GS à la 6e';
     show(`<div class="wrap"><section class="hero"><h1>${UI.homeTitle}</h1><p>${UI.homeLead}</p></section>
     <section class="levels">${LEVELS.map((lv) => {
       const n = implemented(lv).length, d = doneCount(lv);
@@ -61,7 +61,7 @@
 
   function pageLevel(id) {
     const lv = lvOf(id); if (!lv) return pageHome();
-    document.title = `Maths ${lv.short} — Académie Maths`;
+    document.title = `Maths ${lv.short} — Tadriss-Maths`;
     const pills = LEVELS.map((l) => `<a class="pill ${l.id === id ? 'on' : ''}" style="background:${l.color};--c:${l.color}" href="#/niveau/${l.id}">${l.short}</a>`).join('');
     const doms = lv.domains.map((d, di) => `<section class="domain" id="d${di}" style="--c:${lv.color};--c2:${lv.color}"><h2>${esc(d.name)}</h2><div class="cats">${d.cats.map((c) => `<div class="cat"><h3>${esc(c.name)}</h3>${c.skills.map((s) => s.gen
       ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span>${dot(s.id, lv.color)}</a>`
@@ -94,7 +94,7 @@
     const lv = lvOf(sk.level), pr = prog(id);
     let lastSecs = 0;
     P = { skill: sk, lv, score: pr.score, answered: 0, correct: 0, secs: 0, flushed: 0, q: null, sel: null, done: false, celebrated: pr.score >= 100, daySecs() { const d = this.secs - lastSecs; lastSecs = this.secs; return d; } };
-    document.title = `${sk.code} ${sk.title} — Académie Maths`;
+    document.title = `${sk.code} ${sk.title} — Tadriss-Maths`;
     show(`<div class="wrap"><div class="crumb"><a href="#/niveau/${lv.id}">${lv.short}</a> › ${esc(sk.cat.name)}</div>
       <div class="prac"><section class="qcard" id="qcard" aria-live="polite"></section>
       <aside class="side"><h3>${sk.code} · ${esc(sk.title)}</h3><svg class="ring" viewBox="0 0 120 120" id="ring"></svg><p class="levelmsg" id="lmsg"></p>
@@ -106,7 +106,7 @@
 
   function renderSide() {
     const s = P.score, r = 50, c = 2 * Math.PI * r;
-    $('#ring').innerHTML = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="#e3efec" stroke-width="12"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="${s >= 100 ? '#15803d' : P.lv.color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(c * s) / 100} ${c}" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-size="30" font-weight="800" fill="#12302c">${s}</text>`;
+    $('#ring').innerHTML = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="#e8e6f6" stroke-width="12"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="${s >= 100 ? '#15803d' : P.lv.color}" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(c * s) / 100} ${c}" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-size="30" font-weight="800" fill="#1f1d3d">${s}</text>`;
     $('#lmsg').textContent = s >= 100 ? '★ ' + UI.mastered : s >= 80 ? UI.excellent : '';
     $('#sA').textContent = P.answered; $('#sC').textContent = P.correct; $('#sT').textContent = fmtTime(P.secs);
   }
@@ -170,7 +170,7 @@
 
   function pageRewards(id) {
     const lv = lvOf(id) || LEVELS[4];
-    document.title = 'Récompenses — Académie Maths';
+    document.title = 'Récompenses — Tadriss-Maths';
     let won = 0;
     const sq = lv.catList.map((c, i) => {
       const got = catDone(c) >= need(c); if (got) won++;
@@ -197,7 +197,7 @@
 
   /* ---------- suivi des progrès ---------- */
   function pageProgress() {
-    document.title = 'Suivi des progrès — Académie Maths';
+    document.title = 'Suivi des progrès — Tadriss-Maths';
     const rows = Object.entries(store.skills).filter(([, v]) => v.answered);
     const tot = rows.reduce((a, [, v]) => a + v.answered, 0), ok = rows.reduce((a, [, v]) => a + v.correct, 0);
     const secs = Object.values(store.days).reduce((a, d) => a + (d.secs || 0), 0) || rows.reduce((a, [, v]) => a + (v.secs || 0), 0);
@@ -219,9 +219,9 @@
 
   /* ---------- page de présentation ---------- */
   function pageAbout() {
-    document.title = 'Pourquoi Académie Maths';
+    document.title = 'Pourquoi Tadriss-Maths';
     const total = LEVELS.reduce((a, l) => a + l.skillList.length, 0), impl = LEVELS.reduce((a, l) => a + implemented(l).length, 0);
-    show(`<div class="wrap"><section class="promo"><h1>Académie Maths donne envie de faire des maths</h1><p>Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.</p><a class="btn big" href="#/">Choisir mon niveau</a></section>
+    show(`<div class="wrap"><section class="promo"><h1>Tadriss-Maths donne envie de faire des maths</h1><p>Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.</p><a class="btn big" href="#/">Choisir mon niveau</a></section>
       <h2 class="section-t">Une façon d’apprendre pensée pour l’enfant</h2>
       <div class="feats"><div class="feat"><div class="ic">♾️</div><h3>Des exercices sans fin</h3><p>Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.</p></div>
       <div class="feat"><div class="ic">🧩</div><h3>Des schémas pour comprendre</h3><p>Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.</p></div>
@@ -234,7 +234,7 @@
 
   function pageSearch(q) {
     q = decodeURIComponent(q || '').trim().toLowerCase();
-    document.title = 'Recherche — Académie Maths';
+    document.title = 'Recherche — Tadriss-Maths';
     const hits = Object.values(byId).filter((s) => q && (s.title.toLowerCase().includes(q) || s.cat.name.toLowerCase().includes(q)));
     show(`<div class="wrap"><div class="lvhead"><h1>Recherche</h1><p>${hits.length} compétence(s) pour « ${esc(q)} ».</p></div><div class="panel results">${hits.slice(0, 80).map((s) => `<a href="${s.gen ? '#/exercice/' + s.id : '#/niveau/' + s.level}"><span class="lvtag" style="color:${lvOf(s.level).color}">${lvOf(s.level).short}</span><span><b>${s.code}</b> ${esc(s.title)} ${s.gen ? '' : `<span class="soon-tag">${UI.soon}</span>`}</span></a>`).join('')}</div></div>`, 'maths');
   }
