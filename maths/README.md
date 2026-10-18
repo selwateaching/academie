@@ -13,7 +13,7 @@ Site d'exercices de maths interactifs (GS → 6e), avec comptes, abonnements men
 cd maths
 python -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-PAYMENT_MODE=demo python server.py      # http://127.0.0.1:5000
+PAYMENT_MODE=demo python server.py      # http://127.0.0.1:8000
 python -m unittest discover tests       # tests du serveur
 ```
 
