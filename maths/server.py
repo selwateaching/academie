@@ -118,7 +118,8 @@ def create_app(database_url=None):
         level, code = m.groups()
         if code in db.FREE_CODES or not paywall_on():
             return True
-        return bool(uid) and level in db.active_subscriptions(conn, uid)
+        subs = db.active_subscriptions(conn, uid) if uid else {}
+        return level in subs or db.FAMILY in subs
 
     def me_payload(conn):
         u = current_user(conn)
@@ -272,7 +273,7 @@ def create_app(database_url=None):
                 if not m or not isinstance(v, dict):
                     continue
                 level, code = m.groups()
-                if paywall_on() and code not in db.FREE_CODES and level not in subs:
+                if paywall_on() and code not in db.FREE_CODES and level not in subs and db.FAMILY not in subs:
                     refused.append(sid)
                     continue
                 vals = dict(score=clamp(v.get("score"), 100), answered=clamp(v.get("answered"), 10**6),
@@ -300,12 +301,15 @@ def create_app(database_url=None):
             return jsonify(saved=saved, refused=refused)
 
     # ---------- paiements ----------
+    def plan_label(level):
+        return "Famille" if level == db.FAMILY else level.upper()
+
     @app.post("/api/checkout")
     def checkout():
         d = request.get_json(silent=True) or {}
         level = d.get("level")
         method = d.get("method")
-        if level not in db.LEVELS:
+        if level not in db.PRICES:
             return err("Niveau inconnu.")
         amount = db.PRICES[level]
         with engine.begin() as conn:
@@ -321,7 +325,7 @@ def create_app(database_url=None):
                     c = chargily.create_checkout(
                         amount, base_url() + "/#/paiement/succes", base_url() + "/#/paiement/echec",
                         base_url() + "/api/webhook/chargily",
-                        f"Tadriss-Maths {level.upper()} - 1 mois", [{"payment_id": pay_id, "level": level}], method)
+                        f"Tadriss-Maths {plan_label(level)} - 1 mois", [{"payment_id": pay_id, "level": level}], method)
                     cid, url = c["id"], c["url"]
                 else:
                     cid = "demo_" + secrets.token_urlsafe(16)
@@ -402,7 +406,7 @@ def create_app(database_url=None):
     @app.get("/pay/demo/<cid>")
     def demo_page(cid):
         p = demo_payment(cid)
-        return DEMO_PAGE.format(level=p["level"].upper(), amount=p["amount"], cid=cid)
+        return DEMO_PAGE.format(level=("Famille" if p["level"] == db.FAMILY else p["level"].upper()), amount=p["amount"], cid=cid)
 
     @app.post("/pay/demo/<cid>/confirm")
     def demo_confirm(cid):

@@ -190,6 +190,10 @@ main{flex:1;outline:none}
 .prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:22px 0}
 .pcard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border-top:5px solid var(--c);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 .pcard p{color:var(--ink2);font-size:.9rem;flex:1}
+.pcard.fam{--c:#7c3aed;margin-top:22px;flex-direction:row;align-items:center;flex-wrap:wrap;gap:16px 24px;background:linear-gradient(135deg,#f5f3ff,var(--card))}
+.pcard.fam h2{margin-bottom:4px}
+.pcard.fam .btn{background:var(--c)}
+.pcard.fam p{min-width:220px}
 .pbadge{color:#fff;font-weight:800;border-radius:999px;padding:2px 14px}
 .pamount b{font-size:2.2rem;font-weight:800}
 .pamount span{color:var(--ink3)}

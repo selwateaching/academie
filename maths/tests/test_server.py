@@ -143,6 +143,14 @@ class PaymentTests(Base):
         ok = self.post("/api/progress", {"skills": {"cm1-D2": {"score": 10}, "cp-D2": {"score": 10}}}).get_json()
         self.assertEqual((ok["saved"], ok["refused"]), (1, ["cp-D2"]))
 
+    def test_family_plan_unlocks_every_level(self):
+        self.register()
+        self.assertEqual(self.c.get("/api/me").get_json()["config"]["prices"]["fam"], 600)
+        self.pay_demo("fam")
+        self.assertEqual(list(self.c.get("/api/me").get_json()["subscriptions"]), ["fam"])
+        ok = self.post("/api/progress", {"skills": {"cm1-D2": {"score": 10}, "cp-D2": {"score": 10}}}).get_json()
+        self.assertEqual((ok["saved"], ok["refused"]), (2, []))
+
     def test_payment_is_idempotent_and_extends(self):
         self.register()
         self.pay_demo("6e")

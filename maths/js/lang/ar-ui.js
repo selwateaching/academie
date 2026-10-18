@@ -7,6 +7,9 @@
     /* en-tête et pied de page */
     'Tadriss-Maths': 'تدريس رياضيات',
     'Menu': 'القائمة', 'Navigation principale': 'التنقّل الرئيسي',
+    'Forfait Famille': 'باقة العائلة',
+    'Choisir le forfait Famille': 'اختر باقة العائلة',
+    'Tous les niveaux, de la grande section à la sixième, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.': 'جميع المستويات، من التحضيري إلى السنة الأولى متوسط، لكل التلاميذ في الحساب (حتى 5 ملفات)، بدفعة واحدة.',
     'Maths': 'الرياضيات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
     'Rechercher une compétence': 'ابحث عن مهارة',
     'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
