@@ -73,7 +73,7 @@
   const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
   const subscribed = (lv) => !!auth.subscriptions[lv] && new Date(auth.subscriptions[lv]) > new Date();
   const canPlay = (sk) => auth.offline || isFree(sk) || subscribed(sk.level);
-  const price = (lv) => auth.config.prices[lv] || 400;
+  const price = (lv) => auth.config.prices[lv] || 200;
   const dateFr = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const prog = (id) => store.skills[id] || { score: 0, answered: 0, correct: 0, secs: 0 };
   const today = () => new Date().toISOString().slice(0, 10);
@@ -85,6 +85,10 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const fmtTime = (s) => (s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')} min` : s >= 60 ? `${Math.floor(s / 60)} min` : `${s} s`);
   const lvOf = (id) => LEVELS.find((l) => l.id === id);
+  const menuBtn = $('#menuBtn'), topBar = document.querySelector('.top');
+  const setMenu = (o) => { topBar.classList.toggle('open', o); menuBtn.setAttribute('aria-expanded', String(o)); };
+  menuBtn.addEventListener('click', () => setMenu(!topBar.classList.contains('open')));
+  window.addEventListener('hashchange', () => setMenu(false));
   const setNav = (k) => document.querySelectorAll('[data-nav]').forEach((a) => a.classList.toggle('on', a.dataset.nav === k));
   function show(html, nav) { app.innerHTML = html; setNav(nav); window.scrollTo(0, 0); }
 

@@ -113,9 +113,9 @@ class PaymentTests(Base):
 
     def test_prices(self):
         cfg = self.c.get("/api/me").get_json()["config"]
-        self.assertEqual(cfg["prices"]["6e"], 200)
+        self.assertEqual(cfg["prices"]["6e"], 400)
         for lv in ("gs", "cp", "ce1", "ce2", "cm1", "cm2"):
-            self.assertEqual(cfg["prices"][lv], 400)
+            self.assertEqual(cfg["prices"][lv], 200)
 
     def test_demo_payment_unlocks_level_only(self):
         self.register()
@@ -179,7 +179,7 @@ class ChargilyTests(Base):
         self.assertEqual(r.get_json()["url"], "https://pay.example/ch_1")
         args, kwargs = post.call_args
         self.assertEqual(args[0], "https://pay.chargily.net/test/api/v2/checkouts")
-        self.assertEqual(kwargs["json"]["amount"], 200)
+        self.assertEqual(kwargs["json"]["amount"], 400)
         self.assertEqual(kwargs["json"]["currency"], "dzd")
         self.assertEqual(kwargs["json"]["payment_method"], "edahabia")
 
