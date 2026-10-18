@@ -72,7 +72,7 @@
   }
   const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
   const subscribed = (lv) => !!auth.subscriptions[lv] && new Date(auth.subscriptions[lv]) > new Date();
-  const canPlay = (sk) => auth.offline || isFree(sk) || subscribed(sk.level);
+  const canPlay = (sk) => auth.offline || auth.config.open || isFree(sk) || subscribed(sk.level);
   const price = (lv) => auth.config.prices[lv] || 200;
   const dateFr = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const prog = (id) => store.skills[id] || { score: 0, answered: 0, correct: 0, secs: 0 };
@@ -115,7 +115,7 @@
   }
 
   function levelBanner(lv) {
-    if (auth.offline) return '';
+    if (auth.offline || auth.config.open) return '';
     if (subscribed(lv.id)) return `<div class="note ok">Abonnement ${lv.short} actif jusqu’au ${dateFr(auth.subscriptions[lv.id])}. Tout le niveau est débloqué.</div>`;
     return `<div class="note">Tu peux essayer gratuitement 3 compétences du ${lv.short}. Pour débloquer tout le niveau : <b>${price(lv.id)} DA par mois</b>. <a class="btn" style="margin-left:8px;padding:7px 14px" href="#/tarifs">Voir les tarifs</a></div>`;
   }
@@ -125,7 +125,7 @@
     document.title = `Maths ${lv.short} — Tadriss-Maths`;
     const pills = LEVELS.map((l) => `<a class="pill ${l.id === id ? 'on' : ''}" style="background:${l.color};--c:${l.color}" href="#/niveau/${l.id}">${l.short}</a>`).join('');
     const doms = lv.domains.map((d, di) => `<section class="domain" id="d${di}" style="--c:${lv.color};--c2:${lv.color}"><h2>${esc(d.name)}</h2><div class="cats">${d.cats.map((c) => `<div class="cat"><h3>${esc(c.name)}</h3>${c.skills.map((s) => s.gen
-      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !subscribed(lv.id) ? '<span class="soon-tag free">Gratuit</span>' : '') + dot(s.id, lv.color) : '<span class="lock" title="Réservé aux abonnés">🔒</span>'}</a>`
+      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !auth.config.open && !subscribed(lv.id) ? '<span class="soon-tag free">Gratuit</span>' : '') + dot(s.id, lv.color) : '<span class="lock" title="Réservé aux abonnés">🔒</span>'}</a>`
       : `<span class="sk soon"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span><span class="soon-tag">${UI.soon}</span></span>`).join('')}</div>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1 style="color:${lv.color}">Réussir ${lv.art} ${lv.short}</h1>
       <p>${esc(lv.name)} · ${esc(lv.blurb)} Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.</p></div>

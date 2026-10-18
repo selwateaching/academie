@@ -10,6 +10,7 @@ Variables d'environnement :
   PAYMENT_MODE          demo (paiement simulé) ou chargily
   CHARGILY_SECRET_KEY   clé secrète Chargily (clé de TEST tant que CHARGILY_MODE=test)
   CHARGILY_MODE         test (par défaut) ou live
+  ABONNEMENTS_ACTIFS    1 pour réserver les compétences payantes aux abonnés ; absent = tout est ouvert
 """
 import os
 import re
@@ -107,19 +108,23 @@ def create_app(database_url=None):
             return plist[0]
         return None
 
+    def paywall_on():
+        return os.environ.get("ABONNEMENTS_ACTIFS", "").strip().lower() in ("1", "oui", "true")
+
     def can_access(conn, uid, skill_id):
         m = SKILL_RE.match(skill_id or "")
         if not m:
             return False
         level, code = m.groups()
-        if code in db.FREE_CODES:
+        if code in db.FREE_CODES or not paywall_on():
             return True
         return bool(uid) and level in db.active_subscriptions(conn, uid)
 
     def me_payload(conn):
         u = current_user(conn)
         cfg = {"prices": db.PRICES, "free": list(db.FREE_CODES), "days": db.PLAN_DAYS,
-               "currency": "DA", "payment": payment_mode(), "levels": db.LEVELS}
+               "currency": "DA", "payment": payment_mode(), "levels": db.LEVELS,
+               "open": not paywall_on()}
         if not u:
             return {"user": None, "config": cfg}
         subs = {lv: exp.isoformat() + "Z" for lv, exp in db.active_subscriptions(conn, u["id"]).items()}
@@ -267,7 +272,7 @@ def create_app(database_url=None):
                 if not m or not isinstance(v, dict):
                     continue
                 level, code = m.groups()
-                if code not in db.FREE_CODES and level not in subs:
+                if paywall_on() and code not in db.FREE_CODES and level not in subs:
                     refused.append(sid)
                     continue
                 vals = dict(score=clamp(v.get("score"), 100), answered=clamp(v.get("answered"), 10**6),

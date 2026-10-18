@@ -21,6 +21,9 @@ H = {"X-Tadriss": "1"}
 
 class Base(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": "1"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.app = server.create_app("sqlite://")
         self.c = self.app.test_client()
 
@@ -29,6 +32,21 @@ class Base(unittest.TestCase):
 
     def register(self, email="a@b.dz", client=None):
         return self.post("/api/register", {"email": email, "password": "motdepasse1", "name": "Sara", "level": "cm1"}, client)
+
+
+class OpenAccessTests(Base):
+    def test_everything_open_without_flag(self):
+        with mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": ""}):
+            self.register()
+            self.assertTrue(self.c.get("/api/me").get_json()["config"]["open"])
+            r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40, "answered": 5, "correct": 3}}})
+            self.assertEqual(r.get_json()["refused"], [])
+
+    def test_locked_when_flag_on(self):
+        self.register()
+        self.assertFalse(self.c.get("/api/me").get_json()["config"]["open"])
+        r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40, "answered": 5, "correct": 3}}})
+        self.assertEqual(r.get_json()["refused"], ["6e-D1"])
 
 
 class AuthTests(Base):
