@@ -15,15 +15,24 @@ main{flex:1;outline:none}
 
 /* en-tête */
 .top{background:var(--brand);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 12px rgba(0,0,0,.12)}
-.top-in{display:flex;align-items:center;gap:18px;flex-wrap:wrap;min-height:64px;padding-top:8px;padding-bottom:8px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;text-decoration:none}
+.top-in{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;min-height:64px;padding-top:8px;padding-bottom:8px;position:relative}
+.brand{flex:none;white-space:nowrap;display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;text-decoration:none}
 .brand-mark{width:36px;height:36px;border-radius:10px;background:var(--sun);color:var(--brand2);display:grid;place-items:center;font-family:Georgia,serif;font-size:22px}
-.nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
-.nav a{color:#e0defa;text-decoration:none;padding:8px 12px;border-radius:999px;font-weight:700;font-size:.95rem}
+.nav{display:flex;gap:2px;flex:1;justify-content:center;min-width:0}
+.nav a{color:#e0defa;text-decoration:none;padding:8px 11px;border-radius:999px;font-weight:700;font-size:.92rem;white-space:nowrap}
 .nav a:hover{background:rgba(255,255,255,.14)}
 .nav a.on{background:#fff;color:var(--brand2)}
-.search input{border:0;border-radius:999px;padding:9px 16px;width:230px;font:inherit;font-size:.95rem}
-@media(max-width:760px){.search{width:100%}.search input{width:100%}}
+.search{flex:0 1 190px;min-width:120px}
+.search input{border:0;border-radius:999px;padding:9px 16px;width:100%;font:inherit;font-size:.95rem}
+.menu-btn{display:none;flex:none;border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:10px;width:40px;height:40px;font-size:1.3rem;line-height:1}
+@media(max-width:1020px){
+  .top-in{flex-wrap:wrap;row-gap:8px}
+  .brand{order:1;margin-right:auto}.acct{order:2}.menu-btn{order:3;display:block}
+  .search{order:4;flex:1 0 100%}
+  .nav{order:5;flex:1 0 100%;flex-direction:column;justify-content:flex-start;display:none;padding-bottom:6px}
+  .top.open .nav{display:flex}
+  .nav a{padding:11px 14px}
+}
 
 /* accueil */
 .hero{padding:34px 0 10px}
