@@ -215,6 +215,7 @@
     /* ---- interface ---- */
     'ui.correct': ['Bravo !', 'Excellent !', 'Très bien !', 'Parfait !', 'Bien joué !'],
     'cur': '€',
+    'sep': ' ; ',
     /* unités affichées dans les conversions */
     'u.km': 'km', 'u.m': 'm', 'u.cm': 'cm', 'u.mm': 'mm',
     'u.kg': 'kg', 'u.g': 'g', 'u.t': 't',

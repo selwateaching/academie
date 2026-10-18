@@ -230,6 +230,7 @@ main{flex:1;outline:none}
 [dir=rtl] body{font-family:'Noto Sans Arabic','Noto Naskh Arabic',Nunito,system-ui,sans-serif}
 [dir=rtl] .m,[dir=rtl] .frac,[dir=rtl] .expr,[dir=rtl] .box,[dir=rtl] .coin,[dir=rtl] .pamount b{direction:ltr;unicode-bidi:isolate}
 [dir=rtl] .expr{text-align:center}
+[dir=rtl] .lst,[dir=rtl] .emojis{direction:rtl;unicode-bidi:isolate}
 [dir=rtl] .q{line-height:1.7}
 [dir=rtl] svg text{direction:rtl}
 [dir=rtl] .lv-badge{min-width:112px;padding:0 8px;font-size:1.25rem;text-align:center;line-height:1.3}
