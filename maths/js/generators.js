@@ -26,7 +26,7 @@
     const g = i.replace('-', '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
     return (i[0] === '-' ? '−' : '') + g + (d ? ',' + d : '');
   };
-  const m = (s) => `<span class="m">${s}</span>`;
+  const m = (s) => `<span class="m">${String(s).replace(/[\u0600-\u06FF]+/g, '\u2066$&\u2069')}</span>`;
   const frac = (n, d) => `<span class="frac"><span>${fmt(n)}</span><span>${fmt(d)}</span></span>`;
   const box = '<span class="box">?</span>';
   const sup = (d) => (d === 1 ? '' : `<sup>${d}</sup>`);
@@ -163,7 +163,7 @@
   GEN.money = (p) => {
     const vals = [1, 2, 5, 10, 20], k = R(2, p.pieces || 4); let items, sum;
     do { items = Array.from({ length: k }, () => pick(vals)); sum = items.reduce((a, b) => a + b, 0); } while (sum > p.max);
-    return { q: t('money.q'), vis: `<div class="coins">${items.map((v) => `<span class="coin c${v}">${v} €</span>`).join('')}</div>`, kind: 'num', ans: sum, exp: t('money.exp', { sum: m(sum) }) };
+    return { q: t('money.q'), vis: `<div class="coins">${items.map((v) => `<span class="coin c${v}">${v} ${t('cur')}</span>`).join('')}</div>`, kind: 'num', ans: sum, exp: t('money.exp', { sum: m(sum) }) };
   };
 
   /* ===== Nombres ===== */
@@ -379,12 +379,12 @@
     area: [['m²', 'cm²', 10000], ['cm²', 'mm²', 100]],
   };
   GEN.unit = (p) => {
-    const [big, small, f] = pick(UNITS[pick(p.sets)]), down = pick([true, false]), v = R(2, 25);
+    const [bigK, smallK, f] = pick(UNITS[pick(p.sets)]), big = t('u.' + bigK), small = t('u.' + smallK), down = pick([true, false]), v = R(2, 25);
     if (down) return { q: t('unit.q'), expr: m(`${v} ${big} = ${box} ${small}`), kind: 'num', ans: v * f, exp: t('unit.down.exp', { big, small, f: m(f) }) };
     return { q: t('unit.q'), expr: m(`${v * f} ${small} = ${box} ${big}`), kind: 'num', ans: v, exp: t('unit.up.exp', { big, small, f: m(f) }) };
   };
   GEN.wordprob = (p) => {
-    const k = pick(p.kinds), [name, g] = pick(t('wp.people')).split('|'), il = t(g === 'f' ? 'wp.elle' : 'wp.il'), Il = il[0].toUpperCase() + il.slice(1);
+    const k = pick(p.kinds), [name, g] = pick(t('wp.people')).split('|'), il = t(g === 'f' ? 'wp.elle' : 'wp.il'), Il = il ? il[0].toUpperCase() + il.slice(1) : il;
     const v = { P: name, il, Il };
     if (k === 'add') { const a = R(...p.r), b = R(...p.r); return { q: t('wp.add', { ...v, a: m(a), b: m(b) }), kind: 'num', ans: a + b, exp: m(`${a} + ${b} = ${a + b}`) }; }
     if (k === 'sub') { let a = R(...p.r), b = R(...p.r); if (b > a) [a, b] = [b, a]; return { q: t('wp.sub', { ...v, a: m(a), b: m(b) }), kind: 'num', ans: a - b, exp: m(`${a} − ${b} = ${a - b}`) }; }
@@ -410,7 +410,7 @@
     return { q: t('elapsed.q', { s: m(L(h1, m1)), e: m(L(h2, m2)) }), kind: 'num', ans: dur, exp: t('elapsed.exp', { s: m(L(h1, m1)), e: m(L(h2, m2)), r: m(dur) }) };
   };
   GEN.measure = (p) => {
-    const k = pick(p.kinds), u = p.u || 'cm';
+    const k = pick(p.kinds), u = t('u.' + (p.u || 'cm'));
     if (k === 'rectP' || k === 'rectA') {
       const a = R(p.r[0], p.r[1]), b = R(p.r[0], p.r[1]), vis = svg(220, 130, `<rect x="30" y="25" width="150" height="75" fill="#dbeafe" stroke="#1e3a8a" stroke-width="2.5"/>` + txt(105, 18, a + ' ' + u) + txt(205, 66, b + ' ' + u));
       return k === 'rectP' ? { q: t('ms.rectP'), vis, kind: 'num', ans: 2 * (a + b), exp: t('ms.rectP.exp', { a: m(a), b: m(b), r: m(2 * (a + b)), u }) } : { q: t('ms.rectA'), vis, kind: 'num', ans: a * b, exp: t('ms.rectA.exp', { a: m(a), b: m(b), r: m(a * b) }) };

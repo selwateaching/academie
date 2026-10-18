@@ -1,0 +1,128 @@
+/* Textes de l'interface en arabe. Clé = texte français exact tel qu'il est écrit
+ * autour de T() dans app.js et index.html (ou renvoyé par le serveur) ;
+ * valeur = traduction. Les {variables} sont conservées. Ce qui manque reste en
+ * français (voir tests/check_ar.js). */
+(function (root) {
+  root.AR_UI = {
+    /* en-tête et pied de page */
+    'Tadriss-Maths': 'تدريس-ماث',
+    'Menu': 'القائمة', 'Navigation principale': 'التنقّل الرئيسي',
+    'Maths': 'الرياضيات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس-ماث', 'Tarifs': 'الأسعار',
+    'Rechercher une compétence': 'ابحث عن مهارة',
+    'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
+    'Tadriss-Maths · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس-ماث · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',
+    '{h} h {m} min': '{h} سا و{m} د', '{m} min': '{m} د', '{s} s': '{s} ثا',
+
+    /* accueil et niveaux */
+    'Tadriss-Maths — exercices de maths de la GS à la 6e': 'تدريس-ماث — تمارين الرياضيات من التحضيري إلى السنة الأولى متوسط',
+    'Des exercices de maths pour réussir de la GS à la 6ᵉ': 'تمارين رياضيات للنجاح من التحضيري إلى السنة الأولى متوسط',
+    'Choisis ton niveau, entraîne-toi sur une compétence et vois ton score grimper. Les questions sont tirées au hasard : tu ne manqueras jamais d’exercices.': 'اختر مستواك وتدرّب على مهارة وشاهد نتيجتك ترتفع. الأسئلة تُختار عشوائيًا، فلن تنفد منك التمارين أبدًا.',
+    'Réussir {art} {short}': 'النجاح في {short}',
+    '{age} · {cats} catégories · {d} / {n} compétences acquises': '{age} · {cats} فئة · {d} / {n} من المهارات المكتسبة',
+    'Voir les {n} compétences ›': '‹ عرض المهارات ({n})',
+    'Abonnement {lv} actif jusqu’au {date}. Tout le niveau est débloqué.': 'اشتراك {lv} فعّال حتى {date}. المستوى كلّه مفتوح.',
+    'Tu peux essayer gratuitement 3 compétences du {lv}. Pour débloquer tout le niveau : <b>{price} DA par mois</b>.': 'يمكنك تجربة 3 مهارات مجانًا في {lv}. لفتح المستوى كلّه: <b>{price} دج في الشهر</b>.',
+    'Voir les tarifs': 'عرض الأسعار',
+    'Maths {lv} — Tadriss-Maths': 'رياضيات {lv} — تدريس-ماث',
+    'Gratuit': 'مجاني', 'Réservé aux abonnés': 'خاص بالمشتركين', 'bientôt': 'قريبًا',
+    'Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.': 'اضغط على مهارة لتتدرّب: تُحفظ نتيجتك وتتكيّف الصعوبة مع تقدّمك.',
+    'Choisir un niveau': 'اختر مستوى',
+    'pas commencée': 'لم تبدأ', 'en cours': 'قيد التقدّم', 'acquise (80 et plus)': 'مكتسبة (80 فأكثر)', 'maîtrisée (100)': 'متقَنة (100)',
+
+    /* exercice */
+    'Questions': 'الأسئلة', 'Réussies': 'الصحيحة', 'Temps': 'الوقت',
+    'Le score monte quand tu réponds juste et baisse quand tu te trompes. À 100, la compétence est maîtrisée.': 'ترتفع النتيجة عندما تجيب إجابة صحيحة وتنخفض عندما تخطئ. عند 100 تكون المهارة متقَنة.',
+    'Maîtrisée': 'متقَنة', 'Très bien': 'جيّد جدًا',
+    'Ta réponse': 'إجابتك', 'Valider': 'تحقّق', 'Pas tout à fait.': 'ليس تمامًا.', 'La bonne réponse est : ': 'الإجابة الصحيحة هي: ',
+    'Suivant': 'التالي', 'J’ai compris': 'فهمت',
+    'Compétence maîtrisée !': 'مهارة متقَنة!', 'Retour à la liste': 'العودة إلى القائمة', 'Continuer': 'متابعة',
+
+    /* récompenses */
+    'Récompenses — Tadriss-Maths': 'المكافآت — تدريس-ماث',
+    'Chaque niveau a son plateau de jeu. Un carré se dévoile quand tu acquiers (80 et plus) deux compétences d’une même catégorie. Touche un carré pour voir ce qu’il te reste à faire.': 'لكل مستوى لوحة لعب. يظهر مربّع عندما تكتسب (80 فأكثر) مهارتين من الفئة نفسها. المس مربّعًا لترى ما بقي عليك.',
+    'Plateau {lv}': 'لوحة {lv}', 'Carrés dévoilés': 'المربّعات المكشوفة', 'Compétences acquises': 'المهارات المكتسبة', 'Récompenses (tous niveaux)': 'المكافآت (كل المستويات)',
+    'Récompense gagnée !': 'ربحت مكافأة!', 'Tu as acquis {n} compétence(s) dans la catégorie « {cat} ».': 'اكتسبت {n} من المهارات في الفئة «{cat}».',
+    'Pour dévoiler ce carré': 'لكشف هذا المربّع',
+    'Acquiers {n} compétences dans la catégorie :': 'اكتسب {n} من المهارات في الفئة:', 'Acquiers {n} compétence dans la catégorie :': 'اكتسب مهارة واحدة في الفئة:',
+    'Tu en as déjà {n}.': 'لديك منها {n} حتى الآن.',
+    'S’entraîner encore': 'تدرّب أكثر', 'Plus d’exercices': 'المزيد من التمارين', 'Fermer': 'إغلاق',
+
+    /* suivi des progrès */
+    'Suivi des progrès — Tadriss-Maths': 'متابعة التقدّم — تدريس-ماث',
+    'Un coup d’œil sur ce qui a été travaillé sur cet appareil : combien de questions, avec quelle réussite, et quelles compétences méritent un coup de pouce.': 'نظرة سريعة على ما جرى العمل عليه في هذا الجهاز: عدد الأسئلة ونسبة النجاح والمهارات التي تحتاج إلى دعم.',
+    'questions répondues': 'سؤالًا أُجيب عنه', 'de réussite': 'نسبة النجاح', 'de travail': 'من العمل',
+    'compétences acquises (dont {n} maîtrisées)': 'مهارة مكتسبة (منها {n} متقَنة)',
+    'Progression par niveau': 'التقدّم حسب المستوى', 'Questions par jour (14 derniers jours)': 'الأسئلة في اليوم (آخر 14 يومًا)',
+    'À retravailler': 'تحتاج إلى مراجعة',
+    'Rien à signaler pour l’instant : continue comme ça, ou lance-toi sur une nouvelle compétence.': 'لا شيء يستدعي الانتباه الآن: واصل هكذا أو ابدأ مهارة جديدة.',
+    'Dernières compétences travaillées': 'آخر المهارات التي اشتغلت عليها',
+    'Aucun exercice fait pour l’instant. <a href="#/">Choisis un niveau</a> pour commencer.': 'لم تُنجَز أي تمارين بعد. <a href="#/">اختر مستوى</a> لتبدأ.',
+    'Effacer ma progression': 'مسح تقدّمي', 'Effacer toute la progression enregistrée sur cet appareil ?': 'هل تريد مسح كل التقدّم المسجّل على هذا الجهاز؟',
+
+    /* présentation */
+    'Tadriss-Maths donne envie de faire des maths': 'تدريس-ماث يجعلك تحبّ الرياضيات',
+    'Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.': 'تمارين تفاعلية تُصحَّح فورًا وتتكيّف مع إيقاعك. من أول عدّ في التحضيري إلى الكسور والمساحات في السنة الأولى متوسط.',
+    'Choisir mon niveau': 'اختيار مستواي', 'Une façon d’apprendre pensée pour l’enfant': 'طريقة في التعلّم مصمَّمة للطفل',
+    'Des exercices sans fin': 'تمارين لا تنتهي', 'Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.': 'كل سؤال يُختار عشوائيًا: يمكن التدرّب بقدر ما نشاء.',
+    'Des schémas pour comprendre': 'رسوم توضيحية للفهم', 'Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.': 'أشرطة وأقراص ومستقيمات مدرّجة وساعات ومجسّمات: نرى المفهوم قبل أن نحسب.',
+    'Une explication après chaque erreur': 'شرح بعد كل خطأ', 'La bonne réponse s’affiche avec une courte explication, pour comprendre et pas seulement corriger.': 'تظهر الإجابة الصحيحة مع شرح قصير، لنفهم وليس لنصحّح فقط.',
+    'Des récompenses à débloquer': 'مكافآت لفتحها', 'Un plateau par niveau, avec des carrés cachés à dévoiler en acquérant des compétences.': 'لوحة لكل مستوى فيها مربّعات مخفية تنكشف باكتساب المهارات.',
+    'Le programme, niveau par niveau': 'المنهاج مستوًى بعد مستوى', 'Où en est le site ?': 'أين وصل الموقع؟',
+    '{total} compétences sont listées de la GS à la 6ᵉ, et {impl} ont déjà leurs exercices. Les autres sont marquées « bientôt » et seront ajoutées niveau par niveau. L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.': 'هناك {total} مهارة مدرجة من التحضيري إلى السنة الأولى متوسط، و{impl} منها لها تمارينها الآن. أما الباقي فمكتوب عليه «قريبًا» وسيُضاف مستوًى بعد مستوى. الواجهة متوفرة بالفرنسية والعربية (من اليمين إلى اليسار): زر FR / عربي في أعلى الصفحة.',
+
+    /* recherche */
+    'Recherche — Tadriss-Maths': 'بحث — تدريس-ماث', 'Recherche': 'بحث', '{n} compétence(s) pour « {q} ».': 'عدد النتائج: {n} للبحث «{q}».',
+
+    /* accès réservé et tarifs */
+    'Compétence réservée aux abonnés': 'مهارة خاصة بالمشتركين',
+    '<b>{skill}</b> fait partie de l’abonnement {lv} : <b>{price} DA par mois</b>, tout le niveau débloqué.': '<b>{skill}</b> ضمن اشتراك {lv}: <b>{price} دج في الشهر</b> ويُفتح المستوى كلّه.',
+    '3 compétences de chaque niveau restent gratuites pour essayer (codes A.1, B.1 et C.1).': 'تبقى 3 مهارات من كل مستوى مجانية للتجربة (الرموز A.1 وB.1 وC.1).',
+    'Retour au niveau': 'العودة إلى المستوى',
+    'Tarifs — Tadriss-Maths': 'الأسعار — تدريس-ماث',
+    'Un abonnement par niveau, valable {days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.': 'اشتراك واحد لكل مستوى، صالح {days} يومًا، دون تجديد تلقائي: تدفع عندما تريد المتابعة. الدفع بالدينار ببطاقة CIB أو الذهبية.',
+    'Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.': 'وضع التجربة: لا يتمّ أي دفع حقيقي، الدفع محاكى.',
+    'DA': 'دج', '/ mois': '/ شهر',
+    '{n} compétences avec exercices, correction immédiate, suivi et récompenses.': '{n} من المهارات مع تمارين وتصحيح فوري ومتابعة ومكافآت.',
+    'Actif jusqu’au {date}': 'فعّال حتى {date}', 'Prolonger d’un mois': 'تمديد شهر', 'S’abonner': 'اشترك',
+    'Ce qui est inclus': 'ما الذي يشمله الاشتراك',
+    'Tous les exercices du niveau choisi, sans limite de questions, avec explications après chaque erreur, score, récompenses et suivi des progrès sauvegardés sur ton compte. Trois compétences par niveau restent gratuites.': 'كل تمارين المستوى المختار دون حدّ للأسئلة، مع شرح بعد كل خطأ ونتيجة ومكافآت ومتابعة للتقدّم محفوظة في حسابك. تبقى ثلاث مهارات في كل مستوى مجانية.',
+    'Moyen de paiement': 'وسيلة الدفع', 'Je choisis sur la page de paiement': 'أختار في صفحة الدفع', 'Carte CIB': 'بطاقة CIB', 'Carte Edahabia': 'البطاقة الذهبية (Edahabia)',
+    'Les abonnements ne sont pas disponibles dans cet aperçu.': 'الاشتراكات غير متاحة في هذه المعاينة.',
+
+    /* compte */
+    'Connexion — Tadriss-Maths': 'تسجيل الدخول — تدريس-ماث', 'Adresse e-mail': 'البريد الإلكتروني', 'Mot de passe': 'كلمة المرور', 'Me connecter': 'دخول',
+    'Pas encore de compte ? <a href="#/inscription">Créer un compte</a>': 'ليس لديك حساب؟ <a href="#/inscription">أنشئ حسابًا</a>',
+    'Créer un compte — Tadriss-Maths': 'إنشاء حساب — تدريس-ماث', 'Créer un compte': 'إنشاء حساب',
+    'Le compte est celui du parent. Il peut contenir jusqu’à 5 profils d’élèves, chacun avec sa propre progression.': 'الحساب هو حساب الوليّ. يمكن أن يضمّ حتى 5 ملفات للتلاميذ، لكل منها تقدّمه الخاص.',
+    'Adresse e-mail du parent': 'البريد الإلكتروني للوليّ', 'Mot de passe (8 caractères minimum)': 'كلمة المرور (8 أحرف على الأقل)', 'Prénom de l’élève': 'اسم التلميذ', 'Niveau de l’élève': 'مستوى التلميذ',
+    'J’accepte les <a href="#/legal">conditions d’utilisation</a>.': 'أوافق على <a href="#/legal">شروط الاستعمال</a>.', 'Créer mon compte': 'إنشاء حسابي',
+    'Déjà un compte ? <a href="#/connexion">Se connecter</a>': 'لديك حساب؟ <a href="#/connexion">سجّل الدخول</a>',
+    'Mon compte — Tadriss-Maths': 'حسابي — تدريس-ماث', 'Profils des élèves': 'ملفات التلاميذ', 'profil actif': 'الملف النشط', 'Choisir': 'اختيار', 'Supprimer': 'حذف',
+    'Prénom': 'الاسم', 'Prénom du nouvel élève': 'اسم التلميذ الجديد', 'Niveau': 'المستوى', 'Ajouter un profil': 'إضافة ملف',
+    'Abonnements': 'الاشتراكات', 'jusqu’au {date}': 'حتى {date}', 'Aucun abonnement actif. Les compétences gratuites restent accessibles.': 'لا يوجد اشتراك فعّال. تبقى المهارات المجانية متاحة.',
+    'Derniers paiements': 'آخر المدفوعات', 'payé': 'مدفوع', 'en attente': 'قيد الانتظار', 'échoué': 'فشل', 'Aucun paiement pour l’instant.': 'لا توجد مدفوعات حتى الآن.',
+    'Me déconnecter': 'تسجيل الخروج', 'Supprimer ce profil et sa progression ?': 'هل تريد حذف هذا الملف وتقدّمه؟',
+
+    /* paiement */
+    'Paiement — Tadriss-Maths': 'الدفع — تدريس-ماث', 'Vérification du paiement…': 'جارٍ التحقّق من الدفع…', 'Paiement non terminé': 'لم يكتمل الدفع',
+    'Le paiement a été annulé ou a échoué. Aucun abonnement n’a été activé.': 'أُلغي الدفع أو فشل. لم يُفعَّل أي اشتراك.', 'Retour aux tarifs': 'العودة إلى الأسعار',
+    'Paiement reçu, merci !': 'تمّ استلام الدفع، شكرًا!', 'Paiement en cours de confirmation': 'الدفع قيد التأكيد',
+    'Ton abonnement est actif. Bon entraînement !': 'اشتراكك فعّال. تدريبًا موفّقًا!', 'La banque n’a pas encore confirmé. Recharge cette page dans une minute.': 'لم يؤكّد البنك بعد. أعد تحميل هذه الصفحة بعد دقيقة.',
+
+    /* conditions */
+    'Conditions et confidentialité — Tadriss-Maths': 'الشروط والخصوصية — تدريس-ماث', 'Conditions et confidentialité': 'الشروط والخصوصية',
+    'Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.': 'نصّ مؤقّت ينبغي مراجعته واستكماله (اسم الناشر والعنوان وبيانات الاتصال) قبل الإطلاق للعموم.',
+    'Le service': 'الخدمة', 'Tadriss-Maths propose des exercices de mathématiques en ligne, de la grande section à la sixième. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.': 'يقدّم تدريس-ماث تمارين رياضيات عبر الإنترنت من التحضيري إلى السنة الأولى متوسط. ثلاث مهارات في كل مستوى مجانية، وباقي المستوى متاح بالاشتراك.',
+    'Abonnements et paiement': 'الاشتراكات والدفع', 'Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.': 'يخصّ الاشتراك مستوًى واحدًا ويدوم {days} يومًا ابتداءً من الدفع، ولا يُجدَّد تلقائيًا. يتمّ الدفع بالدينار الجزائري ببطاقة CIB أو الذهبية عبر مزوّد الخدمة Chargily Pay. لا يتلقّى تدريس-ماث أرقام البطاقات ولا يحتفظ بها.',
+    'Données personnelles': 'البيانات الشخصية', 'Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.': 'نحتفظ بالبريد الإلكتروني للوليّ وأسماء ملفات التلاميذ وتقدّمهم في التمارين وسجلّ المدفوعات. تُستعمل هذه البيانات فقط لتشغيل الخدمة. لا إعلانات ولا بيع للبيانات.',
+    'Supprimer son compte': 'حذف الحساب', 'Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).': 'يمكن حذف ملف من صفحة «حسابي». ولحذف الحساب كلّه، تُرسَل رسالة إلى عنوان الاتصال (يُستكمل لاحقًا).',
+
+    /* messages du serveur */
+    'Erreur': 'حدث خطأ',
+    'Adresse e-mail invalide.': 'عنوان البريد الإلكتروني غير صالح.', 'Connexion nécessaire.': 'يلزم تسجيل الدخول.', 'E-mail ou mot de passe incorrect.': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+    'Indique le prénom de l\'élève.': 'اكتب اسم التلميذ.', 'Indique un prénom.': 'اكتب اسمًا.', 'Le mot de passe doit avoir au moins 8 caractères.': 'يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل.',
+    'Le paiement est momentanément indisponible.': 'الدفع غير متاح مؤقتًا.', 'Niveau inconnu.': 'مستوى غير معروف.', 'Profil introuvable.': 'الملف غير موجود.',
+    'Trop d\'essais, réessaie dans quelques minutes.': 'محاولات كثيرة، أعد المحاولة بعد بضع دقائق.', 'Un compte existe déjà avec cette adresse.': 'يوجد حساب بهذا العنوان من قبل.',
+    'Un compte garde au moins un profil.': 'يحتفظ الحساب بملف واحد على الأقل.', 'requête refusée': 'طلب مرفوض', 'signature invalide': 'توقيع غير صالح',
+  };
+}(typeof window !== 'undefined' ? window : globalThis));
