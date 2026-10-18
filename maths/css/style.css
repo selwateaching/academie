@@ -171,3 +171,38 @@ main{flex:1;outline:none}
 .lg.p{background:conic-gradient(var(--c) var(--deg),#e8e6f6 0);border:0}
 .lg.a{background:#f59e0b;border:0}
 .lg.m{background:var(--ok);border:0}
+
+/* abonnements et comptes */
+.narrow{max-width:560px}
+.center{text-align:center}
+.bigico{font-size:3rem;line-height:1.2}
+.row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.qcard.center p{margin:8px 0}
+.prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:22px 0}
+.pcard{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border-top:5px solid var(--c);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.pcard p{color:var(--ink2);font-size:.9rem;flex:1}
+.pbadge{color:#fff;font-weight:800;border-radius:999px;padding:2px 14px}
+.pamount b{font-size:2.2rem;font-weight:800}
+.pamount span{color:var(--ink3)}
+.form{display:flex;flex-direction:column;gap:14px}
+.fld{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.95rem}
+.fld input,.fld select,.inl input,.inl select,#method{font:inherit;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.fld input:focus,.fld select:focus,.inl input:focus{outline:3px solid #cfcdf6;border-color:var(--brand)}
+.chk{display:flex;gap:8px;align-items:flex-start;font-size:.92rem}
+.errtxt{color:var(--no);font-weight:700;min-height:1.2em}
+.hint{color:var(--ink2);font-size:.92rem}
+.profs{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.prof{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:2px solid var(--line);border-radius:12px}
+.prof.on{border-color:var(--brand);background:#f1f0fc}
+.prof b{flex:1}
+.btn.sm{padding:4px 12px;font-size:.85rem}
+.inl{display:flex;gap:8px;flex-wrap:wrap}
+.inl input{flex:1;min-width:120px}
+.lock{opacity:.9}
+.soon-tag.free{background:var(--ok-bg);color:var(--ok)}
+.note.ok{background:var(--ok-bg);border-color:#9fd8b3}
+.legal h2{margin:18px 0 6px;font-size:1.1rem}
+.legal p{margin-bottom:8px;color:var(--ink2)}
+.acct{background:var(--sun);color:#3a2600;font-weight:800;text-decoration:none;padding:6px 14px;border-radius:999px;font-size:.9rem;white-space:nowrap}
+.acct:hover{filter:brightness(.95)}
+.stat{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}

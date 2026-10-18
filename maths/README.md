@@ -1,40 +1,51 @@
 # Tadriss-Maths
 
-Site d'exercices de maths interactifs, de la GS à la 6ᵉ, inspiré de la structure d'IXL
-(niveaux, compétences codées A.1, B.2…, score, récompenses, suivi des progrès).
-Tout le contenu (titres, exercices, schémas, explications) est original.
+Site d'exercices de maths interactifs (GS → 6e), avec comptes, abonnements mensuels et suivi des progrès.
 
-## Lancer
+- Tarifs : **200 DA / mois pour la 6e**, **400 DA / mois pour les autres niveaux**. Abonnement de 30 jours par niveau, sans reconduction automatique.
+- 3 compétences gratuites par niveau (codes A.1, B.1, C.1).
+- Compte parent, jusqu'à 5 profils d'élèves, progression enregistrée côté serveur.
+- Paiement CIB / Edahabia via Chargily Pay (mode test par défaut).
 
+## Lancer en local
+
+```bash
+cd maths
+python -m venv .venv && . .venv/bin/activate
+pip install -r requirements.txt
+PAYMENT_MODE=demo python server.py      # http://127.0.0.1:5000
+python -m unittest discover tests       # tests du serveur
 ```
-python3 server.py        # http://localhost:8000
-```
 
-Aucune dépendance : site statique (HTML, CSS, JavaScript) et un petit serveur Python
-de la bibliothèque standard. La progression est enregistrée dans le navigateur (`localStorage`).
+Sans `DATABASE_URL`, une base SQLite `tadriss.db` est créée. Sans serveur (fichier `index.html` ouvert seul), tout est accessible et la progression reste dans le navigateur.
 
-## Contenu
+## Variables d'environnement
 
-- 7 niveaux : GS, CP, CE1, CE2, CM1, CM2, 6ᵉ — 374 compétences listées, 360 avec exercices.
-  Les autres sont affichées « bientôt ».
-- 48 types d'exercices générés au hasard (`js/generators.js`) : comptage, opérations, fractions
-  (bandes, disques, droites graduées, fractions égales), décimaux, mesures, horloge, thermomètre,
-  règle, solides, symétrie, statistiques, probabilités…
-- Pages : Maths (niveaux et arbre des compétences), exercice avec score sur 100,
-  Récompenses (un plateau à cases cachées par niveau), Suivi des progrès, présentation.
-
-## Organisation
-
-| Fichier | Rôle |
+| Variable | Rôle |
 |---|---|
-| `js/catalog.js` | Niveaux, domaines, catégories et compétences (titres en français, codes automatiques) |
-| `js/generators.js` | Générateurs de questions (maths, schémas SVG) |
-| `js/lang/fr.js` | Tous les textes des exercices : à copier en `ar.js` pour l'arabe |
-| `js/app.js` | Pages, score, récompenses, suivi (textes d'interface dans l'objet `UI`) |
+| `SECRET_KEY` | clé des sessions (générée par Render) |
+| `DATABASE_URL` | base PostgreSQL (fournie par Render) |
+| `BASE_URL` | adresse publique du site, ex. `https://tadriss-maths.onrender.com` |
+| `PAYMENT_MODE` | `demo` (paiement simulé) ou `chargily` |
+| `CHARGILY_SECRET_KEY` | clé secrète Chargily (test, puis live) |
+| `CHARGILY_MODE` | `test` (faux paiements) ou `live` |
 
-## Arabe (prévu, pas encore fait)
+## Déploiement sur Render
 
-Les textes des exercices sont isolés dans `js/lang/fr.js`. Pour l'arabe : traduire un `ar.js`,
-traduire les titres de `catalog.js` (par code de compétence), les textes de l'objet `UI`,
-et passer `<html>` en `lang="ar" dir="rtl"`. Les expressions mathématiques sont déjà dans des
-éléments `.m` / `.frac` à garder en `direction: ltr`.
+`render.yaml` (à la racine du dépôt) décrit le service web `tadriss-maths` et la base `tadriss-db`. Après création : renseigner `BASE_URL` et `CHARGILY_SECRET_KEY`, puis passer `PAYMENT_MODE` à `chargily`. Dans Chargily, déclarer le webhook `BASE_URL/api/webhook/chargily`.
+
+## Accorder un abonnement à la main
+
+```bash
+python manage.py grant parent@exemple.com cm1 30
+python manage.py list
+```
+
+## Limites connues
+
+- Les exercices sont générés dans le navigateur : le blocage des niveaux payants empêche l'enregistrement de la progression et masque l'accès, mais ne protège pas le code JavaScript lui-même.
+- Le client Chargily a été écrit sans accès à leur documentation en ligne : à tester avec une clé de test avant tout lancement. Le serveur revérifie chaque paiement auprès de Chargily avant d'activer l'abonnement.
+- Pas de confirmation d'e-mail ni de mot de passe oublié, pas d'écran d'administration.
+- Les conditions d'utilisation sont un brouillon à faire relire.
+- La limitation du nombre d'essais de connexion est en mémoire (un seul worker).
+- Interface en français ; l'arabe (RTL) viendra après validation du français.

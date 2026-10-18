@@ -19,11 +19,62 @@
     soon: 'bientôt',
   };
 
-  /* ---------- progression (localStorage) ---------- */
+  /* ---------- progression, compte et abonnement ---------- */
+  // Sans compte : la progression reste dans le navigateur (essai gratuit).
+  // Avec un compte : elle est enregistrée sur le serveur, profil par profil.
   const KEY = 'tadriss-maths.v1';
-  let store = { skills: {}, days: {} };
-  try { const raw = localStorage.getItem(KEY); if (raw) store = Object.assign(store, JSON.parse(raw)); } catch (e) { /* stockage indisponible */ }
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignoré */ } };
+  const emptyStore = () => ({ skills: {}, days: {} });
+  const localLoad = () => { try { const raw = localStorage.getItem(KEY); return raw ? Object.assign(emptyStore(), JSON.parse(raw)) : emptyStore(); } catch (e) { return emptyStore(); } };
+  let store = emptyStore();
+  const auth = { offline: false, user: null, profiles: [], active: null, subscriptions: {}, payments: [], config: { prices: {}, free: ['A1', 'B1', 'C1'], payment: 'demo', days: 30 } };
+  const dirty = { skills: new Set(), days: new Set() };
+  let pushTimer = null;
+  let returnTo = '#/';
+
+  async function api(path, method = 'GET', body, keepalive = false) {
+    const opt = { method, credentials: 'same-origin', headers: { 'X-Tadriss': '1' }, keepalive };
+    if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    const r = await fetch(path, opt);
+    let data = {}; try { data = await r.json(); } catch (e) { /* pas de JSON */ }
+    if (!r.ok) throw Object.assign(new Error(data.error || 'Erreur'), { status: r.status });
+    return data;
+  }
+  function pushNow(keepalive) {
+    clearTimeout(pushTimer);
+    if (!auth.user || (!dirty.skills.size && !dirty.days.size)) return;
+    const body = { skills: {}, days: {} };
+    dirty.skills.forEach((id) => { if (store.skills[id]) body.skills[id] = store.skills[id]; });
+    dirty.days.forEach((d) => { if (store.days[d]) body.days[d] = store.days[d]; });
+    dirty.skills.clear(); dirty.days.clear();
+    api('/api/progress', 'POST', body, keepalive).catch(() => { /* réessayé à la prochaine sauvegarde */ });
+  }
+  function save(skillId, day) {
+    if (auth.user) {
+      if (skillId) dirty.skills.add(skillId);
+      if (day) dirty.days.add(day);
+      clearTimeout(pushTimer); pushTimer = setTimeout(() => pushNow(false), 1200);
+    } else { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignoré */ } }
+  }
+  function applyMe(d) {
+    auth.user = d.user || null; auth.config = d.config || auth.config;
+    auth.profiles = d.profiles || []; auth.active = d.activeProfile || null;
+    auth.subscriptions = d.subscriptions || {}; auth.payments = d.payments || [];
+    const a = $('#account');
+    if (auth.offline) { a.hidden = true; return; }
+    a.hidden = false;
+    const ap = auth.profiles.find((x) => x.id === auth.active);
+    a.textContent = auth.user ? (ap ? ap.name : 'Mon compte') : 'Connexion';
+    a.setAttribute('href', auth.user ? '#/compte' : '#/connexion');
+  }
+  async function loadProgress() {
+    if (!auth.user) { store = localLoad(); return; }
+    try { const d = await api('/api/progress'); store = { skills: d.skills || {}, days: d.days || {} }; } catch (e) { store = emptyStore(); }
+  }
+  const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
+  const subscribed = (lv) => !!auth.subscriptions[lv] && new Date(auth.subscriptions[lv]) > new Date();
+  const canPlay = (sk) => auth.offline || isFree(sk) || subscribed(sk.level);
+  const price = (lv) => auth.config.prices[lv] || 400;
+  const dateFr = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const prog = (id) => store.skills[id] || { score: 0, answered: 0, correct: 0, secs: 0 };
   const today = () => new Date().toISOString().slice(0, 10);
   const status = (id) => { const s = prog(id).score; return s >= 100 ? 'm' : s >= 80 ? 'a' : s > 0 ? 'p' : ''; };
@@ -59,15 +110,22 @@
     return `<span class="st p" style="--c:${color};--deg:${Math.round(p.score * 3.6)}deg"></span>`;
   }
 
+  function levelBanner(lv) {
+    if (auth.offline) return '';
+    if (subscribed(lv.id)) return `<div class="note ok">Abonnement ${lv.short} actif jusqu’au ${dateFr(auth.subscriptions[lv.id])}. Tout le niveau est débloqué.</div>`;
+    return `<div class="note">Tu peux essayer gratuitement 3 compétences du ${lv.short}. Pour débloquer tout le niveau : <b>${price(lv.id)} DA par mois</b>. <a class="btn" style="margin-left:8px;padding:7px 14px" href="#/tarifs">Voir les tarifs</a></div>`;
+  }
+
   function pageLevel(id) {
     const lv = lvOf(id); if (!lv) return pageHome();
     document.title = `Maths ${lv.short} — Tadriss-Maths`;
     const pills = LEVELS.map((l) => `<a class="pill ${l.id === id ? 'on' : ''}" style="background:${l.color};--c:${l.color}" href="#/niveau/${l.id}">${l.short}</a>`).join('');
     const doms = lv.domains.map((d, di) => `<section class="domain" id="d${di}" style="--c:${lv.color};--c2:${lv.color}"><h2>${esc(d.name)}</h2><div class="cats">${d.cats.map((c) => `<div class="cat"><h3>${esc(c.name)}</h3>${c.skills.map((s) => s.gen
-      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span>${dot(s.id, lv.color)}</a>`
+      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !subscribed(lv.id) ? '<span class="soon-tag free">Gratuit</span>' : '') + dot(s.id, lv.color) : '<span class="lock" title="Réservé aux abonnés">🔒</span>'}</a>`
       : `<span class="sk soon"><span class="code">${s.code}</span><span class="t">${esc(s.title)}</span><span class="soon-tag">${UI.soon}</span></span>`).join('')}</div>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1 style="color:${lv.color}">Réussir ${lv.art} ${lv.short}</h1>
       <p>${esc(lv.name)} · ${esc(lv.blurb)} Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.</p></div>
+      ${levelBanner(lv)}
       <div class="pills" aria-label="Choisir un niveau">${pills}</div>
       <div class="anchors">${lv.domains.map((d, di) => `<a href="#/niveau/${id}" data-scroll="d${di}" style="--c:${lv.color}">${esc(d.name)}</a>`).join('')}</div>
       <div class="legend"><span><i class="lg"></i> pas commencée</span><span><i class="lg p" style="--c:${lv.color};--deg:200deg"></i> en cours</span><span><i class="lg a">✓</i> acquise (80 et plus)</span><span><i class="lg m">★</i> maîtrisée (100)</span></div>${doms}</div>`, 'maths');
@@ -84,13 +142,14 @@
     const e = store.skills[P.skill.id] || { score: 0, answered: 0, correct: 0, secs: 0 };
     e.secs += P.secs - P.flushed; P.flushed = P.secs;
     const d = store.days[today()] || { n: 0, ok: 0, secs: 0 };
-    d.secs += P.daySecs(); store.days[today()] = d; store.skills[P.skill.id] = e; save();
+    d.secs += P.daySecs(); store.days[today()] = d; store.skills[P.skill.id] = e; save(P.skill.id, today());
   }
-  window.addEventListener('pagehide', flush);
-  window.addEventListener('hashchange', () => { flush(); P = null; route(); });
+  window.addEventListener('pagehide', () => { flush(); pushNow(true); });
+  window.addEventListener('hashchange', () => { flush(); pushNow(false); P = null; route(); });
 
   function pagePractice(id) {
     const sk = byId[id]; if (!sk || !sk.gen) return pageHome();
+    if (!canPlay(sk)) return pageLocked(sk);
     const lv = lvOf(sk.level), pr = prog(id);
     let lastSecs = 0;
     P = { skill: sk, lv, score: pr.score, answered: 0, correct: 0, secs: 0, flushed: 0, q: null, sel: null, done: false, celebrated: pr.score >= 100, daySecs() { const d = this.secs - lastSecs; lastSecs = this.secs; return d; } };
@@ -142,7 +201,7 @@
     else P.score = Math.max(0, P.score - (P.score >= 80 ? 10 : P.score >= 50 ? 7 : 4));
     const e = store.skills[P.skill.id] || { score: 0, answered: 0, correct: 0, secs: 0 };
     e.score = P.score; e.answered++; if (ok) e.correct++; e.last = Date.now(); store.skills[P.skill.id] = e;
-    const d = store.days[today()] || { n: 0, ok: 0, secs: 0 }; d.n++; if (ok) d.ok++; store.days[today()] = d; save();
+    const d = store.days[today()] || { n: 0, ok: 0, secs: 0 }; d.n++; if (ok) d.ok++; store.days[today()] = d; save(P.skill.id, today());
     if (q.kind === 'choice') document.querySelectorAll('.ch').forEach((b, i) => { b.classList.toggle('good', String(q.choices[i].v) === String(q.ans)); if (i === P.sel && !ok) b.classList.add('bad'); });
     else $('#ans').disabled = true;
     const goodLabel = q.kind === 'choice' ? q.choices.find((c) => String(c.v) === String(q.ans)).label : `<span class="m">${String(q.ans).replace('-', '−').replace('.', ',')}</span>`;
@@ -213,8 +272,9 @@
       <div class="panel"><h2>Questions par jour (14 derniers jours)</h2><div class="days">${days.map((d) => `<div title="${d.k} : ${d.n}"><i style="height:${(d.n / max) * 100}%"></i>${d.lab}</div>`).join('')}</div></div>
       <div class="panel"><h2>À retravailler</h2><div class="todo">${weak.length ? weak.map(link).join('') : '<p class="hint">Rien à signaler pour l’instant : continue comme ça, ou lance-toi sur une nouvelle compétence.</p>'}</div></div>
       <div class="panel"><h2>Dernières compétences travaillées</h2><div class="todo">${recent.length ? recent.map(link).join('') : '<p class="hint">Aucun exercice fait pour l’instant. <a href="#/">Choisis un niveau</a> pour commencer.</p>'}</div></div>
-      <p style="margin-bottom:30px"><button class="btn ghost" id="reset">Effacer ma progression</button></p></div>`, 'suivi');
-    $('#reset').onclick = () => { if (confirm('Effacer toute la progression enregistrée sur cet appareil ?')) { store = { skills: {}, days: {} }; save(); pageProgress(); } };
+      ${auth.user ? '' : '<p style="margin-bottom:30px"><button class="btn ghost" id="reset">Effacer ma progression</button></p>'}</div>`, 'suivi');
+    const rs = $('#reset');
+    if (rs) rs.onclick = () => { if (confirm('Effacer toute la progression enregistrée sur cet appareil ?')) { store = emptyStore(); save(); pageProgress(); } };
   }
 
   /* ---------- page de présentation ---------- */
@@ -239,13 +299,123 @@
     show(`<div class="wrap"><div class="lvhead"><h1>Recherche</h1><p>${hits.length} compétence(s) pour « ${esc(q)} ».</p></div><div class="panel results">${hits.slice(0, 80).map((s) => `<a href="${s.gen ? '#/exercice/' + s.id : '#/niveau/' + s.level}"><span class="lvtag" style="color:${lvOf(s.level).color}">${lvOf(s.level).short}</span><span><b>${s.code}</b> ${esc(s.title)} ${s.gen ? '' : `<span class="soon-tag">${UI.soon}</span>`}</span></a>`).join('')}</div></div>`, 'maths');
   }
 
+  /* ---------- pages : accès réservé, tarifs, connexion, compte ---------- */
+  function pageLocked(sk) {
+    const lv = lvOf(sk.level);
+    document.title = `${sk.code} — Tadriss-Maths`;
+    show(`<div class="wrap narrow"><div class="crumb"><a href="#/niveau/${lv.id}">${lv.short}</a> › ${esc(sk.cat.name)}</div>
+      <div class="qcard center"><div class="bigico">🔒</div><h1>Compétence réservée aux abonnés</h1>
+      <p><b>${sk.code} · ${esc(sk.title)}</b> fait partie de l’abonnement ${lv.short} : <b>${price(lv.id)} DA par mois</b>, tout le niveau débloqué.</p>
+      <p class="hint">3 compétences de chaque niveau restent gratuites pour essayer (codes A.1, B.1 et C.1).</p>
+      <div class="row"><a class="btn big" href="#/tarifs">Voir les tarifs</a><a class="btn ghost big" href="#/niveau/${lv.id}">Retour au niveau</a></div></div></div>`, 'maths');
+  }
+
+  function pagePricing() {
+    document.title = 'Tarifs — Tadriss-Maths';
+    const demo = auth.config.payment === 'demo';
+    show(`<div class="wrap"><div class="lvhead"><h1>Tarifs</h1><p>Un abonnement par niveau, valable ${auth.config.days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.</p></div>
+      ${demo ? '<div class="note">Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.</div>' : ''}
+      <div class="prices">${LEVELS.map((lv) => `<div class="pcard" style="--c:${lv.color}"><div class="pbadge" style="background:${lv.color}">${lv.short}</div><div class="pamount"><b>${price(lv.id)}</b> DA <span>/ mois</span></div>
+        <p>${implemented(lv).length} compétences avec exercices, correction immédiate, suivi et récompenses.</p>
+        ${subscribed(lv.id) ? `<p class="hint">Actif jusqu’au ${dateFr(auth.subscriptions[lv.id])}</p>` : ''}
+        <button class="btn" style="background:${lv.color}" data-buy="${lv.id}">${subscribed(lv.id) ? 'Prolonger d’un mois' : 'S’abonner'}</button></div>`).join('')}</div>
+      <div class="panel"><h2>Ce qui est inclus</h2><p>Tous les exercices du niveau choisi, sans limite de questions, avec explications après chaque erreur, score, récompenses et suivi des progrès sauvegardés sur ton compte. Trois compétences par niveau restent gratuites.</p>
+      <p class="hint" style="margin-top:10px"><label>Moyen de paiement <select id="method"><option value="">Je choisis sur la page de paiement</option><option value="cib">Carte CIB</option><option value="edahabia">Carte Edahabia</option></select></label></p><p id="buyErr" class="errtxt"></p></div></div>`, 'tarifs');
+    document.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', async () => {
+      if (auth.offline) { $('#buyErr').textContent = 'Les abonnements ne sont pas disponibles dans cet aperçu.'; return; }
+      if (!auth.user) { returnTo = '#/tarifs'; location.hash = '#/inscription'; return; }
+      b.disabled = true;
+      try { const d = await api('/api/checkout', 'POST', { level: b.dataset.buy, method: $('#method').value || undefined }); location.href = d.url; }
+      catch (e) { $('#buyErr').textContent = e.message; b.disabled = false; }
+    }));
+  }
+
+  const field = (id, label, type, extra = '') => `<label class="fld" for="${id}">${label}<input id="${id}" name="${id}" type="${type}" ${extra} required></label>`;
+  function afterAuth(d) { applyMe(d); return loadProgress().then(() => { const t = returnTo; returnTo = '#/'; location.hash = t; route(); }); }
+
+  function pageLogin() {
+    document.title = 'Connexion — Tadriss-Maths';
+    show(`<div class="wrap narrow"><div class="lvhead"><h1>Connexion</h1></div><form class="form panel" id="fLogin">
+      ${field('email', 'Adresse e-mail', 'email', 'autocomplete="email"')}${field('password', 'Mot de passe', 'password', 'autocomplete="current-password"')}
+      <p class="errtxt" id="err" role="alert"></p><button class="btn big" type="submit">Me connecter</button>
+      <p class="hint">Pas encore de compte ? <a href="#/inscription">Créer un compte</a></p></form></div>`, 'compte');
+    $('#fLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try { await afterAuth(await api('/api/login', 'POST', { email: $('#email').value, password: $('#password').value })); }
+      catch (er) { $('#err').textContent = er.message; }
+    });
+  }
+
+  function pageRegister() {
+    document.title = 'Créer un compte — Tadriss-Maths';
+    show(`<div class="wrap narrow"><div class="lvhead"><h1>Créer un compte</h1><p>Le compte est celui du parent. Il peut contenir jusqu’à 5 profils d’élèves, chacun avec sa propre progression.</p></div><form class="form panel" id="fReg">
+      ${field('email', 'Adresse e-mail du parent', 'email', 'autocomplete="email"')}${field('password', 'Mot de passe (8 caractères minimum)', 'password', 'autocomplete="new-password" minlength="8"')}
+      ${field('name', 'Prénom de l’élève', 'text', 'maxlength="40"')}
+      <label class="fld" for="level">Niveau de l’élève<select id="level">${LEVELS.map((l) => `<option value="${l.id}" ${l.id === 'cm1' ? 'selected' : ''}>${l.short} · ${esc(l.name)}</option>`).join('')}</select></label>
+      <label class="chk"><input type="checkbox" id="ok" required> J’accepte les <a href="#/legal">conditions d’utilisation</a>.</label>
+      <p class="errtxt" id="err" role="alert"></p><button class="btn big" type="submit">Créer mon compte</button>
+      <p class="hint">Déjà un compte ? <a href="#/connexion">Se connecter</a></p></form></div>`, 'compte');
+    $('#fReg').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const local = localLoad();
+      try {
+        const d = await api('/api/register', 'POST', { email: $('#email').value, password: $('#password').value, name: $('#name').value, level: $('#level').value });
+        applyMe(d);
+        if (Object.keys(local.skills).length) { // reprend les exercices gratuits déjà faits sur cet appareil
+          try { await api('/api/progress', 'POST', local); localStorage.removeItem(KEY); } catch (er) { /* ignoré */ }
+        }
+        await loadProgress(); const t = returnTo; returnTo = '#/'; location.hash = t; route();
+      } catch (er) { $('#err').textContent = er.message; }
+    });
+  }
+
+  function pageAccount() {
+    if (!auth.user) { returnTo = '#/compte'; return pageLogin(); }
+    document.title = 'Mon compte — Tadriss-Maths';
+    const subs = LEVELS.filter((l) => subscribed(l.id));
+    show(`<div class="wrap"><div class="lvhead"><h1>Mon compte</h1><p>${esc(auth.user.email)}</p></div>
+      <div class="panel"><h2>Profils des élèves</h2><div class="profs">${auth.profiles.map((p) => `<div class="prof ${p.id === auth.active ? 'on' : ''}"><b>${esc(p.name)}</b><span>${esc(lvOf(p.level).short)}</span>
+        ${p.id === auth.active ? '<span class="soon-tag free">profil actif</span>' : `<button class="btn ghost sm" data-sel="${p.id}">Choisir</button>`}
+        ${auth.profiles.length > 1 ? `<button class="btn ghost sm" data-del="${p.id}" aria-label="Supprimer ${esc(p.name)}">Supprimer</button>` : ''}</div>`).join('')}</div>
+        ${auth.profiles.length < 5 ? `<form class="inl" id="fProf"><input id="pname" placeholder="Prénom" maxlength="40" required aria-label="Prénom du nouvel élève"><select id="plevel" aria-label="Niveau">${LEVELS.map((l) => `<option value="${l.id}">${l.short}</option>`).join('')}</select><button class="btn" type="submit">Ajouter un profil</button></form>` : ''}<p class="errtxt" id="err"></p></div>
+      <div class="panel"><h2>Abonnements</h2>${subs.length ? subs.map((l) => `<div class="stat"><span>${l.short}</span><b>jusqu’au ${dateFr(auth.subscriptions[l.id])}</b></div>`).join('') : '<p class="hint">Aucun abonnement actif. Les compétences gratuites restent accessibles.</p>'}<p style="margin-top:12px"><a class="btn" href="#/tarifs">Voir les tarifs</a></p></div>
+      <div class="panel"><h2>Derniers paiements</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${lvOf(x.level).short} · ${x.amount} DA · ${dateFr(x.date)}</span><b>${{ paid: 'payé', pending: 'en attente', failed: 'échoué' }[x.status] || x.status}</b></div>`).join('') : '<p class="hint">Aucun paiement pour l’instant.</p>'}</div>
+      <p style="margin-bottom:30px"><button class="btn ghost" id="logout">Me déconnecter</button></p></div>`, 'compte');
+    const swap = async (fn) => { try { applyMe(await fn()); await loadProgress(); pageAccount(); } catch (e) { $('#err').textContent = e.message; } };
+    document.querySelectorAll('[data-sel]').forEach((b) => b.addEventListener('click', () => { pushNow(false); swap(() => api(`/api/profiles/${b.dataset.sel}/select`, 'POST', {})); }));
+    document.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => { if (confirm('Supprimer ce profil et sa progression ?')) swap(() => api(`/api/profiles/${b.dataset.del}`, 'DELETE')); }));
+    const f = $('#fProf'); if (f) f.addEventListener('submit', (e) => { e.preventDefault(); pushNow(false); swap(() => api('/api/profiles', 'POST', { name: $('#pname').value, level: $('#plevel').value })); });
+    $('#logout').onclick = async () => { pushNow(false); await api('/api/logout', 'POST', {}).catch(() => {}); applyMe({ user: null, config: auth.config }); store = localLoad(); location.hash = '#/'; route(); };
+  }
+
+  async function pagePaid(ok) {
+    document.title = 'Paiement — Tadriss-Maths';
+    show(`<div class="wrap narrow"><div class="qcard center"><div class="bigico">${ok ? '⏳' : '⚠️'}</div><h1>${ok ? 'Vérification du paiement…' : 'Paiement non terminé'}</h1><p id="pmsg">${ok ? '' : 'Le paiement a été annulé ou a échoué. Aucun abonnement n’a été activé.'}</p><div class="row"><a class="btn big" href="#/tarifs">Retour aux tarifs</a></div></div></div>`, 'tarifs');
+    if (!ok || !auth.user) return;
+    try {
+      const d = await api('/api/payments/refresh', 'POST', {}); applyMe(d);
+      const has = Object.keys(auth.subscriptions).length;
+      $('.bigico').textContent = has ? '🎉' : '⏳'; $('h1').textContent = has ? 'Paiement reçu, merci !' : 'Paiement en cours de confirmation';
+      $('#pmsg').textContent = has ? 'Ton abonnement est actif. Bon entraînement !' : 'La banque n’a pas encore confirmé. Recharge cette page dans une minute.';
+    } catch (e) { $('#pmsg').textContent = e.message; }
+  }
+
+  function pageLegal() {
+    document.title = 'Conditions et confidentialité — Tadriss-Maths';
+    show(`<div class="wrap narrow"><div class="lvhead"><h1>Conditions et confidentialité</h1></div><div class="note">Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.</div>
+      <div class="panel legal"><h2>Le service</h2><p>Tadriss-Maths propose des exercices de mathématiques en ligne, de la grande section à la sixième. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.</p>
+      <h2>Abonnements et paiement</h2><p>Un abonnement concerne un niveau et dure ${auth.config.days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.</p>
+      <h2>Données personnelles</h2><p>Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.</p>
+      <h2>Supprimer son compte</h2><p>Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).</p></div></div>`, 'compte');
+  }
+
   /* ---------- routeur ---------- */
   function route() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true;
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
-    else if (page === 'avantages') pageAbout(); else if (page === 'recherche') pageSearch(arg); else pageHome();
+    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && P && $('#go') && $('#modal').hidden && !(e.target.tagName === 'BUTTON')) { e.preventDefault(); submit(); }
@@ -253,5 +423,10 @@
   });
   $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal') e.target.hidden = true; });
   $('#search').addEventListener('submit', (e) => { e.preventDefault(); const v = $('#q').value.trim(); if (v) location.hash = '#/recherche/' + encodeURIComponent(v); });
-  route();
+  async function boot() {
+    try { applyMe(await api('/api/me')); } catch (e) { auth.offline = true; applyMe({ user: null }); } // sans serveur : aperçu, tout est accessible
+    await loadProgress();
+    route();
+  }
+  boot();
 }());
