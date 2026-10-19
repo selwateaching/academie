@@ -128,7 +128,7 @@
     show(`<div class="wrap"><section class="hero"><h1>${T('Des exercices de maths pour réussir de la GS à la 6ᵉ')}</h1><p>${T('Choisis ton niveau, entraîne-toi sur une compétence et vois ton score grimper. Les questions sont tirées au hasard : tu ne manqueras jamais d’exercices.')}</p></section>
     <section class="levels">${LEVELS.map((lv) => {
       const n = implemented(lv).length, d = doneCount(lv);
-      return `<a class="lv" href="#/niveau/${lv.id}"><span class="lv-badge" style="background:${lv.color}">${sh(lv)}</span>
+      return `<a class="lv" href="#/niveau/${lv.id}"><span class="lv-badge" style="background:${lv.color}">${sh(lv)}</span><img class="lv-photo" src="/img/niveau-${lv.id}.jpg" alt="" loading="lazy" width="150" height="170">
         <span class="lv-body"><h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p>
         <p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p>
         <span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${lv.color}"></i></span></span>
@@ -319,10 +319,10 @@
     const total = LEVELS.reduce((a, l) => a + l.skillList.length, 0), impl = LEVELS.reduce((a, l) => a + implemented(l).length, 0);
     show(`<div class="wrap"><section class="promo"><h1>${T('Tadriss-Maths donne envie de faire des maths')}</h1><p>${T('Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.')}</p><a class="btn big" href="#/">${T('Choisir mon niveau')}</a></section>
       <h2 class="section-t">${T('Une façon d’apprendre pensée pour l’enfant')}</h2>
-      <div class="feats"><div class="feat"><div class="ic">♾️</div><h3>${T('Des exercices sans fin')}</h3><p>${T('Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.')}</p></div>
-      <div class="feat"><div class="ic">🧩</div><h3>${T('Des schémas pour comprendre')}</h3><p>${T('Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.')}</p></div>
-      <div class="feat"><div class="ic">💡</div><h3>${T('Une explication après chaque erreur')}</h3><p>${T('La bonne réponse s’affiche avec une courte explication, pour comprendre et pas seulement corriger.')}</p></div>
-      <div class="feat"><div class="ic">🏆</div><h3>${T('Des récompenses à débloquer')}</h3><p>${T('Un plateau par niveau, avec des carrés cachés à dévoiler en acquérant des compétences.')}</p></div></div>
+      <div class="feats"><div class="feat"><img class="ic" src="/img/ico-0.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des exercices sans fin')}</h3><p>${T('Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.')}</p></div>
+      <div class="feat"><img class="ic" src="/img/ico-1.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des schémas pour comprendre')}</h3><p>${T('Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.')}</p></div>
+      <div class="feat"><img class="ic" src="/img/ico-2.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Une explication après chaque erreur')}</h3><p>${T('La bonne réponse s’affiche avec une courte explication, pour comprendre et pas seulement corriger.')}</p></div>
+      <div class="feat"><img class="ic" src="/img/ico-3.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des récompenses à débloquer')}</h3><p>${T('Un plateau par niveau, avec des carrés cachés à dévoiler en acquérant des compétences.')}</p></div></div>
       <h2 class="section-t">${T('Le programme, niveau par niveau')}</h2>
       <div class="feats">${LEVELS.map((lv) => `<a class="feat" href="#/niveau/${lv.id}" style="text-decoration:none;border-top:6px solid ${lv.color}"><h3 style="color:${lv.color};font-size:1.4rem">${sh(lv)}</h3><p>${ti(lv.blurb)}</p></a>`).join('')}</div>
       <div class="note"><b>${T('Où en est le site ?')}</b> ${T('{total} compétences sont listées de la GS à la 6ᵉ, et {impl} ont déjà leurs exercices. Les autres sont marquées « bientôt » et seront ajoutées niveau par niveau. L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.', { total, impl })}</div></div>`, 'avantages');

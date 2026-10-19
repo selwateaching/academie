@@ -599,6 +599,10 @@ def create_app(database_url=None):
     def css(name):
         return send_from_directory(os.path.join(ROOT, "css"), name)
 
+    @app.get("/img/<path:name>")
+    def img(name):
+        return send_from_directory(os.path.join(ROOT, "img"), name)
+
     @app.get("/js/<path:name>")
     def js(name):
         return send_from_directory(os.path.join(ROOT, "js"), name)
