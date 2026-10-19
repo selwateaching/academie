@@ -15,6 +15,7 @@ main{flex:1;outline:none}
 
 /* en-tête */
 .top{background:var(--brand);color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.top .wrap{max-width:1440px}
 .top-in{display:flex;align-items:center;gap:16px;flex-wrap:nowrap;min-height:64px;padding-top:8px;padding-bottom:8px;position:relative}
 .brand{flex:none;white-space:nowrap;display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;text-decoration:none}
 .brand-mark{width:36px;height:36px;border-radius:10px;background:var(--sun);color:var(--brand2);display:grid;place-items:center;font-family:Georgia,serif;font-size:22px}
@@ -25,7 +26,7 @@ main{flex:1;outline:none}
 .search{flex:0 1 190px;min-width:120px}
 .search input{border:0;border-radius:999px;padding:9px 16px;width:100%;font:inherit;font-size:.95rem}
 .menu-btn{display:none;flex:none;border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:10px;width:40px;height:40px;font-size:1.3rem;line-height:1}
-@media(max-width:1020px){
+@media(max-width:1320px){
   .top-in{flex-wrap:wrap;row-gap:8px}
   .brand{order:1;margin-inline-end:auto}.lang{order:2}.acct{order:3}.menu-btn{order:4;display:block}
   .search{order:5;flex:1 0 100%}
@@ -252,7 +253,7 @@ main{flex:1;outline:none}
 [dir=rtl] .lv-badge{min-width:112px;padding:0 8px;font-size:1.25rem;text-align:center;line-height:1.3}
 [dir=rtl] .pill{padding-inline:14px}
 /* en arabe l'en-tête est plus large : le menu se replie un peu plus tôt */
-@media(max-width:1180px){
+@media(max-width:1380px){
   [dir=rtl] .top-in{flex-wrap:wrap;row-gap:8px}
   [dir=rtl] .brand{order:1;margin-inline-end:auto}[dir=rtl] .lang{order:2}[dir=rtl] .acct{order:3}[dir=rtl] .menu-btn{order:4;display:block}
   [dir=rtl] .search{order:5;flex:1 0 100%}
