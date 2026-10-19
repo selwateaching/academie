@@ -27,11 +27,20 @@ main{flex:1;outline:none}
 .menu-btn{display:none;flex:none;border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:10px;width:40px;height:40px;font-size:1.3rem;line-height:1}
 @media(max-width:1020px){
   .top-in{flex-wrap:wrap;row-gap:8px}
-  .brand{order:1;margin-inline-end:auto}.menu-btn{order:2;display:block}.lang{order:3}.acct{order:4;margin-inline-start:auto}
-  .search{order:4;flex:1 0 100%}
-  .nav{order:5;flex:1 0 100%;flex-direction:column;justify-content:flex-start;display:none;padding-bottom:6px}
+  .brand{order:1;margin-inline-end:auto}.lang{order:2}.acct{order:3}.menu-btn{order:4;display:block}
+  .search{order:5;flex:1 0 100%}
+  .nav{order:6;flex:1 0 100%;flex-direction:column;justify-content:flex-start;display:none;padding-bottom:6px}
   .top.open .nav{display:flex}
   .nav a{padding:11px 14px}
+}
+@media(max-width:520px){
+  .top-in{gap:8px}
+  .brand{font-size:1rem;gap:7px}.brand-mark{width:30px;height:30px;font-size:19px}
+  .lang button{padding:5px 8px;font-size:.8rem}.menu-btn{width:36px;height:36px}
+  /* téléphone : ligne 1 = logo, langue, menu ; ligne 2 = compte et recherche */
+  .lang,[dir=rtl] .lang{order:2}.menu-btn,[dir=rtl] .menu-btn{order:3}
+  .acct,[dir=rtl] .acct{order:4;font-size:.85rem}.search,[dir=rtl] .search{order:5;flex:1 1 0;min-width:0}
+  .nav,[dir=rtl] .nav{order:6}
 }
 
 /* accueil */
@@ -245,9 +254,14 @@ main{flex:1;outline:none}
 /* en arabe l'en-tête est plus large : le menu se replie un peu plus tôt */
 @media(max-width:1180px){
   [dir=rtl] .top-in{flex-wrap:wrap;row-gap:8px}
-  [dir=rtl] .brand{order:1;margin-inline-end:auto}[dir=rtl] .menu-btn{order:2;display:block}[dir=rtl] .lang{order:3}[dir=rtl] .acct{order:4;margin-inline-start:auto}
+  [dir=rtl] .brand{order:1;margin-inline-end:auto}[dir=rtl] .lang{order:2}[dir=rtl] .acct{order:3}[dir=rtl] .menu-btn{order:4;display:block}
   [dir=rtl] .search{order:5;flex:1 0 100%}
   [dir=rtl] .nav{order:6;flex:1 0 100%;flex-direction:column;justify-content:flex-start;display:none;padding-bottom:6px}
   [dir=rtl] .top.open .nav{display:flex}
   [dir=rtl] .nav a{padding:11px 14px}
+}
+@media(max-width:520px){
+  .lang,[dir=rtl] .lang{order:2}.menu-btn,[dir=rtl] .menu-btn{order:3}
+  .acct,[dir=rtl] .acct{order:4;margin-inline-start:0}.search,[dir=rtl] .search{order:5;flex:1 1 0;min-width:0}
+  .nav,[dir=rtl] .nav{order:6}
 }
