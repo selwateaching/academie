@@ -112,7 +112,7 @@
     'Choisir cette leçon comme démo': 'اختيار هذا الدرس للتجربة المجانية',
     'Tu as déjà choisi tes {n} leçons gratuites.': 'لقد اخترت دروسك المجانية الـ {n}.',
     'Crée un compte gratuit pour choisir 3 leçons de ton choix en démo.': 'أنشئ حسابًا مجانيًا لتختار 3 دروس من اختيارك للتجربة.',
-    'Ta démo : choisis {left} leçon(s) gratuite(s) de ton choix. Ouvre une leçon verrouillée 🔒 et touche « Choisir cette leçon comme démo ».': 'تجربتك: اختر {left} درس(دروس) مجانية. افتح درسًا مقفلًا 🔒 واضغط «اختيار هذا الدرس للتجربة المجانية».',
+    'Ta démo : choisis {left} leçon(s) gratuite(s) de ton choix. Touche « ☆ Choisir » à côté d’une leçon verrouillée 🔒.': 'تجربتك: اختر {left} درس(دروس) مجانية. اضغط «☆ اختيار» بجانب درس مقفل 🔒.',
     'Tu as choisi tes {n} leçons gratuites. Les autres demandent un abonnement.': 'لقد اخترت دروسك المجانية الـ {n}. بقية الدروس تتطلب اشتراكًا.',
     'Compétence inconnue.': 'مهارة غير معروفة.',
     'Tu as déjà choisi tes 3 leçons gratuites.': 'لقد اخترت دروسك المجانية الـ 3.',

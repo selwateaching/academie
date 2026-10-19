@@ -145,7 +145,7 @@
   }
 
   function levelBanner(lv) {
-    if (auth.offline || auth.config.open) return '';
+    if (auth.offline || auth.config.open || auth.user) return '';
     if (subscribed(lv.id)) return `<div class="note ok">${T('Abonnement {lv} actif jusqu’au {date}. Tout le niveau est débloqué.', { lv: sh(lv), date: dateFr(expiry(lv.id)) })}</div>`;
     return `<div class="note">${T('Tu peux essayer gratuitement 3 compétences du {lv}. Pour débloquer tout le niveau : <b>{price} DA par mois</b>.', { lv: sh(lv), price: price(lv.id) })} <a class="btn" style="margin-inline-start:8px;padding:7px 14px" href="#/tarifs">${T('Voir les tarifs')}</a></div>`;
   }
@@ -155,15 +155,16 @@
     document.title = T('Maths {lv} — Tadriss-Maths', { lv: T(lv.short) });
     const pills = LEVELS.map((l) => `<a class="pill ${l.id === id ? 'on' : ''}" style="background:${l.color};--c:${l.color}" href="#/niveau/${l.id}">${sh(l)}</a>`).join('');
     const doms = lv.domains.map((d, di) => `<section class="domain" id="d${di}" style="--c:${lv.color};--c2:${lv.color}"><h2>${ti(d.name)}</h2><div class="cats">${d.cats.map((c) => `<div class="cat"><h3>${ti(c.name)}</h3>${c.skills.map((s) => s.gen
-      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${ti(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !auth.config.open && !subscribed(lv.id) ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') + dot(s.id, lv.color) : `<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`
+      ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${ti(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !auth.config.open && !subscribed(lv.id) ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') + dot(s.id, lv.color) : `${auth.user && picksLeft() > 0 ? `<span class="pick" data-pick="${s.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`
       : `<span class="sk soon"><span class="code">${s.code}</span><span class="t">${ti(s.title)}</span><span class="soon-tag">${T('bientôt')}</span></span>`).join('')}</div>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1 style="color:${lv.color}">${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h1>
       <p>${ti(lv.name)} · ${ti(lv.blurb)} ${T('Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.')}</p></div>
       ${levelBanner(lv)}
-      ${auth.user && !auth.offline && !auth.config.open ? `<div class="note">${picksLeft() > 0 ? T('Ta démo : choisis {left} leçon(s) gratuite(s) de ton choix. Ouvre une leçon verrouillée 🔒 et touche « Choisir cette leçon comme démo ».', { left: picksLeft() }) : T('Tu as choisi tes {n} leçons gratuites. Les autres demandent un abonnement.', { n: auth.config.demoMax || 3 })}</div>` : ''}
+      ${auth.user && !auth.offline && !auth.config.open ? `<div class="note">${picksLeft() > 0 ? T('Ta démo : choisis {left} leçon(s) gratuite(s) de ton choix. Touche « ☆ Choisir » à côté d’une leçon verrouillée 🔒.', { left: picksLeft() }) : T('Tu as choisi tes {n} leçons gratuites. Les autres demandent un abonnement.', { n: auth.config.demoMax || 3 })}</div>` : ''}
       <div class="pills" aria-label="${T('Choisir un niveau')}">${pills}</div>
       <div class="anchors">${lv.domains.map((d, di) => `<a href="#/niveau/${id}" data-scroll="d${di}" style="--c:${lv.color}">${ti(d.name)}</a>`).join('')}</div>
       <div class="legend"><span><i class="lg"></i> ${T('pas commencée')}</span><span><i class="lg p" style="--c:${lv.color};--deg:200deg"></i> ${T('en cours')}</span><span><i class="lg a">✓</i> ${T('acquise (80 et plus)')}</span><span><i class="lg m">★</i> ${T('maîtrisée (100)')}</span></div>${doms}</div>`, 'maths');
+    document.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); pickDemo(b.dataset.pick); }));
     document.querySelectorAll('[data-scroll]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); $('#' + a.dataset.scroll).scrollIntoView({ behavior: 'smooth' }); }));
   }
 

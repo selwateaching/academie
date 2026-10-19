@@ -37,6 +37,9 @@ services:
       # E-mail(s) des administrateurs (séparés par des virgules) : accès à /#/admin
       - key: ADMIN_EMAILS
         sync: false
+      # Mot de passe oublié : y mettre un nouveau mot de passe (8+ caractères), redéployer, se connecter, puis SUPPRIMER la variable
+      - key: ADMIN_RESET_PASSWORD
+        sync: false
       # "demo" = paiement simulé. Passer à "chargily" seulement quand les clés sont prêtes.
       - key: PAYMENT_MODE
         value: demo

@@ -266,3 +266,6 @@ main{flex:1;outline:none}
   .acct,[dir=rtl] .acct{order:4;margin-inline-start:0}.search,[dir=rtl] .search{order:5;flex:1 1 0;min-width:0}
   .nav,[dir=rtl] .nav{order:6}
 }
+
+.sk .pick{margin-inline-start:auto;font-size:.78rem;font-weight:700;color:var(--c);border:1.5px solid var(--c);border-radius:999px;padding:2px 9px;white-space:nowrap;cursor:pointer}
+.sk .pick+.lock{margin-inline-start:6px}

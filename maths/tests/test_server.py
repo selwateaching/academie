@@ -347,6 +347,20 @@ class AdminTests(Base):
         self.assertEqual(self.post("/api/admin/users/9999/subscription", {"plan": "cm1"}).status_code, 404)
 
 
+class AdminResetTests(Base):
+    def test_reset_password_for_admin_only(self):
+        self.register("boss@b.dz")
+        other = self.app.test_client()
+        self.register("other@b.dz", other)
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "boss@b.dz", "ADMIN_RESET_PASSWORD": "nouveau-mdp-1"}):
+            server.reset_admin_password(self.app.engine)
+        c = self.app.test_client()
+        ok = c.post("/api/login", json={"email": "boss@b.dz", "password": "nouveau-mdp-1"}, headers=H)
+        self.assertEqual(ok.status_code, 200)
+        ko = c.post("/api/login", json={"email": "other@b.dz", "password": "nouveau-mdp-1"}, headers=H)
+        self.assertEqual(ko.status_code, 401)
+
+
 class LoginLimitTests(Base):
     def login(self, email, password, ip):
         return self.c.post("/api/login", data=json.dumps({"email": email, "password": password}),
