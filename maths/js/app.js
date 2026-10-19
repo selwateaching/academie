@@ -76,7 +76,9 @@
     if (!auth.user) { store = localLoad(); return; }
     try { const d = await api('/api/progress'); store = { skills: d.skills || {}, days: d.days || {} }; } catch (e) { store = emptyStore(); }
   }
-  const isFree = (sk) => auth.config.free.includes(sk.code.replace('.', ''));
+  const isFree = (sk) => auth.user ? (auth.config.picks || []).includes(sk.id) : auth.config.free.includes(sk.code.replace('.', ''));
+  const picksLeft = () => (auth.config.demoMax || 3) - (auth.config.picks || []).length;
+  async function pickDemo(id) { try { applyMe(await api('/api/demo-pick', 'POST', { skill: id })); route(); } catch (e) { const n = $('#pickerr'); if (n) n.textContent = e.message; } }
   const valid = (k) => !!auth.subscriptions[k] && new Date(auth.subscriptions[k]) > new Date();
   const subscribed = (lv) => valid(lv) || valid('fam');
   const expiry = (lv) => auth.subscriptions[valid(lv) ? lv : 'fam'];
@@ -158,6 +160,7 @@
     show(`<div class="wrap"><div class="lvhead"><h1 style="color:${lv.color}">${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h1>
       <p>${ti(lv.name)} · ${ti(lv.blurb)} ${T('Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.')}</p></div>
       ${levelBanner(lv)}
+      ${auth.user && !auth.offline && !auth.config.open ? `<div class="note">${picksLeft() > 0 ? T('Ta démo : choisis {left} leçon(s) gratuite(s) de ton choix. Ouvre une leçon verrouillée 🔒 et touche « Choisir cette leçon comme démo ».', { left: picksLeft() }) : T('Tu as choisi tes {n} leçons gratuites. Les autres demandent un abonnement.', { n: auth.config.demoMax || 3 })}</div>` : ''}
       <div class="pills" aria-label="${T('Choisir un niveau')}">${pills}</div>
       <div class="anchors">${lv.domains.map((d, di) => `<a href="#/niveau/${id}" data-scroll="d${di}" style="--c:${lv.color}">${ti(d.name)}</a>`).join('')}</div>
       <div class="legend"><span><i class="lg"></i> ${T('pas commencée')}</span><span><i class="lg p" style="--c:${lv.color};--deg:200deg"></i> ${T('en cours')}</span><span><i class="lg a">✓</i> ${T('acquise (80 et plus)')}</span><span><i class="lg m">★</i> ${T('maîtrisée (100)')}</span></div>${doms}</div>`, 'maths');
@@ -339,8 +342,10 @@
     show(`<div class="wrap narrow"><div class="crumb"><a href="#/niveau/${lv.id}">${sh(lv)}</a> › ${ti(sk.cat.name)}</div>
       <div class="qcard center"><div class="bigico">🔒</div><h1>${T('Compétence réservée aux abonnés')}</h1>
       <p>${T('<b>{skill}</b> fait partie de l’abonnement {lv} : <b>{price} DA par mois</b>, tout le niveau débloqué.', { skill: `${sk.code} · ${ti(sk.title)}`, lv: sh(lv), price: price(lv.id) })}</p>
-      <p class="hint">${T('3 compétences de chaque niveau restent gratuites pour essayer (codes A.1, B.1 et C.1).')}</p>
+      ${auth.user && picksLeft() > 0 ? `<p class="hint">${T('Ta démo : tu peux choisir {n} leçons gratuites parmi toutes celles du site. Il t’en reste {left}.', { n: auth.config.demoMax || 3, left: picksLeft() })}</p>
+      <div class="row"><button class="btn big" id="pickdemo">${T('Choisir cette leçon comme démo')}</button></div><p class="hint" id="pickerr"></p>` : auth.user ? `<p class="hint">${T('Tu as déjà choisi tes {n} leçons gratuites.', { n: auth.config.demoMax || 3 })}</p>` : `<p class="hint">${T('Crée un compte gratuit pour choisir 3 leçons de ton choix en démo.')}</p>`}
       <div class="row"><a class="btn big" href="#/tarifs">${T('Voir les tarifs')}</a><a class="btn ghost big" href="#/niveau/${lv.id}">${T('Retour au niveau')}</a></div></div></div>`, 'maths');
+    const pb = $('#pickdemo'); if (pb) pb.onclick = () => pickDemo(sk.id);
   }
 
   function pagePricing() {
@@ -481,10 +486,12 @@
           <button class="btn" type="submit">${T('Activer ou prolonger')}</button></form>
           <p class="hint">${T('Si le client a payé en espèces, indique le montant : il sera compté dans les revenus.')}</p>
           ${act.map((p) => `<div class="stat"><span>${planLabel(p)} · ${T('jusqu’au {date}', { date: dateFr(d.user.subscriptions[p]) })}</span><button class="btn ghost sm" data-rm="${p}">${T('Retirer')}</button></div>`).join('')}
+          <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
           <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
         const refresh = () => { loadStats(); loadList(); };
         $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: f.querySelector('select').value, days: i[0].value, amount: i[1].value }); refresh(); } catch (er) { fail(er); } });
+        const rp = $('[data-resetpicks]', det); if (rp) rp.addEventListener('click', async () => { try { await api(`/api/admin/users/${box.dataset.u}/picks`, 'POST', { reset: true }); det.hidden = true; openClient(box); } catch (er) { fail(er); } });
         det.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', async () => { if (!confirm(T('Retirer cet abonnement ?'))) return;
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: b.dataset.rm, remove: true }); refresh(); } catch (er) { fail(er); } }));
       } catch (e) { fail(e); }

@@ -40,6 +40,7 @@ class OpenAccessTests(Base):
         with mock.patch.dict(os.environ, env, clear=True):
             self.register()
             self.assertFalse(self.c.get("/api/me").get_json()["config"]["open"])
+            self.post("/api/demo-pick", {"skill": "6e-A1"})
             r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40}, "6e-A1": {"score": 40}}})
             self.assertEqual((r.get_json()["saved"], r.get_json()["refused"]), (1, ["6e-D1"]))
 
@@ -113,6 +114,7 @@ class AuthTests(Base):
 class ProgressAndAccessTests(Base):
     def test_free_vs_paid_progress(self):
         self.register()
+        self.post("/api/demo-pick", {"skill": "cm1-A1"})
         body = {"skills": {"cm1-A1": {"score": 40, "answered": 5, "correct": 4, "secs": 30, "last": 1},
                            "cm1-D2": {"score": 90, "answered": 9, "correct": 9, "secs": 30, "last": 1},
                            "bad": {"score": 1}},
@@ -126,6 +128,7 @@ class ProgressAndAccessTests(Base):
 
     def test_score_clamped(self):
         self.register()
+        self.post("/api/demo-pick", {"skill": "cm1-A1"})
         self.post("/api/progress", {"skills": {"cm1-A1": {"score": 9999, "answered": -3}}})
         s = self.c.get("/api/progress").get_json()["skills"]["cm1-A1"]
         self.assertEqual((s["score"], s["answered"]), (100, 0))
@@ -133,8 +136,22 @@ class ProgressAndAccessTests(Base):
     def test_progress_needs_login(self):
         self.assertEqual(self.c.get("/api/progress").status_code, 401)
 
+    def test_demo_picks(self):
+        self.register()
+        self.assertEqual(self.c.get("/api/me").get_json()["config"]["picks"], [])
+        self.assertEqual(self.post("/api/progress", {"skills": {"cm1-A1": {"score": 5}}}).get_json()["refused"], ["cm1-A1"])
+        for sid in ("cm1-A1", "cp-B2", "6e-C3"):
+            self.assertEqual(self.post("/api/demo-pick", {"skill": sid}).status_code, 200)
+        self.assertEqual(self.post("/api/demo-pick", {"skill": "cm1-A1"}).status_code, 200)
+        self.assertEqual(self.post("/api/demo-pick", {"skill": "cm2-A1"}).status_code, 409)
+        self.assertEqual(self.post("/api/demo-pick", {"skill": "zz"}).status_code, 400)
+        self.assertEqual(self.c.get("/api/me").get_json()["config"]["picks"], ["cm1-A1", "cp-B2", "6e-C3"])
+        r = self.post("/api/progress", {"skills": {"cp-B2": {"score": 5}, "cm1-D2": {"score": 5}}}).get_json()
+        self.assertEqual((r["saved"], r["refused"]), (1, ["cm1-D2"]))
+
     def test_profiles_have_separate_progress(self):
         self.register()
+        self.post("/api/demo-pick", {"skill": "cm1-A1"})
         self.post("/api/progress", {"skills": {"cm1-A1": {"score": 50}}})
         self.post("/api/profiles", {"name": "Yacine", "level": "cm1"})
         self.assertEqual(self.c.get("/api/progress").get_json()["skills"], {})

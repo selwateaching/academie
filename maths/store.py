@@ -59,6 +59,14 @@ subscriptions = Table(
     Column("expires_at", DateTime, nullable=False),
     UniqueConstraint("user_id", "level", name="uq_sub_user_level"),
 )
+demo_picks = Table(
+    "demo_picks", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False),
+    Column("skill_id", String(16), nullable=False),
+    UniqueConstraint("user_id", "skill_id", name="uq_pick_user_skill"),
+)
+DEMO_MAX = 3
 payments = Table(
     "payments", metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
