@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confidentialité — ListeningClassroom</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    body { background:#0d1117; color:#e6edf3; font-family: system-ui, sans-serif; line-height:1.7; margin:0; }
+    main { max-width: 760px; margin: 0 auto; padding: 3rem 1.2rem; }
+    h1 { font-size: 1.8rem; margin-bottom: 1rem; } h2 { font-size: 1.15rem; margin: 1.8rem 0 .5rem; color:#58a6ff; }
+    p, li { color:#c9d1d9; } ul { margin-left: 1.2rem; } a { color:#58a6ff; }
+    .note { color:#7d8590; font-size:.9rem; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="/">← Accueil</a></p>
+  <h1>Confidentialité</h1>
+
+  <h2>Générateur audio (une voix, dialogue)</h2>
+  <p>La synthèse vocale se fait entièrement dans votre navigateur. Le texte n'est pas envoyé à nos serveurs. Le modèle de voix est téléchargé une seule fois depuis Hugging Face, puis gardé en cache par le navigateur.</p>
+
+  <h2>Mode « AR / FR → EN »</h2>
+  <p>Le texte en arabe ou en français est envoyé à notre serveur, qui le transmet à Anthropic (modèle Claude) pour le traduire et l'adapter au niveau choisi. Nous ne conservons pas ce texte. Anthropic le traite selon sa propre politique de confidentialité.</p>
+
+  <h2>Labo de langue</h2>
+  <ul>
+    <li><strong>Enseignant :</strong> l'exercice publié (titre, transcription, questions, audio) est conservé sur nos serveurs pour que les apprenants puissent l'ouvrir. Quand l'IA propose les questions, la transcription est envoyée à Anthropic.</li>
+    <li><strong>Apprenant :</strong> le nom, la classe saisie, les réponses, le score, le nombre d'écoutes et la durée sont conservés et visibles par l'enseignant qui détient le lien de résultats.</li>
+    <li>Les données restent jusqu'à ce que l'enseignant supprime l'exercice. Il peut le faire depuis la page des résultats, ce qui efface aussi l'audio et toutes les réponses.</li>
+    <li>Aucun compte, aucun cookie publicitaire. Le navigateur garde localement le nom de l'apprenant et la liste des exercices de l'enseignant, pour plus de confort.</li>
+  </ul>
+
+  <h2>Hébergement</h2>
+  <p>Le site et la base de données sont hébergés par Render (région Francfort, Union européenne).</p>
+
+  <p class="note">Pour toute question ou demande de suppression, contactez l'enseignant qui vous a envoyé le lien, ou l'éditeur du site.</p>
+</main>
+</body>
+</html>

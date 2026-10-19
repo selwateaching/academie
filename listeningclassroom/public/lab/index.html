@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Lab — Listening exercises for teachers and learners | ListeningClassroom</title>
+  <meta name="description" content="Create an English listening exercise from your audio in minutes: multiple choice, true/false, gap-fill and dictation. Share a link with your learners, get automatic correction and see their results.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://listeningclassroom.com/lab/">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --surface2: #1c2128; --border: #30363d;
+      --text: #e6edf3; --muted: #7d8590; --accent: #58a6ff; --accent-warm: #f78166;
+      --green: #3fb950; --yellow: #d29922; --red: #f85149; --glow: rgba(88,166,255,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; min-height: 100vh; }
+    a { color: var(--accent); }
+    [hidden] { display: none !important; }
+
+    header { border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: sticky; top: 0; background: rgba(13,17,23,0.92); backdrop-filter: blur(12px); z-index: 50; }
+    .logo { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--accent); text-decoration: none; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent-warm); }
+    .logo small { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; color: var(--yellow); margin-left: 0.4rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .header-right nav a { color: var(--muted); font-size: 0.85rem; text-decoration: none; }
+    .header-right nav a:hover { color: var(--text); }
+    .lang-switcher { display: flex; gap: 2px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+    .lang-btn { padding: 0.2rem 0.6rem; background: transparent; border: none; border-radius: 4px; color: var(--muted); font: 600 0.76rem 'DM Sans', sans-serif; cursor: pointer; }
+    .lang-btn.active { background: var(--accent); color: #0d1117; }
+
+    main { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: clamp(1.7rem, 4.5vw, 2.5rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 0.6rem; }
+    h1 em { color: var(--accent-warm); font-style: normal; }
+    h2 { font-family: 'Fraunces', serif; font-size: 1.25rem; letter-spacing: -0.01em; margin-bottom: 0.8rem; }
+    h3 { font-size: 0.98rem; margin-bottom: 0.5rem; }
+    .lead { color: var(--muted); max-width: 640px; margin-bottom: 1.8rem; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.2rem; }
+    .card.highlight { border-color: rgba(88,166,255,0.45); box-shadow: 0 0 30px rgba(88,166,255,0.08); }
+    .label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+    .field { margin-bottom: 1rem; }
+
+    input[type=text], input[type=number], textarea, select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 0.55rem 0.8rem; font: 0.92rem 'DM Sans', sans-serif; color: var(--text); outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
+    .check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.88rem; color: var(--text); margin-bottom: 0.4rem; cursor: pointer; }
+    .check input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+    button, .btn { font: 600 0.86rem 'DM Sans', sans-serif; padding: 0.6rem 1.15rem; border-radius: 7px; border: 1px solid transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; transition: all 0.15s; text-decoration: none; }
+    .btn-primary { background: var(--accent); color: #0d1117; border-color: var(--accent); }
+    .btn-primary:hover:not(:disabled) { box-shadow: 0 0 22px rgba(88,166,255,0.45); transform: translateY(-1px); }
+    .btn-green { background: var(--green); color: #0d1117; border-color: var(--green); }
+    .btn-green:hover:not(:disabled) { box-shadow: 0 0 22px rgba(63,185,80,0.45); }
+    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn-danger { background: transparent; color: var(--red); border-color: rgba(248,81,73,0.5); }
+    .btn-danger:hover { background: rgba(248,81,73,0.1); }
+    .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .row { display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+
+    .level-picker { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+    .level-picker button { justify-content: center; padding: 0.4rem 0; background: transparent; color: var(--muted); border: none; }
+    .level-picker button.active { background: var(--accent); color: #0d1117; }
+
+    .status { font-size: 0.85rem; color: var(--muted); margin-top: 0.8rem; min-height: 1.4em; }
+    .status.error { color: var(--red); } .status.ok { color: var(--green); }
+    .pill { display: inline-block; font-size: 0.72rem; padding: 2px 9px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); }
+    .pill.blue { color: var(--accent); border-color: var(--accent); }
+    .pill.green { color: var(--green); border-color: var(--green); }
+
+    /* Editor */
+    .q-item { border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; margin-bottom: 0.7rem; background: var(--surface2); }
+    .q-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; gap: 0.5rem; }
+    .q-num { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+    .opt-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.4rem; }
+    .opt-row input[type=radio] { accent-color: var(--green); width: 17px; height: 17px; flex-shrink: 0; }
+    .gap-preview { font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .gap-preview mark { background: rgba(210,153,34,0.2); color: var(--yellow); padding: 0 4px; border-radius: 3px; }
+    .section-title { display: flex; align-items: center; justify-content: space-between; margin: 1.4rem 0 0.7rem; }
+    .section-title h3 { margin: 0; }
+
+    /* Share box */
+    .share { background: rgba(63,185,80,0.07); border: 1px solid rgba(63,185,80,0.3); border-radius: 10px; padding: 1rem; margin-bottom: 0.9rem; }
+    .share.secret { background: rgba(210,153,34,0.07); border-color: rgba(210,153,34,0.35); }
+    .share code { display: block; word-break: break-all; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.5rem 0.7rem; font-size: 0.84rem; margin: 0.5rem 0; color: var(--text); }
+
+    /* My exercises */
+    .ex-list { list-style: none; }
+    .ex-list li { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; padding: 0.7rem 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .ex-list li:first-child { border-top: none; }
+
+    /* Learner player */
+    .player { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; }
+    .play-btn { width: 56px; height: 56px; border-radius: 50%; justify-content: center; font-size: 1.3rem; background: var(--accent); color: #0d1117; border: none; padding: 0; }
+    .play-btn:hover:not(:disabled) { box-shadow: 0 0 24px rgba(88,166,255,0.5); }
+    .progress { flex: 1; min-width: 160px; height: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; cursor: pointer; }
+    .progress > div { height: 100%; width: 0; background: var(--accent); }
+    .time { font-variant-numeric: tabular-nums; font-size: 0.82rem; color: var(--muted); min-width: 88px; }
+    .speed { width: auto; padding: 0.35rem 0.5rem; font-size: 0.82rem; }
+
+    .lq { padding: 1rem 0; border-top: 1px solid var(--border); }
+    .lq:first-of-type { border-top: none; }
+    .lq-q { font-weight: 500; margin-bottom: 0.55rem; }
+    .choice { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; cursor: pointer; background: var(--surface2); }
+    .choice:hover { border-color: var(--muted); }
+    .choice input { accent-color: var(--accent); width: 17px; height: 17px; }
+    .choice.correct { border-color: var(--green); background: rgba(63,185,80,0.1); }
+    .choice.wrong { border-color: var(--red); background: rgba(248,81,73,0.08); }
+    .tf-row { display: flex; gap: 0.5rem; }
+    .tf-row .choice { flex: 1; }
+    .gap-line { line-height: 2.3; }
+    .gap-line input { display: inline-block; width: auto; min-width: 7ch; padding: 0.15rem 0.45rem; border-radius: 6px; font-size: 0.95rem; text-align: center; vertical-align: baseline; }
+    .gap-line input.correct { border-color: var(--green); color: var(--green); }
+    .gap-line input.wrong { border-color: var(--red); color: var(--red); text-decoration: line-through; }
+    .fix { color: var(--green); font-weight: 600; font-size: 0.88rem; margin-left: 0.3rem; }
+    .dict textarea { min-height: 70px; }
+    .diff { font-size: 0.95rem; line-height: 2; margin-top: 0.4rem; }
+    .diff span { padding: 1px 3px; border-radius: 3px; margin-right: 3px; }
+    .diff .ok { color: var(--green); }
+    .diff .wrong { color: var(--red); text-decoration: line-through; }
+    .diff .missing { color: var(--yellow); border: 1px dashed var(--yellow); }
+    .diff .extra { color: var(--muted); text-decoration: line-through; }
+    .diff .fixw { color: var(--green); font-weight: 600; }
+
+    .score-big { font-family: 'Fraunces', serif; font-size: 3rem; font-weight: 900; line-height: 1; }
+    .score-big.good { color: var(--green); } .score-big.mid { color: var(--yellow); } .score-big.low { color: var(--red); }
+    .transcript { white-space: pre-wrap; background: var(--surface2); border-radius: 8px; padding: 1rem; font-size: 0.95rem; }
+
+    /* Results table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td { text-align: left; padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    tbody tr { cursor: pointer; } tbody tr:hover { background: var(--surface2); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-bottom: 1.2rem; }
+    .stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; }
+    .stat b { display: block; font-family: 'Fraunces', serif; font-size: 1.6rem; }
+    .bar { height: 7px; background: var(--bg); border-radius: 5px; overflow: hidden; margin-top: 0.3rem; }
+    .bar > div { height: 100%; background: var(--accent); }
+    .qstat { display: grid; grid-template-columns: 1fr 120px 44px; gap: 0.6rem; align-items: center; font-size: 0.84rem; padding: 0.35rem 0; }
+    .detail-row td { white-space: normal; background: var(--bg); cursor: default; }
+
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+    @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+    .step { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.9rem; font-size: 0.85rem; color: var(--muted); }
+    .step b { color: var(--text); display: block; margin-bottom: 0.2rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 1.6rem; text-align: center; font-size: 0.8rem; color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 0.4rem; }
+    .spinner { width: 15px; height: 15px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<header>
+  <a href="/" class="logo">Listening<span>Classroom</span><small data-t="labBadge">Lab</small></a>
+  <div class="header-right">
+    <nav id="teacher-nav"><a href="/generator/" data-t="navGenerator">Audio generator</a></nav>
+    <div class="lang-switcher" id="lang-switcher">
+      <button class="lang-btn" data-lang="fr">FR</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="es">ES</button>
+    </div>
+  </div>
+</header>
+
+<main id="app">
+  <!-- ═══════════════ TEACHER: HOME + CREATE ═══════════════ -->
+  <section id="view-teacher" hidden>
+    <h1 data-th="tHeroTitle"></h1>
+    <p class="lead" data-t="tHeroLead"></p>
+
+    <div class="steps">
+      <div class="step"><b data-t="step1Title"></b><span data-t="step1"></span></div>
+      <div class="step"><b data-t="step2Title"></b><span data-t="step2"></span></div>
+      <div class="step"><b data-t="step3Title"></b><span data-t="step3"></span></div>
+    </div>
+
+    <!-- 1. Source -->
+    <div class="card highlight" id="card-source">
+      <h2 data-t="srcTitle"></h2>
+      <div class="field">
+        <span class="label" data-t="labelTitle"></span>
+        <input type="text" id="ex-title" maxlength="120">
+      </div>
+      <div class="field">
+        <span class="label" data-t="labelLevel"></span>
+        <div class="level-picker" id="ex-level">
+          <button type="button" data-level="A1">A1</button><button type="button" data-level="A2">A2</button>
+          <button type="button" data-level="B1">B1</button><button type="button" data-level="B2">B2</button>
+          <button type="button" data-level="">—</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label" data-t="labelTranscript"></span>
+        <textarea id="ex-text" maxlength="4000" lang="en" dir="ltr"></textarea>
+      </div>
+      <div class="field">
+        <span class="label" data-t="labelAudio"></span>
+        <div id="audio-from-generator" class="share" hidden>
+          <span data-t="audioFromGenerator"></span>
+          <audio id="teacher-audio" controls style="width:100%;margin-top:0.5rem"></audio>
+        </div>
+        <div class="row">
+          <label class="btn btn-ghost btn-sm" for="audio-file"><span data-t="btnChooseAudio"></span></label>
+          <input type="file" id="audio-file" accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/webm,audio/mp4,audio/x-m4a,.mp3,.wav,.m4a,.ogg" hidden>
+          <span class="muted" id="audio-file-name"></span>
+          <a href="/generator/" class="muted" data-t="linkGenerator"></a>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn-primary" id="btn-draft"><span data-t="btnDraft"></span></button>
+        <button class="btn-ghost" id="btn-blank"><span data-t="btnBlank"></span></button>
+      </div>
+      <div class="status" id="draft-status"></div>
+    </div>
+
+    <!-- 2. Editor -->
+    <div class="card" id="card-editor" hidden>
+      <h2 data-t="editorTitle"></h2>
+      <p class="muted" data-t="editorHelp"></p>
+
+      <div class="section-title"><h3 data-t="secMcq"></h3><button class="btn-ghost btn-sm" data-add="mcq" data-t="btnAdd"></button></div>
+      <div id="ed-mcq"></div>
+      <div class="section-title"><h3 data-t="secTf"></h3><button class="btn-ghost btn-sm" data-add="tf" data-t="btnAdd"></button></div>
+      <div id="ed-tf"></div>
+      <div class="section-title"><h3 data-t="secGaps"></h3><button class="btn-ghost btn-sm" data-add="gaps" data-t="btnAdd"></button></div>
+      <div id="ed-gaps"></div>
+      <div class="section-title"><h3 data-t="secDictation"></h3></div>
+      <p class="muted" data-t="dictationHelp" style="margin-bottom:0.6rem"></p>
+      <div id="ed-dictation"></div>
+
+      <h3 style="margin-top:1.6rem" data-t="settingsTitle"></h3>
+      <div class="grid2">
+        <div class="field">
+          <span class="label" data-t="labelMaxPlays"></span>
+          <select id="set-plays">
+            <option value="0" data-t="playsUnlimited"></option>
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="5">5</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="label" data-t="labelInstructions"></span>
+          <input type="text" id="set-instructions" maxlength="400">
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="set-transcript" checked> <span data-t="setTranscript"></span></label>
+      <label class="check"><input type="checkbox" id="set-speed" checked> <span data-t="setSpeed"></span></label>
+
+      <div class="row" style="margin-top:1.2rem">
+        <button class="btn-green" id="btn-publish"><span data-t="btnPublish"></span></button>
+      </div>
+      <div class="status" id="publish-status"></div>
+    </div>
+
+    <!-- 3. Published -->
+    <div class="card" id="card-published" hidden>
+      <h2 data-t="publishedTitle"></h2>
+      <div class="share">
+        <b data-t="learnerLink"></b>
+        <code id="pub-learner"></code>
+        <div class="row">
+          <button class="btn-green btn-sm" data-copy="pub-learner" data-t="btnCopy"></button>
+          <a class="btn btn-ghost btn-sm" id="pub-learner-open" target="_blank" data-t="btnTry"></a>
+        </div>
+      </div>
+      <div class="share secret">
+        <b data-t="teacherLink"></b>
+        <p class="muted" data-t="teacherLinkHelp"></p>
+        <code id="pub-teacher"></code>
+        <div class="row">
+          <button class="btn-ghost btn-sm" data-copy="pub-teacher" data-t="btnCopy"></button>
+          <a class="btn btn-primary btn-sm" id="pub-teacher-open" data-t="btnSeeResults"></a>
+        </div>
+      </div>
+      <button class="btn-ghost" id="btn-new" data-t="btnNew"></button>
+    </div>
+
+    <!-- My exercises -->
+    <div class="card" id="card-mine" hidden>
+      <h2 data-t="mineTitle"></h2>
+      <p class="muted" data-t="mineHelp" style="margin-bottom:0.6rem"></p>
+      <ul class="ex-list" id="mine-list"></ul>
+    </div>
+  </section>
+
+  <!-- ═══════════════ LEARNER ═══════════════ -->
+  <section id="view-learner" hidden>
+    <span class="pill blue" id="l-level"></span>
+    <h1 id="l-title" style="margin-top:0.5rem"></h1>
+    <p class="lead" id="l-instructions"></p>
+
+    <div class="card" id="l-start">
+      <h2 data-t="lStartTitle"></h2>
+      <div class="grid2">
+        <div class="field"><span class="label" data-t="labelName"></span><input type="text" id="l-name" maxlength="60" autocomplete="name"></div>
+        <div class="field"><span class="label" data-t="labelGroup"></span><input type="text" id="l-group" maxlength="40"></div>
+      </div>
+      <button class="btn-primary" id="l-begin"><span data-t="btnBegin"></span></button>
+      <div class="status" id="l-start-status"></div>
+    </div>
+
+    <div id="l-work" hidden>
+      <div class="card" id="l-player-card">
+        <div class="player">
+          <button class="play-btn" id="l-play" aria-label="Play">▶</button>
+          <div class="progress" id="l-progress"><div></div></div>
+          <span class="time" id="l-time">0:00 / 0:00</span>
+          <select class="speed" id="l-speed" aria-label="Speed">
+            <option value="0.75">0.75×</option><option value="0.9">0.9×</option><option value="1" selected>1×</option>
+          </select>
+        </div>
+        <p class="muted" id="l-plays" style="margin-top:0.6rem"></p>
+        <audio id="l-audio" preload="auto"></audio>
+      </div>
+
+      <div class="card" id="l-sec-mcq" hidden><h2 data-t="secMcq"></h2><div id="l-mcq"></div></div>
+      <div class="card" id="l-sec-tf" hidden><h2 data-t="secTf"></h2><div id="l-tf"></div></div>
+      <div class="card" id="l-sec-gaps" hidden><h2 data-t="secGaps"></h2><p class="muted" data-t="lGapsHelp"></p><div id="l-gaps"></div></div>
+      <div class="card" id="l-sec-dict" hidden><h2 data-t="secDictation"></h2><p class="muted" data-t="lDictHelp"></p><div id="l-dict"></div></div>
+
+      <div class="card" id="l-submit-card">
+        <button class="btn-green" id="l-submit"><span data-t="btnSubmit"></span></button>
+        <div class="status" id="l-submit-status"></div>
+      </div>
+    </div>
+
+    <div class="card highlight" id="l-result" hidden>
+      <div class="row" style="gap:1.2rem">
+        <div class="score-big" id="l-score"></div>
+        <div><b id="l-score-text"></b><div class="muted" id="l-score-detail"></div></div>
+      </div>
+    </div>
+    <div class="card" id="l-transcript-card" hidden>
+      <h2 data-t="transcriptTitle"></h2>
+      <div class="transcript" id="l-transcript" lang="en"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ TEACHER RESULTS ═══════════════ -->
+  <section id="view-results" hidden>
+    <a href="/lab/" class="muted" data-t="backToLab"></a>
+    <h1 id="r-title" style="margin-top:0.6rem"></h1>
+    <p class="lead"><span class="pill blue" id="r-level"></span> <span class="muted" id="r-created"></span></p>
+
+    <div class="stats" id="r-stats"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;margin-bottom:0.8rem">
+        <h2 style="margin:0" data-t="rLearners"></h2>
+        <div class="row">
+          <button class="btn-ghost btn-sm" id="r-refresh" data-t="btnRefresh"></button>
+          <button class="btn-ghost btn-sm" id="r-csv" data-t="btnCsv"></button>
+          <button class="btn-ghost btn-sm" data-copy="r-learner-url" data-t="btnCopyLearner"></button>
+        </div>
+      </div>
+      <code id="r-learner-url" hidden></code>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th data-t="colName"></th><th data-t="colGroup"></th><th data-t="colDate"></th><th data-t="colScore"></th><th data-t="colPlays"></th><th data-t="colTime"></th></tr></thead>
+          <tbody id="r-rows"></tbody>
+        </table>
+      </div>
+      <p class="muted" id="r-empty" data-t="rEmpty" hidden></p>
+    </div>
+
+    <div class="card">
+      <h2 data-t="rByQuestion"></h2>
+      <div id="r-questions"></div>
+    </div>
+
+    <div class="card">
+      <h2 data-t="transcriptTitle"></h2>
+      <div class="transcript" id="r-transcript" lang="en"></div>
+    </div>
+
+    <button class="btn-danger" id="r-delete" data-t="btnDelete"></button>
+    <div class="status" id="r-status"></div>
+  </section>
+
+  <section id="view-error" hidden>
+    <div class="card"><h2 data-t="errTitle"></h2><p class="muted" id="err-msg"></p><p style="margin-top:1rem"><a href="/lab/" data-t="backToLab"></a></p></div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 ListeningClassroom.com</p>
+  <p style="margin-top:0.4rem"><a href="/generator/">Generator</a><a href="/lab/">Lab</a><a href="/privacy.html">Privacy Policy</a></p>
+</footer>
+
+<script type="module">
+/* ═════════════════════════════ I18N ═════════════════════════════ */
+const T = {
+  fr: {
+    labBadge: 'Labo', navGenerator: 'Générateur audio',
+    tHeroTitle: 'Labo de langue — <em>exercices d\'écoute en ligne</em>',
+    tHeroLead: 'Transformez un audio en exercice : QCM, vrai/faux, texte à trous et dictée. Partagez un lien, vos apprenants font l\'exercice, la correction est automatique et vous voyez leurs résultats.',
+    step1Title: '1. Le support', step1: 'Un audio du générateur (ou votre MP3) et sa transcription.',
+    step2Title: '2. Les questions', step2: 'L\'IA propose les questions selon le niveau. Vous relisez et modifiez.',
+    step3Title: '3. Le lien', step3: 'Publiez, envoyez le lien aux apprenants, suivez les résultats.',
+    srcTitle: 'Support de l\'exercice', labelTitle: 'Titre', labelLevel: 'Niveau des apprenants (CECRL)',
+    labelTranscript: 'Transcription en anglais (texte exact de l\'audio)', labelAudio: 'Audio',
+    audioFromGenerator: '✓ Audio reçu du générateur.', btnChooseAudio: '📁 Choisir un fichier audio',
+    linkGenerator: 'ou créer un audio dans le générateur →',
+    btnDraft: '✨ Générer les questions', btnBlank: 'Créer sans IA',
+    draftWorking: 'L\'IA prépare les questions…', draftDone: 'Questions prêtes. Relisez-les ci-dessous.',
+    needText: 'Ajoutez la transcription.', needAudio: 'Ajoutez un audio (fichier ou générateur).',
+    editorTitle: 'Questions', editorHelp: 'Modifiez librement. La bonne réponse est cochée en vert.',
+    secMcq: 'Questions à choix multiple', secTf: 'Vrai ou faux', secGaps: 'Texte à trous', secDictation: 'Dictée',
+    btnAdd: '+ Ajouter', btnRemove: 'Supprimer', question: 'Question', statement: 'Affirmation',
+    true: 'Vrai', false: 'Faux', option: 'Option', correctAnswer: 'Bonne réponse',
+    gapSentence: 'Phrase (mettez le mot à trouver entre [crochets])', gapAlts: 'Autres réponses acceptées (séparées par des virgules)',
+    gapInvalid: 'Mettez un mot entre [crochets].', dictBlocked: 'déjà utilisée dans le texte à trous',
+    dictationHelp: 'Cochez les phrases (2 ou 3 conseillées) que les apprenants devront écrire.',
+    settingsTitle: 'Réglages', labelMaxPlays: 'Nombre d\'écoutes', playsUnlimited: 'Illimité',
+    labelInstructions: 'Consigne (facultatif)', setTranscript: 'Montrer la transcription après la correction',
+    setSpeed: 'Autoriser le ralentissement de l\'audio',
+    btnPublish: '🚀 Publier l\'exercice', publishing: 'Publication…', uploading: 'Envoi de l\'audio…',
+    publishedTitle: '✓ Exercice publié', learnerLink: 'Lien pour les apprenants',
+    teacherLink: 'Votre lien de résultats (secret)',
+    teacherLinkHelp: 'Gardez-le pour vous : il donne accès aux résultats. Il est aussi enregistré dans ce navigateur.',
+    btnCopy: 'Copier', copied: 'Copié ✓', btnTry: 'Tester comme apprenant', btnSeeResults: 'Voir les résultats', btnNew: 'Créer un autre exercice',
+    mineTitle: 'Mes exercices', mineHelp: 'Enregistrés dans ce navigateur. Pensez à garder vos liens de résultats.',
+    lStartTitle: 'Avant de commencer', labelName: 'Prénom et nom', labelGroup: 'Classe / groupe (facultatif)',
+    btnBegin: 'Commencer', needName: 'Écrivez votre nom.',
+    lGapsHelp: 'Écoutez et complétez avec le mot entendu.',
+    lDictHelp: 'Écoutez et écrivez la phrase complète.', dictStarts: 'Phrase qui commence par « {start} » ({n} mots)',
+    playsLeft: 'Écoutes restantes : {n}', playsUnlimitedL: 'Vous pouvez écouter autant de fois que vous voulez.', noPlaysLeft: 'Vous avez utilisé toutes vos écoutes.',
+    btnSubmit: '✓ Envoyer mes réponses', confirmEmpty: 'Certaines questions sont sans réponse. Envoyer quand même ?',
+    submitting: 'Correction…', scoreText: '{p} / {m} points', scoreDetail: 'Vos réponses sont envoyées à votre professeur.',
+    great: 'Excellent travail !', good: 'Bon travail !', keep: 'Continuez à vous entraîner !',
+    transcriptTitle: 'Transcription', yourAnswer: 'Votre réponse', expected: 'Réponse',
+    backToLab: '← Labo', rLearners: 'Apprenants', btnRefresh: '↻ Actualiser', btnCsv: '⬇ CSV', btnCopyLearner: 'Copier le lien apprenant',
+    colName: 'Nom', colGroup: 'Groupe', colDate: 'Date', colScore: 'Score', colPlays: 'Écoutes', colTime: 'Durée',
+    rEmpty: 'Aucun apprenant n\'a encore répondu.', rByQuestion: 'Réussite par question',
+    statCount: 'Réponses', statAvg: 'Moyenne', statBest: 'Meilleur', statWorst: 'Plus faible',
+    btnDelete: 'Supprimer l\'exercice', confirmDelete: 'Supprimer définitivement cet exercice et tous les résultats ?',
+    deleted: 'Exercice supprimé.', created: 'Créé le {d}',
+    errTitle: 'Impossible d\'ouvrir cet exercice', errNotFound: 'Ce lien n\'existe pas ou l\'exercice a été supprimé.', errKey: 'Lien de résultats invalide.',
+    created_: 'créé', results: 'Résultats', open: 'Ouvrir', forget: 'Oublier',
+  },
+  en: {
+    labBadge: 'Lab', navGenerator: 'Audio generator',
+    tHeroTitle: 'Language Lab — <em>online listening exercises</em>',
+    tHeroLead: 'Turn any audio into an exercise: multiple choice, true/false, gap-fill and dictation. Share a link, learners do the exercise, correction is automatic and you see their results.',
+    step1Title: '1. The material', step1: 'An audio from the generator (or your own MP3) and its transcript.',
+    step2Title: '2. The questions', step2: 'AI drafts questions for the level. You review and edit them.',
+    step3Title: '3. The link', step3: 'Publish, send the link to learners, follow their results.',
+    srcTitle: 'Exercise material', labelTitle: 'Title', labelLevel: 'Learners\' level (CEFR)',
+    labelTranscript: 'English transcript (exact text of the audio)', labelAudio: 'Audio',
+    audioFromGenerator: '✓ Audio received from the generator.', btnChooseAudio: '📁 Choose an audio file',
+    linkGenerator: 'or create audio in the generator →',
+    btnDraft: '✨ Generate questions', btnBlank: 'Create without AI',
+    draftWorking: 'AI is preparing the questions…', draftDone: 'Questions ready. Review them below.',
+    needText: 'Add the transcript.', needAudio: 'Add an audio (file or generator).',
+    editorTitle: 'Questions', editorHelp: 'Edit freely. The correct answer is ticked in green.',
+    secMcq: 'Multiple choice', secTf: 'True or false', secGaps: 'Gap-fill', secDictation: 'Dictation',
+    btnAdd: '+ Add', btnRemove: 'Remove', question: 'Question', statement: 'Statement',
+    true: 'True', false: 'False', option: 'Option', correctAnswer: 'Correct answer',
+    gapSentence: 'Sentence (put the missing word in [brackets])', gapAlts: 'Other accepted answers (comma-separated)',
+    gapInvalid: 'Put one word in [brackets].', dictBlocked: 'already used in the gap-fill',
+    dictationHelp: 'Tick the sentences (2 or 3 recommended) learners will have to write.',
+    settingsTitle: 'Settings', labelMaxPlays: 'Number of plays', playsUnlimited: 'Unlimited',
+    labelInstructions: 'Instructions (optional)', setTranscript: 'Show the transcript after correction',
+    setSpeed: 'Allow learners to slow down the audio',
+    btnPublish: '🚀 Publish the exercise', publishing: 'Publishing…', uploading: 'Uploading audio…',
+    publishedTitle: '✓ Exercise published', learnerLink: 'Link for learners',
+    teacherLink: 'Your results link (secret)',
+    teacherLinkHelp: 'Keep it to yourself: it gives access to results. It is also saved in this browser.',
+    btnCopy: 'Copy', copied: 'Copied ✓', btnTry: 'Try as a learner', btnSeeResults: 'See results', btnNew: 'Create another exercise',
+    mineTitle: 'My exercises', mineHelp: 'Saved in this browser. Keep your results links somewhere safe.',
+    lStartTitle: 'Before you start', labelName: 'First and last name', labelGroup: 'Class / group (optional)',
+    btnBegin: 'Start', needName: 'Please write your name.',
+    lGapsHelp: 'Listen and write the missing word.',
+    lDictHelp: 'Listen and write the whole sentence.', dictStarts: 'Sentence starting with "{start}" ({n} words)',
+    playsLeft: 'Plays left: {n}', playsUnlimitedL: 'You can listen as many times as you like.', noPlaysLeft: 'You have used all your plays.',
+    btnSubmit: '✓ Submit my answers', confirmEmpty: 'Some questions are unanswered. Submit anyway?',
+    submitting: 'Correcting…', scoreText: '{p} / {m} points', scoreDetail: 'Your answers have been sent to your teacher.',
+    great: 'Excellent work!', good: 'Good work!', keep: 'Keep practising!',
+    transcriptTitle: 'Transcript', yourAnswer: 'Your answer', expected: 'Answer',
+    backToLab: '← Lab', rLearners: 'Learners', btnRefresh: '↻ Refresh', btnCsv: '⬇ CSV', btnCopyLearner: 'Copy learner link',
+    colName: 'Name', colGroup: 'Group', colDate: 'Date', colScore: 'Score', colPlays: 'Plays', colTime: 'Time',
+    rEmpty: 'No learner has answered yet.', rByQuestion: 'Success rate by question',
+    statCount: 'Submissions', statAvg: 'Average', statBest: 'Best', statWorst: 'Lowest',
+    btnDelete: 'Delete exercise', confirmDelete: 'Permanently delete this exercise and all results?',
+    deleted: 'Exercise deleted.', created: 'Created {d}',
+    errTitle: 'This exercise cannot be opened', errNotFound: 'This link does not exist or the exercise was deleted.', errKey: 'Invalid results link.',
+    created_: 'created', results: 'Results', open: 'Open', forget: 'Forget',
+  },
+  es: {
+    labBadge: 'Lab', navGenerator: 'Generador de audio',
+    tHeroTitle: 'Laboratorio de idiomas — <em>ejercicios de escucha en línea</em>',
+    tHeroLead: 'Convierte un audio en un ejercicio: opción múltiple, verdadero/falso, completar huecos y dictado. Comparte un enlace, tus alumnos hacen el ejercicio, la corrección es automática y ves sus resultados.',
+    step1Title: '1. El material', step1: 'Un audio del generador (o tu MP3) y su transcripción.',
+    step2Title: '2. Las preguntas', step2: 'La IA propone preguntas según el nivel. Tú las revisas y editas.',
+    step3Title: '3. El enlace', step3: 'Publica, envía el enlace y sigue los resultados.',
+    srcTitle: 'Material del ejercicio', labelTitle: 'Título', labelLevel: 'Nivel de los alumnos (MCER)',
+    labelTranscript: 'Transcripción en inglés (texto exacto del audio)', labelAudio: 'Audio',
+    audioFromGenerator: '✓ Audio recibido del generador.', btnChooseAudio: '📁 Elegir un archivo de audio',
+    linkGenerator: 'o crear un audio en el generador →',
+    btnDraft: '✨ Generar preguntas', btnBlank: 'Crear sin IA',
+    draftWorking: 'La IA está preparando las preguntas…', draftDone: 'Preguntas listas. Revísalas abajo.',
+    needText: 'Añade la transcripción.', needAudio: 'Añade un audio (archivo o generador).',
+    editorTitle: 'Preguntas', editorHelp: 'Edita libremente. La respuesta correcta está marcada en verde.',
+    secMcq: 'Opción múltiple', secTf: 'Verdadero o falso', secGaps: 'Completar huecos', secDictation: 'Dictado',
+    btnAdd: '+ Añadir', btnRemove: 'Eliminar', question: 'Pregunta', statement: 'Afirmación',
+    true: 'Verdadero', false: 'Falso', option: 'Opción', correctAnswer: 'Respuesta correcta',
+    gapSentence: 'Frase (pon la palabra que falta entre [corchetes])', gapAlts: 'Otras respuestas aceptadas (separadas por comas)',
+    gapInvalid: 'Pon una palabra entre [corchetes].', dictBlocked: 'ya usada en completar huecos',
+    dictationHelp: 'Marca las frases (2 o 3 recomendadas) que los alumnos tendrán que escribir.',
+    settingsTitle: 'Ajustes', labelMaxPlays: 'Número de escuchas', playsUnlimited: 'Ilimitado',
+    labelInstructions: 'Consigna (opcional)', setTranscript: 'Mostrar la transcripción tras la corrección',
+    setSpeed: 'Permitir ralentizar el audio',
+    btnPublish: '🚀 Publicar el ejercicio', publishing: 'Publicando…', uploading: 'Subiendo el audio…',
+    publishedTitle: '✓ Ejercicio publicado', learnerLink: 'Enlace para los alumnos',
+    teacherLink: 'Tu enlace de resultados (secreto)',
+    teacherLinkHelp: 'Guárdalo para ti: da acceso a los resultados. También se guarda en este navegador.',
+    btnCopy: 'Copiar', copied: 'Copiado ✓', btnTry: 'Probar como alumno', btnSeeResults: 'Ver resultados', btnNew: 'Crear otro ejercicio',
+    mineTitle: 'Mis ejercicios', mineHelp: 'Guardados en este navegador. Conserva tus enlaces de resultados.',
+    lStartTitle: 'Antes de empezar', labelName: 'Nombre y apellido', labelGroup: 'Clase / grupo (opcional)',
+    btnBegin: 'Empezar', needName: 'Escribe tu nombre.',
+    lGapsHelp: 'Escucha y escribe la palabra que falta.',
+    lDictHelp: 'Escucha y escribe la frase completa.', dictStarts: 'Frase que empieza por «{start}» ({n} palabras)',
+    playsLeft: 'Escuchas restantes: {n}', playsUnlimitedL: 'Puedes escuchar todas las veces que quieras.', noPlaysLeft: 'Has usado todas tus escuchas.',
+    btnSubmit: '✓ Enviar mis respuestas', confirmEmpty: 'Hay preguntas sin responder. ¿Enviar de todos modos?',
+    submitting: 'Corrigiendo…', scoreText: '{p} / {m} puntos', scoreDetail: 'Tus respuestas se han enviado a tu profesor.',
+    great: '¡Excelente trabajo!', good: '¡Buen trabajo!', keep: '¡Sigue practicando!',
+    transcriptTitle: 'Transcripción', yourAnswer: 'Tu respuesta', expected: 'Respuesta',
+    backToLab: '← Laboratorio', rLearners: 'Alumnos', btnRefresh: '↻ Actualizar', btnCsv: '⬇ CSV', btnCopyLearner: 'Copiar enlace de alumno',
+    colName: 'Nombre', colGroup: 'Grupo', colDate: 'Fecha', colScore: 'Nota', colPlays: 'Escuchas', colTime: 'Tiempo',
+    rEmpty: 'Ningún alumno ha respondido todavía.', rByQuestion: 'Acierto por pregunta',
+    statCount: 'Respuestas', statAvg: 'Media', statBest: 'Mejor', statWorst: 'Más baja',
+    btnDelete: 'Eliminar ejercicio', confirmDelete: '¿Eliminar definitivamente este ejercicio y todos los resultados?',
+    deleted: 'Ejercicio eliminado.', created: 'Creado el {d}',
+    errTitle: 'No se puede abrir este ejercicio', errNotFound: 'Este enlace no existe o el ejercicio fue eliminado.', errKey: 'Enlace de resultados no válido.',
+    created_: 'creado', results: 'Resultados', open: 'Abrir', forget: 'Olvidar',
+  },
+};
+
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+};
+let lang = ls.get('lc:lab-lang') || (['fr', 'en', 'es'].includes(ls.get('lang')) ? ls.get('lang') : null)
+  || ((navigator.language || 'en').slice(0, 2) === 'fr' ? 'fr' : (navigator.language || '').slice(0, 2) === 'es' ? 'es' : 'en');
+if (!T[lang]) lang = 'en';
+
+const t = (k, vars = {}) => String(T[lang][k] ?? T.en[k] ?? k).replace(/\{(\w+)\}/g, (_, x) => vars[x] ?? '');
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'text') n.textContent = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v);
+  }
+  kids.flat().forEach(c => c != null && n.append(c));
+  return n;
+};
+const fmtTime = s => { s = Math.max(0, Math.round(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const fmtDate = iso => { try { return new Date(iso).toLocaleString(lang, { dateStyle: 'short', timeStyle: 'short' }); } catch { return iso; } };
+
+let rerender = () => {};
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-t]').forEach(n => { n.textContent = t(n.dataset.t); });
+  document.querySelectorAll('[data-th]').forEach(n => { n.innerHTML = t(n.dataset.th); });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
+  rerender();
+}
+document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('click', () => { lang = b.dataset.lang; ls.set('lc:lab-lang', lang); applyLang(); }));
+
+function setStatus(id, msg, kind = '') { const n = $(id); n.className = 'status ' + kind; n.innerHTML = ''; if (kind === 'busy') n.append(el('span', { class: 'spinner' }), ' '); n.append(msg); }
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-copy]');
+  if (!b) return;
+  const text = $(b.dataset.copy).textContent;
+  try { await navigator.clipboard.writeText(text); } catch {
+    const ta = el('textarea'); ta.value = text; document.body.append(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const old = b.textContent; b.textContent = t('copied'); setTimeout(() => { b.textContent = old; }, 1500);
+});
+
+async function api(action, { method = 'GET', params = {}, body, headers } = {}) {
+  const q = new URLSearchParams({ action, ...params });
+  const r = await fetch(`/api/lab?${q}`, {
+    method, headers: body && !(body instanceof Blob) ? { 'Content-Type': 'application/json', ...headers } : headers,
+    body: body instanceof Blob ? body : body ? JSON.stringify(body) : undefined,
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(data.error || `HTTP ${r.status}`), { status: r.status });
+  return data;
+}
+
+/* ═════════════════════════════ ROUTING ═════════════════════════════ */
+const params = new URLSearchParams(location.search);
+const hash = new URLSearchParams(location.hash.slice(1));
+const exId = params.get('id');
+const teacherKey = hash.get('key');
+
+function show(view) {
+  ['teacher', 'learner', 'results', 'error'].forEach(v => { $('view-' + v).hidden = v !== view; });
+  $('teacher-nav').hidden = view === 'learner';
+}
+function showError(msg) { show('error'); $('err-msg').textContent = msg; }
+
+if (exId && teacherKey) initResults();
+else if (exId) initLearner();
+else initTeacher();
+applyLang();
+
+/* ═════════════════════════════ TEACHER ═════════════════════════════ */
+function initTeacher() {
+  show('teacher');
+  const state = { level: 'B1', audio: null, audioName: '', draft: null, sentences: [] };
+
+  const levelBtns = [...$('ex-level').querySelectorAll('button')];
+  const setLevel = l => { state.level = l; levelBtns.forEach(b => b.classList.toggle('active', b.dataset.level === l)); };
+  levelBtns.forEach(b => b.addEventListener('click', () => setLevel(b.dataset.level)));
+  setLevel('B1');
+
+  $('audio-file').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    if (f.size > 5 * 1024 * 1024) { setStatus('draft-status', 'Max 5 MB', 'error'); return; }
+    state.audio = f; state.audioName = f.name;
+    $('audio-file-name').textContent = f.name;
+    $('audio-from-generator').hidden = true;
+  });
+
+  // Hand-off from the generator (IndexedDB).
+  if (params.get('from') === 'generator') {
+    idbTake('pending').then(p => {
+      if (!p) return;
+      history.replaceState(null, '', '/lab/');
+      $('ex-text').value = p.text || '';
+      $('ex-title').value = (p.title && !/^audio_english$/.test(p.title)) ? p.title.replace(/[_-]+/g, ' ') : '';
+      if (p.level) setLevel(p.level);
+      if (p.mp3) {
+        state.audio = p.mp3; state.audioName = 'generator.mp3';
+        $('teacher-audio').src = URL.createObjectURL(p.mp3);
+        $('audio-from-generator').hidden = false;
+      }
+    }).catch(() => {});
+  }
+
+  $('btn-draft').addEventListener('click', async () => {
+    const text = $('ex-text').value.trim();
+    if (!text) return setStatus('draft-status', t('needText'), 'error');
+    if (!state.audio) return setStatus('draft-status', t('needAudio'), 'error');
+    $('btn-draft').disabled = true;
+    setStatus('draft-status', t('draftWorking'), 'busy');
+    try {
+      const d = await api('draft', { method: 'POST', body: { text, level: state.level || null } });
+      state.sentences = d.sentences || [];
+      state.draft = {
+        mcq: (d.mcq || []).map(q => ({ q: q.q || '', options: (q.options || []).slice(0, 4), answer: q.answer ?? 0 })),
+        tf: (d.tf || []).map(x => ({ s: x.s || '', answer: !!x.answer })),
+        gaps: (d.gaps || []).map(g => ({ src: `${g.before}[${g.answer}]${g.after}`, alts: (g.alts || []).join(', ') })),
+        dictation: new Set(d.dictation || []),
+      };
+      renderEditor();
+      setStatus('draft-status', t('draftDone'), 'ok');
+      $('card-editor').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      setStatus('draft-status', err.message, 'error');
+    } finally { $('btn-draft').disabled = false; }
+  });
+
+  $('btn-blank').addEventListener('click', () => {
+    const text = $('ex-text').value.trim();
+    if (!text) return setStatus('draft-status', t('needText'), 'error');
+    if (!state.audio) return setStatus('draft-status', t('needAudio'), 'error');
+    state.sentences = splitSentencesClient(text);
+    state.draft = { mcq: [], tf: [], gaps: [], dictation: new Set() };
+    renderEditor();
+    $('card-editor').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  document.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => {
+    const d = state.draft; if (!d) return;
+    if (b.dataset.add === 'mcq') d.mcq.push({ q: '', options: ['', '', ''], answer: 0 });
+    if (b.dataset.add === 'tf') d.tf.push({ s: '', answer: true });
+    if (b.dataset.add === 'gaps') d.gaps.push({ src: '', alts: '' });
+    renderEditor();
+  }));
+
+  function renderEditor() {
+    const d = state.draft; if (!d) return;
+    $('card-editor').hidden = false;
+    const removeBtn = (arr, i) => el('button', { class: 'btn-danger btn-sm', type: 'button', text: t('btnRemove'), onclick: () => { arr.splice(i, 1); renderEditor(); } });
+
+    $('ed-mcq').replaceChildren(...d.mcq.map((q, i) => {
+      const name = `mcq-${i}-${Math.random().toString(36).slice(2, 7)}`;
+      return el('div', { class: 'q-item' },
+        el('div', { class: 'q-head' }, el('span', { class: 'q-num', text: `${t('question')} ${i + 1}` }), removeBtn(d.mcq, i)),
+        el('input', { type: 'text', value: q.q, placeholder: t('question'), oninput: e => { q.q = e.target.value; } }),
+        ...q.options.map((o, j) => el('div', { class: 'opt-row' },
+          el('input', { type: 'radio', name, checked: q.answer === j, title: t('correctAnswer'), onchange: () => { q.answer = j; } }),
+          el('input', { type: 'text', value: o, placeholder: `${t('option')} ${j + 1}`, oninput: e => { q.options[j] = e.target.value; } }))));
+    }));
+
+    $('ed-tf').replaceChildren(...d.tf.map((x, i) => el('div', { class: 'q-item' },
+      el('div', { class: 'q-head' }, el('span', { class: 'q-num', text: `${t('statement')} ${i + 1}` }), removeBtn(d.tf, i)),
+      el('input', { type: 'text', value: x.s, oninput: e => { x.s = e.target.value; } }),
+      el('div', { class: 'row', style: 'margin-top:0.5rem' },
+        el('select', { style: 'width:auto', onchange: e => { x.answer = e.target.value === '1'; } },
+          el('option', { value: '1', selected: x.answer, text: t('true') }), el('option', { value: '0', selected: !x.answer, text: t('false') }))))));
+
+    $('ed-gaps').replaceChildren(...d.gaps.map((g, i) => {
+      const preview = el('div', { class: 'gap-preview' });
+      const upd = () => {
+        const m = /^(.*?)\[([^\]]+)\](.*)$/s.exec(g.src);
+        preview.innerHTML = m ? `${esc(m[1])}<mark>${esc(m[2])}</mark>${esc(m[3])}` : `<span style="color:var(--red)">${esc(t('gapInvalid'))}</span>`;
+      };
+      upd();
+      return el('div', { class: 'q-item' },
+        el('div', { class: 'q-head' }, el('span', { class: 'q-num', text: `${t('secGaps')} ${i + 1}` }), removeBtn(d.gaps, i)),
+        preview,
+        el('span', { class: 'label', text: t('gapSentence') }),
+        el('input', { type: 'text', value: g.src, oninput: e => { g.src = e.target.value; upd(); }, onchange: renderDictation }),
+        el('span', { class: 'label', style: 'margin-top:0.5rem', text: t('gapAlts') }),
+        el('input', { type: 'text', value: g.alts, oninput: e => { g.alts = e.target.value; } }));
+    }));
+
+    renderDictation();
+  }
+
+  // A sentence used as a gap is visible to learners, so it can't be dictated.
+  function renderDictation() {
+    const d = state.draft;
+    const norm = x => x.replace(/[\[\]]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const used = new Set(d.gaps.map(g => norm(g.src)));
+    $('ed-dictation').replaceChildren(...state.sentences.map(s => {
+      const blocked = used.has(norm(s));
+      if (blocked) d.dictation.delete(s);
+      return el('label', { class: 'check', style: blocked ? 'opacity:0.45' : null, title: blocked ? t('dictBlocked') : null },
+        el('input', { type: 'checkbox', checked: d.dictation.has(s), disabled: blocked, onchange: e => { e.target.checked ? d.dictation.add(s) : d.dictation.delete(s); } }),
+        el('span', { text: blocked ? `${s} — ${t('dictBlocked')}` : s }));
+    }));
+  }
+  rerender = () => { if (state.draft) renderEditor(); renderMine(); };
+
+  $('btn-publish').addEventListener('click', async () => {
+    const d = state.draft;
+    const gaps = d.gaps.map(g => {
+      const m = /^(.*?)\[([^\]]+)\](.*)$/s.exec(g.src.trim());
+      return m ? { before: m[1], answer: m[2].trim(), after: m[3], alts: g.alts.split(',').map(s => s.trim()).filter(Boolean) } : null;
+    }).filter(Boolean);
+    const exercise = {
+      title: $('ex-title').value.trim(), level: state.level || null, text: $('ex-text').value.trim(),
+      mcq: d.mcq.map(q => {
+        const opts = q.options.map(o => o.trim());
+        const keep = opts.map((o, j) => ({ o, j })).filter(x => x.o);
+        return { q: q.q.trim(), options: keep.map(x => x.o), answer: keep.findIndex(x => x.j === q.answer) };
+      }),
+      tf: d.tf.filter(x => x.s.trim()),
+      gaps,
+      dictation: state.sentences.filter(s => d.dictation.has(s)),
+      settings: {
+        maxPlays: +$('set-plays').value, showTranscriptAfter: $('set-transcript').checked,
+        allowSpeed: $('set-speed').checked, instructions: $('set-instructions').value.trim(),
+      },
+    };
+    $('btn-publish').disabled = true;
+    setStatus('publish-status', t('publishing'), 'busy');
+    try {
+      const { id, key } = await api('publish', { method: 'POST', body: { exercise } });
+      setStatus('publish-status', t('uploading'), 'busy');
+      const blob = state.audio instanceof Blob ? state.audio : null;
+      const type = blob.type || (/\.wav$/i.test(state.audioName) ? 'audio/wav' : 'audio/mpeg');
+      await api('audio', { method: 'PUT', params: { id }, body: new Blob([blob], { type }), headers: { 'Content-Type': type, 'X-Teacher-Key': key } });
+      const learnerUrl = `${location.origin}/lab/?id=${id}`;
+      const teacherUrl = `${location.origin}/lab/?id=${id}#key=${key}`;
+      saveMine({ id, key, title: exercise.title || 'Listening exercise', level: exercise.level, at: new Date().toISOString() });
+      $('pub-learner').textContent = learnerUrl; $('pub-learner-open').href = learnerUrl;
+      $('pub-teacher').textContent = teacherUrl; $('pub-teacher-open').href = teacherUrl;
+      $('card-source').hidden = true; $('card-editor').hidden = true; $('card-published').hidden = false;
+      setStatus('publish-status', '');
+      renderMine();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setStatus('publish-status', err.message, 'error');
+    } finally { $('btn-publish').disabled = false; }
+  });
+
+  $('btn-new').addEventListener('click', () => { location.href = '/lab/'; });
+  renderMine();
+}
+
+function getMine() { try { return JSON.parse(ls.get('lc:lab-mine') || '[]'); } catch { return []; } }
+function saveMine(item) { ls.set('lc:lab-mine', JSON.stringify([item, ...getMine().filter(x => x.id !== item.id)].slice(0, 200))); }
+function forgetMine(id) { ls.set('lc:lab-mine', JSON.stringify(getMine().filter(x => x.id !== id))); }
+function renderMine() {
+  const mine = getMine();
+  $('card-mine').hidden = !mine.length;
+  $('mine-list').replaceChildren(...mine.map(x => el('li', {},
+    el('div', {}, el('b', { text: x.title }), ' ', x.level ? el('span', { class: 'pill blue', text: x.level }) : '', el('div', { class: 'muted', text: fmtDate(x.at) })),
+    el('div', { class: 'row' },
+      el('a', { class: 'btn btn-primary btn-sm', href: `/lab/?id=${x.id}#key=${x.key}`, text: t('results') }),
+      el('a', { class: 'btn btn-ghost btn-sm', href: `/lab/?id=${x.id}`, target: '_blank', text: t('open') }),
+      el('button', { class: 'btn-ghost btn-sm', text: t('forget'), onclick: () => { forgetMine(x.id); renderMine(); } })))));
+}
+
+function splitSentencesClient(text) {
+  return text.split('\n').map(l => l.replace(/^\s*(?:speaker|orador)\s*[12]\s*:\s*/i, '').trim()).filter(Boolean)
+    .flatMap(l => (l.match(/[^.!?]+(?:[.!?]+["'”’)]*|$)/g) || []).map(s => s.trim()).filter(Boolean));
+}
+
+function idbTake(key) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open('lc-lab', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('handoff');
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result;
+      const tx = db.transaction('handoff', 'readwrite');
+      const st = tx.objectStore('handoff');
+      const g = st.get(key);
+      g.onsuccess = () => { st.delete(key); };
+      tx.oncomplete = () => { db.close(); resolve(g.result || null); };
+      tx.onerror = () => reject(tx.error);
+    };
+  });
+}
+
+/* ═════════════════════════════ LEARNER ═════════════════════════════ */
+async function initLearner() {
+  show('learner');
+  let ex;
+  try { ex = await api('get', { params: { id: exId } }); }
+  catch (err) { return showError(err.status === 404 ? t('errNotFound') : err.message); }
+
+  document.title = `${ex.title} — ListeningClassroom`;
+  $('l-title').textContent = ex.title;
+  $('l-level').textContent = ex.level || 'English';
+  $('l-level').hidden = !ex.level;
+  $('l-instructions').textContent = ex.settings.instructions || '';
+  $('l-name').value = ls.get('lc:lab-name') || '';
+  $('l-group').value = ls.get('lc:lab-group') || '';
+
+  const answers = { mcq: ex.mcq.map(() => null), tf: ex.tf.map(() => null), gaps: ex.gaps.map(() => ''), dictation: ex.dictation.map(() => '') };
+  let plays = 0, startedAt = 0, result = null;
+
+  /* Player */
+  const audio = $('l-audio');
+  audio.src = `/api/lab?action=audio&id=${encodeURIComponent(exId)}`;
+  const playBtn = $('l-play'), bar = $('l-progress').firstElementChild;
+  let atStart = true;
+  const max = ex.settings.maxPlays;
+  const updatePlays = () => {
+    $('l-plays').textContent = result ? '' : !max ? t('playsUnlimitedL') : (max - plays > 0 || !atStart ? t('playsLeft', { n: Math.max(0, max - plays) }) : t('noPlaysLeft'));
+    playBtn.disabled = !result && !!max && plays >= max && atStart;
+  };
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      if (atStart) { if (!result && max && plays >= max) return; plays++; atStart = false; }
+      audio.play(); playBtn.textContent = '❚❚';
+    } else { audio.pause(); playBtn.textContent = '▶'; }
+    updatePlays();
+  });
+  audio.addEventListener('timeupdate', () => {
+    bar.style.width = audio.duration ? `${(audio.currentTime / audio.duration) * 100}%` : '0';
+    $('l-time').textContent = `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+  });
+  audio.addEventListener('loadedmetadata', () => { $('l-time').textContent = `0:00 / ${fmtTime(audio.duration)}`; });
+  audio.addEventListener('ended', () => { atStart = true; audio.currentTime = 0; playBtn.textContent = '▶'; updatePlays(); });
+  $('l-progress').addEventListener('click', e => {
+    // Seeking is allowed only inside the current play (or without a play limit).
+    if (!audio.duration || (max && atStart && !result)) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+  $('l-speed').hidden = !ex.settings.allowSpeed;
+  $('l-speed').addEventListener('change', e => { audio.playbackRate = +e.target.value; });
+
+  /* Start */
+  $('l-begin').addEventListener('click', () => {
+    const name = $('l-name').value.trim();
+    if (!name) { setStatus('l-start-status', t('needName'), 'error'); $('l-name').focus(); return; }
+    ls.set('lc:lab-name', name); ls.set('lc:lab-group', $('l-group').value.trim());
+    $('l-start').hidden = true; $('l-work').hidden = false; startedAt = Date.now();
+    render(); updatePlays();
+  });
+
+  function render() {
+    const g = result?.sections;
+    $('l-sec-mcq').hidden = !ex.mcq.length;
+    $('l-mcq').replaceChildren(...ex.mcq.map((q, i) => el('div', { class: 'lq' },
+      el('div', { class: 'lq-q', text: `${i + 1}. ${q.q}` }),
+      ...q.options.map((o, j) => {
+        const cls = g ? (j === g.mcq[i].correct ? 'choice correct' : j === answers.mcq[i] ? 'choice wrong' : 'choice') : 'choice';
+        return el('label', { class: cls }, el('input', { type: 'radio', name: `mcq${i}`, checked: answers.mcq[i] === j, disabled: !!g, onchange: () => { answers.mcq[i] = j; } }), el('span', { text: o }));
+      }))));
+
+    $('l-sec-tf').hidden = !ex.tf.length;
+    $('l-tf').replaceChildren(...ex.tf.map((x, i) => el('div', { class: 'lq' },
+      el('div', { class: 'lq-q', text: `${i + 1}. ${x.s}` }),
+      el('div', { class: 'tf-row' }, ...[true, false].map(v => {
+        const cls = g ? (v === g.tf[i].correct ? 'choice correct' : v === answers.tf[i] ? 'choice wrong' : 'choice') : 'choice';
+        return el('label', { class: cls }, el('input', { type: 'radio', name: `tf${i}`, checked: answers.tf[i] === v, disabled: !!g, onchange: () => { answers.tf[i] = v; } }), el('span', { text: t(String(v)) }));
+      })))));
+
+    $('l-sec-gaps').hidden = !ex.gaps.length;
+    $('l-gaps').replaceChildren(...ex.gaps.map((x, i) => {
+      const r = g?.gaps[i];
+      const input = el('input', { type: 'text', value: answers.gaps[i], size: Math.max(6, x.len + 2), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', lang: 'en',
+        class: r ? (r.ok ? 'correct' : 'wrong') : '', disabled: !!g, oninput: e => { answers.gaps[i] = e.target.value; } });
+      return el('div', { class: 'lq gap-line', lang: 'en' }, `${i + 1}. ${x.before}`, input, r && !r.ok ? el('span', { class: 'fix', text: r.correct }) : '', x.after);
+    }));
+
+    $('l-sec-dict').hidden = !ex.dictation.length;
+    $('l-dict').replaceChildren(...ex.dictation.map((x, i) => {
+      const r = g?.dictation[i];
+      const box = el('div', { class: 'lq dict' },
+        el('div', { class: 'lq-q', text: `${i + 1}. ${t('dictStarts', { start: x.start, n: x.words })}` }),
+        el('textarea', { lang: 'en', spellcheck: 'false', autocapitalize: 'sentences', disabled: !!g, oninput: e => { answers.dictation[i] = e.target.value; } }));
+      box.querySelector('textarea').value = answers.dictation[i];
+      if (r) {
+        const diff = el('div', { class: 'diff' });
+        r.ops.forEach(o => {
+          if (o.t === 'ok') diff.append(el('span', { class: 'ok', text: o.w }));
+          else if (o.t === 'wrong') diff.append(el('span', { class: 'wrong', text: o.w }), el('span', { class: 'fixw', text: o.expected }));
+          else if (o.t === 'missing') diff.append(el('span', { class: 'missing', text: o.expected }));
+          else diff.append(el('span', { class: 'extra', text: o.w }));
+        });
+        box.append(diff, el('div', { class: 'muted', text: `${Math.round(r.score * 100)} %` }));
+      }
+      return box;
+    }));
+  }
+  rerender = () => { if (!$('l-work').hidden) { render(); updatePlays(); } if (result) showScore(); };
+
+  $('l-submit').addEventListener('click', async () => {
+    const empty = answers.mcq.includes(null) || answers.tf.includes(null) || answers.gaps.some(s => !s.trim()) || answers.dictation.some(s => !s.trim());
+    if (empty && !confirm(t('confirmEmpty'))) return;
+    $('l-submit').disabled = true;
+    setStatus('l-submit-status', t('submitting'), 'busy');
+    try {
+      result = await api('submit', { method: 'POST', params: { id: exId }, body: {
+        name: $('l-name').value.trim(), group: $('l-group').value.trim(), answers,
+        plays, seconds: Math.round((Date.now() - startedAt) / 1000),
+      } });
+      $('l-submit-card').hidden = true;
+      render(); updatePlays(); showScore();
+      if (result.transcript) { $('l-transcript').textContent = result.transcript; $('l-transcript-card').hidden = false; }
+      $('l-result').scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+      setStatus('l-submit-status', err.message, 'error');
+      $('l-submit').disabled = false;
+    }
+  });
+
+  function showScore() {
+    $('l-result').hidden = false;
+    const s = $('l-score');
+    s.textContent = `${result.percent}%`;
+    s.className = 'score-big ' + (result.percent >= 80 ? 'good' : result.percent >= 50 ? 'mid' : 'low');
+    $('l-score-text').textContent = `${result.percent >= 80 ? t('great') : result.percent >= 50 ? t('good') : t('keep')} · ${t('scoreText', { p: result.points, m: result.max })}`;
+    $('l-score-detail').textContent = t('scoreDetail');
+  }
+}
+
+/* ═════════════════════════════ RESULTS ═════════════════════════════ */
+async function initResults() {
+  show('results');
+  let data;
+  const load = async () => {
+    try { data = await api('results', { params: { id: exId }, headers: { 'X-Teacher-Key': teacherKey } }); }
+    catch (err) { return showError(err.status === 403 ? t('errKey') : err.status === 404 ? t('errNotFound') : err.message); }
+    render();
+  };
+
+  function render() {
+    if (!data) return;
+    const { exercise: ex, submissions: subs } = data;
+    document.title = `${ex.title} — ${t('results')}`;
+    $('r-title').textContent = ex.title;
+    $('r-level').textContent = ex.level || '—';
+    $('r-created').textContent = t('created', { d: fmtDate(ex.createdAt) });
+    $('r-transcript').textContent = ex.text;
+    $('r-learner-url').textContent = `${location.origin}/lab/?id=${ex.id}`;
+
+    const pcts = subs.map(s => s.percent);
+    const avg = pcts.length ? Math.round(pcts.reduce((a, b) => a + b, 0) / pcts.length) : 0;
+    const stat = (label, val) => el('div', { class: 'stat' }, el('span', { class: 'muted', text: label }), el('b', { text: val }));
+    $('r-stats').replaceChildren(
+      stat(t('statCount'), String(subs.length)),
+      stat(t('statAvg'), pcts.length ? `${avg}%` : '—'),
+      stat(t('statBest'), pcts.length ? `${Math.max(...pcts)}%` : '—'),
+      stat(t('statWorst'), pcts.length ? `${Math.min(...pcts)}%` : '—'));
+
+    $('r-empty').hidden = !!subs.length;
+    const rows = [];
+    [...subs].reverse().forEach(s => {
+      const tr = el('tr', {},
+        el('td', {}, el('b', { text: s.name })), el('td', { text: s.group || '' }), el('td', { text: fmtDate(s.at) }),
+        el('td', {}, el('span', { class: 'pill ' + (s.percent >= 80 ? 'green' : 'blue'), text: `${s.percent}%` })),
+        el('td', { text: String(s.plays ?? '') }), el('td', { text: fmtTime(s.seconds) }));
+      const detail = el('tr', { class: 'detail-row', hidden: true }, el('td', { colspan: 6 }, detailFor(ex, s)));
+      tr.addEventListener('click', () => { detail.hidden = !detail.hidden; });
+      rows.push(tr, detail);
+    });
+    $('r-rows').replaceChildren(...rows);
+
+    // Success by question
+    const qrow = (label, rate) => el('div', { class: 'qstat' },
+      el('span', { text: label }), el('div', { class: 'bar' }, el('div', { style: `width:${rate}%;background:${rate >= 70 ? 'var(--green)' : rate >= 40 ? 'var(--yellow)' : 'var(--red)'}` })),
+      el('b', { text: subs.length ? `${rate}%` : '—' }));
+    const rate = (sec, i) => subs.length ? Math.round(100 * subs.reduce((a, s) => a + (sec === 'dictation' ? (s.sections.dictation[i]?.score || 0) : (s.sections[sec][i]?.ok ? 1 : 0)), 0) / subs.length) : 0;
+    const blocks = [];
+    const head = txt => el('h3', { style: 'margin-top:0.8rem', text: txt });
+    if (ex.mcq.length) blocks.push(head(t('secMcq')), ...ex.mcq.map((q, i) => qrow(`${i + 1}. ${q.q}`, rate('mcq', i))));
+    if (ex.tf.length) blocks.push(head(t('secTf')), ...ex.tf.map((q, i) => qrow(`${i + 1}. ${q.s}`, rate('tf', i))));
+    if (ex.gaps.length) blocks.push(head(t('secGaps')), ...ex.gaps.map((g, i) => qrow(`${i + 1}. ${g.answer}`, rate('gaps', i))));
+    if (ex.dictation.length) blocks.push(head(t('secDictation')), ...ex.dictation.map((d, i) => qrow(`${i + 1}. ${d}`, rate('dictation', i))));
+    $('r-questions').replaceChildren(...blocks);
+  }
+
+  function detailFor(ex, s) {
+    const box = el('div', { style: 'padding:0.4rem 0' });
+    const line = (ok, label, given, correct) => el('div', { style: 'margin:0.25rem 0' },
+      el('span', { style: `color:${ok ? 'var(--green)' : 'var(--red)'}`, text: ok ? '✓ ' : '✗ ' }), label,
+      ok ? '' : el('span', { class: 'muted', text: ` — ${t('yourAnswer')}: ${given || '∅'} · ${t('expected')}: ${correct}` }));
+    ex.mcq.forEach((q, i) => { const r = s.sections.mcq[i]; if (r) box.append(line(r.ok, `${t('secMcq')} ${i + 1}`, q.options[r.given] ?? '', q.options[r.correct])); });
+    ex.tf.forEach((q, i) => { const r = s.sections.tf[i]; if (r) box.append(line(r.ok, `${t('secTf')} ${i + 1}`, r.given == null ? '' : t(String(r.given)), t(String(r.correct)))); });
+    ex.gaps.forEach((g, i) => { const r = s.sections.gaps[i]; if (r) box.append(line(r.ok, `${t('secGaps')} ${i + 1}`, r.given, r.correct)); });
+    ex.dictation.forEach((d, i) => { const r = s.sections.dictation[i]; if (r) box.append(el('div', { style: 'margin:0.25rem 0' },
+      el('b', { text: `${t('secDictation')} ${i + 1} — ${Math.round(r.score * 100)}%` }), el('div', { class: 'muted', text: r.given || '∅' }))); });
+    return box;
+  }
+
+  rerender = render;
+  $('r-refresh').addEventListener('click', load);
+
+  $('r-csv').addEventListener('click', () => {
+    if (!data) return;
+    const { exercise: ex, submissions: subs } = data;
+    const headers = ['name', 'group', 'date', 'score_percent', 'points', 'max', 'plays', 'seconds',
+      ...ex.mcq.map((_, i) => `mcq${i + 1}`), ...ex.tf.map((_, i) => `tf${i + 1}`),
+      ...ex.gaps.map((_, i) => `gap${i + 1}`), ...ex.dictation.map((_, i) => `dictation${i + 1}_percent`)];
+    const rows = subs.map(s => [s.name, s.group, s.at, s.percent, s.points, s.max, s.plays, s.seconds,
+      ...s.sections.mcq.map(r => r.ok ? 1 : 0), ...s.sections.tf.map(r => r.ok ? 1 : 0),
+      ...s.sections.gaps.map(r => r.ok ? 1 : 0), ...s.sections.dictation.map(r => Math.round(r.score * 100))]);
+    const csv = [headers, ...rows].map(r => r.map(v => {
+      let s = String(v ?? '');
+      if (/^[=+\-@]/.test(s)) s = "'" + s;                 // avoid spreadsheet formula injection
+      return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }).join(',')).join('\r\n');
+    const a = el('a', { href: URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })), download: `${(ex.title || 'results').replace(/[^\w-]+/g, '_')}.csv` });
+    a.click();
+  });
+
+  $('r-delete').addEventListener('click', async () => {
+    if (!confirm(t('confirmDelete'))) return;
+    try {
+      await api('delete', { method: 'POST', params: { id: exId }, headers: { 'X-Teacher-Key': teacherKey } });
+      forgetMine(exId);
+      setStatus('r-status', t('deleted'), 'ok');
+      setTimeout(() => { location.href = '/lab/'; }, 1200);
+    } catch (err) { setStatus('r-status', err.message, 'error'); }
+  });
+
+  // Remember this exercise in the teacher's browser.
+  const mine = getMine();
+  if (!mine.some(x => x.id === exId)) saveMine({ id: exId, key: teacherKey, title: '…', level: null, at: new Date().toISOString() });
+  await load();
+  if (data) saveMine({ id: exId, key: teacherKey, title: data.exercise.title, level: data.exercise.level, at: data.exercise.createdAt });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ListeningClassroom — Audio d'écoute et labo de langue pour l'anglais</title>
+  <meta name="description" content="Créez des audios en anglais du niveau A1 au B2 à partir d'un texte en arabe ou en français, puis transformez-les en exercices d'écoute corrigés automatiquement.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0d1117; --surface:#161b22; --border:#30363d; --text:#e6edf3; --muted:#7d8590; --accent:#58a6ff; --warm:#f78166; --yellow:#d29922; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+    header { border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; }
+    .logo { font-family: 'Fraunces', serif; font-size: 1.2rem; color: var(--accent); text-decoration: none; }
+    .logo span { color: var(--warm); }
+    main { flex: 1; max-width: 960px; margin: 0 auto; padding: 4rem 1.2rem; }
+    h1 { font-family: 'Fraunces', serif; font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 1rem; }
+    h1 em { color: var(--warm); font-style: normal; }
+    .lead { color: var(--muted); font-size: 1.08rem; max-width: 620px; margin-bottom: 2.5rem; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    @media (max-width: 680px) { .cards { grid-template-columns: 1fr; } }
+    .card { display: block; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem; transition: border-color .15s, transform .15s; }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card .icon { font-size: 1.8rem; }
+    .card h2 { font-family: 'Fraunces', serif; font-size: 1.35rem; margin: 0.6rem 0 0.4rem; }
+    .card p { color: var(--muted); font-size: 0.93rem; }
+    .card ul { margin: 0.9rem 0 1.1rem 1.1rem; color: var(--muted); font-size: 0.88rem; }
+    .go { color: var(--accent); font-weight: 600; font-size: 0.92rem; }
+    .card.lab .go { color: var(--yellow); }
+    footer { border-top: 1px solid var(--border); padding: 1.4rem; text-align: center; font-size: 0.8rem; color: var(--muted); }
+    footer a { color: var(--muted); margin: 0 0.4rem; }
+  </style>
+</head>
+<body>
+  <header><a href="/" class="logo">Listening<span>Classroom</span></a></header>
+  <main>
+    <h1>L'anglais à l'écoute, <em>du A1 au B2</em></h1>
+    <p class="lead">Écrivez votre texte en arabe ou en français : il devient un audio en anglais adapté au niveau de vos élèves, puis un exercice d'écoute en ligne, corrigé automatiquement.</p>
+    <div class="cards">
+      <a class="card" href="/generator/">
+        <div class="icon">🎙</div>
+        <h2>Générateur audio</h2>
+        <p>Des audios en anglais, téléchargeables en MP3.</p>
+        <ul>
+          <li>Texte arabe ou français → anglais A1, A2, B1 ou B2</li>
+          <li>Une voix ou un dialogue à deux voix</li>
+          <li>Voix générées dans votre navigateur</li>
+        </ul>
+        <span class="go">Ouvrir le générateur →</span>
+      </a>
+      <a class="card lab" href="/lab/">
+        <div class="icon">🎧</div>
+        <h2>Labo de langue</h2>
+        <p>Exercices d'écoute pour vos apprenants.</p>
+        <ul>
+          <li>QCM, vrai/faux, texte à trous, dictée</li>
+          <li>Un lien à partager, sans compte</li>
+          <li>Correction automatique et résultats de la classe</li>
+        </ul>
+        <span class="go">Ouvrir le labo →</span>
+      </a>
+    </div>
+  </main>
+  <footer>© 2026 ListeningClassroom · <a href="/privacy.html">Confidentialité</a></footer>
+</body>
+</html>
