@@ -308,3 +308,22 @@ class AdminTests(Base):
         self.assertEqual(bad({"plan": "cm1", "days": 0}), 400)
         self.assertEqual(bad({"plan": "cm1", "days": "abc"}), 400)
         self.assertEqual(self.post("/api/admin/users/9999/subscription", {"plan": "cm1"}).status_code, 404)
+
+
+class LoginLimitTests(Base):
+    def login(self, email, password, ip):
+        return self.c.post("/api/login", data=json.dumps({"email": email, "password": password}),
+                           headers={**H, "Content-Type": "application/json", "X-Forwarded-For": ip})
+
+    def test_successful_logins_never_block(self):
+        self.register("a@b.dz")
+        for _ in range(15):
+            self.assertEqual(self.login("a@b.dz", "motdepasse1", "1.2.3.4").status_code, 200)
+
+    def test_wrong_password_is_limited_per_visitor(self):
+        self.register("a@b.dz")
+        codes = [self.login("a@b.dz", "faux", "1.2.3.4").status_code for _ in range(9)]
+        self.assertEqual(codes[:8], [401] * 8)
+        self.assertEqual(codes[8], 429)
+        # un autre visiteur (autre adresse derrière le proxy) n'est pas touché
+        self.assertEqual(self.login("a@b.dz", "motdepasse1", "5.6.7.8").status_code, 200)

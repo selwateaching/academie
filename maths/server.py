@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 
 from flask import Flask, abort, jsonify, redirect, request, send_from_directory, session
 from sqlalchemy import func, select
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import chargily
@@ -48,6 +49,9 @@ def create_app(database_url=None):
         PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 30,
         MAX_CONTENT_LENGTH=256 * 1024,
     )
+    # Derrière le proxy de Render, sans cela tous les visiteurs auraient la même adresse (celle du proxy)
+    # et partageraient la même limite d'essais.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
     engine = db.make_engine(database_url)
     app.engine = engine
     hits = defaultdict(deque)
@@ -61,6 +65,13 @@ def create_app(database_url=None):
             return True
         q.append(t)
         return False
+
+    def blocked(key, limit, window=300):
+        t = time.time()
+        q = hits[key]
+        while q and q[0] < t - window:
+            q.popleft()
+        return len(q) >= limit
 
     def base_url():
         return (os.environ.get("BASE_URL") or request.host_url).rstrip("/")
@@ -174,13 +185,18 @@ def create_app(database_url=None):
 
     @app.post("/api/login")
     def login():
-        if too_many("login:" + (request.remote_addr or "")):
-            return err("Trop d'essais, réessaie dans quelques minutes.", 429)
         d = request.get_json(silent=True) or {}
         email = str(d.get("email", "")).strip().lower()
+        ip = request.remote_addr or ""
+        # Seuls les échecs comptent : une connexion réussie ne bloque jamais personne.
+        k_mail, k_ip = f"login:{ip}:{email}", f"loginip:{ip}"
+        if blocked(k_mail, 8) or blocked(k_ip, 40):
+            return err("Trop d'essais, réessaie dans quelques minutes.", 429)
         with engine.begin() as conn:
             u = conn.execute(select(db.users).where(db.users.c.email == email)).mappings().first()
             if not u or not check_password_hash(u["pw_hash"], str(d.get("password", ""))):
+                hits[k_mail].append(time.time())
+                hits[k_ip].append(time.time())
                 return err("E-mail ou mot de passe incorrect.", 401)
             session.clear()
             session.permanent = True
