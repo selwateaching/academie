@@ -36,6 +36,18 @@ DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_PROFILES = 5
 
 
+def reset_admin_password(engine):
+    """Mot de passe oublié de l'admin : on pose ADMIN_RESET_PASSWORD dans Render, le compte de chaque
+    e-mail de ADMIN_EMAILS reçoit ce mot de passe au démarrage ; on supprime ensuite la variable."""
+    new_pw = os.environ.get("ADMIN_RESET_PASSWORD", "")
+    if len(new_pw) < 8:
+        return
+    with engine.begin() as conn:
+        for mail in [e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()]:
+            conn.execute(db.users.update().where(db.users.c.email == mail)
+                         .values(pw_hash=generate_password_hash(new_pw)))
+
+
 def create_app(database_url=None):
     app = Flask(__name__, static_folder=None)
     secret = os.environ.get("SECRET_KEY")
@@ -579,6 +591,7 @@ def create_app(database_url=None):
     def js(name):
         return send_from_directory(os.path.join(ROOT, "js"), name)
 
+    reset_admin_password(engine)
     return app
 
 
