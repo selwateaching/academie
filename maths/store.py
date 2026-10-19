@@ -97,6 +97,20 @@ def active_subscriptions(conn, user_id):
     return {lv: exp for lv, exp in rows if exp > t}
 
 
+def grant(conn, user_id, plan, days):
+    """Ajoute `days` jours à l'abonnement `plan` (à partir de maintenant ou de son échéance). Renvoie la nouvelle échéance."""
+    t = now()
+    sub = conn.execute(select(subscriptions).where(
+        (subscriptions.c.user_id == user_id) & (subscriptions.c.level == plan))).mappings().first()
+    if sub is None:
+        end = t + timedelta(days=days)
+        conn.execute(subscriptions.insert().values(user_id=user_id, level=plan, expires_at=end))
+    else:
+        end = max(t, sub["expires_at"]) + timedelta(days=days)
+        conn.execute(subscriptions.update().where(subscriptions.c.id == sub["id"]).values(expires_at=end))
+    return end
+
+
 def activate_payment(conn, payment_id):
     """Marque un paiement comme payé et prolonge l'abonnement de 30 jours.
 

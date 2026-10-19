@@ -417,6 +417,7 @@
         ${auth.profiles.length < 5 ? `<form class="inl" id="fProf"><input id="pname" placeholder="${T('Prénom')}" maxlength="40" required aria-label="${T('Prénom du nouvel élève')}"><select id="plevel" aria-label="${T('Niveau')}">${LEVELS.map((l) => `<option value="${l.id}">${sh(l)}</option>`).join('')}</select><button class="btn" type="submit">${T('Ajouter un profil')}</button></form>` : ''}<p class="errtxt" id="err"></p></div>
       <div class="panel"><h2>${T('Abonnements')}</h2>${(subs.length || valid('fam')) ? (valid('fam') ? `<div class="stat"><span>${T('Forfait Famille')}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</b></div>` : '') + subs.map((l) => `<div class="stat"><span>${sh(l)}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</b></div>`).join('') : `<p class="hint">${T('Aucun abonnement actif. Les compétences gratuites restent accessibles.')}</p>`}<p style="margin-top:12px"><a class="btn" href="#/tarifs">${T('Voir les tarifs')}</a></p></div>
       <div class="panel"><h2>${T('Derniers paiements')}</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${x.level === 'fam' ? T('Forfait Famille') : sh(lvOf(x.level))} · ${x.amount} ${T('DA')} · ${dateFr(x.date)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}</div>
+      ${auth.user.admin ? `<p><a class="btn" href="#/admin">${T('Tableau de bord administrateur')}</a></p>` : ''}
       <p style="margin-bottom:30px"><button class="btn ghost" id="logout">${T('Me déconnecter')}</button></p></div>`, 'compte');
     const swap = async (fn) => { try { applyMe(await fn()); await loadProgress(); pageAccount(); } catch (e) { $('#err').textContent = e.message; } };
     document.querySelectorAll('[data-sel]').forEach((b) => b.addEventListener('click', () => { pushNow(false); swap(() => api(`/api/profiles/${b.dataset.sel}/select`, 'POST', {})); }));
@@ -446,13 +447,59 @@
       <h2>${T('Supprimer son compte')}</h2><p>${T('Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).')}</p></div></div>`, 'compte');
   }
 
+  /* ---------- administration : clients, abonnements, paiements ---------- */
+  const PLANS = () => [...LEVELS.map((l) => ({ id: l.id, label: sh(l) })), { id: 'fam', label: T('Forfait Famille') }];
+  const planLabel = (id) => (PLANS().find((p) => p.id === id) || { label: id }).label;
+  const da = (n) => `${Number(n).toLocaleString('fr-FR')} ${T('DA')}`;
+  function pageAdmin() {
+    document.title = T('Administration — Tadriss-Maths');
+    if (!auth.user) { returnTo = '#/admin'; return pageLogin(); }
+    if (!auth.user.admin) { show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Administration')}</h1></div><div class="note">${T('Ce compte n’a pas accès à l’administration.')}</div><p><a class="btn ghost" href="#/compte">${T('Mon compte')}</a></p></div>`, 'compte'); return; }
+    show(`<div class="wrap"><div class="lvhead"><h1>${T('Tableau de bord')}</h1></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="panel"><h2>${T('Clients')}</h2>
+        <form class="inl" id="fSearch"><input id="aq" type="search" dir="ltr" placeholder="${T('Rechercher par e-mail')}" aria-label="${T('Rechercher par e-mail')}"><button class="btn" type="submit">${T('Chercher')}</button></form>
+        <p class="errtxt" id="aerr"></p><div id="alist"></div></div></div>`, 'compte');
+    const fail = (e) => { $('#aerr').textContent = e.message; };
+    const loadStats = () => api('/api/admin/stats').then((s) => {
+      $('#kpis').innerHTML = [[s.users, T('Comptes')], [s.subscribers, T('Abonnés actifs')], [da(s.revenue_month), T('Revenus du mois')], [da(s.revenue_total), T('Revenus au total')]]
+        .map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+    }).catch(fail);
+    const subsText = (u) => { const k = Object.keys(u.subscriptions); return k.length ? k.map((p) => `${planLabel(p)} (${T('jusqu’au {date}', { date: dateFr(u.subscriptions[p]) })})`).join(' · ') : T('Aucun abonnement actif.'); };
+    const loadList = () => api('/api/admin/users?q=' + encodeURIComponent($('#aq').value.trim())).then((d) => {
+      $('#alist').innerHTML = d.users.length ? d.users.map((u) => `<div class="cl" data-u="${u.id}"><div class="clh"><b dir="ltr">${esc(u.email)}</b><span>${T('inscrit le {date}', { date: dateFr(u.created) })} · ${u.profiles} ${T('profil(s)')} · ${da(u.paid)}</span><span>${subsText(u)}</span></div><button class="btn ghost sm" data-open="${u.id}">${T('Gérer')}</button><div class="cld" hidden></div></div>`).join('') : `<p class="hint">${T('Aucun client trouvé.')}</p>`;
+      document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => openClient(b.closest('.cl'))));
+    }).catch(fail);
+    async function openClient(box) {
+      const det = $('.cld', box); if (!det.hidden) { det.hidden = true; return; }
+      try {
+        const d = await api('/api/admin/users/' + box.dataset.u); det.hidden = false;
+        const act = Object.keys(d.user.subscriptions);
+        det.innerHTML = `<form class="inl" data-grant><select aria-label="${T('Niveau')}">${PLANS().map((p) => `<option value="${p.id}">${p.label}</option>`).join('')}</select>
+          <label>${T('Jours')} <input type="number" min="1" max="366" value="30" dir="ltr" style="width:80px"></label>
+          <label>${T('Montant payé (DA)')} <input type="number" min="0" max="100000" value="0" dir="ltr" style="width:100px"></label>
+          <button class="btn" type="submit">${T('Activer ou prolonger')}</button></form>
+          <p class="hint">${T('Si le client a payé en espèces, indique le montant : il sera compté dans les revenus.')}</p>
+          ${act.map((p) => `<div class="stat"><span>${planLabel(p)} · ${T('jusqu’au {date}', { date: dateFr(d.user.subscriptions[p]) })}</span><button class="btn ghost sm" data-rm="${p}">${T('Retirer')}</button></div>`).join('')}
+          <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
+        const refresh = () => { loadStats(); loadList(); };
+        $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
+          try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: f.querySelector('select').value, days: i[0].value, amount: i[1].value }); refresh(); } catch (er) { fail(er); } });
+        det.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', async () => { if (!confirm(T('Retirer cet abonnement ?'))) return;
+          try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: b.dataset.rm, remove: true }); refresh(); } catch (er) { fail(er); } }));
+      } catch (e) { fail(e); }
+    }
+    $('#fSearch').addEventListener('submit', (e) => { e.preventDefault(); loadList(); });
+    loadStats(); loadList();
+  }
+
   /* ---------- routeur ---------- */
   function route() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true;
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
-    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
+    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && P && $('#go') && $('#modal').hidden && !(e.target.tagName === 'BUTTON')) { e.preventDefault(); submit(); }
