@@ -532,6 +532,18 @@ def create_app(database_url=None):
             return jsonify(user=user_row(conn, u), payments=pays, profiles=user_profiles(conn, uid),
                            picks=picks_of(conn, uid))
 
+    @app.post("/api/admin/users/<int:uid>/password")
+    def admin_password(uid):
+        """Mot de passe oublié d'un client : en pose un temporaire, affiché une seule fois à l'admin."""
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            if not conn.execute(select(db.users.c.id).where(db.users.c.id == uid)).first():
+                return err("Client introuvable.", 404)
+            pw = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(10))
+            conn.execute(db.users.update().where(db.users.c.id == uid).values(pw_hash=generate_password_hash(pw)))
+            return jsonify(password=pw)
+
     @app.post("/api/admin/users/<int:uid>/picks")
     def admin_picks(uid):
         """Remet à zéro les leçons gratuites choisies par un client ({"reset": true})."""
