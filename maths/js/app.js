@@ -273,10 +273,10 @@
     }).join('');
     const all = LEVELS.reduce((a, l) => a + l.catList.filter((c) => catDone(c) >= need(c)).length, 0);
     const tabs = LEVELS.map((l) => `<a class="pill" style="background:${l.color};min-width:50px;height:50px;--c:${l.color}${l.id === lv.id ? ';opacity:1;border-color:#fff;box-shadow:0 0 0 3px ' + l.color : ''}" href="#/recompenses/${l.id}">${sh(l)}</a>`).join('');
-    show(`<div class="wrap"><div class="lvhead"><h1>${T('Récompenses')}</h1><p>${T('Chaque niveau a son plateau de jeu. Un carré se dévoile quand tu acquiers (80 et plus) deux compétences d’une même catégorie. Touche un carré pour voir ce qu’il te reste à faire.')}</p></div>
+    show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-3.jpg" alt="" width="44" height="44">${T('Récompenses')}</h1><p>${T('Chaque niveau a son plateau de jeu. Un carré se dévoile quand tu acquiers (80 et plus) deux compétences d’une même catégorie. Touche un carré pour voir ce qu’il te reste à faire.')}</p></div>
       <div class="pills" style="margin:10px 0">${tabs}</div>
       <div class="rtop"><div class="board" style="--c:${lv.color}">${sq}</div>
-      <aside class="side"><h3>${T('Plateau {lv}', { lv: sh(lv) })}</h3><div class="stat"><span>${T('Carrés dévoilés')}</span><b>${won} / ${lv.catList.length}</b></div>
+      <aside class="side"><img class="side-ph" src="/img/niveau-${lv.id}.jpg" alt="" width="64" height="64"><h3>${T('Plateau {lv}', { lv: sh(lv) })}</h3><div class="stat"><span>${T('Carrés dévoilés')}</span><b>${won} / ${lv.catList.length}</b></div>
       <div class="stat"><span>${T('Compétences acquises')}</span><b>${doneCount(lv)} / ${implemented(lv).length}</b></div>
       <div class="stat"><span>${T('Récompenses (tous niveaux)')}</span><b>${all}</b></div></aside></div></div>`, 'recompenses');
     document.querySelectorAll('.sq').forEach((b) => b.addEventListener('click', () => {
