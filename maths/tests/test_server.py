@@ -21,7 +21,7 @@ H = {"X-Tadriss": "1"}
 
 class Base(unittest.TestCase):
     def setUp(self):
-        patcher = mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": "1"})
+        patcher = mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": "1", "ADMIN_EMAILS": ""})
         patcher.start()
         self.addCleanup(patcher.stop)
         self.app = server.create_app("sqlite://")
@@ -35,8 +35,28 @@ class Base(unittest.TestCase):
 
 
 class OpenAccessTests(Base):
-    def test_everything_open_without_flag(self):
-        with mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": ""}):
+    def test_locked_by_default_when_flag_absent(self):
+        env = {k: v for k, v in os.environ.items() if k != "ABONNEMENTS_ACTIFS"}
+        with mock.patch.dict(os.environ, env, clear=True):
+            self.register()
+            self.assertFalse(self.c.get("/api/me").get_json()["config"]["open"])
+            r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40}, "6e-A1": {"score": 40}}})
+            self.assertEqual((r.get_json()["saved"], r.get_json()["refused"]), (1, ["6e-D1"]))
+
+    def test_admin_sees_every_course_others_only_the_demo(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "patron@b.dz"}):
+            self.register("patron@b.dz")
+            self.assertTrue(self.c.get("/api/me").get_json()["config"]["open"])
+            r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40}}})
+            self.assertEqual(r.get_json()["refused"], [])
+            other = self.app.test_client()
+            self.register("client@b.dz", other)
+            self.assertFalse(other.get("/api/me").get_json()["config"]["open"])
+            r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40}}}, other)
+            self.assertEqual(r.get_json()["refused"], ["6e-D1"])
+
+    def test_everything_open_when_switched_off(self):
+        with mock.patch.dict(os.environ, {"ABONNEMENTS_ACTIFS": "0"}):
             self.register()
             self.assertTrue(self.c.get("/api/me").get_json()["config"]["open"])
             r = self.post("/api/progress", {"skills": {"6e-D1": {"score": 40, "answered": 5, "correct": 3}}})

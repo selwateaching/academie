@@ -11,7 +11,8 @@ Variables d'environnement :
   CHARGILY_SECRET_KEY   clé secrète Chargily (clé de TEST tant que CHARGILY_MODE=test)
   CHARGILY_MODE         test (par défaut) ou live
   ADMIN_EMAILS          e-mails des administrateurs (séparés par des virgules) : accès à /#/admin
-  ABONNEMENTS_ACTIFS    1 pour réserver les compétences payantes aux abonnés ; absent = tout est ouvert
+  ABONNEMENTS_ACTIFS    0 pour tout ouvrir à tout le monde ; absent ou autre = seule la démo est gratuite
+                        (3 compétences par niveau), le reste demande un abonnement ; les administrateurs ont toujours tout
 """
 import os
 import re
@@ -123,27 +124,22 @@ def create_app(database_url=None):
         return None
 
     def paywall_on():
-        return os.environ.get("ABONNEMENTS_ACTIFS", "").strip().lower() in ("1", "oui", "true")
-
-    def can_access(conn, uid, skill_id):
-        m = SKILL_RE.match(skill_id or "")
-        if not m:
-            return False
-        level, code = m.groups()
-        if code in db.FREE_CODES or not paywall_on():
-            return True
-        subs = db.active_subscriptions(conn, uid) if uid else {}
-        return level in subs or db.FAMILY in subs
+        # par défaut, seule la démo est gratuite ; "0" ouvre tout (période de test)
+        return os.environ.get("ABONNEMENTS_ACTIFS", "").strip().lower() not in ("0", "non", "false", "off")
 
     def is_admin(u):
         admins = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()}
         return bool(u) and u["email"].lower() in admins
 
+    def open_for(u):
+        """Tout est ouvert si les abonnements sont coupés, ou pour un administrateur connecté."""
+        return not paywall_on() or is_admin(u)
+
     def me_payload(conn):
         u = current_user(conn)
         cfg = {"prices": db.PRICES, "free": list(db.FREE_CODES), "days": db.PLAN_DAYS,
                "currency": "DA", "payment": payment_mode(), "levels": db.LEVELS,
-               "open": not paywall_on()}
+               "open": open_for(u)}
         if not u:
             return {"user": None, "config": cfg}
         subs = {lv: exp.isoformat() + "Z" for lv, exp in db.active_subscriptions(conn, u["id"]).items()}
@@ -296,7 +292,7 @@ def create_app(database_url=None):
                 if not m or not isinstance(v, dict):
                     continue
                 level, code = m.groups()
-                if paywall_on() and code not in db.FREE_CODES and level not in subs and db.FAMILY not in subs:
+                if not open_for(u) and code not in db.FREE_CODES and level not in subs and db.FAMILY not in subs:
                     refused.append(sid)
                     continue
                 vals = dict(score=clamp(v.get("score"), 100), answered=clamp(v.get("answered"), 10**6),
