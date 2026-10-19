@@ -450,7 +450,7 @@
   /* ---------- administration : clients, abonnements, paiements ---------- */
   const PLANS = () => [...LEVELS.map((l) => ({ id: l.id, label: sh(l) })), { id: 'fam', label: T('Forfait Famille') }];
   const planLabel = (id) => (PLANS().find((p) => p.id === id) || { label: id }).label;
-  const da = (n) => `${Number(n).toLocaleString('fr-FR')} ${T('DA')}`;
+  const da = (n) => `<span style="white-space:nowrap">${Number(n).toLocaleString('fr-FR')} ${T('DA')}</span>`;
   function pageAdmin() {
     document.title = T('Administration — Tadriss-Maths');
     if (!auth.user) { returnTo = '#/admin'; return pageLogin(); }
