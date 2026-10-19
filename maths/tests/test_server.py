@@ -361,6 +361,20 @@ class AdminResetTests(Base):
         self.assertEqual(ko.status_code, 401)
 
 
+class AdminPasswordTests(Base):
+    def test_admin_sets_temp_password(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "boss@b.dz"}):
+            self.register("boss@b.dz")
+            cl = self.app.test_client()
+            self.register("kid@b.dz", cl)
+            uid = self.c.get("/api/admin/users?q=kid").get_json()["users"][0]["id"]
+            self.assertEqual(self.post(f"/api/admin/users/{uid}/password", client=cl).status_code, 403)
+            pw = self.post(f"/api/admin/users/{uid}/password").get_json()["password"]
+            self.assertGreaterEqual(len(pw), 8)
+            r = self.app.test_client().post("/api/login", json={"email": "kid@b.dz", "password": pw}, headers=H)
+            self.assertEqual(r.status_code, 200)
+
+
 class LoginLimitTests(Base):
     def login(self, email, password, ip):
         return self.c.post("/api/login", data=json.dumps({"email": email, "password": password}),

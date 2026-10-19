@@ -381,7 +381,9 @@
     show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Connexion')}</h1></div><form class="form panel" id="fLogin">
       ${field('email', T('Adresse e-mail'), 'email', 'autocomplete="email"')}${field('password', T('Mot de passe'), 'password', 'autocomplete="current-password"')}
       <p class="errtxt" id="err" role="alert"></p><button class="btn big" type="submit">${T('Me connecter')}</button>
-      <p class="hint">${T('Pas encore de compte ? <a href="#/inscription">Créer un compte</a>')}</p></form></div>`, 'compte');
+      <p class="hint">${T('Pas encore de compte ? <a href="#/inscription">Créer un compte</a>')}</p>
+      <p class="hint"><a href="#" id="forgot">${T('Mot de passe oublié ?')}</a></p><p class="hint" id="forgotmsg" hidden>${T('Écris-nous depuis l’adresse e-mail de ton compte : nous te donnerons un mot de passe temporaire à changer ensuite.')}</p></form></div>`, 'compte');
+    $('#forgot').addEventListener('click', (e) => { e.preventDefault(); $('#forgotmsg').hidden = false; });
     $('#fLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       try { await afterAuth(await api('/api/login', 'POST', { email: $('#email').value, password: $('#password').value })); }
@@ -487,11 +489,14 @@
           <button class="btn" type="submit">${T('Activer ou prolonger')}</button></form>
           <p class="hint">${T('Si le client a payé en espèces, indique le montant : il sera compté dans les revenus.')}</p>
           ${act.map((p) => `<div class="stat"><span>${planLabel(p)} · ${T('jusqu’au {date}', { date: dateFr(d.user.subscriptions[p]) })}</span><button class="btn ghost sm" data-rm="${p}">${T('Retirer')}</button></div>`).join('')}
+          <div class="stat"><span>${T('Mot de passe oublié ?')}</span><button class="btn ghost sm" data-resetpw>${T('Réinitialiser le mot de passe')}</button></div><p class="hint" id="pwres" hidden></p>
           <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
           <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
         const refresh = () => { loadStats(); loadList(); };
         $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: f.querySelector('select').value, days: i[0].value, amount: i[1].value }); refresh(); } catch (er) { fail(er); } });
+        $('[data-resetpw]', det).addEventListener('click', async () => { if (!confirm(T('Réinitialiser le mot de passe de ce client ?'))) return;
+          try { const r = await api(`/api/admin/users/${box.dataset.u}/password`, 'POST', {}); const o = $('#pwres', det); o.hidden = false; o.innerHTML = `${T('Mot de passe temporaire (à transmettre au client, affiché une seule fois) :')} <b dir="ltr">${r.password}</b>`; } catch (er) { fail(er); } });
         const rp = $('[data-resetpicks]', det); if (rp) rp.addEventListener('click', async () => { try { await api(`/api/admin/users/${box.dataset.u}/picks`, 'POST', { reset: true }); det.hidden = true; openClient(box); } catch (er) { fail(er); } });
         det.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', async () => { if (!confirm(T('Retirer cet abonnement ?'))) return;
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: b.dataset.rm, remove: true }); refresh(); } catch (er) { fail(er); } }));
