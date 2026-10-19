@@ -248,3 +248,63 @@ class StaticTests(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AdminTests(Base):
+    def setUp(self):
+        super().setUp()
+        p = mock.patch.dict(os.environ, {"ADMIN_EMAILS": "Patron@b.dz, autre@b.dz"})
+        p.start()
+        self.addCleanup(p.stop)
+
+    def admin(self):
+        self.register("patron@b.dz")  # e-mail enregistré en minuscules : la comparaison ignore la casse
+
+    def client_id(self, email="client@b.dz"):
+        other = self.app.test_client()
+        self.register(email, other)
+        with self.app.engine.begin() as conn:
+            return conn.execute(select(db.users.c.id).where(db.users.c.email == email)).scalar()
+
+    def test_admin_flag_and_refusals(self):
+        self.assertEqual(self.c.get("/api/admin/stats").status_code, 403)  # anonyme
+        self.register("simple@b.dz")
+        self.assertFalse(self.c.get("/api/me").get_json()["user"]["admin"])
+        for url in ("/api/admin/stats", "/api/admin/users", "/api/admin/users/1"):
+            self.assertEqual(self.c.get(url).status_code, 403)
+        self.assertEqual(self.post("/api/admin/users/1/subscription", {"plan": "cm1"}).status_code, 403)
+
+    def test_no_admin_when_env_empty(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": ""}):
+            self.admin()
+            self.assertFalse(self.c.get("/api/me").get_json()["user"]["admin"])
+            self.assertEqual(self.c.get("/api/admin/stats").status_code, 403)
+
+    def test_dashboard_grant_extend_remove(self):
+        cid = self.client_id()
+        self.admin()
+        self.assertTrue(self.c.get("/api/me").get_json()["user"]["admin"])
+        r = self.post(f"/api/admin/users/{cid}/subscription", {"plan": "fam", "days": 30, "amount": 600})
+        self.assertEqual(r.status_code, 200)
+        exp1 = r.get_json()["user"]["subscriptions"]["fam"]
+        exp2 = self.post(f"/api/admin/users/{cid}/subscription", {"plan": "fam", "days": 15}).get_json()["user"]["subscriptions"]["fam"]
+        self.assertGreater(exp2, exp1)
+        stats = self.c.get("/api/admin/stats").get_json()
+        self.assertEqual((stats["users"], stats["subscribers"], stats["revenue_month"]), (2, 1, 600))
+        detail = self.c.get(f"/api/admin/users/{cid}").get_json()
+        self.assertEqual((detail["payments"][0]["provider"], detail["payments"][0]["amount"]), ("manuel", 600))
+        self.post(f"/api/admin/users/{cid}/subscription", {"plan": "fam", "remove": True})
+        self.assertEqual(self.c.get("/api/admin/stats").get_json()["subscribers"], 0)
+
+    def test_search_and_validation(self):
+        cid = self.client_id("zoe@b.dz")
+        self.client_id("paul@b.dz")
+        self.admin()
+        found = self.c.get("/api/admin/users?q=ZOE").get_json()["users"]
+        self.assertEqual([u["email"] for u in found], ["zoe@b.dz"])
+        self.assertEqual(self.c.get("/api/admin/users?q=%25").get_json()["users"], [])  # « % » n'est pas un joker
+        bad = lambda body: self.post(f"/api/admin/users/{cid}/subscription", body).status_code
+        self.assertEqual(bad({"plan": "terminale"}), 400)
+        self.assertEqual(bad({"plan": "cm1", "days": 0}), 400)
+        self.assertEqual(bad({"plan": "cm1", "days": "abc"}), 400)
+        self.assertEqual(self.post("/api/admin/users/9999/subscription", {"plan": "cm1"}).status_code, 404)

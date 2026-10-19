@@ -10,6 +10,7 @@ Variables d'environnement :
   PAYMENT_MODE          demo (paiement simulé) ou chargily
   CHARGILY_SECRET_KEY   clé secrète Chargily (clé de TEST tant que CHARGILY_MODE=test)
   CHARGILY_MODE         test (par défaut) ou live
+  ADMIN_EMAILS          e-mails des administrateurs (séparés par des virgules) : accès à /#/admin
   ABONNEMENTS_ACTIFS    1 pour réserver les compétences payantes aux abonnés ; absent = tout est ouvert
 """
 import os
@@ -17,10 +18,10 @@ import re
 import secrets
 import time
 from collections import defaultdict, deque
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Flask, abort, jsonify, redirect, request, send_from_directory, session
-from sqlalchemy import select
+from sqlalchemy import func, select
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import chargily
@@ -123,6 +124,10 @@ def create_app(database_url=None):
         subs = db.active_subscriptions(conn, uid) if uid else {}
         return level in subs or db.FAMILY in subs
 
+    def is_admin(u):
+        admins = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()}
+        return bool(u) and u["email"].lower() in admins
+
     def me_payload(conn):
         u = current_user(conn)
         cfg = {"prices": db.PRICES, "free": list(db.FREE_CODES), "days": db.PLAN_DAYS,
@@ -136,7 +141,7 @@ def create_app(database_url=None):
                 for r in conn.execute(select(db.payments).where(db.payments.c.user_id == u["id"])
                                       .order_by(db.payments.c.id.desc()).limit(10)).mappings()]
         ap = active_profile(conn, u["id"])
-        return {"user": {"email": u["email"]}, "profiles": user_profiles(conn, u["id"]),
+        return {"user": {"email": u["email"], "admin": is_admin(u)}, "profiles": user_profiles(conn, u["id"]),
                 "activeProfile": ap["id"] if ap else None, "subscriptions": subs, "payments": pays, "config": cfg}
 
     # ---------- comptes ----------
@@ -419,6 +424,97 @@ def create_app(database_url=None):
         with engine.begin() as conn:
             db.activate_payment(conn, p["id"])
         return redirect("/#/paiement/succes", 303)
+
+    # ---------- administration ----------
+    def admin_user(conn):
+        u = current_user(conn)
+        return u if is_admin(u) else None
+
+    def iso(d):
+        return d.isoformat() + "Z" if d else None
+
+    def user_row(conn, u):
+        subs = {lv: iso(exp) for lv, exp in db.active_subscriptions(conn, u["id"]).items()}
+        paid = conn.execute(select(func.coalesce(func.sum(db.payments.c.amount), 0)).where(
+            (db.payments.c.user_id == u["id"]) & (db.payments.c.status == "paid"))).scalar()
+        n = conn.execute(select(func.count()).select_from(db.profiles).where(db.profiles.c.user_id == u["id"])).scalar()
+        return {"id": u["id"], "email": u["email"], "created": iso(u["created_at"]), "profiles": n,
+                "subscriptions": subs, "paid": int(paid)}
+
+    @app.get("/api/admin/stats")
+    def admin_stats():
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            t = db.now()
+            month = t.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            paid = (db.payments.c.status == "paid")
+            return jsonify(
+                users=conn.execute(select(func.count()).select_from(db.users)).scalar(),
+                subscribers=conn.execute(select(func.count(func.distinct(db.subscriptions.c.user_id)))
+                                         .where(db.subscriptions.c.expires_at > t)).scalar(),
+                revenue_month=int(conn.execute(select(func.coalesce(func.sum(db.payments.c.amount), 0)).where(
+                    paid & (db.payments.c.paid_at >= month))).scalar()),
+                revenue_total=int(conn.execute(select(func.coalesce(func.sum(db.payments.c.amount), 0)).where(paid)).scalar()))
+
+    @app.get("/api/admin/users")
+    def admin_users():
+        q = str(request.args.get("q", "")).strip().lower()[:100]
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            stmt = select(db.users).order_by(db.users.c.id.desc()).limit(50)
+            if q:
+                like = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%"
+                stmt = stmt.where(db.users.c.email.like(like, escape="\\"))
+            return jsonify(users=[user_row(conn, u) for u in conn.execute(stmt).mappings()])
+
+    @app.get("/api/admin/users/<int:uid>")
+    def admin_user_detail(uid):
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            u = conn.execute(select(db.users).where(db.users.c.id == uid)).mappings().first()
+            if not u:
+                return err("Client introuvable.", 404)
+            pays = [{"level": r["level"], "amount": r["amount"], "status": r["status"], "provider": r["provider"],
+                     "date": iso(r["paid_at"] or r["created_at"])}
+                    for r in conn.execute(select(db.payments).where(db.payments.c.user_id == uid)
+                                          .order_by(db.payments.c.id.desc()).limit(30)).mappings()]
+            return jsonify(user=user_row(conn, u), payments=pays, profiles=user_profiles(conn, uid))
+
+    @app.post("/api/admin/users/<int:uid>/subscription")
+    def admin_subscription(uid):
+        """Activer / prolonger ({"plan", "days", "amount"}) ou retirer ({"plan", "remove": true}) un abonnement."""
+        d = request.get_json(silent=True) or {}
+        plan = d.get("plan")
+        if plan not in db.PRICES:
+            return err("Niveau inconnu.")
+        with engine.begin() as conn:
+            admin = admin_user(conn)
+            if not admin:
+                return err("Accès réservé aux administrateurs.", 403)
+            if not conn.execute(select(db.users.c.id).where(db.users.c.id == uid)).first():
+                return err("Client introuvable.", 404)
+            if d.get("remove"):
+                conn.execute(db.subscriptions.delete().where(
+                    (db.subscriptions.c.user_id == uid) & (db.subscriptions.c.level == plan)))
+                app.logger.info("admin %s retire %s de %s", admin["email"], plan, uid)
+            else:
+                try:
+                    days, amount = int(d.get("days", db.PLAN_DAYS)), int(d.get("amount") or 0)
+                except (TypeError, ValueError):
+                    return err("Nombre de jours ou montant invalide.")
+                if not 1 <= days <= 366 or not 0 <= amount <= 100000:
+                    return err("Nombre de jours ou montant invalide.")
+                db.grant(conn, uid, plan, days)
+                if amount:  # paiement en espèces : gardé dans l'historique et dans les revenus
+                    conn.execute(db.payments.insert().values(
+                        user_id=uid, level=plan, amount=amount, currency="dzd", provider="manuel",
+                        status="paid", created_at=db.now(), paid_at=db.now()))
+                app.logger.info("admin %s accorde %s jours de %s à %s", admin["email"], days, plan, uid)
+            u = conn.execute(select(db.users).where(db.users.c.id == uid)).mappings().first()
+            return jsonify(user=user_row(conn, u))
 
     # ---------- site ----------
     @app.get("/healthz")
