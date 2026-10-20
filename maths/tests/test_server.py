@@ -1,6 +1,7 @@
 """Tests du serveur : python3 -m unittest discover -s tests  (depuis le dossier maths/)."""
 import hashlib
 import hmac
+import io
 import json
 import os
 import sys
@@ -345,6 +346,76 @@ class AdminTests(Base):
         self.assertEqual(bad({"plan": "cm1", "days": 0}), 400)
         self.assertEqual(bad({"plan": "cm1", "days": "abc"}), 400)
         self.assertEqual(self.post("/api/admin/users/9999/subscription", {"plan": "cm1"}).status_code, 404)
+
+
+class CorrectionAudioTests(Base):
+    """Correction audio : l'admin dépose un message vocal sur le profil d'un élève, le parent l'écoute."""
+    AUDIO = b"\x1aE\xdf\xa3" + b"opus-fake" * 50
+
+    def setUp(self):
+        super().setUp()
+        p = mock.patch.dict(os.environ, {"ADMIN_EMAILS": "patron@b.dz"})
+        p.start()
+        self.addCleanup(p.stop)
+        self.parent = self.app.test_client()
+        self.register("parent@b.dz", self.parent)
+        self.pid = self.parent.get("/api/me").get_json()["activeProfile"]
+        self.register("patron@b.dz")  # self.c = administrateur
+
+    def upload(self, client=None, pid=None, mime="audio/webm;codecs=opus", data=None, **form):
+        return (client or self.c).post(
+            f"/api/admin/profiles/{pid or self.pid}/corrections", headers=H,
+            data={"audio": (io.BytesIO(self.AUDIO if data is None else data), "c.webm", mime),
+                  "title": "Copie 3", "seconds": "42", **form})
+
+    def test_admin_uploads_parent_listens(self):
+        r = self.upload()
+        self.assertEqual(r.status_code, 200)
+        item = r.get_json()["corrections"][0]
+        self.assertEqual((item["title"], item["seconds"]), ("Copie 3", 42))
+        listed = self.parent.get("/api/corrections").get_json()["corrections"]
+        self.assertEqual([c["id"] for c in listed], [item["id"]])
+        a = self.parent.get(f"/api/corrections/{item['id']}/audio")
+        self.assertEqual((a.status_code, a.mimetype, a.data), (200, "audio/webm", self.AUDIO))
+        part = self.parent.get(f"/api/corrections/{item['id']}/audio", headers={"Range": "bytes=0-9"})
+        self.assertEqual((part.status_code, len(part.data)), (206, 10))  # lecture par morceaux
+
+    def test_only_owner_and_admin_can_listen(self):
+        cid = self.upload().get_json()["corrections"][0]["id"]
+        stranger = self.app.test_client()
+        self.assertEqual(stranger.get(f"/api/corrections/{cid}/audio").status_code, 401)
+        self.register("autre@b.dz", stranger)
+        self.assertEqual(stranger.get(f"/api/corrections/{cid}/audio").status_code, 404)
+        self.assertEqual(stranger.get("/api/corrections").get_json()["corrections"], [])
+        self.assertEqual(self.c.get(f"/api/corrections/{cid}/audio").status_code, 200)
+
+    def test_upload_and_delete_are_admin_only(self):
+        self.assertEqual(self.upload(client=self.parent).status_code, 403)
+        cid = self.upload().get_json()["corrections"][0]["id"]
+        self.assertEqual(self.parent.delete(f"/api/admin/corrections/{cid}", headers=H).status_code, 403)
+        self.assertEqual(self.parent.get(f"/api/admin/profiles/{self.pid}/corrections").status_code, 403)
+        r = self.c.delete(f"/api/admin/corrections/{cid}", headers=H)
+        self.assertEqual(r.get_json()["corrections"], [])
+        self.assertEqual(self.parent.get(f"/api/corrections/{cid}/audio").status_code, 404)
+
+    def test_upload_checks(self):
+        self.assertEqual(self.upload(mime="text/html").status_code, 400)  # pas un audio
+        self.assertEqual(self.upload(data=b"").status_code, 400)
+        self.assertEqual(self.upload(data=b"x" * (db.AUDIO_MAX_BYTES + 1)).status_code, 413)
+        self.assertEqual(self.upload(pid=9999).status_code, 404)
+        self.assertEqual(self.c.post(f"/api/admin/profiles/{self.pid}/corrections", data={}).status_code, 403)  # sans en-tête CSRF
+        self.assertEqual(self.upload(title=" ").get_json()["corrections"][0]["title"], "Correction")
+
+    def test_deleting_profile_removes_its_corrections(self):
+        self.post("/api/profiles", {"name": "Yacine", "level": "cp"}, self.parent)
+        self.upload()
+        self.assertEqual(self.parent.delete(f"/api/profiles/{self.pid}", headers=H).status_code, 200)
+        with self.app.engine.begin() as conn:
+            self.assertEqual(conn.execute(select(db.corrections.c.id)).all(), [])
+
+    def test_other_endpoints_keep_small_body_limit(self):
+        r = self.c.post("/api/progress", data=b"x" * (300 * 1024), headers={**H, "Content-Type": "application/json"})
+        self.assertEqual(r.status_code, 413)
 
 
 class AdminResetTests(Base):

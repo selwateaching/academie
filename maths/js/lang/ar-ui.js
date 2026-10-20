@@ -170,5 +170,17 @@
     'Le paiement est momentanément indisponible.': 'الدفع غير متاح مؤقتًا.', 'Niveau inconnu.': 'مستوى غير معروف.', 'Profil introuvable.': 'الملف غير موجود.',
     'Trop d\'essais, réessaie dans quelques minutes.': 'محاولات كثيرة، أعد المحاولة بعد بضع دقائق.', 'Un compte existe déjà avec cette adresse.': 'يوجد حساب بهذا العنوان من قبل.',
     'Un compte garde au moins un profil.': 'يحتفظ الحساب بملف واحد على الأقل.', 'requête refusée': 'طلب مرفوض', 'signature invalide': 'توقيع غير صالح',
+    /* corrections audio */
+    'Corrections': 'التصحيحات', 'Corrections audio': 'التصحيحات الصوتية', 'Corrections audio — Tadriss-Maths': 'التصحيحات الصوتية — تدريس رياضيات',
+    'Messages vocaux pour {name}': 'رسائل صوتية لـ {name}', 'Chargement…': 'جارٍ التحميل…',
+    'Aucune correction pour l’instant. Les messages vocaux de l’enseignant apparaîtront ici.': 'لا توجد تصحيحات بعد. ستظهر هنا الرسائل الصوتية للأستاذ.',
+    'Aucune correction.': 'لا توجد تصحيحات.', 'Supprimer cette correction ?': 'هل تريد حذف هذا التصحيح؟',
+    'Titre (ex. Copie du 12 mars)': 'العنوان (مثال: ورقة 12 مارس)', 'Titre de la correction': 'عنوان التصحيح',
+    'Enregistrer': 'تسجيل', 'Arrêter': 'إيقاف', 'Envoyer': 'إرسال', 'Recommencer': 'إعادة', 'Choisir un fichier audio': 'اختيار ملف صوتي',
+    'Envoi…': 'جارٍ الإرسال…', 'Correction envoyée.': 'تم إرسال التصحيح.',
+    'Ce navigateur ne permet pas d’enregistrer : choisis un fichier audio.': 'هذا المتصفح لا يتيح التسجيل: اختر ملفًا صوتيًا.',
+    'Micro inaccessible : autorise-le dans le navigateur.': 'الميكروفون غير متاح: اسمح به في المتصفح.',
+    'Aucun enregistrement reçu.': 'لم يصل أي تسجيل.', 'Enregistrement trop long (5 Mo maximum).': 'التسجيل طويل جدًا (5 ميغابايت كحد أقصى).',
+    'Format audio non reconnu.': 'صيغة الصوت غير معروفة.', 'Correction introuvable.': 'التصحيح غير موجود.', 'requête trop volumineuse': 'الطلب كبير جدًا',
   };
 }(typeof window !== 'undefined' ? window : globalThis));

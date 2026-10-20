@@ -39,7 +39,8 @@
 
   async function api(path, method = 'GET', body, keepalive = false) {
     const opt = { method, credentials: 'same-origin', headers: { 'X-Tadriss': '1' }, keepalive };
-    if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
+    if (body instanceof FormData) opt.body = body; // dépôt d'un audio : le navigateur fixe lui-même le Content-Type
+    else if (body !== undefined) { opt.headers['Content-Type'] = 'application/json'; opt.body = JSON.stringify(body); }
     const r = await fetch(path, opt);
     let data = {}; try { data = await r.json(); } catch (e) { /* pas de JSON */ }
     if (!r.ok) throw Object.assign(new Error(T(data.error || 'Erreur')), { status: r.status });
@@ -491,7 +492,9 @@
           ${act.map((p) => `<div class="stat"><span>${planLabel(p)} · ${T('jusqu’au {date}', { date: dateFr(d.user.subscriptions[p]) })}</span><button class="btn ghost sm" data-rm="${p}">${T('Retirer')}</button></div>`).join('')}
           <div class="stat"><span>${T('Mot de passe oublié ?')}</span><button class="btn ghost sm" data-resetpw>${T('Réinitialiser le mot de passe')}</button></div><p class="hint" id="pwres" hidden></p>
           <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
+          <h3>${T('Corrections audio')}</h3>${d.profiles.map((p) => `<div class="corrp" data-cpid="${p.id}"><b>${esc(p.name)} · ${sh(lvOf(p.level))}</b><div class="cm"></div></div>`).join('')}
           <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
+        det.querySelectorAll('[data-cpid]').forEach((c) => mountCorrections($('.cm', c), c.dataset.cpid, fail));
         const refresh = () => { loadStats(); loadList(); };
         $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: f.querySelector('select').value, days: i[0].value, amount: i[1].value }); refresh(); } catch (er) { fail(er); } });
@@ -506,13 +509,78 @@
     loadStats(); loadList();
   }
 
+  /* ---------- corrections audio : l'enseignant enregistre, le parent écoute ---------- */
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const correctionItem = (c, admin) => `<div class="corr"><div class="stat"><b>${esc(c.title)}</b><span>${dateFr(c.created)}${c.seconds ? ' · ' + mmss(c.seconds) : ''}${admin ? ` <button class="btn ghost sm" type="button" data-delcorr="${c.id}">${T('Supprimer')}</button>` : ''}</span></div><audio controls preload="none" src="/api/corrections/${c.id}/audio"></audio></div>`;
+
+  function pageCorrections() {
+    if (!auth.user) { returnTo = '#/corrections'; return pageLogin(); }
+    document.title = T('Corrections audio — Tadriss-Maths');
+    const ap = auth.profiles.find((p) => p.id === auth.active);
+    show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Corrections audio')}</h1>${ap ? `<p>${T('Messages vocaux pour {name}', { name: esc(ap.name) })}</p>` : ''}</div>
+      <div class="panel" id="clist"><p class="hint">${T('Chargement…')}</p></div></div>`, 'corrections');
+    api('/api/corrections').then((d) => {
+      $('#clist').innerHTML = d.corrections.length ? d.corrections.map((c) => correctionItem(c, false)).join('')
+        : `<p class="hint">${T('Aucune correction pour l’instant. Les messages vocaux de l’enseignant apparaîtront ici.')}</p>`;
+    }).catch((e) => { $('#clist').innerHTML = `<p class="errtxt">${esc(e.message)}</p>`; });
+  }
+
+  /* Côté administrateur : liste + enregistreur (micro) ou choix d'un fichier audio, pour le profil `pid`. */
+  function mountCorrections(el, pid, fail) {
+    el.innerHTML = `<div class="corrl"></div>
+      <div class="inl rec"><input class="ctitle" maxlength="80" placeholder="${T('Titre (ex. Copie du 12 mars)')}" aria-label="${T('Titre de la correction')}">
+        <button class="btn" type="button" data-rec>● ${T('Enregistrer')}</button>
+        <label class="btn ghost">${T('Choisir un fichier audio')}<input type="file" accept="audio/*" hidden></label></div>
+      <p class="hint rstate" aria-live="polite"></p>`;
+    const list = $('.corrl', el), st = $('.rstate', el), recBtn = $('[data-rec]', el), title = $('.ctitle', el);
+    const url = `/api/admin/profiles/${pid}/corrections`;
+    const draw = (items) => {
+      list.innerHTML = items.length ? items.map((c) => correctionItem(c, true)).join('') : `<p class="hint">${T('Aucune correction.')}</p>`;
+      list.querySelectorAll('[data-delcorr]').forEach((b) => b.addEventListener('click', async () => {
+        if (!confirm(T('Supprimer cette correction ?'))) return;
+        try { draw((await api('/api/admin/corrections/' + b.dataset.delcorr, 'DELETE')).corrections); } catch (e) { fail(e); }
+      }));
+    };
+    api(url).then((d) => draw(d.corrections)).catch(fail);
+    const send = async (blob, secs) => {
+      const f = new FormData(); f.append('audio', blob, 'correction'); f.append('title', title.value); f.append('seconds', String(secs));
+      st.textContent = T('Envoi…');
+      try { draw((await api(url, 'POST', f)).corrections); title.value = ''; st.textContent = T('Correction envoyée.'); } catch (e) { st.textContent = ''; fail(e); }
+    };
+    const preview = (blob, secs) => {
+      const u = URL.createObjectURL(blob);
+      st.innerHTML = `<audio controls src="${u}"></audio> <button class="btn sm" type="button" data-send>${T('Envoyer')}</button> <button class="btn ghost sm" type="button" data-again>${T('Recommencer')}</button>`;
+      $('[data-send]', st).onclick = () => { URL.revokeObjectURL(u); send(blob, secs); };
+      $('[data-again]', st).onclick = () => { URL.revokeObjectURL(u); st.textContent = ''; };
+    };
+    $('input[type=file]', el).addEventListener('change', (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) preview(f, 0); });
+    let rec = null;
+    recBtn.addEventListener('click', async () => {
+      if (rec) { rec.stop(); return; }
+      if (!navigator.mediaDevices || !window.MediaRecorder) { st.textContent = T('Ce navigateur ne permet pas d’enregistrer : choisis un fichier audio.'); return; }
+      let stream;
+      try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e) { st.textContent = T('Micro inaccessible : autorise-le dans le navigateur.'); return; }
+      const chunks = [], t0 = Date.now(), label = () => '■ ' + T('Arrêter') + ' ' + mmss(Math.round((Date.now() - t0) / 1000));
+      rec = new MediaRecorder(stream, { audioBitsPerSecond: 48000 }); // ~6 Ko/s : 10 minutes restent sous la limite de 5 Mo
+      const tick = setInterval(() => { recBtn.textContent = label(); if (Date.now() - t0 >= 600000 && rec) rec.stop(); }, 500);
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = () => {
+        clearInterval(tick); stream.getTracks().forEach((t) => t.stop());
+        const type = rec.mimeType || (chunks[0] && chunks[0].type) || 'audio/webm'; rec = null;
+        recBtn.textContent = '● ' + T('Enregistrer');
+        if (chunks.length) preview(new Blob(chunks, { type }), Math.round((Date.now() - t0) / 1000));
+      };
+      rec.start(); st.textContent = ''; recBtn.textContent = label();
+    });
+  }
+
   /* ---------- routeur ---------- */
   function route() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true;
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
-    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
+    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'corrections') pageCorrections(); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && P && $('#go') && $('#modal').hidden && !(e.target.tagName === 'BUTTON')) { e.preventDefault(); submit(); }

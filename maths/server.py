@@ -14,6 +14,7 @@ Variables d'environnement :
   ABONNEMENTS_ACTIFS    0 pour tout ouvrir à tout le monde ; absent ou autre = seule la démo est gratuite
                         (3 compétences par niveau), le reste demande un abonnement ; les administrateurs ont toujours tout
 """
+import io
 import os
 import re
 import secrets
@@ -21,7 +22,7 @@ import time
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 
-from flask import Flask, abort, jsonify, redirect, request, send_from_directory, session
+from flask import Flask, abort, jsonify, redirect, request, send_file, send_from_directory, session
 from sqlalchemy import func, select
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -60,7 +61,7 @@ def create_app(database_url=None):
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=os.environ.get("BASE_URL", "").startswith("https://"),
         PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 30,
-        MAX_CONTENT_LENGTH=256 * 1024,
+        MAX_CONTENT_LENGTH=db.AUDIO_MAX_BYTES + 256 * 1024,  # le dépôt d'un audio ; le reste est limité plus bas
     )
     # Derrière le proxy de Render, sans cela tous les visiteurs auraient la même adresse (celle du proxy)
     # et partageraient la même limite d'essais.
@@ -94,6 +95,11 @@ def create_app(database_url=None):
 
     def err(msg, code=400):
         return jsonify(error=msg), code
+
+    @app.before_request
+    def size_guard():
+        if (request.content_length or 0) > 256 * 1024 and not request.path.endswith("/corrections"):
+            return err("requête trop volumineuse", 413)
 
     @app.before_request
     def csrf_guard():
@@ -268,6 +274,7 @@ def create_app(database_url=None):
                 return err("Un compte garde au moins un profil.")
             conn.execute(db.progress.delete().where(db.progress.c.profile_id == pid))
             conn.execute(db.daily.delete().where(db.daily.c.profile_id == pid))
+            conn.execute(db.corrections.delete().where(db.corrections.c.profile_id == pid))
             conn.execute(db.profiles.delete().where(db.profiles.c.id == pid))
             if session.get("pid") == pid:
                 session.pop("pid", None)
@@ -585,6 +592,84 @@ def create_app(database_url=None):
                 app.logger.info("admin %s accorde %s jours de %s à %s", admin["email"], days, plan, uid)
             u = conn.execute(select(db.users).where(db.users.c.id == uid)).mappings().first()
             return jsonify(user=user_row(conn, u))
+
+    # ---------- corrections audio ----------
+    def correction_row(r):
+        return {"id": r["id"], "title": r["title"], "seconds": r["seconds"], "created": iso(r["created_at"])}
+
+    def corrections_of(conn, pid):
+        cols = [db.corrections.c.id, db.corrections.c.title, db.corrections.c.seconds, db.corrections.c.created_at]
+        return [correction_row(r) for r in conn.execute(select(*cols).where(db.corrections.c.profile_id == pid)
+                                                        .order_by(db.corrections.c.id.desc())).mappings()]
+
+    @app.get("/api/corrections")
+    def my_corrections():
+        """Corrections audio de l'élève dont le profil est actif."""
+        with engine.begin() as conn:
+            u = current_user(conn)
+            ap = active_profile(conn, u["id"]) if u else None
+            if not ap:
+                return err("Connexion nécessaire.", 401)
+            return jsonify(corrections=corrections_of(conn, ap["id"]))
+
+    @app.get("/api/corrections/<int:cid>/audio")
+    def correction_audio(cid):
+        with engine.begin() as conn:
+            u = current_user(conn)
+            if not u:
+                return err("Connexion nécessaire.", 401)
+            c = conn.execute(select(db.corrections).where(db.corrections.c.id == cid)).mappings().first()
+            owner = c and conn.execute(select(db.profiles.c.user_id).where(db.profiles.c.id == c["profile_id"])).scalar()
+            if not c or not (owner == u["id"] or is_admin(u)):
+                return err("Correction introuvable.", 404)
+        resp = send_file(io.BytesIO(c["audio"]), mimetype=c["mime"], conditional=True, max_age=0)  # conditional : lecture par morceaux (Safari)
+        resp.headers["Cache-Control"] = "private, no-store"
+        return resp
+
+    @app.get("/api/admin/profiles/<int:pid>/corrections")
+    def admin_corrections(pid):
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            if not conn.execute(select(db.profiles.c.id).where(db.profiles.c.id == pid)).first():
+                return err("Profil introuvable.", 404)
+            return jsonify(corrections=corrections_of(conn, pid))
+
+    @app.post("/api/admin/profiles/<int:pid>/corrections")
+    def admin_add_correction(pid):
+        """Dépôt d'un audio (formulaire : audio, title, seconds) sur la copie d'un élève."""
+        f = request.files.get("audio")
+        data = f.read(db.AUDIO_MAX_BYTES + 1) if f else b""
+        mime = (f.mimetype or "").split(";")[0].strip().lower() if f else ""
+        if not data:
+            return err("Aucun enregistrement reçu.")
+        if len(data) > db.AUDIO_MAX_BYTES:
+            return err("Enregistrement trop long (5 Mo maximum).", 413)
+        if mime not in db.AUDIO_MIMES:
+            return err("Format audio non reconnu.")
+        title = str(request.form.get("title", "")).strip()[:80] or "Correction"
+        seconds = clamp(request.form.get("seconds"), 3600)
+        with engine.begin() as conn:
+            admin = admin_user(conn)
+            if not admin:
+                return err("Accès réservé aux administrateurs.", 403)
+            if not conn.execute(select(db.profiles.c.id).where(db.profiles.c.id == pid)).first():
+                return err("Profil introuvable.", 404)
+            conn.execute(db.corrections.insert().values(profile_id=pid, title=title, mime=mime, seconds=seconds,
+                                                        audio=data, created_at=db.now()))
+            app.logger.info("admin %s dépose une correction audio pour le profil %s", admin["email"], pid)
+            return jsonify(corrections=corrections_of(conn, pid))
+
+    @app.delete("/api/admin/corrections/<int:cid>")
+    def admin_delete_correction(cid):
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            pid = conn.execute(select(db.corrections.c.profile_id).where(db.corrections.c.id == cid)).scalar()
+            if pid is None:
+                return err("Correction introuvable.", 404)
+            conn.execute(db.corrections.delete().where(db.corrections.c.id == cid))
+            return jsonify(corrections=corrections_of(conn, pid))
 
     # ---------- site ----------
     @app.get("/healthz")

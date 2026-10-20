@@ -5,7 +5,7 @@ PostgreSQL sur Render (variable DATABASE_URL), SQLite en local si elle est absen
 import os
 from datetime import datetime, timedelta
 
-from sqlalchemy import (Column, DateTime, ForeignKey, Integer, MetaData, String, Table,
+from sqlalchemy import (Column, DateTime, ForeignKey, Integer, LargeBinary, MetaData, String, Table,
                         UniqueConstraint, create_engine, select)
 
 LEVELS = ["gs", "cp", "ce1", "ce2", "cm1", "cm2", "6e"]
@@ -80,6 +80,20 @@ payments = Table(
     Column("created_at", DateTime, nullable=False),
     Column("paid_at", DateTime),
 )
+# Corrections audio : un message vocal de l'enseignant sur la copie d'un élève, stocké dans la base.
+corrections = Table(
+    "corrections", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("profile_id", Integer, ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True),
+    Column("title", String(80), nullable=False),
+    Column("mime", String(40), nullable=False),
+    Column("seconds", Integer, nullable=False, default=0),
+    Column("audio", LargeBinary, nullable=False),
+    Column("created_at", DateTime, nullable=False),
+)
+AUDIO_MIMES = ("audio/webm", "audio/ogg", "audio/mp4", "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav", "audio/wave",
+               "audio/x-m4a", "audio/m4a", "audio/aac", "audio/x-aac")
+AUDIO_MAX_BYTES = 5 * 1024 * 1024
 
 
 def make_engine(url=None):

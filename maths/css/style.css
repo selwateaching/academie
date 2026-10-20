@@ -276,3 +276,10 @@ main{flex:1;outline:none}
 
 .ttl-ic{width:44px;height:44px;border-radius:12px;object-fit:cover;vertical-align:middle;margin-inline-end:10px}
 .side-ph{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:center 72%;display:block;margin-bottom:8px;border:3px solid var(--c,#fff)}
+
+/* corrections audio */
+.corr audio,.corrl audio{width:100%;margin:2px 0 12px}
+.corrp{border-top:1px solid var(--line);padding:10px 0}
+.rec{margin-top:8px;align-items:center}
+.rec label{cursor:pointer}
+.rstate{min-height:1.2em}.rstate audio{vertical-align:middle;max-width:100%}
