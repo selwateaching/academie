@@ -246,9 +246,13 @@ const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 /* ---------- accueil ---------- */
 function home(){
   $("#app").innerHTML=`<h1>Que créons-nous aujourd'hui ?</h1><p class="sub">Une séquence de leçons complète : diapositives illustrées, notes et quiz.</p>
-  <div class="card"><button class="btn" onclick="S=blank();step=1;msg='';render()">＋ Créer une séquence</button></div>
+  <div class="card"><button class="btn" onclick="S=blank();step=1;msg='';render()">＋ Créer une séquence</button> <button class="btn ghost" onclick="loadExample()">👀 Voir un exemple</button></div>
   ${saved.length?`<div class="card"><h2>Mes séquences</h2>${saved.map(x=>`<div class="saved"><div><b>${esc(x.title||x.topic)}</b><br><small style="color:var(--mut)">${esc(x.level)} · ${x.lessons.length} leçons · ${x.lessons.filter(l=>l.slides).length} prêtes</small></div>
   <span><button class="btn sm ghost" onclick="openS('${x.id}')">Ouvrir</button> <button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></span></div>`).join("")}</div>`:""}`;
+}
+async function loadExample(){
+  try{const d=await (await fetch("/exemple.json")).json();d.id=uid();d.title+=" (exemple)";S=d;step=5;msg="";save();render();}
+  catch{alert("Exemple indisponible.");}
 }
 function openS(id){S=saved.find(x=>x.id===id);step=S.started?5:3;msg="";render();}
 function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();render();}}
