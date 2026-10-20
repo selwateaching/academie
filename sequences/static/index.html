@@ -203,14 +203,51 @@ header{background:linear-gradient(#e6f4ec,#fff);border-radius:16px}
 .ft .cols{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
 .ft h4{font-size:22px;margin:0 0 12px}.ft a{display:block;color:#fff;margin:8px 0;cursor:pointer;font-size:16px}
 .ft .bt{max-width:1180px;margin:28px auto 0;border-top:1px solid rgba(255,255,255,.25);padding-top:16px;font-size:14px}
-@media(max-width:700px){.hn .l a:not(:first-child){display:none}.hn .l{gap:12px}.ghostw{display:none}.hbar{flex-direction:column;align-items:stretch;border-radius:22px}.wm{margin-top:28px}}
+@media(max-width:700px){.hn .l a:not(:last-child){display:none}.hn .l{gap:12px}.ghostw{display:block!important;padding:8px 14px;font-size:14px}.hbar{flex-direction:column;align-items:stretch;border-radius:22px}.wm{margin-top:28px}}
+
+body.app header,body.home header{display:none}
+#side{display:none}
+body.app #side{display:flex;flex-direction:column;position:fixed;left:8px;top:8px;bottom:8px;width:250px;background:#409e9e;border-radius:22px;padding:26px 16px 16px;color:#fff;z-index:30;overflow:auto}
+body.app #app{margin:0 auto 0 266px;max-width:920px;padding:24px 28px 80px}
+body.app #app.dashw{max-width:none;margin-right:0}
+#side .av{width:72px;height:72px;border-radius:50%;background:#1d7f7f;display:grid;place-items:center;font:700 34px Inter,sans-serif;margin:0 auto 10px;border:3px solid rgba(255,255,255,.35)}
+#side .nm{text-align:center;font-weight:800;font-size:18px;margin-bottom:22px;word-break:break-word}
+#side nav{display:flex;flex-direction:column;gap:6px}
+#side nav a{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:12px;font-size:18px;font-weight:600;color:#fff;cursor:pointer;border:2px solid transparent}
+#side nav a:hover{background:rgba(255,255,255,.12)}#side nav a.on{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.5)}
+#side .promos{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:20px}
+.pcard{background:#fff;color:#111;border-radius:14px;padding:12px 14px;border:3px solid transparent}.pcard.org{border-color:#d68c45;background:#fff}
+.pcard b{display:block;font-size:15px;line-height:1.25}.pcard small{display:block;color:#555;margin:2px 0 8px}
+.pcard button{width:100%;font:inherit;font-weight:700;font-size:15px;padding:8px;border-radius:10px;border:1px solid #333;background:#fff;cursor:pointer}.pcard.org button{border-color:#2c6e49;color:#2c6e49}
+#side .logout{margin-top:12px;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6);border-radius:10px;padding:8px;font:inherit;font-weight:600;cursor:pointer}
+@media(max-width:900px){body.app #side{position:static;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px;padding:12px;margin-bottom:8px}
+ #side .av{width:40px;height:40px;font-size:20px;margin:0}#side .nm{margin:0;font-size:16px}#side nav{flex-direction:row;flex-wrap:wrap}#side nav a{padding:6px 10px;font-size:15px}#side .promos{display:none}#side .logout{margin:0 0 0 auto}
+ body.app #app{margin:0 auto;padding:16px 8px 60px}}
+.dh h1{font-size:clamp(26px,3vw,36px);font-weight:900;margin:6px 0 16px}
+.dh h2{font-size:26px;font-weight:900;margin:34px 0 14px}
+.ccs{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;max-width:980px}
+.cc{background:#fff;border:0;border-radius:18px;padding:22px 14px 16px;text-align:center;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.12);font:inherit}
+.cc:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.16)}.cc .ic{font-size:54px;display:block;margin-bottom:10px}.cc b{display:block;font-size:19px}.cc small{color:#444;font-size:15px}
+.rh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:34px 0 14px}.rh h2{margin:0}
+.rh .acts{display:flex;gap:10px;align-items:center}
+.sbox{display:flex;align-items:center;border:2px solid var(--g);border-radius:12px;background:#fff;padding:0 10px;height:46px}.sbox input{border:0;outline:0!important;box-shadow:none;width:180px;padding:6px}
+.nbtn{font:inherit;font-weight:800;font-size:16px;color:var(--g);background:#fff;border:2px solid var(--g);border-radius:12px;height:46px;padding:0 18px;cursor:pointer}.nbtn:hover{background:var(--g2)}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px}
+.rc{background:#fff;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,.14);overflow:hidden;cursor:pointer}
+.rc .cover{position:relative;overflow:hidden;background:linear-gradient(135deg,#409e9e,#2c6e49);display:grid;place-items:center;font-size:54px;color:#fff;width:100%}
+.rc .bd{padding:14px 16px 16px}.rc .tt{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.rc .tt b{font-size:19px;line-height:1.25}
+.rc .mt{display:flex;gap:10px;align-items:center;margin-top:14px;font-size:14px;color:#374151;flex-wrap:wrap}
+.rc .pl{background:#eef1f4;border-radius:8px;padding:3px 9px;font-weight:600}
+.empty{background:#fff;border-radius:18px;padding:40px;text-align:center;color:var(--mut);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.hn .lk{background:none;border:0;color:#fff;font:inherit;font-size:18px;font-weight:500;cursor:pointer;padding:0}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><button class="chip" onclick="goPricing()"></button></nav></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip plan" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
+<aside id="side"></aside>
 <main id="app"></main>
 <div id="modal" onclick="if(event.target===this)closeModal()"></div>
 <div id="studio"></div>
@@ -249,7 +286,11 @@ let PL=null;
 const PNAME={free:"Gratuit",pro:"Pro",max:"Max"};
 const CAP=()=>PL?.caps||{series:5,slides:12,curriculum:false,youtube:false,no_badge:false,custom_themes:false};
 async function loadPlan(){try{const r=await fetch("/api/plan",{headers:{"X-Seq-Device":DEV}});if(r.ok)PL=await r.json();}catch{}chip();if(page==="pricing")pricing();}
-function chip(){const s=PL?`${PNAME[PL.plan]} · ${PL.used}/${PL.limit} ${PL.days===7?"cette semaine":"ce mois-ci"}`:"Tarifs";document.querySelectorAll(".chip").forEach(c=>c.textContent=s);}
+function chip(){
+  const s=PL?`${PNAME[PL.plan]} · ${PL.used}/${PL.limit} ${PL.days===7?"cette semaine":"ce mois-ci"}`:"";
+  document.querySelectorAll(".chip.plan").forEach(c=>c.textContent=s||"Tarifs");
+  document.querySelectorAll(".plantxt").forEach(c=>c.textContent=s||"");
+}
 function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500);}
 function modal(html){$("#modal").innerHTML=`<div class="box">${html}</div>`;$("#modal").classList.add("on");}
 function closeModal(){$("#modal").classList.remove("on");}
@@ -266,26 +307,46 @@ const blank=()=>({id:uid(),topic:"",level:"6e",language:"français",count:5,inst
   options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10},title:"",lessons:[]});
 
 /* ---------- API ---------- */
+const TOK=()=>{try{return localStorage.getItem("seq.tok");}catch{return null;}};
+let ACC=null,AUTH_AFTER=null;
 async function api(path,body,method="POST"){
   const hdr={"Content-Type":"application/json","X-Seq-Device":DEV};
   const code=localStorage.getItem("seq.code");if(code)hdr["X-Seq-Code"]=code;
-  let r=await fetch(path,{method,headers:hdr,body:JSON.stringify(body)});
-  if(r.status===401){
+  const tok=TOK();if(tok)hdr["Authorization"]="Bearer "+tok;
+  const go=()=>fetch(path,{method,headers:hdr,body:body==null?undefined:JSON.stringify(body)});
+  let r=await go(),d=await r.json().catch(()=>({}));
+  if(r.status===401&&d.code==="access"){
     const c=prompt("Code d'accès :");if(!c)throw new Error("Code d'accès requis.");
-    localStorage.setItem("seq.code",c);hdr["X-Seq-Code"]=c;
-    r=await fetch(path,{method,headers:hdr,body:JSON.stringify(body)});
+    localStorage.setItem("seq.code",c);hdr["X-Seq-Code"]=c;r=await go();d=await r.json().catch(()=>({}));
   }
-  const d=await r.json().catch(()=>({}));
-  if(!r.ok){const e=new Error(d.error||"Erreur "+r.status);e.code=d.code;throw e;}
+  if(!r.ok){
+    if(d.code==="auth"&&!path.startsWith("/api/auth/")&&tok){clearAuth();render();}
+    const e=new Error(d.error||"Erreur "+r.status);e.code=d.code;throw e;
+  }
   return d;
 }
 const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:S.options,title:S.title,
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
-function go(v){if(v==="home"){S=null;step=1;msg="";}page="";closeStudio();closeShow();render();}
-function save(){const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();}
-function render(){const isHome=!S&&page==="";document.body.classList.toggle("home",isHome);$("#app").classList.toggle("home",isHome);$("#app").classList.toggle("wide",page==="pricing");if(page==="pricing")return pricing();if(!S)return home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
+function go(v){if(v==="home"){S=null;step=1;msg="";}page="";closeStudio();closeShow();closeModal();render();}
+function navSeqs(){S=null;step=1;page="seqs";closeStudio();closeShow();render();}
+const pushT={};
+function save(){
+  S.updated=Date.now();
+  const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();
+  if(ACC){const sr=S;clearTimeout(pushT[sr.id]);pushT[sr.id]=setTimeout(()=>pushSeries(sr),1200);}
+}
+function pushSeries(sr){return api("/api/series/"+sr.id,sr,"PUT").catch(e=>{if(e.code==="too_large"||e.code==="quota")toast(e.message);});}
+function render(){
+  const landing=!ACC&&!S&&page==="";
+  document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
+  $("#app").classList.toggle("home",landing);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
+  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||(!S&&page==="")));
+  side();
+  if(page==="pricing")return pricing();
+  if(page==="seqs"&&!S)return seqsPage();
+  if(!S)return ACC?dash():home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
 const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
 const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 
@@ -295,7 +356,7 @@ const PH=["Le cycle de l'eau…","Les fractions…","La Révolution française�
 let phTimer=null;
 function home(){
   $("#app").innerHTML=`<section class="th-hero">
-   <div class="hn"><div class="l"><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a></div><div class="r"><button class="chip" onclick="goPricing()"></button><button class="ghostw" onclick="loadExample()">Voir un exemple</button></div></div>
+   <div class="hn"><div class="l"><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div><div class="r"><button class="ghostw" style="display:block" onclick="openAuth('register')">Inscription gratuite</button></div></div>
    <div class="wm">📚 Séquences</div>
    <h1>Votre meilleure séquence.<br>À chaque leçon.</h1>
    <p class="sb">Alignée sur le programme, adaptée à chaque élève, prête en quelques minutes.</p>
@@ -312,8 +373,8 @@ function home(){
     <div class="fc"><div class="ic">✅</div><h3>Quiz et notes</h3><p>Des questions corrigées et des notes de l'enseignant sur chaque leçon.</p></div>
     <div class="fc"><div class="ic">⬇️</div><h3>Export</h3><p>PowerPoint, Google Slides ou PDF, pour enseigner avec l'outil de votre choix.</p></div>
    </div></section>
-  <section class="cta"><h2>Essayez Séquences dès aujourd'hui</h2><button class="btn" onclick="document.getElementById('hq').focus();scrollTo({top:0,behavior:'smooth'})">Créer une séquence</button><button class="btn ghost" onclick="loadExample()">Voir un exemple</button></section>
-  <footer class="ft"><div class="cols"><div><h4>Liens utiles</h4><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a></div>
+  <section class="cta"><h2>Essayez Séquences dès aujourd'hui</h2><button class="btn" onclick="openAuth('register')">Inscription gratuite</button><button class="btn ghost" onclick="loadExample()">Voir un exemple</button></section>
+  <footer class="ft"><div class="cols"><div><h4>Liens utiles</h4><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div>
    <div><h4>Fonctionnalités</h4><a onclick="loadExample()">Séquences de leçons</a><a onclick="loadExample()">Diapositives illustrées</a><a onclick="goPricing()">Thèmes personnalisés</a></div></div>
    <div class="bt">Séquences 2026</div></footer>`;
   chip();clearInterval(phTimer);let k=0;
@@ -330,8 +391,8 @@ async function loadExample(){
   try{const d=await (await fetch("/exemple.json")).json();d.id=uid();d.title+=" (exemple)";S=d;step=5;msg="";save();render();}
   catch{alert("Exemple indisponible.");}
 }
-function openS(id){S=saved.find(x=>x.id===id);step=S.started?5:3;msg="";render();}
-function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();render();}}
+function openS(id){S=saved.find(x=>x.id===id);step=S.started?5:3;msg="";page="";render();scrollTo(0,0);}
+function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
 function s1(){
@@ -339,7 +400,7 @@ function s1(){
   <div class="card"><label>Sujet de la séquence</label><input id="topic" maxlength="300" placeholder="Ex. Le système solaire, les fractions, la Révolution française…" value="${esc(S.topic)}">
   <div class="row"><div><label>Niveau</label><select id="level">${LEVELS.map(l=>`<option ${l===S.level?"selected":""}>${l}</option>`).join("")}</select></div>
   <div><label>Langue</label><select id="lang">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===S.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
-  <label>Nombre de leçons</label><select id="count">${[2,3,4,5,6,7,8,9,10,12,15,20,25].map(n=>`<option ${n==S.count?"selected":""} ${n>CAP().series?"disabled":""}>${n}${n>CAP().series?" 🔒":""}</option>`).join("")}</select>
+  <label>Nombre de leçons</label><select id="count">${[1,2,3,4,5,6,7,8,9,10,12,15,20,25].map(n=>`<option ${n==S.count?"selected":""} ${n>CAP().series?"disabled":""}>${n}${n>CAP().series?" 🔒":""}</option>`).join("")}</select>
   <small style="color:var(--mut)">Votre formule : séquences jusqu'à ${CAP().series} leçons. <a href="#" onclick="goPricing();return false">Voir les plans</a></small>
   <label>Consignes supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea id="ins" maxlength="3000" placeholder="Thèmes à aborder, contraintes, programme à suivre…">${esc(S.instructions)}</textarea></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="go('home')">Annuler</button><button class="btn" onclick="from1()">Continuer</button></div>`;
@@ -382,7 +443,7 @@ function s3(){
   $("#app").innerHTML=`${stepsBar()}<h2>Vérifiez le plan</h2><p class="sub">Modifiez les titres et les résumés, réordonnez, supprimez ou ajoutez des leçons.</p>
   <div class="card"><label>Titre de la séquence</label><input id="st" value="${esc(S.title)}" oninput="S.title=this.value">
   <label>Leçons</label>${S.lessons.map((l,i)=>`<div class="ol"><div class="n">${i+1}</div><div class="f"><input value="${esc(l.title)}" oninput="S.lessons[${i}].title=this.value" placeholder="Titre de la leçon"><textarea oninput="S.lessons[${i}].summary=this.value" placeholder="Ce que couvre cette leçon">${esc(l.summary)}</textarea></div>
-  <div class="t"><button class="ib" ${i?"":"disabled"} onclick="mv(${i},-1)" title="Monter">▲</button><button class="ib" ${i<n-1?"":"disabled"} onclick="mv(${i},1)" title="Descendre">▼</button><button class="ib" ${n>2?"":"disabled"} onclick="rm(${i})" title="Supprimer">🗑</button></div></div>`).join("")}
+  <div class="t"><button class="ib" ${i?"":"disabled"} onclick="mv(${i},-1)" title="Monter">▲</button><button class="ib" ${i<n-1?"":"disabled"} onclick="mv(${i},1)" title="Descendre">▼</button><button class="ib" ${n>1?"":"disabled"} onclick="rm(${i})" title="Supprimer">🗑</button></div></div>`).join("")}
   <button class="btn sm ghost" onclick="add()">＋ Ajouter une leçon</button> <small style="color:var(--mut)">${n}/${CAP().series}</small></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="step=2;render()">Retour</button><button class="btn" onclick="start()">Générer la séquence</button></div>`;
 }
@@ -594,6 +655,96 @@ function printAll(){
   window.print();
 }
 
+
+/* ============ comptes ============ */
+function clearAuth(){try{localStorage.removeItem("seq.tok");}catch{}ACC=null;}
+async function boot(){
+  if(TOK()){try{ACC=await api("/api/me",null,"GET");}catch(e){if(e.code==="auth")clearAuth();}}
+  await loadPlan();
+  if(ACC)await syncSeries();
+  render();
+}
+async function syncSeries(){
+  try{
+    const remote=await api("/api/series",null,"GET"),rm=new Map(remote.map(x=>[x.id,x]));
+    for(const x of remote){const i=saved.findIndex(s=>s.id===x.id);if(i<0)saved.push(x);else if((x.updated||0)>(saved[i].updated||0))saved[i]=x;}
+    saved.sort((a,b)=>(b.updated||0)-(a.updated||0));persist();
+    for(const l of saved){const r=rm.get(l.id);if(!r||(l.updated||0)>(r.updated||0))await pushSeries(l);}
+  }catch{}
+}
+function openAuth(mode,after){
+  AUTH_AFTER=after||null;const reg=mode!=="login";
+  modal(`<h2>${reg?"Inscrivez-vous et gagnez du temps":"Bon retour parmi nous !"}</h2><p class="sub">${reg?"La manière rapide de créer des séquences de leçons ⚡️":"Saisissez vos identifiants pour continuer 💪"}</p>
+  ${reg?'<label>Prénom et nom</label><input id="au_name" autocomplete="name" maxlength="80">':""}
+  <label>E-mail</label><input id="au_email" type="email" autocomplete="email">
+  <label>Mot de passe${reg?" (8 caractères minimum)":""}</label><input id="au_pw" type="password" autocomplete="${reg?"new-password":"current-password"}">
+  <div id="au_err"></div>
+  <button class="btn" id="au_go" style="width:100%;margin-top:14px;height:48px;font-size:17px" onclick="submitAuth('${reg?"register":"login"}')">${reg?"S'inscrire":"Se connecter"}</button>
+  <p style="text-align:center;margin:14px 0 0">${reg?`J'ai déjà un compte · <a href="#" onclick="openAuth('login',AUTH_AFTER);return false">Se connecter</a>`:`Pas encore de compte ? <a href="#" onclick="openAuth('register',AUTH_AFTER);return false">Inscription gratuite</a>`}</p>`);
+  document.querySelectorAll("#modal input").forEach(i=>i.addEventListener("keydown",e=>{if(e.key==="Enter")submitAuth(reg?"register":"login");}));
+  setTimeout(()=>$(reg?"#au_name":"#au_email")?.focus(),50);
+}
+async function submitAuth(mode){
+  const v=i=>($("#"+i)?.value||"").trim(),b=$("#au_go");b.disabled=true;
+  try{
+    const r=await api("/api/auth/"+mode,{email:v("au_email"),password:$("#au_pw").value,name:v("au_name")});
+    localStorage.setItem("seq.tok",r.token);ACC=r.account;closeModal();
+    await syncSeries();await loadPlan();toast(mode==="register"?"Bienvenue ! Votre compte est créé.":"Content de vous revoir !");
+    const cb=AUTH_AFTER;AUTH_AFTER=null;render();if(cb)cb();
+  }catch(e){$("#au_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;}
+}
+async function logout(){
+  try{await api("/api/auth/logout",{});}catch{}
+  clearAuth();saved=[];persist();S=null;page="";step=1;PL=null;await loadPlan();render();toast("Vous êtes déconnecté");
+}
+function startFree(){ACC?go("home"):openAuth("register");}
+
+/* ============ barre latérale et tableau de bord (connecté) ============ */
+function side(){
+  const el=$("#side");if(!ACC){el.innerHTML="";return;}
+  const nm=ACC.name||ACC.email.split("@")[0],ini=(nm[0]||"?").toUpperCase();
+  const home=!S&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing";
+  el.innerHTML=`<div class="av">${esc(ini)}</div><div class="nm">${esc(nm)}</div>
+  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
+  <div class="promos"><div class="pcard org"><b>Séquences pour les établissements</b><small>Aidez vos collègues</small><button onclick="openContact(true)">Essai gratuit</button></div>
+  <div class="pcard"><b>Votre plan</b><small class="plantxt"></small><button onclick="goPricing()">Voir les plans</button></div></div>
+  <button class="logout" onclick="logout()">Déconnexion</button>`;
+  chip();
+}
+function newSeries(single){S=blank();if(single)S.count=1;step=1;msg="";page="";render();scrollTo(0,0);}
+const when=ts=>{if(!ts)return "";const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?"aujourd'hui":d.toLocaleDateString("fr-FR");};
+function statusOf(x){const n=x.lessons.filter(l=>l.slides).length;return n&&n===x.lessons.length?"Terminée":n?"En cours":"Brouillon";}
+function coverHTML(x){
+  const l=x.lessons.find(l=>l.slides),sl=l&&l.slides[0];if(!sl)return `<div class="cover" style="aspect-ratio:16/9">📚</div>`;
+  const prev=S;S=x;let h;try{h=slideHTML(normalize(sl),{theme:x.theme,thumb:true});}finally{S=prev;}
+  return `<div class="cover fit" style="aspect-ratio:16/9">${h}</div>`;
+}
+let Q="";
+function cards(){
+  const q=Q.toLowerCase(),list=saved.filter(x=>!q||(x.title||x.topic||"").toLowerCase().includes(q));
+  if(!list.length)return `<div class="empty" style="grid-column:1/-1">${saved.length?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Les séquences que vous créez apparaîtront ici."}</div>`;
+  return list.map(x=>`<div class="rc" onclick="openS('${x.id}')">${coverHTML(x)}<div class="bd"><div class="tt"><b>${esc(x.title||x.topic)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div>
+   <div class="mt"><span class="pl">📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}</span><span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
+}
+function fitCovers(){document.querySelectorAll(".rc .cover.fit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";fit(b);});}
+function setQ(v){Q=v;$("#grid").innerHTML=cards();fitCovers();}
+const gridBlock=()=>`<div class="rh"><h2>Ressources</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label><button class="nbtn" onclick="newSeries()">Nouvelle séquence ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;
+function dash(){
+  $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ?</h1>
+   <div class="ccs"><button class="cc" onclick="newSeries(true)"><span class="ic">✨</span><b>Leçon unique</b><small>Une leçon ponctuelle</small></button>
+   <button class="cc" onclick="newSeries()"><span class="ic">🗂️</span><b>Séquence</b><small>Plusieurs leçons sur un sujet</small></button>
+   <button class="cc" onclick="loadExample()"><span class="ic">👀</span><b>Exemple</b><small>Voir une séquence complète</small></button></div>
+   ${gridBlock()}</div>`;
+  fitCovers();
+}
+function seqsPage(){$("#app").innerHTML=`<div class="dh"><h1>Séquences</h1><p class="sub">Plusieurs leçons sur des sujets complexes.</p>${gridBlock().replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function openMenu(id){
+  const x=saved.find(s=>s.id===id);if(!x)return;
+  modal(`<h2>${esc(x.title||x.topic)}</h2><div style="display:grid;gap:8px;margin-top:12px"><button class="btn ghost" onclick="closeModal();openS('${id}')">Ouvrir</button><button class="btn ghost" onclick="renameSeries('${id}')">Renommer</button><button class="btn ghost" onclick="dupSeries('${id}')">Dupliquer</button><button class="btn ghost" style="color:var(--warn);border-color:var(--warn)" onclick="del('${id}')">Supprimer</button></div>`);
+}
+function renameSeries(id){const x=saved.find(s=>s.id===id),n=prompt("Nouveau titre :",x.title||x.topic);if(!n||!n.trim())return;closeModal();const prev=S;S=x;x.title=n.trim().slice(0,160);save();S=prev;render();}
+function dupSeries(id){const x=saved.find(s=>s.id===id),c=JSON.parse(JSON.stringify(x));c.id=uid();c.title=(x.title||x.topic)+" (copie)";closeModal();const prev=S;S=c;save();S=prev;render();toast("Séquence dupliquée");}
+
 /* ============ thèmes personnalisés (Max) ============ */
 const mix=(a,b,k)=>{const f=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const x=f(a),y=f(b);return "#"+x.map((v,i)=>Math.round(v*k+y[i]*(1-k)).toString(16).padStart(2,"0")).join("");};
 function newTheme(){if(!CAP().custom_themes)return openUpgrade("themes");editTheme(null);}
@@ -696,7 +847,7 @@ function pricing(){
   ${demo?`<div class="err" style="background:#fff7e6;color:#8a5a00">Phase de test : les plans Pro et Max s'activent sans paiement.</div>`:""}
   <div class="plans">
    <div class="plan ${cur==="free"?"cur":""}"><h3>Gratuit</h3><div class="price">0,00 €/mois</div>${feats(["Aucune carte requise","Créez des leçons et des activités","Exportation vers Google &amp; Microsoft","Créez 5 ressources chaque semaine"])}
-    <button class="pbtn" onclick="go('home')">Commencer</button></div>
+    <button class="pbtn" onclick="startFree()">Commencer</button></div>
    ${paid("pro","Pro",["Alignement sur les programmes","Supprimer le badge « Séquences »","Ajoutez des vidéos YouTube","Créez 200 ressources par mois","Séquences jusqu'à 12 leçons","Leçons jusqu'à 25 diapositives"])}
    ${paid("max","Max",["Thèmes et polices personnalisés","Créez 400 ressources par mois","Séquences jusqu'à 25 leçons","Leçons jusqu'à 35 diapositives"],true)}
    <div class="plan schools"><div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between"><div><h3>Écoles</h3><div class="price" style="margin-top:10px">Discutons</div></div>
@@ -712,6 +863,7 @@ function pricing(){
 }
 async function subscribe(p){
   if(PL?.payment!=="demo")return modal(`<h2>Bientôt disponible</h2><p>Les abonnements ne sont pas encore ouverts. Laissez-nous un message et nous vous préviendrons.</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Fermer</button><button class="btn" onclick="closeModal();openContact()">Nous écrire</button></div>`);
+  if(!ACC)return openAuth("register",()=>subscribe(p));
   if(!confirm(`Phase de test : aucun paiement n'est demandé. Activer le plan ${PNAME[p]} (${BILL[p]==="annual"?"annuel":"mensuel"}) ?`))return;
   try{PL=await api("/api/plan/subscribe",{plan:p,billing:BILL[p]});chip();pricing();toast(`Plan ${PNAME[p]} activé`);}catch(e){alert(e.message);}
 }
@@ -731,7 +883,7 @@ async function sendContact(){
   try{await api("/api/contact",{name:v("ct_name"),email:v("ct_email"),school:v("ct_school")||"(non précisé)",licenses:v("ct_lic"),message:v("ct_msg")});closeModal();toast("Message envoyé, merci !");}
   catch(e){$("#ct_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;}
 }
-render();loadPlan();
+render();boot();
 </script>
 </body>
 </html>

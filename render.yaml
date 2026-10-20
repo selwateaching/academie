@@ -33,6 +33,9 @@ services:
         value: demo
       - key: SEQ_ADMIN_CODE
         sync: false
+      # Base PostgreSQL pour garder comptes, plans et séquences (sans elle : fichier JSON, effacé à chaque redémarrage)
+      - key: DATABASE_URL
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
 

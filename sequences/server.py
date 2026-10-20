@@ -9,14 +9,17 @@ Variables d'environnement :
   SEQ_MODEL          facultatif : modèle Claude (défaut claude-sonnet-5-5)
   SEQ_PER_HOUR       facultatif : appels IA max par heure et par IP (défaut 60)
   PAYMENT_MODE       demo (défaut : passer à Pro/Max sans payer, pour tester) | off (abonnements fermés)
-  SEQ_DATA_FILE      facultatif : fichier de sauvegarde des plans et des compteurs (défaut data.json)
+  DATABASE_URL       facultatif : base PostgreSQL (comptes, plans, séquences). Sans elle : fichier JSON, effacé à chaque redémarrage sur Render gratuit
+  SEQ_DATA_FILE      facultatif : fichier JSON utilisé sans DATABASE_URL (défaut data.json)
   SEQ_ADMIN_CODE     facultatif : code pour lire les messages du formulaire « Écoles » (/api/contact?code=…)
 """
 
+import hashlib
 import hmac
 import json
 import os
 import re
+import secrets
 import tempfile
 import threading
 import time
@@ -24,6 +27,7 @@ from collections import defaultdict, deque
 import xml.etree.ElementTree as ET
 
 import anthropic
+from werkzeug.security import check_password_hash, generate_password_hash
 from flask import Flask, Response, g, jsonify, request, send_from_directory
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -50,7 +54,7 @@ PRICES = {  # € par mois
 }
 
 app = Flask(__name__, static_folder=None)
-app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024
 
 SYSTEM = (
     "Tu es un concepteur pédagogique expert. Tu écris en français clair (ou dans la langue demandée), "
@@ -156,7 +160,7 @@ def brief(b):
         f"Niveau : {s(b.get('level'), 80)}",
         f"Langue des contenus : {s(b.get('language'), 40) or 'français'}",
     ]
-    if b.get("curriculum") and getattr(g, "dev", None) and plan_of(g.dev)[1]["curriculum"]:
+    if b.get("curriculum") and getattr(g, "ukey", None) and plan_of(g.ukey)[1]["curriculum"]:
         lines.append(f"Alignement sur le programme scolaire : {s(b['curriculum'], 200)}. "
                      "Rattache chaque leçon aux attendus de ce programme et à son vocabulaire.")
     if b.get("instructions"):
@@ -164,38 +168,93 @@ def brief(b):
     return "\n".join(lines)
 
 
-# ---------------------------------------------------------------- comptes anonymes, plans, quotas
-# Chaque navigateur a un identifiant aléatoire (en-tête X-Seq-Device). Le serveur retient son plan
-# et ses générations. Pas de compte ni de mot de passe : c'est un MVP, un autre navigateur = un autre « compte ».
+# ---------------------------------------------------------------- stockage (fichier JSON ou PostgreSQL)
+# Tout est gardé en mémoire (un seul processus) et écrit à chaque modification :
+#   - dans DATABASE_URL (PostgreSQL) si elle est définie, sinon dans un fichier JSON (effacé à chaque
+#     redémarrage sur l'offre gratuite de Render : utilisez une base pour garder les comptes).
 
-DEVICE = re.compile(r"^[A-Za-z0-9-]{16,64}$")
-_ulock = threading.Lock()
-_users = {}     # identifiant -> {"plan","billing","until","cancelled","usage":[timestamps]}
-_contacts = []
+NS = ("users", "acct", "sess", "series", "contacts")
+DB = {ns: {} for ns in NS}
+_ulock = threading.RLock()
+DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
+_pg = None
+
+
+def pg_conn():
+    return _pg.connect(DATABASE_URL)
 
 
 def load_store():
+    global _pg
+    if DATABASE_URL:
+        try:
+            import psycopg2 as _pg_mod
+            _pg = _pg_mod
+            with pg_conn() as c, c.cursor() as cur:
+                cur.execute("CREATE TABLE IF NOT EXISTS kv (ns text, k text, v jsonb, PRIMARY KEY (ns, k))")
+                cur.execute("SELECT ns, k, v FROM kv")
+                for ns, k, v in cur.fetchall():
+                    DB.setdefault(ns, {})[k] = v
+            return
+        except Exception as e:  # base injoignable : on retombe sur le fichier plutôt que de planter
+            _pg = None
+            app.logger.error("PostgreSQL indisponible (%s), stockage dans un fichier.", e)
     try:
         with open(DATA_FILE, encoding="utf-8") as f:
             saved = json.load(f)
     except (OSError, ValueError):
         return
-    _users.update(saved.get("users", {}))
-    _contacts.extend(saved.get("contacts", []))
+    for ns in NS:
+        if isinstance(saved.get(ns), dict):
+            DB[ns].update(saved[ns])
+    if isinstance(saved.get("contacts"), list):  # ancien format
+        DB["contacts"] = {f"{i:08d}": c for i, c in enumerate(saved["contacts"])}
+    DB["users"] = {(k if ":" in k else "dev:" + k): v for k, v in DB["users"].items()}
 
 
-def save_store():
+def persist(ns, key, value=None, delete=False):
+    """Appelé avec _ulock tenu après chaque modification."""
+    if delete:
+        DB[ns].pop(key, None)
+    else:
+        DB[ns][key] = value
     try:
-        fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(DATA_FILE)), suffix=".tmp")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump({"users": _users, "contacts": _contacts[-500:]}, f, ensure_ascii=False)
-        os.replace(tmp, DATA_FILE)
-    except OSError as e:
+        if _pg:
+            with pg_conn() as c, c.cursor() as cur:
+                if delete:
+                    cur.execute("DELETE FROM kv WHERE ns=%s AND k=%s", (ns, key))
+                else:
+                    cur.execute("INSERT INTO kv VALUES (%s,%s,%s) ON CONFLICT (ns,k) DO UPDATE SET v=EXCLUDED.v",
+                                (ns, key, json.dumps(value)))
+        else:
+            fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(DATA_FILE)), suffix=".tmp")
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(DB, f, ensure_ascii=False)
+            os.replace(tmp, DATA_FILE)
+    except Exception as e:
         app.logger.warning("Sauvegarde impossible : %s", e)
 
 
-def user_rec(dev):
-    return _users.setdefault(dev, {"plan": "free", "billing": "monthly", "until": 0, "cancelled": False, "usage": []})
+# ---------------------------------------------------------------- comptes, sessions, plans, quotas
+# Sans compte : le navigateur a un identifiant aléatoire (en-tête X-Seq-Device) et le serveur retient
+# son plan et ses générations. Avec un compte (e-mail + mot de passe) : jeton de session (Authorization:
+# Bearer), plan et séquences rattachés au compte, accessibles depuis tous les appareils.
+
+DEVICE = re.compile(r"^[A-Za-z0-9-]{16,64}$")
+EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,200}\.[^@\s]{2,}$")
+SERIES_ID = re.compile(r"^[A-Za-z0-9_-]{4,40}$")
+SESSION_DAYS = 90
+MAX_SERIES = 50
+MAX_SERIES_BYTES = 2_000_000
+_DUMMY_HASH = generate_password_hash("not-a-real-password")
+
+
+def new_rec():
+    return {"plan": "free", "billing": "monthly", "until": 0, "cancelled": False, "usage": []}
+
+
+def user_rec(ukey):
+    return DB["users"].setdefault(ukey, new_rec())
 
 
 def effective_plan(u, now):
@@ -212,17 +271,16 @@ def usage_info(u, now):
     return plan, cfg, used, resets
 
 
-def plan_of(dev):
-    now = time.time()
+def plan_of(ukey):
     with _ulock:
-        plan = effective_plan(user_rec(dev), now)
+        plan = effective_plan(user_rec(ukey), time.time())
     return plan, PLANS[plan]
 
 
-def plan_json(dev):
+def plan_json(ukey):
     now = time.time()
     with _ulock:
-        u = user_rec(dev)
+        u = user_rec(ukey)
         plan, cfg, used, resets = usage_info(u, now)
         return {
             "plan": plan, "billing": u["billing"], "until": u["until"] if plan != "free" else 0,
@@ -233,43 +291,166 @@ def plan_json(dev):
         }
 
 
+def sha(x):
+    return hashlib.sha256(x.encode()).hexdigest()
+
+
+def session_email(token):
+    with _ulock:
+        sess = DB["sess"].get(sha(token))
+        if sess and sess["exp"] > time.time():
+            return sess["email"]
+    return None
+
+
+def open_session(email):
+    token = secrets.token_urlsafe(32)
+    with _ulock:
+        now = time.time()
+        for k in [k for k, v in DB["sess"].items() if v["exp"] < now][:50]:
+            persist("sess", k, delete=True)
+        persist("sess", sha(token), {"email": email, "exp": now + SESSION_DAYS * DAY})
+    return token
+
+
+PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
+
+
 @app.before_request
-def need_device():
-    if request.path in ("/api/outline", "/api/lesson", "/api/slide", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"):
-        dev = request.headers.get("X-Seq-Device", "")
-        if not DEVICE.match(dev):
-            return error("device", "Identifiant du navigateur manquant. Rechargez la page.", 400)
-        g.dev = dev
+def identify():
+    path = request.path
+    if not (path in PUBLIC_API or path.startswith(("/api/auth/", "/api/series", "/api/me"))):
+        return None
+    auth = request.headers.get("Authorization", "")
+    g.acct = session_email(auth[7:]) if auth.startswith("Bearer ") else None
+    dev = request.headers.get("X-Seq-Device", "")
+    g.dev = dev if DEVICE.match(dev) else None
+    if g.acct:
+        g.ukey = "acct:" + g.acct
+    elif g.dev:
+        g.ukey = "dev:" + g.dev
+    elif path in PUBLIC_API:
+        return error("device", "Identifiant du navigateur manquant. Rechargez la page.", 400)
+    else:
+        g.ukey = None
+    if path.startswith(("/api/series", "/api/me")) and not g.acct:
+        return error("auth", "Connexion requise.", 401)
+    return None
+
+
+def account_json(email):
+    a = DB["acct"][email]
+    return {"email": email, "name": a.get("name", "")}
+
+
+@app.post("/api/auth/register")
+def register():
+    b = request.get_json(silent=True) or {}
+    email, pw = s(b.get("email"), 254).lower(), str(b.get("password") or "")
+    if not EMAIL.match(email):
+        return error("invalid_request", "Adresse e-mail invalide.", 400)
+    if not 8 <= len(pw) <= 200:
+        return error("invalid_request", "Le mot de passe doit faire au moins 8 caractères.", 400)
+    if not rate_ok("auth:" + client_ip()):
+        return error("rate_limited", "Trop de tentatives. Réessayez plus tard.", 429)
+    with _ulock:
+        if email in DB["acct"]:
+            return error("exists", "Un compte existe déjà avec cette adresse. Connectez-vous.", 409)
+        persist("acct", email, {"hash": generate_password_hash(pw), "name": s(b.get("name"), 80), "created": int(time.time())})
+        old = DB["users"].get("dev:" + g.dev) if g.dev else None  # le plan et l'usage du navigateur suivent le compte
+        persist("users", "acct:" + email, json.loads(json.dumps(old)) if old else new_rec())
+    return jsonify({"token": open_session(email), "account": account_json(email)})
+
+
+@app.post("/api/auth/login")
+def login():
+    b = request.get_json(silent=True) or {}
+    email, pw = s(b.get("email"), 254).lower(), str(b.get("password") or "")[:200]
+    if not rate_ok("login:" + client_ip()):
+        return error("rate_limited", "Trop de tentatives. Réessayez plus tard.", 429)
+    a = DB["acct"].get(email)
+    ok = check_password_hash(a["hash"] if a else _DUMMY_HASH, pw)
+    if not (a and ok):
+        return error("auth", "E-mail ou mot de passe incorrect.", 401)
+    return jsonify({"token": open_session(email), "account": account_json(email)})
+
+
+@app.post("/api/auth/logout")
+def logout():
+    auth = request.headers.get("Authorization", "")
+    if auth.startswith("Bearer "):
+        with _ulock:
+            persist("sess", sha(auth[7:]), delete=True)
+    return jsonify({"ok": True})
+
+
+@app.get("/api/me")
+def me():
+    return jsonify(account_json(g.acct))
+
+
+@app.get("/api/series")
+def series_list():
+    pre = g.acct + "|"
+    with _ulock:
+        return jsonify([v for k, v in DB["series"].items() if k.startswith(pre)])
+
+
+@app.put("/api/series/<sid>")
+def series_put(sid):
+    if not SERIES_ID.match(sid):
+        return error("invalid_request", "Identifiant invalide.", 400)
+    raw = request.get_data()
+    if len(raw) > MAX_SERIES_BYTES:
+        return error("too_large", "Séquence trop volumineuse.", 413)
+    doc = request.get_json(silent=True)
+    if not isinstance(doc, dict) or doc.get("id") != sid:
+        return error("invalid_request", "Document invalide.", 400)
+    key = f"{g.acct}|{sid}"
+    with _ulock:
+        if key not in DB["series"] and sum(1 for k in DB["series"] if k.startswith(g.acct + "|")) >= MAX_SERIES:
+            return error("quota", f"Limite de {MAX_SERIES} séquences atteinte.", 409)
+        persist("series", key, doc)
+    return jsonify({"ok": True})
+
+
+@app.delete("/api/series/<sid>")
+def series_delete(sid):
+    with _ulock:
+        persist("series", f"{g.acct}|{sid}", delete=True)
+    return jsonify({"ok": True})
 
 
 @app.get("/api/plan")
 def get_plan():
-    return jsonify(plan_json(g.dev))
+    return jsonify(plan_json(g.ukey))
 
 
 @app.post("/api/plan/subscribe")
 def subscribe():
     if PAYMENT_MODE != "demo":
         return error("payment_off", "Les abonnements ne sont pas encore ouverts. Écrivez-nous depuis la page Tarifs.", 503)
+    if not g.acct:
+        return error("auth", "Créez un compte ou connectez-vous pour activer un plan.", 401)
     b = request.get_json(silent=True) or {}
     plan, billing = b.get("plan"), b.get("billing")
     if plan not in ("pro", "max") or billing not in ("monthly", "annual"):
         return error("invalid_request", "Plan invalide.", 400)
     with _ulock:
-        u = user_rec(g.dev)
+        u = user_rec(g.ukey)
         u.update(plan=plan, billing=billing, cancelled=False,
                  until=time.time() + (365 if billing == "annual" else 30) * DAY)
-        save_store()
-    return jsonify(plan_json(g.dev))
+        persist("users", g.ukey, u)
+    return jsonify(plan_json(g.ukey))
 
 
 @app.post("/api/plan/cancel")
 def cancel():
     with _ulock:
-        u = user_rec(g.dev)
+        u = user_rec(g.ukey)
         u["cancelled"] = True  # le plan reste actif jusqu'à la fin de la période, sans renouvellement
-        save_store()
-    return jsonify(plan_json(g.dev))
+        persist("users", g.ukey, u)
+    return jsonify(plan_json(g.ukey))
 
 
 @app.post("/api/contact")
@@ -277,14 +458,13 @@ def contact():
     b = request.get_json(silent=True) or {}
     msg = {k: s(b.get(k), 2000 if k == "message" else 200)
            for k in ("name", "email", "school", "role", "licenses", "message")}
-    if not msg["name"] or not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", msg["email"]) or not msg["school"]:
+    if not msg["name"] or not EMAIL.match(msg["email"]) or not msg["school"]:
         return error("invalid_request", "Nom, e-mail valide et établissement requis.", 400)
     if not rate_ok("contact:" + client_ip()):
         return error("rate_limited", "Trop de demandes. Réessayez plus tard.", 429)
     msg["at"] = int(time.time())
     with _ulock:
-        _contacts.append(msg)
-        save_store()
+        persist("contacts", f"{msg['at']}-{secrets.token_hex(3)}", msg)
     app.logger.info("Demande école : %s", json.dumps(msg, ensure_ascii=False))
     return jsonify({"ok": True})
 
@@ -293,7 +473,7 @@ def contact():
 def list_contacts():
     if not ADMIN_CODE or not hmac.compare_digest(request.args.get("code", "").encode(), ADMIN_CODE.encode()):
         return error("access", "Code administrateur requis.", 401)
-    return jsonify(_contacts)
+    return jsonify(sorted(DB["contacts"].values(), key=lambda m: m.get("at", 0)))
 
 
 # ---------------------------------------------------------------- nettoyage des diapositives
@@ -395,8 +575,8 @@ def outline():
     b = request.get_json(silent=True) or {}
     if not s(b.get("topic"), 300):
         return error("invalid_request", "Sujet manquant.", 400)
-    cap = plan_of(g.dev)[1]["series"]
-    n = max(2, min(cap, int(b.get("count") or 5)))
+    cap = plan_of(g.ukey)[1]["series"]
+    n = max(1, min(cap, int(b.get("count") or 5)))
     data, err = ask(
         f"{brief(b)}\n\nPropose le plan d'une séquence de {n} leçons, progressives et cohérentes "
         "(chaque leçon s'appuie sur la précédente).\n"
@@ -422,12 +602,12 @@ def lesson():
         idx = int(b.get("index"))
     except (TypeError, ValueError):
         idx = -1
-    pname, cfg = plan_of(g.dev)
+    pname, cfg = plan_of(g.ukey)
     if not isinstance(plan, list) or not 0 <= idx < len(plan) or len(plan) > cfg["series"]:
         return error("invalid_request", f"Plan invalide ou trop long pour votre formule ({cfg['series']} leçons maximum).", 400)
     now = time.time()
     with _ulock:
-        _, _, used, resets = usage_info(user_rec(g.dev), now)
+        _, _, used, resets = usage_info(user_rec(g.ukey), now)
     if used >= cfg["limit"]:
         when = time.strftime("%d/%m", time.localtime(resets)) if resets else "bientôt"
         msg = ("Vous avez créé toutes vos ressources gratuites pour cette semaine."
@@ -462,8 +642,9 @@ def lesson():
     if err:
         return err
     with _ulock:
-        user_rec(g.dev)["usage"].append(time.time())
-        save_store()
+        u = user_rec(g.ukey)
+        u["usage"].append(time.time())
+        persist("users", g.ukey, u)
     out = {
         "title": s(data.get("title"), 160) or s(cur.get("title"), 160),
         "slides": [c for c in (clean_slide(x) for x in data.get("slides", [])) if c and c["layout"] not in ("activity", "vocab", "title", "video")][:24],

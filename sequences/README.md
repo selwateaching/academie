@@ -35,8 +35,8 @@ Prix : Pro 9,99 €/mois (6,65 €/mois en annuel), Max 18,99 €/mois (12,49 �
 Les plafonds sont des constantes `PLANS` et `PRICES` dans `server.py`.
 
 **Limites actuelles à connaître**
-- Pas de compte : chaque navigateur reçoit un identifiant et le serveur retient son plan et son compteur. Vider les données du navigateur remet le compteur à zéro.
+- Comptes : e-mail + mot de passe (haché), session de 90 jours, plan et séquences rattachés au compte et synchronisés entre appareils. Pas de confirmation d'e-mail ni de « mot de passe oublié ». Sans compte, le navigateur garde son plan et son compteur localement ; créer un compte reprend le plan et l'usage du navigateur.
+- Stockage : avec `DATABASE_URL` (PostgreSQL) tout est conservé ; sans, un fichier JSON est utilisé et il est **effacé à chaque redémarrage** sur l'offre gratuite de Render (comptes compris). Créez une base avant d'ouvrir à de vrais utilisateurs.
 - Pas de vrai paiement : avec `PAYMENT_MODE=demo` (défaut) n'importe qui peut activer Pro ou Max gratuitement ; `PAYMENT_MODE=off` ferme les abonnements.
 - Quotas, plafonds de leçons et de diapositives sont appliqués côté serveur. Les verrous Pro/Max (vidéos, thèmes, badge, programme) ne le sont que dans la page.
-- Plans et compteurs sont dans `data.json` : sur l'offre gratuite de Render, le disque est effacé à chaque redémarrage.
 - Le formulaire « Écoles » enregistre les messages ; `SEQ_ADMIN_CODE` permet de les lire via `/api/contact?code=…`.
