@@ -327,6 +327,19 @@ body.app #app.paperw{max-width:none}
 .tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:10px}
 #print.wbprint{display:none}#print.wbprint h1{page-break-before:avoid!important;font-size:30px!important}
 @media print{#print.wbprint{display:block}#print.wbprint .paper{width:auto;box-shadow:none;padding:0;margin:0;border-radius:0}#print.wbprint .del{display:none}#print.wbprint h2.sec{break-after:avoid}}
+
+.dh{max-width:1120px;margin:0 auto}.dh h1{text-align:center;font-size:clamp(28px,3.2vw,40px)}
+.ccs{max-width:980px;margin:6px auto 0;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px}
+.cc{background:none!important;box-shadow:none!important;border-radius:0!important;padding:0!important}.cc:hover{transform:none!important;box-shadow:none!important}
+.cc{display:block;align-self:start;text-align:center;font:inherit;cursor:pointer}
+.cc .box{display:grid;place-items:center;height:112px;background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.16);margin-bottom:12px;transition:transform .2s,box-shadow .2s}
+.cc:hover .box{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.18)}.cc .box svg{width:54px;height:54px}.cc b{font-size:17px}.cc small{display:block;max-width:190px;margin:2px auto 0}
+.tpl .tic svg{width:48px;height:48px}.tpl{position:relative}
+.rec{position:absolute;top:-6px;right:8px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2);font-size:12px;font-weight:700;padding:3px 9px;z-index:2}
+#side nav a svg{flex:none}
+.rc.fold .cover{background:linear-gradient(135deg,#e9f5f0,#dbeee7)!important;color:#2c6e49}.rc.fold .cover svg{width:64px;height:64px}
+.crumbs{margin:0 0 14px;font-size:16px;color:var(--mut)}.crumbs a{color:var(--g);font-weight:700;cursor:pointer}
+.movel label{display:flex;gap:10px;align-items:center;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;font-weight:600}.movel input{width:auto}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -434,19 +447,43 @@ function render(){
   const landing=!ACC&&!S&&page==="";
   document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
   $("#app").classList.toggle("home",landing);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
-  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
+  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="lecons"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
   side();
   if(page==="pricing")return pricing();
   if(page==="fiches"&&!W)return shList();
   if(page==="sh"&&W)return shFlow();
   if(page==="cahiers"&&!W)return wbList();
   if(page==="wb"&&W)return wbFlow();
+  if(page==="lecons"&&!S)return leconsPage();
   if(page==="seqs"&&!S)return seqsPage();
   if(!S)return ACC?dash():home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
 const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
 const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 
 /* ---------- accueil ---------- */
+const svgi=(d,s=22)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const NAVI={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',lesson:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8l1.2 2.8L16 12l-2.8 1.2L12 16l-1.2-2.8L8 12l2.8-1.2z"/>',
+ seq:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 012-2h10"/>',sheet:'<rect x="4" y="3" width="13" height="18" rx="2"/><path d="M8 8h5M8 12h5M8 16h3"/><path d="M17 15l3 3-4 2z"/>',
+ book:'<path d="M5 4h12a2 2 0 012 2v14H7a2 2 0 01-2-2z"/><path d="M9 8h6M9 12h6"/>',price:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'};
+const G="#2c6e49",K="#4b5563";
+const star=(x,y,r,f)=>`<path d="M${x} ${y-r}l${r*.28} ${r*.72} ${r*.72} ${r*.28}-${r*.72} ${r*.28}-${r*.28} ${r*.72}-${r*.28}-${r*.72}-${r*.72}-${r*.28} ${r*.72}-${r*.28}z" fill="${f}"/>`;
+const BIG=(d)=>`<svg viewBox="0 0 48 48" fill="none" stroke="${G}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const CARDI={lesson:BIG(star(20,24,17,G)+star(38,10,7,G)+star(38,36,6,G)),
+ seq:BIG(`<rect x="16" y="16" width="26" height="26" rx="3"/><path d="M10 34V13a3 3 0 013-3h21"/>`+star(12,12,7,G)),
+ sheet:BIG(`<rect x="14" y="10" width="26" height="32" rx="3"/><path d="M20 20h12M20 27h12M20 34h7"/>`+star(10,12,7,G)),
+ book:BIG(`<path d="M12 8h22a4 4 0 014 4v28H16a4 4 0 01-4-4z"/><path d="M20 18h12M20 25h12M20 32h8"/>`)};
+const TPLI=a=>`<svg viewBox="0 0 48 48" fill="none" stroke="${K}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${a}</svg>`;
+const TPLICON={
+ association:TPLI('<rect x="6" y="8" width="14" height="8" rx="2"/><rect x="6" y="20" width="14" height="8" rx="2"/><rect x="6" y="32" width="14" height="8" rx="2"/><rect x="28" y="8" width="14" height="8" rx="2"/><rect x="28" y="20" width="14" height="8" rx="2"/><rect x="28" y="32" width="14" height="8" rx="2"/><path d="M20 12l8 20M20 24l8-12M20 36l8-12" stroke="#9ca3af"/>'),
+ knowledge_check:TPLI('<rect x="9" y="6" width="30" height="38" rx="3"/><path d="M15 16h8M15 25h8M15 34h8"/><path d="M28 16l2 2 4-4M28 25l2 2 4-4M28 34l2 2 4-4" stroke="#16a34a"/>'),
+ reading_comprehension:TPLI('<path d="M6 16c6-3 12-3 18 1 6-4 12-4 18-1v22c-6-3-12-3-18 1-6-4-12-4-18-1z"/><path d="M24 17v22"/><circle cx="31" cy="9" r="6" stroke="#9ca3af"/><path d="M29.5 8a1.6 1.6 0 113 .6c-.5.8-1.5.9-1.5 2" stroke="#9ca3af"/>'),
+ practice_test:TPLI('<rect x="8" y="6" width="26" height="36" rx="3"/><path d="M14 15h14M14 22h14M14 29h8"/><path d="M36 22l6 6-12 12-7 1 1-7z" stroke="#ea580c"/>'),
+ word_search:TPLI('<rect x="6" y="6" width="30" height="30" rx="2"/><path d="M6 16h30M6 26h30M16 6v30M26 6v30" stroke="#9ca3af"/><circle cx="33" cy="33" r="7" stroke="#2563eb"/><path d="M38 38l5 5" stroke="#2563eb"/>'),
+ homework:TPLI('<path d="M6 24L24 8l18 16"/><path d="M11 21v19h26V21"/><circle cx="24" cy="26" r="5" stroke="#f59e0b"/><path d="M22 33h4" stroke="#f59e0b"/>'),
+ end_test:TPLI('<circle cx="24" cy="19" r="12"/><path d="M24 12l2.2 4.6 5 .6-3.7 3.5 1 5L24 23.2l-4.5 2.5 1-5-3.7-3.5 5-.6z" stroke="#ea580c"/><path d="M17 29l-4 14 11-5 11 5-4-14" stroke="#9ca3af"/>'),
+ cloze:TPLI('<path d="M7 12h34M7 22h12M27 22h14M7 32h34"/><path d="M20 24h6" stroke="#ea580c"/><path d="M7 42h18" stroke="#9ca3af"/>'),
+ exit_slip:TPLI('<path d="M5 14h38v7a3.5 3.5 0 000 7v7H5v-7a3.5 3.5 0 000-7z"/><path d="M30 14v21" stroke-dasharray="3 3" stroke="#9ca3af"/><path d="M13 22h12M13 28h8"/>')};
+const FOLDERI=`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 14a3 3 0 013-3h11l5 6h16a3 3 0 013 3v18a3 3 0 01-3 3H8a3 3 0 01-3-3z"/></svg>`;
 const SUGG=[["☀️","Le système solaire"],["🌊","Le cycle de l'eau"],["🏛️","L'Empire romain"],["➗","Les fractions et les décimaux"],["🧬","La cellule"],["⚔️","Les Vikings"],["⚡","Électricité et circuits"],["📖","La poésie"],["🌍","Les volcans et les séismes"],["🥗","L'alimentation équilibrée"]];
 const PH=["Le cycle de l'eau…","Les fractions…","La Révolution française…","La photosynthèse…","Le système solaire…"];
 let phTimer=null;
@@ -462,7 +499,7 @@ function home(){
    <div class="chips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
    <div class="stats"><span>Séquences complètes</span><span>•</span><span>Diapositives illustrées</span><span>•</span><span>Export PowerPoint</span></div>
   </section>
-  ${saved.length?`<section class="sec"><h2>Mes séquences</h2><div class="mine">${saved.map(x=>`<div class="mc"><b>${esc(x.title||x.topic)}</b><small>${esc(x.level)} · ${metaOf(x)} · ${statusOf(x)}</small><div class="row2"><button class="btn sm" onclick="openS('${x.id}')">Ouvrir</button><button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></div></div>`).join("")}</div></section>`:""}
+  ${saved.some(x=>!isFolder(x))?`<section class="sec"><h2>Mes séquences</h2><div class="mine">${saved.filter(x=>!isFolder(x)).map(x=>`<div class="mc"><b>${esc(x.title||x.topic)}</b><small>${esc(x.level)} · ${metaOf(x)} · ${statusOf(x)}</small><div class="row2"><button class="btn sm" onclick="openS('${x.id}')">Ouvrir</button><button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></div></div>`).join("")}</div></section>`:""}
   <section class="sec"><p class="eb">Ce que vous pouvez créer</p><h2>Des leçons que vous rêviez de donner</h2>
    <div class="fcards">
     <div class="fc"><div class="ic">🗂️</div><h3>Séquences</h3><p>Une série complète planifiée en une seule fois. Chaque leçon s'appuie sur la précédente.</p></div>
@@ -493,7 +530,8 @@ function openS(id){
   if(isDoc(x)){S=null;W=x;wstep=isSheet(x)||x.started?5:3;page="wb";msg="";closeModal();render();scrollTo(0,0);return;}
   W=null;S=x;step=S.started?5:3;msg="";page="";render();scrollTo(0,0);
 }
-function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
+function del(id){const f=saved.find(x=>x.id===id);if(f&&isFolder(f)){if(!confirm("Supprimer ce dossier ? Son contenu retourne à l'accueil."))return;saved.filter(x=>x.folder===id).forEach(x=>{x.folder="";saveDoc(x);});if(FOLDER===id)FOLDER="";saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();return;}
+  if(confirm("Supprimer cette ressource ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
 function s1(){
@@ -804,32 +842,44 @@ function startFree(){ACC?go("home"):openAuth("register");}
 function side(){
   const el=$("#side");if(!ACC){el.innerHTML="";return;}
   const nm=ACC.name||ACC.email.split("@")[0],ini=(nm[0]||"?").toUpperCase();
-  const home=!S&&!W&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing",fic=page==="fiches"||page==="sh"||(page==="wb"&&W&&W.kind==="sheet"),cah=(page==="cahiers"||page==="wb")&&!fic;
+  const home=!S&&!W&&page==="",pr=page==="pricing",fic=page==="fiches"||page==="sh"||(page==="wb"&&W&&W.kind==="sheet"),
+    cah=(page==="cahiers"||page==="wb")&&!fic,lec=page==="lecons"||(!!S&&S.lessons.length===1),seqs=(page==="seqs"||(!!S&&S.lessons.length!==1))&&!lec;
+  const a=(on,fn,ic,lab)=>`<a class="${on&&!pr?"on":""}" onclick="${fn}">${svgi(NAVI[ic])} ${lab}</a>`;
   el.innerHTML=`<div class="av">${esc(ini)}</div><div class="nm">${esc(nm)}</div>
-  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr&&!cah&&!fic?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${fic?"on":""}" onclick="navFiches()">📄 Fiches d'activités</a><a class="${cah?"on":""}" onclick="navCahiers()">📘 Cahiers d'activités</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
+  <nav>${a(home,"FOLDER='';go('home')","home","Accueil")}${a(lec,"navLecons()","lesson","Leçons")}${a(seqs,"navSeqs()","seq","Séquences")}${a(fic,"navFiches()","sheet","Fiches d'activités")}${a(cah,"navCahiers()","book","Cahiers d'activités")}
+  <a class="${pr?"on":""}" onclick="goPricing()">${svgi(NAVI.price)} Tarifs</a><a onclick="openContact()">${svgi(NAVI.mail)} Contact</a></nav>
   <div class="promos"><div class="pcard org"><b>Séquences pour les établissements</b><small>Aidez vos collègues</small><button onclick="openContact(true)">Essai gratuit</button></div>
   <div class="pcard"><b>Votre plan</b><small class="plantxt"></small><button onclick="goPricing()">Voir les plans</button></div></div>
   <button class="logout" onclick="logout()">Déconnexion</button>`;
   chip();
 }
+function navLecons(){S=null;W=null;page="lecons";closeStudio();closeShow();render();}
 function newSeries(single){S=blank();if(single)S.count=1;step=1;msg="";page="";render();scrollTo(0,0);}
-const when=ts=>{if(!ts)return "";const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?"aujourd'hui":d.toLocaleDateString("fr-FR");};
+const when=ts=>{if(!ts)return "";const d=new Date(ts),n=new Date();if(n-d<120000)return "À l'instant";return d.toDateString()===n.toDateString()?"aujourd'hui":d.toLocaleDateString("fr-FR");};
 const TPL={};  /* modèles de fiches d'activités, remplis plus bas */
-const isWB=x=>x.kind==="workbook",isSheet=x=>x.kind==="sheet",isDoc=x=>isWB(x)||isSheet(x);
+const isWB=x=>x.kind==="workbook",isSheet=x=>x.kind==="sheet",isFolder=x=>x.kind==="folder",isDoc=x=>isWB(x)||isSheet(x);
+const isLesson=x=>!isDoc(x)&&!isFolder(x)&&x.lessons&&x.lessons.length===1,isSeq=x=>!isDoc(x)&&!isFolder(x)&&!isLesson(x);
 const DIFFN={support:"Soutien",core:"Standard",challenge:"Approfondissement"};
 function statusOf(x){const L=isDoc(x)?x.sections:x.lessons,n=L.filter(l=>isDoc(x)?l.data:l.slides).length;return n&&n===L.length?"Terminée":n?"En cours":"Brouillon";}
-function metaOf(x){return isSheet(x)?"📄 Fiche d'activités":isWB(x)?`📘 ${x.sections.length} sections`:`📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}`;}
+function metaOf(x){if(isFolder(x))return "📁 Dossier";return isSheet(x)?"📄 Fiche d'activités":isWB(x)?`📘 ${x.sections.length} sections`:`📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}`;}
 function coverHTML(x){
   if(isDoc(x))return `<div class="cover pfit" style="aspect-ratio:16/9"><div class="pin">${paperHTML(false,false,x)}</div></div>`;
   const l=x.lessons.find(l=>l.slides),sl=l&&l.slides[0];if(!sl)return `<div class="cover" style="aspect-ratio:16/9">📚</div>`;
   const prev=S;S=x;let h;try{h=slideHTML(normalize(sl),{theme:x.theme,thumb:true});}finally{S=prev;}
   return `<div class="cover fit" style="aspect-ratio:16/9">${h}</div>`;
 }
-let Q="",GK="";
+let Q="",GK="",FOLDER="";
+const kindOK=x=>GK===""||(GK==="wb"?isWB(x):GK==="sheet"?isSheet(x):GK==="lesson"?isLesson(x):isSeq(x));
 function cards(){
-  const q=Q.toLowerCase(),list=saved.filter(x=>(GK==="wb"?isWB(x):GK==="sheet"?isSheet(x):GK==="seq"?!isDoc(x):true)&&(!q||(x.title||x.topic||"").toLowerCase().includes(q)));
-  if(!list.length)return `<div class="empty" style="grid-column:1/-1">${saved.length&&q?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Ce que vous créez apparaîtra ici."}</div>`;
-  return list.map(x=>`<div class="rc" onclick="openS('${x.id}')">${coverHTML(x)}<div class="bd"><div class="tt"><b>${esc(x.title||x.topic)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div>
+  const q=Q.toLowerCase(),match=x=>!q||(x.title||x.topic||"").toLowerCase().includes(q);
+  const list=saved.filter(x=>{
+    if(isFolder(x))return GK===""&&!FOLDER&&match(x);
+    if(!kindOK(x)||!match(x))return false;
+    return q||GK!==""?true:(x.folder||"")===FOLDER;
+  }).sort((a,b)=>(isFolder(b)-isFolder(a)));
+  if(!list.length)return `<div class="empty" style="grid-column:1/-1">${q?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Ce que vous créez apparaîtra ici."}</div>`;
+  return list.map(x=>isFolder(x)?`<div class="rc fold" onclick="openFolder('${x.id}')"><div class="cover" style="aspect-ratio:16/9">${FOLDERI}</div><div class="bd"><div class="tt"><b>${esc(x.title)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div><div class="mt"><span class="pl">📁 ${saved.filter(s=>s.folder===x.id).length} élément(s)</span></div></div></div>`:
+   `<div class="rc" onclick="openS('${x.id}')">${coverHTML(x)}<div class="bd"><div class="tt"><b>${esc(x.title||x.topic)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div>
    <div class="mt">${isSheet(x)?`<span class="pl pk">Fiche d'activités</span><span class="pl pk">${DIFFN[x.difficulty||"core"]}</span>`:`<span class="pl">${metaOf(x)}</span>`}<span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
 }
 function fitCovers(){
@@ -837,27 +887,39 @@ function fitCovers(){
   document.querySelectorAll(".rc .pfit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";const s=b.clientWidth*.72/794,pin=b.firstElementChild;pin.style.transform=`scale(${s})`;pin.style.left=((b.clientWidth-794*s)/2)+"px";});
 }
 function setQ(v){Q=v;$("#grid").innerHTML=cards();fitCovers();}
-const gridBlock=(kind,fn,label)=>{GK=kind;return `<div class="rh"><h2>Ressources</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label><button class="nbtn" onclick="${fn}">${label} ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;};
+const gridBlock=(kind,fn,label)=>{GK=kind;return `<div class="rh"><h2>${kind===""&&FOLDER?esc((saved.find(f=>f.id===FOLDER)||{}).title||"Dossier"):"Ressources"}</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label>${kind===""?`<button class="nbtn" onclick="createFolder()">Créer un dossier ＋</button>`:""}<button class="nbtn" onclick="${fn}">${label} ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;};
 const TPLIDS=["association","knowledge_check","reading_comprehension","practice_test","word_search","homework","end_test","cloze","exit_slip"];
-Object.assign(TPL,{association:{n:"Association",ic:"🔗"},knowledge_check:{n:"Vérification des connaissances",ic:"✅"},reading_comprehension:{n:"Compréhension de lecture",ic:"📖"},
-  practice_test:{n:"Test d'entraînement",ic:"📝",total:true},word_search:{n:"Mots mêlés",ic:"🔎"},homework:{n:"Fiche de devoirs",ic:"🏠"},end_test:{n:"Évaluation de fin de thème",ic:"🏅",total:true},cloze:{n:"Texte à trous",ic:"✏️"},exit_slip:{n:"Ticket de sortie",ic:"🎫"}});
-const tplRow=()=>`<div class="tplrow">${TPLIDS.map(id=>`<button class="tpl" onclick="newSheet('${id}')"><div class="tic">${TPL[id].ic}</div><span>${TPL[id].n}</span></button>`).join("")}</div>`;
+Object.assign(TPL,{association:{n:"Association"},knowledge_check:{n:"Vérification des connaissances"},reading_comprehension:{n:"Compréhension de lecture"},
+  practice_test:{n:"Test d'entraînement",total:true},word_search:{n:"Mots mêlés"},homework:{n:"Fiche de devoirs"},end_test:{n:"Évaluation de fin de thème",total:true},cloze:{n:"Texte à trous"},exit_slip:{n:"Ticket de sortie"}});
+for(const k of TPLIDS)TPL[k].ic=TPLICON[k];
+const lastTpl=()=>{try{return localStorage.getItem("seq.lasttpl");}catch{return null;}};
+const tplRow=()=>`<div class="tplrow">${TPLIDS.map(id=>`<button class="tpl" onclick="newSheet('${id}')">${lastTpl()===id?'<span class="rec">Récent</span>':""}<div class="tic">${TPL[id].ic}</div><span>${TPL[id].n}</span></button>`).join("")}</div>`;
+const cc=(fn,ic,ti,sub)=>`<button class="cc" onclick="${fn}"><span class="box">${CARDI[ic]}</span><b>${ti}</b><small>${sub}</small></button>`;
 function dash(){
-  $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ? ✨ <a href="#" onclick="loadExample();return false" style="font-size:15px;font-weight:600;margin-left:10px;color:var(--g)">👀 Voir un exemple</a></h1>
-   <div class="ccs"><button class="cc" onclick="newSeries(true)"><span class="ic">✨</span><b>Leçon unique</b><small>Une leçon ponctuelle</small></button>
-   <button class="cc" onclick="newSeries()"><span class="ic">🗂️</span><b>Séquence</b><small>Plusieurs leçons sur un sujet</small></button>
-   <button class="cc" onclick="newSheet()"><span class="ic">📄</span><b>Fiches d'activités</b><small>Fiches de tâches prêtes à imprimer</small></button>
-   <button class="cc" onclick="newWB()"><span class="ic">📘</span><b>Cahiers d'activités</b><small>Tout un sujet, prêt à imprimer</small></button></div>
+  const f=FOLDER&&saved.find(x=>x.id===FOLDER);if(FOLDER&&!f)FOLDER="";
+  $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ? ✨</h1><p style="text-align:center;margin:-8px 0 18px"><a href="#" onclick="loadExample();return false" style="font-size:15px;font-weight:600;color:var(--g)">👀 Voir un exemple</a></p>
+   <div class="ccs">${cc("newSeries(true)","lesson","Leçon unique","Une leçon ponctuelle")}${cc("newSeries()","seq","Séquence","Plusieurs leçons sur un sujet")}${cc("newSheet()","sheet","Fiches d'activités","Fiches de tâches prêtes à imprimer")}${cc("newWB()","book","Cahiers d'activités","Tout un sujet, prêt à imprimer")}</div>
    <h2>Modèles de fiches d'activités</h2>${tplRow()}
-   ${gridBlock("","newSeries()","Nouvelle séquence")}</div>`;
+   ${FOLDER?`<p class="crumbs"><a onclick="openFolder('')">Accueil</a> › <b>${esc(f.title)}</b></p>`:""}${gridBlock("","newSeries()","Nouvelle séquence")}</div>`;
   fitCovers();
 }
-function seqsPage(){$("#app").innerHTML=`<div class="dh"><h1>Séquences</h1><p class="sub">Plusieurs leçons sur des sujets complexes.</p>${gridBlock("seq","newSeries()","Nouvelle séquence").replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
-function wbList(){$("#app").innerHTML=`<div class="dh"><h1>Cahiers d'activités</h1><p class="sub">Créez des ressources imprimables avec des explications et des questions.</p>${gridBlock("wb","newWB()","Nouveau cahier").replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function openFolder(id){FOLDER=id;Q="";if(page!==""||S||W){go("home");}else dash();}
+function createFolder(){const n=prompt("Nom du dossier :");if(!n||!n.trim())return;saveDoc({id:uid(),kind:"folder",title:n.trim().slice(0,80)});render();}
+function seqsPage(){$("#app").innerHTML=`<div class="dh"><h1>Séquences</h1><p class="sub" style="text-align:center">Plusieurs leçons sur des sujets complexes.</p>${gridBlock("seq","newSeries()","Nouvelle séquence").replace(/<div class="rh"><h2>[^<]*<\/h2>/,'<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function leconsPage(){$("#app").innerHTML=`<div class="dh"><h1>Leçons</h1><p class="sub" style="text-align:center">Des leçons ponctuelles, prêtes à enseigner.</p>${gridBlock("lesson","newSeries(true)","Nouvelle leçon").replace(/<div class="rh"><h2>[^<]*<\/h2>/,'<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function wbList(){$("#app").innerHTML=`<div class="dh"><h1>Cahiers d'activités</h1><p class="sub" style="text-align:center">Créez des ressources imprimables avec des explications et des questions.</p>${gridBlock("wb","newWB()","Nouveau cahier").replace(/<div class="rh"><h2>[^<]*<\/h2>/,'<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function shList(){$("#app").innerHTML=`<div class="dh"><h1>Fiches d'activités</h1><p class="sub" style="text-align:center">Créez des fiches imprimables à compléter en classe ou à la maison.</p><h2 style="margin-top:6px">Modèles</h2>${tplRow()}${gridBlock("sheet","newSheet()","Nouvelle fiche")}</div>`;fitCovers();}
 function openMenu(id){
   const x=saved.find(s=>s.id===id);if(!x)return;
-  modal(`<h2>${esc(x.title||x.topic)}</h2><div style="display:grid;gap:8px;margin-top:12px"><button class="btn ghost" onclick="closeModal();openS('${id}')">Ouvrir</button><button class="btn ghost" onclick="renameSeries('${id}')">Renommer</button><button class="btn ghost" onclick="dupSeries('${id}')">Dupliquer</button><button class="btn ghost" style="color:var(--warn);border-color:var(--warn)" onclick="del('${id}')">Supprimer</button></div>`);
+  const b=(c,l,st="")=>`<button class="btn ghost" style="${st}" onclick="${c}">${l}</button>`;
+  modal(`<h2>${esc(x.title||x.topic)}</h2><div style="display:grid;gap:8px;margin-top:12px">${isFolder(x)?b(`closeModal();openFolder('${id}')`,"Ouvrir"):b(`closeModal();openS('${id}')`,"Ouvrir")}${b(`renameSeries('${id}')`,"Renommer")}${isFolder(x)?"":b(`dupSeries('${id}')`,"Dupliquer")+b(`openMove('${id}')`,"Déplacer dans un dossier")}${b(`del('${id}')`,"Supprimer","color:var(--warn);border-color:var(--warn)")}</div>`);
 }
+function openMove(id){
+  const x=saved.find(s=>s.id===id),fs=saved.filter(isFolder);
+  modal(`<h2>Déplacer « ${esc(x.title||x.topic)} »</h2><div class="movel" style="margin-top:12px"><label><input type="radio" name="mv" value="" ${!x.folder?"checked":""}> Accueil (aucun dossier)</label>${fs.map(f=>`<label><input type="radio" name="mv" value="${f.id}" ${x.folder===f.id?"checked":""}> 📁 ${esc(f.title)}</label>`).join("")}${fs.length?"":'<p class="sub">Créez d\'abord un dossier depuis l\'accueil.</p>'}</div>
+  <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="moveTo('${id}')">Déplacer</button></div>`);
+}
+function moveTo(id){const x=saved.find(s=>s.id===id),v=document.querySelector("input[name=mv]:checked")?.value||"";x.folder=v;saveDoc(x);closeModal();render();toast(v?"Déplacé dans le dossier":"Remis à l'accueil");}
 function renameSeries(id){const x=saved.find(s=>s.id===id),n=prompt("Nouveau titre :",x.title||x.topic);if(!n||!n.trim())return;closeModal();const prev=S;S=x;x.title=n.trim().slice(0,160);save();S=prev;render();}
 function dupSeries(id){const x=saved.find(s=>s.id===id),c=JSON.parse(JSON.stringify(x));c.id=uid();c.title=(x.title||x.topic)+" (copie)";closeModal();const prev=S;S=c;save();S=prev;render();toast("Séquence dupliquée");}
 
@@ -878,7 +940,7 @@ function seriesContext(id){
   }).join("\n\n").slice(0,9000);
 }
 function wbPick(){
-  const q=(W._q||"").toLowerCase(),mine=saved.filter(x=>!isWB(x)&&x.lessons.some(l=>l.slides)&&(!q||(x.title||"").toLowerCase().includes(q)));
+  const q=(W._q||"").toLowerCase(),mine=saved.filter(x=>!isDoc(x)&&!isFolder(x)&&x.lessons&&x.lessons.some(l=>l.slides)&&(!q||(x.title||"").toLowerCase().includes(q)));
   return mine.length?mine.map(x=>`<label><input type="radio" name="sr" value="${x.id}" ${W.seriesId===x.id?"checked":""} onchange="W.seriesId=this.value"> <span>${esc(x.title||x.topic)} <small style="color:var(--mut);font-weight:400">· ${x.lessons.length} leçons</small></span></label>`).join(""):`<p style="padding:14px;color:var(--mut);margin:0">Aucune séquence terminée. Créez-en une d'abord, ou partez d'un sujet.</p>`;
 }
 function wb1(){
@@ -1088,8 +1150,7 @@ document.addEventListener("click",e=>{
 
 
 /* ============ fiches d'activités ============ */
-function shList(){$("#app").innerHTML=`<div class="dh"><h1>Fiches d'activités</h1><p class="sub">Créez des fiches imprimables à compléter en classe ou à la maison.</p><h2 style="margin-top:6px">Modèles</h2>${tplRow()}${gridBlock("sheet","newSheet()","Nouvelle fiche")}</div>`;fitCovers();}
-function newSheet(tpl){
+function newSheet(tpl){if(tpl){try{localStorage.setItem("seq.lasttpl",tpl);}catch{}}
   S=null;W={id:uid(),kind:"sheet",tpl:tpl||"",title:"",topic:"",level:"6e",language:"français",difficulty:"core",instructions:"",curriculum:"",theme:"classique",sections:[],options:{},started:false};
   wstep=tpl?2:1;page="sh";msg="";render();scrollTo(0,0);
 }
@@ -1102,7 +1163,7 @@ function sh1(){
 function sh2(){
   const tp=TPL[W.tpl]||TPL.knowledge_check;
   $("#app").innerHTML=`<h2 style="text-align:center">Choisissez le sujet et le niveau de votre fiche</h2>
-  <p class="sub" style="text-align:center">Modèle : <b>${tp.ic} ${tp.n}</b> · <a href="#" onclick="wstep=1;render();return false">changer</a></p>
+  <p class="sub" style="text-align:center">Modèle : <b>${tp.n}</b> · <a href="#" onclick="wstep=1;render();return false">changer</a></p>
   <div class="card"><label>Sujet de la fiche d'activités</label><input id="sh_t" maxlength="300" placeholder="Ex. Les fractions, le cycle de l'eau…" value="${esc(W.topic)}" oninput="W.topic=this.value">
   <div class="row"><div><label>Niveau</label><select onchange="W.level=this.value">${LEVELS.map(l=>`<option ${l===W.level?"selected":""}>${l}</option>`).join("")}</select></div>
   <div><label>Langue</label><select onchange="W.language=this.value">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===W.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
