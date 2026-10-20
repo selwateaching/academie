@@ -28,6 +28,11 @@ services:
         sync: false
       - key: SEQ_ACCESS_CODE
         sync: false
+      # "demo" = Pro/Max s'activent sans payer (phase de test). "off" = abonnements fermés.
+      - key: PAYMENT_MODE
+        value: demo
+      - key: SEQ_ADMIN_CODE
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
 

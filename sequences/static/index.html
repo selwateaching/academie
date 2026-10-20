@@ -124,11 +124,49 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 @media print{body>*:not(#print){display:none!important}#print{display:block}
 #print h1{page-break-before:always;font-size:22px}#print h1:first-child{page-break-before:avoid}
 #print .s{break-inside:avoid;margin:0 0 14px;padding-left:12px;border-left:4px solid var(--g)}}
+
+header nav{display:flex;gap:18px;align-items:center}
+header nav a{cursor:pointer;color:var(--ink);font-weight:500}header nav a:hover{color:var(--or)}
+.chip{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--g);color:var(--g);background:#fff;border-radius:99px;padding:5px 12px;cursor:pointer}
+.wide{max-width:1180px}
+.hero h1{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.15;margin:20px 0 8px}
+.hero p{font-size:20px;font-weight:600;margin:0 0 28px}
+.plans{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));align-items:stretch}@media(min-width:1000px){.plans{grid-template-columns:repeat(3,1fr)}}
+.plan{display:flex;flex-direction:column;gap:12px;border:8px solid #ebeff2;border-radius:20px;padding:22px;background:#f7fafc;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.plan.max{background:#fff4f1}.plan.cur{border-color:var(--g)}
+.plan h3{margin:0;font-size:28px;font-weight:900;text-transform:uppercase}
+.plan .price{font-size:22px;font-weight:700}.plan .bill{min-height:24px;margin:0;color:var(--mut)}
+.plan ul{list-style:none;padding:0;margin:6px 0 14px;flex:1}.plan li{display:flex;gap:8px;margin:10px 0}
+.seg{display:inline-flex;background:#e5e7eb;border-radius:99px;padding:3px;box-shadow:inset 0 2px 0 rgba(0,0,0,.15)}
+.seg button{white-space:nowrap;border:0;border-radius:99px;padding:5px 10px;font:inherit;font-size:14px;font-weight:600;background:none;cursor:pointer}
+.seg button.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.seg small{white-space:nowrap;font-size:11px;background:#dbeafe;color:#1e40af;border-radius:5px;padding:1px 6px;margin-left:6px;font-weight:600}
+.pbtn{width:100%;height:56px;border-radius:16px;border:1px solid transparent;font:inherit;font-size:18px;font-weight:900;cursor:pointer;background:var(--g);color:#fff;margin-top:auto}
+.pbtn.out{background:transparent;color:var(--g);border-color:var(--g)}.pbtn:disabled{opacity:.55;cursor:default}
+.pbtn.grad{border:4px solid #1fda71;box-shadow:0 0 0 0}
+.schools{grid-column:1/-1;background:rgba(61,144,144,.07)}.schools h3{color:#3d9090}
+.faq{margin:40px 0}.faq h2{color:#d90368;font-size:24px}
+.faq details{border:1px solid rgba(0,0,0,.1);border-radius:14px;padding:12px 16px;margin-bottom:10px;background:#fff}
+.faq summary{font-weight:700;font-size:18px;cursor:pointer}.faq p{margin:10px 0 0;font-size:17px}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:80;display:none;align-items:center;justify-content:center;padding:16px}
+#modal.on{display:flex}#modal .box{background:#fff;border-radius:18px;padding:24px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+#modal h2{margin-bottom:6px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:12px;z-index:90;font-weight:600}
+.lock{opacity:.6;cursor:pointer}.tag{font-size:11px;font-weight:800;background:#fdf2e6;color:var(--or);border-radius:6px;padding:1px 6px;margin-left:6px}
+.sl .badge{position:absolute;right:16px;bottom:10px;z-index:4;font:700 13px var(--font);background:var(--card);color:var(--ti);padding:3px 10px;border-radius:99px;opacity:.9}
+.sl .vid{flex:1;min-height:0;border-radius:18px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px}
+.sl .vid iframe{width:100%;height:100%;border:0}.sl .vurl{margin-top:8px;font-size:15px;opacity:.8;word-break:break-all}
+.sl .vurl [data-e]{display:inline-block;min-width:420px;border-bottom:2px dotted var(--ac)}.sl .vurl [data-e]:empty::before{content:"https://www.youtube.com/watch?v=…";opacity:.5}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fgrid label{margin:6px 0 2px;font-size:14px}.fgrid input[type=color]{padding:2px;height:38px}
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.bundle.js"></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><button class="chip" id="chip" onclick="goPricing()"></button></nav></header>
 <main id="app"></main>
+<div id="modal" onclick="if(event.target===this)closeModal()"></div>
 <div id="studio"></div>
 <div id="show"></div>
 <div id="print"></div>
@@ -153,35 +191,55 @@ const THEMES={
   sombre:{n:"Sombre",bg:"#111827",fg:"#e5e7eb",ti:"#fbbf24",ac:"#fbbf24",ac2:"#60a5fa",card:"#1f2937",blob:"#1e293b",font:"'Segoe UI',system-ui,sans-serif"},
   mono:{n:"Mono",bg:"#ffffff",fg:"#111111",ti:"#111111",ac:"#111111",ac2:"#6b7280",card:"#f5f5f5",blob:"#eeeeee",font:"Arial,Helvetica,sans-serif"}
 };
-const themeStyle=k=>{const t=THEMES[k]||THEMES.classique;return `--bg:${t.bg};--fg:${t.fg};--ti:${t.ti};--ac:${t.ac};--ac2:${t.ac2};--card:${t.card};--blob:${t.blob};--font:${t.font}`;};
-const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité"};
+const allThemes=()=>({...THEMES,...((typeof S!=="undefined"&&S&&S.custom)||{})});
+const FONTS=[["Trebuchet","'Trebuchet MS',system-ui,sans-serif"],["Segoe UI","'Segoe UI',system-ui,sans-serif"],["Georgia","Georgia,serif"],["Arial Black","'Arial Black',system-ui,sans-serif"],["Poppins","'Poppins',sans-serif"],["Nunito","'Nunito',sans-serif"],["Fredoka","'Fredoka',sans-serif"],["Lora","'Lora',serif"],["Playfair Display","'Playfair Display',serif"]];
+const themeStyle=k=>{const t=allThemes()[k]||THEMES.classique;return `--bg:${t.bg};--fg:${t.fg};--ti:${t.ti};--ac:${t.ac};--ac2:${t.ac2};--card:${t.card};--blob:${t.blob};--font:${t.font}`;};
+const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité",video:"Vidéo YouTube"};
 const PICK=["text_image","list","timeline","steps","quote"];
 
-let S=null,step=1,msg="";
+let S=null,step=1,msg="",page="";
+const DEV=(()=>{try{let d=localStorage.getItem("seq.dev");if(!d){d=crypto.randomUUID();localStorage.setItem("seq.dev",d);}return d;}catch{return crypto.randomUUID();}})();
+let PL=null;
+const PNAME={free:"Gratuit",pro:"Pro",max:"Max"};
+const CAP=()=>PL?.caps||{series:5,slides:12,curriculum:false,youtube:false,no_badge:false,custom_themes:false};
+async function loadPlan(){try{const r=await fetch("/api/plan",{headers:{"X-Seq-Device":DEV}});if(r.ok)PL=await r.json();}catch{}chip();if(page==="pricing")pricing();}
+function chip(){const c=$("#chip");if(!c)return;c.textContent=PL?`${PNAME[PL.plan]} · ${PL.used}/${PL.limit} ${PL.days===7?"cette semaine":"ce mois-ci"}`:"Tarifs";}
+function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500);}
+function modal(html){$("#modal").innerHTML=`<div class="box">${html}</div>`;$("#modal").classList.add("on");}
+function closeModal(){$("#modal").classList.remove("on");}
+const UPG={limit:["Limite atteinte","Vous avez utilisé toutes vos ressources. Passez à un plan supérieur pour en créer davantage."],
+ series:["Séquences plus longues","Votre formule limite le nombre de leçons par séquence. Pro va jusqu'à 12 leçons, Max jusqu'à 25."],
+ slides:["Leçons plus longues","Votre formule limite le nombre de diapositives par leçon. Pro va jusqu'à 25, Max jusqu'à 35."],
+ curriculum:["Alignement sur les programmes","Disponible avec les plans Pro et Max."],
+ youtube:["Vidéos YouTube","Ajoutez des vidéos à vos leçons avec les plans Pro et Max."],
+ themes:["Thèmes et polices personnalisés","Créez vos propres thèmes et choisissez vos polices avec le plan Max."],
+ badge:["Badge « Créé avec Séquences »","Retirez le badge avec les plans Pro et Max."]};
+function openUpgrade(k,extra){const [h,d]=UPG[k]||UPG.limit;modal(`<h2>${h}</h2><p>${esc(extra||d)}</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Plus tard</button><button class="btn" onclick="closeModal();goPricing()">Voir les plans</button></div>`);}
+function goPricing(){closeStudio();closeShow();page="pricing";render();scrollTo(0,0);}
 const blank=()=>({id:uid(),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
   options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10},title:"",lessons:[]});
 
 /* ---------- API ---------- */
-async function api(path,body){
-  const hdr={"Content-Type":"application/json"};
+async function api(path,body,method="POST"){
+  const hdr={"Content-Type":"application/json","X-Seq-Device":DEV};
   const code=localStorage.getItem("seq.code");if(code)hdr["X-Seq-Code"]=code;
-  let r=await fetch(path,{method:"POST",headers:hdr,body:JSON.stringify(body)});
+  let r=await fetch(path,{method,headers:hdr,body:JSON.stringify(body)});
   if(r.status===401){
     const c=prompt("Code d'accès :");if(!c)throw new Error("Code d'accès requis.");
     localStorage.setItem("seq.code",c);hdr["X-Seq-Code"]=c;
-    r=await fetch(path,{method:"POST",headers:hdr,body:JSON.stringify(body)});
+    r=await fetch(path,{method,headers:hdr,body:JSON.stringify(body)});
   }
   const d=await r.json().catch(()=>({}));
-  if(!r.ok)throw new Error(d.error||"Erreur "+r.status);
+  if(!r.ok){const e=new Error(d.error||"Erreur "+r.status);e.code=d.code;throw e;}
   return d;
 }
-const payload=()=>({topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:S.options,title:S.title,
+const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:S.options,title:S.title,
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
-function go(v){if(v==="home"){S=null;step=1;msg="";}closeStudio();closeShow();render();}
+function go(v){if(v==="home"){S=null;step=1;msg="";}page="";closeStudio();closeShow();render();}
 function save(){const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();}
-function render(){if(!S)return home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
+function render(){$("#app").classList.toggle("wide",page==="pricing");if(page==="pricing")return pricing();if(!S)return home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
 const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
 const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 
@@ -201,16 +259,17 @@ function s1(){
   <div class="card"><label>Sujet de la séquence</label><input id="topic" maxlength="300" placeholder="Ex. Le système solaire, les fractions, la Révolution française…" value="${esc(S.topic)}">
   <div class="row"><div><label>Niveau</label><select id="level">${LEVELS.map(l=>`<option ${l===S.level?"selected":""}>${l}</option>`).join("")}</select></div>
   <div><label>Langue</label><select id="lang">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===S.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
-  <label>Nombre de leçons</label><select id="count">${[2,3,4,5,6,7,8,9,10].map(n=>`<option ${n==S.count?"selected":""}>${n}</option>`).join("")}</select>
+  <label>Nombre de leçons</label><select id="count">${[2,3,4,5,6,7,8,9,10,12,15,20,25].map(n=>`<option ${n==S.count?"selected":""} ${n>CAP().series?"disabled":""}>${n}${n>CAP().series?" 🔒":""}</option>`).join("")}</select>
+  <small style="color:var(--mut)">Votre formule : séquences jusqu'à ${CAP().series} leçons. <a href="#" onclick="goPricing();return false">Voir les plans</a></small>
   <label>Consignes supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea id="ins" maxlength="3000" placeholder="Thèmes à aborder, contraintes, programme à suivre…">${esc(S.instructions)}</textarea></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="go('home')">Annuler</button><button class="btn" onclick="from1()">Continuer</button></div>`;
 }
-function read1(){S.topic=$("#topic").value.trim();S.level=$("#level").value;S.language=$("#lang").value;S.count=+$("#count").value;S.instructions=$("#ins").value.trim();}
+function read1(){S.topic=$("#topic").value.trim();S.level=$("#level").value;S.language=$("#lang").value;S.count=Math.min(parseInt($("#count").value),CAP().series);S.instructions=$("#ins").value.trim();}
 function from1(){read1();if(!S.topic){msg="Saisissez un sujet.";return s1();}msg="";step=2;render();}
 
 /* ---------- étape 2 : réglages ---------- */
 function themePicker(cur,fn){
-  return `<div class="themes">${Object.entries(THEMES).map(([k,t])=>`<button class="th ${k===cur?"on":""}" onclick="${fn}('${k}')"><div class="mini fit" style="${themeStyle(k)};background:var(--bg)"><div style="position:absolute;right:-12%;top:-30%;width:60%;height:90%;background:var(--blob);border-radius:50%"></div><div style="position:absolute;left:12%;top:24%;font:800 13px var(--font);color:var(--ti)">TITRE</div><div style="position:absolute;left:12%;top:52%;width:45%;height:8px;background:var(--fg);opacity:.5;border-radius:4px"></div><div style="position:absolute;left:12%;top:70%;width:30%;height:8px;background:var(--ac2);border-radius:4px"></div></div>${t.n}</button>`).join("")}</div>`;
+  return `<div class="themes">${Object.entries(allThemes()).map(([k,t])=>`<button class="th ${k===cur?"on":""}" onclick="${fn}('${k}')"><div class="mini fit" style="${themeStyle(k)};background:var(--bg)"><div style="position:absolute;right:-12%;top:-30%;width:60%;height:90%;background:var(--blob);border-radius:50%"></div><div style="position:absolute;left:12%;top:24%;font:800 13px var(--font);color:var(--ti)">TITRE</div><div style="position:absolute;left:12%;top:52%;width:45%;height:8px;background:var(--fg);opacity:.5;border-radius:4px"></div><div style="position:absolute;left:12%;top:70%;width:30%;height:8px;background:var(--ac2);border-radius:4px"></div></div>${esc(t.n)}</button>`).join("")}<button class="th ${CAP().custom_themes?"":"lock"}" onclick="newTheme()"><div class="mini" style="display:grid;place-items:center;background:#f3f4f6;font-size:26px">＋</div>Personnalisé${CAP().custom_themes?"":'<span class="tag">MAX</span>'}</button></div>`;
 }
 function pickTheme(k){read2();S.theme=k;s2();}
 function s2(){
@@ -218,7 +277,9 @@ function s2(){
   $("#app").innerHTML=`${stepsBar()}<h2>Affinez votre séquence</h2><p class="sub">Tout est facultatif, on s'occupe du reste.</p>
   <div class="card"><label>Thème</label>${themePicker(S.theme,"pickTheme")}
   <label>Cadre de leçon</label><select id="fw">${FW.map(([v,t])=>`<option value="${v}" ${v===S.framework?"selected":""}>${t}</option>`).join("")}</select>
-  <label>Diapositives par leçon</label><select id="sl">${[6,8,10,12,15,20].map(n=>`<option ${n==o.slides?"selected":""}>${n}</option>`).join("")}</select>
+  <label>Diapositives par leçon</label><select id="sl">${[6,8,10,12,15,20,25,30,35].map(n=>`<option value="${n}" ${n==o.slides?"selected":""} ${n>CAP().slides?"disabled":""}>${n}${n>CAP().slides?" 🔒":""}</option>`).join("")}</select>
+  <label onclick="if(!CAP().curriculum)openUpgrade('curriculum')">Alignement sur le programme${CAP().curriculum?"":'<span class="tag">PRO</span>'}</label>
+  <input id="cur" maxlength="200" placeholder="Ex. Programme officiel, cycle 3 — sciences et technologie" value="${esc(S.curriculum||"")}" ${CAP().curriculum?"":'readonly onclick="openUpgrade(\'curriculum\')" class="lock"'}>
   <label>Contenu à inclure</label>
   <label class="chk"><input type="checkbox" id="o4" ${o.images?"checked":""}><span>Illustrations<small>Schémas dessinés par l'IA sur les diapositives (génération un peu plus longue)</small></span></label>
   <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
@@ -226,7 +287,7 @@ function s2(){
   <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
 }
-function read2(){S.framework=$("#fw").value;S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:+$("#sl").value};}
+function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:Math.min(+$("#sl").value,CAP().slides)};}
 async function outline(){
   read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
   try{
@@ -242,12 +303,12 @@ function s3(){
   <div class="card"><label>Titre de la séquence</label><input id="st" value="${esc(S.title)}" oninput="S.title=this.value">
   <label>Leçons</label>${S.lessons.map((l,i)=>`<div class="ol"><div class="n">${i+1}</div><div class="f"><input value="${esc(l.title)}" oninput="S.lessons[${i}].title=this.value" placeholder="Titre de la leçon"><textarea oninput="S.lessons[${i}].summary=this.value" placeholder="Ce que couvre cette leçon">${esc(l.summary)}</textarea></div>
   <div class="t"><button class="ib" ${i?"":"disabled"} onclick="mv(${i},-1)" title="Monter">▲</button><button class="ib" ${i<n-1?"":"disabled"} onclick="mv(${i},1)" title="Descendre">▼</button><button class="ib" ${n>2?"":"disabled"} onclick="rm(${i})" title="Supprimer">🗑</button></div></div>`).join("")}
-  <button class="btn sm ghost" ${n>=10?"disabled":""} onclick="add()">＋ Ajouter une leçon</button></div>
+  <button class="btn sm ghost" onclick="add()">＋ Ajouter une leçon</button> <small style="color:var(--mut)">${n}/${CAP().series}</small></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="step=2;render()">Retour</button><button class="btn" onclick="start()">Générer la séquence</button></div>`;
 }
 function mv(i,d){const a=S.lessons;[a[i],a[i+d]]=[a[i+d],a[i]];s3();}
 function rm(i){S.lessons.splice(i,1);s3();}
-function add(){S.lessons.push({title:"",summary:""});s3();}
+function add(){if(S.lessons.length>=CAP().series){openUpgrade("series");return;}S.lessons.push({title:"",summary:""});s3();}
 function start(){
   if(S.lessons.some(l=>!l.title.trim())){msg="Donnez un titre à chaque leçon.";return s3();}
   S.lessons.forEach(l=>{l.title=l.title.trim();delete l.slides;delete l.err;});
@@ -280,8 +341,10 @@ async function generate(){
     const l=S.lessons[i];if(l.slides)continue;
     l.busy=true;delete l.err;if(step===4)s4();
     try{const d=await api("/api/lesson",{...payload(),index:i});l.slides=buildSlides(d);}
-    catch(e){l.err=e.message;if(/accès|clé|Limite|Trop/i.test(e.message)){l.busy=false;break;}}
-    l.busy=false;save();if(step===4)s4();
+    catch(e){l.err=e.message;
+      if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
+      if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
+    l.busy=false;save();loadPlan();if(step===4)s4();
   }
   running=false;if(step===4)s4();
   if(S.lessons.every(l=>l.slides)&&step===4){step=5;render();}
@@ -297,16 +360,18 @@ function series(){
   ${l.slides?`<span style="white-space:nowrap"><button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button> <button class="btn sm" onclick="play(${i})">▶ Enseigner</button></span>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
   <div class="nav" style="justify-content:flex-start;flex-wrap:wrap">
   ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} manquantes</button>`:""}
-  <button class="btn ghost" onclick="printAll()">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
+  <button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint / Google Slides</button><button class="btn ghost" onclick="printAll()">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
 }
 function setTheme(k){S.theme=k;save();render();}
 
 /* ============ rendu des diapositives ============ */
+const ytId=u=>(String(u||"").match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([\w-]{11})/)||[])[1];
 const ITEM_LAYOUTS=["list","timeline","steps"];
 function normalize(sl){
   sl.bullets=sl.bullets||[];sl.items=sl.items||[];
   if(ITEM_LAYOUTS.includes(sl.layout)&&!sl.items.length)sl.items=sl.bullets.map(b=>({t:b,x:""}));
   if(sl.layout==="text_image"&&!sl.bullets.length)sl.bullets=sl.items.map(i=>i.x?`${i.t} : ${i.x}`:i.t);
+  if(sl.layout==="video"&&sl.url===undefined)sl.url="";
   if(sl.layout==="vocab"&&!sl.vocab)sl.vocab=[{term:"Mot",definition:"Définition"}];
   if(sl.layout==="activity"&&!sl.q)sl.q={q:"Question ?",choices:["Réponse A","Réponse B","Réponse C","Réponse D"],answer:0,why:""};
   return sl;
@@ -331,11 +396,14 @@ function slideHTML(sl,o={}){
     case "activity":{
       const rev=o.tab==="a",q=sl.q;
       b=`${t}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
+    case "video":{
+      const id=ytId(sl.url);
+      b=`${t}<div class="vid">${o.thumb?"▶":id?`<iframe src="https://www.youtube-nocookie.com/embed/${id}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`:"Collez un lien YouTube ci-dessous"}</div>${ed?`<div class="vurl">Lien : ${E("url",sl.url||"")}</div>`:""}`;break;}
     default:
       b=`${t}<div class="body"><div class="txt"><ul class="bl">${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul></div><div class="art">${sl.svg?sl.svg:`<div class="big">${esc(sl.emoji||"💡")}</div>`}</div></div>`;
   }
   const tabs=sl.layout==="activity"?`<div class="tabs"><span data-tab="q" class="${o.tab!=="a"?"on":""}">Question</span><span data-tab="a" class="${o.tab==="a"?"on":""}">Réponse</span></div>`:"";
-  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div></div>`;
+  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
 }
 function fit(box){
   const sl=box.firstElementChild;if(!sl)return;
@@ -353,15 +421,16 @@ const SL=()=>S.lessons[ST.li].slides;
 function studio(){
   const sl=SL(),cur=sl[ST.n];
   $("#studio").innerHTML=`<div class="top"><button class="btn sm" onclick="closeStudio()">←</button><b>${esc(S.lessons[ST.li].title)}</b>
-   <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${t.n}</option>`).join("")}</select>
-   <button class="btn sm" onclick="printAll()">🖨</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
-  <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
+   <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(allThemes()).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${esc(t.n)}</option>`).join("")}</select>
+   <button class="btn sm" onclick="${(S.custom||{})[S.theme]?"editTheme(S.theme)":"newTheme()"}" title="Thème personnalisé (Max)">🎨</button>
+   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="printAll()">🖨</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
+  <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme,thumb:true}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
   <div class="main"><div class="stage" id="stage"><div class="fit" id="big" style="width:100%;height:100%">${slideHTML(cur,{edit:true,theme:S.theme,tab:ST.tab})}</div></div>
    <div class="tools"><span style="font-size:13px;color:var(--mut)">${ST.n+1} / ${sl.length}</span>
-    <select id="lay" onchange="setLayout(this.value)">${Object.entries(LAYOUT_NAMES).map(([k,v])=>`<option value="${k}" ${k===cur.layout?"selected":""}>${v}</option>`).join("")}</select>
+    <select id="lay" onchange="setLayout(this.value)">${Object.entries(LAYOUT_NAMES).map(([k,v])=>`<option value="${k}" ${k===cur.layout?"selected":""}>${v}${k==="video"&&!CAP().youtube?" 🔒":""}</option>`).join("")}</select>
     <button class="btn sm ghost" onclick="mvSlide(-1)" ${ST.n?"":"disabled"} title="Monter">◀</button><button class="btn sm ghost" onclick="mvSlide(1)" ${ST.n<sl.length-1?"":"disabled"} title="Descendre">▶</button>
     <button class="btn sm ghost" onclick="addItem(1)" title="Ajouter une puce ou un élément">＋ élément</button><button class="btn sm ghost" onclick="addItem(-1)" title="Retirer le dernier élément">− élément</button>
-    <button class="btn sm ghost" onclick="dupSlide()">⧉ Dupliquer</button><button class="btn sm ghost" onclick="newSlide()">＋ Diapositive</button><button class="btn sm ghost" onclick="delSlide()" ${sl.length>1?"":"disabled"}>🗑</button></div>
+    <button class="btn sm ghost" onclick="addVideo()">▶ Vidéo</button><button class="btn sm ghost" onclick="dupSlide()">⧉ Dupliquer</button><button class="btn sm ghost" onclick="newSlide()">＋ Diapositive</button><button class="btn sm ghost" onclick="delSlide()" ${sl.length>1?"":"disabled"}>🗑</button></div>
    <div class="ask"><input id="ai" placeholder="Demander à Claude… ex. « ajoute un exemple concret », « simplifie », « fais-en une chronologie »" onkeydown="if(event.key==='Enter')askAI()"><button class="btn sm" id="aib" onclick="askAI()">✨ Envoyer</button></div>
    <div class="notesbox"><small>Notes de l'enseignant (invisibles pour les élèves)</small><textarea oninput="SL()[ST.n].notes=this.value;persist()" onchange="save()">${esc(cur.notes||"")}</textarea></div></div></div>`;
   layoutFit();
@@ -377,7 +446,8 @@ document.addEventListener("focusout",e=>{
   const el=e.target.closest&&e.target.closest("[data-e]");if(!el||!ST)return;
   const p=el.dataset.e,v=el.textContent.replace(/\s+/g," ").trim();
   setPath(SL()[ST.n],p,v);save();
-  const th=document.querySelectorAll(".thumb")[ST.n];if(th){th.querySelector(".fit").innerHTML=slideHTML(SL()[ST.n],{theme:S.theme});layoutFit();}
+  if(p==="url")return studio();
+  const th=document.querySelectorAll(".thumb")[ST.n];if(th){th.querySelector(".fit").innerHTML=slideHTML(SL()[ST.n],{theme:S.theme,thumb:true});layoutFit();}
 });
 document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-e]")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
 document.addEventListener("click",e=>{
@@ -388,8 +458,9 @@ document.addEventListener("click",e=>{
     const tab=e.target.closest("[data-tab]");if(tab){P.tab=tab.dataset.tab;showSlide();}
   }
 });
-function setLayout(l){const sl=SL()[ST.n];sl.layout=l;normalize(sl);save();studio();}
+function setLayout(l){if(l==="video"&&!CAP().youtube){openUpgrade("youtube");return studio();}const sl=SL()[ST.n];sl.layout=l;normalize(sl);save();studio();}
 function mvSlide(d){const a=SL();[a[ST.n],a[ST.n+d]]=[a[ST.n+d],a[ST.n]];ST.n+=d;save();studio();}
+function addVideo(){if(!CAP().youtube)return openUpgrade("youtube");SL().splice(ST.n+1,0,{id:uid(),layout:"video",title:"Vidéo",url:"",bullets:[],items:[],notes:""});ST.n++;save();studio();}
 function dupSlide(){const a=SL(),c=JSON.parse(JSON.stringify(a[ST.n]));c.id=uid();a.splice(ST.n+1,0,c);ST.n++;save();studio();}
 function delSlide(){const a=SL();if(a.length<2||!confirm("Supprimer cette diapositive ?"))return;a.splice(ST.n,1);ST.n=Math.min(ST.n,a.length-1);save();studio();}
 function newSlide(){SL().splice(ST.n+1,0,{id:uid(),layout:"text_image",title:"Nouveau titre",bullets:["Votre texte ici"],items:[],emoji:"💡",notes:""});ST.n++;save();studio();}
@@ -442,7 +513,145 @@ function printAll(){
   $("#print").innerHTML=S.lessons.filter(l=>l.slides).map((l,i)=>`<h1>${i+1}. ${esc(l.title)}</h1>`+l.slides.map(x=>`<div class="s"><b>${esc(x.emoji||"")} ${esc(x.title||"")}</b>${txt(x)}${x.notes?`<i>Notes : ${esc(x.notes)}</i>`:""}</div>`).join("")).join("");
   window.print();
 }
-render();
+
+/* ============ thèmes personnalisés (Max) ============ */
+const mix=(a,b,k)=>{const f=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const x=f(a),y=f(b);return "#"+x.map((v,i)=>Math.round(v*k+y[i]*(1-k)).toString(16).padStart(2,"0")).join("");};
+function newTheme(){if(!CAP().custom_themes)return openUpgrade("themes");editTheme(null);}
+function editTheme(id){
+  if(!CAP().custom_themes)return openUpgrade("themes");
+  const c=(id&&S.custom?.[id])||{n:"Mon thème",bg:"#fdeee8",fg:"#1f2d3d",ti:"#0f766e",ac:"#0f766e",ac2:"#d68c45",card:"#ffffff",font:FONTS[0][1]};
+  const col=(k,l)=>`<div><label>${l}</label><input type="color" id="tc_${k}" value="${c[k]}"></div>`;
+  modal(`<h2>${id?"Modifier le thème":"Créer un thème"}</h2><label>Nom</label><input id="tc_n" maxlength="40" value="${esc(c.n)}">
+  <div class="fgrid">${col("bg","Fond")}${col("card","Cartes")}${col("ti","Titres")}${col("fg","Texte")}${col("ac","Accent 1")}${col("ac2","Accent 2")}</div>
+  <label>Police</label><select id="tc_font">${FONTS.map(([n,v])=>`<option value="${esc(v)}" ${v===c.font?"selected":""} style="font-family:${esc(v)}">${n}</option>`).join("")}</select>
+  <div class="nav"><span>${id?`<button class="btn ghost" onclick="delTheme('${id}')">Supprimer</button>`:""}</span><span><button class="btn ghost" onclick="closeModal()">Annuler</button> <button class="btn" onclick="saveTheme('${id||""}')">Enregistrer</button></span></div>`);
+}
+function saveTheme(id){
+  const v=k=>$("#tc_"+k).value,bg=v("bg"),ac=v("ac");
+  const th={n:v("n").trim()||"Mon thème",bg,fg:v("fg"),ti:v("ti"),ac,ac2:v("ac2"),card:v("card"),blob:mix(ac,bg,.2),font:v("font")};
+  id=id||"c_"+uid();S.custom=S.custom||{};S.custom[id]=th;S.theme=id;save();closeModal();ST?studio():render();
+}
+function delTheme(id){delete S.custom[id];if(S.theme===id)S.theme="classique";save();closeModal();ST?studio():render();}
+
+/* ============ export PowerPoint (compatible Google Slides) ============ */
+const svgPng=svg=>new Promise(res=>{
+  const src=svg.includes("xmlns")?svg:svg.replace("<svg",'<svg xmlns="http://www.w3.org/2000/svg"'),img=new Image();
+  img.onload=()=>{const c=document.createElement("canvas");c.width=800;c.height=600;c.getContext("2d").drawImage(img,0,0,800,600);res(c.toDataURL("image/png"));};
+  img.onerror=()=>res(null);img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(src);
+});
+async function pptxSlide(pptx,sl,th){
+  const hx=c=>String(c).replace("#",""),font=th.font.split(",")[0].replace(/['"]/g,"").trim();
+  const cols=[th.ac,th.ac2,"#D6336C","#222222","#7E22CE","#0891B2"].map(hx);
+  const s=pptx.addSlide();s.background={color:hx(th.bg)};
+  s.addShape("ellipse",{x:6.6,y:-1.8,w:5.2,h:4.2,fill:{color:hx(th.blob)},line:{color:hx(th.blob)}});
+  const T=(txt,o)=>s.addText(txt,{fontFace:font,color:hx(th.fg),...o});
+  const card=(x,y,w,h)=>s.addShape("roundRect",{x,y,w,h,fill:{color:hx(th.card)},line:{color:hx(th.blob),width:1},rectRadius:.12});
+  const badge=(x,y,n,i,sz=.5)=>{s.addShape("roundRect",{x,y,w:sz,h:sz,fill:{color:cols[i%6]},line:{color:cols[i%6]},rectRadius:.08});T(String(n),{x,y,w:sz,h:sz,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:16});};
+  let notes=sl.notes||"";
+  if(!["quote","title"].includes(sl.layout))T((sl.title||"").toUpperCase(),{x:.5,y:.3,w:9,h:.9,fontSize:28,bold:true,color:hx(th.ti),valign:"middle"});
+  const items=sl.items||[];
+  switch(sl.layout){
+    case "title":
+      T(sl.emoji||"📖",{x:0,y:.5,w:10,h:1.2,fontSize:54,align:"center"});
+      T((sl.title||"").toUpperCase(),{x:.5,y:1.7,w:9,h:1.2,fontSize:36,bold:true,color:hx(th.ti),align:"center",valign:"middle"});
+      if(sl.bullets?.length)T(sl.bullets.map(b=>({text:b,options:{bullet:true,breakLine:true}})),{x:2,y:3.1,w:6,h:2,fontSize:16,valign:"top"});break;
+    case "list":{const n=Math.max(items.length,1),h=Math.min(.85,3.7/n);
+      items.forEach((it,i)=>{const y=1.4+i*(h+.1);card(.5,y,9,h);badge(.65,y+(h-.5)/2,i+1,i);T([{text:it.t,options:{bold:true,breakLine:true,fontSize:16}},{text:it.x||"",options:{fontSize:13}}],{x:1.3,y,w:8.1,h,valign:"middle"});});break;}
+    case "steps":{const n=Math.max(items.length,1),w=(9-.2*(n-1))/n;
+      items.forEach((it,i)=>{const x=.5+i*(w+.2);card(x,1.5,w,3.4);badge(x+.15,1.65,i+1,i);T([{text:it.t,options:{bold:true,breakLine:true,fontSize:16}},{text:it.x||"",options:{fontSize:13}}],{x:x+.1,y:2.3,w:w-.2,h:2.5,valign:"top"});});break;}
+    case "timeline":{const n=Math.max(items.length,1),w=9/n;
+      s.addShape("rect",{x:.5,y:2.1,w:9,h:.06,fill:{color:cols[0]},line:{color:cols[0]}});
+      items.forEach((it,i)=>{const x=.5+i*w;s.addShape("ellipse",{x:x+.05,y:1.95,w:.35,h:.35,fill:{color:hx(th.card)},line:{color:cols[1],width:3}});T([{text:it.t,options:{bold:true,breakLine:true,fontSize:15,color:hx(th.ti)}},{text:it.x||"",options:{fontSize:12}}],{x,y:2.5,w:w-.1,h:2.4,valign:"top"});});break;}
+    case "quote":
+      T(`“${sl.quote||""}”`,{x:1,y:1,w:8,h:2.8,fontSize:28,italic:true,align:"center",valign:"middle"});
+      T("— "+(sl.author||""),{x:1,y:3.9,w:8,h:.6,fontSize:18,bold:true,color:hx(th.ti),align:"center"});break;
+    case "vocab":
+      (sl.vocab||[]).forEach((v,i)=>{const x=.5+(i%2)*4.6,y=1.4+Math.floor(i/2)*1.25;card(x,y,4.4,1.1);T([{text:v.term,options:{bold:true,breakLine:true,fontSize:15,color:hx(th.ti)}},{text:v.definition,options:{fontSize:12}}],{x:x+.1,y,w:4.2,h:1.1,valign:"middle"});});break;
+    case "activity":{const q=sl.q;
+      T(q.q,{x:.5,y:1.3,w:9,h:.9,fontSize:20,bold:true,valign:"middle"});
+      q.choices.forEach((c,i)=>{const y=2.3+i*.62;card(.5,y,9,.52);badge(.58,y+.03,i+1,i,.46);T(c,{x:1.2,y,w:8.2,h:.52,fontSize:15,valign:"middle"});});
+      notes=(notes?notes+"\n\n":"")+`Réponse : ${q.answer+1}. ${q.choices[q.answer]}${q.why?" — "+q.why:""}`;break;}
+    case "video":
+      T("Vidéo YouTube",{x:.5,y:1.5,w:9,h:.6,fontSize:20,bold:true});
+      if(sl.url)T([{text:sl.url,options:{hyperlink:{url:sl.url}}}],{x:.5,y:2.2,w:9,h:.6,fontSize:18,color:"0563C1"});break;
+    default:{
+      T((sl.bullets||[]).map(b=>({text:b,options:{bullet:true,breakLine:true}})),{x:.5,y:1.4,w:5.3,h:3.6,fontSize:18,valign:"top",paraSpaceAfter:8});
+      card(6.1,1.5,3.4,2.55);
+      const png=sl.svg?await svgPng(sl.svg):null;
+      if(png)s.addImage({data:png,x:6.2,y:1.55,w:3.2,h:2.4});else T(sl.emoji||"💡",{x:6.1,y:1.6,w:3.4,h:2.3,fontSize:70,align:"center",valign:"middle"});}
+  }
+  if(!CAP().no_badge)T("Créé avec Séquences",{x:7,y:5.2,w:2.8,h:.3,fontSize:10,align:"right",color:hx(th.ti)});
+  if(notes)s.addNotes(notes);
+}
+async function exportPptx(li){
+  if(typeof PptxGenJS==="undefined")return alert("La bibliothèque d'export n'a pas pu se charger. Vérifiez votre connexion et rechargez la page.");
+  const th=allThemes()[S.theme]||THEMES.classique,pptx=new PptxGenJS();pptx.layout="LAYOUT_16x9";pptx.title=S.title;
+  const lessons=li==null?S.lessons.filter(l=>l.slides):[S.lessons[li]];
+  toast("Création du fichier PowerPoint…");
+  try{
+    for(const l of lessons)for(const sl of l.slides)await pptxSlide(pptx,normalize(sl),th);
+    const name=((li==null?S.title:S.lessons[li].title)||"sequence").replace(/[^\p{L}\p{N} _-]/gu,"").trim().slice(0,60)||"sequence";
+    await pptx.writeFile({fileName:name+".pptx"});
+  }catch(e){alert("Export impossible : "+e.message);}
+}
+
+/* ============ page Tarifs ============ */
+const BILL={pro:"annual",max:"annual"};
+const EUR=n=>n.toFixed(2).replace(".",",")+" €";
+const PR={pro:{monthly:9.99,annual:6.65},max:{monthly:18.99,annual:12.49}};
+function setBill(p,b){BILL[p]=b;pricing();}
+function pricing(){
+  const cur=PL?.plan||"free",pr=PL?.prices||PR;
+  const feats=a=>`<ul>${a.map(x=>`<li><span>✅</span><span>${x}</span></li>`).join("")}</ul>`;
+  const paid=(p,name,list,grad)=>{
+    const b=BILL[p],price=pr[p][b],mine=cur===p;
+    return `<div class="plan ${p} ${mine?"cur":""}"><h3>${name}</h3>
+    <div><div class="price">${EUR(price)}/mois</div><p class="bill">${b==="annual"?EUR(price*12)+" facturé annuellement":""}</p></div>
+    <div class="seg"><button class="${b==="monthly"?"on":""}" onclick="setBill('${p}','monthly')">Mensuel</button><button class="${b==="annual"?"on":""}" onclick="setBill('${p}','annual')">Annuel<small>💰 4 mois offerts</small></button></div>
+    ${feats(list)}
+    <button class="pbtn ${grad?"grad":""}" ${mine?"disabled":""} onclick="subscribe('${p}')">${mine?"Votre plan actuel":"Passer à "+name.toUpperCase()}</button>
+    ${mine&&PL?`<p class="bill" style="text-align:center">${PL.cancelled?"Prend fin":"Actif"} jusqu'au ${new Date(PL.until*1000).toLocaleDateString("fr-FR")}${PL.cancelled?"":` · <a href="#" onclick="cancelPlan();return false">Annuler</a>`}</p>`:""}</div>`;};
+  const demo=PL?.payment==="demo";
+  $("#app").innerHTML=`<section class="hero"><h1>Choisissez le plan qui vous convient</h1><p>Un moyen simple et abordable de gagner des heures de votre temps. ⏳</p></section>
+  ${demo?`<div class="err" style="background:#fff7e6;color:#8a5a00">Phase de test : les plans Pro et Max s'activent sans paiement.</div>`:""}
+  <div class="plans">
+   <div class="plan ${cur==="free"?"cur":""}"><h3>Gratuit</h3><div class="price">0,00 €/mois</div>${feats(["Aucune carte requise","Créez des leçons et des activités","Exportation vers Google &amp; Microsoft","Créez 5 ressources chaque semaine"])}
+    <button class="pbtn" onclick="go('home')">Commencer</button></div>
+   ${paid("pro","Pro",["Alignement sur les programmes","Supprimer le badge « Séquences »","Ajoutez des vidéos YouTube","Créez 200 ressources par mois","Séquences jusqu'à 12 leçons","Leçons jusqu'à 25 diapositives"])}
+   ${paid("max","Max",["Thèmes et polices personnalisés","Créez 400 ressources par mois","Séquences jusqu'à 25 leçons","Leçons jusqu'à 35 diapositives"],true)}
+   <div class="plan schools"><div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between"><div><h3>Écoles</h3><div class="price" style="margin-top:10px">Discutons</div></div>
+    <ul style="flex:1;min-width:260px;margin:0">${["Leçons personnalisées","Comptes enseignants liés","Contrôles et suivi administrateur","Facturation centralisée"].map(x=>`<li><span>✅</span><span>${x}</span></li>`).join("")}</ul>
+    <button class="pbtn out" style="width:auto;padding:0 28px" onclick="openContact(true)">Contactez-nous</button></div></div>
+  </div>
+  <section class="faq"><h2>Foire aux questions...</h2>
+   <details><summary>Puis-je annuler ou modifier mon abonnement à tout moment ?</summary><p>Oui ! Vous pouvez modifier, mettre à niveau ou annuler à tout moment. Les modifications prennent effet à la fin de votre période de facturation en cours.</p></details>
+   <details><summary>Quels modes de paiement acceptez-vous ?</summary><p>${demo?"Le paiement en ligne n'est pas encore ouvert : pendant la phase de test, les plans Pro et Max s'activent sans paiement.":"Les abonnements ouvriront bientôt. Écrivez-nous via la page Contact pour être prévenu."}</p></details>
+   <details><summary>Combien de leçons puis-je créer avec le plan gratuit ?</summary><p>Vous pouvez créer jusqu'à 5 leçons complètes tous les 7 jours. Celles-ci peuvent être des leçons ou faire partie d'une séquence de leçons.</p></details>
+   <details><summary>Qu'advient-il de mes leçons si j'annule mon abonnement Pro ou Max ?</summary><p>Rien ! Vous pouvez toujours accéder à toutes les leçons que vous avez déjà créées. Vous perdrez simplement l'accès aux fonctionnalités Pro ou Max, selon votre abonnement.</p></details>
+  </section>`;
+}
+async function subscribe(p){
+  if(PL?.payment!=="demo")return modal(`<h2>Bientôt disponible</h2><p>Les abonnements ne sont pas encore ouverts. Laissez-nous un message et nous vous préviendrons.</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Fermer</button><button class="btn" onclick="closeModal();openContact()">Nous écrire</button></div>`);
+  if(!confirm(`Phase de test : aucun paiement n'est demandé. Activer le plan ${PNAME[p]} (${BILL[p]==="annual"?"annuel":"mensuel"}) ?`))return;
+  try{PL=await api("/api/plan/subscribe",{plan:p,billing:BILL[p]});chip();pricing();toast(`Plan ${PNAME[p]} activé`);}catch(e){alert(e.message);}
+}
+async function cancelPlan(){
+  if(!confirm("Annuler l'abonnement ? Il reste actif jusqu'à la fin de la période en cours."))return;
+  try{PL=await api("/api/plan/cancel",{});chip();pricing();toast("Abonnement annulé : il prendra fin à l'échéance");}catch(e){alert(e.message);}
+}
+function openContact(school){
+  modal(`<h2>${school?"Contactez-nous pour votre établissement":"Contact"}</h2><p class="sub">Nous répondons sous 24 h.</p>
+  <label>Nom</label><input id="ct_name"><label>E-mail</label><input id="ct_email" type="email">
+  ${school?`<label>Établissement</label><input id="ct_school"><label>Nombre de licences</label><input id="ct_lic" placeholder="Au moins 5">`:""}
+  <label>Message</label><textarea id="ct_msg" maxlength="2000"></textarea><div id="ct_err"></div>
+  <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button><button class="btn" id="ct_go" onclick="sendContact()">Envoyer</button></div>`);
+}
+async function sendContact(){
+  const v=i=>($("#"+i)?.value||"").trim(),b=$("#ct_go");b.disabled=true;
+  try{await api("/api/contact",{name:v("ct_name"),email:v("ct_email"),school:v("ct_school")||"(non précisé)",licenses:v("ct_lic"),message:v("ct_msg")});closeModal();toast("Message envoyé, merci !");}
+  catch(e){$("#ct_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;}
+}
+render();loadPlan();
 </script>
 </body>
 </html>

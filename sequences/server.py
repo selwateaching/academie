@@ -8,24 +8,46 @@ Variables d'environnement :
   SEQ_ACCESS_CODE    facultatif : code demandé avant de générer
   SEQ_MODEL          facultatif : modèle Claude (défaut claude-sonnet-5-5)
   SEQ_PER_HOUR       facultatif : appels IA max par heure et par IP (défaut 60)
+  PAYMENT_MODE       demo (défaut : passer à Pro/Max sans payer, pour tester) | off (abonnements fermés)
+  SEQ_DATA_FILE      facultatif : fichier de sauvegarde des plans et des compteurs (défaut data.json)
+  SEQ_ADMIN_CODE     facultatif : code pour lire les messages du formulaire « Écoles » (/api/contact?code=…)
 """
 
 import hmac
 import json
 import os
 import re
+import tempfile
 import threading
 import time
 from collections import defaultdict, deque
 import xml.etree.ElementTree as ET
 
 import anthropic
-from flask import Flask, Response, jsonify, request, send_from_directory
+from flask import Flask, Response, g, jsonify, request, send_from_directory
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 MODEL = os.environ.get("SEQ_MODEL", "claude-sonnet-5-5")
 ACCESS_CODE = os.environ.get("SEQ_ACCESS_CODE", "").strip()
 PER_HOUR = int(os.environ.get("SEQ_PER_HOUR", "60"))
+PAYMENT_MODE = os.environ.get("PAYMENT_MODE", "demo").strip().lower()
+ADMIN_CODE = os.environ.get("SEQ_ADMIN_CODE", "").strip()
+DATA_FILE = os.environ.get("SEQ_DATA_FILE", os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.json"))
+
+DAY = 86400
+# Plans : ressources = leçons générées. Gratuit : par semaine glissante ; payants : par mois glissant.
+PLANS = {
+    "free": {"limit": 5, "days": 7, "series": 5, "slides": 12, "curriculum": False, "youtube": False,
+             "no_badge": False, "custom_themes": False},
+    "pro": {"limit": 200, "days": 30, "series": 12, "slides": 25, "curriculum": True, "youtube": True,
+            "no_badge": True, "custom_themes": False},
+    "max": {"limit": 400, "days": 30, "series": 25, "slides": 35, "curriculum": True, "youtube": True,
+            "no_badge": True, "custom_themes": True},
+}
+PRICES = {  # € par mois
+    "pro": {"monthly": 9.99, "annual": 6.65},
+    "max": {"monthly": 18.99, "annual": 12.49},
+}
 
 app = Flask(__name__, static_folder=None)
 app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
@@ -134,14 +156,150 @@ def brief(b):
         f"Niveau : {s(b.get('level'), 80)}",
         f"Langue des contenus : {s(b.get('language'), 40) or 'français'}",
     ]
+    if b.get("curriculum") and getattr(g, "dev", None) and plan_of(g.dev)[1]["curriculum"]:
+        lines.append(f"Alignement sur le programme scolaire : {s(b['curriculum'], 200)}. "
+                     "Rattache chaque leçon aux attendus de ce programme et à son vocabulaire.")
     if b.get("instructions"):
         lines.append(f"Consignes de l'enseignant : {s(b['instructions'], 3000)}")
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- comptes anonymes, plans, quotas
+# Chaque navigateur a un identifiant aléatoire (en-tête X-Seq-Device). Le serveur retient son plan
+# et ses générations. Pas de compte ni de mot de passe : c'est un MVP, un autre navigateur = un autre « compte ».
+
+DEVICE = re.compile(r"^[A-Za-z0-9-]{16,64}$")
+_ulock = threading.Lock()
+_users = {}     # identifiant -> {"plan","billing","until","cancelled","usage":[timestamps]}
+_contacts = []
+
+
+def load_store():
+    try:
+        with open(DATA_FILE, encoding="utf-8") as f:
+            saved = json.load(f)
+    except (OSError, ValueError):
+        return
+    _users.update(saved.get("users", {}))
+    _contacts.extend(saved.get("contacts", []))
+
+
+def save_store():
+    try:
+        fd, tmp = tempfile.mkstemp(dir=os.path.dirname(os.path.abspath(DATA_FILE)), suffix=".tmp")
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump({"users": _users, "contacts": _contacts[-500:]}, f, ensure_ascii=False)
+        os.replace(tmp, DATA_FILE)
+    except OSError as e:
+        app.logger.warning("Sauvegarde impossible : %s", e)
+
+
+def user_rec(dev):
+    return _users.setdefault(dev, {"plan": "free", "billing": "monthly", "until": 0, "cancelled": False, "usage": []})
+
+
+def effective_plan(u, now):
+    return u["plan"] if u["plan"] in PLANS and u["plan"] != "free" and u["until"] > now else "free"
+
+
+def usage_info(u, now):
+    plan = effective_plan(u, now)
+    cfg = PLANS[plan]
+    window = cfg["days"] * DAY
+    u["usage"] = [x for x in u["usage"] if now - x < window]
+    used = len(u["usage"])
+    resets = (min(u["usage"]) + window) if u["usage"] else None
+    return plan, cfg, used, resets
+
+
+def plan_of(dev):
+    now = time.time()
+    with _ulock:
+        plan = effective_plan(user_rec(dev), now)
+    return plan, PLANS[plan]
+
+
+def plan_json(dev):
+    now = time.time()
+    with _ulock:
+        u = user_rec(dev)
+        plan, cfg, used, resets = usage_info(u, now)
+        return {
+            "plan": plan, "billing": u["billing"], "until": u["until"] if plan != "free" else 0,
+            "cancelled": u["cancelled"] and plan != "free", "used": used, "limit": cfg["limit"],
+            "days": cfg["days"], "resets": resets,
+            "caps": {k: cfg[k] for k in ("series", "slides", "curriculum", "youtube", "no_badge", "custom_themes")},
+            "payment": PAYMENT_MODE, "prices": PRICES,
+        }
+
+
+@app.before_request
+def need_device():
+    if request.path in ("/api/outline", "/api/lesson", "/api/slide", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"):
+        dev = request.headers.get("X-Seq-Device", "")
+        if not DEVICE.match(dev):
+            return error("device", "Identifiant du navigateur manquant. Rechargez la page.", 400)
+        g.dev = dev
+
+
+@app.get("/api/plan")
+def get_plan():
+    return jsonify(plan_json(g.dev))
+
+
+@app.post("/api/plan/subscribe")
+def subscribe():
+    if PAYMENT_MODE != "demo":
+        return error("payment_off", "Les abonnements ne sont pas encore ouverts. Écrivez-nous depuis la page Tarifs.", 503)
+    b = request.get_json(silent=True) or {}
+    plan, billing = b.get("plan"), b.get("billing")
+    if plan not in ("pro", "max") or billing not in ("monthly", "annual"):
+        return error("invalid_request", "Plan invalide.", 400)
+    with _ulock:
+        u = user_rec(g.dev)
+        u.update(plan=plan, billing=billing, cancelled=False,
+                 until=time.time() + (365 if billing == "annual" else 30) * DAY)
+        save_store()
+    return jsonify(plan_json(g.dev))
+
+
+@app.post("/api/plan/cancel")
+def cancel():
+    with _ulock:
+        u = user_rec(g.dev)
+        u["cancelled"] = True  # le plan reste actif jusqu'à la fin de la période, sans renouvellement
+        save_store()
+    return jsonify(plan_json(g.dev))
+
+
+@app.post("/api/contact")
+def contact():
+    b = request.get_json(silent=True) or {}
+    msg = {k: s(b.get(k), 2000 if k == "message" else 200)
+           for k in ("name", "email", "school", "role", "licenses", "message")}
+    if not msg["name"] or not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", msg["email"]) or not msg["school"]:
+        return error("invalid_request", "Nom, e-mail valide et établissement requis.", 400)
+    if not rate_ok("contact:" + client_ip()):
+        return error("rate_limited", "Trop de demandes. Réessayez plus tard.", 429)
+    msg["at"] = int(time.time())
+    with _ulock:
+        _contacts.append(msg)
+        save_store()
+    app.logger.info("Demande école : %s", json.dumps(msg, ensure_ascii=False))
+    return jsonify({"ok": True})
+
+
+@app.get("/api/contact")
+def list_contacts():
+    if not ADMIN_CODE or not hmac.compare_digest(request.args.get("code", "").encode(), ADMIN_CODE.encode()):
+        return error("access", "Code administrateur requis.", 401)
+    return jsonify(_contacts)
+
+
 # ---------------------------------------------------------------- nettoyage des diapositives
 
-LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity"}
+LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video"}
+YT = re.compile(r"(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})")
 SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
             "text", "tspan", "defs", "lineargradient", "radialgradient", "stop"}
 SVG_ATTRS = {"viewbox", "d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "width",
@@ -203,6 +361,9 @@ def clean_slide(x):
         "svg": clean_svg(x.get("svg")) if x.get("svg") else "",
         "notes": s(x.get("notes"), 1500),
     }
+    if layout == "video":
+        m = YT.search(str(x.get("url") or ""))
+        out["url"] = f"https://www.youtube.com/watch?v={m.group(1)}" if m else ""
     if layout == "vocab":
         out["vocab"] = [{"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
                         for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
@@ -234,19 +395,20 @@ def outline():
     b = request.get_json(silent=True) or {}
     if not s(b.get("topic"), 300):
         return error("invalid_request", "Sujet manquant.", 400)
-    n = max(2, min(10, int(b.get("count") or 5)))
+    cap = plan_of(g.dev)[1]["series"]
+    n = max(2, min(cap, int(b.get("count") or 5)))
     data, err = ask(
         f"{brief(b)}\n\nPropose le plan d'une séquence de {n} leçons, progressives et cohérentes "
         "(chaque leçon s'appuie sur la précédente).\n"
         'Format : {"title": "titre de la séquence", "lessons": [{"title": "...", "summary": "2 phrases : ce que couvre la leçon"}]}',
-        3000,
+        6000,
     )
     if err:
         return err
     lessons = [
         {"title": s(l.get("title"), 160), "summary": s(l.get("summary"), 600)}
         for l in data.get("lessons", []) if isinstance(l, dict) and l.get("title")
-    ][:10]
+    ][:cap]
     if not lessons:
         return error("invalid_json", "Plan vide, réessayez.", 422)
     return jsonify({"title": s(data.get("title"), 160) or s(b.get("topic"), 160), "lessons": lessons})
@@ -260,10 +422,19 @@ def lesson():
         idx = int(b.get("index"))
     except (TypeError, ValueError):
         idx = -1
-    if not isinstance(plan, list) or not 0 <= idx < len(plan) or len(plan) > 10:
-        return error("invalid_request", "Plan ou numéro de leçon invalide.", 400)
+    pname, cfg = plan_of(g.dev)
+    if not isinstance(plan, list) or not 0 <= idx < len(plan) or len(plan) > cfg["series"]:
+        return error("invalid_request", f"Plan invalide ou trop long pour votre formule ({cfg['series']} leçons maximum).", 400)
+    now = time.time()
+    with _ulock:
+        _, _, used, resets = usage_info(user_rec(g.dev), now)
+    if used >= cfg["limit"]:
+        when = time.strftime("%d/%m", time.localtime(resets)) if resets else "bientôt"
+        msg = ("Vous avez créé toutes vos ressources gratuites pour cette semaine."
+               if pname == "free" else "Vous avez atteint votre limite mensuelle de ressources.")
+        return error("limit", f"{msg} Votre quota se réinitialise vers le {when}.", 429)
     opt = b.get("options") if isinstance(b.get("options"), dict) else {}
-    slides = max(6, min(20, int(opt.get("slides") or 10)))
+    slides = max(6, min(cfg["slides"], int(opt.get("slides") or 10)))
     outline_txt = "\n".join(
         f"{i + 1}. {s(l.get('title'), 160)} — {s(l.get('summary'), 600)}" for i, l in enumerate(plan)
     )
@@ -286,13 +457,16 @@ def lesson():
         "(au moins une chronologie ou des étapes si le sujet s'y prête, une liste, et une citation si pertinent). "
         + (SVG_RULES + " Mets une illustration sur la plupart des diapositives text_image." if images
            else 'N\'inclus pas de champ "svg".'),
-        32000,
+        64000,
     )
     if err:
         return err
+    with _ulock:
+        user_rec(g.dev)["usage"].append(time.time())
+        save_store()
     out = {
         "title": s(data.get("title"), 160) or s(cur.get("title"), 160),
-        "slides": [c for c in (clean_slide(x) for x in data.get("slides", [])) if c and c["layout"] not in ("activity", "vocab", "title")][:24],
+        "slides": [c for c in (clean_slide(x) for x in data.get("slides", [])) if c and c["layout"] not in ("activity", "vocab", "title", "video")][:24],
         "objectives": [s(t, 300) for t in data.get("objectives", []) if t][:6],
         "vocabulary": [
             {"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
@@ -348,6 +522,8 @@ def healthz():
 def static_files(name):
     return send_from_directory(STATIC_DIR, name)
 
+
+load_store()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=False)

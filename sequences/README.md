@@ -20,3 +20,23 @@ python server.py        # http://127.0.0.1:5000
 | `SEQ_PER_HOUR` | appels IA max par heure et par IP (défaut 60) |
 
 Déploiement Render : service `sequences` déjà décrit dans `../render.yaml`.
+
+## Plans et quotas (comme la page Tarifs)
+
+| | Gratuit | Pro | Max |
+|---|---|---|---|
+| Ressources (1 leçon générée = 1 ressource) | 5 / 7 jours | 200 / 30 jours | 400 / 30 jours |
+| Leçons par séquence | 5 | 12 | 25 |
+| Diapositives par leçon | 12 | 25 | 35 |
+| Alignement sur les programmes, vidéos YouTube, sans badge | – | oui | oui |
+| Thèmes et polices personnalisés | – | – | oui |
+
+Prix : Pro 9,99 €/mois (6,65 €/mois en annuel), Max 18,99 €/mois (12,49 €/mois en annuel). Export PowerPoint (compatible Google Slides) pour tous.
+Les plafonds sont des constantes `PLANS` et `PRICES` dans `server.py`.
+
+**Limites actuelles à connaître**
+- Pas de compte : chaque navigateur reçoit un identifiant et le serveur retient son plan et son compteur. Vider les données du navigateur remet le compteur à zéro.
+- Pas de vrai paiement : avec `PAYMENT_MODE=demo` (défaut) n'importe qui peut activer Pro ou Max gratuitement ; `PAYMENT_MODE=off` ferme les abonnements.
+- Quotas, plafonds de leçons et de diapositives sont appliqués côté serveur. Les verrous Pro/Max (vidéos, thèmes, badge, programme) ne le sont que dans la page.
+- Plans et compteurs sont dans `data.json` : sur l'offre gratuite de Render, le disque est effacé à chaque redémarrage.
+- Le formulaire « Écoles » enregistre les messages ; `SEQ_ADMIN_CODE` permet de les lire via `/api/contact?code=…`.
