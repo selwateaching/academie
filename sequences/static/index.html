@@ -296,7 +296,34 @@ body.app #app.dashw{max-width:none;margin-right:0}
 .paper [contenteditable]{outline:none;border-radius:4px}.paper.edit [contenteditable]:hover{background:rgba(0,0,0,.04)}.paper.edit [contenteditable]:focus{background:rgba(64,158,158,.12)}
 .paper .del{border:0;background:none;color:#b91c1c;cursor:pointer;font-size:14px;opacity:.55}.paper .del:hover{opacity:1}
 .wbcover{background:linear-gradient(135deg,#eef6ff,#fdeee8)!important;color:#1f2d3d!important;font-size:18px!important;padding:16px;text-align:center;font-weight:800}.wbcover span{display:block;font-size:46px}
-.paperw{max-width:900px!important}
+body.app #app.paperw{max-width:none}
+.wbtop{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;background:#409e9e;color:#fff;border-radius:16px;padding:10px 14px;margin:0 0 14px}
+.wbtop .ttl{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:60px}.wbtop .sv{font-size:13px;font-weight:700;opacity:.95}
+.wbtop .rb{width:38px;height:38px;border-radius:10px;border:2px solid rgba(255,255,255,.7);background:transparent;color:#fff;font-size:18px;cursor:pointer}.wbtop .rb:hover:not(:disabled){background:rgba(255,255,255,.2)}.wbtop .rb:disabled{opacity:.4;cursor:default}
+.wbtop .btn{background:#fff;color:#2c6e49;border:0}.wbtop .btn.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.8)}
+.exp{position:relative}.expm{display:none;position:absolute;right:0;top:44px;background:#fff;color:#111;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:6px;min-width:190px;z-index:40}.expm.on{display:block}
+.expm button{display:block;width:100%;text-align:left;font:inherit;padding:9px 12px;border:0;background:none;border-radius:8px;cursor:pointer}.expm button:hover{background:var(--g2)}
+.wbopts{display:flex;gap:14px;align-items:center;margin:0 0 14px;flex-wrap:wrap}.wbopts select{width:auto;padding:6px 10px}.wbopts .ck{display:flex;gap:6px;align-items:center;font-weight:600;margin:0}.wbopts .ck input{width:auto}
+.wbmain{display:flex;gap:18px;align-items:flex-start}.wbpaper{flex:1;min-width:0;position:relative}
+.addsec{position:sticky;bottom:16px;display:flex;justify-content:center;margin-top:-20px;pointer-events:none}.addsec button{pointer-events:auto;font:inherit;font-weight:800;background:#fff;color:var(--g);border:2px solid var(--g);border-radius:99px;padding:11px 22px;box-shadow:0 6px 18px rgba(0,0,0,.2);cursor:pointer}
+.wbchat{width:320px;flex:none;position:sticky;top:76px;height:calc(100vh - 100px);background:#fff;border-radius:18px;box-shadow:0 2px 14px rgba(0,0,0,.15);display:flex;flex-direction:column;overflow:hidden}
+.wbchat .cm{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.wbchat .hi{text-align:center;font-weight:800;font-size:18px;margin:30px 0 6px}.wbchat .sg{display:flex;flex-direction:column;gap:8px;align-items:center}
+.wbchat .sg button{font:inherit;font-weight:600;color:var(--g);background:#fff;border:2px solid var(--g);border-radius:99px;padding:8px 14px;cursor:pointer}
+.bub{max-width:90%;padding:9px 13px;border-radius:14px;font-size:15px}.bub.u{align-self:flex-end;background:var(--g);color:#fff}.bub.a{align-self:flex-start;background:#f0f4f3}
+.wbchat .ci{border-top:1px solid var(--line);padding:10px;display:flex;flex-direction:column;gap:8px}.wbchat .ci .r{display:flex;gap:8px}.wbchat select{font-size:13px;padding:5px 8px}
+.chatbtn{display:none}
+.match{display:grid;grid-template-columns:1fr 64px 1.5fr;gap:8px 10px;margin:10px 0;align-items:stretch}
+.match>div{border:1.5px solid var(--ac);border-radius:6px;padding:6px 10px;font-size:14px}.match .mbx{border-radius:6px;background:#fff}
+.wsg{border-collapse:collapse;margin:10px auto;font:700 18px/1 ui-monospace,Menlo,Consolas,monospace}.wsg td{width:30px;height:30px;text-align:center;border:1px solid #d1d5db}.wsg td.hl{background:#fde68a}
+.wsw{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-weight:700;margin-top:6px}
+@media(max-width:1240px){.chatbtn{display:inline-block}.wbchat{display:none;position:fixed;right:12px;top:80px;bottom:12px;height:auto;z-index:60}.wbchat.open{display:flex}}
+.tplrow{display:flex;align-items:flex-start;gap:16px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
+.tpl{flex:none;align-self:flex-start;width:150px;border:0;background:none;font:inherit;cursor:pointer;text-align:center;scroll-snap-align:start}
+.tpl .tic{height:92px;border-radius:16px;background:#eceff1;display:grid;place-items:center;font-size:42px;margin-bottom:8px;transition:transform .2s,background .2s}.tpl:hover .tic{transform:translateY(-3px);background:#dfe8e6}.tpl span{font-weight:700;font-size:15px;line-height:1.25;display:block}
+.pk{background:#fde7f1!important;color:#be185d}
+.pfit{position:relative;overflow:hidden;background:linear-gradient(#fdeee8,#fff)!important;display:block!important}.pfit .pin{position:absolute;top:14px;left:0;width:794px;transform-origin:0 0;pointer-events:none}.pfit .paper{margin:0;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:10px}
 #print.wbprint{display:none}#print.wbprint h1{page-break-before:avoid!important;font-size:30px!important}
 @media print{#print.wbprint{display:block}#print.wbprint .paper{width:auto;box-shadow:none;padding:0;margin:0;border-radius:0}#print.wbprint .del{display:none}#print.wbprint h2.sec{break-after:avoid}}
 </style>
@@ -390,6 +417,7 @@ const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,lang
 
 /* ---------- navigation ---------- */
 function go(v){if(v==="home"){S=null;W=null;step=1;msg="";}page="";closeStudio();closeShow();closeModal();render();}
+function navFiches(){S=null;W=null;page="fiches";closeStudio();closeShow();render();}
 function navCahiers(){S=null;W=null;page="cahiers";closeStudio();closeShow();render();}
 function navSeqs(){S=null;W=null;step=1;page="seqs";closeStudio();closeShow();render();}
 const pushT={};
@@ -397,6 +425,7 @@ function saveDoc(d){
   d.updated=Date.now();
   const i=saved.findIndex(x=>x.id===d.id);i<0?saved.unshift(d):saved[i]=d;persist();
   if(ACC){clearTimeout(pushT[d.id]);pushT[d.id]=setTimeout(()=>pushSeries(d),1200);}
+  if(typeof markSaved==="function")markSaved();
 }
 function save(){saveDoc(S);}
 function pushSeries(sr){return api("/api/series/"+sr.id,sr,"PUT").catch(e=>{if(e.code==="too_large"||e.code==="quota")toast(e.message);});}
@@ -404,9 +433,11 @@ function render(){
   const landing=!ACC&&!S&&page==="";
   document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
   $("#app").classList.toggle("home",landing);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
-  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="cahiers"||(!S&&page==="")));
+  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
   side();
   if(page==="pricing")return pricing();
+  if(page==="fiches"&&!W)return shList();
+  if(page==="sh"&&W)return shFlow();
   if(page==="cahiers"&&!W)return wbList();
   if(page==="wb"&&W)return wbFlow();
   if(page==="seqs"&&!S)return seqsPage();
@@ -457,7 +488,7 @@ async function loadExample(){
 }
 function openS(id){
   const x=saved.find(s=>s.id===id);if(!x)return;
-  if(isWB(x)){S=null;W=x;wstep=x.started?5:3;page="wb";msg="";closeModal();render();scrollTo(0,0);return;}
+  if(isDoc(x)){S=null;W=x;wstep=isSheet(x)||x.started?5:3;page="wb";msg="";closeModal();render();scrollTo(0,0);return;}
   W=null;S=x;step=S.started?5:3;msg="";page="";render();scrollTo(0,0);
 }
 function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
@@ -771,9 +802,9 @@ function startFree(){ACC?go("home"):openAuth("register");}
 function side(){
   const el=$("#side");if(!ACC){el.innerHTML="";return;}
   const nm=ACC.name||ACC.email.split("@")[0],ini=(nm[0]||"?").toUpperCase();
-  const home=!S&&!W&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing",cah=page==="cahiers"||page==="wb";
+  const home=!S&&!W&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing",fic=page==="fiches"||page==="sh"||(page==="wb"&&W&&W.kind==="sheet"),cah=(page==="cahiers"||page==="wb")&&!fic;
   el.innerHTML=`<div class="av">${esc(ini)}</div><div class="nm">${esc(nm)}</div>
-  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr&&!cah?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${cah?"on":""}" onclick="navCahiers()">📘 Cahiers d'activités</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
+  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr&&!cah&&!fic?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${fic?"on":""}" onclick="navFiches()">📄 Fiches d'activités</a><a class="${cah?"on":""}" onclick="navCahiers()">📘 Cahiers d'activités</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
   <div class="promos"><div class="pcard org"><b>Séquences pour les établissements</b><small>Aidez vos collègues</small><button onclick="openContact(true)">Essai gratuit</button></div>
   <div class="pcard"><b>Votre plan</b><small class="plantxt"></small><button onclick="goPricing()">Voir les plans</button></div></div>
   <button class="logout" onclick="logout()">Déconnexion</button>`;
@@ -781,31 +812,41 @@ function side(){
 }
 function newSeries(single){S=blank();if(single)S.count=1;step=1;msg="";page="";render();scrollTo(0,0);}
 const when=ts=>{if(!ts)return "";const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?"aujourd'hui":d.toLocaleDateString("fr-FR");};
-const isWB=x=>x.kind==="workbook";
-function statusOf(x){const L=isWB(x)?x.sections:x.lessons,n=L.filter(l=>isWB(x)?l.data:l.slides).length;return n&&n===L.length?"Terminée":n?"En cours":"Brouillon";}
-function metaOf(x){return isWB(x)?`📘 ${x.sections.length} sections`:`📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}`;}
+const TPL={};  /* modèles de fiches d'activités, remplis plus bas */
+const isWB=x=>x.kind==="workbook",isSheet=x=>x.kind==="sheet",isDoc=x=>isWB(x)||isSheet(x);
+const DIFFN={support:"Soutien",core:"Standard",challenge:"Approfondissement"};
+function statusOf(x){const L=isDoc(x)?x.sections:x.lessons,n=L.filter(l=>isDoc(x)?l.data:l.slides).length;return n&&n===L.length?"Terminée":n?"En cours":"Brouillon";}
+function metaOf(x){return isSheet(x)?"📄 Fiche d'activités":isWB(x)?`📘 ${x.sections.length} sections`:`📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}`;}
 function coverHTML(x){
-  if(isWB(x))return `<div class="cover wbcover" style="aspect-ratio:16/9"><div><span>📘</span>${esc(x.title||x.topic)}</div></div>`;
+  if(isDoc(x))return `<div class="cover pfit" style="aspect-ratio:16/9"><div class="pin">${paperHTML(false,false,x)}</div></div>`;
   const l=x.lessons.find(l=>l.slides),sl=l&&l.slides[0];if(!sl)return `<div class="cover" style="aspect-ratio:16/9">📚</div>`;
   const prev=S;S=x;let h;try{h=slideHTML(normalize(sl),{theme:x.theme,thumb:true});}finally{S=prev;}
   return `<div class="cover fit" style="aspect-ratio:16/9">${h}</div>`;
 }
 let Q="",GK="";
 function cards(){
-  const q=Q.toLowerCase(),list=saved.filter(x=>(GK==="wb"?isWB(x):GK==="seq"?!isWB(x):true)&&(!q||(x.title||x.topic||"").toLowerCase().includes(q)));
+  const q=Q.toLowerCase(),list=saved.filter(x=>(GK==="wb"?isWB(x):GK==="sheet"?isSheet(x):GK==="seq"?!isDoc(x):true)&&(!q||(x.title||x.topic||"").toLowerCase().includes(q)));
   if(!list.length)return `<div class="empty" style="grid-column:1/-1">${saved.length&&q?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Ce que vous créez apparaîtra ici."}</div>`;
   return list.map(x=>`<div class="rc" onclick="openS('${x.id}')">${coverHTML(x)}<div class="bd"><div class="tt"><b>${esc(x.title||x.topic)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div>
-   <div class="mt"><span class="pl">${metaOf(x)}</span><span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
+   <div class="mt">${isSheet(x)?`<span class="pl pk">Fiche d'activités</span><span class="pl pk">${DIFFN[x.difficulty||"core"]}</span>`:`<span class="pl">${metaOf(x)}</span>`}<span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
 }
-function fitCovers(){document.querySelectorAll(".rc .cover.fit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";fit(b);});}
+function fitCovers(){
+  document.querySelectorAll(".rc .cover.fit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";fit(b);});
+  document.querySelectorAll(".rc .pfit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";const s=b.clientWidth*.72/794,pin=b.firstElementChild;pin.style.transform=`scale(${s})`;pin.style.left=((b.clientWidth-794*s)/2)+"px";});
+}
 function setQ(v){Q=v;$("#grid").innerHTML=cards();fitCovers();}
 const gridBlock=(kind,fn,label)=>{GK=kind;return `<div class="rh"><h2>Ressources</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label><button class="nbtn" onclick="${fn}">${label} ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;};
+const TPLIDS=["association","knowledge_check","reading_comprehension","practice_test","word_search","homework","end_test","cloze","exit_slip"];
+Object.assign(TPL,{association:{n:"Association",ic:"🔗"},knowledge_check:{n:"Vérification des connaissances",ic:"✅"},reading_comprehension:{n:"Compréhension de lecture",ic:"📖"},
+  practice_test:{n:"Test d'entraînement",ic:"📝",total:true},word_search:{n:"Mots mêlés",ic:"🔎"},homework:{n:"Fiche de devoirs",ic:"🏠"},end_test:{n:"Évaluation de fin de thème",ic:"🏅",total:true},cloze:{n:"Texte à trous",ic:"✏️"},exit_slip:{n:"Ticket de sortie",ic:"🎫"}});
+const tplRow=()=>`<div class="tplrow">${TPLIDS.map(id=>`<button class="tpl" onclick="newSheet('${id}')"><div class="tic">${TPL[id].ic}</div><span>${TPL[id].n}</span></button>`).join("")}</div>`;
 function dash(){
-  $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ?</h1>
+  $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ? ✨ <a href="#" onclick="loadExample();return false" style="font-size:15px;font-weight:600;margin-left:10px;color:var(--g)">👀 Voir un exemple</a></h1>
    <div class="ccs"><button class="cc" onclick="newSeries(true)"><span class="ic">✨</span><b>Leçon unique</b><small>Une leçon ponctuelle</small></button>
    <button class="cc" onclick="newSeries()"><span class="ic">🗂️</span><b>Séquence</b><small>Plusieurs leçons sur un sujet</small></button>
-   <button class="cc" onclick="newWB()"><span class="ic">📘</span><b>Cahier d'activités</b><small>Tout un sujet, prêt à imprimer</small></button>
-   <button class="cc" onclick="loadExample()"><span class="ic">👀</span><b>Exemple</b><small>Voir une séquence complète</small></button></div>
+   <button class="cc" onclick="newSheet()"><span class="ic">📄</span><b>Fiches d'activités</b><small>Fiches de tâches prêtes à imprimer</small></button>
+   <button class="cc" onclick="newWB()"><span class="ic">📘</span><b>Cahiers d'activités</b><small>Tout un sujet, prêt à imprimer</small></button></div>
+   <h2>Modèles de fiches d'activités</h2>${tplRow()}
    ${gridBlock("","newSeries()","Nouvelle séquence")}</div>`;
   fitCovers();
 }
@@ -922,49 +963,163 @@ async function wbGenerate(){
       if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
     l.busy=false;saveDoc(doc);if(i===0)loadPlan();if(here())wb4();
   }
-  wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();}else wb4();}
+  wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();toast("Document prêt ! Votre cahier a été créé.");}else wb4();}
 }
-function paperHTML(edit,ans){
-  const E=(pth,txt,tag="span",cls="")=>`<${tag} class="${cls}" ${edit?`contenteditable="plaintext-only" data-w="${pth}"`:""}>${esc(txt)}</${tag}>`,key=[];let n=0,sn=0;
-  const body=W.sections.map((s,si)=>{
+const getPath=(o,p)=>p.split(".").reduce((c,k)=>c==null?c:c[k],o);
+const LET="ABCDEFGH";
+function paperHTML(edit,ans,D=W){
+  const E=(pth,txt,tag="span",cls="")=>`<${tag} class="${cls}" ${edit?`contenteditable="plaintext-only" data-w="${pth}"`:""}>${esc(txt)}</${tag}>`,key=[];let n=0,sn=0,total=0;
+  const sheet=D.kind==="sheet";
+  const body=D.sections.map((s,si)=>{
     const d=s.data;if(!d)return "";sn++;const P=`sections.${si}.data`;
     const qs=d.questions.map((q,qi)=>{
-      n++;const Q=`${P}.questions.${qi}`;let a="";
+      n++;total+=+q.marks||0;const Q=`${P}.questions.${qi}`;let a="";
       if(q.type==="qcm")a=q.choices.map((c,ci)=>`<div class="ch">${E(Q+".choices."+ci,c)}</div>`).join("");
-      else if(q.type==="long")a='<div class="ln"></div>'.repeat(5);else if(q.type!=="fill")a='<div class="ln"></div><div class="ln"></div>';
-      key.push(`<li><b>${n}.</b> ${q.type==="qcm"?String.fromCharCode(65+(+q.answer||0))+" — "+esc(q.choices[+q.answer]||""):esc(q.answer)}</li>`);
+      else if(q.type==="long")a='<div class="ln"></div>'.repeat(5);
+      else if(q.type==="short")a='<div class="ln"></div><div class="ln"></div>';
+      else if(q.type==="match"){
+        const o=q.order;
+        a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term)}</div><div class="mbx"></div><div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def)}</div>`).join("")}</div>`;
+      }else if(q.type==="wordsearch"){
+        const hl=new Set(ans?(q.placed||[]).flatMap(w=>w.cells.map(c=>c.join(","))):[]);
+        a=`<table class="wsg">${q.grid.map((row,r)=>`<tr>${[...row].map((ch,c)=>`<td class="${hl.has(r+","+c)?"hl":""}">${esc(ch)}</td>`).join("")}</tr>`).join("")}</table><div class="wsw">${q.words.map((w,wi)=>`<span>${E(Q+".words."+wi,w)}</span>`).join("")}</div>`;
+      }
+      key.push(`<li><b>${n}.</b> ${q.type==="qcm"?LET[+q.answer||0]+" — "+esc(q.choices[+q.answer]||""):q.type==="match"?q.pairs.map((_,i)=>`${i+1}→${LET[q.order.indexOf(i)]}`).join(", "):q.type==="wordsearch"?"voir les mots surlignés dans la grille":esc(q.answer)}</li>`);
       return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q)}<span class="mk">${q.marks} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint)}</div>`:""}</div>`;
     }).join("");
-    return `<h2 class="sec"><span>${sn}. ${E(P+".title",d.title)}</span>${edit?`<button class="del" data-del="sections.${si}" title="Supprimer la section">✕</button>`:""}</h2>
-      ${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
+    const head=sheet&&D.sections.length===1?"":`<h2 class="sec"><span>${sn}. ${E(P+".title",d.title)}</span>${edit?`<button class="del" data-del="sections.${si}" title="Supprimer la section">✕</button>`:""}</h2>`;
+    return `${head}${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
       ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>`<p>${E(P+".explanation."+xi,x)}</p>`).join("")}</div>`:""}${qs}`;
   }).join("");
-  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(W.theme)}">${E("title",W.title,"h1")}<p class="sub2">${esc(W.level)} · ${esc(W.topic)}</p><div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}${ans?`<div class="ans"><h2 class="sec" style="margin-top:0">Corrigé</h2><ul style="list-style:none;padding:0">${key.join("")}</ul></div>`:""}</div>`;
+  const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
+  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}${ans?`<div class="ans"><h2 class="sec" style="margin-top:0">Corrigé</h2><ul style="list-style:none;padding:0">${key.join("")}</ul></div>`:""}</div>`;
+}
+
+/* historique (annuler / rétablir), « Enregistré », assistant */
+let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
+function initHist(){if(HIST.id!==W.id){HIST={id:W.id,u:[],r:[]};CHAT=[];CT=0;}}
+const snapJSON=()=>JSON.stringify({t:W.title,s:W.sections});
+function commit(fn){const before=snapJSON();fn();HIST.u.push(before);if(HIST.u.length>40)HIST.u.shift();HIST.r=[];saveDoc(W);updBar();}
+function updBar(){const u=$("#undo"),r=$("#redo");if(u)u.disabled=!HIST.u.length;if(r)r.disabled=!HIST.r.length;}
+function restore(str){const o=JSON.parse(str);W.title=o.t;W.sections=o.s;saveDoc(W);wbView();}
+function undoWB(){if(!HIST.u.length)return;HIST.r.push(snapJSON());restore(HIST.u.pop());}
+function redoWB(){if(!HIST.r.length)return;HIST.u.push(snapJSON());restore(HIST.r.pop());}
+function markSaved(){const e=$("#sv");if(!e)return;e.textContent="Enregistrement…";clearTimeout(svT);svT=setTimeout(()=>{const e=$("#sv");if(e)e.textContent="Enregistré";},500);}
+function refreshPaper(){const b=$(".wbpaper");if(b){b.innerHTML=paperHTML(true,W.showAns)+`<div class="addsec"><button onclick="openAddSection()">✨ Ajouter une section</button></div>`;}updBar();chatRender();}
+const briefWB=()=>({topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,title:W.title});
+function chatRender(){
+  const cm=$("#cm");if(!cm)return;const nm=ACC?(ACC.name||ACC.email.split("@")[0]).split(" ")[0]:"";
+  cm.innerHTML=CHAT.length?CHAT.map(m=>`<div class="bub ${m.r}">${esc(m.t)}</div>`).join("")+(CB?'<div class="bub a"><span class="spin"></span></div>':""):
+   `<div class="hi">Bonjour ${esc(nm)},<br>comment puis-je vous aider ?</div><div class="sg"><button onclick="openAddSection()">Ajouter plus d'activités</button><button onclick="chatSend('Ajoute deux questions de défi d\\'approfondissement à cette section.')">Ajouter des défis</button><button onclick="chatSend('Simplifie cette section : vocabulaire plus simple et indices.')">Simplifier cette section</button><button onclick="exportWB(false)">Créer un PDF mis en page</button></div>`;
+  cm.scrollTop=cm.scrollHeight;
+  const tg=$("#ctg");if(tg){tg.innerHTML=W.sections.map((s,i)=>s.data?`<option value="${i}" ${i===CT?"selected":""}>Section ${i+1} : ${esc((s.data.title||s.title).slice(0,28))}</option>`:"").join("");}
+}
+async function chatSend(text){
+  const inp=$("#cin"),ins=(text||(inp&&inp.value)||"").trim();if(!ins||CB)return;if(inp)inp.value="";
+  const idx=Math.min(+($("#ctg")?.value??CT),W.sections.length-1),sec=W.sections[idx];if(!sec||!sec.data)return;
+  CT=idx;CB=true;CHAT.push({r:"u",t:ins});chatRender();
+  try{const r=await api("/api/workbook/edit",{...briefWB(),instruction:ins,section:sec.data});commit(()=>{sec.data=r;});CHAT.push({r:"a",t:`C'est fait : j'ai modifié la section ${idx+1}.`});refreshPaper();}
+  catch(e){CHAT.push({r:"a",t:"Désolé : "+e.message});}
+  CB=false;chatRender();
 }
 function wbView(){
-  $("#app").innerHTML=`<div class="wbbar"><button class="btn sm ghost" onclick="navCahiers()">← Cahiers</button>
-   <select onchange="W.theme=this.value;saveDoc(W);wbView()" title="Thème">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}" ${k===W.theme?"selected":""}>${v.n}</option>`).join("")}</select>
-   <label class="ck"><input type="checkbox" ${W.showAns?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);wbView()"> Afficher le corrigé</label><span style="flex:1"></span>
-   ${W.sections.some(l=>!l.data)?`<button class="btn sm ghost" onclick="wstep=4;render();wbGenerate()">Générer les sections manquantes</button>`:""}
-   <button class="btn sm" onclick="exportWB(false)">⬇ PDF élève</button><button class="btn sm ghost" onclick="exportWB(true)">⬇ PDF avec corrigé</button></div>${paperHTML(true,W.showAns)}`;
+  initHist();
+  $("#app").innerHTML=`<div class="wbtop"><button class="rb" onclick="wbBack()" title="Retour">←</button><button class="btn sm ghost" onclick="openConsigne()">Modifier la consigne</button><span class="ttl">${esc(W.title)}</span><span class="sv" id="sv">Enregistré</span>
+   <button class="rb" id="undo" onclick="undoWB()" title="Annuler" disabled>↶</button><button class="rb" id="redo" onclick="redoWB()" title="Rétablir" disabled>↷</button><button class="rb" onclick="exportWB(false)" title="Imprimer">🖨</button>
+   <div class="exp"><button class="btn sm" onclick="$('#expm').classList.toggle('on')">⬆ Exporter</button><div id="expm" class="expm"><button onclick="exportWB(false)">PDF élève</button><button onclick="exportWB(true)">PDF avec corrigé</button></div></div><button class="rb chatbtn" onclick="$('.wbchat').classList.toggle('open')" title="Assistant">💬</button></div>
+  <div class="wbopts"><label>Thème <select onchange="W.theme=this.value;saveDoc(W);refreshPaper()">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}" ${k===W.theme?"selected":""}>${v.n}</option>`).join("")}</select></label>
+   <label class="ck"><input type="checkbox" ${W.showAns?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);refreshPaper()"> Afficher le corrigé</label>
+   ${W.sections.some(l=>!l.data)&&W.kind==="workbook"?`<button class="btn sm ghost" onclick="wstep=4;render();wbGenerate()">Générer les sections manquantes</button>`:""}</div>
+  <div class="wbmain"><div class="wbpaper"></div><aside class="wbchat"><div class="cm" id="cm"></div><div class="ci"><select id="ctg" onchange="CT=+this.value" title="Section modifiée par l'assistant"></select><div class="r"><input id="cin" placeholder="Demander à Claude…" onkeydown="if(event.key==='Enter')chatSend()"><button class="btn sm" onclick="chatSend()">➤</button></div></div></aside></div>`;
+  refreshPaper();
 }
+function wbBack(){W.kind==="sheet"?navFiches():navCahiers();}
 function exportWB(ans){
   const el=$("#print"),st=document.createElement("style");st.textContent="@page{size:A4;margin:14mm}";document.head.appendChild(st);
   el.className="wbprint";el.innerHTML=paperHTML(false,ans);
   const done=()=>{st.remove();el.className="";el.innerHTML="";removeEventListener("afterprint",done);};addEventListener("afterprint",done);
   toast("Dans la fenêtre d'impression, choisissez « Enregistrer au format PDF ».");setTimeout(()=>window.print(),300);
 }
+function openConsigne(){
+  modal(`<h2>Modifier la consigne</h2><p class="sub">Changez vos instructions puis régénérez, ou enregistrez-les pour plus tard.</p><textarea id="cs_t" maxlength="3000" style="min-height:120px">${esc(W.instructions||"")}</textarea>
+  <div class="nav"><button class="btn ghost" onclick="W.instructions=$('#cs_t').value;saveDoc(W);closeModal()">Enregistrer</button><button class="btn" onclick="regenDoc()">Régénérer</button></div>`);
+}
+function regenDoc(){
+  W.instructions=$("#cs_t").value;if(!confirm("Régénérer remplace le contenu actuel et compte pour une nouvelle ressource. Continuer ?"))return;
+  closeModal();W.sections.forEach(l=>{delete l.data;delete l.err;delete l.busy;});saveDoc(W);
+  if(W.kind==="sheet"){shGenerate();}else{wstep=4;render();wbGenerate();}
+}
+const ACTS=["Exercice de vocabulaire","Association","Texte à trous","Choix multiples","Questions rapides","Question ouverte","Mots mêlés"];
+function openAddSection(){
+  if(W.sections.length>=CAP().series)return openUpgrade("series");
+  modal(`<h2>Ajouter une section</h2><p class="sub">Dites-nous ce dont vous avez besoin ou choisissez une activité prête à l'emploi 🏃</p><input id="as_p" maxlength="300" placeholder="5 questions à choix multiples sur…">
+  <label>Activités</label><div class="lens" id="as_c">${ACTS.map(a=>`<button onclick="pickAct(this)">${a}</button>`).join("")}</div>
+  <label>Emplacement</label><select id="as_pos"><option value="end">À la fin</option>${W.sections.map((s,i)=>`<option value="${i+1}">Après la section ${i+1}</option>`).join("")}</select><div id="as_err"></div>
+  <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button><button class="btn" id="as_go" onclick="addSection()">Ajouter une section</button></div>`);
+}
+function pickAct(b){const on=b.classList.contains("on");document.querySelectorAll("#as_c button").forEach(x=>x.classList.remove("on"));if(!on)b.classList.add("on");}
+async function addSection(){
+  const pr=($("#as_p").value||"").trim(),focus=document.querySelector("#as_c .on")?.textContent||"";
+  if(!pr&&!focus){$("#as_err").innerHTML='<div class="err">Décrivez ce dont vous avez besoin ou choisissez une activité.</div>';return;}
+  const pv=$("#as_pos").value,pos=pv==="end"?W.sections.length:+pv,b=$("#as_go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création…';
+  const secs=W.sections.map(x=>({title:x.title,summary:x.summary}));secs.splice(pos,0,{title:focus||pr.slice(0,80),summary:pr||focus});
+  try{
+    const o=W.options||{};
+    const r=await api("/api/workbook/section",{...briefWB(),sections:secs,index:pos,context:"",options:{explain:!!o.explain,objectives:!!o.objectives,support:!!o.support,challenge:!!o.challenge,questions:5,focus:focus||pr,extra:true}});
+    commit(()=>W.sections.splice(pos,0,{title:r.title,summary:pr||focus,data:r}));closeModal();refreshPaper();toast("Section ajoutée");
+  }catch(e){$("#as_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;b.textContent="Ajouter une section";}
+}
+document.addEventListener("focusin",e=>{const el=e.target.closest&&e.target.closest("[data-w]");if(!el)return;const m=el.dataset.w.match(/^sections\.(\d+)/);if(m){CT=+m[1];const tg=$("#ctg");if(tg)tg.value=String(CT);}});
 document.addEventListener("focusout",e=>{
   const el=e.target.closest&&e.target.closest("[data-w]");if(!el||!W)return;
-  setPath(W,el.dataset.w,el.textContent.replace(/\s+/g," ").trim());saveDoc(W);
+  const pth=el.dataset.w,v=el.textContent.replace(/\s+/g," ").trim();if(getPath(W,pth)===v)return;
+  commit(()=>setPath(W,pth,v));
 });
 document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-w]")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
 document.addEventListener("click",e=>{
+  if(!e.target.closest(".exp"))$("#expm")?.classList.remove("on");
   const b=e.target.closest&&e.target.closest("[data-del]");if(!b||!W)return;
   const parts=b.dataset.del.split("."),idx=+parts.pop();let c=W;for(const k of parts)c=c[k];
   if(parts.join(".")==="sections"&&W.sections.filter(s=>s.data).length<2)return toast("Il faut garder au moins une section.");
-  c.splice(idx,1);saveDoc(W);wbView();
+  commit(()=>c.splice(idx,1));refreshPaper();
 });
+
+
+/* ============ fiches d'activités ============ */
+function shList(){$("#app").innerHTML=`<div class="dh"><h1>Fiches d'activités</h1><p class="sub">Créez des fiches imprimables à compléter en classe ou à la maison.</p><h2 style="margin-top:6px">Modèles</h2>${tplRow()}${gridBlock("sheet","newSheet()","Nouvelle fiche")}</div>`;fitCovers();}
+function newSheet(tpl){
+  S=null;W={id:uid(),kind:"sheet",tpl:tpl||"",title:"",topic:"",level:"6e",language:"français",difficulty:"core",instructions:"",curriculum:"",theme:"classique",sections:[],options:{},started:false};
+  wstep=tpl?2:1;page="sh";msg="";render();scrollTo(0,0);
+}
+function shFlow(){W.sections.length&&W.sections[0].data&&wstep>2?wbView():(wstep===1?sh1:sh2)();}
+function sh1(){
+  $("#app").innerHTML=`<h2 style="text-align:center">Choisissez un modèle</h2><p class="sub" style="text-align:center">Chaque modèle crée une fiche prête à imprimer.</p>
+  <div class="tplgrid">${TPLIDS.map(id=>`<button class="tpl" onclick="W.tpl='${id}';wstep=2;render()"><div class="tic">${TPL[id].ic}</div><span>${TPL[id].n}</span></button>`).join("")}</div>
+  <div class="nav"><button class="btn ghost" onclick="navFiches()">Annuler</button><span></span></div>`;
+}
+function sh2(){
+  const tp=TPL[W.tpl]||TPL.knowledge_check;
+  $("#app").innerHTML=`<h2 style="text-align:center">Choisissez le sujet et le niveau de votre fiche</h2>
+  <p class="sub" style="text-align:center">Modèle : <b>${tp.ic} ${tp.n}</b> · <a href="#" onclick="wstep=1;render();return false">changer</a></p>
+  <div class="card"><label>Sujet de la fiche d'activités</label><input id="sh_t" maxlength="300" placeholder="Ex. Les fractions, le cycle de l'eau…" value="${esc(W.topic)}" oninput="W.topic=this.value">
+  <div class="row"><div><label>Niveau</label><select onchange="W.level=this.value">${LEVELS.map(l=>`<option ${l===W.level?"selected":""}>${l}</option>`).join("")}</select></div>
+  <div><label>Langue</label><select onchange="W.language=this.value">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===W.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
+  <label>Difficulté</label><div class="lens">${Object.entries(DIFFN).map(([k,v])=>`<button class="${W.difficulty===k?"on":""}" onclick="W.difficulty='${k}';sh2()">${v}</button>`).join("")}</div>
+  <label>Instructions supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea maxlength="3000" oninput="W.instructions=this.value" placeholder="Notions à couvrir, contraintes…">${esc(W.instructions)}</textarea></div>
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="navFiches()">Annuler</button><button class="btn" onclick="shStart()">Générer la fiche</button></div>`;
+}
+function shStart(){if(!W.topic.trim()){msg="Saisissez un sujet.";return sh2();}msg="";shGenerate();}
+async function shGenerate(){
+  const doc=W;$("#app").innerHTML=`<div class="card" style="text-align:center;padding:50px 20px;margin-top:40px"><div class="spin" style="width:34px;height:34px;border-width:4px"></div><h2 style="margin-top:18px">Création de votre fiche…</h2><p class="sub">Cela prend quelques secondes.</p></div>`;
+  try{
+    const r=await api("/api/sheet",{template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum});
+    doc.title=r.title;doc.sections=[{title:r.title,summary:"",data:r.section}];doc.started=true;saveDoc(doc);loadPlan();
+    if(W===doc){page="wb";wstep=5;render();toast("Document prêt ! Votre fiche a été créée.");}
+  }catch(e){
+    if(e.code==="limit")openUpgrade("limit",e.message);
+    if(W===doc){msg=e.message;page="sh";wstep=2;doc.sections=[];render();}
+  }
+}
 
 /* ============ thèmes personnalisés (Max) ============ */
 const mix=(a,b,k)=>{const f=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const x=f(a),y=f(b);return "#"+x.map((v,i)=>Math.round(v*k+y[i]*(1-k)).toString(16).padStart(2,"0")).join("");};

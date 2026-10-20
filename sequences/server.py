@@ -18,7 +18,9 @@ import hashlib
 import hmac
 import json
 import os
+import random
 import re
+import unicodedata
 import secrets
 import tempfile
 import threading
@@ -313,7 +315,7 @@ def open_session(email):
     return token
 
 
-PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/workbook/outline", "/api/workbook/section", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
+PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/workbook/outline", "/api/workbook/section", "/api/workbook/edit", "/api/sheet", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
 
 
 @app.before_request
@@ -690,7 +692,36 @@ def slide():
 
 # ---------------------------------------------------------------- cahiers d'activités
 
-QTYPES = {"qcm", "short", "fill", "long"}
+QTYPES = {"qcm", "short", "fill", "long", "match", "wordsearch"}
+
+
+
+def build_grid(words):
+    """Grille de mots mêlés : renvoie (lignes, mots placés avec leurs cases)."""
+    items = []
+    for w in words:
+        c = re.sub(r"[^A-Z]", "", unicodedata.normalize("NFD", w).encode("ascii", "ignore").decode().upper())
+        if 3 <= len(c) <= 14:
+            items.append((w.upper(), c))
+    if len(items) < 4:
+        return None, []
+    size = min(16, max(12, max(len(c) for _, c in items) + 1))
+    grid = [[""] * size for _ in range(size)]
+    placed = []
+    for w, c in sorted(items, key=lambda x: -len(x[1])):
+        for _ in range(300):
+            dr, dc = random.choice([(0, 1), (1, 0), (1, 1)])
+            r, col = random.randrange(size), random.randrange(size)
+            if r + dr * (len(c) - 1) >= size or col + dc * (len(c) - 1) >= size:
+                continue
+            cells = [(r + dr * i, col + dc * i) for i in range(len(c))]
+            if all(grid[a][b] in ("", c[i]) for i, (a, b) in enumerate(cells)):
+                for i, (a, b) in enumerate(cells):
+                    grid[a][b] = c[i]
+                placed.append({"word": w, "cells": [list(x) for x in cells]})
+                break
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    return ["".join(ch or random.choice(letters) for ch in row) for row in grid], placed
 
 
 def clean_section(x):
@@ -698,12 +729,34 @@ def clean_section(x):
         return None
     qs = []
     for q in x.get("questions") or []:
-        if not isinstance(q, dict) or not q.get("q"):
+        if not isinstance(q, dict) or not (q.get("q") or q.get("type") in ("match", "wordsearch")):
             continue
         typ = q.get("type") if q.get("type") in QTYPES else "short"
         item = {"type": typ, "q": s(q.get("q"), 600), "answer": s(q.get("answer"), 800),
                 "marks": max(1, min(10, int(q.get("marks") or 1))) if str(q.get("marks") or "1").isdigit() else 1,
                 "hint": s(q.get("hint"), 300), "challenge": bool(q.get("challenge"))}
+        if typ == "wordsearch":
+            grid, placed = build_grid([s(w, 24) for w in q.get("words") or [] if w][:12])
+            if not grid or len(placed) < 4:
+                continue
+            item["words"], item["grid"], item["placed"] = [p["word"] for p in placed], grid, placed
+            item["q"] = item["q"] or "Retrouve les mots cachés dans la grille."
+            qs.append(item)
+            continue
+        if typ == "match":
+            pairs = [{"term": s(p.get("term"), 140), "def": s(p.get("def"), 300)}
+                     for p in q.get("pairs") or [] if isinstance(p, dict) and p.get("term") and p.get("def")][:8]
+            if len(pairs) < 2:
+                continue
+            order = list(range(len(pairs)))
+            for _ in range(10):  # mélange des définitions, jamais dans l'ordre des termes
+                random.shuffle(order)
+                if order != sorted(order) or len(order) < 3:
+                    break
+            item["pairs"], item["order"] = pairs, order
+            item["q"] = item["q"] or "Associe chaque notion à sa définition en inscrivant la lettre dans la case."
+            qs.append(item)
+            continue
         if typ == "qcm":
             ch = [s(c, 200) for c in q.get("choices") or []][:6]
             ans = q.get("answer")
@@ -757,7 +810,9 @@ def workbook_section():
     pname, cfg = plan_of(g.ukey)
     if not isinstance(plan, list) or not 0 <= idx < len(plan) or len(plan) > cfg["series"]:
         return error("invalid_request", f"Plan invalide ou trop long pour votre formule ({cfg['series']} sections maximum).", 400)
-    if idx == 0:  # un cahier = une ressource, comptée à sa première section
+    opt0 = b.get("options") if isinstance(b.get("options"), dict) else {}
+    counted = idx == 0 and not opt0.get("extra")
+    if counted:  # un cahier = une ressource, comptée à sa première section
         with _ulock:
             _, _, used, resets = usage_info(user_rec(g.ukey), time.time())
         if used >= cfg["limit"]:
@@ -775,7 +830,8 @@ def workbook_section():
         fields += ['"objective": "objectif de la section"', '"keywords": ["4 à 6 mots clés"]']
     if opt.get("explain", True):
         fields.append('"explanation": ["2 à 4 courts paragraphes qui expliquent la notion"]')
-    qdesc = ('"questions": [{"type": "qcm | short | fill | long", "q": "énoncé", "choices": ["A","B","C","D"] (qcm seulement), '
+    qdesc = ('"questions": [{"type": "qcm | short | fill | long | match", "q": "énoncé", "choices": ["A","B","C","D"] (qcm seulement), '
+             '"pairs": [{"term": "notion", "def": "définition"}] (match seulement : 4 à 6 paires, "q" = consigne), '
              '"answer": "réponse attendue complète (qcm : indice de la bonne réponse)", "marks": 1')
     if opt.get("support"):
         qdesc += ', "hint": "un indice qui aide sans donner la réponse"'
@@ -788,6 +844,8 @@ def workbook_section():
         f"{brief(b)}\n" + (f"\nContenu de départ :\n{ctx}\n" if ctx else "") +
         f"\nPlan du cahier « {s(b.get('title'), 160)} » :\n{outline_txt}\n\n"
         f"Écris la section {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
+        + (f"Cette section doit surtout proposer des exercices de type : {s(opt.get('focus'), 80)}. " if opt.get("focus") else "")
+        + (f"Les questions doivent aussi inclure une association (type match). " if idx == 1 and not opt.get("focus") else "") +
         f"Format : {{{', '.join(fields)}}}",
         8000,
     )
@@ -796,12 +854,88 @@ def workbook_section():
     out = clean_section(data)
     if not out:
         return error("invalid_json", "Section vide, réessayez.", 422)
-    if idx == 0:
+    if counted:
         with _ulock:
             u = user_rec(g.ukey)
             u["usage"].append(time.time())
             persist("users", g.ukey, u)
     return jsonify(out)
+
+
+@app.post("/api/workbook/edit")
+def workbook_edit():
+    """« Demander à Claude » : réécrit une section du cahier selon une consigne."""
+    b = request.get_json(silent=True) or {}
+    cur, instr = b.get("section"), s(b.get("instruction"), 1000)
+    if not isinstance(cur, dict) or not instr:
+        return error("invalid_request", "Section ou consigne manquante.", 400)
+    data, err = ask(
+        f"{brief(b)}\nCahier : {s(b.get('title'), 160)}\n\nSection actuelle (JSON) :\n{json.dumps(cur, ensure_ascii=False)[:9000]}\n\n"
+        f"Consigne de l'enseignant : {instr}\n\n"
+        "Renvoie la section modifiée, au même format JSON (title, objective, keywords, explanation, questions ; "
+        'questions de type qcm | short | fill | long | match avec "pairs": [{"term","def"}] pour match).',
+        8000,
+    )
+    if err:
+        return err
+    out = clean_section(data)
+    if not out:
+        return error("invalid_json", "Section illisible, réessayez.", 422)
+    return jsonify(out)
+
+
+SHEET_TEMPLATES = {
+    "association": ("Association", "un exercice d'association (type match) de 6 paires, puis 2 questions courtes de vérification", False),
+    "knowledge_check": ("Vérification des connaissances", "8 questions rapides, surtout des qcm et des réponses courtes", False),
+    "reading_comprehension": ("Compréhension de lecture", "un texte de 150 à 250 mots (champ explanation, 2 à 4 paragraphes) suivi de 6 questions de compréhension (qcm, short, long)", False),
+    "practice_test": ("Test d'entraînement", "un test formel de 10 questions variées avec un barème (marks), total sur 20 si possible", True),
+    "word_search": ("Mots mêlés", "un exercice de mots mêlés (type wordsearch avec 10 mots clés du thème dans words) puis 3 questions sur ces mots", False),
+    "homework": ("Fiche de devoirs", "6 exercices progressifs et variés à faire à la maison", False),
+    "end_test": ("Évaluation de fin de thème", "une évaluation sommative de 12 questions variées avec un barème (marks)", True),
+    "cloze": ("Texte à trous", "un court texte (champ explanation) puis 8 phrases à compléter (type fill, avec ____)", False),
+    "exit_slip": ("Ticket de sortie", "trois questions rapides (un qcm, une short, une long) pour vérifier la compréhension en fin de leçon", False),
+}
+SHEET_DIFF = {
+    "support": "Niveau Soutien : vocabulaire simple, consignes très guidées, un indice (hint) pour chaque question.",
+    "core": "Niveau Standard.",
+    "challenge": "Niveau Approfondissement : questions plus complexes, dont au moins 2 questions de défi (challenge true).",
+}
+
+
+@app.post("/api/sheet")
+def sheet():
+    b = request.get_json(silent=True) or {}
+    tpl = SHEET_TEMPLATES.get(b.get("template"))
+    if not tpl or not s(b.get("topic"), 300):
+        return error("invalid_request", "Modèle ou sujet manquant.", 400)
+    pname, cfg = plan_of(g.ukey)
+    with _ulock:
+        _, _, used, resets = usage_info(user_rec(g.ukey), time.time())
+    if used >= cfg["limit"]:
+        when = time.strftime("%d/%m", time.localtime(resets)) if resets else "bientôt"
+        msg = ("Vous avez créé toutes vos ressources gratuites pour cette semaine."
+               if pname == "free" else "Vous avez atteint votre limite mensuelle de ressources.")
+        return error("limit", f"{msg} Votre quota se réinitialise vers le {when}.", 429)
+    data, err = ask(
+        f"{brief(b)}\n{SHEET_DIFF.get(b.get('difficulty'), SHEET_DIFF['core'])}\n\n"
+        f"Crée une fiche d'activités imprimable « {tpl[0]} » : {tpl[1]}.\n"
+        'Format : {"title": "titre de la fiche", "explanation": ["paragraphes, seulement si le modèle en demande"], '
+        '"questions": [{"type": "qcm | short | fill | long | match | wordsearch", "q": "énoncé ou consigne", '
+        '"choices": ["A","B","C","D"] (qcm), "pairs": [{"term": "notion", "def": "définition"}] (match, 4 à 6 paires), '
+        '"words": ["MOT"] (wordsearch), "answer": "réponse attendue (qcm : indice de la bonne réponse)", "marks": 1, '
+        '"hint": "indice (niveau Soutien)", "challenge": false}]}',
+        8000,
+    )
+    if err:
+        return err
+    out = clean_section({"title": data.get("title"), "explanation": data.get("explanation"), "questions": data.get("questions")})
+    if not out:
+        return error("invalid_json", "Fiche vide, réessayez.", 422)
+    with _ulock:
+        u = user_rec(g.ukey)
+        u["usage"].append(time.time())
+        persist("users", g.ukey, u)
+    return jsonify({"title": out["title"], "section": out})
 
 
 @app.get("/")
