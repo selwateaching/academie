@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Séquences — créez une série de leçons</title>
+<style>
+:root{--g:#2c6e49;--g2:#f0f9f4;--ink:#1c2420;--mut:#5f6b64;--line:#dfe6e1;--card:#fff;--warn:#bb2e26;--or:#d68c45}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:linear-gradient(#e6f4ec,#fff 320px) no-repeat #fff;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;max-width:900px;margin:0 auto}
+.logo{font-weight:800;font-size:20px;color:var(--g);cursor:pointer;background:none;border:0;padding:0}
+main{max-width:760px;margin:0 auto;padding:8px 20px 80px}
+h1{font-size:28px;margin:12px 0 4px}h2{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mut);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 3px 0 rgba(0,0,0,.05)}
+label{display:block;font-weight:600;margin:14px 0 6px}label:first-child{margin-top:0}
+input,select,textarea{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:inherit}
+textarea{min-height:90px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:transparent}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:11px 20px;cursor:pointer;background:var(--g);color:#fff}
+.btn:hover{filter:brightness(1.1)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--g);border:1px solid var(--g)}
+.btn.sm{padding:6px 12px;font-size:14px}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.steps{display:flex;gap:6px;margin:6px 0 18px;list-style:none;padding:0}
+.steps li{flex:1;text-align:center;font-size:13px;color:var(--mut);padding-bottom:6px;border-bottom:4px solid var(--line)}
+.steps li.on{color:var(--g);font-weight:700;border-color:var(--g)}.steps li.done{border-color:var(--g)}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:10px 0;font-weight:500}
+.chk input{width:auto;margin-top:5px}
+.chk small{display:block;color:var(--mut);font-weight:400}
+.err{background:#fdecea;color:var(--warn);border-radius:10px;padding:10px 14px;margin:12px 0}
+.ol{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.ol .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--g2);color:var(--g);font-weight:700;display:grid;place-items:center;margin-top:8px}
+.ol .f{flex:1}.ol input{font-weight:700;margin-bottom:6px}.ol textarea{min-height:56px}
+.ol .t{display:flex;flex-direction:column;gap:2px}
+.ib{border:0;background:none;cursor:pointer;font-size:16px;padding:2px 6px;color:var(--mut)}.ib:hover{color:var(--g)}.ib:disabled{opacity:.25}
+.lrow{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}.lrow b{display:block}
+.pill{font-size:12px;border-radius:99px;padding:2px 10px;background:var(--g2);color:var(--g);font-weight:600;white-space:nowrap}
+.pill.w{background:#fdf2e6;color:var(--or)}.pill.e{background:#fdecea;color:var(--warn)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:s 0.8s linear infinite;vertical-align:-2px}
+@keyframes s{to{transform:rotate(360deg)}}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
+.saved{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.saved:first-child{border-top:0}
+/* diaporama */
+#show{position:fixed;inset:0;background:#fff;z-index:50;display:none;flex-direction:column}
+#show.on{display:flex}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);gap:10px}
+.stage{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px}
+.slide{max-width:900px;width:100%}
+.slide .em{font-size:56px}.slide h3{font-size:clamp(26px,4vw,40px);margin:6px 0 16px;color:var(--g)}
+.slide li{font-size:clamp(18px,2.4vw,26px);margin:10px 0}
+.notes{border-top:1px solid var(--line);background:var(--g2);padding:12px 20px;max-height:28vh;overflow:auto;display:none}
+.notes.on{display:block}
+.qz button{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:clamp(16px,2vw,22px);cursor:pointer}
+.qz button.ok{border-color:var(--g);background:var(--g2)}.qz button.ko{border-color:var(--warn);background:#fdecea}
+#print{display:none}
+@media print{body>*:not(#print){display:none!important}#print{display:block}
+#print h1{page-break-before:always;font-size:22px}#print h1:first-child{page-break-before:avoid}
+#print .s{break-inside:avoid;margin:0 0 14px;padding-left:12px;border-left:4px solid var(--g)}}
+</style>
+</head>
+<body>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><span id="top"></span></header>
+<main id="app"></main>
+<div id="show"></div>
+<div id="print"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEY="sequences.v1";
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}};
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch{}};
+let saved=load();
+const LEVELS=["Maternelle","CP","CE1","CE2","CM1","CM2","6e","5e","4e","3e","Seconde","Première","Terminale","Études supérieures","Adultes"];
+const FW=[["standard","Standard : modélisation, pratique guidée"],["jfn","Je fais / Nous faisons / Tu fais"],["5e","5E : engager, explorer, expliquer…"],["rosenshine","Principes de Rosenshine"],["imr","Introduction / Activité / Bilan"]];
+let S=null,step=1,busy=false,msg="";
+const blank=()=>({id:Date.now().toString(36),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",
+  options:{objectives:true,vocabulary:true,quiz:true,slides:10},title:"",lessons:[]});
+
+/* ---------- API ---------- */
+async function api(path,body){
+  const hdr={"Content-Type":"application/json"};
+  const code=localStorage.getItem("seq.code");if(code)hdr["X-Seq-Code"]=code;
+  let r=await fetch(path,{method:"POST",headers:hdr,body:JSON.stringify(body)});
+  if(r.status===401){
+    const c=prompt("Code d'accès :");if(!c)throw new Error("Code d'accès requis.");
+    localStorage.setItem("seq.code",c);hdr["X-Seq-Code"]=c;
+    r=await fetch(path,{method:"POST",headers:hdr,body:JSON.stringify(body)});
+  }
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.error||"Erreur "+r.status);
+  return d;
+}
+const payload=()=>({topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:S.options,title:S.title,
+  lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
+
+/* ---------- navigation ---------- */
+function go(v){if(v==="home"){S=null;step=1;msg="";}render();}
+function save(){const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();}
+function render(){
+  $("#top").innerHTML="";
+  if(!S)return home();
+  if(step===5)return series();
+  [null,s1,s2,s3,s4][step]();
+}
+const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
+const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
+
+/* ---------- accueil ---------- */
+function home(){
+  $("#app").innerHTML=`<h1>Que créons-nous aujourd'hui ?</h1><p class="sub">Une séquence de leçons complète, avec diapositives, notes et quiz.</p>
+  <div class="card"><button class="btn" onclick="S=blank();step=1;msg='';render()">＋ Créer une séquence</button></div>
+  ${saved.length?`<div class="card"><h2>Mes séquences</h2>${saved.map(x=>`<div class="saved"><div><b>${esc(x.title||x.topic)}</b><br><small style="color:var(--mut)">${esc(x.level)} · ${x.lessons.length} leçons · ${x.lessons.filter(l=>l.data).length} prêtes</small></div>
+  <span><button class="btn sm ghost" onclick="openS('${x.id}')">Ouvrir</button> <button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></span></div>`).join("")}</div>`:""}`;
+}
+function openS(id){S=saved.find(x=>x.id===id);step=S.lessons.length&&S.started?5:3;msg="";render();}
+function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();render();}}
+
+/* ---------- étape 1 : sujet ---------- */
+function s1(){
+  $("#app").innerHTML=`${stepsBar()}<h2>Choisissez le sujet de votre séquence</h2><p class="sub">Soyez aussi précis que vous voulez.</p>
+  <div class="card"><label>Sujet de la séquence</label><input id="topic" maxlength="300" placeholder="Ex. Le système solaire, les fractions, la Révolution française…" value="${esc(S.topic)}">
+  <div class="row"><div><label>Niveau</label><select id="level">${LEVELS.map(l=>`<option ${l===S.level?"selected":""}>${l}</option>`).join("")}</select></div>
+  <div><label>Langue</label><select id="lang">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===S.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
+  <label>Nombre de leçons</label><select id="count">${[2,3,4,5,6,7,8,9,10].map(n=>`<option ${n==S.count?"selected":""}>${n}</option>`).join("")}</select>
+  <label>Consignes supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea id="ins" maxlength="3000" placeholder="Thèmes à aborder, contraintes, programme à suivre…">${esc(S.instructions)}</textarea></div>
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="go('home')">Annuler</button><button class="btn" onclick="from1()">Continuer</button></div>`;
+}
+function read1(){S.topic=$("#topic").value.trim();S.level=$("#level").value;S.language=$("#lang").value;S.count=+$("#count").value;S.instructions=$("#ins").value.trim();}
+function from1(){read1();if(!S.topic){msg="Saisissez un sujet.";return s1();}msg="";step=2;render();}
+
+/* ---------- étape 2 : réglages ---------- */
+function s2(){
+  const o=S.options;
+  $("#app").innerHTML=`${stepsBar()}<h2>Affinez votre séquence</h2><p class="sub">Tout est facultatif, on s'occupe du reste.</p>
+  <div class="card"><label>Cadre de leçon</label><select id="fw">${FW.map(([v,t])=>`<option value="${v}" ${v===S.framework?"selected":""}>${t}</option>`).join("")}</select>
+  <label>Diapositives par leçon</label><select id="sl">${[6,8,10,12,15,20].map(n=>`<option ${n==o.slides?"selected":""}>${n}</option>`).join("")}</select>
+  <label>Contenu à inclure</label>
+  <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
+  <label class="chk"><input type="checkbox" id="o2" ${o.vocabulary?"checked":""}><span>Vocabulaire clé<small>Mots importants avec leur définition</small></span></label>
+  <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
+}
+function read2(){S.framework=$("#fw").value;S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,slides:+$("#sl").value};}
+async function outline(){
+  read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
+  try{
+    const d=await api("/api/outline",{topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,count:S.count});
+    S.title=d.title;S.lessons=d.lessons.map(l=>({...l}));step=3;save();render();
+  }catch(e){msg=e.message;s2();}
+}
+
+/* ---------- étape 3 : plan ---------- */
+function s3(){
+  const n=S.lessons.length;
+  $("#app").innerHTML=`${stepsBar()}<h2>Vérifiez le plan</h2><p class="sub">Modifiez les titres et les résumés, réordonnez, supprimez ou ajoutez des leçons.</p>
+  <div class="card"><label>Titre de la séquence</label><input id="st" value="${esc(S.title)}" oninput="S.title=this.value">
+  <label>Leçons</label>${S.lessons.map((l,i)=>`<div class="ol"><div class="n">${i+1}</div><div class="f"><input value="${esc(l.title)}" oninput="S.lessons[${i}].title=this.value" placeholder="Titre de la leçon"><textarea oninput="S.lessons[${i}].summary=this.value" placeholder="Ce que couvre cette leçon">${esc(l.summary)}</textarea></div>
+  <div class="t"><button class="ib" ${i?"":"disabled"} onclick="mv(${i},-1)" title="Monter">▲</button><button class="ib" ${i<n-1?"":"disabled"} onclick="mv(${i},1)" title="Descendre">▼</button><button class="ib" ${n>2?"":"disabled"} onclick="rm(${i})" title="Supprimer">🗑</button></div></div>`).join("")}
+  <button class="btn sm ghost" ${n>=10?"disabled":""} onclick="add()">＋ Ajouter une leçon</button></div>
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="step=2;render()">Retour</button><button class="btn" onclick="start()">Générer la séquence</button></div>`;
+}
+function mv(i,d){const a=S.lessons;[a[i],a[i+d]]=[a[i+d],a[i]];s3();}
+function rm(i){S.lessons.splice(i,1);s3();}
+function add(){S.lessons.push({title:"",summary:""});s3();}
+function start(){
+  if(S.lessons.some(l=>!l.title.trim())){msg="Donnez un titre à chaque leçon.";return s3();}
+  S.lessons.forEach(l=>{l.title=l.title.trim();delete l.data;delete l.err;});
+  msg="";S.started=true;step=4;save();render();generate();
+}
+
+/* ---------- étape 4 : génération ---------- */
+let running=false;
+function s4(){
+  const done=S.lessons.filter(l=>l.data).length,n=S.lessons.length;
+  $("#app").innerHTML=`${stepsBar()}<h2>Création de vos leçons</h2><p class="sub">Gardez cet onglet ouvert, cela prend quelques minutes.</p>
+  <div class="card"><b>${done} sur ${n} leçons prêtes</b><div class="bar"><i style="width:${done/n*100}%"></i></div>
+  ${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b></div>${
+    l.data?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="retry(${i})">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}</div>
+  <div class="nav"><button class="btn ghost" onclick="step=3;render()" ${running?"disabled":""}>Retour au plan</button><button class="btn" onclick="step=5;render()" ${done?"":"disabled"}>Voir la séquence</button></div>`;
+}
+async function generate(){
+  if(running)return;running=true;
+  for(let i=0;i<S.lessons.length;i++){
+    const l=S.lessons[i];if(l.data)continue;
+    l.busy=true;delete l.err;if(step===4)s4();
+    try{l.data=await api("/api/lesson",{...payload(),index:i});}
+    catch(e){l.err=e.message;if(/accès|clé|Limite|Trop/i.test(e.message)){l.busy=false;break;}}
+    l.busy=false;save();if(step===4)s4();
+  }
+  running=false;if(step===4)s4();
+  if(S.lessons.every(l=>l.data)&&step===4){step=5;render();}
+}
+function retry(i){delete S.lessons[i].err;generate();}
+
+/* ---------- séquence terminée ---------- */
+function series(){
+  const miss=S.lessons.filter(l=>!l.data).length;
+  $("#app").innerHTML=`<h1>${esc(S.title)}</h1><p class="sub">${esc(S.level)} · ${S.lessons.length} leçons</p>
+  <div class="card">${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.data?.title||l.title)}</b><small style="color:var(--mut)">${esc(l.summary)}</small></div>
+  ${l.data?`<button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
+  <div class="nav" style="justify-content:flex-start;flex-wrap:wrap">
+  ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} manquantes</button>`:""}
+  <button class="btn ghost" onclick="printAll()">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
+}
+
+/* ---------- diaporama ---------- */
+let P=null;
+function play(i){
+  const d=S.lessons[i].data,sl=[];
+  sl.push({k:"t",title:d.title,emoji:"📖",bullets:d.objectives?.length?["Objectifs :",...d.objectives]:[]});
+  d.slides.forEach(x=>sl.push({k:"s",...x}));
+  if(d.vocabulary?.length)sl.push({k:"v",title:"Vocabulaire clé",emoji:"🔤",vocab:d.vocabulary});
+  d.quiz?.forEach((q,j)=>sl.push({k:"q",title:`Quiz ${j+1}/${d.quiz.length}`,emoji:"❓",q}));
+  P={i,sl,n:0,notes:false};show();
+}
+function show(){
+  const x=P.sl[P.n],el=$("#show");el.classList.add("on");
+  let body=`<div class="em">${esc(x.emoji||"")}</div><h3>${esc(x.title)}</h3>`;
+  if(x.k==="v")body+=`<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
+  else if(x.k==="q")body+=`<p style="font-size:clamp(18px,2.6vw,28px);font-weight:600">${esc(x.q.q)}</p><div class="qz">${x.q.choices.map((c,j)=>`<button onclick="ans(this,${j})">${esc(c)}</button>`).join("")}</div><p id="why" style="color:var(--g);font-weight:600"></p>`;
+  else body+=`<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;
+  el.innerHTML=`<div class="sbar"><button class="btn sm ghost" onclick="closeShow()">✕ Quitter</button><span>${P.n+1} / ${P.sl.length}</span>
+  <span><button class="btn sm ghost" onclick="P.notes=!P.notes;show()">Notes</button> <button class="btn sm ghost" onclick="nav(-1)" ${P.n?"":"disabled"}>◀</button> <button class="btn sm" onclick="nav(1)" ${P.n<P.sl.length-1?"":"disabled"}>▶</button></span></div>
+  <div class="stage"><div class="slide">${body}</div></div><div class="notes ${P.notes&&x.notes?"on":""}"><b>Notes de l'enseignant</b><br>${esc(x.notes||"")}</div>`;
+}
+function ans(btn,j){const q=P.sl[P.n].q;[...btn.parentNode.children].forEach((b,k)=>{b.disabled=true;if(k===q.answer)b.classList.add("ok");else if(k===j)b.classList.add("ko");});$("#why").textContent=q.why;}
+function nav(d){P.n=Math.max(0,Math.min(P.sl.length-1,P.n+d));show();}
+function closeShow(){P=null;$("#show").classList.remove("on");}
+document.addEventListener("keydown",e=>{if(!P)return;if(e.key==="ArrowRight"||e.key===" ")nav(1);else if(e.key==="ArrowLeft")nav(-1);else if(e.key==="Escape")closeShow();});
+
+/* ---------- impression ---------- */
+function printAll(){
+  $("#print").innerHTML=S.lessons.filter(l=>l.data).map((l,i)=>{const d=l.data;return `<h1>${i+1}. ${esc(d.title)}</h1>
+  ${d.objectives?.length?`<p><b>Objectifs</b></p><ul>${d.objectives.map(o=>`<li>${esc(o)}</li>`).join("")}</ul>`:""}
+  ${d.slides.map(s=>`<div class="s"><b>${esc(s.emoji)} ${esc(s.title)}</b><ul>${s.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>${s.notes?`<i>Notes : ${esc(s.notes)}</i>`:""}</div>`).join("")}
+  ${d.vocabulary?.length?`<p><b>Vocabulaire</b></p><ul>${d.vocabulary.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`:""}
+  ${d.quiz?.length?`<p><b>Quiz</b></p><ol>${d.quiz.map(q=>`<li>${esc(q.q)}<ul>${q.choices.map((c,j)=>`<li>${j===q.answer?"<b>":""}${esc(c)}${j===q.answer?" ✓</b>":""}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}`;}).join("");
+  window.print();
+}
+render();
+</script>
+</body>
+</html>
