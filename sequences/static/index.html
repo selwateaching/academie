@@ -368,6 +368,11 @@ header nav a{white-space:nowrap}header .chip{white-space:nowrap;padding:5px 10px
 .paper.pans{break-before:page}.pans h1{margin-bottom:6px}.pans .as{font-size:17px;color:var(--ti);margin:20px 0 4px;border-bottom:2px solid var(--blob);padding-bottom:3px}
 .ar{display:flex;gap:8px;margin:9px 0;align-items:baseline}.ar .an{color:var(--ti);min-width:26px}.ar .why{color:#374151}.am div{margin:3px 0}
 .paper [data-w]:empty::before{content:"Ajouter…";color:#9ca3af}
+
+.paper .ln,.paper .mbx,.paper .hv,.paper .mkv{min-width:12px}.paper .ln{min-height:28px;line-height:28px}.paper .mbx{min-height:34px;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center}
+.paper .hv{display:inline-block;min-width:70px;color:#111}
+.paper .ln:empty::before,.paper .mbx:empty::before,.paper .hv:empty::before,.paper .mkv:empty::before{content:""!important}
+.paper.edit .ln:hover,.paper.edit .mbx:hover{background:rgba(64,158,158,.08)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -729,7 +734,7 @@ function fit(box){
   sl.style.transform=`scale(${k})`;
 }
 function fitBox(html,w,h,cls=""){return `<div class="fit ${cls}" style="width:${w};height:${h}">${html}</div>`;}
-function setPath(o,p,v){const k=p.split(".");let c=o;for(let i=0;i<k.length-1;i++)c=c[k[i]];c[k.at(-1)]=v;}
+function setPath(o,p,v){const k=p.split(".");let c=o;for(let i=0;i<k.length-1;i++){if(c[k[i]]==null)c[k[i]]=/^\d+$/.test(k[i+1])?[]:{};c=c[k[i]];}c[k.at(-1)]=v;}
 
 /* ============ studio (éditeur) ============ */
 let ST=null;
@@ -1086,8 +1091,9 @@ const fmt=v=>String(v??"").startsWith(RICH)?cleanHTML(String(v).slice(1)):esc(v)
 const getPath=(o,p)=>p.split(".").reduce((c,k)=>c==null?c:c[k],o);
 const LET="ABCDEFGH";
 function paperHTML(edit,ans,D=W){
-  const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
+  const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"${/\.marks$/.test(pth)?" data-num=\"1\"":""}`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
   let n=0,sn=0,total=0;const sheet=D.kind==="sheet",secAns={};
+  const lines=(Q,q,c)=>Array.from({length:c},(_,k)=>E(Q+".lines."+k,(q.lines||[])[k]||"","div","ln")).join("");
   const wsGrid=(q,hlOn)=>{const hl=new Set(hlOn?(q.placed||[]).flatMap(w=>w.cells.map(c=>c.join(","))):[]);return `<table class="wsg">${q.grid.map((row,r)=>`<tr>${[...row].map((ch,c)=>`<td class="${hl.has(r+","+c)?"hl":""}">${esc(ch)}</td>`).join("")}</tr>`).join("")}</table>`;};
   const ansRow=(q,Q,num)=>{
     let a;
@@ -1103,16 +1109,16 @@ function paperHTML(edit,ans,D=W){
     const qs=d.questions.map((q,qi)=>{
       n++;total+=+q.marks||0;const Q=`${P}.questions.${qi}`;let a="";
       if(q.type==="qcm")a=q.choices.map((c,ci)=>`<div class="ch">${E(Q+".choices."+ci,c,"span","",true)}</div>`).join("");
-      else if(q.type==="long")a='<div class="ln"></div>'.repeat(5);
-      else if(q.type==="short")a='<div class="ln"></div><div class="ln"></div>';
+      else if(q.type==="long")a=lines(Q,q,5);
+      else if(q.type==="short")a=lines(Q,q,2);
       else if(q.type==="match"){
         const o=q.order;
-        a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term,"span","",true)}</div><div class="mbx"></div><div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def,"span","",true)}</div>`).join("")}</div>`;
+        a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term,"span","",true)}</div>${E(Q+".given."+i,(q.given||[])[i]||"","div","mbx")}<div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def,"span","",true)}</div>`).join("")}</div>`;
       }else if(q.type==="wordsearch"){
         a=`${wsGrid(q,false)}<div class="wsw">${q.words.map((w,wi)=>`<span>${E(Q+".words."+wi,w)}</span>`).join("")}</div>`;
       }
       (secAns[si]=secAns[si]||[]).push(ansRow(q,Q,n));
-      return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q,"span","",true)}<span class="mk">${q.marks} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint,"span","",true)}</div>`:""}</div>`;
+      return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q,"span","",true)}<span class="mk">${E(Q+".marks",q.marks,"span","mkv")} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint,"span","",true)}</div>`:""}</div>`;
     }).join("");
     const head=sheet&&D.sections.length===1?"":`<h2 class="sec"><span>${sn}. ${E(P+".title",d.title)}</span>${edit?`<button class="del" data-del="sections.${si}" title="Supprimer la section">✕</button>`:""}</h2>`;
     return `${head}${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective,"span","",true)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
@@ -1120,7 +1126,7 @@ function paperHTML(edit,ans,D=W){
   }).join("");
   const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
   const ansCard=ans?`<div class="paper pans ${edit?"edit":""}" style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
-  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}</div>${ansCard}`;
+  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
 }
 /* historique (annuler / rétablir), « Enregistré », assistant */
 let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
@@ -1222,6 +1228,7 @@ document.addEventListener("focusout",e=>{
   const pth=el.dataset.w;let v;
   if(el.dataset.r){const h=cleanHTML(el.innerHTML);v=/<[a-z]/i.test(h)?RICH+h:el.textContent.replace(/\s+/g," ").trim();}
   else v=el.textContent.replace(/\s+/g," ").trim();
+  if(el.dataset.num)v=Math.max(0,Math.min(99,parseInt(v)||0));
   if(getPath(W,pth)===v)return;
   commit(()=>setPath(W,pth,v));
 });
