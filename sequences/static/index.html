@@ -326,7 +326,7 @@ body.app #app.paperw{max-width:none}
 .pfit{position:relative;overflow:hidden;background:linear-gradient(#fdeee8,#fff)!important;display:block!important}.pfit .pin{position:absolute;top:14px;left:0;width:794px;transform-origin:0 0;pointer-events:none}.pfit .paper{margin:0;box-shadow:0 2px 12px rgba(0,0,0,.2)}
 .tplgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:10px}
 #print.wbprint{display:none}#print.wbprint h1{page-break-before:avoid!important;font-size:30px!important}
-@media print{#print.wbprint{display:block}#print.wbprint .paper{width:auto;box-shadow:none;padding:0;margin:0;border-radius:0}#print.wbprint .del{display:none}#print.wbprint h2.sec{break-after:avoid}}
+@media print{#print.wbprint{display:block}#print.wbprint .paper.pans{break-before:page}#print.wbprint .paper{width:auto;box-shadow:none;padding:0;margin:0;border-radius:0}#print.wbprint .del{display:none}#print.wbprint h2.sec{break-after:avoid}}
 
 .dh{max-width:1120px;margin:0 auto}.dh h1{text-align:center;font-size:clamp(28px,3.2vw,40px)}
 .ccs{max-width:980px;margin:6px auto 0;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px}
@@ -353,13 +353,28 @@ body #app.serw{max-width:1180px!important}
 .sside .card{padding:16px}.sside h3{margin:0 0 10px;font-size:17px}.sside .w{width:100%;margin-bottom:8px}
 .dots{display:flex;flex-wrap:wrap;gap:10px}.dot{position:relative;width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);cursor:pointer;background:var(--bg);display:grid;place-items:center;font:900 12px Inter,sans-serif;color:var(--ti);padding:0}
 .dot.on{box-shadow:0 0 0 3px var(--g)}.dot:hover{transform:scale(1.1)}.dot.add{background:#f3f4f6;color:#6b7280;font-size:20px}.dotname{margin:10px 0 0;font-size:14px;color:var(--mut)}
+
+#app.paperw{max-width:1240px!important}
+header nav a{white-space:nowrap}header .chip{white-space:nowrap;padding:5px 10px}header nav{gap:14px}
+.fmtbar{position:sticky;top:64px;z-index:25;display:flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.14);padding:5px 8px;margin:0 auto 14px;width:max-content;max-width:100%;flex-wrap:wrap}
+.fmtbar button,.fmtbar select,.fmtbar .colbtn{font:inherit;border:0;background:none;padding:6px 9px;border-radius:8px;cursor:pointer;color:#1f2937;min-width:32px;text-align:center}
+.fmtbar button:hover,.fmtbar .colbtn:hover{background:#eef2f1}.fmtbar select{width:auto!important;padding:6px 6px}.fmtbar{flex-wrap:nowrap!important;overflow-x:auto}
+.fmtbar .sep{width:1px;height:22px;background:var(--line);margin:0 5px}
+.fmtbar .ask{color:var(--g);font-weight:700;white-space:nowrap}.fmtbar .bt-d{color:#b91c1c}
+.colbtn{position:relative;display:inline-block;font-weight:800}.colbtn span{border-bottom:3px solid #b91c1c;line-height:1}.colbtn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.paper [data-r] h3{font-size:18px;margin:6px 0}.paper [data-r] h4{font-size:16px;margin:4px 0}.paper ul,.paper ol{margin:4px 0 4px 22px;padding:0}.paper a{color:#2563eb}.paper .eq{font-family:Georgia,serif;font-style:italic}
+.paper .ex>div{margin:6px 0}
+
+.paper.pans{break-before:page}.pans h1{margin-bottom:6px}.pans .as{font-size:17px;color:var(--ti);margin:20px 0 4px;border-bottom:2px solid var(--blob);padding-bottom:3px}
+.ar{display:flex;gap:8px;margin:9px 0;align-items:baseline}.ar .an{color:var(--ti);min-width:26px}.ar .why{color:#374151}.am div{margin:3px 0}
+.paper [data-w]:empty::before{content:"Ajouter…";color:#9ca3af}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 <script src="/pptxgen.bundle.js" defer></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="navFiches()">Fiches d'activités</a><a onclick="navCahiers()">Cahiers d'activités</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="navFiches()">Fiches</a><a onclick="navCahiers()">Cahiers</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
 <aside id="side"></aside>
 <main id="app"></main>
 <div id="modal" onclick="if(event.target===this)closeModal()"></div>
@@ -1052,36 +1067,61 @@ async function wbGenerate(){
   }
   wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();toast("Document prêt ! Votre cahier a été créé.");}else wb4();}
 }
+const RICH="\u0001",OKCOL=/^(#[0-9a-f]{3,8}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\))$/i;
+function cleanHTML(html){
+  const doc=new DOMParser().parseFromString("<body>"+html+"</body>","text/html"),ALLOW=new Set(["B","STRONG","I","EM","U","A","SPAN","UL","OL","LI","BR","DIV","SUB","SUP","H3","H4","P"]);
+  const walk=n=>{for(const c of [...n.childNodes]){
+    if(c.nodeType===3)continue;if(c.nodeType!==1){c.remove();continue;}
+    if(!ALLOW.has(c.tagName)){walk(c);while(c.firstChild)c.parentNode.insertBefore(c.firstChild,c);c.remove();continue;}
+    for(const a of [...c.attributes]){const k=a.name.toLowerCase();
+      if(c.tagName==="A"&&k==="href"&&/^(https?:|mailto:)/i.test(a.value))continue;
+      if(c.tagName==="SPAN"&&k==="style"){const m=a.value.match(/(?:^|;)\s*color:\s*([^;]+)/i);if(m&&OKCOL.test(m[1].trim())){c.setAttribute("style","color:"+m[1].trim());continue;}}
+      if(c.tagName==="SPAN"&&k==="class"&&a.value==="eq")continue;
+      c.removeAttribute(a.name);}
+    if(c.tagName==="A"){c.setAttribute("target","_blank");c.setAttribute("rel","noopener noreferrer");}
+    walk(c);}};
+  walk(doc.body);return doc.body.innerHTML;
+}
+const fmt=v=>String(v??"").startsWith(RICH)?cleanHTML(String(v).slice(1)):esc(v);
 const getPath=(o,p)=>p.split(".").reduce((c,k)=>c==null?c:c[k],o);
 const LET="ABCDEFGH";
 function paperHTML(edit,ans,D=W){
-  const E=(pth,txt,tag="span",cls="")=>`<${tag} class="${cls}" ${edit?`contenteditable="plaintext-only" data-w="${pth}"`:""}>${esc(txt)}</${tag}>`,key=[];let n=0,sn=0,total=0;
-  const sheet=D.kind==="sheet";
+  const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
+  let n=0,sn=0,total=0;const sheet=D.kind==="sheet",secAns={};
+  const wsGrid=(q,hlOn)=>{const hl=new Set(hlOn?(q.placed||[]).flatMap(w=>w.cells.map(c=>c.join(","))):[]);return `<table class="wsg">${q.grid.map((row,r)=>`<tr>${[...row].map((ch,c)=>`<td class="${hl.has(r+","+c)?"hl":""}">${esc(ch)}</td>`).join("")}</tr>`).join("")}</table>`;};
+  const ansRow=(q,Q,num)=>{
+    let a;
+    if(q.type==="qcm"){const k=+q.answer||0;a=`<b>${LET[k]}</b> : ${fmt(q.choices[k]||"")}`;}
+    else if(q.type==="match")a=`<div class="am">${q.pairs.map((pr,i)=>`<div><b>${i+1}-${LET[q.order.indexOf(i)]}</b> : ${esc(pr.term)} → ${fmt(pr.def)}</div>`).join("")}</div>`;
+    else if(q.type==="wordsearch")a=`Mots à retrouver : <b>${q.words.map(esc).join(", ")}</b>${wsGrid(q,true)}`;
+    else a=E(Q+".answer",q.answer);
+    const why=q.type==="match"||q.type==="wordsearch"?"":(q.why||edit?` <span class="why">— ${E(Q+".why",q.why||"")}</span>`:"");
+    return `<div class="ar"><b class="an">${num}.</b><span>${a}${why}</span></div>`;
+  };
   const body=D.sections.map((s,si)=>{
     const d=s.data;if(!d)return "";sn++;const P=`sections.${si}.data`;
     const qs=d.questions.map((q,qi)=>{
       n++;total+=+q.marks||0;const Q=`${P}.questions.${qi}`;let a="";
-      if(q.type==="qcm")a=q.choices.map((c,ci)=>`<div class="ch">${E(Q+".choices."+ci,c)}</div>`).join("");
+      if(q.type==="qcm")a=q.choices.map((c,ci)=>`<div class="ch">${E(Q+".choices."+ci,c,"span","",true)}</div>`).join("");
       else if(q.type==="long")a='<div class="ln"></div>'.repeat(5);
       else if(q.type==="short")a='<div class="ln"></div><div class="ln"></div>';
       else if(q.type==="match"){
         const o=q.order;
-        a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term)}</div><div class="mbx"></div><div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def)}</div>`).join("")}</div>`;
+        a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term,"span","",true)}</div><div class="mbx"></div><div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def,"span","",true)}</div>`).join("")}</div>`;
       }else if(q.type==="wordsearch"){
-        const hl=new Set(ans?(q.placed||[]).flatMap(w=>w.cells.map(c=>c.join(","))):[]);
-        a=`<table class="wsg">${q.grid.map((row,r)=>`<tr>${[...row].map((ch,c)=>`<td class="${hl.has(r+","+c)?"hl":""}">${esc(ch)}</td>`).join("")}</tr>`).join("")}</table><div class="wsw">${q.words.map((w,wi)=>`<span>${E(Q+".words."+wi,w)}</span>`).join("")}</div>`;
+        a=`${wsGrid(q,false)}<div class="wsw">${q.words.map((w,wi)=>`<span>${E(Q+".words."+wi,w)}</span>`).join("")}</div>`;
       }
-      key.push(`<li><b>${n}.</b> ${q.type==="qcm"?LET[+q.answer||0]+" — "+esc(q.choices[+q.answer]||""):q.type==="match"?q.pairs.map((_,i)=>`${i+1}→${LET[q.order.indexOf(i)]}`).join(", "):q.type==="wordsearch"?"voir les mots surlignés dans la grille":esc(q.answer)}</li>`);
-      return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q)}<span class="mk">${q.marks} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint)}</div>`:""}</div>`;
+      (secAns[si]=secAns[si]||[]).push(ansRow(q,Q,n));
+      return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q,"span","",true)}<span class="mk">${q.marks} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint,"span","",true)}</div>`:""}</div>`;
     }).join("");
     const head=sheet&&D.sections.length===1?"":`<h2 class="sec"><span>${sn}. ${E(P+".title",d.title)}</span>${edit?`<button class="del" data-del="sections.${si}" title="Supprimer la section">✕</button>`:""}</h2>`;
-    return `${head}${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
-      ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>`<p>${E(P+".explanation."+xi,x)}</p>`).join("")}</div>`:""}${qs}`;
+    return `${head}${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective,"span","",true)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
+      ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>E(P+".explanation."+xi,x,"div","",true)).join("")}</div>`:""}${qs}`;
   }).join("");
   const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
-  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}${ans?`<div class="ans"><h2 class="sec" style="margin-top:0">Corrigé</h2><ul style="list-style:none;padding:0">${key.join("")}</ul></div>`:""}</div>`;
+  const ansCard=ans?`<div class="paper pans ${edit?"edit":""}" style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
+  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}</div>${ansCard}`;
 }
-
 /* historique (annuler / rétablir), « Enregistré », assistant */
 let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
 function initHist(){if(HIST.id!==W.id){HIST={id:W.id,u:[],r:[]};CHAT=[];CT=0;}}
@@ -1092,12 +1132,31 @@ function restore(str){const o=JSON.parse(str);W.title=o.t;W.sections=o.s;saveDoc
 function undoWB(){if(!HIST.u.length)return;HIST.r.push(snapJSON());restore(HIST.u.pop());}
 function redoWB(){if(!HIST.r.length)return;HIST.u.push(snapJSON());restore(HIST.r.pop());}
 function markSaved(){const e=$("#sv");if(!e)return;e.textContent="Enregistrement…";clearTimeout(svT);svT=setTimeout(()=>{const e=$("#sv");if(e)e.textContent="Enregistré";},500);}
-function refreshPaper(){const b=$(".wbpaper");if(b){b.innerHTML=paperHTML(true,W.showAns)+`<div class="addsec"><button onclick="openAddSection()">✨ Ajouter une section</button></div>`;}updBar();chatRender();}
+let CURF=null,SELTXT="",ASKSEL="",SAVEDR=null;
+document.addEventListener("focusin",e=>{CURF=(e.target.closest&&e.target.closest("[data-r]"))||CURF;});
+document.addEventListener("selectionchange",()=>{const s=getSelection();SELTXT=s&&!s.isCollapsed&&CURF&&CURF.contains(s.anchorNode)?s.toString().slice(0,500):"";});
+const saveSel=()=>{const s=getSelection();SAVEDR=s.rangeCount?s.getRangeAt(0).cloneRange():null;};
+const restoreSel=()=>{if(CURF)CURF.focus();if(SAVEDR){const s=getSelection();s.removeAllRanges();s.addRange(SAVEDR);}};
+function fcmd(c,v){if(!CURF)return toast("Cliquez d'abord dans un texte à modifier.");CURF.focus();document.execCommand(c,false,v);}
+function flink(){if(!CURF)return toast("Sélectionnez d'abord du texte.");saveSel();const u=prompt("Adresse du lien (https://…) :");if(u&&/^(https?:|mailto:)/i.test(u)){restoreSel();document.execCommand("createLink",false,u);}}
+function fblock(v){if(!CURF)return toast("Cliquez d'abord dans un texte à modifier.");restoreSel();document.execCommand("formatBlock",false,v==="p"?"div":v);}
+function fcolor(c){if(!CURF)return;restoreSel();document.execCommand("foreColor",false,c);}
+const mathHTML=s=>esc(s).replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g,"($1)/($2)").replace(/\\sqrt\{([^}]*)\}/g,"√($1)").replace(/\\times/g,"×").replace(/\^\{([^}]*)\}|\^(\w)/g,(m,a,b)=>`<sup>${a||b}</sup>`).replace(/_\{([^}]*)\}|_(\w)/g,(m,a,b)=>`<sub>${a||b}</sub>`);
+function feq(){if(!CURF)return toast("Cliquez d'abord dans un texte à modifier.");saveSel();const s=prompt("Équation (ex. x^2 + 3 = 7 ; \\frac{a}{b} ; \\sqrt{x}) :");if(!s)return;restoreSel();document.execCommand("insertHTML",false,`<span class="eq">${mathHTML(s)}</span>&nbsp;`);}
+function fdel(){const q=CURF&&CURF.closest(".q"),b=q&&q.querySelector("[data-del]");if(b)b.click();else toast("Cliquez dans une question pour la supprimer.");}
+function fask(){ASKSEL=SELTXT;$(".wbchat")?.classList.add("open");const i=$("#cin");if(i){i.placeholder=ASKSEL?"Que faire de cette sélection ?":"Demander à Claude…";i.focus();}}
+const FMT=`<div class="fmtbar" onmousedown="if(!event.target.closest('select,input'))event.preventDefault();else saveSel()">
+ <button class="ask" onclick="fask()">✨ Demander à Claude</button><span class="sep"></span>
+ <select onchange="fblock(this.value);this.value='p'" title="Style du paragraphe"><option value="p">Paragraphe</option><option value="h3">Titre</option><option value="h4">Sous-titre</option></select><span class="sep"></span>
+ <button onclick="fcmd('bold')" title="Gras"><b>B</b></button><button onclick="fcmd('italic')" title="Italique"><i>I</i></button><button onclick="fcmd('underline')" title="Souligné"><u>U</u></button><button onclick="flink()" title="Lien">🔗</button><button onclick="feq()" title="Équation">√x</button>
+ <label class="colbtn" title="Couleur du texte"><span>A</span><input type="color" value="#b91c1c" oninput="fcolor(this.value)"></label><span class="sep"></span>
+ <button onclick="fcmd('insertUnorderedList')" title="Liste à puces">• ≡</button><button onclick="fcmd('insertOrderedList')" title="Liste numérotée">1. ≡</button><button onclick="fcmd('justifyLeft')" title="Aligner à gauche">⇤</button><button onclick="fcmd('justifyCenter')" title="Centrer">↔</button><span class="sep"></span><button class="bt-d" onclick="fdel()" title="Supprimer la question">🗑</button></div>`;
+function refreshPaper(){const b=$(".wbpaper");if(b){b.innerHTML=FMT+paperHTML(true,W.showAns!==false)+`<div class="addsec"><button onclick="openAddSection()">✨ Ajouter une section</button></div>`;}updBar();chatRender();}
 const briefWB=()=>({topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,title:W.title});
 function chatRender(){
   const cm=$("#cm");if(!cm)return;const nm=ACC?(ACC.name||ACC.email.split("@")[0]).split(" ")[0]:"";
   cm.innerHTML=CHAT.length?CHAT.map(m=>`<div class="bub ${m.r}">${esc(m.t)}</div>`).join("")+(CB?'<div class="bub a"><span class="spin"></span></div>':""):
-   `<div class="hi">Bonjour ${esc(nm)},<br>comment puis-je vous aider ?</div><div class="sg"><button onclick="openAddSection()">Ajouter plus d'activités</button><button onclick="chatSend('Ajoute deux questions de défi d\\'approfondissement à cette section.')">Ajouter des défis</button><button onclick="chatSend('Simplifie cette section : vocabulaire plus simple et indices.')">Simplifier cette section</button><button onclick="exportWB(false)">Créer un PDF mis en page</button></div>`;
+   `<div class="hi">Bonjour${nm?" "+esc(nm):""},<br>comment puis-je vous aider ?</div><div class="sg"><button onclick="openAddSection()">Ajouter plus d'activités</button><button onclick="chatSend('Ajoute deux questions de défi d\\'approfondissement à cette section.')">Ajouter des défis</button><button onclick="chatSend('Simplifie cette section : vocabulaire plus simple et indices.')">Simplifier cette section</button><button onclick="exportWB(false)">Créer un PDF mis en page</button></div>`;
   cm.scrollTop=cm.scrollHeight;
   const tg=$("#ctg");if(tg){tg.innerHTML=W.sections.map((s,i)=>s.data?`<option value="${i}" ${i===CT?"selected":""}>Section ${i+1} : ${esc((s.data.title||s.title).slice(0,28))}</option>`:"").join("");}
 }
@@ -1105,7 +1164,8 @@ async function chatSend(text){
   const inp=$("#cin"),ins=(text||(inp&&inp.value)||"").trim();if(!ins||CB)return;if(inp)inp.value="";
   const idx=Math.min(+($("#ctg")?.value??CT),W.sections.length-1),sec=W.sections[idx];if(!sec||!sec.data)return;
   CT=idx;CB=true;CHAT.push({r:"u",t:ins});chatRender();
-  try{const r=await api("/api/workbook/edit",{...briefWB(),instruction:ins,section:sec.data});commit(()=>{sec.data=r;});CHAT.push({r:"a",t:`C'est fait : j'ai modifié la section ${idx+1}.`});refreshPaper();}
+  const full=ASKSEL?`À propos du passage « ${ASKSEL} » : ${ins}`:ins;ASKSEL="";const ci=$("#cin");if(ci)ci.placeholder="Demander à Claude…";
+  try{const r=await api("/api/workbook/edit",{...briefWB(),instruction:full,section:sec.data});commit(()=>{sec.data=r;});CHAT.push({r:"a",t:`C'est fait : j'ai modifié la section ${idx+1}.`});refreshPaper();}
   catch(e){CHAT.push({r:"a",t:"Désolé : "+e.message});}
   CB=false;chatRender();
 }
@@ -1115,7 +1175,7 @@ function wbView(){
    <button class="rb" id="undo" onclick="undoWB()" title="Annuler" disabled>↶</button><button class="rb" id="redo" onclick="redoWB()" title="Rétablir" disabled>↷</button><button class="rb" onclick="exportWB(false)" title="Imprimer">🖨</button>
    <div class="exp"><button class="btn sm" onclick="$('#expm').classList.toggle('on')">⬆ Exporter</button><div id="expm" class="expm"><button onclick="exportWB(false)">PDF élève</button><button onclick="exportWB(true)">PDF avec corrigé</button></div></div><button class="rb chatbtn" onclick="$('.wbchat').classList.toggle('open')" title="Assistant">💬</button></div>
   <div class="wbopts"><label>Thème <select onchange="W.theme=this.value;saveDoc(W);refreshPaper()">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}" ${k===W.theme?"selected":""}>${v.n}</option>`).join("")}</select></label>
-   <label class="ck"><input type="checkbox" ${W.showAns?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);refreshPaper()"> Afficher le corrigé</label>
+   <label class="ck"><input type="checkbox" ${W.showAns!==false?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);refreshPaper()"> Afficher les réponses</label>
    ${W.sections.some(l=>!l.data)&&W.kind==="workbook"?`<button class="btn sm ghost" onclick="wstep=4;render();wbGenerate()">Générer les sections manquantes</button>`:""}</div>
   <div class="wbmain"><div class="wbpaper"></div><aside class="wbchat"><div class="cm" id="cm"></div><div class="ci"><select id="ctg" onchange="CT=+this.value" title="Section modifiée par l'assistant"></select><div class="r"><input id="cin" placeholder="Demander à Claude…" onkeydown="if(event.key==='Enter')chatSend()"><button class="btn sm" onclick="chatSend()">➤</button></div></div></aside></div>`;
   refreshPaper();
@@ -1159,10 +1219,13 @@ async function addSection(){
 document.addEventListener("focusin",e=>{const el=e.target.closest&&e.target.closest("[data-w]");if(!el)return;const m=el.dataset.w.match(/^sections\.(\d+)/);if(m){CT=+m[1];const tg=$("#ctg");if(tg)tg.value=String(CT);}});
 document.addEventListener("focusout",e=>{
   const el=e.target.closest&&e.target.closest("[data-w]");if(!el||!W)return;
-  const pth=el.dataset.w,v=el.textContent.replace(/\s+/g," ").trim();if(getPath(W,pth)===v)return;
+  const pth=el.dataset.w;let v;
+  if(el.dataset.r){const h=cleanHTML(el.innerHTML);v=/<[a-z]/i.test(h)?RICH+h:el.textContent.replace(/\s+/g," ").trim();}
+  else v=el.textContent.replace(/\s+/g," ").trim();
+  if(getPath(W,pth)===v)return;
   commit(()=>setPath(W,pth,v));
 });
-document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-w]")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
+document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-w]:not([data-r])")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
 document.addEventListener("click",e=>{
   if(!e.target.closest(".exp"))$("#expm")?.classList.remove("on");
   const b=e.target.closest&&e.target.closest("[data-del]");if(!b||!W)return;

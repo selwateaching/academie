@@ -25,6 +25,8 @@ Déploiement Render : service `sequences` déjà décrit dans `../render.yaml`.
 
 Fiche imprimable créée en une étape à partir d'un **modèle** : Association, Vérification des connaissances, Compréhension de lecture, Test d'entraînement, Mots mêlés, Fiche de devoirs, Évaluation de fin de thème, Texte à trous, Ticket de sortie. On choisit le sujet, le niveau, la langue et la difficulté (Soutien / Standard / Approfondissement).
 Les fiches et les cahiers s'ouvrent dans le même éditeur de document : texte modifiable en place, annuler / rétablir, « Enregistré », **Ajouter une section** (description libre ou activité prête à l'emploi), **assistant** à droite (« Demander à Claude » : réécrit la section choisie), **Modifier la consigne** (régénérer), thème, corrigé, export PDF A4. Types de questions : choix multiple, réponse courte, texte à trous, réponse développée, association, mots mêlés (grille générée par le serveur).
+Barre d'outils de mise en forme (gras, italique, souligné, lien, équation, couleur, listes, alignement, suppression, « Demander à Claude » sur la sélection). Le texte enrichi est nettoyé par liste blanche avant d'être affiché ou imprimé.
+Le corrigé est une page **Réponses** séparée (réponse + explication de chaque question, par section, modifiable), incluse dans le PDF « avec corrigé » seulement.
 Une fiche compte pour une ressource ; ajouter une section ou utiliser l'assistant n'en consomme pas.
 
 ## Cahiers d'activités

@@ -734,7 +734,8 @@ def clean_section(x):
         typ = q.get("type") if q.get("type") in QTYPES else "short"
         item = {"type": typ, "q": s(q.get("q"), 600), "answer": s(q.get("answer"), 800),
                 "marks": max(1, min(10, int(q.get("marks") or 1))) if str(q.get("marks") or "1").isdigit() else 1,
-                "hint": s(q.get("hint"), 300), "challenge": bool(q.get("challenge"))}
+                "hint": s(q.get("hint"), 300), "challenge": bool(q.get("challenge")),
+                "why": s(q.get("why"), 700)}
         if typ == "wordsearch":
             grid, placed = build_grid([s(w, 24) for w in q.get("words") or [] if w][:12])
             if not grid or len(placed) < 4:
@@ -832,7 +833,7 @@ def workbook_section():
         fields.append('"explanation": ["2 à 4 courts paragraphes qui expliquent la notion"]')
     qdesc = ('"questions": [{"type": "qcm | short | fill | long | match", "q": "énoncé", "choices": ["A","B","C","D"] (qcm seulement), '
              '"pairs": [{"term": "notion", "def": "définition"}] (match seulement : 4 à 6 paires, "q" = consigne), '
-             '"answer": "réponse attendue complète (qcm : indice de la bonne réponse)", "marks": 1')
+             '"answer": "réponse attendue complète (qcm : indice de la bonne réponse)", "why": "explication courte et claire de la bonne réponse, pour le corrigé", "marks": 1')
     if opt.get("support"):
         qdesc += ', "hint": "un indice qui aide sans donner la réponse"'
     if opt.get("challenge"):
@@ -873,7 +874,7 @@ def workbook_edit():
         f"{brief(b)}\nCahier : {s(b.get('title'), 160)}\n\nSection actuelle (JSON) :\n{json.dumps(cur, ensure_ascii=False)[:9000]}\n\n"
         f"Consigne de l'enseignant : {instr}\n\n"
         "Renvoie la section modifiée, au même format JSON (title, objective, keywords, explanation, questions ; "
-        'questions de type qcm | short | fill | long | match avec "pairs": [{"term","def"}] pour match).',
+        'questions de type qcm | short | fill | long | match avec "pairs": [{"term","def"}] pour match ; chaque question garde un champ "why" : explication de la bonne réponse).',
         8000,
     )
     if err:
@@ -922,7 +923,7 @@ def sheet():
         'Format : {"title": "titre de la fiche", "explanation": ["paragraphes, seulement si le modèle en demande"], '
         '"questions": [{"type": "qcm | short | fill | long | match | wordsearch", "q": "énoncé ou consigne", '
         '"choices": ["A","B","C","D"] (qcm), "pairs": [{"term": "notion", "def": "définition"}] (match, 4 à 6 paires), '
-        '"words": ["MOT"] (wordsearch), "answer": "réponse attendue (qcm : indice de la bonne réponse)", "marks": 1, '
+        '"words": ["MOT"] (wordsearch), "answer": "réponse attendue (qcm : indice de la bonne réponse)", "why": "explication courte de la bonne réponse, pour le corrigé", "marks": 1, '
         '"hint": "indice (niveau Soutien)", "challenge": false}]}',
         8000,
     )
