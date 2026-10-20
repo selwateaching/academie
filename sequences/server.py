@@ -313,7 +313,7 @@ def open_session(email):
     return token
 
 
-PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
+PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/workbook/outline", "/api/workbook/section", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
 
 
 @app.before_request
@@ -685,6 +685,122 @@ def slide():
     out = clean_slide(data)
     if not out:
         return error("invalid_json", "Diapositive illisible, réessayez.", 422)
+    return jsonify(out)
+
+
+# ---------------------------------------------------------------- cahiers d'activités
+
+QTYPES = {"qcm", "short", "fill", "long"}
+
+
+def clean_section(x):
+    if not isinstance(x, dict):
+        return None
+    qs = []
+    for q in x.get("questions") or []:
+        if not isinstance(q, dict) or not q.get("q"):
+            continue
+        typ = q.get("type") if q.get("type") in QTYPES else "short"
+        item = {"type": typ, "q": s(q.get("q"), 600), "answer": s(q.get("answer"), 800),
+                "marks": max(1, min(10, int(q.get("marks") or 1))) if str(q.get("marks") or "1").isdigit() else 1,
+                "hint": s(q.get("hint"), 300), "challenge": bool(q.get("challenge"))}
+        if typ == "qcm":
+            ch = [s(c, 200) for c in q.get("choices") or []][:6]
+            ans = q.get("answer")
+            if len(ch) < 2:
+                continue
+            idx = ans if isinstance(ans, int) and 0 <= ans < len(ch) else 0
+            item["choices"], item["answer"] = ch, str(idx)
+        qs.append(item)
+    out = {
+        "title": s(x.get("title"), 160),
+        "objective": s(x.get("objective"), 400),
+        "keywords": [s(k, 60) for k in x.get("keywords") or [] if k][:8],
+        "explanation": [s(p, 1200) for p in x.get("explanation") or [] if p][:6],
+        "questions": qs[:14],
+    }
+    return out if out["title"] and out["questions"] else None
+
+
+@app.post("/api/workbook/outline")
+def workbook_outline():
+    b = request.get_json(silent=True) or {}
+    if not s(b.get("topic"), 300):
+        return error("invalid_request", "Sujet manquant.", 400)
+    cap = plan_of(g.ukey)[1]["series"]
+    n = max(2, min(cap, int(b.get("sections") or 5)))
+    ctx = s(b.get("context"), 9000)
+    data, err = ask(
+        f"{brief(b)}\n" + (f"\nContenu de départ (à reprendre et à approfondir) :\n{ctx}\n" if ctx else "") +
+        f"\nPropose le plan d'un cahier d'activités imprimable de {n} sections, progressives, chacune avec des "
+        "explications puis des exercices.\n"
+        'Format : {"title": "titre du cahier", "sections": [{"title": "...", "summary": "2 phrases : notions et exercices de la section"}]}',
+        4000,
+    )
+    if err:
+        return err
+    secs = [{"title": s(x.get("title"), 160), "summary": s(x.get("summary"), 600)}
+            for x in data.get("sections", []) if isinstance(x, dict) and x.get("title")][:cap]
+    if not secs:
+        return error("invalid_json", "Plan vide, réessayez.", 422)
+    return jsonify({"title": s(data.get("title"), 160) or s(b.get("topic"), 160), "sections": secs})
+
+
+@app.post("/api/workbook/section")
+def workbook_section():
+    b = request.get_json(silent=True) or {}
+    plan = b.get("sections")
+    try:
+        idx = int(b.get("index"))
+    except (TypeError, ValueError):
+        idx = -1
+    pname, cfg = plan_of(g.ukey)
+    if not isinstance(plan, list) or not 0 <= idx < len(plan) or len(plan) > cfg["series"]:
+        return error("invalid_request", f"Plan invalide ou trop long pour votre formule ({cfg['series']} sections maximum).", 400)
+    if idx == 0:  # un cahier = une ressource, comptée à sa première section
+        with _ulock:
+            _, _, used, resets = usage_info(user_rec(g.ukey), time.time())
+        if used >= cfg["limit"]:
+            when = time.strftime("%d/%m", time.localtime(resets)) if resets else "bientôt"
+            msg = ("Vous avez créé toutes vos ressources gratuites pour cette semaine."
+                   if pname == "free" else "Vous avez atteint votre limite mensuelle de ressources.")
+            return error("limit", f"{msg} Votre quota se réinitialise vers le {when}.", 429)
+    opt = b.get("options") if isinstance(b.get("options"), dict) else {}
+    nq = max(3, min(10, int(opt.get("questions") or 5)))
+    cur = plan[idx]
+    outline_txt = "\n".join(f"{i + 1}. {s(l.get('title'), 160)} — {s(l.get('summary'), 600)}" for i, l in enumerate(plan))
+    ctx = s(b.get("context"), 9000)
+    fields = ['"title"']
+    if opt.get("objectives", True):
+        fields += ['"objective": "objectif de la section"', '"keywords": ["4 à 6 mots clés"]']
+    if opt.get("explain", True):
+        fields.append('"explanation": ["2 à 4 courts paragraphes qui expliquent la notion"]')
+    qdesc = ('"questions": [{"type": "qcm | short | fill | long", "q": "énoncé", "choices": ["A","B","C","D"] (qcm seulement), '
+             '"answer": "réponse attendue complète (qcm : indice de la bonne réponse)", "marks": 1')
+    if opt.get("support"):
+        qdesc += ', "hint": "un indice qui aide sans donner la réponse"'
+    if opt.get("challenge"):
+        qdesc += ', "challenge": true pour les 2 questions d\'approfondissement ajoutées à la fin'
+    qdesc += f'}}] ({nq} questions variées'
+    qdesc += (", plus 2 questions de défi" if opt.get("challenge") else "") + '; "fill" = phrase avec ____ à compléter)'
+    fields.append(qdesc)
+    data, err = ask(
+        f"{brief(b)}\n" + (f"\nContenu de départ :\n{ctx}\n" if ctx else "") +
+        f"\nPlan du cahier « {s(b.get('title'), 160)} » :\n{outline_txt}\n\n"
+        f"Écris la section {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
+        f"Format : {{{', '.join(fields)}}}",
+        8000,
+    )
+    if err:
+        return err
+    out = clean_section(data)
+    if not out:
+        return error("invalid_json", "Section vide, réessayez.", 422)
+    if idx == 0:
+        with _ulock:
+            u = user_rec(g.ukey)
+            u["usage"].append(time.time())
+            persist("users", g.ukey, u)
     return jsonify(out)
 
 

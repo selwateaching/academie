@@ -271,6 +271,34 @@ body.app #app.dashw{max-width:none;margin-right:0}
 .cmp table{width:100%;border-collapse:collapse;margin-top:16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .cmp th,.cmp td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line)}.cmp th:first-child,.cmp td:first-child{text-align:left;font-weight:600}.cmp tr:hover td{background:#f4faf7}
 @media(prefers-reduced-motion:reduce){.pcd,.pcd li,.pcd .tk,.pbtn.grad{animation:none!important}.pcd{transition:none}}
+
+.opt{display:flex;gap:14px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 18px;cursor:pointer;margin-bottom:12px;text-align:left;width:100%;font:inherit}
+.opt:hover{border-color:#9ccbb0}.opt.on{border-color:var(--g);box-shadow:0 0 0 3px rgba(44,110,73,.15)}.opt .ic{font-size:34px}.opt b{display:block;font-size:18px}.opt small{color:var(--mut);font-size:15px}
+.pick{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+.pick label{display:flex;gap:10px;align-items:center;margin:0;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer;font-weight:600}.pick label:hover{background:var(--g2)}.pick input{width:auto}
+.tg{display:flex;gap:14px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:10px;cursor:pointer}
+.tg .ic{font-size:28px}.tg .tx{flex:1}.tg b{display:block}.tg small{color:var(--mut)}.tg .bx{width:26px;height:26px;border-radius:7px;border:2px solid #cbd5e1;display:grid;place-items:center;color:#fff;font-weight:900}.tg.on{border-color:var(--g)}.tg.on .bx{background:var(--g);border-color:var(--g)}
+.lens{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.lens button{font:inherit;font-weight:600;border:2px solid var(--line);border-radius:10px;background:#f3f4f6;padding:8px 16px;cursor:pointer}.lens button.on{border-color:var(--g);background:#fff}.lens button:disabled{opacity:.5;cursor:not-allowed}
+.h3s{font-size:17px;font-weight:800;margin:22px 0 10px}
+.wbbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 0;margin:0 0 18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wbbar select{width:auto;padding:7px 10px}.wbbar .ck{display:flex;gap:6px;align-items:center;font-weight:600;margin:0}.wbbar .ck input{width:auto}
+.paper{background:#fff;width:794px;max-width:100%;margin:0 auto 40px;padding:48px 56px;box-shadow:0 4px 24px rgba(0,0,0,.18);border-radius:6px;font-family:var(--font);color:#1a1a1a;font-size:16px;line-height:1.5}
+.paper h1{font-size:30px;color:var(--ti);margin:0 0 4px;line-height:1.2}.paper .sub2{color:#555;margin:0 0 14px}
+.paper .nd{display:flex;gap:22px;font-size:14px;color:#444;margin:6px 0 22px;border-top:2px solid var(--ac);padding-top:10px}.paper .nd span{flex:1;border-bottom:1px solid #999;padding-bottom:2px}
+.paper h2.sec{font-size:22px;color:var(--ti);margin:30px 0 8px;padding-bottom:4px;border-bottom:3px solid var(--blob);display:flex;justify-content:space-between;gap:8px}
+.paper .obj{background:var(--blob);border-left:5px solid var(--ac);border-radius:8px;padding:8px 12px;margin:8px 0;font-weight:600}
+.paper .kw{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.paper .kw span{border:1px solid var(--ac);border-radius:99px;padding:1px 10px;font-size:14px;color:var(--ti);font-weight:600}
+.paper .ex p{margin:6px 0}
+.paper .q{margin:16px 0;break-inside:avoid}.paper .qh{display:flex;gap:8px;align-items:baseline}.paper .qn{font-weight:800;color:var(--ti);white-space:nowrap}.paper .mk{margin-left:auto;font-size:13px;color:#666;white-space:nowrap}
+.paper .ch{padding-left:26px;margin:4px 0;position:relative}.paper .ch::before{content:"";position:absolute;left:4px;top:5px;width:14px;height:14px;border:2px solid #555;border-radius:3px}
+.paper .ln{border-bottom:1px dotted #777;height:28px}.paper .hint{font-size:14px;font-style:italic;color:#555;margin-top:4px}.paper .star{color:#d97706;font-weight:800;font-size:13px}
+.paper .ans{margin-top:30px;border-top:3px dashed var(--ac);padding-top:6px}.paper .ans li{margin:4px 0}
+.paper [contenteditable]{outline:none;border-radius:4px}.paper.edit [contenteditable]:hover{background:rgba(0,0,0,.04)}.paper.edit [contenteditable]:focus{background:rgba(64,158,158,.12)}
+.paper .del{border:0;background:none;color:#b91c1c;cursor:pointer;font-size:14px;opacity:.55}.paper .del:hover{opacity:1}
+.wbcover{background:linear-gradient(135deg,#eef6ff,#fdeee8)!important;color:#1f2d3d!important;font-size:18px!important;padding:16px;text-align:center;font-weight:800}.wbcover span{display:block;font-size:46px}
+.paperw{max-width:900px!important}
+#print.wbprint{display:none}#print.wbprint h1{page-break-before:avoid!important;font-size:30px!important}
+@media print{#print.wbprint{display:block}#print.wbprint .paper{width:auto;box-shadow:none;padding:0;margin:0;border-radius:0}#print.wbprint .del{display:none}#print.wbprint h2.sec{break-after:avoid}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -312,6 +340,7 @@ const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timel
 const PICK=["text_image","list","timeline","steps","quote"];
 
 let S=null,step=1,msg="",page="";
+let W=null,wstep=1;
 const DEV=(()=>{try{let d=localStorage.getItem("seq.dev");if(!d){d=crypto.randomUUID();localStorage.setItem("seq.dev",d);}return d;}catch{return crypto.randomUUID();}})();
 let PL=null;
 const PNAME={free:"Gratuit",pro:"Pro",max:"Max"};
@@ -360,22 +389,26 @@ const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,lang
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
-function go(v){if(v==="home"){S=null;step=1;msg="";}page="";closeStudio();closeShow();closeModal();render();}
-function navSeqs(){S=null;step=1;page="seqs";closeStudio();closeShow();render();}
+function go(v){if(v==="home"){S=null;W=null;step=1;msg="";}page="";closeStudio();closeShow();closeModal();render();}
+function navCahiers(){S=null;W=null;page="cahiers";closeStudio();closeShow();render();}
+function navSeqs(){S=null;W=null;step=1;page="seqs";closeStudio();closeShow();render();}
 const pushT={};
-function save(){
-  S.updated=Date.now();
-  const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();
-  if(ACC){const sr=S;clearTimeout(pushT[sr.id]);pushT[sr.id]=setTimeout(()=>pushSeries(sr),1200);}
+function saveDoc(d){
+  d.updated=Date.now();
+  const i=saved.findIndex(x=>x.id===d.id);i<0?saved.unshift(d):saved[i]=d;persist();
+  if(ACC){clearTimeout(pushT[d.id]);pushT[d.id]=setTimeout(()=>pushSeries(d),1200);}
 }
+function save(){saveDoc(S);}
 function pushSeries(sr){return api("/api/series/"+sr.id,sr,"PUT").catch(e=>{if(e.code==="too_large"||e.code==="quota")toast(e.message);});}
 function render(){
   const landing=!ACC&&!S&&page==="";
   document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
-  $("#app").classList.toggle("home",landing);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
-  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||(!S&&page==="")));
+  $("#app").classList.toggle("home",landing);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
+  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="cahiers"||(!S&&page==="")));
   side();
   if(page==="pricing")return pricing();
+  if(page==="cahiers"&&!W)return wbList();
+  if(page==="wb"&&W)return wbFlow();
   if(page==="seqs"&&!S)return seqsPage();
   if(!S)return ACC?dash():home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
 const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
@@ -396,7 +429,7 @@ function home(){
    <div class="chips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
    <div class="stats"><span>Séquences complètes</span><span>•</span><span>Diapositives illustrées</span><span>•</span><span>Export PowerPoint</span></div>
   </section>
-  ${saved.length?`<section class="sec"><h2>Mes séquences</h2><div class="mine">${saved.map(x=>`<div class="mc"><b>${esc(x.title||x.topic)}</b><small>${esc(x.level)} · ${x.lessons.length} leçons · ${x.lessons.filter(l=>l.slides).length} prêtes</small><div class="row2"><button class="btn sm" onclick="openS('${x.id}')">Ouvrir</button><button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></div></div>`).join("")}</div></section>`:""}
+  ${saved.length?`<section class="sec"><h2>Mes séquences</h2><div class="mine">${saved.map(x=>`<div class="mc"><b>${esc(x.title||x.topic)}</b><small>${esc(x.level)} · ${metaOf(x)} · ${statusOf(x)}</small><div class="row2"><button class="btn sm" onclick="openS('${x.id}')">Ouvrir</button><button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></div></div>`).join("")}</div></section>`:""}
   <section class="sec"><p class="eb">Ce que vous pouvez créer</p><h2>Des leçons que vous rêviez de donner</h2>
    <div class="fcards">
     <div class="fc"><div class="ic">🗂️</div><h3>Séquences</h3><p>Une série complète planifiée en une seule fois. Chaque leçon s'appuie sur la précédente.</p></div>
@@ -422,7 +455,11 @@ async function loadExample(){
   try{const d=await (await fetch("/exemple.json")).json();d.id=uid();d.title+=" (exemple)";S=d;step=5;msg="";save();render();}
   catch{alert("Exemple indisponible.");}
 }
-function openS(id){S=saved.find(x=>x.id===id);step=S.started?5:3;msg="";page="";render();scrollTo(0,0);}
+function openS(id){
+  const x=saved.find(s=>s.id===id);if(!x)return;
+  if(isWB(x)){S=null;W=x;wstep=x.started?5:3;page="wb";msg="";closeModal();render();scrollTo(0,0);return;}
+  W=null;S=x;step=S.started?5:3;msg="";page="";render();scrollTo(0,0);
+}
 function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
@@ -734,9 +771,9 @@ function startFree(){ACC?go("home"):openAuth("register");}
 function side(){
   const el=$("#side");if(!ACC){el.innerHTML="";return;}
   const nm=ACC.name||ACC.email.split("@")[0],ini=(nm[0]||"?").toUpperCase();
-  const home=!S&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing";
+  const home=!S&&!W&&page==="",seqs=page==="seqs"||!!S,pr=page==="pricing",cah=page==="cahiers"||page==="wb";
   el.innerHTML=`<div class="av">${esc(ini)}</div><div class="nm">${esc(nm)}</div>
-  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
+  <nav><a class="${home&&!pr?"on":""}" onclick="go('home')">🏠 Accueil</a><a class="${seqs&&!pr&&!cah?"on":""}" onclick="navSeqs()">🗂️ Séquences</a><a class="${cah?"on":""}" onclick="navCahiers()">📘 Cahiers d'activités</a><a class="${pr?"on":""}" onclick="goPricing()">💳 Tarifs</a><a onclick="openContact()">✉️ Contact</a></nav>
   <div class="promos"><div class="pcard org"><b>Séquences pour les établissements</b><small>Aidez vos collègues</small><button onclick="openContact(true)">Essai gratuit</button></div>
   <div class="pcard"><b>Votre plan</b><small class="plantxt"></small><button onclick="goPricing()">Voir les plans</button></div></div>
   <button class="logout" onclick="logout()">Déconnexion</button>`;
@@ -744,37 +781,190 @@ function side(){
 }
 function newSeries(single){S=blank();if(single)S.count=1;step=1;msg="";page="";render();scrollTo(0,0);}
 const when=ts=>{if(!ts)return "";const d=new Date(ts),n=new Date();return d.toDateString()===n.toDateString()?"aujourd'hui":d.toLocaleDateString("fr-FR");};
-function statusOf(x){const n=x.lessons.filter(l=>l.slides).length;return n&&n===x.lessons.length?"Terminée":n?"En cours":"Brouillon";}
+const isWB=x=>x.kind==="workbook";
+function statusOf(x){const L=isWB(x)?x.sections:x.lessons,n=L.filter(l=>isWB(x)?l.data:l.slides).length;return n&&n===L.length?"Terminée":n?"En cours":"Brouillon";}
+function metaOf(x){return isWB(x)?`📘 ${x.sections.length} sections`:`📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}`;}
 function coverHTML(x){
+  if(isWB(x))return `<div class="cover wbcover" style="aspect-ratio:16/9"><div><span>📘</span>${esc(x.title||x.topic)}</div></div>`;
   const l=x.lessons.find(l=>l.slides),sl=l&&l.slides[0];if(!sl)return `<div class="cover" style="aspect-ratio:16/9">📚</div>`;
   const prev=S;S=x;let h;try{h=slideHTML(normalize(sl),{theme:x.theme,thumb:true});}finally{S=prev;}
   return `<div class="cover fit" style="aspect-ratio:16/9">${h}</div>`;
 }
-let Q="";
+let Q="",GK="";
 function cards(){
-  const q=Q.toLowerCase(),list=saved.filter(x=>!q||(x.title||x.topic||"").toLowerCase().includes(q));
-  if(!list.length)return `<div class="empty" style="grid-column:1/-1">${saved.length?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Les séquences que vous créez apparaîtront ici."}</div>`;
+  const q=Q.toLowerCase(),list=saved.filter(x=>(GK==="wb"?isWB(x):GK==="seq"?!isWB(x):true)&&(!q||(x.title||x.topic||"").toLowerCase().includes(q)));
+  if(!list.length)return `<div class="empty" style="grid-column:1/-1">${saved.length&&q?"Aucun résultat pour cette recherche.":"Il n'y a rien ici pour l'instant ✨<br>Ce que vous créez apparaîtra ici."}</div>`;
   return list.map(x=>`<div class="rc" onclick="openS('${x.id}')">${coverHTML(x)}<div class="bd"><div class="tt"><b>${esc(x.title||x.topic)}</b><button class="ib" title="Options" onclick="event.stopPropagation();openMenu('${x.id}')">⋯</button></div>
-   <div class="mt"><span class="pl">📚 ${x.lessons.length} ${x.lessons.length>1?"leçons":"leçon"}</span><span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
+   <div class="mt"><span class="pl">${metaOf(x)}</span><span>${statusOf(x)} • ${when(x.updated)}</span></div></div></div>`).join("");
 }
 function fitCovers(){document.querySelectorAll(".rc .cover.fit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";fit(b);});}
 function setQ(v){Q=v;$("#grid").innerHTML=cards();fitCovers();}
-const gridBlock=()=>`<div class="rh"><h2>Ressources</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label><button class="nbtn" onclick="newSeries()">Nouvelle séquence ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;
+const gridBlock=(kind,fn,label)=>{GK=kind;return `<div class="rh"><h2>Ressources</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label><button class="nbtn" onclick="${fn}">${label} ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;};
 function dash(){
   $("#app").innerHTML=`<div class="dh"><h1>Que créons-nous aujourd'hui ?</h1>
    <div class="ccs"><button class="cc" onclick="newSeries(true)"><span class="ic">✨</span><b>Leçon unique</b><small>Une leçon ponctuelle</small></button>
    <button class="cc" onclick="newSeries()"><span class="ic">🗂️</span><b>Séquence</b><small>Plusieurs leçons sur un sujet</small></button>
+   <button class="cc" onclick="newWB()"><span class="ic">📘</span><b>Cahier d'activités</b><small>Tout un sujet, prêt à imprimer</small></button>
    <button class="cc" onclick="loadExample()"><span class="ic">👀</span><b>Exemple</b><small>Voir une séquence complète</small></button></div>
-   ${gridBlock()}</div>`;
+   ${gridBlock("","newSeries()","Nouvelle séquence")}</div>`;
   fitCovers();
 }
-function seqsPage(){$("#app").innerHTML=`<div class="dh"><h1>Séquences</h1><p class="sub">Plusieurs leçons sur des sujets complexes.</p>${gridBlock().replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function seqsPage(){$("#app").innerHTML=`<div class="dh"><h1>Séquences</h1><p class="sub">Plusieurs leçons sur des sujets complexes.</p>${gridBlock("seq","newSeries()","Nouvelle séquence").replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
+function wbList(){$("#app").innerHTML=`<div class="dh"><h1>Cahiers d'activités</h1><p class="sub">Créez des ressources imprimables avec des explications et des questions.</p>${gridBlock("wb","newWB()","Nouveau cahier").replace('<div class="rh"><h2>Ressources</h2>','<div class="rh" style="margin-top:0"><span></span>')}</div>`;fitCovers();}
 function openMenu(id){
   const x=saved.find(s=>s.id===id);if(!x)return;
   modal(`<h2>${esc(x.title||x.topic)}</h2><div style="display:grid;gap:8px;margin-top:12px"><button class="btn ghost" onclick="closeModal();openS('${id}')">Ouvrir</button><button class="btn ghost" onclick="renameSeries('${id}')">Renommer</button><button class="btn ghost" onclick="dupSeries('${id}')">Dupliquer</button><button class="btn ghost" style="color:var(--warn);border-color:var(--warn)" onclick="del('${id}')">Supprimer</button></div>`);
 }
 function renameSeries(id){const x=saved.find(s=>s.id===id),n=prompt("Nouveau titre :",x.title||x.topic);if(!n||!n.trim())return;closeModal();const prev=S;S=x;x.title=n.trim().slice(0,160);save();S=prev;render();}
 function dupSeries(id){const x=saved.find(s=>s.id===id),c=JSON.parse(JSON.stringify(x));c.id=uid();c.title=(x.title||x.topic)+" (copie)";closeModal();const prev=S;S=c;save();S=prev;render();toast("Séquence dupliquée");}
+
+
+/* ============ cahiers d'activités ============ */
+const LEN={"4-6":{n:3,q:4,l:"4 – 6"},"7-12":{n:5,q:5,l:"7 – 12"},"13-20":{n:8,q:6,l:"13 – 20"},"21+":{n:12,q:7,l:"21+"}};
+const blankWB=()=>({id:uid(),kind:"workbook",title:"",topic:"",level:"6e",language:"français",instructions:"",curriculum:"",theme:"classique",src:"topic",seriesId:"",
+  options:{explain:true,objectives:true,length:"7-12",support:false,challenge:false},sections:[],started:false});
+function newWB(){S=null;W=blankWB();wstep=1;page="wb";msg="";render();scrollTo(0,0);}
+const wbSteps=()=>`<ol class="steps">${["Source","Configuration","Plan"].map((n,i)=>{const c=Math.min(wstep,3);return `<li class="${i+1===c?"on":i+1<c?"done":""}">${n}</li>`;}).join("")}</ol>`;
+function wbFlow(){[null,wb1,wb2,wb3,wb4,wbView][wstep]();}
+function seriesContext(id){
+  const x=saved.find(s=>s.id===id);if(!x||isWB(x))return "";
+  return x.lessons.map((l,i)=>{
+    const sl=l.slides||[],obj=(sl[0]?.bullets||[]).join("; "),voc=sl.filter(s=>s.layout==="vocab").flatMap(s=>s.vocab||[]).map(v=>v.term+" : "+v.definition).join("; ");
+    const body=sl.filter(s=>!["title","vocab","activity","video"].includes(s.layout)).map(s=>s.title+" — "+[...(s.bullets||[]),...(s.items||[]).map(i=>i.t+" "+(i.x||""))].join(" ")).join("\n");
+    return `Leçon ${i+1} : ${l.title}\nObjectifs : ${obj}\nVocabulaire : ${voc}\n${body}`;
+  }).join("\n\n").slice(0,9000);
+}
+function wbPick(){
+  const q=(W._q||"").toLowerCase(),mine=saved.filter(x=>!isWB(x)&&x.lessons.some(l=>l.slides)&&(!q||(x.title||"").toLowerCase().includes(q)));
+  return mine.length?mine.map(x=>`<label><input type="radio" name="sr" value="${x.id}" ${W.seriesId===x.id?"checked":""} onchange="W.seriesId=this.value"> <span>${esc(x.title||x.topic)} <small style="color:var(--mut);font-weight:400">· ${x.lessons.length} leçons</small></span></label>`).join(""):`<p style="padding:14px;color:var(--mut);margin:0">Aucune séquence terminée. Créez-en une d'abord, ou partez d'un sujet.</p>`;
+}
+function wb1(){
+  $("#app").innerHTML=`${wbSteps()}<h2 style="text-align:center">Par où commençons-nous ?</h2><p class="sub" style="text-align:center">Choisissez votre point de départ.</p>
+  <button class="opt ${W.src==="series"?"on":""}" onclick="W.src='series';wb1()"><span class="ic">🗂️</span><span><b>Créer à partir d'une séance ou d'une séquence</b><small>Utilisez le contenu pédagogique d'une séquence existante</small></span></button>
+  <button class="opt ${W.src==="topic"?"on":""}" onclick="W.src='topic';wb1()"><span class="ic">✨</span><span><b>Commencer un nouveau projet</b><small>À partir d'un sujet</small></span></button>
+  ${W.src==="series"?`<div class="card"><label>Choisir une séquence</label><input placeholder="Rechercher votre séquence" value="${esc(W._q||"")}" oninput="W._q=this.value;$('#pk').innerHTML=wbPick()"><div class="pick" id="pk">${wbPick()}</div></div>`
+  :`<div class="card"><label>Sujet du cahier</label><input maxlength="300" placeholder="Ex. Les fractions, la photosynthèse…" value="${esc(W.topic)}" oninput="W.topic=this.value">
+   <div class="row"><div><label>Niveau</label><select onchange="W.level=this.value">${LEVELS.map(l=>`<option ${l===W.level?"selected":""}>${l}</option>`).join("")}</select></div>
+   <div><label>Langue</label><select onchange="W.language=this.value">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===W.language?"selected":""}>${l}</option>`).join("")}</select></div></div></div>`}
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="navCahiers()">Annuler</button><button class="btn" onclick="wbFrom1()">Continuer</button></div>`;
+}
+function wbFrom1(){
+  if(W.src==="series"){
+    const x=saved.find(s=>s.id===W.seriesId);if(!x){msg="Choisissez une séquence.";return wb1();}
+    W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;W.title=x.title;
+  }else if(!W.topic.trim()){msg="Saisissez un sujet.";return wb1();}
+  msg="";wstep=2;render();
+}
+function togWB(k){W.options[k]=!W.options[k];wb2();}
+function setLen(k){if(Math.min(LEN[k].n,99)>CAP().series)return openUpgrade("series");W.options.length=k;wb2();}
+function wb2(){
+  const o=W.options,tg=(k,ic,ti,d)=>`<div class="tg ${o[k]?"on":""}" onclick="togWB('${k}')"><span class="ic">${ic}</span><span class="tx"><b>${ti}</b><small>${d}</small></span><span class="bx">${o[k]?"✓":""}</span></div>`;
+  const src=W.src==="series"?saved.find(s=>s.id===W.seriesId):null;
+  $("#app").innerHTML=`${wbSteps()}<h2 style="text-align:center">${src?"Créer à partir d'une séance ou d'une séquence 📚":"Configurez votre cahier ✨"}</h2>
+  <div class="card" style="margin-top:14px"><b>${esc(src?src.title:W.topic)}</b><br><small style="color:var(--mut)">${esc(W.level)} · ${esc(W.language)} · <a href="#" onclick="wstep=1;render();return false">modifier</a></small></div>
+  <textarea placeholder="Des instructions ou sujets spécifiques ?" maxlength="3000" oninput="W.instructions=this.value" style="min-height:84px">${esc(W.instructions)}</textarea>
+  <div class="tg" style="margin-top:14px;cursor:default"><span class="ic">🎓</span><span class="tx"><b>Aligner au programme ${CAP().curriculum?"":'<span class="tag">PRO</span>'}</b><small>Alignez votre cahier sur les objectifs d'apprentissage du programme choisi.</small>
+   <input style="margin-top:8px" maxlength="200" placeholder="Ex. Programme officiel, cycle 3" value="${esc(W.curriculum)}" ${CAP().curriculum?`oninput="W.curriculum=this.value"`:`readonly onclick="openUpgrade('curriculum')" class="lock"`}></span></div>
+  <div class="h3s">Paramètres</div>
+  ${tg("explain","🧑‍🏫","Inclure des explications","Ajoutez une courte explication avant chaque série de questions.")}
+  ${tg("objectives","🎯","Objectifs et mots-clés","Commencez chaque section par un objectif et le vocabulaire essentiel.")}
+  <div class="tg" style="cursor:default;display:block"><b>📏 Longueur</b><br><small style="color:var(--mut)">Environ combien de pages ?</small><div class="lens">${Object.entries(LEN).map(([k,v])=>`<button class="${o.length===k?"on":""}" onclick="setLen('${k}')">${v.l}${v.n>CAP().series?" 🔒":""}</button>`).join("")}</div></div>
+  <div class="h3s">Différenciation</div>
+  ${tg("support","🛟","Inclure des aides","Ajoutez des indices et des aides dans les activités.")}
+  ${tg("challenge","🚀","Inclure des défis","Ajoutez des questions d'approfondissement dans les activités.")}
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="wstep=1;render()">Retour</button><button class="btn" id="wgo" onclick="wbOutline()">Générer le plan</button></div>`;
+}
+async function wbOutline(){
+  const b=$("#wgo");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';msg="";
+  try{
+    const n=Math.min(LEN[W.options.length].n,CAP().series);
+    const d=await api("/api/workbook/outline",{topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,sections:n,context:W.src==="series"?seriesContext(W.seriesId):""});
+    W.title=d.title;W.sections=d.sections.map(x=>({...x}));wstep=3;saveDoc(W);render();
+  }catch(e){msg=e.message;wb2();}
+}
+function wb3(){
+  const n=W.sections.length;
+  $("#app").innerHTML=`${wbSteps()}<h2>Vérifiez le plan</h2><p class="sub">Modifiez les titres et les résumés, réordonnez, supprimez ou ajoutez des sections.</p>
+  <div class="card"><label>Titre du cahier</label><input value="${esc(W.title)}" oninput="W.title=this.value"><label>Sections</label>
+  ${W.sections.map((l,i)=>`<div class="ol"><div class="n">${i+1}</div><div class="f"><input value="${esc(l.title)}" oninput="W.sections[${i}].title=this.value" placeholder="Titre de la section"><textarea oninput="W.sections[${i}].summary=this.value" placeholder="Notions et exercices">${esc(l.summary)}</textarea></div>
+  <div class="t"><button class="ib" ${i?"":"disabled"} onclick="wmv(${i},-1)">▲</button><button class="ib" ${i<n-1?"":"disabled"} onclick="wmv(${i},1)">▼</button><button class="ib" ${n>1?"":"disabled"} onclick="wrm(${i})">🗑</button></div></div>`).join("")}
+  <button class="btn sm ghost" onclick="wadd()">＋ Ajouter une section</button> <small style="color:var(--mut)">${n}/${CAP().series}</small></div>
+  ${errBox()}<div class="nav"><button class="btn ghost" onclick="wstep=2;render()">Retour</button><button class="btn" onclick="wbStart()">Générer le cahier</button></div>`;
+}
+function wmv(i,d){const a=W.sections;[a[i],a[i+d]]=[a[i+d],a[i]];wb3();}
+function wrm(i){W.sections.splice(i,1);wb3();}
+function wadd(){if(W.sections.length>=CAP().series)return openUpgrade("series");W.sections.push({title:"",summary:""});wb3();}
+function wbStart(){
+  if(W.sections.some(l=>!l.title.trim())){msg="Donnez un titre à chaque section.";return wb3();}
+  W.sections.forEach(l=>{l.title=l.title.trim();delete l.data;delete l.err;delete l.busy;});delete W._q;
+  msg="";W.started=true;wstep=4;saveDoc(W);render();wbGenerate();
+}
+let wrunning=false;
+function wb4(){
+  const done=W.sections.filter(l=>l.data).length,n=W.sections.length;
+  $("#app").innerHTML=`${wbSteps()}<h2>Création de votre cahier</h2><p class="sub">Gardez cet onglet ouvert, cela prend quelques minutes.</p>
+  <div class="card"><b>${done} sur ${n} sections prêtes</b><div class="bar"><i style="width:${done/n*100}%"></i></div>
+  ${W.sections.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b></div>${l.data?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="W.sections[${i}].err=null;wbGenerate()">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}
+  ${W.sections.some(l=>l.err)?`<div class="err">${esc(W.sections.find(l=>l.err).err)}</div>`:""}</div>
+  <div class="nav"><button class="btn ghost" onclick="wstep=3;render()" ${wrunning?"disabled":""}>Retour au plan</button><button class="btn" onclick="wstep=5;render()" ${done?"":"disabled"}>Voir le cahier</button></div>`;
+}
+async function wbGenerate(){
+  if(wrunning)return;wrunning=true;const doc=W,here=()=>W===doc&&page==="wb"&&wstep===4;
+  const ctx=doc.src==="series"?seriesContext(doc.seriesId):"",o=doc.options;
+  for(let i=0;i<doc.sections.length;i++){
+    const l=doc.sections[i];if(l.data)continue;
+    l.busy=true;delete l.err;if(here())wb4();
+    try{
+      l.data=await api("/api/workbook/section",{topic:doc.topic,level:doc.level,language:doc.language,instructions:doc.instructions,curriculum:doc.curriculum,title:doc.title,context:ctx,index:i,
+        sections:doc.sections.map(x=>({title:x.title,summary:x.summary})),options:{explain:o.explain,objectives:o.objectives,support:o.support,challenge:o.challenge,questions:LEN[o.length].q}});
+    }catch(e){l.err=e.message;
+      if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
+      if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
+    l.busy=false;saveDoc(doc);if(i===0)loadPlan();if(here())wb4();
+  }
+  wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();}else wb4();}
+}
+function paperHTML(edit,ans){
+  const E=(pth,txt,tag="span",cls="")=>`<${tag} class="${cls}" ${edit?`contenteditable="plaintext-only" data-w="${pth}"`:""}>${esc(txt)}</${tag}>`,key=[];let n=0,sn=0;
+  const body=W.sections.map((s,si)=>{
+    const d=s.data;if(!d)return "";sn++;const P=`sections.${si}.data`;
+    const qs=d.questions.map((q,qi)=>{
+      n++;const Q=`${P}.questions.${qi}`;let a="";
+      if(q.type==="qcm")a=q.choices.map((c,ci)=>`<div class="ch">${E(Q+".choices."+ci,c)}</div>`).join("");
+      else if(q.type==="long")a='<div class="ln"></div>'.repeat(5);else if(q.type!=="fill")a='<div class="ln"></div><div class="ln"></div>';
+      key.push(`<li><b>${n}.</b> ${q.type==="qcm"?String.fromCharCode(65+(+q.answer||0))+" — "+esc(q.choices[+q.answer]||""):esc(q.answer)}</li>`);
+      return `<div class="q"><div class="qh"><span class="qn">${q.challenge?'<span class="star">⭐ Défi</span> ':""}${n}.</span>${E(Q+".q",q.q)}<span class="mk">${q.marks} pt${q.marks>1?"s":""}</span>${edit?`<button class="del" data-del="${Q}" title="Supprimer la question">✕</button>`:""}</div>${a}${q.hint?`<div class="hint">💡 ${E(Q+".hint",q.hint)}</div>`:""}</div>`;
+    }).join("");
+    return `<h2 class="sec"><span>${sn}. ${E(P+".title",d.title)}</span>${edit?`<button class="del" data-del="sections.${si}" title="Supprimer la section">✕</button>`:""}</h2>
+      ${d.objective?`<div class="obj">🎯 ${E(P+".objective",d.objective)}</div>`:""}${d.keywords?.length?`<div class="kw">${d.keywords.map((k,ki)=>`<span>${E(P+".keywords."+ki,k)}</span>`).join("")}</div>`:""}
+      ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>`<p>${E(P+".explanation."+xi,x)}</p>`).join("")}</div>`:""}${qs}`;
+  }).join("");
+  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(W.theme)}">${E("title",W.title,"h1")}<p class="sub2">${esc(W.level)} · ${esc(W.topic)}</p><div class="nd"><span>Nom :</span><span>Prénom :</span><span>Date :</span></div>${body}${ans?`<div class="ans"><h2 class="sec" style="margin-top:0">Corrigé</h2><ul style="list-style:none;padding:0">${key.join("")}</ul></div>`:""}</div>`;
+}
+function wbView(){
+  $("#app").innerHTML=`<div class="wbbar"><button class="btn sm ghost" onclick="navCahiers()">← Cahiers</button>
+   <select onchange="W.theme=this.value;saveDoc(W);wbView()" title="Thème">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}" ${k===W.theme?"selected":""}>${v.n}</option>`).join("")}</select>
+   <label class="ck"><input type="checkbox" ${W.showAns?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);wbView()"> Afficher le corrigé</label><span style="flex:1"></span>
+   ${W.sections.some(l=>!l.data)?`<button class="btn sm ghost" onclick="wstep=4;render();wbGenerate()">Générer les sections manquantes</button>`:""}
+   <button class="btn sm" onclick="exportWB(false)">⬇ PDF élève</button><button class="btn sm ghost" onclick="exportWB(true)">⬇ PDF avec corrigé</button></div>${paperHTML(true,W.showAns)}`;
+}
+function exportWB(ans){
+  const el=$("#print"),st=document.createElement("style");st.textContent="@page{size:A4;margin:14mm}";document.head.appendChild(st);
+  el.className="wbprint";el.innerHTML=paperHTML(false,ans);
+  const done=()=>{st.remove();el.className="";el.innerHTML="";removeEventListener("afterprint",done);};addEventListener("afterprint",done);
+  toast("Dans la fenêtre d'impression, choisissez « Enregistrer au format PDF ».");setTimeout(()=>window.print(),300);
+}
+document.addEventListener("focusout",e=>{
+  const el=e.target.closest&&e.target.closest("[data-w]");if(!el||!W)return;
+  setPath(W,el.dataset.w,el.textContent.replace(/\s+/g," ").trim());saveDoc(W);
+});
+document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-w]")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
+document.addEventListener("click",e=>{
+  const b=e.target.closest&&e.target.closest("[data-del]");if(!b||!W)return;
+  const parts=b.dataset.del.split("."),idx=+parts.pop();let c=W;for(const k of parts)c=c[k];
+  if(parts.join(".")==="sections"&&W.sections.filter(s=>s.data).length<2)return toast("Il faut garder au moins une section.");
+  c.splice(idx,1);saveDoc(W);wbView();
+});
 
 /* ============ thèmes personnalisés (Max) ============ */
 const mix=(a,b,k)=>{const f=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const x=f(a),y=f(b);return "#"+x.map((v,i)=>Math.round(v*k+y[i]*(1-k)).toString(16).padStart(2,"0")).join("");};

@@ -21,6 +21,12 @@ python server.py        # http://127.0.0.1:5000
 
 Déploiement Render : service `sequences` déjà décrit dans `../render.yaml`.
 
+## Cahiers d'activités
+
+Ressource imprimable (explications + questions + corrigé), créée en 3 étapes comme sur Chalkie : **Source** (à partir d'une séquence existante ou d'un sujet) → **Configuration** (instructions, alignement au programme [Pro], explications, objectifs et mots-clés, longueur 4–6 / 7–12 / 13–20 / 21+, aides, défis) → **Plan** modifiable → génération section par section.
+Questions de quatre types (choix multiple, réponse courte, texte à trous, réponse développée). Le cahier se modifie en place, a un thème, un corrigé que l'on affiche ou non, et s'exporte en PDF A4 (« élève » ou « avec corrigé »). Un cahier compte pour une ressource. Le nombre de sections est limité comme les leçons d'une séquence (5 / 12 / 25).
+Pas d'export Word ni de fiches d'activités autonomes pour l'instant.
+
 ## Plans et quotas (comme la page Tarifs)
 
 | | Gratuit | Pro | Max |
