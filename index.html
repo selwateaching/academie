@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Correction orale</title>
+<meta name="description" content="Enregistrez une correction orale de copies, pour toutes les matières et tous les niveaux. Sans compte, sans serveur.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+:root{--bg:#f4f7f6;--card:#fff;--ink:#14231f;--ink2:#52625d;--line:#d9e3e0;--brand:#0f766e;--brand2:#0a5a54;--soft:#e3f2ef;--rec:#dc2626;--warn:#f59e0b;--r:16px}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1614;--card:#16211e;--ink:#e8f1ee;--ink2:#9db1ab;--line:#26352f;--brand:#2dd4bf;--brand2:#5eead4;--soft:#14302b}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--brand);color:#fff}
+@media (prefers-color-scheme:dark){header{background:#0f3b36}}
+header h1{margin:0;font-size:1.25rem}
+.lang{display:flex;gap:4px}
+.lang button{border:0;border-radius:8px;padding:6px 10px;font:inherit;font-size:.85rem;font-weight:700;background:rgba(255,255,255,.18);color:#fff;cursor:pointer}
+.lang button[aria-pressed=true]{background:#fff;color:var(--brand2)}
+main{max-width:760px;margin:0 auto;padding:16px 16px 60px}
+.lead{color:var(--ink2);margin:4px 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:18px}
+.card h2{margin:0 0 12px;font-size:1.1rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.grid{grid-template-columns:1fr}}
+.grid .wide{grid-column:1/-1}
+label{display:block;font-size:.85rem;font-weight:600;color:var(--ink2)}
+input,select{display:block;width:100%;margin-top:4px;padding:10px 12px;font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--soft);border-color:var(--brand)}
+button{font:inherit;cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:10px 16px;font-weight:700;background:var(--brand);color:#fff}
+.btn:hover{background:var(--brand2)}
+@media (prefers-color-scheme:dark){.btn{color:#04201c}}
+.btn.ghost{background:var(--soft);color:var(--brand2)}
+.btn.sm{padding:6px 11px;font-size:.85rem;border-radius:10px}
+.btn.danger{background:#fde8e8;color:#b91c1c}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.copy{margin-top:12px}
+.copy img{display:block;max-height:140px;max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:8px}
+/* enregistreur */
+.recbox{margin-top:16px;padding:16px;border-radius:14px;background:var(--bg);border:1px dashed var(--line);text-align:center}
+.time{font-size:2rem;font-weight:800;font-variant-numeric:tabular-nums;margin:6px 0}
+.meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden;max-width:320px;margin:0 auto 14px}
+.meter i{display:block;height:100%;width:0;background:var(--brand);transition:width .08s}
+.bigrec{width:84px;height:84px;border-radius:50%;border:6px solid var(--card);box-shadow:0 0 0 3px var(--rec);background:var(--rec);color:#fff;font-size:0;cursor:pointer}
+.bigrec:active{transform:scale(.96)}
+.recbox[data-state=idle] [data-on]:not([data-on~=idle]),.recbox[data-state=rec] [data-on]:not([data-on~=rec]),.recbox[data-state=paused] [data-on]:not([data-on~=paused]),.recbox[data-state=review] [data-on]:not([data-on~=review]){display:none}
+.recbox .row{justify-content:center}
+.recbox[data-state=rec] .time{color:var(--rec)}
+.recbox audio{width:100%;max-width:420px;margin:6px 0 12px}
+.hint{font-size:.85rem;color:var(--ink2);margin:10px 0 0}
+/* liste */
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.tools input,.tools select{margin:0;flex:1;min-width:150px}
+.item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);align-items:flex-start;flex-wrap:wrap}
+.thumb{flex:0 0 64px;width:64px;height:64px;border-radius:12px;border:1px solid var(--line);background:var(--soft);overflow:hidden;padding:0;font-size:1.6rem;display:grid;place-items:center}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.meta{flex:1;min-width:180px}
+.meta b{display:block}.meta span,.meta small{display:block;color:var(--ink2)}
+.meta small{font-size:.82rem}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.empty{color:var(--ink2);text-align:center;padding:18px 0}
+/* visionneuse */
+#viewer{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px}
+#viewer[hidden]{display:none}
+#viewer .vimg{flex:1;min-height:0;width:100%;overflow:auto;text-align:center}
+#viewer .vimg img{max-width:100%;border-radius:8px;background:#fff}
+#viewer .vbar{width:100%;max-width:560px;background:var(--card);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px}
+#viewer audio{width:100%}
+#toast{position:fixed;inset-inline:16px;bottom:18px;max-width:420px;margin:0 auto;padding:12px 16px;border-radius:12px;background:#14231f;color:#fff;font-weight:600;text-align:center;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s;z-index:30}
+#toast.on{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<header>
+  <h1 data-i="app">Correction orale</h1>
+  <div class="lang" role="group" aria-label="Langue / اللغة"><button type="button" data-lang="fr" lang="fr">FR</button><button type="button" data-lang="ar" lang="ar">عربي</button></div>
+</header>
+<main>
+  <p class="lead" data-i="lead"></p>
+
+  <section class="card" aria-labelledby="hNew">
+    <h2 id="hNew" data-i="newTitle"></h2>
+    <div class="grid">
+      <label class="wide"><span data-i="student"></span><input id="fStudent" maxlength="60" autocomplete="off"></label>
+      <label><span data-i="subject"></span><input id="fSubject" maxlength="60" list="dSubject" autocomplete="off"></label>
+      <label><span data-i="level"></span><input id="fLevel" maxlength="40" list="dLevel" autocomplete="off"></label>
+      <label class="wide"><span data-i="task"></span><input id="fTask" maxlength="80" autocomplete="off"></label>
+      <label class="wide"><span data-i="note"></span><input id="fNote" maxlength="120" autocomplete="off"></label>
+    </div>
+    <datalist id="dSubject"></datalist><datalist id="dLevel"></datalist>
+
+    <div class="copy">
+      <div class="row">
+        <label class="btn ghost" style="cursor:pointer"><span data-i="addCopy"></span><input id="fCopy" type="file" accept="image/*" hidden></label>
+        <button class="btn ghost sm" type="button" id="rmCopy" hidden data-i="removeCopy"></button>
+      </div>
+      <img id="copyPrev" alt="" hidden>
+    </div>
+
+    <div class="recbox" id="recbox" data-state="idle">
+      <div class="time" id="time" aria-live="off">0:00</div>
+      <div class="meter" data-on="rec" aria-hidden="true"><i id="level"></i></div>
+      <div class="row" data-on="idle">
+        <button class="bigrec" type="button" id="bRec" aria-label="Enregistrer" data-i-aria="rec">●</button>
+      </div>
+      <div class="row" data-on="rec paused">
+        <button class="btn ghost" type="button" id="bPause" data-on="rec"></button>
+        <button class="btn ghost" type="button" id="bResume" data-on="paused"></button>
+        <button class="btn" type="button" id="bStop" data-i="stop"></button>
+      </div>
+      <div data-on="review">
+        <audio id="prev" controls></audio>
+        <div class="row">
+          <button class="btn" type="button" id="bSave" data-i="save"></button>
+          <button class="btn ghost" type="button" id="bRedo" data-i="redo"></button>
+        </div>
+      </div>
+      <div class="row" data-on="idle" style="margin-top:14px">
+        <label class="btn ghost sm" style="cursor:pointer"><span data-i="importAudio"></span><input id="fAudio" type="file" accept="audio/*" hidden></label>
+      </div>
+    </div>
+    <p class="hint" data-i="local"></p>
+  </section>
+
+  <section class="card" aria-labelledby="hLib">
+    <h2 id="hLib" data-i="libTitle"></h2>
+    <div class="tools">
+      <input id="qSearch" type="search" data-i-ph="search" autocomplete="off">
+      <select id="qSubject" aria-label="Matière"></select>
+      <button class="btn sm" type="button" id="bZip" data-i="zip"></button>
+    </div>
+    <div id="list"></div>
+  </section>
+</main>
+
+<div id="viewer" hidden role="dialog" aria-modal="true">
+  <div class="vimg"><img id="vImg" alt="" hidden></div>
+  <div class="vbar">
+    <b id="vTitle"></b>
+    <audio id="vAudio" controls></audio>
+    <div class="row"><button class="btn sm" type="button" id="vDl"></button><button class="btn ghost sm" type="button" id="vClose"></button></div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+  /* ---------- langue : français ou arabe (de droite à gauche) ---------- */
+  const TXT = {
+    app: ['Correction orale', 'التصحيح الشفهي'],
+    lead: ['Enregistrez votre correction à voix haute, pour n’importe quelle matière et n’importe quel niveau, puis téléchargez-la ou partagez-la.', 'سجّل تصحيحك بصوتك لأي مادة وأي مستوى، ثم حمّله أو شاركه.'],
+    newTitle: ['Nouvelle correction', 'تصحيح جديد'],
+    student: ['Élève ou étudiant', 'التلميذ أو الطالب'],
+    subject: ['Matière', 'المادة'],
+    level: ['Classe ou niveau', 'القسم أو المستوى'],
+    task: ['Devoir ou copie (ex. Contrôle n°2)', 'الفرض أو الورقة (مثال: فرض رقم 2)'],
+    note: ['Note ou appréciation (facultatif)', 'النقطة أو الملاحظة (اختياري)'],
+    addCopy: ['Ajouter la photo de la copie', 'إضافة صورة الورقة'],
+    removeCopy: ['Retirer la photo', 'إزالة الصورة'],
+    rec: ['Enregistrer', 'تسجيل'],
+    pause: ['Pause', 'إيقاف مؤقت'],
+    resume: ['Reprendre', 'استئناف'],
+    stop: ['Terminer', 'إنهاء'],
+    importAudio: ['Importer un audio', 'استيراد ملف صوتي'],
+    save: ['Sauvegarder la correction', 'حفظ التصحيح'],
+    redo: ['Recommencer', 'إعادة'],
+    libTitle: ['Mes corrections', 'تصحيحاتي'],
+    search: ['Rechercher…', 'بحث…'],
+    allSubjects: ['Toutes les matières', 'كل المواد'],
+    zip: ['Tout télécharger (.zip)', 'تحميل الكل (.zip)'],
+    listen: ['Écouter', 'استماع'],
+    download: ['Télécharger', 'تحميل'],
+    wav: ['WAV (lisible partout)', 'WAV (يعمل في كل مكان)'],
+    share: ['Partager', 'مشاركة'],
+    del: ['Supprimer', 'حذف'],
+    close: ['Fermer', 'إغلاق'],
+    confirmDel: ['Supprimer cette correction ?', 'هل تريد حذف هذا التصحيح؟'],
+    empty: ['Aucune correction pour l’instant.', 'لا توجد تصحيحات بعد.'],
+    saved: ['Correction sauvegardée.', 'تم حفظ التصحيح.'],
+    micErr: ['Micro inaccessible : autorisez-le dans le navigateur.', 'الميكروفون غير متاح: اسمح به في المتصفح.'],
+    noRec: ['Ce navigateur ne permet pas d’enregistrer : importez un fichier audio.', 'هذا المتصفح لا يتيح التسجيل: استورد ملفًا صوتيًا.'],
+    notAudio: ['Ce fichier n’est pas un audio.', 'هذا الملف ليس ملفًا صوتيًا.'],
+    local: ['Les enregistrements restent sur cet appareil (rien n’est envoyé sur Internet). Téléchargez-les pour en garder une copie.', 'تبقى التسجيلات على هذا الجهاز (لا يُرسل شيء عبر الإنترنت). حمّلها للاحتفاظ بنسخة.'],
+    noName: ['Sans nom', 'بدون اسم'],
+    working: ['Préparation…', 'جارٍ التحضير…'],
+    maxed: ['Durée maximale atteinte (30 min).', 'تم بلوغ المدة القصوى (30 دقيقة).'],
+    dbErr: ['Stockage du navigateur indisponible.', 'تخزين المتصفح غير متاح.'],
+  };
+  let lang = 'fr';
+  try { lang = localStorage.getItem('correction-orale.lang') === 'ar' ? 'ar' : 'fr'; } catch (e) { /* ignoré */ }
+  const t = (k) => TXT[k][lang === 'ar' ? 1 : 0];
+  function applyLang() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    $$('[data-i]').forEach((e) => { e.textContent = t(e.dataset.i); });
+    $$('[data-i-ph]').forEach((e) => e.setAttribute('placeholder', t(e.dataset.iPh)));
+    $$('[data-i-aria]').forEach((e) => e.setAttribute('aria-label', t(e.dataset.iAria)));
+    $('#bPause').textContent = '⏸ ' + t('pause'); $('#bResume').textContent = '▶ ' + t('resume');
+    $('#vClose').textContent = t('close'); $('#vDl').textContent = t('download');
+    $$('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === lang)));
+    document.title = t('app');
+  }
+  $$('[data-lang]').forEach((b) => b.addEventListener('click', () => {
+    lang = b.dataset.lang; try { localStorage.setItem('correction-orale.lang', lang); } catch (e) { /* ignoré */ }
+    applyLang(); render();
+  }));
+
+  /* ---------- aides ---------- */
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const fmtDate = (ms) => new Date(ms).toLocaleDateString(lang === 'ar' ? 'ar-DZ-u-nu-latn' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  let toastTimer;
+  function toast(msg) { const n = $('#toast'); n.textContent = msg; n.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => n.classList.remove('on'), 3500); }
+  const baseMime = (m) => String(m || '').split(';')[0].trim().toLowerCase();
+  const EXT = { 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/m4a': 'm4a', 'audio/aac': 'aac', 'audio/webm': 'webm', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/wav': 'wav', 'audio/x-wav': 'wav', 'audio/wave': 'wav' };
+  const EXT2MIME = { m4a: 'audio/mp4', aac: 'audio/aac', webm: 'audio/webm', ogg: 'audio/ogg', opus: 'audio/ogg', mp3: 'audio/mpeg', wav: 'audio/wav', amr: 'audio/amr', '3gp': 'audio/3gpp' };
+  const extOf = (mime) => EXT[baseMime(mime)] || 'audio';
+  // noms de fichiers sans accents (é → e) pour s'ouvrir partout ; les lettres arabes sont conservées
+  const slug = (s) => String(s || '').normalize('NFD').replace(/\p{M}+/gu, '').replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, '');
+  const stamp = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const baseName = (it) => [it.subject, it.level, it.student, it.task].map(slug).filter(Boolean).join('_') + (it.student || it.subject || it.level || it.task ? '_' : '') + stamp(it.created);
+  function saveBlob(blob, name) {
+    $('#toast').classList.remove('on');
+    const u = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = u; a.download = name; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(u), 15000);
+  }
+  // Un enregistrement du navigateur n'a pas toujours sa durée : on la force pour pouvoir avancer dans la lecture.
+  function fixDuration(a) {
+    a.addEventListener('loadedmetadata', () => {
+      if (a.duration !== Infinity) return;
+      a.currentTime = 1e101;
+      a.addEventListener('timeupdate', function f() { a.removeEventListener('timeupdate', f); a.currentTime = 0; });
+    });
+  }
+  [$('#prev'), $('#vAudio')].forEach(fixDuration);
+
+  /* ---------- stockage : IndexedDB (audio et photos restent dans l'appareil) ---------- */
+  const DB = (() => {
+    let p;
+    const open = () => p || (p = new Promise((res, rej) => {
+      const r = indexedDB.open('correction-orale', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('items', { keyPath: 'id', autoIncrement: true });
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    }));
+    const tx = async (mode, fn) => {
+      const db = await open();
+      return new Promise((res, rej) => { const x = db.transaction('items', mode); const out = fn(x.objectStore('items')); x.oncomplete = () => res(out.result); x.onerror = () => rej(x.error); x.onabort = () => rej(x.error); });
+    };
+    return { all: () => tx('readonly', (s) => s.getAll()), add: (v) => tx('readwrite', (s) => s.add(v)), del: (id) => tx('readwrite', (s) => s.delete(id)) };
+  })();
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* ignoré */ }
+
+  /* ---------- photo de la copie (réduite pour économiser la place) ---------- */
+  let copyBlob = null;
+  async function shrink(file) {
+    try {
+      const bmp = await createImageBitmap(file), k = Math.min(1, 1800 / Math.max(bmp.width, bmp.height));
+      const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise((res) => c.toBlob((b) => res(b || file), 'image/jpeg', 0.85));
+    } catch (e) { return file; }
+  }
+  function setCopy(blob) {
+    const img = $('#copyPrev'); if (img.src) URL.revokeObjectURL(img.src);
+    copyBlob = blob; img.hidden = !blob; $('#rmCopy').hidden = !blob;
+    if (blob) img.src = URL.createObjectURL(blob); else img.removeAttribute('src');
+  }
+  $('#fCopy').addEventListener('change', async (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) setCopy(await shrink(f)); });
+  $('#rmCopy').addEventListener('click', () => setCopy(null));
+
+  /* ---------- enregistreur ---------- */
+  const box = $('#recbox');
+  const R = { rec: null, stream: null, chunks: [], t0: 0, acc: 0, timer: 0, ctx: null, raf: 0, blob: null, secs: 0, wake: null };
+  const setState = (s) => { box.dataset.state = s; };
+  const elapsed = () => R.acc + (box.dataset.state === 'rec' ? Date.now() - R.t0 : 0);
+  const MIMES = ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+  const pickMime = () => MIMES.find((m) => MediaRecorder.isTypeSupported(m));
+
+  function meter(stream) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; R.ctx = new AC();
+      const an = R.ctx.createAnalyser(); an.fftSize = 512; R.ctx.createMediaStreamSource(stream).connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      const loop = () => { an.getByteTimeDomainData(buf); let pk = 0; for (const v of buf) pk = Math.max(pk, Math.abs(v - 128)); $('#level').style.width = Math.min(100, pk * 1.6) + '%'; R.raf = requestAnimationFrame(loop); };
+      loop();
+    } catch (e) { /* le niveau sonore est facultatif */ }
+  }
+  async function startRec() {
+    if (!navigator.mediaDevices || !window.MediaRecorder) return toast(t('noRec'));
+    try { R.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); } catch (e) { return toast(t('micErr')); }
+    const mime = pickMime(); R.chunks = [];
+    R.rec = new MediaRecorder(R.stream, Object.assign({ audioBitsPerSecond: 64000 }, mime ? { mimeType: mime } : {}));
+    R.rec.ondataavailable = (e) => { if (e.data && e.data.size) R.chunks.push(e.data); };
+    R.rec.onstop = onStopped;
+    R.rec.start(1000);
+    R.acc = 0; R.t0 = Date.now(); setState('rec'); meter(R.stream);
+    R.timer = setInterval(() => { const s = Math.round(elapsed() / 1000); $('#time').textContent = mmss(s); if (s >= 1800) { toast(t('maxed')); stopRec(); } }, 250);
+    try { if (navigator.wakeLock) R.wake = await navigator.wakeLock.request('screen'); } catch (e) { /* ignoré */ }
+  }
+  function stopRec() {
+    if (!R.rec || R.rec.state === 'inactive') return;
+    R.acc = elapsed(); R.rec.stop();
+  }
+  function onStopped() {
+    clearInterval(R.timer); cancelAnimationFrame(R.raf); $('#level').style.width = '0';
+    R.stream.getTracks().forEach((x) => x.stop()); if (R.ctx) { R.ctx.close(); R.ctx = null; }
+    if (R.wake) { R.wake.release().catch(() => {}); R.wake = null; }
+    const type = R.rec.mimeType || (R.chunks[0] && R.chunks[0].type) || 'audio/webm';
+    R.rec = null; if (!R.chunks.length) return setState('idle');
+    review(new Blob(R.chunks, { type }), Math.round(R.acc / 1000));
+  }
+  function review(blob, secs) {
+    R.blob = blob; R.secs = secs;
+    const a = $('#prev'); if (a.src) URL.revokeObjectURL(a.src); a.src = URL.createObjectURL(blob);
+    $('#time').textContent = mmss(secs); setState('review');
+  }
+  function reset() {
+    const a = $('#prev'); if (a.src) { URL.revokeObjectURL(a.src); a.removeAttribute('src'); }
+    R.blob = null; R.secs = 0; $('#time').textContent = '0:00'; setState('idle');
+  }
+  $('#bRec').addEventListener('click', startRec);
+  $('#bStop').addEventListener('click', stopRec);
+  $('#bPause').addEventListener('click', () => { R.rec.pause(); R.acc += Date.now() - R.t0; setState('paused'); });
+  $('#bResume').addEventListener('click', () => { R.rec.resume(); R.t0 = Date.now(); setState('rec'); });
+  $('#bRedo').addEventListener('click', reset);
+  $('#fAudio').addEventListener('change', (e) => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    let type = baseMime(f.type); const ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (!type.startsWith('audio/')) type = EXT2MIME[ext] || '';
+    if (!type) return toast(t('notAudio'));
+    const blob = new Blob([f], { type }), probe = new Audio(), u = URL.createObjectURL(blob);
+    probe.preload = 'metadata'; probe.src = u;
+    const go = () => { URL.revokeObjectURL(u); review(blob, Number.isFinite(probe.duration) ? Math.round(probe.duration) : 0); };
+    probe.addEventListener('loadedmetadata', go, { once: true }); probe.addEventListener('error', go, { once: true });
+  });
+  $('#bSave').addEventListener('click', async () => {
+    if (!R.blob) return;
+    const v = (id) => $(id).value.trim();
+    const item = { student: v('#fStudent'), subject: v('#fSubject'), level: v('#fLevel'), task: v('#fTask'), note: v('#fNote'),
+      created: Date.now(), seconds: R.secs, mime: baseMime(R.blob.type), audio: R.blob, copy: copyBlob };
+    try { await DB.add(item); } catch (e) { return toast(t('dbErr')); }
+    // on garde matière, classe et devoir : on corrige souvent plusieurs copies de suite
+    $('#fStudent').value = ''; $('#fNote').value = ''; setCopy(null); reset();
+    toast(t('saved')); render(); $('#fStudent').focus();
+  });
+
+  /* ---------- liste des corrections ---------- */
+  let thumbUrls = [];
+  const searchText = (it) => [it.student, it.subject, it.level, it.task, it.note].join(' ').toLowerCase();
+  async function items() {
+    const all = await DB.all(); all.sort((a, b) => b.created - a.created);
+    const q = $('#qSearch').value.trim().toLowerCase(), sub = $('#qSubject').value;
+    return { all, shown: all.filter((it) => (!sub || it.subject === sub) && (!q || searchText(it).includes(q))) };
+  }
+  const uniq = (arr) => [...new Set(arr.filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  async function render() {
+    let data; try { data = await items(); } catch (e) { $('#list').innerHTML = `<p class="empty">${t('dbErr')}</p>`; return; }
+    const { all, shown } = data;
+    const subs = uniq(all.map((i) => i.subject)), cur = $('#qSubject').value;
+    $('#qSubject').innerHTML = `<option value="">${t('allSubjects')}</option>` + subs.map((s) => `<option${s === cur ? ' selected' : ''}>${esc(s)}</option>`).join('');
+    $('#dSubject').innerHTML = subs.map((s) => `<option value="${esc(s)}">`).join('');
+    $('#dLevel').innerHTML = uniq(all.map((i) => i.level)).map((s) => `<option value="${esc(s)}">`).join('');
+    $('#bZip').hidden = !shown.length;
+    thumbUrls.forEach(URL.revokeObjectURL); thumbUrls = [];
+    const canShare = !!(navigator.canShare && navigator.share);
+    $('#list').innerHTML = shown.length ? shown.map((it) => {
+      let th = '🎧'; if (it.copy) { const u = URL.createObjectURL(it.copy); thumbUrls.push(u); th = `<img src="${u}" alt="">`; }
+      const line = [it.subject, it.level, it.task].filter(Boolean).map(esc).join(' · ');
+      return `<article class="item" data-id="${it.id}"><button class="thumb" type="button" data-a="open" aria-label="${t('listen')}">${th}</button>
+        <div class="meta"><b>${esc(it.student || t('noName'))}</b>${line ? `<span>${line}</span>` : ''}<small>${fmtDate(it.created)}${it.seconds ? ' · ' + mmss(it.seconds) : ''}${it.note ? ' · ' + esc(it.note) : ''}</small></div>
+        <div class="acts"><button class="btn sm" type="button" data-a="open">▶ ${t('listen')}</button><button class="btn ghost sm" type="button" data-a="dl">⬇ ${t('download')}</button>
+        <button class="btn ghost sm" type="button" data-a="wav">${t('wav')}</button>${canShare ? `<button class="btn ghost sm" type="button" data-a="share">${t('share')}</button>` : ''}
+        <button class="btn danger sm" type="button" data-a="del">${t('del')}</button></div></article>`;
+    }).join('') : `<p class="empty">${t('empty')}</p>`;
+  }
+  const find = async (id) => (await DB.all()).find((i) => i.id === id);
+
+  /* WAV : le format que tous les lecteurs savent ouvrir (WhatsApp, vieux téléphones, Windows…) */
+  async function toWav(blob) {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const buf = await ctx.decodeAudioData(await blob.arrayBuffer()); ctx.close();
+    const rate = 22050, off = new OfflineAudioContext(1, Math.max(1, Math.ceil(buf.duration * rate)), rate);
+    const src = off.createBufferSource(); src.buffer = buf; src.connect(off.destination); src.start();
+    const pcm = (await off.startRendering()).getChannelData(0), out = new DataView(new ArrayBuffer(44 + pcm.length * 2));
+    const w = (o, s) => { for (let i = 0; i < s.length; i++) out.setUint8(o + i, s.charCodeAt(i)); };
+    w(0, 'RIFF'); out.setUint32(4, 36 + pcm.length * 2, true); w(8, 'WAVEfmt '); out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 1, true);
+    out.setUint32(24, rate, true); out.setUint32(28, rate * 2, true); out.setUint16(32, 2, true); out.setUint16(34, 16, true); w(36, 'data'); out.setUint32(40, pcm.length * 2, true);
+    for (let i = 0; i < pcm.length; i++) out.setInt16(44 + i * 2, Math.max(-1, Math.min(1, pcm[i])) * 0x7fff, true);
+    return new Blob([out], { type: 'audio/wav' });
+  }
+
+  /* ZIP sans compression (suffisant : l'audio est déjà compressé) */
+  const CRC = (() => { const tb = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; tb[n] = c >>> 0; } return tb; })();
+  const crc32 = (u8) => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function makeZip(files) {
+    const enc = new TextEncoder(), parts = [], central = []; let offset = 0;
+    for (const f of files) {
+      const name = enc.encode(f.name), len = f.data.length, crc = crc32(f.data), d = new Date(f.date);
+      const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(10, time, true); lh.setUint16(12, date, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, len, true); lh.setUint32(22, len, true); lh.setUint16(26, name.length, true);
+      parts.push(lh.buffer, name, f.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, time, true); ch.setUint16(14, date, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, len, true); ch.setUint32(24, len, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+      central.push(ch.buffer, name); offset += 30 + name.length + len;
+    }
+    const size = central.reduce((a, b) => a + b.byteLength, 0), end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, size, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, end.buffer], { type: 'application/zip' });
+  }
+  $('#bZip').addEventListener('click', async () => {
+    toast(t('working'));
+    const { shown } = await items(), files = [], used = new Set();
+    const uniqueName = (n, ext) => { let k = n, i = 2; while (used.has(`${k}.${ext}`)) k = `${n}_${i++}`; used.add(`${k}.${ext}`); return `${k}.${ext}`; };
+    for (const it of shown) {
+      const b = baseName(it) || 'correction';
+      files.push({ name: uniqueName(b, extOf(it.mime)), data: new Uint8Array(await it.audio.arrayBuffer()), date: it.created });
+      if (it.copy) files.push({ name: uniqueName(b + '_copie', 'jpg'), data: new Uint8Array(await it.copy.arrayBuffer()), date: it.created });
+    }
+    saveBlob(makeZip(files), 'corrections_' + stamp(Date.now()) + '.zip');
+  });
+
+  /* visionneuse : la copie en photo + la correction audio */
+  let viewing = null, viewUrls = [];
+  async function openViewer(it) {
+    viewing = it; const v = $('#viewer'), img = $('#vImg'), au = $('#vAudio');
+    viewUrls.forEach(URL.revokeObjectURL); viewUrls = [];
+    if (it.copy) { const u = URL.createObjectURL(it.copy); viewUrls.push(u); img.src = u; img.hidden = false; } else { img.hidden = true; img.removeAttribute('src'); }
+    const a = URL.createObjectURL(it.audio); viewUrls.push(a); au.src = a;
+    $('#vTitle').textContent = [it.student || t('noName'), it.subject, it.level, it.task].filter(Boolean).join(' · ');
+    v.hidden = false; au.play().catch(() => {});
+  }
+  function closeViewer() { const au = $('#vAudio'); au.pause(); $('#viewer').hidden = true; viewing = null; }
+  $('#vClose').addEventListener('click', closeViewer);
+  $('#vDl').addEventListener('click', () => viewing && saveBlob(viewing.audio, baseName(viewing) + '.' + extOf(viewing.mime)));
+  $('#viewer').addEventListener('click', (e) => { if (e.target.id === 'viewer' || e.target.classList.contains('vimg')) closeViewer(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && viewing) closeViewer(); });
+
+  $('#list').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-a]'); if (!b) return;
+    const id = Number(b.closest('.item').dataset.id), it = await find(id); if (!it) return;
+    const a = b.dataset.a;
+    if (a === 'open') openViewer(it);
+    else if (a === 'dl') saveBlob(it.audio, baseName(it) + '.' + extOf(it.mime));
+    else if (a === 'wav') { toast(t('working')); try { saveBlob(await toWav(it.audio), baseName(it) + '.wav'); } catch (er) { toast(t('notAudio')); } }
+    else if (a === 'share') {
+      const file = new File([it.audio], baseName(it) + '.' + extOf(it.mime), { type: baseMime(it.mime) });
+      try { if (navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: baseName(it) }); else saveBlob(it.audio, file.name); } catch (er) { /* annulé */ }
+    } else if (a === 'del') { if (confirm(t('confirmDel'))) { await DB.del(id); render(); } }
+  });
+  $('#qSearch').addEventListener('input', render);
+  $('#qSubject').addEventListener('change', render);
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+  applyLang(); render();
+})();
+</script>
+</body>
+</html>
