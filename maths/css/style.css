@@ -276,3 +276,62 @@ main{flex:1;outline:none}
 
 .ttl-ic{width:44px;height:44px;border-radius:12px;object-fit:cover;vertical-align:middle;margin-inline-end:10px}
 .side-ph{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:center 72%;display:block;margin-bottom:8px;border:3px solid var(--c,#fff)}
+
+/* cours illustrés */
+.csub{margin:26px 0}.csub h2{font-size:1.3rem;color:var(--c);margin-bottom:12px}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ccard{display:flex;gap:12px;align-items:center;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;text-decoration:none;color:inherit;border-inline-start:6px solid var(--c)}
+.ccard:hover{transform:translateY(-2px)}.ccard b{display:block;font-size:1rem}.ccard small{color:var(--ink3);font-size:.82rem}
+.cic{font-size:1.9rem;width:46px;height:46px;border-radius:12px;background:color-mix(in srgb,var(--c) 14%,#fff);display:grid;place-items:center;flex:none}.cic.big{width:64px;height:64px;font-size:2.4rem}
+.pill.off{background:#e5e7eb;color:#64748b;opacity:1}.pill small{font-size:.7rem}
+.cours .chead{display:flex;gap:16px;align-items:center;margin:14px 0}.cours .chead h1{font-size:clamp(1.5rem,3.4vw,2.1rem);color:var(--c)}.cours .chead p{color:var(--ink2);margin-top:4px}
+.crow{margin:6px 0 16px}
+.cstep{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;border:2px solid transparent;transition:border-color .2s}
+.cstep.speaking{border-color:var(--c);box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 18%,transparent)}
+.chd{display:flex;gap:12px;align-items:center;padding:10px 16px;background:color-mix(in srgb,var(--c) 12%,#fff)}
+.chd h3{flex:1;font-size:1.05rem;color:var(--c)}.chd .n{width:32px;height:32px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
+.cbd{padding:14px 18px;line-height:1.65}.cbd p{margin:0 0 8px}.cbd ul{margin:0;padding-inline-start:20px}.cbd li{margin:4px 0}
+.cfig{display:block;width:100%;max-width:440px;margin:12px auto 4px;color:var(--ink)}
+.cstep.recap{--c:#d97706;background:#fff9db}.cstep.recap .chd{background:#fdecab}
+.cq{margin:12px 0;padding-bottom:10px;border-bottom:1px dashed #e5e7eb}.cch{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.cch .btn.good{background:#16a34a;color:#fff}.cch .btn.bad{background:#ef4444;color:#fff}.cres{font-weight:700;min-height:1.4em}
+.cnav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cours{direction:ltr}[dir=rtl] .cours{direction:ltr;text-align:left}
+
+/* lecteur animé */
+.stage{background:linear-gradient(160deg,#16163a,#2b2a6e);color:#fff;border-radius:20px;padding:18px 20px 16px;margin:14px 0 22px;box-shadow:var(--shadow)}
+.sdots{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:12px}
+.sd{width:12px;height:12px;border-radius:50%;border:0;background:rgba(255,255,255,.3);padding:0;cursor:pointer}.sd.on{background:#ffb703;transform:scale(1.35)}
+.sbody{min-height:280px}.sstep{animation:sin .5s both}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:8px}.sh h2{font-size:clamp(1.15rem,2.6vw,1.5rem);color:#ffd166}
+.sh .n{width:38px;height:38px;border-radius:50%;background:#ffb703;color:#1e1b4b;display:grid;place-items:center;font-weight:800;flex:none}
+.sh .cic{background:rgba(255,255,255,.12)}
+.sp{font-size:1.08rem;line-height:1.65;animation:sin .7s .15s both}.sp ul{margin:0;padding-inline-start:22px}.sp li{margin:6px 0}
+.stage .cfig{background:#fff;color:#1e1b4b;border-radius:14px;padding:6px;max-width:480px;animation:sin .7s .35s both}
+.sctl{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:14px;flex-wrap:wrap}
+.sctl .btn.ghost{background:rgba(255,255,255,.14);color:#fff}
+.cs-t{font-size:1.15rem;margin:18px 0 10px;text-align:center}
+@keyframes sin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* animations des schémas */
+.stage .cfig > *{animation:fin .45s calc(var(--k,0)*70ms + .2s) both}
+@keyframes fin{from{opacity:0}to{opacity:1}}
+.cfig .flow{stroke:#ef4444;stroke-width:5;stroke-dasharray:1 14;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-30}}
+.cfig .draw{stroke-dasharray:100;stroke-dashoffset:100;animation:drw 4s .5s ease-out forwards}
+@keyframes drw{to{stroke-dashoffset:0}}
+.cfig .dash{stroke-dasharray:8 6;animation:flow 1.4s linear infinite}
+.cfig .pop{transform-box:fill-box;transform-origin:center;animation:pp 1.6s ease-in-out infinite}
+@keyframes pp{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+.cfig .pulse{animation:pls 1.4s ease-in-out infinite}
+@keyframes pls{0%,100%{opacity:1}50%{opacity:.25}}
+.cfig .ps{animation:jit .5s ease-in-out infinite alternate}
+@keyframes jit{from{transform:translate(-1.5px,-1px)}to{transform:translate(1.5px,1px)}}
+.cfig .pl{animation:lq 2.4s ease-in-out infinite alternate}
+@keyframes lq{from{transform:translate(-4px,0)}to{transform:translate(5px,3px)}}
+.cfig .pg{animation:gz 3s ease-in-out infinite alternate}
+@keyframes gz{0%{transform:translate(0,0)}33%{transform:translate(30px,-18px)}66%{transform:translate(-18px,24px)}100%{transform:translate(22px,14px)}}
+@media(prefers-reduced-motion:reduce){.cfig *,.sstep,.sp,.stage .cfig{animation:none!important}.cfig .draw{stroke-dashoffset:0}}
+
+.sbig{font-size:5rem;text-align:center;margin:10px 0;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.sctl{flex-wrap:nowrap}.sctl .btn.big{flex:1 1 auto;min-width:0;padding:12px 12px;font-size:1rem}.sctl .btn.ghost{flex:none}
