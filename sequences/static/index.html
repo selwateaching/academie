@@ -189,6 +189,7 @@ header{background:linear-gradient(#e6f4ec,#fff);border-radius:16px}
 .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:980px;margin:18px auto 0}
 .chip2{font:inherit;font-weight:600;font-size:17px;color:#0b1f1f;background:rgba(255,255,255,.55);border:2px solid rgba(255,255,255,.9);border-radius:99px;padding:8px 16px;cursor:pointer}
 .chip2:hover{background:#fff}
+.kinds{display:flex;gap:10px;justify-content:center;align-items:center;margin:16px 0 0;flex-wrap:wrap;font-weight:700;color:#0b1f1f}.chip2.kd{background:#fff;font-weight:800}
 .stats{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:34px;font-weight:700;font-size:17px;color:#fff}
 .sec{max-width:1180px;margin:0 auto;padding:56px 20px 0}
 .sec h2{font-size:clamp(26px,3.4vw,40px);font-weight:900;margin:0 0 6px;line-height:1.2}
@@ -457,6 +458,7 @@ function home(){
    <p class="sb">Alignée sur le programme, adaptée à chaque élève, prête en quelques minutes.</p>
    <form class="hbar" onsubmit="heroGo(event)"><input id="hq" maxlength="300" placeholder="${PH[0]}" aria-label="Sujet de la séquence"><button class="go" type="submit">✨ Créer</button></form>
    <div class="opts"><select id="hl" aria-label="Niveau">${LEVELS.map(l=>`<option ${l==="6e"?"selected":""}>${l}</option>`).join("")}</select><select id="hg" aria-label="Langue">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option>${l}</option>`).join("")}</select></div>
+   <div class="kinds"><span>Ou créez :</span><button class="chip2 kd" onclick="newSheet()">📄 Fiche d'activités</button><button class="chip2 kd" onclick="newWB()">📘 Cahier d'activités</button></div>
    <div class="chips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
    <div class="stats"><span>Séquences complètes</span><span>•</span><span>Diapositives illustrées</span><span>•</span><span>Export PowerPoint</span></div>
   </section>
