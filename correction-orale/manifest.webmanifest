@@ -1,0 +1,11 @@
+{
+  "name": "Correction orale",
+  "short_name": "Correction orale",
+  "description": "Enregistrer une correction orale de copies, pour toutes les matières et tous les niveaux.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f6",
+  "theme_color": "#0f766e",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
