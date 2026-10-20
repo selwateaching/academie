@@ -340,13 +340,26 @@ body.app #app.paperw{max-width:none}
 .rc.fold .cover{background:linear-gradient(135deg,#e9f5f0,#dbeee7)!important;color:#2c6e49}.rc.fold .cover svg{width:64px;height:64px}
 .crumbs{margin:0 0 14px;font-size:16px;color:var(--mut)}.crumbs a{color:var(--g);font-weight:700;cursor:pointer}
 .movel label{display:flex;gap:10px;align-items:center;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;font-weight:600}.movel input{width:auto}
+
+body #app.serw{max-width:1180px!important}
+.shead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:0 0 20px}
+.shead h1{font-size:clamp(24px,3vw,34px);line-height:1.2}.sacts{display:flex;gap:8px;flex-wrap:wrap}
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+@media(max-width:1000px){.sgrid{grid-template-columns:1fr}}
+.srow{display:flex;gap:14px;align-items:center;padding:16px 0;border-top:1px solid var(--line)}.srow:first-child{border-top:0}
+.srow .no{flex:none;width:36px;height:36px;border-radius:50%;background:var(--g2);color:var(--g);font-weight:800;display:grid;place-items:center}
+.srow .tx{flex:1;min-width:0}.srow b{display:block;font-size:17px;line-height:1.3}.srow p{margin:3px 0 0;color:var(--mut);font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.srow .bt{display:flex;gap:6px;flex:none}
+.sside .card{padding:16px}.sside h3{margin:0 0 10px;font-size:17px}.sside .w{width:100%;margin-bottom:8px}
+.dots{display:flex;flex-wrap:wrap;gap:10px}.dot{position:relative;width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line);cursor:pointer;background:var(--bg);display:grid;place-items:center;font:900 12px Inter,sans-serif;color:var(--ti);padding:0}
+.dot.on{box-shadow:0 0 0 3px var(--g)}.dot:hover{transform:scale(1.1)}.dot.add{background:#f3f4f6;color:#6b7280;font-size:20px}.dotname{margin:10px 0 0;font-size:14px;color:var(--mut)}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 <script src="/pptxgen.bundle.js" defer></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="navFiches()">Fiches d'activités</a><a onclick="navCahiers()">Cahiers d'activités</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
 <aside id="side"></aside>
 <main id="app"></main>
 <div id="modal" onclick="if(event.target===this)closeModal()"></div>
@@ -446,7 +459,7 @@ function pushSeries(sr){return api("/api/series/"+sr.id,sr,"PUT").catch(e=>{if(e
 function render(){
   const landing=!ACC&&!S&&page==="";
   document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
-  $("#app").classList.toggle("home",landing);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
+  $("#app").classList.toggle("home",landing);$("#app").classList.toggle("serw",!!S&&step===5);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
   $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="lecons"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
   side();
   if(page==="pricing")return pricing();
@@ -489,7 +502,7 @@ const PH=["Le cycle de l'eau…","Les fractions…","La Révolution française�
 let phTimer=null;
 function home(){
   $("#app").innerHTML=`<section class="th-hero">
-   <div class="hn"><div class="l"><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div><div class="r"><button class="ghostw" style="display:block" onclick="openAuth('register')">Inscription gratuite</button></div></div>
+   <div class="hn"><div class="l"><a onclick="navFiches()">Fiches d'activités</a><a onclick="navCahiers()">Cahiers d'activités</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div><div class="r"><button class="ghostw" style="display:block" onclick="openAuth('register')">Inscription gratuite</button></div></div>
    <div class="wm">📚 Séquences</div>
    <h1>Votre meilleure séquence.<br>À chaque leçon.</h1>
    <p class="sb">Alignée sur le programme, adaptée à chaque élève, prête en quelques minutes.</p>
@@ -632,15 +645,25 @@ async function generate(){
 function retry(i){delete S.lessons[i].err;generate();}
 
 /* ---------- séquence terminée ---------- */
+function themeDots(cur,fn){
+  const all=allThemes();
+  return `<div class="dots">${Object.entries(all).map(([k,v])=>`<button class="dot ${k===cur?"on":""}" style="${themeStyle(k)}" title="${esc(v.n)}" aria-label="Thème ${esc(v.n)}" onclick="${fn}('${k}')">A</button>`).join("")}<button class="dot add" title="Thème personnalisé${CAP().custom_themes?"":" (Max)"}" onclick="newTheme()">＋</button></div><p class="dotname">${esc((all[cur]||{}).n||"")}${CAP().custom_themes?"":" · personnalisé : plan Max"}</p>`;
+}
 function series(){
-  const miss=S.lessons.filter(l=>!l.slides).length;
-  $("#app").innerHTML=`<h1>${esc(S.title)}</h1><p class="sub">${esc(S.level)} · ${S.lessons.length} leçons</p>
-  <div class="card"><label>Thème</label>${themePicker(S.theme,"setTheme")}</div>
-  <div class="card">${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b><small style="color:var(--mut)">${esc(l.summary)}</small></div>
-  ${l.slides?`<span style="white-space:nowrap"><button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button> <button class="btn sm" onclick="play(${i})">▶ Enseigner</button></span>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
-  <div class="nav" style="justify-content:flex-start;flex-wrap:wrap">
-  ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} manquantes</button>`:""}
-  <button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint / Google Slides</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF (diapositives)</button><button class="btn ghost" onclick="printAll()">📝 Fiche texte + notes</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
+  const miss=S.lessons.filter(l=>!l.slides).length,first=S.lessons.findIndex(l=>l.slides),n=S.lessons.length;
+  $("#app").innerHTML=`<div class="shead"><div><p class="crumbs" style="margin:0 0 6px"><a onclick="${ACC?"navSeqs()":"go('home')"}">← ${ACC?"Séquences":"Accueil"}</a></p><h1 style="margin:0">${esc(S.title)}</h1><p class="sub" style="margin:4px 0 0">${esc(S.level)} · ${n} ${n>1?"leçons":"leçon"} · ${statusOf(S)}</p></div>
+  <div class="sacts">${first>=0?`<button class="btn" onclick="play(${first},0)">▶ Enseigner</button>`:""}<button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF</button><button class="btn ghost" onclick="printAll()" title="Fiche texte avec notes de l'enseignant">📝 Notes</button></div></div>
+  <div class="sgrid"><div class="smain"><div class="card" style="padding:4px 20px">${S.lessons.map((l,i)=>`<div class="srow"><div class="no">${i+1}</div><div class="tx"><b>${esc(l.slides?(l.slides[0]?.title||l.title):l.title)}</b><p>${esc(l.summary)}</p></div>
+   <div class="bt">${l.slides?`<button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button><button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div></div>`).join("")}</div>
+   ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} leçons manquantes</button>`:""}</div>
+  <aside class="sside"><div class="card"><h3>🎨 Thème</h3>${themeDots(S.theme,"setTheme")}</div>
+   <div class="card"><h3>📄 Activités</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Créez des ressources imprimables à partir de cette séquence.</p><button class="btn ghost w" onclick="sheetFromSeries()">📄 Fiche d'activités</button><button class="btn ghost w" onclick="wbFromSeries()">📘 Cahier d'activités</button></div>
+   <div class="card"><h3>🗂️ Plan</h3><button class="btn ghost w" onclick="step=3;render()">Modifier le plan</button></div></aside></div>`;
+}
+function wbFromSeries(){const id=S.id;newWB();W.src="series";W.seriesId=id;wbFrom1();}
+function sheetFromSeries(){
+  const x=S;newSheet();W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;
+  W.instructions="Base-toi sur la séquence « "+x.title+" » : "+x.lessons.map(l=>l.title).join(" ; ")+".";wstep=1;render();
 }
 function setTheme(k){S.theme=k;save();render();}
 
