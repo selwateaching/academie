@@ -121,7 +121,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .showbar{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;opacity:.0;transition:opacity .2s}
 #show:hover .showbar{opacity:1}
 #print{display:none}
-@media print{body>*:not(#print){display:none!important}#print{display:block}
+#print.slides .tabs{display:none}
+@media print{*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{padding:0!important;background:#fff!important}body>*:not(#print){display:none!important}#print{display:block}
+#print.slides .pg{width:960px;height:539px;position:relative;overflow:hidden;break-after:page;page-break-after:always}#print.slides .pg:last-child{break-after:auto;page-break-after:auto}html,body{height:auto!important;margin:0!important}
+#print.slides .sl{position:absolute;left:0;top:0;transform:none!important}
 #print h1{page-break-before:always;font-size:22px}#print h1:first-child{page-break-before:avoid}
 #print .s{break-inside:avoid;margin:0 0 14px;padding-left:12px;border-left:4px solid var(--g)}}
 
@@ -501,7 +504,7 @@ function series(){
   ${l.slides?`<span style="white-space:nowrap"><button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button> <button class="btn sm" onclick="play(${i})">▶ Enseigner</button></span>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
   <div class="nav" style="justify-content:flex-start;flex-wrap:wrap">
   ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} manquantes</button>`:""}
-  <button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint / Google Slides</button><button class="btn ghost" onclick="printAll()">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
+  <button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint / Google Slides</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF (diapositives)</button><button class="btn ghost" onclick="printAll()">📝 Fiche texte + notes</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
 }
 function setTheme(k){S.theme=k;save();render();}
 
@@ -564,7 +567,7 @@ function studio(){
   $("#studio").innerHTML=`<div class="top"><button class="btn sm" onclick="closeStudio()">←</button><b>${esc(S.lessons[ST.li].title)}</b>
    <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(allThemes()).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${esc(t.n)}</option>`).join("")}</select>
    <button class="btn sm" onclick="${(S.custom||{})[S.theme]?"editTheme(S.theme)":"newTheme()"}" title="Thème personnalisé (Max)">🎨</button>
-   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="printAll()">🖨</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
+   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="exportPdf(${ST.li})" title="PDF des diapositives">⬇ PDF</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
   <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme,thumb:true}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
   <div class="main"><div class="stage" id="stage"><div class="fit" id="big" style="width:100%;height:100%">${slideHTML(cur,{edit:true,theme:S.theme,tab:ST.tab})}</div></div>
    <div class="tools"><span style="font-size:13px;color:var(--mut)">${ST.n+1} / ${sl.length}</span>
@@ -651,7 +654,7 @@ function printAll(){
     case "vocab":return `<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
     case "activity":return `<p>${esc(x.q.q)}</p><ol>${x.q.choices.map((c,j)=>`<li>${j===x.q.answer?"<b>":""}${esc(c)}${j===x.q.answer?" ✓</b>":""}</li>`).join("")}</ol><i>${esc(x.q.why)}</i>`;
     default:return `<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;}};
-  $("#print").innerHTML=S.lessons.filter(l=>l.slides).map((l,i)=>`<h1>${i+1}. ${esc(l.title)}</h1>`+l.slides.map(x=>`<div class="s"><b>${esc(x.emoji||"")} ${esc(x.title||"")}</b>${txt(x)}${x.notes?`<i>Notes : ${esc(x.notes)}</i>`:""}</div>`).join("")).join("");
+  $("#print").className="";$("#print").innerHTML=S.lessons.filter(l=>l.slides).map((l,i)=>`<h1>${i+1}. ${esc(l.title)}</h1>`+l.slides.map(x=>`<div class="s"><b>${esc(x.emoji||"")} ${esc(x.title||"")}</b>${txt(x)}${x.notes?`<i>Notes : ${esc(x.notes)}</i>`:""}</div>`).join("")).join("");
   window.print();
 }
 
@@ -814,16 +817,36 @@ async function pptxSlide(pptx,sl,th){
   if(!CAP().no_badge)T("Créé avec Séquences",{x:7,y:5.2,w:2.8,h:.3,fontSize:10,align:"right",color:hx(th.ti)});
   if(notes)s.addNotes(notes);
 }
+async function ensurePptx(){
+  if(typeof PptxGenJS!=="undefined")return true;
+  await new Promise(res=>{const s=document.createElement("script");s.src="/pptxgen.bundle.js?"+Date.now();s.onload=res;s.onerror=res;document.head.appendChild(s);});
+  return typeof PptxGenJS!=="undefined";
+}
+function download(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);}
+const fname=s=>((s||"sequence").replace(/[^\p{L}\p{N} _-]/gu,"").trim().slice(0,60)||"sequence");
 async function exportPptx(li){
-  if(typeof PptxGenJS==="undefined")return alert("La bibliothèque d'export n'a pas pu se charger. Vérifiez votre connexion et rechargez la page.");
+  if(!(await ensurePptx()))return alert("Le module d'export PowerPoint n'a pas pu être chargé depuis le site (/pptxgen.bundle.js). Rechargez la page avec Ctrl+F5. Si cela persiste, utilisez « PDF » en attendant.");
   const th=allThemes()[S.theme]||THEMES.classique,pptx=new PptxGenJS();pptx.layout="LAYOUT_16x9";pptx.title=S.title;
   const lessons=li==null?S.lessons.filter(l=>l.slides):[S.lessons[li]];
   toast("Création du fichier PowerPoint…");
   try{
     for(const l of lessons)for(const sl of l.slides)await pptxSlide(pptx,normalize(sl),th);
-    const name=((li==null?S.title:S.lessons[li].title)||"sequence").replace(/[^\p{L}\p{N} _-]/gu,"").trim().slice(0,60)||"sequence";
-    await pptx.writeFile({fileName:name+".pptx"});
-  }catch(e){alert("Export impossible : "+e.message);}
+    const blob=await pptx.write({outputType:"blob"});
+    download(blob,fname(li==null?S.title:S.lessons[li].title)+".pptx");
+  }catch(e){alert("Export PowerPoint impossible : "+(e&&e.message||e));}
+}
+/* PDF des diapositives : la boîte d'impression du navigateur, réglée sur des pages 16:9 */
+function exportPdf(li){
+  const lessons=li==null?S.lessons.filter(l=>l.slides):[S.lessons[li]],el=$("#print");let h="";
+  for(const l of lessons)for(const sl of l.slides){normalize(sl);
+    h+=`<div class="pg">${slideHTML(sl,{theme:S.theme,tab:"q"})}</div>`;
+    if(sl.layout==="activity")h+=`<div class="pg">${slideHTML(sl,{theme:S.theme,tab:"a"})}</div>`;}
+  const st=document.createElement("style");st.id="pgstyle";st.textContent="@page{size:960px 540px;margin:0}";document.head.appendChild(st);
+  el.className="slides";el.innerHTML=h;
+  const done=()=>{st.remove();el.className="";el.innerHTML="";removeEventListener("afterprint",done);};
+  addEventListener("afterprint",done);
+  toast("Dans la fenêtre d'impression, choisissez « Enregistrer au format PDF ».");
+  setTimeout(()=>window.print(),400);
 }
 
 /* ============ page Tarifs ============ */
