@@ -8,7 +8,7 @@
 :root{--g:#2c6e49;--g2:#f0f9f4;--ink:#1c2420;--mut:#5f6b64;--line:#dfe6e1;--card:#fff;--warn:#bb2e26;--or:#d68c45}
 *{box-sizing:border-box}
 body{margin:0;font:16px/1.5 Inter,system-ui,sans-serif;color:var(--ink);background:linear-gradient(#e6f4ec,#fff 320px) no-repeat #fff;min-height:100vh}
-header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;max-width:900px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:14px 20px;max-width:1180px;margin:0 auto}
 .logo{font-weight:800;font-size:20px;color:var(--g);cursor:pointer;background:none;border:0;padding:0}
 main{max-width:760px;margin:0 auto;padding:8px 20px 80px}
 h1{font-size:28px;margin:12px 0 4px}h2{font-size:22px;margin:0 0 4px}
@@ -135,11 +135,11 @@ header nav a{cursor:pointer;color:var(--ink);font-weight:500}header nav a:hover{
 .hero h1{font-size:clamp(30px,5vw,52px);font-weight:900;line-height:1.15;margin:20px 0 8px}
 .hero p{font-size:20px;font-weight:600;margin:0 0 28px}
 .plans{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));align-items:stretch}@media(min-width:1000px){.plans{grid-template-columns:repeat(3,1fr)}}
-.plan{display:flex;flex-direction:column;gap:12px;border:8px solid #ebeff2;border-radius:20px;padding:22px;background:#f7fafc;box-shadow:0 3px 0 rgba(0,0,0,.12)}
-.plan.max{background:#fff4f1}.plan.cur{border-color:var(--g)}
-.plan h3{margin:0;font-size:28px;font-weight:900;text-transform:uppercase}
-.plan .price{font-size:22px;font-weight:700}.plan .bill{min-height:24px;margin:0;color:var(--mut)}
-.plan ul{list-style:none;padding:0;margin:6px 0 14px;flex:1}.plan li{display:flex;gap:8px;margin:10px 0}
+.pcd{display:flex;flex-direction:column;gap:12px;border:8px solid #ebeff2;border-radius:20px;padding:22px;background:#f7fafc;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.pcd.max{background:#fff4f1}.pcd.cur{border-color:var(--g)}
+.pcd h3{margin:0;font-size:28px;font-weight:900;text-transform:uppercase}
+.pcd .price{font-size:22px;font-weight:700}.pcd .bill{min-height:24px;margin:0;color:var(--mut)}
+.pcd ul{list-style:none;padding:0;margin:6px 0 14px;flex:1}.pcd li{display:flex;gap:8px;margin:10px 0}
 .seg{display:inline-flex;background:#e5e7eb;border-radius:99px;padding:3px;box-shadow:inset 0 2px 0 rgba(0,0,0,.15)}
 .seg button{white-space:nowrap;border:0;border-radius:99px;padding:5px 10px;font:inherit;font-size:14px;font-weight:600;background:none;cursor:pointer}
 .seg button.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)}
@@ -243,13 +243,41 @@ body.app #app.dashw{max-width:none;margin-right:0}
 .rc .pl{background:#eef1f4;border-radius:8px;padding:3px 9px;font-weight:600}
 .empty{background:#fff;border-radius:18px;padding:40px;text-align:center;color:var(--mut);box-shadow:0 2px 12px rgba(0,0,0,.08)}
 .hn .lk{background:none;border:0;color:#fff;font:inherit;font-size:18px;font-weight:500;cursor:pointer;padding:0}
+
+@keyframes rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes shine{0%{background-position:0 50%}100%{background-position:200% 50%}}
+.pcd{position:relative;transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease,opacity .25s ease;animation:rise .55s both;cursor:default}
+.pcd:nth-child(1){animation-delay:0s}.pcd:nth-child(2){animation-delay:.1s}.pcd:nth-child(3){animation-delay:.2s}.pcd:nth-child(4){animation-delay:.3s}
+.pcd:hover{transform:translateY(-8px);box-shadow:0 16px 30px rgba(0,0,0,.18);border-color:#bfe3d0}
+.pcd.pop{border-color:#cfe9dc}.pcd.cur{border-color:var(--g)}
+.plans.has-sel .pcd:not(.sel){opacity:.72}.pcd.sel{border-color:var(--g);box-shadow:0 0 0 4px rgba(44,110,73,.18),0 16px 30px rgba(0,0,0,.18)}
+.ribbon{position:absolute;top:-14px;right:22px;background:#f59e0b;color:#111;font-weight:800;font-size:13px;padding:5px 14px;border-radius:99px;box-shadow:0 3px 0 rgba(0,0,0,.15)}
+.pcd .price{display:flex;align-items:baseline;gap:4px}.pcd .amt{font-size:34px;font-weight:900;font-variant-numeric:tabular-nums}.pcd .per{font-size:17px;font-weight:700;color:var(--mut)}
+.save{display:inline-block;background:#e7f7ec;color:#166534;font-weight:700;font-size:14px;border-radius:99px;padding:3px 12px;transition:opacity .3s,max-height .3s;overflow:hidden;max-height:30px}
+.save.off{opacity:0;max-height:0;padding:0}
+.pcd li{animation:fadein .45s both;animation-delay:calc(var(--d,0ms) + .35s);align-items:flex-start}
+.pcd .tk{flex:none;animation:pop .45s both;animation-delay:calc(var(--d,0ms) + .45s)}
+.pbtn{transition:transform .15s,filter .15s}.pbtn:hover:not(:disabled){transform:scale(1.03);filter:brightness(1.1)}.pbtn:active:not(:disabled){transform:scale(.98)}
+.pbtn.grad{background:linear-gradient(90deg,#1fda71,#2c6e49,#1fda71);background-size:200% 100%;animation:shine 3s linear infinite;border:0}
+.seg.big{position:relative;padding:4px;margin:0 auto 26px;display:grid;grid-template-columns:1fr 1fr;width:max-content;max-width:100%}
+.seg.big button{position:relative;z-index:1;padding:9px 22px;font-size:16px;text-align:center}.seg.big .knob{position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);background:#fff;border-radius:99px;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.seg.big[data-b=annual] .knob{transform:translateX(100%)}.seg.big button.on{background:none;box-shadow:none}
+.seg.big small{background:#dbeafe;color:#1e40af}
+.meter{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden}.meter i{display:block;height:100%;background:linear-gradient(90deg,#2c6e49,#1fda71);border-radius:99px;transition:width 1s ease}
+.cmpbtn{display:block;margin:30px auto 0;font:inherit;font-weight:700;background:#fff;border:2px solid var(--g);color:var(--g);border-radius:99px;padding:10px 22px;cursor:pointer}
+.cmp{max-height:0;overflow:hidden;transition:max-height .5s ease}.cmp.open{max-height:700px}
+.cmp table{width:100%;border-collapse:collapse;margin-top:16px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+.cmp th,.cmp td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line)}.cmp th:first-child,.cmp td:first-child{text-align:left;font-weight:600}.cmp tr:hover td{background:#f4faf7}
+@media(prefers-reduced-motion:reduce){.pcd,.pcd li,.pcd .tk,.pbtn.grad{animation:none!important}.pcd{transition:none}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Fredoka:wght@400;700&family=Lora:wght@400;700&family=Nunito:wght@400;800&family=Playfair+Display:wght@400;800&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
 <script src="/pptxgen.bundle.js" defer></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip plan" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
 <aside id="side"></aside>
 <main id="app"></main>
 <div id="modal" onclick="if(event.target===this)closeModal()"></div>
@@ -291,7 +319,7 @@ const CAP=()=>PL?.caps||{series:5,slides:12,curriculum:false,youtube:false,no_ba
 async function loadPlan(){try{const r=await fetch("/api/plan",{headers:{"X-Seq-Device":DEV}});if(r.ok)PL=await r.json();}catch{}chip();if(page==="pricing")pricing();}
 function chip(){
   const s=PL?`${PNAME[PL.plan]} · ${PL.used}/${PL.limit} ${PL.days===7?"cette semaine":"ce mois-ci"}`:"";
-  document.querySelectorAll(".chip.plan").forEach(c=>c.textContent=s||"Tarifs");
+  document.querySelectorAll(".pchip").forEach(c=>c.textContent=s||"Tarifs");
   document.querySelectorAll(".plantxt").forEach(c=>c.textContent=s||"");
 }
 function toast(m){const d=document.createElement("div");d.className="toast";d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3500);}
@@ -853,36 +881,58 @@ function exportPdf(li){
 const BILL={pro:"annual",max:"annual"};
 const EUR=n=>n.toFixed(2).replace(".",",")+" €";
 const PR={pro:{monthly:9.99,annual:6.65},max:{monthly:18.99,annual:12.49}};
-function setBill(p,b){BILL[p]=b;pricing();}
+const TICK='<svg class="tk" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#2c6e49"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const prices=()=>PL?.prices||PR;
+function tween(el,from,to){const t0=performance.now(),d=480;(function f(now){const k=Math.min(1,(now-t0)/d),e=1-Math.pow(1-k,3);el.textContent=EUR(from+(to-from)*e);if(k<1)requestAnimationFrame(f);})(t0);requestAnimationFrame(()=>{});}
+function setBillAll(b){
+  BILL.pro=BILL.max=b;const seg=$("#seg");if(!seg)return;seg.dataset.b=b;
+  seg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x.dataset.b===b));
+  for(const p of ["pro","max"]){
+    const el=document.querySelector(`.amt[data-p=${p}]`),to=prices()[p][b];
+    if(el)tween(el,parseFloat(el.textContent.replace(",",".")),to);
+    const bill=document.querySelector(`[data-bill=${p}]`);if(bill)bill.textContent=b==="annual"?EUR(to*12)+" facturé annuellement":"Facturé chaque mois";
+    const sv=document.querySelector(`[data-save=${p}]`);if(sv)sv.classList.toggle("off",b!=="annual");
+  }
+}
+function selPlan(el){const g=$(".plans");const was=el.classList.contains("sel");document.querySelectorAll(".pcd.sel").forEach(x=>x.classList.remove("sel"));g.classList.toggle("has-sel",!was);if(!was)el.classList.add("sel");}
+function toggleCmp(){const c=$("#cmp"),o=c.classList.toggle("open");$("#cmpb").textContent=o?"Masquer la comparaison ▴":"Comparer les plans ▾";}
 function pricing(){
-  const cur=PL?.plan||"free",pr=PL?.prices||PR;
-  const feats=a=>`<ul>${a.map(x=>`<li><span>✅</span><span>${x}</span></li>`).join("")}</ul>`;
+  const cur=PL?.plan||"free",pr=prices(),b0=BILL.pro;
+  const feats=a=>`<ul>${a.map((x,i)=>`<li style="--d:${i*70}ms">${TICK}<span>${x}</span></li>`).join("")}</ul>`;
+  const pct=PL?Math.min(100,Math.round(PL.used/PL.limit*100)):0;
+  const meter=p=>PL&&cur===p?`<div><div class="meter"><i style="width:0" data-w="${pct}"></i></div><p class="bill" style="margin:6px 0 0">${PL.used} / ${PL.limit} ressources ${PL.days===7?"cette semaine":"ce mois-ci"}</p></div>`:"";
   const paid=(p,name,list,grad)=>{
-    const b=BILL[p],price=pr[p][b],mine=cur===p;
-    return `<div class="plan ${p} ${mine?"cur":""}"><h3>${name}</h3>
-    <div><div class="price">${EUR(price)}/mois</div><p class="bill">${b==="annual"?EUR(price*12)+" facturé annuellement":""}</p></div>
-    <div class="seg"><button class="${b==="monthly"?"on":""}" onclick="setBill('${p}','monthly')">Mensuel</button><button class="${b==="annual"?"on":""}" onclick="setBill('${p}','annual')">Annuel<small>💰 4 mois offerts</small></button></div>
-    ${feats(list)}
-    <button class="pbtn ${grad?"grad":""}" ${mine?"disabled":""} onclick="subscribe('${p}')">${mine?"Votre plan actuel":"Passer à "+name.toUpperCase()}</button>
-    ${mine&&PL?`<p class="bill" style="text-align:center">${PL.cancelled?"Prend fin":"Actif"} jusqu'au ${new Date(PL.until*1000).toLocaleDateString("fr-FR")}${PL.cancelled?"":` · <a href="#" onclick="cancelPlan();return false">Annuler</a>`}</p>`:""}</div>`;};
-  const demo=PL?.payment==="demo";
+    const mine=cur===p,price=pr[p][b0],save=(pr[p].monthly-pr[p].annual)*12;
+    return `<div class="pcd ${p} ${mine?"cur":""} ${p==="pro"?"pop":""}" onclick="selPlan(this)">${p==="pro"?'<div class="ribbon">⭐ Populaire</div>':""}<h3>${name}${mine?' <span class="tag" style="background:#e7f7ec;color:#166534">Votre plan</span>':""}</h3>
+    <div><div class="price"><span class="amt" data-p="${p}">${EUR(price)}</span><span class="per">/mois</span></div><p class="bill" data-bill="${p}">${b0==="annual"?EUR(price*12)+" facturé annuellement":"Facturé chaque mois"}</p></div>
+    <div><span class="save ${b0==="annual"?"":"off"}" data-save="${p}">💰 Économisez ${EUR(save)} par an</span></div>
+    ${meter(p)}${feats(list)}
+    <button class="pbtn ${grad?"grad":""}" ${mine?"disabled":""} onclick="event.stopPropagation();subscribe('${p}')">${mine?"Votre plan actuel":"Passer à "+name.toUpperCase()}</button>
+    ${mine&&PL?`<p class="bill" style="text-align:center">${PL.cancelled?"Prend fin":"Actif"} jusqu'au ${new Date(PL.until*1000).toLocaleDateString("fr-FR")}${PL.cancelled?"":` · <a href="#" onclick="event.stopPropagation();cancelPlan();return false">Annuler</a>`}</p>`:""}</div>`;};
+  const demo=PL?.payment==="demo",row=(l,a,b,c)=>`<tr><td>${l}</td><td>${a}</td><td>${b}</td><td>${c}</td></tr>`,Y="✔",N="–";
   $("#app").innerHTML=`<section class="hero"><h1>Choisissez le plan qui vous convient</h1><p>Un moyen simple et abordable de gagner des heures de votre temps. ⏳</p></section>
   ${demo?`<div class="err" style="background:#fff7e6;color:#8a5a00">Phase de test : les plans Pro et Max s'activent sans paiement.</div>`:""}
+  <div class="seg big" id="seg" data-b="${b0}"><i class="knob"></i><button data-b="monthly" class="${b0==="monthly"?"on":""}" onclick="setBillAll('monthly')">Mensuel</button><button data-b="annual" class="${b0==="annual"?"on":""}" onclick="setBillAll('annual')">Annuel <small>💰 4 mois offerts</small></button></div>
   <div class="plans">
-   <div class="plan ${cur==="free"?"cur":""}"><h3>Gratuit</h3><div class="price">0,00 €/mois</div>${feats(["Aucune carte requise","Créez des leçons et des activités","Exportation vers Google &amp; Microsoft","Créez 5 ressources chaque semaine"])}
-    <button class="pbtn" onclick="startFree()">Commencer</button></div>
+   <div class="pcd ${cur==="free"?"cur":""}" onclick="selPlan(this)"><h3>Gratuit${cur==="free"?' <span class="tag" style="background:#e7f7ec;color:#166534">Votre plan</span>':""}</h3><div class="price"><span class="amt">0,00 €</span><span class="per">/mois</span></div>${meter("free")}${feats(["Aucune carte requise","Créez des leçons et des activités","Exportation vers Google &amp; Microsoft","Créez 5 ressources chaque semaine"])}
+    <button class="pbtn" onclick="event.stopPropagation();startFree()">Commencer</button></div>
    ${paid("pro","Pro",["Alignement sur les programmes","Supprimer le badge « Séquences »","Ajoutez des vidéos YouTube","Créez 200 ressources par mois","Séquences jusqu'à 12 leçons","Leçons jusqu'à 25 diapositives"])}
    ${paid("max","Max",["Thèmes et polices personnalisés","Créez 400 ressources par mois","Séquences jusqu'à 25 leçons","Leçons jusqu'à 35 diapositives"],true)}
-   <div class="plan schools"><div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between"><div><h3>Écoles</h3><div class="price" style="margin-top:10px">Discutons</div></div>
-    <ul style="flex:1;min-width:260px;margin:0">${["Leçons personnalisées","Comptes enseignants liés","Contrôles et suivi administrateur","Facturation centralisée"].map(x=>`<li><span>✅</span><span>${x}</span></li>`).join("")}</ul>
+   <div class="pcd schools"><div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between"><div><h3>Écoles</h3><div class="price" style="margin-top:10px"><span class="amt" style="font-size:24px">Discutons</span></div></div>
+    <ul style="flex:1;min-width:260px;margin:0">${["Leçons personnalisées","Comptes enseignants liés","Contrôles et suivi administrateur","Facturation centralisée"].map((x,i)=>`<li style="--d:${i*70}ms">${TICK}<span>${x}</span></li>`).join("")}</ul>
     <button class="pbtn out" style="width:auto;padding:0 28px" onclick="openContact(true)">Contactez-nous</button></div></div>
   </div>
+  <button class="cmpbtn" id="cmpb" onclick="toggleCmp()">Comparer les plans ▾</button>
+  <div class="cmp" id="cmp"><table><tr><th></th><th>Gratuit</th><th>Pro</th><th>Max</th></tr>
+   ${row("Ressources","5 / semaine","200 / mois","400 / mois")}${row("Leçons par séquence","5","12","25")}${row("Diapositives par leçon","12","25","35")}
+   ${row("Alignement sur les programmes",N,Y,Y)}${row("Vidéos YouTube",N,Y,Y)}${row("Sans badge « Séquences »",N,Y,Y)}${row("Thèmes et polices personnalisés",N,N,Y)}${row("Export PowerPoint et PDF",Y,Y,Y)}</table></div>
   <section class="faq"><h2>Foire aux questions...</h2>
    <details><summary>Puis-je annuler ou modifier mon abonnement à tout moment ?</summary><p>Oui ! Vous pouvez modifier, mettre à niveau ou annuler à tout moment. Les modifications prennent effet à la fin de votre période de facturation en cours.</p></details>
    <details><summary>Quels modes de paiement acceptez-vous ?</summary><p>${demo?"Le paiement en ligne n'est pas encore ouvert : pendant la phase de test, les plans Pro et Max s'activent sans paiement.":"Les abonnements ouvriront bientôt. Écrivez-nous via la page Contact pour être prévenu."}</p></details>
    <details><summary>Combien de leçons puis-je créer avec le plan gratuit ?</summary><p>Vous pouvez créer jusqu'à 5 leçons complètes tous les 7 jours. Celles-ci peuvent être des leçons ou faire partie d'une séquence de leçons.</p></details>
    <details><summary>Qu'advient-il de mes leçons si j'annule mon abonnement Pro ou Max ?</summary><p>Rien ! Vous pouvez toujours accéder à toutes les leçons que vous avez déjà créées. Vous perdrez simplement l'accès aux fonctionnalités Pro ou Max, selon votre abonnement.</p></details>
   </section>`;
+  requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll(".meter i[data-w]").forEach(i=>i.style.width=i.dataset.w+"%"),250));
 }
 async function subscribe(p){
   if(PL?.payment!=="demo")return modal(`<h2>Bientôt disponible</h2><p>Les abonnements ne sont pas encore ouverts. Laissez-nous un message et nous vous préviendrons.</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Fermer</button><button class="btn" onclick="closeModal();openContact()">Nous écrire</button></div>`);
