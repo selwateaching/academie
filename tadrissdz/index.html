@@ -6353,6 +6353,10 @@ function biblioRenderResults() {
   var f = BIBLIO_FILTERS;
   var q = f.q.trim().toLowerCase();
   var filtered = BIBLIO_DATA.filter(function(r) {
+    /* Une ligne sans lien document (colonne "Lien Drive" vide — typiquement un fichier audio pur,
+       déjà affiché séparément dans la Bibliothèque audio) n'a rien à ouvrir ici : on ne l'affiche
+       pas du tout plutôt que de montrer une carte avec "Lien manquant". */
+    if (!r.lien) return false;
     if (f.matiere && r.matiere !== f.matiere) return false;
     if (f.niveau && r.niveaux.length && r.niveaux.indexOf(f.niveau) < 0) return false;
     if (f.type && r.type !== f.type) return false;
