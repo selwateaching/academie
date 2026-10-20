@@ -1,7 +1,9 @@
 # Séquences
 
 Créateur de séquences de leçons avec Claude, en 4 étapes : **sujet → réglages → plan modifiable → génération leçon par leçon**.
-Chaque leçon contient des diapositives (mode « Enseigner » plein écran, notes de l'enseignant), des objectifs, du vocabulaire et un quiz. Impression / PDF depuis le navigateur. Les séquences sont enregistrées dans le navigateur.
+Chaque leçon contient des diapositives mises en page (texte et image, liste, chronologie, étapes, citation, vocabulaire, activité Question/Réponse), avec 8 thèmes, des illustrations SVG dessinées par Claude et des notes de l'enseignant.
+Un éditeur permet de modifier le texte en place, de réordonner, dupliquer, ajouter ou supprimer des diapositives, de changer de mise en page, et de demander à Claude de réécrire une diapositive. Mode « Enseigner » plein écran, impression / PDF. Les séquences sont enregistrées dans le navigateur.
+Les illustrations sont filtrées côté serveur (liste blanche de balises SVG, rien d'externe).
 
 ```bash
 cd sequences

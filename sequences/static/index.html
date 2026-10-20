@@ -41,23 +41,85 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .lrow:first-child{border-top:0}.lrow b{display:block}
 .pill{font-size:12px;border-radius:99px;padding:2px 10px;background:var(--g2);color:var(--g);font-weight:600;white-space:nowrap}
 .pill.w{background:#fdf2e6;color:var(--or)}.pill.e{background:#fdecea;color:var(--warn)}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:s 0.8s linear infinite;vertical-align:-2px}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--g);border-radius:50%;animation:s .8s linear infinite;vertical-align:-2px}
 @keyframes s{to{transform:rotate(360deg)}}
 .bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0}.bar i{display:block;height:100%;background:var(--g);transition:width .3s}
 .saved{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
 .saved:first-child{border-top:0}
-/* diaporama */
-#show{position:fixed;inset:0;background:#fff;z-index:50;display:none;flex-direction:column}
-#show.on{display:flex}
-.sbar{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);gap:10px}
-.stage{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px}
-.slide{max-width:900px;width:100%}
-.slide .em{font-size:56px}.slide h3{font-size:clamp(26px,4vw,40px);margin:6px 0 16px;color:var(--g)}
-.slide li{font-size:clamp(18px,2.4vw,26px);margin:10px 0}
-.notes{border-top:1px solid var(--line);background:var(--g2);padding:12px 20px;max-height:28vh;overflow:auto;display:none}
-.notes.on{display:block}
-.qz button{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-size:clamp(16px,2vw,22px);cursor:pointer}
-.qz button.ok{border-color:var(--g);background:var(--g2)}.qz button.ko{border-color:var(--warn);background:#fdecea}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+.th{border:2px solid var(--line);border-radius:12px;padding:6px;cursor:pointer;background:#fff;font:inherit;font-size:13px;text-align:center}
+.th.on{border-color:var(--g);box-shadow:0 0 0 2px var(--g2)}
+.th .mini{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:6px;margin-bottom:4px}
+
+/* ============ diapositives (960×540, mises à l'échelle) ============ */
+.fit{position:relative;overflow:hidden}
+.sl{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;background:var(--bg);color:var(--fg);font-family:var(--font);overflow:hidden;line-height:1.3}
+.sl::before,.sl::after{content:"";position:absolute;background:var(--blob);z-index:0}
+.sl::before{right:-130px;top:-120px;width:560px;height:470px;border-radius:58% 42% 52% 48%/48% 58% 42% 52%}
+.sl::after{left:-150px;bottom:-190px;width:430px;height:360px;border-radius:46% 54% 60% 40%/55% 45% 55% 45%;opacity:.7}
+.sl .in{position:absolute;inset:0;padding:42px 56px;z-index:1;display:flex;flex-direction:column}
+.sl h2{font-size:42px;line-height:1.1;color:var(--ti);text-transform:uppercase;margin:0 0 20px;font-weight:800;letter-spacing:-.5px}
+.sl ul.bl{margin:0;padding-left:28px;font-size:25px}.sl ul.bl li{margin:0 0 14px}
+.sl .body{flex:1;display:flex;gap:30px;min-height:0}
+.sl .txt{flex:1.15;min-width:0}
+.sl .art{flex:1;display:flex;align-items:center;justify-content:center;background:var(--card);border-radius:22px;padding:14px;box-shadow:0 6px 0 rgba(0,0,0,.06);align-self:center;aspect-ratio:4/3;overflow:hidden}
+.sl .art svg{width:100%;height:100%}.sl .art .big{font-size:120px}
+.sl .cards{display:grid;gap:14px;flex:1;align-content:start}
+.sl .cd{display:flex;gap:16px;align-items:center;background:var(--card);border-radius:16px;padding:12px 18px;box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.sl .num{flex:none;width:44px;height:44px;border-radius:10px;color:#fff;font-weight:800;font-size:22px;display:grid;place-items:center}
+.sl .c0{background:var(--ac)}.sl .c1{background:var(--ac2)}.sl .c2{background:#d6336c}.sl .c3{background:#222}.sl .c4{background:#7e22ce}.sl .c5{background:#0891b2}
+.sl .cd .tt{font-weight:800;font-size:22px}.sl .cd .xx{font-size:19px;opacity:.9}
+.sl .cols{display:grid;gap:20px;flex:1;align-items:start}
+.sl .col{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 4px 0 rgba(0,0,0,.06);height:100%}
+.sl .col .num{margin-bottom:10px}.sl .col .tt{font-weight:800;font-size:22px;margin-bottom:6px}.sl .col .xx{font-size:19px}
+.sl .tl{position:relative;flex:1;display:flex;align-items:flex-start;gap:14px;padding-top:70px}
+.sl .tl::before{content:"";position:absolute;left:0;right:0;top:48px;height:5px;background:var(--ac);border-radius:3px}
+.sl .ev{flex:1;position:relative;padding-top:22px}
+.sl .ev::before{content:"";position:absolute;left:0;top:-30px;width:24px;height:24px;border-radius:50%;background:var(--card);border:6px solid var(--ac2)}
+.sl .ev .tt{font-weight:800;font-size:21px;color:var(--ti);margin-bottom:6px}.sl .ev .xx{font-size:17px}
+.sl .qt{margin:auto 0;text-align:center}.sl .qt .mark{font-size:120px;line-height:.6;color:var(--ac2);font-family:Georgia,serif}
+.sl .qt blockquote{margin:0;font-size:36px;font-style:italic;font-weight:600}.sl .qt cite{display:block;margin-top:20px;font-size:22px;color:var(--ti);font-style:normal;font-weight:700}
+.sl .hero{margin:auto 0;text-align:center}.sl .hero .em{font-size:90px}.sl .hero h2{font-size:54px;margin:8px 0 20px}
+.sl .hero ul{display:inline-block;text-align:left;font-size:22px;margin:0;padding-left:24px}
+.sl.act h2{font-size:30px;margin-bottom:10px}.sl .qq{font-size:26px;font-weight:600;margin:0 0 14px}
+.sl .ch{display:flex;gap:16px;align-items:center;background:var(--card);border:3px solid transparent;border-radius:14px;padding:7px 14px;margin-bottom:9px;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.06)}
+.sl .ch.ok{border-color:#16a34a;background:#e7f7ec}.sl .ch.ko{opacity:.55}
+.sl .why{margin-top:4px;padding:8px 16px;border-radius:14px;background:var(--card);border-left:6px solid #16a34a;font-size:18px}
+.sl .vg{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;align-content:start}
+.sl .vg div{background:var(--card);border-radius:14px;padding:12px 16px;font-size:19px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .vg b{display:block;color:var(--ti);font-size:21px}
+.sl .tabs{display:flex;gap:8px;position:absolute;top:14px;right:18px;z-index:3}
+.sl .tabs span{padding:6px 14px;border-radius:99px;font-size:15px;font-weight:700;background:var(--card);cursor:pointer;opacity:.7}.sl .tabs span.on{opacity:1;box-shadow:0 0 0 2px var(--ac)}
+.edit [contenteditable]{outline:none;border-radius:6px;cursor:text}
+.edit [contenteditable]:hover{box-shadow:0 0 0 2px rgba(0,0,0,.12)}.edit [contenteditable]:focus{box-shadow:0 0 0 2px var(--ac);background:rgba(255,255,255,.5)}
+.edit .ch,.edit .num{cursor:pointer}
+
+/* ============ studio & présentation ============ */
+#studio,#show{position:fixed;inset:0;z-index:50;display:none;flex-direction:column;background:#f4f6f5}
+#studio.on,#show.on{display:flex}
+#show{background:#111}
+.top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--g);color:#fff;flex-wrap:wrap}
+.top .btn{background:#fff;color:var(--g)}.top .btn.pri{background:#f59e0b;color:#111}
+.top select{width:auto;padding:6px 10px;color:var(--ink)}
+.top b{flex:1;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbody{flex:1;display:grid;grid-template-columns:170px 1fr;min-height:0}
+.thumbs{overflow:auto;padding:10px;background:#e9eeeb;display:flex;flex-direction:column;gap:10px}
+.thumb{position:relative;cursor:pointer;border:3px solid transparent;border-radius:8px;background:#fff}
+.thumb.on{border-color:var(--g)}
+.thumb .k{position:absolute;left:6px;bottom:4px;z-index:5;font-size:12px;font-weight:700;background:#fff;border-radius:6px;padding:0 6px}
+.thumb .fit{pointer-events:none;border-radius:5px}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:14px}
+.stage .fit{box-shadow:0 8px 30px rgba(0,0,0,.18);border-radius:12px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 14px;background:#fff;border-top:1px solid var(--line)}
+.tools select{width:auto;padding:6px 10px}
+.ask{display:flex;gap:8px;padding:8px 14px;background:#fff;border-top:1px solid var(--line)}
+.ask input{flex:1}
+.notesbox{padding:8px 14px 12px;background:#fff}.notesbox textarea{min-height:56px;font-size:14px}
+.notesbox small{color:var(--mut)}
+@media(max-width:700px){.sbody{grid-template-columns:1fr;grid-template-rows:1fr 90px}.thumbs{order:2;flex-direction:row}.thumb{width:120px;flex:none}}
+#show .stage{padding:0}#show .stage .fit{box-shadow:none;border-radius:0}
+.showbar{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;opacity:.0;transition:opacity .2s}
+#show:hover .showbar{opacity:1}
 #print{display:none}
 @media print{body>*:not(#print){display:none!important}#print{display:block}
 #print h1{page-break-before:always;font-size:22px}#print h1:first-child{page-break-before:avoid}
@@ -65,22 +127,39 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 </style>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><span id="top"></span></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button></header>
 <main id="app"></main>
+<div id="studio"></div>
 <div id="show"></div>
 <div id="print"></div>
 <script>
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const KEY="sequences.v1";
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const KEY="sequences.v2";
 const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}};
-const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch{}};
+let warned=false;
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch{if(!warned){warned=true;alert("Espace de stockage du navigateur plein : supprimez d'anciennes séquences.");}}};
 let saved=load();
 const LEVELS=["Maternelle","CP","CE1","CE2","CM1","CM2","6e","5e","4e","3e","Seconde","Première","Terminale","Études supérieures","Adultes"];
 const FW=[["standard","Standard : modélisation, pratique guidée"],["jfn","Je fais / Nous faisons / Tu fais"],["5e","5E : engager, explorer, expliquer…"],["rosenshine","Principes de Rosenshine"],["imr","Introduction / Activité / Bilan"]];
-let S=null,step=1,busy=false,msg="";
-const blank=()=>({id:Date.now().toString(36),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",
-  options:{objectives:true,vocabulary:true,quiz:true,slides:10},title:"",lessons:[]});
+const THEMES={
+  classique:{n:"Classique",bg:"#fdeee8",fg:"#1f2d3d",ti:"#0f766e",ac:"#0f766e",ac2:"#d68c45",card:"#ffffff",blob:"#fbd5c8",font:"'Trebuchet MS',system-ui,sans-serif"},
+  menthe:{n:"Menthe",bg:"#e8f6ef",fg:"#16352a",ti:"#2c6e49",ac:"#2c6e49",ac2:"#d68c45",card:"#ffffff",blob:"#cdebdc",font:"'Segoe UI',system-ui,sans-serif"},
+  ocean:{n:"Océan",bg:"#e6f1fb",fg:"#12263f",ti:"#1d4ed8",ac:"#1d4ed8",ac2:"#f59e0b",card:"#ffffff",blob:"#cfe3f8",font:"'Segoe UI',system-ui,sans-serif"},
+  audacieux:{n:"Audacieux",bg:"#fff4c2",fg:"#1a1a1a",ti:"#e11d48",ac:"#e11d48",ac2:"#2563eb",card:"#ffffff",blob:"#ffe27a",font:"'Arial Black','Arial Bold',system-ui,sans-serif"},
+  papier:{n:"Papier",bg:"#faf5ea",fg:"#3b2f22",ti:"#7c2d12",ac:"#7c2d12",ac2:"#0f766e",card:"#fffdf7",blob:"#efe3c8",font:"Georgia,'Times New Roman',serif"},
+  violet:{n:"Violet",bg:"#f3e8ff",fg:"#2e1065",ti:"#7e22ce",ac:"#7e22ce",ac2:"#f97316",card:"#ffffff",blob:"#e4ccfb",font:"'Trebuchet MS',system-ui,sans-serif"},
+  sombre:{n:"Sombre",bg:"#111827",fg:"#e5e7eb",ti:"#fbbf24",ac:"#fbbf24",ac2:"#60a5fa",card:"#1f2937",blob:"#1e293b",font:"'Segoe UI',system-ui,sans-serif"},
+  mono:{n:"Mono",bg:"#ffffff",fg:"#111111",ti:"#111111",ac:"#111111",ac2:"#6b7280",card:"#f5f5f5",blob:"#eeeeee",font:"Arial,Helvetica,sans-serif"}
+};
+const themeStyle=k=>{const t=THEMES[k]||THEMES.classique;return `--bg:${t.bg};--fg:${t.fg};--ti:${t.ti};--ac:${t.ac};--ac2:${t.ac2};--card:${t.card};--blob:${t.blob};--font:${t.font}`;};
+const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité"};
+const PICK=["text_image","list","timeline","steps","quote"];
+
+let S=null,step=1,msg="";
+const blank=()=>({id:uid(),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
+  options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10},title:"",lessons:[]});
 
 /* ---------- API ---------- */
 async function api(path,body){
@@ -100,25 +179,20 @@ const payload=()=>({topic:S.topic,level:S.level,language:S.language,instructions
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
-function go(v){if(v==="home"){S=null;step=1;msg="";}render();}
+function go(v){if(v==="home"){S=null;step=1;msg="";}closeStudio();closeShow();render();}
 function save(){const i=saved.findIndex(x=>x.id===S.id);i<0?saved.unshift(S):saved[i]=S;persist();}
-function render(){
-  $("#top").innerHTML="";
-  if(!S)return home();
-  if(step===5)return series();
-  [null,s1,s2,s3,s4][step]();
-}
+function render(){if(!S)return home();if(step===5)return series();[null,s1,s2,s3,s4][step]();}
 const stepsBar=()=>`<ol class="steps">${["Sujet","Réglages","Plan","Génération"].map((n,i)=>`<li class="${i+1===step?"on":i+1<step?"done":""}">${n}</li>`).join("")}</ol>`;
 const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 
 /* ---------- accueil ---------- */
 function home(){
-  $("#app").innerHTML=`<h1>Que créons-nous aujourd'hui ?</h1><p class="sub">Une séquence de leçons complète, avec diapositives, notes et quiz.</p>
+  $("#app").innerHTML=`<h1>Que créons-nous aujourd'hui ?</h1><p class="sub">Une séquence de leçons complète : diapositives illustrées, notes et quiz.</p>
   <div class="card"><button class="btn" onclick="S=blank();step=1;msg='';render()">＋ Créer une séquence</button></div>
-  ${saved.length?`<div class="card"><h2>Mes séquences</h2>${saved.map(x=>`<div class="saved"><div><b>${esc(x.title||x.topic)}</b><br><small style="color:var(--mut)">${esc(x.level)} · ${x.lessons.length} leçons · ${x.lessons.filter(l=>l.data).length} prêtes</small></div>
+  ${saved.length?`<div class="card"><h2>Mes séquences</h2>${saved.map(x=>`<div class="saved"><div><b>${esc(x.title||x.topic)}</b><br><small style="color:var(--mut)">${esc(x.level)} · ${x.lessons.length} leçons · ${x.lessons.filter(l=>l.slides).length} prêtes</small></div>
   <span><button class="btn sm ghost" onclick="openS('${x.id}')">Ouvrir</button> <button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></span></div>`).join("")}</div>`:""}`;
 }
-function openS(id){S=saved.find(x=>x.id===id);step=S.lessons.length&&S.started?5:3;msg="";render();}
+function openS(id){S=saved.find(x=>x.id===id);step=S.started?5:3;msg="";render();}
 function del(id){if(confirm("Supprimer cette séquence ?")){saved=saved.filter(x=>x.id!==id);persist();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
@@ -135,18 +209,24 @@ function read1(){S.topic=$("#topic").value.trim();S.level=$("#level").value;S.la
 function from1(){read1();if(!S.topic){msg="Saisissez un sujet.";return s1();}msg="";step=2;render();}
 
 /* ---------- étape 2 : réglages ---------- */
+function themePicker(cur,fn){
+  return `<div class="themes">${Object.entries(THEMES).map(([k,t])=>`<button class="th ${k===cur?"on":""}" onclick="${fn}('${k}')"><div class="mini fit" style="${themeStyle(k)};background:var(--bg)"><div style="position:absolute;right:-12%;top:-30%;width:60%;height:90%;background:var(--blob);border-radius:50%"></div><div style="position:absolute;left:12%;top:24%;font:800 13px var(--font);color:var(--ti)">TITRE</div><div style="position:absolute;left:12%;top:52%;width:45%;height:8px;background:var(--fg);opacity:.5;border-radius:4px"></div><div style="position:absolute;left:12%;top:70%;width:30%;height:8px;background:var(--ac2);border-radius:4px"></div></div>${t.n}</button>`).join("")}</div>`;
+}
+function pickTheme(k){read2();S.theme=k;s2();}
 function s2(){
   const o=S.options;
   $("#app").innerHTML=`${stepsBar()}<h2>Affinez votre séquence</h2><p class="sub">Tout est facultatif, on s'occupe du reste.</p>
-  <div class="card"><label>Cadre de leçon</label><select id="fw">${FW.map(([v,t])=>`<option value="${v}" ${v===S.framework?"selected":""}>${t}</option>`).join("")}</select>
+  <div class="card"><label>Thème</label>${themePicker(S.theme,"pickTheme")}
+  <label>Cadre de leçon</label><select id="fw">${FW.map(([v,t])=>`<option value="${v}" ${v===S.framework?"selected":""}>${t}</option>`).join("")}</select>
   <label>Diapositives par leçon</label><select id="sl">${[6,8,10,12,15,20].map(n=>`<option ${n==o.slides?"selected":""}>${n}</option>`).join("")}</select>
   <label>Contenu à inclure</label>
+  <label class="chk"><input type="checkbox" id="o4" ${o.images?"checked":""}><span>Illustrations<small>Schémas dessinés par l'IA sur les diapositives (génération un peu plus longue)</small></span></label>
   <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
   <label class="chk"><input type="checkbox" id="o2" ${o.vocabulary?"checked":""}><span>Vocabulaire clé<small>Mots importants avec leur définition</small></span></label>
   <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
 }
-function read2(){S.framework=$("#fw").value;S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,slides:+$("#sl").value};}
+function read2(){S.framework=$("#fw").value;S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:+$("#sl").value};}
 async function outline(){
   read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
   try{
@@ -170,77 +250,196 @@ function rm(i){S.lessons.splice(i,1);s3();}
 function add(){S.lessons.push({title:"",summary:""});s3();}
 function start(){
   if(S.lessons.some(l=>!l.title.trim())){msg="Donnez un titre à chaque leçon.";return s3();}
-  S.lessons.forEach(l=>{l.title=l.title.trim();delete l.data;delete l.err;});
+  S.lessons.forEach(l=>{l.title=l.title.trim();delete l.slides;delete l.err;});
   msg="";S.started=true;step=4;save();render();generate();
 }
 
 /* ---------- étape 4 : génération ---------- */
 let running=false;
+function buildSlides(d){
+  const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
+  d.slides.forEach(x=>out.push(x));
+  const v=d.vocabulary||[];
+  for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
+  (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
+  out.forEach(x=>x.id=uid());
+  return out;
+}
 function s4(){
-  const done=S.lessons.filter(l=>l.data).length,n=S.lessons.length;
+  const done=S.lessons.filter(l=>l.slides).length,n=S.lessons.length;
   $("#app").innerHTML=`${stepsBar()}<h2>Création de vos leçons</h2><p class="sub">Gardez cet onglet ouvert, cela prend quelques minutes.</p>
   <div class="card"><b>${done} sur ${n} leçons prêtes</b><div class="bar"><i style="width:${done/n*100}%"></i></div>
   ${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b></div>${
-    l.data?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="retry(${i})">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}</div>
+    l.slides?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="retry(${i})">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}
+  ${S.lessons.some(l=>l.err)?`<div class="err">${esc(S.lessons.find(l=>l.err).err)}</div>`:""}</div>
   <div class="nav"><button class="btn ghost" onclick="step=3;render()" ${running?"disabled":""}>Retour au plan</button><button class="btn" onclick="step=5;render()" ${done?"":"disabled"}>Voir la séquence</button></div>`;
 }
 async function generate(){
   if(running)return;running=true;
   for(let i=0;i<S.lessons.length;i++){
-    const l=S.lessons[i];if(l.data)continue;
+    const l=S.lessons[i];if(l.slides)continue;
     l.busy=true;delete l.err;if(step===4)s4();
-    try{l.data=await api("/api/lesson",{...payload(),index:i});}
+    try{const d=await api("/api/lesson",{...payload(),index:i});l.slides=buildSlides(d);}
     catch(e){l.err=e.message;if(/accès|clé|Limite|Trop/i.test(e.message)){l.busy=false;break;}}
     l.busy=false;save();if(step===4)s4();
   }
   running=false;if(step===4)s4();
-  if(S.lessons.every(l=>l.data)&&step===4){step=5;render();}
+  if(S.lessons.every(l=>l.slides)&&step===4){step=5;render();}
 }
 function retry(i){delete S.lessons[i].err;generate();}
 
 /* ---------- séquence terminée ---------- */
 function series(){
-  const miss=S.lessons.filter(l=>!l.data).length;
+  const miss=S.lessons.filter(l=>!l.slides).length;
   $("#app").innerHTML=`<h1>${esc(S.title)}</h1><p class="sub">${esc(S.level)} · ${S.lessons.length} leçons</p>
-  <div class="card">${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.data?.title||l.title)}</b><small style="color:var(--mut)">${esc(l.summary)}</small></div>
-  ${l.data?`<button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
+  <div class="card"><label>Thème</label>${themePicker(S.theme,"setTheme")}</div>
+  <div class="card">${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b><small style="color:var(--mut)">${esc(l.summary)}</small></div>
+  ${l.slides?`<span style="white-space:nowrap"><button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button> <button class="btn sm" onclick="play(${i})">▶ Enseigner</button></span>`:`<span class="pill e">Non générée</span>`}</div>`).join("")}</div>
   <div class="nav" style="justify-content:flex-start;flex-wrap:wrap">
   ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} manquantes</button>`:""}
   <button class="btn ghost" onclick="printAll()">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="step=3;render()">Modifier le plan</button><button class="btn ghost" onclick="go('home')">Mes séquences</button></div>`;
 }
+function setTheme(k){S.theme=k;save();render();}
 
-/* ---------- diaporama ---------- */
+/* ============ rendu des diapositives ============ */
+const ITEM_LAYOUTS=["list","timeline","steps"];
+function normalize(sl){
+  sl.bullets=sl.bullets||[];sl.items=sl.items||[];
+  if(ITEM_LAYOUTS.includes(sl.layout)&&!sl.items.length)sl.items=sl.bullets.map(b=>({t:b,x:""}));
+  if(sl.layout==="text_image"&&!sl.bullets.length)sl.bullets=sl.items.map(i=>i.x?`${i.t} : ${i.x}`:i.t);
+  if(sl.layout==="vocab"&&!sl.vocab)sl.vocab=[{term:"Mot",definition:"Définition"}];
+  if(sl.layout==="activity"&&!sl.q)sl.q={q:"Question ?",choices:["Réponse A","Réponse B","Réponse C","Réponse D"],answer:0,why:""};
+  return sl;
+}
+function slideHTML(sl,o={}){
+  const ed=o.edit,E=(p,txt,tag="span",cls="")=>`<${tag} class="${cls}" ${ed?`contenteditable="plaintext-only" data-e="${p}"`:""}>${esc(txt)}</${tag}>`;
+  const t=sl.title!==undefined?E("title",sl.title,"h2"):"";
+  let b="";
+  switch(sl.layout){
+    case "title":
+      b=`<div class="hero"><div class="em">${esc(sl.emoji||"📖")}</div>${t}${sl.bullets.length?`<ul>${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul>`:""}</div>`;break;
+    case "list":
+      b=`${t}<div class="cards">${sl.items.map((it,i)=>`<div class="cd"><div class="num c${i%6}">${i+1}</div><div><div class="tt">${E("items."+i+".t",it.t)}</div><div class="xx">${E("items."+i+".x",it.x)}</div></div></div>`).join("")}</div>`;break;
+    case "steps":
+      b=`${t}<div class="cols" style="grid-template-columns:repeat(${Math.max(sl.items.length,1)},1fr)">${sl.items.map((it,i)=>`<div class="col"><div class="num c${i%6}">${i+1}</div><div class="tt">${E("items."+i+".t",it.t)}</div><div class="xx">${E("items."+i+".x",it.x)}</div></div>`).join("")}</div>`;break;
+    case "timeline":
+      b=`${t}<div class="tl">${sl.items.map((it,i)=>`<div class="ev"><div class="tt">${E("items."+i+".t",it.t)}</div><div class="xx">${E("items."+i+".x",it.x)}</div></div>`).join("")}</div>`;break;
+    case "quote":
+      b=`<div class="qt"><div class="mark">“</div><blockquote>${E("quote",sl.quote)}</blockquote><cite>${E("author",sl.author)}</cite></div>${sl.title?`<div style="text-align:center;opacity:.6">${E("title",sl.title)}</div>`:""}`;break;
+    case "vocab":
+      b=`${t}<div class="vg">${sl.vocab.map((v,i)=>`<div><b>${E("vocab."+i+".term",v.term)}</b>${E("vocab."+i+".definition",v.definition,"span")}</div>`).join("")}</div>`;break;
+    case "activity":{
+      const rev=o.tab==="a",q=sl.q;
+      b=`${t}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
+    default:
+      b=`${t}<div class="body"><div class="txt"><ul class="bl">${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul></div><div class="art">${sl.svg?sl.svg:`<div class="big">${esc(sl.emoji||"💡")}</div>`}</div></div>`;
+  }
+  const tabs=sl.layout==="activity"?`<div class="tabs"><span data-tab="q" class="${o.tab!=="a"?"on":""}">Question</span><span data-tab="a" class="${o.tab==="a"?"on":""}">Réponse</span></div>`:"";
+  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div></div>`;
+}
+function fit(box){
+  const sl=box.firstElementChild;if(!sl)return;
+  const k=Math.min(box.clientWidth/960,box.clientHeight/540);
+  sl.style.transform=`scale(${k})`;
+}
+function fitBox(html,w,h,cls=""){return `<div class="fit ${cls}" style="width:${w};height:${h}">${html}</div>`;}
+function setPath(o,p,v){const k=p.split(".");let c=o;for(let i=0;i<k.length-1;i++)c=c[k[i]];c[k.at(-1)]=v;}
+
+/* ============ studio (éditeur) ============ */
+let ST=null;
+function openStudio(li,n=0){ST={li,n,tab:"q",busy:false};S.lessons[li].slides.forEach(normalize);$("#studio").classList.add("on");studio();}
+function closeStudio(){ST=null;$("#studio").classList.remove("on");if(S&&step===5)series();}
+const SL=()=>S.lessons[ST.li].slides;
+function studio(){
+  const sl=SL(),cur=sl[ST.n];
+  $("#studio").innerHTML=`<div class="top"><button class="btn sm" onclick="closeStudio()">←</button><b>${esc(S.lessons[ST.li].title)}</b>
+   <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(THEMES).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${t.n}</option>`).join("")}</select>
+   <button class="btn sm" onclick="printAll()">🖨</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
+  <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
+  <div class="main"><div class="stage" id="stage"><div class="fit" id="big" style="width:100%;height:100%">${slideHTML(cur,{edit:true,theme:S.theme,tab:ST.tab})}</div></div>
+   <div class="tools"><span style="font-size:13px;color:var(--mut)">${ST.n+1} / ${sl.length}</span>
+    <select id="lay" onchange="setLayout(this.value)">${Object.entries(LAYOUT_NAMES).map(([k,v])=>`<option value="${k}" ${k===cur.layout?"selected":""}>${v}</option>`).join("")}</select>
+    <button class="btn sm ghost" onclick="mvSlide(-1)" ${ST.n?"":"disabled"} title="Monter">◀</button><button class="btn sm ghost" onclick="mvSlide(1)" ${ST.n<sl.length-1?"":"disabled"} title="Descendre">▶</button>
+    <button class="btn sm ghost" onclick="addItem(1)" title="Ajouter une puce ou un élément">＋ élément</button><button class="btn sm ghost" onclick="addItem(-1)" title="Retirer le dernier élément">− élément</button>
+    <button class="btn sm ghost" onclick="dupSlide()">⧉ Dupliquer</button><button class="btn sm ghost" onclick="newSlide()">＋ Diapositive</button><button class="btn sm ghost" onclick="delSlide()" ${sl.length>1?"":"disabled"}>🗑</button></div>
+   <div class="ask"><input id="ai" placeholder="Demander à Claude… ex. « ajoute un exemple concret », « simplifie », « fais-en une chronologie »" onkeydown="if(event.key==='Enter')askAI()"><button class="btn sm" id="aib" onclick="askAI()">✨ Envoyer</button></div>
+   <div class="notesbox"><small>Notes de l'enseignant (invisibles pour les élèves)</small><textarea oninput="SL()[ST.n].notes=this.value;persist()" onchange="save()">${esc(cur.notes||"")}</textarea></div></div></div>`;
+  layoutFit();
+}
+function layoutFit(){
+  const big=$("#big");if(!big)return;
+  const st=$("#stage"),w=Math.min(st.clientWidth-28,(st.clientHeight-28)*16/9);
+  big.style.width=w+"px";big.style.height=w*9/16+"px";fit(big);
+  document.querySelectorAll(".th-fit").forEach(b=>{b.style.height=b.clientWidth*9/16+"px";fit(b);});
+}
+addEventListener("resize",()=>{if(ST)layoutFit();if(P)layoutShow();});
+document.addEventListener("focusout",e=>{
+  const el=e.target.closest&&e.target.closest("[data-e]");if(!el||!ST)return;
+  const p=el.dataset.e,v=el.textContent.replace(/\s+/g," ").trim();
+  setPath(SL()[ST.n],p,v);save();
+  const th=document.querySelectorAll(".thumb")[ST.n];if(th){th.querySelector(".fit").innerHTML=slideHTML(SL()[ST.n],{theme:S.theme});layoutFit();}
+});
+document.addEventListener("keydown",e=>{if(e.target.matches&&e.target.matches("[data-e]")&&e.key==="Enter"){e.preventDefault();e.target.blur();}});
+document.addEventListener("click",e=>{
+  if(ST){
+    const tab=e.target.closest("[data-tab]");if(tab){ST.tab=tab.dataset.tab;studio();return;}
+    const a=e.target.closest("[data-ans]");if(a&&!e.target.closest("[data-e]")){SL()[ST.n].q.answer=+a.dataset.ans;save();studio();}
+  }else if(P){
+    const tab=e.target.closest("[data-tab]");if(tab){P.tab=tab.dataset.tab;showSlide();}
+  }
+});
+function setLayout(l){const sl=SL()[ST.n];sl.layout=l;normalize(sl);save();studio();}
+function mvSlide(d){const a=SL();[a[ST.n],a[ST.n+d]]=[a[ST.n+d],a[ST.n]];ST.n+=d;save();studio();}
+function dupSlide(){const a=SL(),c=JSON.parse(JSON.stringify(a[ST.n]));c.id=uid();a.splice(ST.n+1,0,c);ST.n++;save();studio();}
+function delSlide(){const a=SL();if(a.length<2||!confirm("Supprimer cette diapositive ?"))return;a.splice(ST.n,1);ST.n=Math.min(ST.n,a.length-1);save();studio();}
+function newSlide(){SL().splice(ST.n+1,0,{id:uid(),layout:"text_image",title:"Nouveau titre",bullets:["Votre texte ici"],items:[],emoji:"💡",notes:""});ST.n++;save();studio();}
+function addItem(d){
+  const sl=SL()[ST.n];
+  if(sl.layout==="vocab"){d>0?sl.vocab.push({term:"Mot",definition:"Définition"}):sl.vocab.length>1&&sl.vocab.pop();}
+  else if(sl.layout==="activity"){d>0?sl.q.choices.length<6&&sl.q.choices.push("Nouvelle réponse"):sl.q.choices.length>2&&(sl.q.choices.pop(),sl.q.answer=Math.min(sl.q.answer,sl.q.choices.length-1));}
+  else if(ITEM_LAYOUTS.includes(sl.layout)){d>0?sl.items.length<6&&sl.items.push({t:"Titre",x:"Description"}):sl.items.length>1&&sl.items.pop();}
+  else{d>0?sl.bullets.length<8&&sl.bullets.push("Nouveau point"):sl.bullets.length>0&&sl.bullets.pop();}
+  save();studio();
+}
+async function askAI(){
+  const inp=$("#ai"),ins=inp.value.trim();if(!ins||ST.busy)return;
+  ST.busy=true;const b=$("#aib");b.disabled=true;b.innerHTML='<span class="spin"></span>';
+  const {li,n}=ST,cur=SL()[n];
+  try{
+    const r=await api("/api/slide",{topic:S.topic,level:S.level,language:S.language,lesson:S.lessons[li].title,instruction:ins,slide:{...cur,svg:undefined}});
+    r.id=cur.id;if(!r.svg&&cur.layout===r.layout&&cur.svg)r.svg=cur.svg;if(r.notes===""&&cur.notes)r.notes=cur.notes;
+    S.lessons[li].slides[n]=normalize(r);save();
+  }catch(e){alert(e.message);}
+  if(ST&&ST.li===li){ST.busy=false;studio();}
+}
+
+/* ============ mode Enseigner ============ */
 let P=null;
-function play(i){
-  const d=S.lessons[i].data,sl=[];
-  sl.push({k:"t",title:d.title,emoji:"📖",bullets:d.objectives?.length?["Objectifs :",...d.objectives]:[]});
-  d.slides.forEach(x=>sl.push({k:"s",...x}));
-  if(d.vocabulary?.length)sl.push({k:"v",title:"Vocabulaire clé",emoji:"🔤",vocab:d.vocabulary});
-  d.quiz?.forEach((q,j)=>sl.push({k:"q",title:`Quiz ${j+1}/${d.quiz.length}`,emoji:"❓",q}));
-  P={i,sl,n:0,notes:false};show();
+function play(li,n=0){closeStudio();S.lessons[li].slides.forEach(normalize);P={li,n,tab:"q"};$("#show").classList.add("on");showSlide();}
+function showSlide(){
+  const sl=S.lessons[P.li].slides,cur=sl[P.n];
+  $("#show").innerHTML=`<div class="stage"><div class="fit" id="sbig">${slideHTML(cur,{theme:S.theme,tab:P.tab})}</div></div>
+  <div class="showbar"><button class="btn sm" onclick="nav(-1)">◀</button><button class="btn sm" onclick="${cur.layout==="activity"?"P.tab=P.tab==='q'?'a':'q';showSlide()":"nav(1)"}">${cur.layout==="activity"?(P.tab==="q"?"Voir la réponse":"Masquer"):"▶"}</button><button class="btn sm" onclick="nav(1)">Suivant ▶</button><span style="color:#fff;align-self:center;font-size:14px">${P.n+1}/${sl.length}</span><button class="btn sm" onclick="closeShow()">✕</button></div>`;
+  layoutShow();
 }
-function show(){
-  const x=P.sl[P.n],el=$("#show");el.classList.add("on");
-  let body=`<div class="em">${esc(x.emoji||"")}</div><h3>${esc(x.title)}</h3>`;
-  if(x.k==="v")body+=`<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
-  else if(x.k==="q")body+=`<p style="font-size:clamp(18px,2.6vw,28px);font-weight:600">${esc(x.q.q)}</p><div class="qz">${x.q.choices.map((c,j)=>`<button onclick="ans(this,${j})">${esc(c)}</button>`).join("")}</div><p id="why" style="color:var(--g);font-weight:600"></p>`;
-  else body+=`<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;
-  el.innerHTML=`<div class="sbar"><button class="btn sm ghost" onclick="closeShow()">✕ Quitter</button><span>${P.n+1} / ${P.sl.length}</span>
-  <span><button class="btn sm ghost" onclick="P.notes=!P.notes;show()">Notes</button> <button class="btn sm ghost" onclick="nav(-1)" ${P.n?"":"disabled"}>◀</button> <button class="btn sm" onclick="nav(1)" ${P.n<P.sl.length-1?"":"disabled"}>▶</button></span></div>
-  <div class="stage"><div class="slide">${body}</div></div><div class="notes ${P.notes&&x.notes?"on":""}"><b>Notes de l'enseignant</b><br>${esc(x.notes||"")}</div>`;
-}
-function ans(btn,j){const q=P.sl[P.n].q;[...btn.parentNode.children].forEach((b,k)=>{b.disabled=true;if(k===q.answer)b.classList.add("ok");else if(k===j)b.classList.add("ko");});$("#why").textContent=q.why;}
-function nav(d){P.n=Math.max(0,Math.min(P.sl.length-1,P.n+d));show();}
+function layoutShow(){const b=$("#sbig");if(!b)return;const st=b.parentNode,w=Math.min(st.clientWidth,st.clientHeight*16/9);b.style.width=w+"px";b.style.height=w*9/16+"px";fit(b);}
+function nav(d){const len=S.lessons[P.li].slides.length;P.n=Math.max(0,Math.min(len-1,P.n+d));P.tab="q";showSlide();}
 function closeShow(){P=null;$("#show").classList.remove("on");}
-document.addEventListener("keydown",e=>{if(!P)return;if(e.key==="ArrowRight"||e.key===" ")nav(1);else if(e.key==="ArrowLeft")nav(-1);else if(e.key==="Escape")closeShow();});
+document.addEventListener("keydown",e=>{
+  if(!P)return;const cur=S.lessons[P.li].slides[P.n];
+  if(e.key==="ArrowRight"||e.key===" "){e.preventDefault();if(cur.layout==="activity"&&P.tab==="q"){P.tab="a";showSlide();}else nav(1);}
+  else if(e.key==="ArrowLeft")nav(-1);else if(e.key==="Escape")closeShow();
+});
 
 /* ---------- impression ---------- */
 function printAll(){
-  $("#print").innerHTML=S.lessons.filter(l=>l.data).map((l,i)=>{const d=l.data;return `<h1>${i+1}. ${esc(d.title)}</h1>
-  ${d.objectives?.length?`<p><b>Objectifs</b></p><ul>${d.objectives.map(o=>`<li>${esc(o)}</li>`).join("")}</ul>`:""}
-  ${d.slides.map(s=>`<div class="s"><b>${esc(s.emoji)} ${esc(s.title)}</b><ul>${s.bullets.map(b=>`<li>${esc(b)}</li>`).join("")}</ul>${s.notes?`<i>Notes : ${esc(s.notes)}</i>`:""}</div>`).join("")}
-  ${d.vocabulary?.length?`<p><b>Vocabulaire</b></p><ul>${d.vocabulary.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`:""}
-  ${d.quiz?.length?`<p><b>Quiz</b></p><ol>${d.quiz.map(q=>`<li>${esc(q.q)}<ul>${q.choices.map((c,j)=>`<li>${j===q.answer?"<b>":""}${esc(c)}${j===q.answer?" ✓</b>":""}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}`;}).join("");
+  const txt=x=>{switch(x.layout){
+    case "list":case "steps":case "timeline":return `<ul>${x.items.map(i=>`<li><b>${esc(i.t)}</b> ${esc(i.x)}</li>`).join("")}</ul>`;
+    case "quote":return `<blockquote>${esc(x.quote)} — ${esc(x.author)}</blockquote>`;
+    case "vocab":return `<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
+    case "activity":return `<p>${esc(x.q.q)}</p><ol>${x.q.choices.map((c,j)=>`<li>${j===x.q.answer?"<b>":""}${esc(c)}${j===x.q.answer?" ✓</b>":""}</li>`).join("")}</ol><i>${esc(x.q.why)}</i>`;
+    default:return `<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;}};
+  $("#print").innerHTML=S.lessons.filter(l=>l.slides).map((l,i)=>`<h1>${i+1}. ${esc(l.title)}</h1>`+l.slides.map(x=>`<div class="s"><b>${esc(x.emoji||"")} ${esc(x.title||"")}</b>${txt(x)}${x.notes?`<i>Notes : ${esc(x.notes)}</i>`:""}</div>`).join("")).join("");
   window.print();
 }
 render();

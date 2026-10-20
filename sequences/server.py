@@ -17,6 +17,7 @@ import re
 import threading
 import time
 from collections import defaultdict, deque
+import xml.etree.ElementTree as ET
 
 import anthropic
 from flask import Flask, Response, jsonify, request, send_from_directory
@@ -102,12 +103,13 @@ def ask(prompt, max_tokens):
     if not rate_ok(client_ip()):
         return None, error("rate_limited", "Trop de générations. Réessayez plus tard.", 429)
     if _client is None:
-        _client = anthropic.Anthropic(timeout=300.0)
+        _client = anthropic.Anthropic(timeout=600.0)
     try:
-        msg = _client.messages.create(
+        with _client.messages.stream(
             model=MODEL, max_tokens=max_tokens, system=SYSTEM,
             messages=[{"role": "user", "content": prompt}],
-        )
+        ) as stream:
+            msg = stream.get_final_message()
     except anthropic.AuthenticationError:
         return None, error("no_key", "Clé API invalide.", 503)
     except anthropic.RateLimitError:
@@ -135,6 +137,96 @@ def brief(b):
     if b.get("instructions"):
         lines.append(f"Consignes de l'enseignant : {s(b['instructions'], 3000)}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- nettoyage des diapositives
+
+LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity"}
+SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
+            "text", "tspan", "defs", "lineargradient", "radialgradient", "stop"}
+SVG_ATTRS = {"viewbox", "d", "cx", "cy", "r", "rx", "ry", "x", "y", "x1", "y1", "x2", "y2", "width",
+             "height", "points", "fill", "stroke", "stroke-width", "stroke-linecap", "stroke-linejoin",
+             "stroke-dasharray", "opacity", "fill-opacity", "stroke-opacity", "transform", "offset",
+             "stop-color", "stop-opacity", "id", "font-size", "font-weight", "text-anchor",
+             "font-family", "fx", "fy", "gradientunits", "dominant-baseline"}
+SVG_NS = "http://www.w3.org/2000/svg"
+ET.register_namespace("", SVG_NS)
+
+
+def clean_svg(raw):
+    """N'accepte qu'un SVG simple : liste blanche de balises et d'attributs, rien d'externe."""
+    raw = str(raw or "").strip()
+    if not raw.lower().startswith("<svg") or len(raw) > 9000 or "<!" in raw or "url(" in raw.lower().replace("url(#", ""):
+        return ""
+    if "xmlns" not in raw[:200]:
+        raw = raw.replace("<svg", f'<svg xmlns="{SVG_NS}"', 1)
+    try:
+        root = ET.fromstring(raw)
+    except ET.ParseError:
+        return ""
+
+    def walk(el):
+        el.tag = el.tag.split("}")[-1]
+        if el.tag.lower() not in SVG_TAGS:
+            return False
+        for k in list(el.attrib):
+            if k.split("}")[-1].lower() not in SVG_ATTRS or "javascript" in el.attrib[k].lower():
+                del el.attrib[k]
+        el.tail = None
+        for child in list(el):
+            if not walk(child):
+                el.remove(child)
+        return True
+
+    if not walk(root) or root.tag.lower() != "svg":
+        return ""
+    root.attrib.pop("width", None)
+    root.attrib.pop("height", None)
+    if "viewBox" not in root.attrib and "viewbox" not in root.attrib:
+        root.set("viewBox", "0 0 400 300")
+    return ET.tostring(root, encoding="unicode")
+
+
+def clean_slide(x):
+    if not isinstance(x, dict):
+        return None
+    layout = x.get("layout") if x.get("layout") in LAYOUTS else "text_image"
+    out = {
+        "layout": layout,
+        "title": s(x.get("title"), 160),
+        "bullets": [s(t, 400) for t in x.get("bullets") or [] if t][:8],
+        "items": [{"t": s(i.get("t"), 140), "x": s(i.get("x"), 300)}
+                  for i in x.get("items") or [] if isinstance(i, dict) and (i.get("t") or i.get("x"))][:6],
+        "quote": s(x.get("quote"), 500),
+        "author": s(x.get("author"), 120),
+        "emoji": s(x.get("emoji"), 8),
+        "svg": clean_svg(x.get("svg")) if x.get("svg") else "",
+        "notes": s(x.get("notes"), 1500),
+    }
+    if layout == "vocab":
+        out["vocab"] = [{"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
+                        for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
+    if layout == "activity":
+        q = x.get("q") if isinstance(x.get("q"), dict) else {}
+        ch = [s(c, 200) for c in q.get("choices") or []][:6]
+        ans = q.get("answer")
+        out["q"] = {"q": s(q.get("q"), 400), "choices": ch,
+                    "answer": ans if isinstance(ans, int) and 0 <= ans < len(ch) else 0,
+                    "why": s(q.get("why"), 500)}
+    return out
+
+
+SLIDE_FORMAT = (
+    '{"layout": "text_image | list | timeline | steps | quote", "title": "...", '
+    '"bullets": ["3 à 4 phrases courtes"] (text_image), "items": [{"t": "titre court", "x": "une phrase"}] (list, timeline, steps : 3 à 5), '
+    '"quote": "..." et "author": "..." (quote), "emoji": "un emoji", "svg": "illustration SVG" (facultatif, text_image seulement), '
+    '"notes": "notes pour l\'enseignant : points clés, erreurs fréquentes, réponses"}'
+)
+SVG_RULES = (
+    "Illustration \"svg\" : un schéma ou dessin plat et simple qui explique la diapositive, "
+    'commençant par <svg viewBox="0 0 400 300">, formes basiques (rect, circle, path, line, polygon, text), '
+    "3 à 5 couleurs, 1800 caractères maximum, aucun script ni image externe, textes très courts."
+)
 
 
 @app.post("/api/outline")
@@ -183,28 +275,24 @@ def lesson():
         extras.append('"vocabulary": [{"term": "...", "definition": "..."}] (4 à 8 mots clés)')
     if opt.get("quiz", True):
         extras.append('"quiz": [{"q": "...", "choices": ["A","B","C","D"], "answer": 0, "why": "explication courte"}] (4 questions, "answer" = indice de la bonne réponse)')
+    images = opt.get("images", True)
     data, err = ask(
         f"{brief(b)}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
         f"Titre de la séquence : {s(b.get('title'), 160)}\nPlan complet :\n{outline_txt}\n\n"
         f"Écris maintenant la leçon {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
         "Ne répète pas le contenu des autres leçons.\n"
-        f'Format : {{"title": "...", "slides": [{{"title": "...", "bullets": ["3 à 5 phrases courtes"], "emoji": "un emoji", "notes": "notes pour l\'enseignant : points clés, erreurs fréquentes, réponses"}}], '
-        f'{", ".join(extras)}}}\nExactement {slides} diapositives, de l\'accroche au bilan.',
-        16000,
+        f"Format : {{\"title\": \"...\", \"slides\": [{SLIDE_FORMAT}], {', '.join(extras)}}}\n"
+        f"Exactement {slides} diapositives, de l'accroche au bilan. Varie les mises en page "
+        "(au moins une chronologie ou des étapes si le sujet s'y prête, une liste, et une citation si pertinent). "
+        + (SVG_RULES + " Mets une illustration sur la plupart des diapositives text_image." if images
+           else 'N\'inclus pas de champ "svg".'),
+        32000,
     )
     if err:
         return err
     out = {
         "title": s(data.get("title"), 160) or s(cur.get("title"), 160),
-        "slides": [
-            {
-                "title": s(x.get("title"), 160),
-                "bullets": [s(t, 400) for t in x.get("bullets", []) if t][:8],
-                "emoji": s(x.get("emoji"), 8),
-                "notes": s(x.get("notes"), 1500),
-            }
-            for x in data.get("slides", []) if isinstance(x, dict)
-        ][:24],
+        "slides": [c for c in (clean_slide(x) for x in data.get("slides", [])) if c and c["layout"] not in ("activity", "vocab", "title")][:24],
         "objectives": [s(t, 300) for t in data.get("objectives", []) if t][:6],
         "vocabulary": [
             {"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
@@ -219,6 +307,29 @@ def lesson():
                 out["quiz"].append({"q": s(q.get("q"), 400), "choices": ch, "answer": q["answer"], "why": s(q.get("why"), 500)})
     if not out["slides"]:
         return error("invalid_json", "Leçon vide, réessayez.", 422)
+    return jsonify(out)
+
+
+@app.post("/api/slide")
+def slide():
+    """« Demander à Claude » : réécrit une diapositive selon une consigne."""
+    b = request.get_json(silent=True) or {}
+    cur, instr = b.get("slide"), s(b.get("instruction"), 1000)
+    if not isinstance(cur, dict) or not instr:
+        return error("invalid_request", "Diapositive ou consigne manquante.", 400)
+    cur = {k: v for k, v in cur.items() if k != "svg"}
+    data, err = ask(
+        f"{brief(b)}\nLeçon : {s(b.get('lesson'), 160)}\n\nDiapositive actuelle (JSON) :\n{json.dumps(cur, ensure_ascii=False)[:6000]}\n\n"
+        f"Consigne de l'enseignant : {instr}\n\n"
+        "Renvoie la diapositive modifiée, au même format JSON que la diapositive actuelle (mêmes champs, "
+        f"« layout » parmi title, text_image, list, timeline, steps, quote, vocab, activity). Pour text_image, tu peux ajouter une illustration. {SVG_RULES}",
+        6000,
+    )
+    if err:
+        return err
+    out = clean_slide(data)
+    if not out:
+        return error("invalid_json", "Diapositive illisible, réessayez.", 422)
     return jsonify(out)
 
 
