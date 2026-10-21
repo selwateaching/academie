@@ -172,6 +172,13 @@ def brief(b):
                      "Utilise beaucoup d'exemples concrets, de comptines, de jeux de sons et d'images.")
         if (b.get("language") or "").lower().startswith("arab"):
             lines.append("En arabe : lettres, mouvements courts et longs (الحركات)، tableaux de syllabes avec fatha, damma, kasra, écriture des mots vocalisés.")
+    if (b.get("language") or "").lower().startswith("arab") and lv.startswith(("préscolaire", "1ap", "2ap", "3ap", "4ap", "5ap", "cp", "ce1", "ce2", "cm1", "cm2", "maternelle")):
+        full = lv.startswith(("préscolaire", "1ap", "2ap", "3ap", "cp", "ce1", "ce2", "maternelle"))
+        lines.append("TEXTE ARABE ENTIÈREMENT VOCALISÉ (التشكيل الكامل) : chaque mot arabe porte toutes ses voyelles brèves (fatha, damma, kasra), "
+                     "sukun, chadda et tanwin, y compris dans les consignes, les questions, les choix, les indices et les corrigés. "
+                     if full else
+                     "TEXTE ARABE VOCALISÉ : mets les voyelles (التشكيل) sur tous les mots, au minimum sur les mots nouveaux ou difficiles et sur les consignes. ")
+        lines.append("Textes courts, une idée par phrase, consignes brèves.")
     if b.get("instructions"):
         lines.append(f"Consignes de l'enseignant : {s(b['instructions'], 3000)}")
     return "\n".join(lines)
