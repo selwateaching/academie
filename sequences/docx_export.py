@@ -69,7 +69,7 @@ AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « �
       'Intermédiaire': 'متوسط',
       'Difficile': 'صعب'}
 
-AR.update({'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
+AR.update({'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
 
 
 class Builder:
@@ -230,6 +230,7 @@ class Builder:
         acts = [x for x in sl if x.get("layout") == "activity" and isinstance(x.get("q"), dict)]
         exo = [x for x in acts if not t(x.get("title")).lower().startswith("vérification")]
         quiz = [x for x in acts if x not in exo]
+        sup = next((x for x in sl if x.get("layout") == "support" and t(x.get("text"))), None)
         prods = [x for x in sl if x.get("layout") == "production" and isinstance(x.get("prod"), dict)]
 
         tb = self.table(1, 1)
@@ -246,7 +247,7 @@ class Builder:
             ((self.L("Compétence globale : "), HINT + HINT + HINT), None),
             ((self.L("Compétence terminale : "), HINT + HINT + HINT), None),
             ((self.L("Séquence : "), t(self.s.get("title"))), (self.L("Séance : "), f"{i + 1} / {n}")),
-            ((self.L("Activité : "), HINT), (self.L("Support : "), HINT)),
+            ((self.L("Activité : "), HINT), (self.L("Support : "), t(sup.get("title"), 120) if sup else HINT)),
             ((self.L("Titre : "), t(lesson.get("title"))), (self.L("Durée : "), "1 h")),
         ]
         for r, (a, b) in enumerate(cells):
@@ -268,8 +269,19 @@ class Builder:
             self.par(self.doc, "•  " + b, after=2)
         self.par(self.doc, "", after=4)
 
+        if sup:
+            self.heading(self.L("Texte support") + (" : " + t(sup.get("title"), 160) if sup.get("title") else ""))
+            tbs = self.table(1, 1)
+            self.shade(tbs.rows[0].cells[0], "FFFBEA")
+            for k, para in enumerate(t(sup.get("text"), 3000).split("\n")):
+                if para.strip():
+                    self.cell_text(tbs.rows[0].cells[0], para.strip(), size=self.size + (2 if self.big else 1), first=(k == 0))
+            self.par(self.doc, "", after=4)
+
         self.heading(self.L("Déroulement de la séance"))
         phases = []
+        if sup:
+            phases.append((self.L("Découverte du support"), "support"))
         if content:
             phases.append((self.L("Mise en situation"), content[:1]))
             if content[1:]:
@@ -293,6 +305,9 @@ class Builder:
                 for sx in what:
                     self.slide_text(b, sx)
                 self.cell_text(c, "……………………………", italic=True, color=GREY)
+            elif what == "support":
+                self.cell_text(b, self.L("Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension."))
+                self.cell_text(c, self.L("Lisent le texte et répondent oralement."), italic=True, color=GREY)
             elif what == "vocab":
                 self.cell_text(b, self.L("Présenter et faire expliquer le vocabulaire clé (tableau ci-dessous)."))
                 self.cell_text(c, self.L("Répètent et expliquent les mots."), italic=True, color=GREY)

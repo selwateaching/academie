@@ -594,7 +594,7 @@ def list_contacts():
 
 # ---------------------------------------------------------------- nettoyage des diapositives
 
-LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video", "production", "sources"}
+LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video", "production", "sources", "support"}
 YT = re.compile(r"(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})")
 SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
             "text", "tspan", "defs", "lineargradient", "radialgradient", "stop"}
@@ -663,6 +663,8 @@ def clean_slide(x):
     if layout == "vocab":
         out["vocab"] = [{"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
                         for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
+    if layout == "support":
+        out["text"] = s(x.get("text"), 3000)
     if layout == "sources":
         out["sources"] = [{"title": s(v.get("title"), 200), "url": s(v.get("url"), 500), "site": s(v.get("site"), 100), "accessed": s(v.get("accessed"), 20)}
                           for v in x.get("sources") or [] if isinstance(v, dict) and str(v.get("url", "")).startswith(("http://", "https://"))][:6]
@@ -689,6 +691,12 @@ PROD_KINDS = {
 }
 LEVELS_EX = {"easy": "facile", "medium": "intermédiaire", "hard": "difficile", "progressive": "progressif", "diff": "différencié en 3 niveaux"}
 LVL_FR = {"facile": "easy", "intermédiaire": "medium", "difficile": "hard", "easy": "easy", "medium": "medium", "hard": "hard"}
+
+
+def clean_support(x):
+    if not isinstance(x, dict) or not s(x.get("text"), 3000):
+        return None
+    return {"title": s(x.get("title"), 160), "text": s(x.get("text"), 3000)}
 
 
 def clean_exercise(x):
@@ -785,6 +793,11 @@ def lesson():
     )
     cur = plan[idx]
     extras = []
+    if opt.get("support", True):
+        short = s(b.get("level"), 80).lower().startswith(("préscolaire", "1ap", "2ap", "cp", "ce1", "maternelle"))
+        extras.append('"support": {"title": "titre du texte", "text": "TEXTE SUPPORT de la leçon, qui sert de base au travail en classe '
+                      '(texte à lire, extrait, document ou énoncé, ' + ("20 à 50 mots, phrases très courtes" if short else "100 à 200 mots") +
+                      ', adapté au niveau, paragraphes séparés par \\n). Texte original : n\'attribue aucune citation à un auteur réel"}')
     if opt.get("objectives", True):
         extras.append('"objectives": ["2 à 4 objectifs d\'apprentissage"]')
     if opt.get("vocabulary", True):
@@ -861,6 +874,7 @@ def lesson():
             for v in data.get("vocabulary", []) if isinstance(v, dict) and v.get("term")
         ][:12],
         "quiz": [],
+        "support": clean_support(data.get("support")) if opt.get("support", True) else None,
         "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:30] if ex_on else [],
         "diff": bool(diff),
         "sources": list(getattr(g, "sources", []) or []) if want_src else [],
