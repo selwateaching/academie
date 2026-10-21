@@ -296,9 +296,16 @@ pre{white-space:pre-wrap;font:inherit;font-size:1.15rem;line-height:1.7;text-ali
 ${audio ? '<audio controls src="' + audio + '"></audio>' : ''}
 <pre dir="${rtl ? 'rtl' : 'ltr'}">${esc(paroles)}</pre>
 ${dedi ? '<p class="d">' + esc(dedi) + '</p>' : ''}</div></body></html>`;
+  const fname = 'cadeau-' + (nom || 'chanson').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, '-') + '.html';
+  const dl = window.claude ? await window.claude.use('downloads') : null;
+  if (dl) {
+    try { await dl.save({ filename: fname, data: new Blob([html], { type: 'text/html' }) }); }
+    catch (e) { if (e.code !== 'declined') alert('Enregistrement impossible : ' + (e.message || e.code)); }
+    return;
+  }
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-  a.download = 'cadeau-' + (nom || 'chanson').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, '-') + '.html';
+  a.download = fname;
   a.click();
 });
 </script>
