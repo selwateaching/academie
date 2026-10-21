@@ -1,5 +1,6 @@
 """Export Word (.docx) d'une séquence : une fiche pédagogique modifiable par séance."""
 import io
+from urllib.parse import quote
 import re
 
 from docx import Document
@@ -22,6 +23,7 @@ def t(x, n=2000):
     return str(x or "").strip()[:n]
 
 
+PROV = "Ce cours a été rédigé par une IA à partir de connaissances générales : aucune source n'a été consultée en direct. Les liens ci-dessous ouvrent des recherches pour vérifier chaque notion."
 AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « …… » sont modifiables (compétences, support, durée, enseignant). Les autres contenus sont générés et modifiables aussi.": 'يملأ الأستاذ(ة) الخانات « …… » مباشرة في Word (الكفاءات، السند، المدة، الأستاذ). باقي المحتويات مولَّدة وقابلة للتعديل أيضا.',
       'Présenter et faire expliquer le vocabulaire clé (tableau ci-dessous).': 'عرض المفردات الأساسية وشرحها (الجدول أدناه).',
       'Donner la consigne de production et les critères de réussite.': 'إعطاء تعليمة الإنتاج ومعايير النجاح.',
@@ -69,7 +71,7 @@ AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « �
       'Intermédiaire': 'متوسط',
       'Difficile': 'صعب'}
 
-AR.update({'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
+AR.update({'Provenance du contenu': 'مصدر المحتوى', 'Références à consulter': 'مراجع يُنصح بها', PROV: 'كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.', 'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
 
 
 class Builder:
@@ -344,7 +346,8 @@ class Builder:
                 self.exercise(k, x["q"], lvl=False)
 
         srcs = [v for x in sl if x.get("layout") == "sources" for v in x.get("sources") or [] if isinstance(v, dict) and (v.get("url") or v.get("title"))]
-        if srcs:
+        prov = next((x.get("prov") for x in sl if x.get("layout") == "sources" and isinstance(x.get("prov"), dict)), None)
+        if srcs or prov:
             self.heading(self.L("Sources"))
             for v in srcs:
                 p = self.par(self.doc, "", after=3)
@@ -355,6 +358,18 @@ class Builder:
                         self.run(p, f"  ({extra})", size=max(self.size - 2, 8), color=GREY)
                 else:
                     self.run(p, t(v.get("title"), 300))
+            if prov:
+                self.par(self.doc, self.L("Provenance du contenu"), bold=True, color=TEAL)
+                self.par(self.doc, self.L(PROV), italic=True, size=max(self.size - 1, 9), color=GREY, after=3)
+                if prov.get("works"):
+                    self.par(self.doc, self.L("Références à consulter") + " : " + " · ".join(t(w, 120) for w in prov["works"]), after=3)
+                wl = {"arab": "ar", "angl": "en", "espag": "es", "allem": "de"}.get(t(self.s.get("language")).lower()[:5].rstrip("e"), "fr")
+                for k in prov.get("keywords") or []:
+                    p = self.par(self.doc, "", after=2)
+                    self.run(p, "•  " + t(k, 80) + "  ")
+                    self.link(p, "Wikipédia", f"https://{wl}.wikipedia.org/w/index.php?search={quote(t(k, 80))}")
+                    self.run(p, "  ")
+                    self.link(p, "Google Scholar", f"https://scholar.google.com/scholar?q={quote(t(k, 80))}")
 
         self.corriges(exo, quiz, prods, sl)
 

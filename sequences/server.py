@@ -665,6 +665,8 @@ def clean_slide(x):
                         for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
     if layout == "support":
         out["text"] = s(x.get("text"), 3000)
+    if layout == "sources" and isinstance(x.get("prov"), dict):
+        out["prov"] = clean_refs(x["prov"]) or {"keywords": [], "works": []}
     if layout == "sources":
         out["sources"] = [{"title": s(v.get("title"), 200), "url": s(v.get("url"), 500), "site": s(v.get("site"), 100), "accessed": s(v.get("accessed"), 20)}
                           for v in x.get("sources") or [] if isinstance(v, dict) and str(v.get("url", "")).startswith(("http://", "https://"))][:6]
@@ -691,6 +693,14 @@ PROD_KINDS = {
 }
 LEVELS_EX = {"easy": "facile", "medium": "intermédiaire", "hard": "difficile", "progressive": "progressif", "diff": "différencié en 3 niveaux"}
 LVL_FR = {"facile": "easy", "intermédiaire": "medium", "difficile": "hard", "easy": "easy", "medium": "medium", "hard": "hard"}
+
+
+def clean_refs(x):
+    if not isinstance(x, dict):
+        return None
+    kw = [s(k, 80) for k in x.get("keywords") or [] if isinstance(k, str) and k.strip()][:5]
+    wk = [s(k, 120) for k in x.get("works") or [] if isinstance(k, str) and k.strip()][:4]
+    return {"keywords": kw, "works": wk} if kw or wk else None
 
 
 def clean_support(x):
@@ -793,6 +803,10 @@ def lesson():
     )
     cur = plan[idx]
     extras = []
+    if opt.get("provenance", True):
+        extras.append('"references": {"keywords": ["3 à 5 expressions précises (notion, loi, théorème, événement, auteur) qui permettent de retrouver les sources fiables de ce cours"], '
+                      '"works": ["2 à 4 types d\'ouvrages ou d\'institutions de référence où ces notions sont documentées, ex. « programme officiel de 3AS, MEN », '
+                      '« manuel scolaire de physique », « UNESCO ». N\'écris AUCUN lien, ni titre précis ni auteur dont tu n\'es pas certain"]}')
     if opt.get("support", True):
         short = s(b.get("level"), 80).lower().startswith(("préscolaire", "1ap", "2ap", "cp", "ce1", "maternelle"))
         extras.append('"support": {"title": "titre du texte", "text": "TEXTE SUPPORT de la leçon, qui sert de base au travail en classe '
@@ -875,6 +889,7 @@ def lesson():
         ][:12],
         "quiz": [],
         "support": clean_support(data.get("support")) if opt.get("support", True) else None,
+        "references": clean_refs(data.get("references")) if opt.get("provenance", True) else None,
         "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:30] if ex_on else [],
         "diff": bool(diff),
         "sources": list(getattr(g, "sources", []) or []) if want_src else [],
