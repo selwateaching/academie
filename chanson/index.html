@@ -72,6 +72,17 @@
     <div class="actions"><button id="go" type="submit">✨ Écrire ma chanson</button></div>
   </form>
 
+  <section class="card" id="deja">
+    <h2>J'ai déjà ma chanson</h2>
+    <label for="mesparoles">Collez vos paroles <small>(écrites par vous, ou par une autre IA)</small></label>
+    <textarea id="mesparoles" style="min-height:160px" placeholder="[Couplet 1]&#10;…"></textarea>
+    <div class="actions"><button class="alt" id="usep" type="button">Utiliser ces paroles</button></div>
+    <label for="audio">Ou ajoutez le fichier audio déjà fait <small>(mp3, wav, m4a…)</small></label>
+    <input id="audio" type="file" accept="audio/*">
+    <audio id="player" class="hidden" controls style="width:100%;margin-top:12px"></audio>
+    <p class="hint">Le fichier reste sur votre appareil : il sert à l'écouter ici, rien n'est envoyé.</p>
+  </section>
+
   <section id="out" class="hidden">
     <div class="card"><h2>Paroles</h2><pre id="paroles"></pre>
       <div class="actions"><button class="alt" data-copy="paroles">Copier les paroles</button><button class="alt" id="reg">↻ Autre version</button></div></div>
@@ -214,6 +225,24 @@ $('reg').addEventListener('click', generate);
 document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
   try { await navigator.clipboard.writeText($(b.dataset.copy).textContent); const t = b.textContent; b.textContent = 'Copié ✓'; setTimeout(() => b.textContent = t, 1500); } catch { }
 }));
+$('usep').addEventListener('click', () => {
+  const t = $('mesparoles').value.trim();
+  if (!t) return alert('Collez d\'abord vos paroles.');
+  const d = data();
+  $('paroles').textContent = t;
+  $('paroles').dir = /[\u0600-\u06FF]/.test(t) ? 'rtl' : 'ltr';
+  $('suno').textContent = buildSuno(d);
+  $('prompt').textContent = buildPrompt(d);
+  $('out').classList.remove('hidden');
+  $('out').scrollIntoView({ behavior: 'smooth' });
+});
+$('audio').addEventListener('change', e => {
+  const f = e.target.files[0], pl = $('player');
+  if (!f) return;
+  pl.src = URL.createObjectURL(f);
+  pl.classList.remove('hidden');
+  pl.play().catch(() => {});
+});
 </script>
 </body>
 </html>
