@@ -26,7 +26,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 /* bandeau */
 .topbar{background:var(--gold-deep);color:#fff;text-align:center;font-size:.8125rem;font-weight:700;padding:8px 12px}
 .topbar a{display:block}
-.topbar u{text-underline-offset:2px;margin-left:6px}
+.topbar u{text-underline-offset:2px;margin-inline-start:6px}
 
 /* hero */
 .hero{background:linear-gradient(var(--cream),#fff);padding-bottom:32px;text-align:center}
@@ -99,14 +99,14 @@ h2{font-size:clamp(1.6rem,5vw,2.25rem);text-align:center;margin-bottom:8px;line-
 .player{max-width:1000px;margin:0 auto;padding:0 16px;display:grid;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.05);background:linear-gradient(#282828,#1f1f1f)}
 @media(min-width:1024px){.player{grid-template-columns:1fr 18rem}}
 .now{display:flex;gap:20px;align-items:center;padding:24px;flex-direction:column;text-align:center}
-@media(min-width:640px){.now{flex-direction:row;text-align:left}}
+@media(min-width:640px){.now{flex-direction:row;text-align:start}}
 .cover{flex:none;width:128px;height:128px;border-radius:12px;display:grid;place-items:center;font-size:3.2rem;box-shadow:0 10px 25px rgba(0,0,0,.4)}
 .now-info{flex:1;min-width:0;width:100%}
 .occ{font-size:.625rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .now-info h3{font:italic 400 1.25rem var(--serif);margin:2px 0}
 .meta{font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px}
 .bar{display:flex;gap:8px;align-items:center;font:.625rem ui-monospace,monospace;color:rgba(255,255,255,.3)}
-.progress{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.1);cursor:pointer;position:relative}
+.progress{direction:ltr;flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.1);cursor:pointer;position:relative}
 .progress i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--gold);width:0}
 .ctrl{display:flex;justify-content:center;gap:4px;margin-top:8px}
 @media(min-width:640px){.ctrl{justify-content:flex-start}}
@@ -115,9 +115,9 @@ h2{font-size:clamp(1.6rem,5vw,2.25rem);text-align:center;margin-bottom:8px;line-
 .ctrl .play{width:44px;height:44px;background:var(--gold);color:var(--charcoal)}
 .ctrl .play:hover{background:var(--gold-light);color:var(--charcoal)}
 .queue{border-top:1px solid rgba(255,255,255,.05)}
-@media(min-width:1024px){.queue{border-top:0;border-left:1px solid rgba(255,255,255,.05)}}
+@media(min-width:1024px){.queue{border-top:0;border-inline-start:1px solid rgba(255,255,255,.05)}}
 .queue h4{display:flex;justify-content:space-between;background:rgba(255,255,255,.05);padding:8px 16px;font-size:.625rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)}
-.track-btn{display:flex;gap:12px;align-items:center;width:100%;padding:8px 16px;text-align:left}
+.track-btn{display:flex;gap:12px;align-items:center;width:100%;padding:8px 16px;text-align:start}
 .track-btn:hover,.track-btn.on{background:rgba(255,255,255,.08)}
 .track-btn .mini{flex:none;width:32px;height:32px;border-radius:4px;display:grid;place-items:center}
 .track-btn b{display:block;font-size:.875rem;font-weight:500}
@@ -150,79 +150,86 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
 .sticky .cta{padding:14px;box-shadow:none}
 @media(min-width:1024px){.sticky{display:none}body{padding-bottom:0}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.lang{border:1.5px solid rgba(26,25,23,.2);background:#fff;border-radius:99px;padding:4px 14px;font-size:.8125rem;font-weight:700}
+.lang:hover{border-color:var(--gold)}
+[dir=rtl] body{font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic","Noto Sans Arabic",system-ui,sans-serif}
+[dir=rtl] .slide{direction:rtl}
+[dir=rtl] .serif{font-style:normal;font-weight:700;font-family:inherit}
+[dir=rtl] .eyebrow,[dir=rtl] .who,[dir=rtl] .occ,[dir=rtl] .queue h4,[dir=rtl] .cta{letter-spacing:0}
+[dir=rtl] .now-info h3{font-style:normal;font-family:inherit;font-weight:700}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
 <body>
 
-<div class="topbar"><a href="#commander">🎁 2ᵉ version OFFERTE · <u>En profiter →</u></a></div>
+<div class="topbar"><a href="#commander"><span data-i18n="top">🎁 2ᵉ version OFFERTE · <u>En profiter →</u></span></a></div>
 
 <header class="hero">
   <div class="wrap">
     <div class="brandrow">
-      <span class="brand"><span class="logo">M</span><span>Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span>
-      <span class="badge">● Express 2h disponible</span>
+      <span class="brand"><span class="logo">M</span><span><span data-i18n="brand">Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span></span>
+      <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="lang" id="lang" aria-label="Changer de langue / تغيير اللغة">العربية</button><span class="badge"><span data-i18n="badge">● Express 2h disponible</span></span></span>
     </div>
 
-    <div class="carousel" role="region" aria-roledescription="carrousel" aria-label="Comment se crée votre chanson">
+    <div class="carousel" dir="ltr" role="region" aria-roledescription="carrousel" aria-label="Comment se crée votre chanson">
       <div class="track" id="track" tabindex="0" aria-label="Étapes de création de votre chanson">
-        <div class="slide s1"><span class="emoji">✍️</span><h3>Donnez-nous son prénom</h3><p>Pour qui est la chanson ? On commence par l'essentiel.</p></div>
-        <div class="slide s2"><span class="emoji">💞</span><h3>Un souvenir, une émotion</h3><p>Racontez en quelques lignes ce qui vous lie. C'est le cœur de la chanson.</p></div>
-        <div class="slide s3"><span class="emoji">🎹</span><h3>On compose et on enregistre</h3><p>Votre histoire devient paroles et mélodie, avec une production de qualité studio.</p></div>
-        <div class="slide s4"><span class="emoji">📩</span><h3>Reçue par email en 24h</h3><p>Un lien pour écouter, télécharger et partager.</p></div>
-        <div class="slide s5"><span class="emoji">😭</span><h3>Ils pleurent de joie</h3><p>Le moment que vous attendiez : leur réaction.</p></div>
+        <div class="slide s1"><span class="emoji">✍️</span><h3><span data-i18n="s1t">Donnez-nous son prénom</span></h3><p><span data-i18n="s1p">Pour qui est la chanson ? On commence par l'essentiel.</span></p></div>
+        <div class="slide s2"><span class="emoji">💞</span><h3><span data-i18n="s2t">Un souvenir, une émotion</span></h3><p><span data-i18n="s2p">Racontez en quelques lignes ce qui vous lie. C'est le cœur de la chanson.</span></p></div>
+        <div class="slide s3"><span class="emoji">🎹</span><h3><span data-i18n="s3t">On compose et on enregistre</span></h3><p><span data-i18n="s3p">Votre histoire devient paroles et mélodie, avec une production de qualité studio.</span></p></div>
+        <div class="slide s4"><span class="emoji">📩</span><h3><span data-i18n="s4t">Reçue par email en 24h</span></h3><p><span data-i18n="s4p">Un lien pour écouter, télécharger et partager.</span></p></div>
+        <div class="slide s5"><span class="emoji">😭</span><h3><span data-i18n="s5t">Ils pleurent de joie</span></h3><p><span data-i18n="s5p">Le moment que vous attendiez : leur réaction.</span></p></div>
       </div>
       <span class="counter" id="counter" aria-live="off">1 / 5</span>
       <button class="nav prev" id="prev" aria-label="Étape précédente">‹</button>
       <button class="nav next" id="next" aria-label="Étape suivante">›</button>
     </div>
-    <div class="dots" id="dots" aria-label="Choisir une étape"></div>
+    <div class="dots" dir="ltr" id="dots" aria-label="Choisir une étape"></div>
 
     <div class="hero-copy">
-      <p class="eyebrow">Le cadeau chanson n°1</p>
-      <h1>« Cette chanson m'a fait <span class="serif gold-text">pleurer</span> ! »</h1>
-      <p class="lead">Surprenez votre proche avec une chanson sur-mesure qu'il n'oubliera jamais.</p>
-      <p class="who">Pour qui est cette chanson ?</p>
+      <p class="eyebrow"><span data-i18n="eyebrow">Le cadeau chanson n°1</span></p>
+      <h1><span data-i18n="h1">« Cette chanson m'a fait <span class="serif gold-text">pleurer</span> ! »</span></h1>
+      <p class="lead"><span data-i18n="lead">Surprenez votre proche avec une chanson sur-mesure qu'il n'oubliera jamais.</span></p>
+      <p class="who"><span data-i18n="who">Pour qui est cette chanson ?</span></p>
       <div class="chips" id="chips">
-        <button class="chip" data-for="Mari">Mari</button><button class="chip" data-for="Femme">Femme</button>
-        <button class="chip" data-for="Copain">Copain</button><button class="chip" data-for="Copine">Copine</button>
-        <button class="chip" data-for="Maman">Maman</button><button class="chip" data-for="Papa">Papa</button>
-        <button class="chip" data-for="Ami">Ami</button><button class="chip" data-for="Autre">Autre</button>
+        <button class="chip" data-for="Mari"><span data-i18n="c_Mari">Mari</span></button><button class="chip" data-for="Femme"><span data-i18n="c_Femme">Femme</span></button>
+        <button class="chip" data-for="Copain"><span data-i18n="c_Copain">Copain</span></button><button class="chip" data-for="Copine"><span data-i18n="c_Copine">Copine</span></button>
+        <button class="chip" data-for="Maman"><span data-i18n="c_Maman">Maman</span></button><button class="chip" data-for="Papa"><span data-i18n="c_Papa">Papa</span></button>
+        <button class="chip" data-for="Ami"><span data-i18n="c_Ami">Ami</span></button><button class="chip" data-for="Autre"><span data-i18n="c_Autre">Autre</span></button>
       </div>
-      <a id="hero-cta" class="cta" href="#commander">🎵 Créer ma chanson →</a>
-      <p class="fine">Composée à partir de votre histoire · Livrée par email en moins de 24 heures</p>
-      <p class="proof"><b>★★★★★</b>Remplacez par votre vrai nombre de clients</p>
+      <a id="hero-cta" class="cta" href="#commander"><span data-i18n="cta_full">🎵 Créer ma chanson →</span></a>
+      <p class="fine"><span data-i18n="fine">Composée à partir de votre histoire · Livrée par email en moins de 24 heures</span></p>
+      <p class="proof"><b>★★★★★</b><span data-i18n="proof">Remplacez par votre vrai nombre de clients</span></p>
     </div>
   </div>
 </header>
 
 <section class="steps" id="commander">
   <div class="wrap">
-    <h2>Comment fonctionne <span class="serif">Ma Chanson</span></h2>
+    <h2><span data-i18n="steps_h">Comment fonctionne <span class="serif">Ma Chanson</span></span></h2>
     <div class="steplist">
-      <div class="step"><span class="num">1</span><div><b>Racontez votre histoire</b><small>3 minutes</small></div></div>
-      <div class="step"><span class="num">2</span><div><b>Nous composons votre chanson</b><small>À partir de votre histoire</small></div></div>
-      <div class="step"><span class="num">3</span><div><b>Livrée par email</b><small style="color:var(--gold-light)">Produit numérique · en moins de 24 heures après le paiement</small></div></div>
+      <div class="step"><span class="num">1</span><div><b><span data-i18n="st1">Racontez votre histoire</span></b><small><span data-i18n="st1s">3 minutes</span></small></div></div>
+      <div class="step"><span class="num">2</span><div><b><span data-i18n="st2">Nous composons votre chanson</span></b><small><span data-i18n="st2s">À partir de votre histoire</span></small></div></div>
+      <div class="step"><span class="num">3</span><div><span data-i18n="st3b"><b>Livrée par email</b></span><small style="color:var(--gold-light)"><span data-i18n="st3s">Produit numérique · en moins de 24 heures après le paiement</span></small></div></div>
     </div>
-    <a class="cta gold" href="#" data-order>🎵 Créer ma chanson →</a>
+    <a class="cta gold" href="#" data-order><span data-i18n="cta_full">🎵 Créer ma chanson →</span></a>
   </div>
 </section>
 
 <section class="reviews">
-  <h2>Ce que disent nos <span class="serif" style="color:var(--gold-deep)">clients</span></h2>
-  <p class="sub">De vraies histoires, de vraies personnes</p>
+  <h2><span data-i18n="rev_h">Ce que disent nos <span class="serif" style="color:var(--gold-deep)">clients</span></span></h2>
+  <p class="sub"><span data-i18n="rev_s">De vraies histoires, de vraies personnes</span></p>
   <div class="grid3">
     <!-- À remplacer par de VRAIS avis clients -->
-    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°1 : mariage, émotion, effet waouh. »</p><div class="who-line"><span class="avatar">A</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
-    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°2 : cadeau pour un parent, larmes de joie. »</p><div class="who-line"><span class="avatar" style="background:var(--gold);color:var(--charcoal)">B</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
-    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°3 : demande en mariage, anniversaire… »</p><div class="who-line"><span class="avatar">C</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
+    <div class="card"><p class="stars">★★★★★</p><p><span data-i18n="r1">« Avis client n°1 : mariage, émotion, effet waouh. »</span></p><div class="who-line"><span class="avatar">A</span><div><b><span data-i18n="rn">Prénom N.</span></b><span><span data-i18n="rv">Client vérifié</span></span></div></div></div>
+    <div class="card"><p class="stars">★★★★★</p><p><span data-i18n="r2">« Avis client n°2 : cadeau pour un parent, larmes de joie. »</span></p><div class="who-line"><span class="avatar" style="background:var(--gold);color:var(--charcoal)">B</span><div><b><span data-i18n="rn">Prénom N.</span></b><span><span data-i18n="rv">Client vérifié</span></span></div></div></div>
+    <div class="card"><p class="stars">★★★★★</p><p><span data-i18n="r3">« Avis client n°3 : demande en mariage, anniversaire… »</span></p><div class="who-line"><span class="avatar">C</span><div><b><span data-i18n="rn">Prénom N.</span></b><span><span data-i18n="rv">Client vérifié</span></span></div></div></div>
   </div>
 </section>
 
 <section class="listen" id="listen">
   <div class="wrap" style="max-width:1000px">
-    <h2>Écoutez ce que nous avons <span class="serif">créé</span></h2>
-    <p class="sub">Chansons réelles. Histoires réelles. Appuyez sur play.</p>
+    <h2><span data-i18n="l_h">Écoutez ce que nous avons <span class="serif">créé</span></span></h2>
+    <p class="sub"><span data-i18n="l_s">Chansons réelles. Histoires réelles. Appuyez sur play.</span></p>
     <audio id="audio" preload="none"></audio>
     <div class="player">
       <div class="now">
@@ -239,82 +246,170 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
           </div>
         </div>
       </div>
-      <div class="queue"><h4><span>À venir</span><span id="count"></span></h4><div id="list"></div></div>
+      <div class="queue"><h4><span data-i18n="next">À venir</span><span id="count"></span></h4><div id="list"></div></div>
     </div>
-    <p class="note">Imaginez leur visage quand ils entendent leur nom dans la chanson…</p>
-    <p class="guarantee">🛡️ Pas de larmes ? Garantie satisfait ou remboursé 60 jours, sans condition.</p>
+    <p class="note"><span data-i18n="l_n">Imaginez leur visage quand ils entendent leur nom dans la chanson…</span></p>
+    <p class="guarantee"><span data-i18n="l_g">🛡️ Pas de larmes ? Garantie satisfait ou remboursé 60 jours, sans condition.</span></p>
   </div>
 </section>
 
 <section class="faq">
   <div class="wrap">
-    <h2>Questions fréquentes</h2>
-    <details><summary>Qu'est-ce qui rend ces chansons spéciales ?</summary><div>Chaque chanson est écrite sur-mesure à partir de votre histoire : le prénom de votre proche, vos souvenirs partagés et les émotions que vous voulez transmettre. Aucun modèle, chaque chanson est unique.</div></details>
-    <details><summary>En combien de temps je reçois la chanson ?</summary><div>C'est un produit 100 % numérique : aucun envoi postal. Votre chanson est livrée par email en moins de 24 heures après le paiement, avec un lien pour l'écouter, la télécharger et la partager.</div></details>
-    <details><summary>Et si la chanson ne me plaît pas ?</summary><div>Garantie satisfait ou remboursé 60 jours, sans condition. Si vous n'êtes pas satisfait, on vous rembourse intégralement.</div></details>
-    <details><summary>Quels genres et styles sont disponibles ?</summary><div>Pop, acoustique, R&amp;B, country, rock, hip-hop, classique, jazz et plus encore. Vous choisissez l'ambiance qui colle le mieux à votre histoire.</div></details>
-    <details><summary>Comment la chanson est-elle créée ?</summary><div>Elle est composée à partir de votre histoire, puis produite pour un rendu de qualité studio, avec plusieurs contrôles qualité avant l'envoi.</div></details>
-    <details><summary>Puis-je diffuser la chanson lors d'un événement ?</summary><div>Oui ! La chanson vous appartient : mariages, anniversaires, cérémonies… partagez-la librement.</div></details>
-    <p class="help">Encore des questions ? <a href="mailto:contact@example.com">contact@example.com</a></p>
+    <h2><span data-i18n="faq_h">Questions fréquentes</span></h2>
+    <details><summary><span data-i18n="q1">Qu'est-ce qui rend ces chansons spéciales ?</span></summary><div><span data-i18n="a1">Chaque chanson est écrite sur-mesure à partir de votre histoire : le prénom de votre proche, vos souvenirs partagés et les émotions que vous voulez transmettre. Aucun modèle, chaque chanson est unique.</span></div></details>
+    <details><summary><span data-i18n="q2">En combien de temps je reçois la chanson ?</span></summary><div><span data-i18n="a2">C'est un produit 100 % numérique : aucun envoi postal. Votre chanson est livrée par email en moins de 24 heures après le paiement, avec un lien pour l'écouter, la télécharger et la partager.</span></div></details>
+    <details><summary><span data-i18n="q3">Et si la chanson ne me plaît pas ?</span></summary><div><span data-i18n="a3">Garantie satisfait ou remboursé 60 jours, sans condition. Si vous n'êtes pas satisfait, on vous rembourse intégralement.</span></div></details>
+    <details><summary><span data-i18n="q4">Quels genres et styles sont disponibles ?</span></summary><div><span data-i18n="a4">Pop, acoustique, R&amp;B, country, rock, hip-hop, classique, jazz et plus encore. Vous choisissez l'ambiance qui colle le mieux à votre histoire.</span></div></details>
+    <details><summary><span data-i18n="q5">Comment la chanson est-elle créée ?</span></summary><div><span data-i18n="a5">Elle est composée à partir de votre histoire, puis produite pour un rendu de qualité studio, avec plusieurs contrôles qualité avant l'envoi.</span></div></details>
+    <details><summary><span data-i18n="q6">Puis-je diffuser la chanson lors d'un événement ?</span></summary><div><span data-i18n="a6">Oui ! La chanson vous appartient : mariages, anniversaires, cérémonies… partagez-la librement.</span></div></details>
+    <p class="help"><span data-i18n="help">Encore des questions ? </span><a href="mailto:contact@example.com">contact@example.com</a></p>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    <span class="brand" style="justify-content:center"><span class="logo">M</span><span style="font-size:1.1rem">Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span>
-    <p>Nous créons des chansons personnalisées pour célébrer vos proches et transformer vos souvenirs les plus précieux en musique.</p>
-    <div class="links"><a href="#">Conditions</a><a href="#">Confidentialité</a><a href="#">Remboursements</a><a href="mailto:contact@example.com">Contact</a></div>
-    <p class="copy">© 2026 Ma Chanson. Tous droits réservés.</p>
+    <span class="brand" style="justify-content:center"><span class="logo">M</span><span style="font-size:1.1rem"><span data-i18n="brand">Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span></span>
+    <p><span data-i18n="f_p">Nous créons des chansons personnalisées pour célébrer vos proches et transformer vos souvenirs les plus précieux en musique.</span></p>
+    <div class="links"><a href="#"><span data-i18n="f1">Conditions</span></a><a href="#"><span data-i18n="f2">Confidentialité</span></a><a href="#"><span data-i18n="f3">Remboursements</span></a><a href="mailto:contact@example.com"><span data-i18n="f4">Contact</span></a></div>
+    <p class="copy"><span data-i18n="copy">© 2026 Ma Chanson. Tous droits réservés.</span></p>
   </div>
 </footer>
 
-<div class="sticky" id="sticky"><a class="cta" href="#" data-order style="max-width:none">Créer ma chanson →</a></div>
+<div class="sticky" id="sticky"><a class="cta" href="#" data-order style="max-width:none"><span data-i18n="cta_s">Créer ma chanson →</span></a></div>
 
 <script>
-/* ---- Configuration : à adapter ---- */
-var ORDER_URL = "#commander"; // lien de commande / formulaire
-var SONGS = [ // ajoutez vos fichiers audio dans "src"
-  {title:"À travers les années", sub:"Pour Sarah · Ballade country", occ:"25e anniversaire", icon:"💍", color:"#7a5c1e", dur:"2:05", src:""},
-  {title:"Le porche de papa", sub:"Pour papa · Folk acoustique", occ:"Fête des pères", icon:"🎸", color:"#2f4f6a", dur:"1:53", src:""},
-  {title:"Toujours cette fille", sub:"Pour maman · Ballade pop", occ:"Anniversaire", icon:"🌹", color:"#7a2f45", dur:"2:08", src:""},
-  {title:"Ma petite fille", sub:"Pour papa · Ballade acoustique", occ:"Naissance", icon:"🧸", color:"#3d6a4a", dur:"1:59", src:""}
+/* ---- Configuration : à adapter / للتعديل ---- */
+var ORDER_URL = "#commander"; // lien de commande / رابط الطلب
+var SONGS = [ // ajoutez vos fichiers audio dans "src" / أضف ملفاتك الصوتية في src
+  {title:{fr:"À travers les années",ar:"عبر السنين"}, sub:{fr:"Pour Sarah · Ballade country",ar:"إلى سارة · أغنية كانتري هادئة"}, occ:{fr:"25e anniversaire",ar:"الذكرى الخامسة والعشرون"}, icon:"💍", color:"#7a5c1e", dur:"2:05", src:""},
+  {title:{fr:"Le porche de papa",ar:"شرفة أبي"}, sub:{fr:"Pour papa · Folk acoustique",ar:"إلى أبي · فولك أكوستيك"}, occ:{fr:"Fête des pères",ar:"عيد الأب"}, icon:"🎸", color:"#2f4f6a", dur:"1:53", src:""},
+  {title:{fr:"Toujours cette fille",ar:"ما زلتِ تلك الفتاة"}, sub:{fr:"Pour maman · Ballade pop",ar:"إلى أمي · أغنية بوب هادئة"}, occ:{fr:"Anniversaire",ar:"عيد ميلاد"}, icon:"🌹", color:"#7a2f45", dur:"2:08", src:""},
+  {title:{fr:"Ma petite fille",ar:"ابنتي الصغيرة"}, sub:{fr:"Pour papa · Ballade acoustique",ar:"إلى أبي · أغنية أكوستيك هادئة"}, occ:{fr:"Naissance",ar:"ولادة"}, icon:"🧸", color:"#3d6a4a", dur:"1:59", src:""}
 ];
 
+/* ---- Langues (fr / ar) ---- */
+var AR = {
+ "brand": "أغني<span class=\"serif\" style=\"color:var(--gold-deep)\">تي</span>",
+ "top": "🎁 النسخة الثانية مجانًا · <u>استفد من العرض ←</u>",
+ "badge": "● خدمة سريعة خلال ساعتين متاحة",
+ "s1t": "أخبرنا باسمه",
+ "s1p": "لمن هذه الأغنية؟ نبدأ بالأهم.",
+ "s2t": "ذكرى وإحساس",
+ "s2p": "احكِ لنا في بضعة أسطر عمّا يجمعكما. هذا هو قلب الأغنية.",
+ "s3t": "نؤلّف ونسجّل",
+ "s3p": "تتحوّل قصتك إلى كلمات ولحن بإنتاج بجودة الاستوديو.",
+ "s4t": "تصلك بالبريد خلال 24 ساعة",
+ "s4p": "رابط للاستماع والتحميل والمشاركة.",
+ "s5t": "يبكون من الفرح",
+ "s5p": "اللحظة التي كنت تنتظرها: ردّة فعلهم.",
+ "eyebrow": "الهدية الغنائية رقم 1",
+ "h1": "« هذه الأغنية <span class=\"serif gold-text\">أبكتني</span> ! »",
+ "lead": "فاجئ من تحب بأغنية مصمَّمة خصيصًا له لن ينساها أبدًا.",
+ "who": "لمن هذه الأغنية؟",
+ "c_Mari": "الزوج",
+ "c_Femme": "الزوجة",
+ "c_Copain": "الحبيب",
+ "c_Copine": "الحبيبة",
+ "c_Maman": "أمي",
+ "c_Papa": "أبي",
+ "c_Ami": "صديق",
+ "c_Autre": "آخر",
+ "cta_full": "🎵 أنشئ أغنيتي ←",
+ "cta_s": "أنشئ أغنيتي ←",
+ "fine": "مؤلَّفة من قصتك · تصلك بالبريد الإلكتروني خلال 24 ساعة",
+ "proof": "استبدل هذا النص بعدد عملائك الحقيقي",
+ "steps_h": "كيف تعمل <span class=\"serif\">أغنيتي</span>",
+ "st1": "احكِ قصتك",
+ "st1s": "3 دقائق",
+ "st2": "نؤلّف أغنيتك",
+ "st2s": "انطلاقًا من قصتك",
+ "st3b": "<b>تصلك بالبريد الإلكتروني</b>",
+ "st3s": "منتج رقمي · خلال 24 ساعة من الدفع",
+ "rev_h": "ماذا يقول <span class=\"serif\" style=\"color:var(--gold-deep)\">عملاؤنا</span>",
+ "rev_s": "قصص حقيقية، أشخاص حقيقيون",
+ "r1": "« رأي العميل 1: زفاف، تأثّر، دهشة. »",
+ "r2": "« رأي العميل 2: هدية لأحد الوالدين، دموع فرح. »",
+ "r3": "« رأي العميل 3: طلب زواج، عيد ميلاد… »",
+ "rn": "الاسم ن.",
+ "rv": "عميل موثَّق",
+ "l_h": "استمع إلى ما <span class=\"serif\">صنعناه</span>",
+ "l_s": "أغانٍ حقيقية. قصص حقيقية. اضغط على تشغيل.",
+ "next": "التالي",
+ "l_n": "تخيّل وجوههم حين يسمعون أسماءهم في الأغنية…",
+ "l_g": "🛡️ لم تدمع العيون؟ ضمان استرداد المال لمدة 60 يومًا دون أي شرط.",
+ "faq_h": "الأسئلة الشائعة",
+ "q1": "ما الذي يميّز هذه الأغاني؟",
+ "a1": "تُكتب كل أغنية خصيصًا انطلاقًا من قصتك: اسم من تحب، ذكرياتكما المشتركة والمشاعر التي تريد إيصالها. لا قوالب جاهزة، فكل أغنية فريدة.",
+ "q2": "متى تصلني الأغنية؟",
+ "a2": "هذا منتج رقمي بالكامل: لا شحن بريدي. تصلك أغنيتك بالبريد الإلكتروني خلال 24 ساعة من الدفع، مع رابط للاستماع إليها وتحميلها ومشاركتها.",
+ "q3": "وماذا لو لم تعجبني الأغنية؟",
+ "a3": "ضمان استرداد المال خلال 60 يومًا دون أي شرط. إن لم تكن راضيًا، نعيد إليك المبلغ كاملًا.",
+ "q4": "ما الأنماط الموسيقية المتاحة؟",
+ "a4": "بوب، أكوستيك، آر أند بي، كانتري، روك، هيب هوب، كلاسيك، جاز وغيرها. تختار الأجواء الأنسب لقصتك.",
+ "q5": "كيف تُصنع الأغنية؟",
+ "a5": "تُؤلَّف انطلاقًا من قصتك، ثم تُنتَج بجودة الاستوديو، مع عدة مراحل لمراقبة الجودة قبل الإرسال.",
+ "q6": "هل يمكنني تشغيل الأغنية في مناسبة؟",
+ "a6": "نعم! الأغنية ملكك: أعراس، أعياد ميلاد، حفلات… شاركها بحرية.",
+ "help": "هل لديك المزيد من الأسئلة؟ ",
+ "f_p": "نصنع أغاني مخصّصة للاحتفاء بأحبّائك وتحويل أجمل ذكرياتك إلى موسيقى.",
+ "f1": "الشروط",
+ "f2": "الخصوصية",
+ "f3": "الاسترداد",
+ "f4": "اتصل بنا",
+ "copy": "© 2026 أغنيتي. جميع الحقوق محفوظة."
+};
+var META = {fr:{title:document.title,desc:document.querySelector('meta[name=description]').content,lang:'العربية',count:function(n){return n+' chansons'}},
+            ar:{title:'أغنيتي — أغنية مخصّصة ستُبكي من تحب',desc:'فاجئ من تحب بأغنية مصمَّمة خصيصًا له بجودة الاستوديو. احكِ قصتك ونؤلّف لك الأغنية. تصلك بالبريد الإلكتروني خلال 24 ساعة.',lang:'Français',count:function(n){return n+' أغانٍ'}}};
+var $=function(id){return document.getElementById(id)};
+var lang='fr';
+try{lang=new URLSearchParams(location.search).get('lang')||localStorage.getItem('lang')||((navigator.language||'').slice(0,2)==='ar'?'ar':'fr')}catch(e){}
+if(lang!=='ar')lang='fr';
+[].forEach.call(document.querySelectorAll('[data-i18n]'),function(el){el.dataset.fr=el.innerHTML});
+function setLang(l){
+  lang=l;
+  document.documentElement.lang=l;document.documentElement.dir=l==='ar'?'rtl':'ltr';
+  [].forEach.call(document.querySelectorAll('[data-i18n]'),function(el){el.innerHTML=l==='ar'?AR[el.dataset.i18n]:el.dataset.fr});
+  document.title=META[l].title;document.querySelector('meta[name=description]').content=META[l].desc;
+  $('lang').textContent=META[l].lang;
+  try{localStorage.setItem('lang',l)}catch(e){}
+  render();
+}
+$('lang').onclick=function(){setLang(lang==='ar'?'fr':'ar')};
+
 /* ---- Carrousel ---- */
-var track=document.getElementById('track'),slides=track.children,dots=document.getElementById('dots'),counter=document.getElementById('counter');
+var track=$('track'),slides=track.children,dots=$('dots'),counter=$('counter');
 var icons=['✍️','💞','🎹','📩','😭'],idx=0;
-icons.forEach(function(ic,i){var b=document.createElement('button');b.className='dot';b.textContent=ic;b.setAttribute('aria-label','Afficher l’étape '+(i+1));b.setAttribute('aria-pressed',i===0);b.onclick=function(){go(i)};dots.appendChild(b)});
+icons.forEach(function(ic,i){var b=document.createElement('button');b.className='dot';b.textContent=ic;b.setAttribute('aria-label','Étape '+(i+1));b.setAttribute('aria-pressed',i===0);b.onclick=function(){go(i)};dots.appendChild(b)});
 function go(i){idx=(i+slides.length)%slides.length;track.scrollTo({left:idx*track.clientWidth,behavior:'smooth'})}
 function sync(){var i=Math.round(track.scrollLeft/track.clientWidth);idx=i;counter.textContent=(i+1)+' / '+slides.length;[].forEach.call(dots.children,function(d,k){d.setAttribute('aria-pressed',k===i)})}
 track.addEventListener('scroll',sync,{passive:true});
-document.getElementById('prev').onclick=function(){go(idx-1)};
-document.getElementById('next').onclick=function(){go(idx+1)};
+$('prev').onclick=function(){go(idx-1)};
+$('next').onclick=function(){go(idx+1)};
 track.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1)});
 
 /* ---- Destinataire & liens de commande ---- */
-function orderHref(f){return f?ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'for='+encodeURIComponent(f):ORDER_URL}
+function orderHref(f){var u=ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'lang='+lang;return f?u+'&for='+encodeURIComponent(f):ORDER_URL}
 var chosen='';
+function updateLinks(){$('hero-cta').href=orderHref(chosen);[].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref(chosen)})}
 [].forEach.call(document.querySelectorAll('.chip'),function(c){c.onclick=function(){
-  chosen=c.dataset['for'];[].forEach.call(document.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===c)});
-  document.getElementById('hero-cta').href=orderHref(chosen);
-  [].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref(chosen)});
+  chosen=c.dataset['for'];[].forEach.call(document.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===c)});updateLinks();
 }});
-[].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref('')});
 
 /* ---- Lecteur ---- */
-var audio=document.getElementById('audio'),cur=0,$=function(id){return document.getElementById(id)};
+var audio=$('audio'),cur=0;
 function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
 function render(){
   var s=SONGS[cur];$('cover').style.background=s.color;$('cover').textContent=s.icon;
-  $('occ').textContent=s.occ;$('title').textContent='“'+s.title+'”';$('meta').textContent=s.sub;$('dur').textContent=s.dur;$('cur').textContent='0:00';$('fill').style.width='0';
-  $('count').textContent=SONGS.length+' chansons';
+  $('occ').textContent=s.occ[lang];$('title').textContent='“'+s.title[lang]+'”';$('meta').textContent=s.sub[lang];
+  if(!audio.duration||audio.paused&&!audio.currentTime){$('dur').textContent=s.dur;$('cur').textContent='0:00';$('fill').style.width='0'}
+  $('count').textContent=META[lang].count(SONGS.length);
   $('list').innerHTML='';
   SONGS.forEach(function(t,i){var b=document.createElement('button');b.className='track-btn'+(i===cur?' on':'');
     b.innerHTML='<span class="mini" style="background:'+t.color+'">'+t.icon+'</span><span style="flex:1;min-width:0"><b></b><small></small></span><small>'+t.dur+'</small>';
-    b.querySelector('b').textContent=t.title;b.querySelectorAll('small')[0].textContent=t.sub;
+    b.querySelector('b').textContent=t.title[lang];b.querySelectorAll('small')[0].textContent=t.sub[lang];
     b.onclick=function(){load(i,true)};$('list').appendChild(b)});
 }
-function load(i,play){cur=(i+SONGS.length)%SONGS.length;audio.pause();audio.src=SONGS[cur].src||'';render();if(play)toggle(true);else $('pPlay').textContent='▶'}
+function load(i,play){cur=(i+SONGS.length)%SONGS.length;audio.pause();audio.removeAttribute('src');if(SONGS[cur].src)audio.src=SONGS[cur].src;$('fill').style.width='0';$('cur').textContent='0:00';render();$('pPlay').textContent='▶';if(play)toggle(true)}
 function toggle(force){
   if(!SONGS[cur].src){$('pPlay').textContent='▶';return}
   if(force===true||audio.paused){audio.play();$('pPlay').textContent='⏸'}else{audio.pause();$('pPlay').textContent='▶'}
@@ -326,11 +421,12 @@ audio.addEventListener('timeupdate',function(){var p=audio.duration?audio.curren
 audio.addEventListener('loadedmetadata',function(){$('dur').textContent=fmt(audio.duration)});
 audio.addEventListener('ended',function(){load(cur+1,true)});
 $('progress').onclick=function(e){if(!audio.duration)return;var r=this.getBoundingClientRect();audio.currentTime=(e.clientX-r.left)/r.width*audio.duration};
-render();
 
 /* ---- CTA collant : apparaît quand le CTA du hero sort de l'écran ---- */
 var sticky=$('sticky');
 if('IntersectionObserver' in window){new IntersectionObserver(function(en){sticky.classList.toggle('show',!en[0].isIntersecting&&en[0].boundingClientRect.top<0)}).observe($('hero-cta'))}
+
+setLang(lang);updateLinks();
 </script>
 </body>
 </html>
