@@ -558,7 +558,7 @@ def clean_slide(x):
         lvl = s(q.get("level"), 20).lower()
         out["q"] = {"q": s(q.get("q"), 600), "choices": ch,
                     "answer": ans if isinstance(ans, int) and 0 <= ans < len(ch) else 0,
-                    "open": s(q.get("open"), 900), "why": s(q.get("why"), 700), "level": lvl if lvl in LVL_FR else ""}
+                    "open": s(q.get("open"), 900), "why": s(q.get("why"), 700), "level": LVL_FR.get(lvl, "")}
     return out
 
 
@@ -570,8 +570,8 @@ PROD_KINDS = {
     "projet": "projet ou tâche complexe (recherche, affiche, maquette…)",
     "lecture": "lecture et compréhension d'un document",
 }
-LEVELS_EX = {"easy": "facile", "medium": "intermédiaire", "hard": "difficile", "progressive": "progressif"}
-LVL_FR = {"facile", "intermédiaire", "difficile"}
+LEVELS_EX = {"easy": "facile", "medium": "intermédiaire", "hard": "difficile", "progressive": "progressif", "diff": "différencié en 3 niveaux"}
+LVL_FR = {"facile": "easy", "intermédiaire": "medium", "difficile": "hard", "easy": "easy", "medium": "medium", "hard": "hard"}
 
 
 def clean_exercise(x):
@@ -579,7 +579,7 @@ def clean_exercise(x):
         return None
     typ = x.get("type") if x.get("type") in ("qcm", "short", "fill", "long") else "short"
     lvl = s(x.get("level"), 20).lower()
-    out = {"type": typ, "q": s(x.get("q"), 600), "why": s(x.get("why"), 700), "level": lvl if lvl in LVL_FR else ""}
+    out = {"type": typ, "q": s(x.get("q"), 600), "why": s(x.get("why"), 700), "level": LVL_FR.get(lvl, "")}
     if typ == "qcm":
         ch = [s(c, 200) for c in x.get("choices") or []][:6]
         a = x.get("answer")
@@ -601,7 +601,8 @@ def clean_production(x):
             pts = r.get("points")
             rub.append({"criterion": s(r.get("criterion"), 160), "points": pts if isinstance(pts, int) and 0 <= pts <= 20 else 1})
     return {"kind": kind, "title": s(x.get("title"), 160), "task": s(x.get("task"), 1500), "duration": s(x.get("duration"), 60),
-            "criteria": [s(c, 240) for c in x.get("criteria") or [] if c][:6], "example": s(x.get("example"), 1500), "rubric": rub[:8]}
+            "criteria": [s(c, 240) for c in x.get("criteria") or [] if c][:6], "example": s(x.get("example"), 1500), "rubric": rub[:8],
+            "level": LVL_FR.get(s(x.get("level"), 20).lower(), "")}
 
 
 SLIDE_FORMAT = (
@@ -679,13 +680,19 @@ def lesson():
     prods = [k for k in ex.get("prods", []) if k in PROD_KINDS][:6] if ex_on else []
     other = s(ex.get("other"), 300) if ex_on else ""
     n_ex = max(3, min(10, int(ex.get("count") or 5))) if ex_on else 0
+    diff = ex_on and ex.get("level") == "diff"
     lvl_key = ex.get("level") if ex.get("level") in LEVELS_EX else "progressive"
     detailed = ex.get("detail", "detailed") != "concise"
     extra_prompt = ""
     if ex_on:
-        dist = {"easy": "tous de niveau « facile »", "medium": "tous de niveau « intermédiaire »", "hard": "tous de niveau « difficile »",
+        dist = {"diff": "répartis en trois groupes de même taille : d'abord les exercices de niveau « facile », puis « intermédiaire », puis « difficile »", "easy": "tous de niveau « facile »", "medium": "tous de niveau « intermédiaire »", "hard": "tous de niveau « difficile »",
                 "progressive": "classés du plus facile au plus difficile (niveaux facile, puis intermédiaire, puis difficile)"}[lvl_key]
-        extra_prompt += (f'\nAjoute aussi "exercises": exactement {n_ex} exercices d\'application, {dist}, au format '
+        if diff:
+            extra_prompt += ('\nDIFFÉRENCIATION : la classe a trois groupes de niveaux. Pour la même notion, écris pour chaque niveau '
+                             f'exactement {n_ex} exercices. facile = très guidés (indices, modèle, vocabulaire donné, QCM simples) ; '
+                             'intermédiaire = niveau attendu du programme ; difficile = plus ouverts (raisonnement, transfert, défi). '
+                             'Chaque exercice porte son "level" (facile, intermédiaire ou difficile).')
+        extra_prompt += (f'\nAjoute aussi "exercises": exactement {n_ex * 3 if diff else n_ex} exercices d\'application, {dist}, au format '
                          '[{"type": "qcm | short | fill | long", "level": "facile | intermédiaire | difficile", "q": "énoncé", '
                          '"choices": ["A","B","C","D"] (qcm), "answer": "réponse attendue (qcm : indice de la bonne réponse)", '
                          '"why": "explication ' + ("détaillée en 2 ou 3 phrases" if detailed else "courte") + '"}].')
@@ -696,7 +703,9 @@ def lesson():
                              + ("détaillée avec les étapes à suivre" if detailed else "claire") + '", "duration": "ex. 15 min", '
                              '"criteria": ["3 à 5 critères de réussite"], "example": "exemple de production attendue ' + ("(80 à 150 mots)" if detailed else "(court)") + '"'
                              + (', "rubric": [{"criterion": "...", "points": 2}] (grille d\'évaluation de 3 à 5 critères)' if detailed else '') + '}]. '
-                             f'Niveau de difficulté des productions : {LEVELS_EX[lvl_key]}.')
+                             + (f'Niveau de difficulté des productions : {LEVELS_EX[lvl_key]}.' if not diff else
+                              'Pour CHAQUE demande, écris trois versions (une par niveau : facile très guidée, intermédiaire, difficile plus exigeante) '
+                              'avec la consigne et les critères adaptés, et ajoute "level": "facile | intermédiaire | difficile" à chacune.'))
     data, err = ask(
         f"{brief(b)}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
         f"Titre de la séquence : {s(b.get('title'), 160)}\nPlan complet :\n{outline_txt}\n\n"
@@ -724,8 +733,9 @@ def lesson():
             for v in data.get("vocabulary", []) if isinstance(v, dict) and v.get("term")
         ][:12],
         "quiz": [],
-        "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:12] if ex_on else [],
-        "productions": [c for c in (clean_production(x) for x in data.get("productions", [])) if c][:8] if ex_on else [],
+        "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:30] if ex_on else [],
+        "diff": bool(diff),
+        "productions": [c for c in (clean_production(x) for x in data.get("productions", [])) if c][:24] if ex_on else [],
     }
     for q in data.get("quiz", []):
         if isinstance(q, dict) and isinstance(q.get("choices"), list) and isinstance(q.get("answer"), int):

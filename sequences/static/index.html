@@ -84,10 +84,12 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .sl.act h2{font-size:30px;margin-bottom:10px}.sl .qq{font-size:26px;font-weight:600;margin:0 0 14px}
 .sl .ch{display:flex;gap:16px;align-items:center;background:var(--card);border:3px solid transparent;border-radius:14px;padding:7px 14px;margin-bottom:9px;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.06)}
 .sl .ch.ok{border-color:#16a34a;background:#e7f7ec}.sl .ch.ko{opacity:.55}
-.sl .lvl{display:inline-block;font-size:14px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px;background:#e0e7ff;color:#3730a3}.sl .lvl.l-easy{background:#dcfce7;color:#166534}.sl .lvl.l-hard{background:#fee2e2;color:#991b1b}
-.sl .wr{border:3px dashed rgba(0,0,0,.2);border-radius:14px;padding:30px 18px;font-size:20px;opacity:.5;margin-top:10px}.sl .why.ans{margin-bottom:10px}
-.sl .pk{display:flex;gap:12px;align-items:center;margin-bottom:12px}.sl .pb{background:var(--ac);color:#fff;border-radius:99px;padding:5px 16px;font-weight:700;font-size:18px}.sl .pdur{font-size:18px;font-weight:600}
-.sl .pt{background:var(--card);border-radius:14px;padding:16px 20px;font-size:23px;margin-bottom:12px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .pc{font-size:19px}.sl .pc ul{margin:6px 0 0 20px;padding:0}
+.sl.lv-easy .in{border-top:12px solid #16a34a}.sl.lv-medium .in{border-top:12px solid #f59e0b}.sl.lv-hard .in{border-top:12px solid #dc2626}
+.sl .xlvl.l-medium{background:#fef3c7;color:#92400e}
+.sl .xlvl{display:inline-block;align-self:flex-start;font-size:14px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px;background:#e0e7ff;color:#3730a3}.sl .xlvl.l-easy{background:#dcfce7;color:#166534}.sl .xlvl.l-hard{background:#fee2e2;color:#991b1b}
+.sl .xwr{border:3px dashed rgba(0,0,0,.2);border-radius:14px;padding:30px 18px;font-size:20px;opacity:.5;margin-top:10px}.sl .why.ans{margin-bottom:10px}
+.sl .xpk{display:flex;align-self:flex-start;background:none;gap:12px;align-items:center;margin-bottom:12px}.sl .xpb{background:var(--ac);color:#fff;border-radius:99px;padding:5px 16px;font-weight:700;font-size:18px}.sl .xpdur{font-size:18px;font-weight:600}
+.sl .xpt{background:var(--card);border-radius:14px;padding:16px 20px;font-size:23px;margin-bottom:12px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .xpc{font-size:19px}.sl .xpc ul{margin:6px 0 0 20px;padding:0}
 .xchips{display:flex;flex-wrap:wrap;gap:8px}.xchip{border:1.5px solid var(--bd,#d1d5db);background:#fff;border-radius:99px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.xchip.on{background:var(--ac,#2c6e49);color:#fff;border-color:transparent}
 .sl .why{margin-top:4px;padding:8px 16px;border-radius:14px;background:var(--card);border-left:6px solid #16a34a;font-size:18px}
 .sl .vg{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;align-content:start}
@@ -601,8 +603,8 @@ function exBlock(x){
   <div class="xchips">${Object.entries(PRODS).map(([k,v])=>chip("p",k,v[0]+" "+v[1],(x.prods||[]).includes(k))).join("")}</div>
   <input id="ex_other" maxlength="200" placeholder="Autre : ex. affiche, saynète, carte mentale…" value="${esc(x.other||"")}" style="margin-top:8px">
   <label>Difficulté des exercices</label>
-  <div class="xchips">${[["easy","Facile"],["medium","Intermédiaire"],["hard","Difficile"],["progressive","Progressif"]].map(([k,l])=>chip("l",k,l,x.level===k)).join("")}</div>
-  <label>Exercices par leçon</label>
+  <div class="xchips">${[["easy","Facile"],["medium","Intermédiaire"],["hard","Difficile"],["progressive","Progressif"],["diff","🟢🟡🔴 Les 3 niveaux (différenciation)"]].map(([k,l])=>chip("l",k,l,x.level===k)).join("")}</div>
+  <label>Exercices par leçon <small id="exn" style="font-weight:400;color:var(--mut)">${x.level==="diff"?"(par niveau, soit ×3)":""}</small></label>
   <div class="xchips">${[3,5,8].map(n=>chip("n",n,n,+x.count===n)).join("")}</div>
   <label>Niveau de détail</label>
   <div class="xchips">${chip("d","concise","Concis",x.detail==="concise")}${chip("d","detailed","Détaillé",x.detail!=="concise")}</div>
@@ -612,6 +614,7 @@ function exPick(b){
   const g=b.dataset.g;
   if(g==="p"){b.classList.toggle("on");return;}
   b.parentNode.querySelectorAll(".xchip").forEach(c=>c.classList.remove("on"));b.classList.add("on");
+  if(g==="l")$("#exn").textContent=b.dataset.v==="diff"?"(par niveau, soit ×3)":"";
 }
 function readEx(){
   const on=$("#ex_on");if(!on)return S.options.ex||EX0;
@@ -668,11 +671,15 @@ function buildSlides(d){
   const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
   d.slides.forEach(x=>out.push(x));
   const ex=d.exercises||[];
-  ex.forEach((q,i)=>out.push({layout:"activity",title:`Exercice ${i+1}${ex.length>1?" / "+ex.length:""}`,q,bullets:[],items:[],notes:""}));
-  (d.productions||[]).forEach(pr=>{
+  const RK={easy:0,medium:1,hard:2,"":1},byL=a=>[...a].sort((x,y)=>RK[x.level||""]-RK[y.level||""]);
+  const dif=!!(d.diff||(ex.some(q=>q.level==="easy")&&ex.some(q=>q.level==="hard")&&ex.some(q=>q.level==="medium")));
+  const exs=dif?byL(ex):ex,cnt={};
+  exs.forEach((q,i)=>{const k=q.level||"",c=cnt[k]=(cnt[k]||0)+1,tot=exs.filter(z=>(z.level||"")===k).length;
+    out.push({layout:"activity",title:dif&&LVLS[k]?`Exercice ${LVLS[k].toLowerCase()} ${c}/${tot}`:`Exercice ${i+1}${exs.length>1?" / "+exs.length:""}`,q,lv:dif?k:"",bullets:[],items:[],notes:""});});
+  (d.diff?byL(d.productions||[]):(d.productions||[])).forEach(pr=>{
     const n=[];if(pr.rubric?.length)n.push("Grille d'évaluation : "+pr.rubric.map(r=>`${r.criterion} (${r.points} pt${r.points>1?"s":""})`).join(" ; "));
     if(pr.example)n.push("Exemple attendu : "+pr.example);
-    out.push({layout:"production",title:pr.title||(PRODS[pr.kind]||PRODS.ecrite)[1],prod:pr,bullets:[],items:[],notes:n.join("\n\n")});});
+    out.push({layout:"production",title:(pr.title||(PRODS[pr.kind]||PRODS.ecrite)[1])+(pr.level&&LVLS[pr.level]?" · "+LVLS[pr.level]:""),prod:pr,lv:pr.level||"",bullets:[],items:[],notes:n.join("\n\n")});});
   const v=d.vocabulary||[];
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
@@ -723,9 +730,9 @@ function series(){
 function wbFromSeries(){
   const x=S,id=x.id,ex=x.options?.ex;newWB();W.src="series";W.seriesId=id;
   if(ex&&ex.on){
-    W.options.support=ex.level==="easy"||ex.level==="progressive";W.options.challenge=ex.level==="hard"||ex.level==="progressive";
+    W.options.support=["easy","progressive","diff"].includes(ex.level);W.options.challenge=["hard","progressive","diff"].includes(ex.level);
     const pl=[...(ex.prods||[]).map(k=>(PRODS[k]||[])[1]).filter(Boolean),ex.other].filter(Boolean);
-    W.instructions=`Reprends les exercices de la séquence avec leurs corrigés complets (niveau : ${({easy:"facile",medium:"intermédiaire",hard:"difficile",progressive:"progressif"})[ex.level]||"progressif"}).`+(pl.length?` Inclure des consignes pour : ${pl.join(", ")}, avec critères et grille d'évaluation.`:"");
+    W.instructions=`Reprends les exercices de la séquence avec leurs corrigés complets (niveau : ${({easy:"facile",medium:"intermédiaire",hard:"difficile",progressive:"progressif",diff:"différencié en 3 niveaux : facile, intermédiaire, difficile"})[ex.level]||"progressif"}).`+(pl.length?` Inclure des consignes pour : ${pl.join(", ")}, avec critères et grille d'évaluation.`:"");
   }
   wbFrom1();
 }
@@ -767,14 +774,14 @@ function slideHTML(sl,o={}){
       b=`${t}<div class="vg">${sl.vocab.map((v,i)=>`<div><b>${E("vocab."+i+".term",v.term)}</b>${E("vocab."+i+".definition",v.definition,"span")}</div>`).join("")}</div>`;break;
     case "activity":{
       const rev=o.tab==="a",q=sl.q;
-      const open=!q.choices||!q.choices.length,lv=q.level&&LVLS[q.level]?`<span class="lvl l-${q.level}">${LVLS[q.level]}</span>`:"";
-      if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="wr">Réponse de l\'élève…</div>'}`;break;}
+      const open=!q.choices||!q.choices.length,lv=q.level&&LVLS[q.level]?`<span class="xlvl l-${q.level}">${LVLS[q.level]}</span>`:"";
+      if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="xwr">Réponse de l\'élève…</div>'}`;break;}
       b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
     case "production":{
       const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
-      b=`${t}<div class="pk"><span class="pb">${pk[0]} ${pk[1]}</span>${pr.duration||ed?`<span class="pdur">⏱ ${E("prod.duration",pr.duration||"")}</span>`:""}</div>
-      <div class="pt">${E("prod.task",pr.task,"div")}</div>
-      ${(pr.criteria||[]).length?`<div class="pc"><b>Critères de réussite</b><ul>${pr.criteria.map((c,i)=>`<li>${E("prod.criteria."+i,c)}</li>`).join("")}</ul></div>`:""}`;break;}
+      b=`${t}<div class="xpk">${pr.level&&LVLS[pr.level]?`<span class="xlvl l-${pr.level}" style="margin:0">${LVLS[pr.level]}</span>`:""}<span class="xpb">${pk[0]} ${pk[1]}</span>${pr.duration||ed?`<span class="xpdur">⏱ ${E("prod.duration",pr.duration||"")}</span>`:""}</div>
+      <div class="xpt">${E("prod.task",pr.task,"div")}</div>
+      ${(pr.criteria||[]).length?`<div class="xpc"><b>Critères de réussite</b><ul>${pr.criteria.map((c,i)=>`<li>${E("prod.criteria."+i,c)}</li>`).join("")}</ul></div>`:""}`;break;}
     case "video":{
       const id=ytId(sl.url);
       b=`${t}<div class="vid">${o.thumb?"▶":id?`<iframe src="https://www.youtube-nocookie.com/embed/${id}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`:"Collez un lien YouTube ci-dessous"}</div>${ed?`<div class="vurl">Lien : ${E("url",sl.url||"")}</div>`:""}`;break;}
@@ -782,7 +789,7 @@ function slideHTML(sl,o={}){
       b=`${t}<div class="body"><div class="txt"><ul class="bl">${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul></div><div class="art">${sl.svg?sl.svg:`<div class="big">${esc(sl.emoji||"💡")}</div>`}</div></div>`;
   }
   const tabs=sl.layout==="activity"?`<div class="tabs"><span data-tab="q" class="${o.tab!=="a"?"on":""}">Question</span><span data-tab="a" class="${o.tab==="a"?"on":""}">Réponse</span></div>`:"";
-  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
+  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""} ${sl.lv?"lv-"+sl.lv:""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
 }
 function fit(box){
   const sl=box.firstElementChild;if(!sl)return;
