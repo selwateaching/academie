@@ -103,6 +103,19 @@
     <p class="hint">Vous avez déjà la musique mais pas les paroles ? Ajoutez-la ici, remplissez le formulaire, décrivez son rythme et son ambiance dans « Précisions sur le style », puis cliquez sur « Écrire ma chanson » : les paroles sont adaptées à la durée de la musique. Le fichier reste sur votre appareil, rien n'est envoyé.</p>
   </section>
 
+  <section class="card" id="chant">
+    <h2>🎵 Créer la musique avec chant (IA)</h2>
+    <p class="hint" style="margin-top:0">Une IA chante vos paroles sur une musique créée pour vous. Disponible quand l'application est en ligne avec la clé du service de musique. Il faut d'abord avoir des paroles affichées.</p>
+    <div class="row">
+      <div><label for="csec">Durée</label><select id="csec"><option value="60">1 minute</option><option value="90" selected>1 min 30</option><option value="120">2 minutes</option><option value="180">3 minutes</option><option value="240">4 minutes</option></select></div>
+      <div><label for="cinstr">Type</label><select id="cinstr"><option value="0">Chanson avec voix</option><option value="1">Musique seule (instrumental)</option></select></div>
+    </div>
+    <div class="actions"><button id="cgo" type="button">🎶 Créer la chanson chantée</button></div>
+    <p class="hint hidden" id="cstat"></p>
+    <audio id="cplayer" class="hidden" controls style="width:100%;margin-top:12px"></audio>
+    <div class="actions hidden" id="cdl"><button class="alt" id="cdlb" type="button">Télécharger (.mp3)</button></div>
+  </section>
+
   <section class="card" id="mix">
     <h2>🎹 Fond musical et mixage</h2>
     <p class="hint" style="margin-top:0">Crée un fond musical doux (piano et nappes) dans votre ambiance, sans voix chantée. Vous pouvez y mélanger votre propre voix (vous chantez ou vous lisez les paroles) et obtenir un fichier audio prêt pour la page cadeau.</p>
@@ -506,6 +519,29 @@ $('pgo').addEventListener('click', async () => {
   };
   tick();
 });
+// ---------- Chanson chantée par une IA (via le serveur) ----------
+let chantBlob = null, chantUrl = '';
+$('cgo').addEventListener('click', async () => {
+  const paroles = $('paroles').textContent.trim();
+  if (!paroles) return alert('Affichez d\'abord des paroles (étape 1).');
+  const d = data(), inst = $('cinstr').value === '1', st = $('cstat'), b = $('cgo');
+  const prompt = `${LANGS[d.langue].suno} ${d.style}, ${d.ambiance}, ${d.voix === 'duo' ? 'duet vocals' : d.voix === 'voix masculine' ? 'male vocals' : 'female vocals'}${d.extra ? ', ' + d.extra : ''}, emotional gift song, clear sung vocals in ${LANGS[d.langue].suno}.` +
+    (inst ? ' Instrumental only, no vocals.' : '\nLyrics to sing exactly as written:\n' + paroles);
+  b.disabled = true; b.textContent = 'Création en cours (1 à 3 minutes)…'; st.classList.remove('hidden'); st.textContent = 'La musique se crée, ne fermez pas la page…';
+  try {
+    const r = await fetch('/api/musique', { method: 'POST', headers: { 'content-type': 'application/json', 'X-Chanson-Code': $('code').value.trim() }, body: JSON.stringify({ prompt: prompt.slice(0, 4000), secondes: +$('csec').value }) });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Erreur ' + r.status);
+    chantBlob = await r.blob();
+    if (chantUrl) URL.revokeObjectURL(chantUrl);
+    chantUrl = URL.createObjectURL(chantBlob);
+    $('cplayer').src = chantUrl; $('cplayer').classList.remove('hidden'); $('cdl').classList.remove('hidden');
+    mixBlob = chantBlob; musicDur = 0;
+    st.textContent = '✅ Chanson créée. Elle sera utilisée dans « Ma chanson finale ».';
+    $('cplayer').play().catch(() => {});
+  } catch (e) { st.textContent = '⚠️ ' + (e.message === 'Failed to fetch' ? 'Serveur injoignable : cette fonction marche seulement sur chanson.onrender.com.' : e.message); }
+  b.disabled = false; b.textContent = '🎶 Créer la chanson chantée';
+});
+$('cdlb').addEventListener('click', () => { if (!chantBlob) return; const a = document.createElement('a'); a.href = chantUrl; a.download = 'chanson.mp3'; a.click(); });
 </script>
 </body>
 </html>

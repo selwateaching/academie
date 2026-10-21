@@ -59,6 +59,10 @@ services:
     envVars:
       - key: ANTHROPIC_API_KEY
         sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: GUNICORN_CMD_ARGS
+        value: --timeout 300
       # Facultatif : code d'accès pour que seuls vos proches puissent écrire une chanson
       - key: CHANSON_ACCESS_CODE
         sync: false
