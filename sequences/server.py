@@ -933,7 +933,7 @@ def workbook_section():
                    if pname == "free" else "Vous avez atteint votre limite mensuelle de ressources.")
             return error("limit", f"{msg} Votre quota se réinitialise vers le {when}.", 429)
     opt = b.get("options") if isinstance(b.get("options"), dict) else {}
-    nq = max(3, min(10, int(opt.get("questions") or 5)))
+    nq = max(3, min(12, int(opt.get("questions") or 5)))
     cur = plan[idx]
     outline_txt = "\n".join(f"{i + 1}. {s(l.get('title'), 160)} — {s(l.get('summary'), 600)}" for i, l in enumerate(plan))
     ctx = s(b.get("context"), 9000)
@@ -956,7 +956,9 @@ def workbook_section():
         f"{brief(b)}\n" + (f"\nContenu de départ :\n{ctx}\n" if ctx else "") +
         f"\nPlan du cahier « {s(b.get('title'), 160)} » :\n{outline_txt}\n\n"
         f"Écris la section {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
-        + (f"Cette section doit surtout proposer des exercices de type : {s(opt.get('focus'), 80)}. " if opt.get("focus") else "")
+        + (("Cette section regroupe PLUSIEURS activités dans un seul document, l'une après l'autre dans cet ordre, avec au moins 2 questions de chaque : "
+           + s(opt.get("focus"), 300) + ". " if " + " in s(opt.get("focus"), 300) else
+           f"Cette section doit surtout proposer des exercices de type : {s(opt.get('focus'), 80)}. ") if opt.get("focus") else "")
         + (f"Les questions doivent aussi inclure une association (type match). " if idx == 1 and not opt.get("focus") else "") +
         f"Format : {{{', '.join(fields)}}}",
         8000,

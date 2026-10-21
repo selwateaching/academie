@@ -1292,22 +1292,22 @@ function regenDoc(){
 const ACTS=["Exercice de vocabulaire","Association","Texte à trous","Choix multiples","Questions rapides","Question ouverte","Mots mêlés"];
 function openAddSection(){
   if(W.sections.length>=CAP().series)return openUpgrade("series");
-  modal(`<h2>Ajouter une section</h2><p class="sub">Dites-nous ce dont vous avez besoin ou choisissez une activité prête à l'emploi 🏃</p><input id="as_p" maxlength="300" placeholder="5 questions à choix multiples sur…">
+  modal(`<h2>Ajouter une section</h2><p class="sub">Dites-nous ce dont vous avez besoin ou cochez une ou plusieurs activités : elles seront créées ensemble, en une seule fois 🏃</p><input id="as_p" maxlength="300" placeholder="5 questions à choix multiples sur…">
   <label>Activités</label><div class="lens" id="as_c">${ACTS.map(a=>`<button onclick="pickAct(this)">${a}</button>`).join("")}</div>
   <label>Emplacement</label><select id="as_pos"><option value="end">À la fin</option>${W.sections.map((s,i)=>`<option value="${i+1}">Après la section ${i+1}</option>`).join("")}</select><div id="as_err"></div>
   <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button><button class="btn" id="as_go" onclick="addSection()">Ajouter une section</button></div>`);
 }
-function pickAct(b){const on=b.classList.contains("on");document.querySelectorAll("#as_c button").forEach(x=>x.classList.remove("on"));if(!on)b.classList.add("on");}
+function pickAct(b){b.classList.toggle("on");const n=document.querySelectorAll("#as_c .on").length,g=$("#as_go");if(g)g.textContent=n>1?`Ajouter ${n} activités en une section`:"Ajouter une section";}
 async function addSection(){
-  const pr=($("#as_p").value||"").trim(),focus=document.querySelector("#as_c .on")?.textContent||"";
+  const pr=($("#as_p").value||"").trim(),foc=[...document.querySelectorAll("#as_c .on")].map(x=>x.textContent),focus=foc.join(" + ");
   if(!pr&&!focus){$("#as_err").innerHTML='<div class="err">Décrivez ce dont vous avez besoin ou choisissez une activité.</div>';return;}
   const pv=$("#as_pos").value,pos=pv==="end"?W.sections.length:+pv,b=$("#as_go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création…';
-  const secs=W.sections.map(x=>({title:x.title,summary:x.summary}));secs.splice(pos,0,{title:focus||pr.slice(0,80),summary:pr||focus});
+  const secs=W.sections.map(x=>({title:x.title,summary:x.summary}));secs.splice(pos,0,{title:foc.length>1?"Activités variées":focus||pr.slice(0,80),summary:pr||focus});
   try{
     const o=W.options||{};
-    const r=await api("/api/workbook/section",{...briefWB(),sections:secs,index:pos,context:"",options:{explain:!!o.explain,objectives:!!o.objectives,support:!!o.support,challenge:!!o.challenge,questions:5,focus:focus||pr,extra:true}});
+    const r=await api("/api/workbook/section",{...briefWB(),sections:secs,index:pos,context:"",options:{explain:!!o.explain,objectives:!!o.objectives,support:!!o.support,challenge:!!o.challenge,questions:Math.min(12,Math.max(5,foc.length*3)),focus:focus||pr,extra:true}});
     commit(()=>W.sections.splice(pos,0,{title:r.title,summary:pr||focus,data:r}));closeModal();refreshPaper();toast("Section ajoutée");
-  }catch(e){$("#as_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;b.textContent="Ajouter une section";}
+  }catch(e){$("#as_err").innerHTML=`<div class="err">${esc(e.message)}</div>`;b.disabled=false;b.textContent=foc.length>1?`Ajouter ${foc.length} activités en une section`:"Ajouter une section";}
 }
 document.addEventListener("focusin",e=>{const el=e.target.closest&&e.target.closest("[data-w]");if(!el)return;const m=el.dataset.w.match(/^sections\.(\d+)/);if(m){CT=+m[1];const tg=$("#ctg");if(tg)tg.value=String(CT);}});
 document.addEventListener("focusout",e=>{
