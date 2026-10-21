@@ -800,7 +800,7 @@ function slideHTML(sl,o={}){
       b=`${t}<div class="body"><div class="txt"><ul class="bl">${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul></div><div class="art">${sl.svg?sl.svg:`<div class="big">${esc(sl.emoji||"💡")}</div>`}</div></div>`;
   }
   const tabs=sl.layout==="activity"?`<div class="tabs"><span data-tab="q" class="${o.tab!=="a"?"on":""}">Question</span><span data-tab="a" class="${o.tab==="a"?"on":""}">Réponse</span></div>`:"";
-  return `<div ${S&&isRTL(S.language)?'dir="rtl" lang="ar" ':""}class="sl ${ed?"edit":""}${S?GD(S.level):""} ${sl.layout==="activity"?"act":""} ${sl.lv?"lv-"+sl.lv:""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
+  return `<div ${S&&docRTL(S)?'dir="rtl" lang="ar" ':""}class="sl ${ed?"edit":""}${S?GD(S.level):""} ${sl.layout==="activity"?"act":""} ${sl.lv?"lv-"+sl.lv:""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
 }
 function fit(box){
   const sl=box.firstElementChild;if(!sl)return;
@@ -1169,9 +1169,11 @@ const LET="ABCDEFGH";
 const isRTL=l=>/^(arab|عرب|hébr|persan)/i.test(l||"");
 const EARLY=l=>/^(préscolaire|[123]ap|cp|ce1|ce2|maternelle)/i.test(l||"");
 const GD=l=>EARLY(l)?" gd":"";
-const RTLA=l=>isRTL(l)?' dir="rtl" lang="ar"':"";
+const hasAR=s=>(String(s||"").match(/[\u0600-\u06FF\u0750-\u077F]/g)||[]).length>=3;
+const docRTL=D=>!!D&&(isRTL(D.language)||hasAR((D.title||"")+(D.topic||"")+(D.sections&&D.sections[0]&&D.sections[0].data?D.sections[0].data.title:"")+(D.lessons&&D.lessons[0]?D.lessons[0].title:"")));
+const RTLA=D=>docRTL(D)?' dir="rtl" lang="ar"':"";
 function paperHTML(edit,ans,D=W){
-  const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"${/\.marks$/.test(pth)?" data-num=\"1\"":""}`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
+  const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${tag!=="span"?'dir="auto" ':""}${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"${/\.marks$/.test(pth)?" data-num=\"1\"":""}`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
   let n=0,sn=0,total=0;const sheet=D.kind==="sheet",secAns={};
   const lines=(Q,q,c)=>Array.from({length:c},(_,k)=>E(Q+".lines."+k,(q.lines||[])[k]||"","div","ln")).join("");
   const wsGrid=(q,hlOn)=>{const hl=new Set(hlOn?(q.placed||[]).flatMap(w=>w.cells.map(c=>c.join(","))):[]);return `<table class="wsg">${q.grid.map((row,r)=>`<tr>${[...row].map((ch,c)=>`<td class="${hl.has(r+","+c)?"hl":""}">${esc(ch)}</td>`).join("")}</tr>`).join("")}</table>`;};
@@ -1210,8 +1212,8 @@ function paperHTML(edit,ans,D=W){
       ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>E(P+".explanation."+xi,x,"div","",true)).join("")}</div>`:""}${qs}`;
   }).join("");
   const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
-  const ansCard=ans?`<div class="paper pans ${edit?"edit":""}${GD(D.level)}"${RTLA(D.language)} style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
-  return `<div class="paper ${edit?"edit":""}${GD(D.level)}"${RTLA(D.language)} style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
+  const ansCard=ans?`<div class="paper pans ${edit?"edit":""}${GD(D.level)}"${RTLA(D)} style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
+  return `<div class="paper ${edit?"edit":""}${GD(D.level)}"${RTLA(D)} style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
 }
 /* historique (annuler / rétablir), « Enregistré », assistant */
 let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
@@ -1392,7 +1394,7 @@ async function pptxSlide(pptx,sl,th){
   const cols=[th.ac,th.ac2,"#D6336C","#222222","#7E22CE","#0891B2"].map(hx);
   const s=pptx.addSlide();s.background={color:hx(th.bg)};
   s.addShape("ellipse",{x:6.6,y:-1.8,w:5.2,h:4.2,fill:{color:hx(th.blob)},line:{color:hx(th.blob)}});
-  const rtl=isRTL(S&&S.language),T=(txt,o)=>s.addText(txt,{fontFace:font,color:hx(th.fg),...(rtl?{rtlMode:true,align:"right"}:{}),...o});
+  const rtl=docRTL(S),T=(txt,o)=>s.addText(txt,{fontFace:font,color:hx(th.fg),...(rtl?{rtlMode:true,align:"right"}:{}),...o});
   const card=(x,y,w,h)=>s.addShape("roundRect",{x,y,w,h,fill:{color:hx(th.card)},line:{color:hx(th.blob),width:1},rectRadius:.12});
   const badge=(x,y,n,i,sz=.5)=>{s.addShape("roundRect",{x,y,w:sz,h:sz,fill:{color:cols[i%6]},line:{color:cols[i%6]},rectRadius:.08});T(String(n),{x,y,w:sz,h:sz,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:16});};
   let notes=sl.notes||"";
