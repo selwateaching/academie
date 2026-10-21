@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fdfbf7"/><stop offset=".55" stop-color="#f7ecd2"/><stop offset="1" stop-color="#ecd9a0"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".8" cy=".15" r=".5">
+      <stop offset="0" stop-color="#d4af37" stop-opacity=".35"/><stop offset="1" stop-color="#d4af37" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#glow)"/>
+  <g fill="none" stroke="#9a7b1c" stroke-opacity=".18" stroke-width="2">
+    <path d="M-20 560 C200 480 330 640 560 560 S900 470 1220 560"/>
+    <path d="M-20 600 C200 520 330 680 560 600 S900 510 1220 600"/>
+    <path d="M-20 640 C200 560 330 720 560 640 S900 550 1220 640"/>
+    <path d="M-20 680 C200 600 330 760 560 680 S900 590 1220 680"/>
+    <path d="M-20 720 C200 640 330 800 560 720 S900 630 1220 720"/>
+  </g>
+  <g fill="#9a7b1c" fill-opacity=".16">
+    <g transform="translate(110 150) rotate(-12) scale(2.6)"><ellipse cx="0" cy="30" rx="12" ry="9"/><rect x="9" y="-30" width="4" height="60"/><path d="M13 -30 q22 8 14 30 q-2 -14 -14 -16z"/></g>
+    <g transform="translate(980 110) rotate(10) scale(3.4)"><ellipse cx="0" cy="30" rx="12" ry="9"/><rect x="9" y="-30" width="4" height="60"/></g>
+    <g transform="translate(1010 330) rotate(-8) scale(2.2)"><ellipse cx="0" cy="30" rx="12" ry="9"/><ellipse cx="42" cy="22" rx="12" ry="9"/><rect x="9" y="-30" width="4" height="60"/><rect x="51" y="-38" width="4" height="60"/><path d="M9 -30 L55 -38 L55 -26 L9 -18z"/></g>
+    <g transform="translate(190 420) rotate(14) scale(1.8)"><ellipse cx="0" cy="30" rx="12" ry="9"/><rect x="9" y="-30" width="4" height="60"/><path d="M13 -30 q22 8 14 30 q-2 -14 -14 -16z"/></g>
+  </g>
+  <g fill="#d4af37" fill-opacity=".5"><circle cx="300" cy="90" r="5"/><circle cx="760" cy="200" r="4"/><circle cx="560" cy="60" r="3"/><circle cx="880" cy="480" r="4"/><circle cx="90" cy="300" r="3"/></g>
+</svg>

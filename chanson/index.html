@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#fdfbf7">
+<link rel="canonical" href="https://chanson.onrender.com/">
+<link rel="icon" href="fond.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ma Chanson">
+<meta property="og:url" content="https://chanson.onrender.com/">
+<meta property="og:title" content="Ma Chanson — Une chanson personnalisée qui les fera pleurer">
+<meta property="og:description" content="Surprenez votre proche avec une chanson sur-mesure de qualité studio. Livrée par email en moins de 24 heures.">
+<meta property="og:image" content="https://chanson.onrender.com/og.png">
+<meta property="og:locale" content="fr_FR"><meta property="og:locale:alternate" content="ar_AR">
+<meta name="twitter:card" content="summary_large_image">
 <title>Ma Chanson — Une chanson personnalisée qui les fera pleurer</title>
 <meta name="description" content="Surprenez votre proche avec une chanson sur-mesure de qualité studio. Racontez votre histoire, on compose la chanson. Livrée par email en moins de 24 heures.">
 <style>
@@ -29,7 +39,7 @@ button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
 .topbar u{text-underline-offset:2px;margin-inline-start:6px}
 
 /* hero */
-.hero{background:linear-gradient(var(--cream),#fff);padding-bottom:32px;text-align:center}
+.hero{background:linear-gradient(rgba(253,251,247,.55),rgba(255,255,255,.92) 70%),url(fond.svg) center top/cover no-repeat,var(--cream);padding-bottom:32px;text-align:center}
 .brandrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:28px 0 14px;flex-wrap:wrap}
 .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.875rem}
 .logo{width:28px;height:28px;border-radius:50%;background:var(--charcoal);color:#fff;display:grid;place-items:center;font:700 .875rem var(--serif)}
@@ -162,7 +172,7 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
 </head>
 <body>
 
-<div class="topbar"><a href="#commander"><span data-i18n="top">🎁 2ᵉ version OFFERTE · <u>En profiter →</u></span></a></div>
+<div class="topbar"><a href="#commander" data-order><span data-i18n="top">🎁 2ᵉ version OFFERTE · <u>En profiter →</u></span></a></div>
 
 <header class="hero">
   <div class="wrap">
@@ -279,7 +289,7 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
 
 <script>
 /* ---- Configuration : à adapter / للتعديل ---- */
-var ORDER_URL = "#commander"; // lien de commande / رابط الطلب
+var ORDER_URL = "https://chanson.onrender.com/"; // lien de commande / رابط الطلب
 var SONGS = [ // ajoutez vos fichiers audio dans "src" / أضف ملفاتك الصوتية في src
   {title:{fr:"À travers les années",ar:"عبر السنين"}, sub:{fr:"Pour Sarah · Ballade country",ar:"إلى سارة · أغنية كانتري هادئة"}, occ:{fr:"25e anniversaire",ar:"الذكرى الخامسة والعشرون"}, icon:"💍", color:"#7a5c1e", dur:"2:05", src:""},
   {title:{fr:"Le porche de papa",ar:"شرفة أبي"}, sub:{fr:"Pour papa · Folk acoustique",ar:"إلى أبي · فولك أكوستيك"}, occ:{fr:"Fête des pères",ar:"عيد الأب"}, icon:"🎸", color:"#2f4f6a", dur:"1:53", src:""},
@@ -388,7 +398,7 @@ $('next').onclick=function(){go(idx+1)};
 track.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1)});
 
 /* ---- Destinataire & liens de commande ---- */
-function orderHref(f){var u=ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'lang='+lang;return f?u+'&for='+encodeURIComponent(f):ORDER_URL}
+function orderHref(f){var u=ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'lang='+lang;return f?u+'&for='+encodeURIComponent(f):u}
 var chosen='';
 function updateLinks(){$('hero-cta').href=orderHref(chosen);[].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref(chosen)})}
 [].forEach.call(document.querySelectorAll('.chip'),function(c){c.onclick=function(){
