@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ma chanson en cadeau</title>
+<style>
+  :root{--bg:#fdf6f0;--card:#fff;--ink:#3b2f2f;--muted:#8a7a74;--accent:#c2556b;--accent2:#e8a87c;--line:#ecdcd2}
+  @media (prefers-color-scheme:dark){:root{--bg:#1f1a1b;--card:#2a2325;--ink:#f3e8e4;--muted:#b3a29c;--accent:#e57f95;--accent2:#e8a87c;--line:#40353a}}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink);line-height:1.5}
+  main{max-width:760px;margin:0 auto;padding:24px 16px 64px}
+  h1{font-size:1.9rem;margin:.2em 0 .1em;text-align:center}
+  .sub{text-align:center;color:var(--muted);margin:0 0 24px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px}
+  label{display:block;font-weight:bold;margin:14px 0 4px;font-size:.95rem}
+  label small{font-weight:normal;color:var(--muted)}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--bg);color:var(--ink)}
+  textarea{min-height:90px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:560px){.row{grid-template-columns:1fr}}
+  button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:12px 22px;background:var(--accent);color:#fff;font-weight:bold}
+  button.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  button:disabled{opacity:.6;cursor:wait}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  pre{white-space:pre-wrap;font:inherit;margin:0;font-size:1.05rem}
+  h2{font-size:1.1rem;margin:0 0 10px;color:var(--accent)}
+  details summary{cursor:pointer;color:var(--muted)}
+  .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>🎶 Ma chanson en cadeau</h1>
+  <p class="sub">Racontez la personne et votre histoire : l'application écrit les paroles et prépare la musique.</p>
+
+  <form id="form" class="card">
+    <div class="row">
+      <div><label for="nom">Pour qui ? <small>(prénom)</small></label><input id="nom" required placeholder="Maman, Léa, Papa…"></div>
+      <div><label for="lien">Votre lien</label>
+        <select id="lien"><option>ma mère</option><option>mon père</option><option>ma femme / mon mari</option><option>mon amoureux(se)</option><option>mon enfant</option><option>ma sœur / mon frère</option><option>mon ami(e)</option><option>mon grand-parent</option><option>une personne qui a compté pour moi</option></select></div>
+    </div>
+    <div class="row">
+      <div><label for="occasion">Occasion</label>
+        <select id="occasion"><option>anniversaire</option><option>mariage</option><option>fête des mères / des pères</option><option>anniversaire de couple</option><option>remerciement</option><option>réconciliation / pardon</option><option>départ / adieu</option><option>hommage / souvenir</option><option>naissance</option></select></div>
+      <div><label for="ambiance">Émotion dominante</label>
+        <select id="ambiance"><option>tendre et touchante</option><option>nostalgique</option><option>joyeuse et lumineuse</option><option>mélancolique</option><option>pleine de gratitude</option><option>romantique</option></select></div>
+    </div>
+    <label for="souvenirs">Souvenirs, détails, anecdotes <small>(un par ligne — plus c'est personnel, plus c'est émouvant)</small></label>
+    <textarea id="souvenirs" placeholder="Les dimanches à la cuisine avec l'odeur du café&#10;Tu chantais toujours faux en voiture&#10;Ta main dans la mienne à l'hôpital"></textarea>
+    <label for="qualites">Ses qualités <small>(séparées par des virgules)</small></label>
+    <input id="qualites" placeholder="courageuse, drôle, généreuse">
+    <label for="message">Ce que vous voulez lui dire vraiment</label>
+    <textarea id="message" placeholder="Merci d'avoir toujours cru en moi. Je t'aime plus que les mots ne le disent."></textarea>
+    <div class="row">
+      <div><label for="style">Style musical</label>
+        <select id="style"><option>pop douce</option><option>folk acoustique guitare</option><option>ballade piano</option><option>chanson française</option><option>acoustique intimiste</option><option>rnb soul</option><option>country</option><option>variété pop-rock</option></select></div>
+      <div><label for="voix">Voix</label>
+        <select id="voix"><option>voix féminine</option><option>voix masculine</option><option>duo</option></select></div>
+    </div>
+
+    <details style="margin-top:16px">
+      <summary>Option : écriture par l'IA Claude (bien plus personnalisée)</summary>
+      <label for="cle">Clé API Anthropic <small>(reste dans votre navigateur, jamais enregistrée)</small></label>
+      <input id="cle" type="password" placeholder="sk-ant-…" autocomplete="off">
+      <div class="hint">Sans clé, l'application écrit un brouillon local et prépare une consigne à coller dans Claude ou ChatGPT.</div>
+    </details>
+
+    <div class="actions"><button id="go" type="submit">✨ Écrire ma chanson</button></div>
+  </form>
+
+  <section id="out" class="hidden">
+    <div class="card"><h2>Paroles</h2><pre id="paroles"></pre>
+      <div class="actions"><button class="alt" data-copy="paroles">Copier les paroles</button><button class="alt" id="reg">↻ Autre version</button></div></div>
+    <div class="card"><h2>Style pour générer la musique <small style="color:var(--muted)">(Suno, Udio…)</small></h2><pre id="suno"></pre>
+      <div class="actions"><button class="alt" data-copy="suno">Copier le style</button></div>
+      <p class="hint">Collez les paroles dans « Lyrics » et ce style dans « Style of music » sur Suno ou Udio pour obtenir la chanson audio.</p></div>
+    <div class="card"><h2>Consigne pour une IA (Claude, ChatGPT…)</h2><pre id="prompt"></pre>
+      <div class="actions"><button class="alt" data-copy="prompt">Copier la consigne</button></div></div>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+function data() {
+  const v = id => $(id).value.trim();
+  return {
+    nom: v('nom'), lien: v('lien'), occasion: v('occasion'), ambiance: v('ambiance'),
+    souvenirs: v('souvenirs').split('\n').map(s => s.trim()).filter(Boolean),
+    qualites: v('qualites').split(',').map(s => s.trim()).filter(Boolean),
+    message: v('message'), style: v('style'), voix: v('voix')
+  };
+}
+
+function buildPrompt(d) {
+  return `Écris les paroles d'une chanson en français, ${d.ambiance}, à offrir à ${d.nom} (${d.lien}) pour ${d.occasion}.
+
+Souvenirs et détails à intégrer (concrets, sans les lister mécaniquement) :
+${d.souvenirs.map(s => '- ' + s).join('\n') || '- (aucun précisé)'}
+
+Qualités : ${d.qualites.join(', ') || 'non précisées'}
+Message du cœur : ${d.message || 'dire merci et je t\'aime'}
+
+Contraintes :
+- Structure : [Couplet 1] [Pré-refrain] [Refrain] [Couplet 2] [Refrain] [Pont] [Refrain final]
+- Rimes naturelles, images simples et sensorielles, ton sincère, aucun cliché pesant
+- Prénom « ${d.nom} » présent dans le refrain
+- Style ${d.style}, ${d.voix} ; environ 3 minutes
+- Donne uniquement les paroles avec les balises de structure.`;
+}
+
+function buildSuno(d) {
+  const mood = { 'tendre et touchante':'tender, intimate', 'nostalgique':'nostalgic, warm', 'joyeuse et lumineuse':'uplifting, bright', 'mélancolique':'melancholic, emotional', 'pleine de gratitude':'heartfelt, grateful', 'romantique':'romantic, soft' }[d.ambiance];
+  const voix = { 'voix féminine':'female vocals', 'voix masculine':'male vocals', 'duo':'duet vocals' }[d.voix];
+  return `${d.style}, ${mood}, ${voix}, French lyrics, emotional ballad, slow tempo, 70 bpm, warm production, building chorus`;
+}
+
+function localLyrics(d) {
+  const s = d.souvenirs, q = d.qualites;
+  const mem = i => s.length ? s[i % s.length].replace(/[.!]+$/, '').replace(/^./, c => c.toLowerCase()) : pick(['les jours simples à tes côtés', 'ta façon de me regarder']);
+  const qual = i => q.length ? q[i % q.length] : pick(['unique', 'précieux(se)', 'lumineux(se)']);
+  const msg = d.message.replace(/[.!]+$/, '') || 'merci d\'être là, je t\'aime';
+  const refrains = [
+    [`${d.nom}, si je pouvais t'offrir le monde,`, `je te donnerais ces mots, ma chanson, ma ronde.`, `Tu es ${qual(0)}, tu es ${qual(1)},`, `${msg}.`],
+    [`Oh ${d.nom}, ce chant est pour toi,`, `pour tout ce que tu es, pour tout ce que tu m'as donné.`, `Tu es ${qual(0)}, tu es ${qual(1)},`, `${msg}.`]
+  ];
+  const ref = pick(refrains).join('\n');
+  const intro = { 'anniversaire':'Un an de plus et tout autant de lumière', 'mariage':'Aujourd\'hui deux chemins n\'en font plus qu\'un', 'remerciement':'Il y a des mots qu\'on garde trop longtemps', 'départ / adieu':'Même si la route nous éloigne', 'hommage / souvenir':'Je ferme les yeux et tu es encore là', 'réconciliation / pardon':'Il est temps de poser nos silences' }[d.occasion] || 'Il y a des gens qui changent une vie';
+  return `[Couplet 1]
+${intro},
+je repense à ${mem(0)}.
+Dans ma mémoire, ${mem(1)},
+et mon cœur s'adoucit rien qu'à y penser.
+
+[Pré-refrain]
+Les années passent, les saisons tournent,
+mais tu restes ce que j'ai de plus beau.
+
+[Refrain]
+${ref}
+
+[Couplet 2]
+Je n'oublierai jamais ${mem(2)},
+ni ${mem(3)} qui me suit partout.
+Tu as été ${qual(2)} quand j'en avais besoin,
+et chaque jour je te le dois un peu plus.
+
+[Refrain]
+${ref}
+
+[Pont]
+Il y a tant de choses que je n'ai pas su dire,
+alors je les chante, tout bas, pour toi.
+${msg}.
+
+[Refrain final]
+${ref}
+${d.nom}… ${d.nom}… c'est pour toi.`;
+}
+
+async function claudeLyrics(d, key) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1500, messages: [{ role: 'user', content: buildPrompt(d) }] })
+  });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error?.message || 'Erreur ' + r.status);
+  return (await r.json()).content.map(b => b.text || '').join('').trim();
+}
+
+async function generate() {
+  const d = data(), key = $('cle').value.trim(), btn = $('go');
+  let text;
+  btn.disabled = true; btn.textContent = 'Écriture en cours…';
+  try {
+    text = key ? await claudeLyrics(d, key) : localLyrics(d);
+  } catch (e) {
+    alert('L\'IA n\'a pas répondu (' + e.message + '). Un brouillon local est proposé à la place.');
+    text = localLyrics(d);
+  }
+  $('paroles').textContent = text;
+  $('suno').textContent = buildSuno(d);
+  $('prompt').textContent = buildPrompt(d);
+  $('out').classList.remove('hidden');
+  $('out').scrollIntoView({ behavior: 'smooth' });
+  btn.disabled = false; btn.textContent = '✨ Écrire ma chanson';
+}
+
+$('form').addEventListener('submit', e => { e.preventDefault(); generate(); });
+$('reg').addEventListener('click', generate);
+document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText($(b.dataset.copy).textContent); const t = b.textContent; b.textContent = 'Copié ✓'; setTimeout(() => b.textContent = t, 1500); } catch { }
+}));
+</script>
+</body>
+</html>
