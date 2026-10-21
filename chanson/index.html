@@ -31,12 +31,22 @@
   details summary{cursor:pointer;color:var(--muted)}
   .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
   .hidden{display:none}
+  .steps{margin:0 0 18px;padding-left:1.2em;color:var(--muted)}.steps a{color:var(--accent)}
+  .final{position:sticky;bottom:12px;display:flex;justify-content:center;margin-top:8px;z-index:5}
+  .final button{box-shadow:0 4px 18px rgba(0,0,0,.25);padding:14px 26px;font-size:1.05rem}
+  .ck{list-style:none;padding:0;margin:8px 0}.ck li{margin:4px 0}
 </style>
 </head>
 <body>
 <main>
   <h1>🎶 Ma chanson en cadeau</h1>
   <p class="sub">Racontez la personne et votre histoire : l'application écrit les paroles et prépare la musique.</p>
+
+  <ol class="steps">
+    <li>Remplissez le formulaire et cliquez sur « Écrire ma chanson » → les <b>paroles</b>.</li>
+    <li>Ajoutez votre <b>musique</b> (fichier de Suno ou autre) dans « J'ai déjà ma chanson », ou créez un fond musical plus bas.</li>
+    <li>Ajoutez la <b>photo</b>, puis cliquez sur <a href="#cadeau">🎁 Obtenir ma chanson finale</a> → un fichier à envoyer.</li>
+  </ol>
 
   <form id="form" class="card">
     <div class="row">
@@ -114,13 +124,14 @@
   </section>
 
   <section class="card" id="cadeau">
-    <h2>🎁 Page cadeau à envoyer</h2>
+    <h2>🎁 Ma chanson finale (page cadeau)</h2>
+    <ul class="ck" id="ck"></ul>
     <p class="hint" style="margin-top:0">Crée un seul fichier à envoyer (WhatsApp, e-mail…) : la personne l'ouvre et voit sa photo en fond, les paroles et peut écouter la chanson.</p>
     <label for="photo">Photo de la personne <small>(sert de fond)</small></label>
     <input id="photo" type="file" accept="image/*">
     <label for="dedi">Petit mot de dédicace <small>(facultatif)</small></label>
     <input id="dedi" placeholder="Avec tout mon amour, Samir">
-    <div class="actions"><button id="mk" type="button">🎁 Créer la page cadeau</button></div>
+    <div class="actions"><button id="mk" type="button">🎁 Obtenir ma chanson finale</button></div>
     <p class="hint">Il faut d'abord avoir des paroles affichées ci-dessus. Ajoutez le fichier audio plus haut pour qu'il soit inclus dans la page.</p>
   </section>
 
@@ -133,6 +144,7 @@
     <div class="card"><h2>Consigne pour une IA (Claude, ChatGPT…)</h2><pre id="prompt" class="edit" contenteditable="plaintext-only" spellcheck="false"></pre>
       <div class="actions"><button class="alt" data-copy="prompt">Copier la consigne</button></div></div>
   </section>
+  <div class="final"><button type="button" id="goFinal">🎁 Obtenir ma chanson finale</button></div>
 </main>
 
 <script>
@@ -449,6 +461,13 @@ $('mixdl').addEventListener('click', async () => {
   }
   const a = document.createElement('a'); a.href = mixUrl; a.download = 'chanson-mixee.wav'; a.click();
 });
+$('goFinal').addEventListener('click', () => $('cadeau').scrollIntoView({ behavior: 'smooth' }));
+function checklist() {
+  const has = $('paroles').textContent.trim() !== '', mus = !!(mixBlob || $('audio').files[0]), ph = !!photoData;
+  $('ck').innerHTML = [[has, 'Paroles', 'faites l\'étape 1'], [mus, 'Musique / chanson audio', 'sans elle, la page n\'aura pas de bouton « lecture »'], [ph, 'Photo de fond', 'facultatif']]
+    .map(([ok, t, h]) => `<li>${ok ? '✅' : '⬜'} ${t}${ok ? '' : ' <small style="color:var(--muted)">— ' + h + '</small>'}</li>`).join('');
+}
+setInterval(checklist, 700); checklist();
 </script>
 </body>
 </html>
