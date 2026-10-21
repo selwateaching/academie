@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr">
 <head>
+<meta name="build" content="__BUILD__">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Séquences — créez une série de leçons</title>
@@ -329,9 +330,10 @@ body.app #app.paperw{max-width:none}
 .ex>div{white-space:pre-line}
 .paper[dir=rtl] .ln,.paper[dir=rtl] .qh{direction:rtl}.paper[dir=rtl] .del{margin-inline-start:6px}
 .paper[dir=rtl] .mk{direction:ltr}
-.paper.gd{font-size:23px;line-height:2.1;padding:56px 60px}.paper.gd[dir=rtl],.sl[dir=rtl]{font-family:"Noto Naskh Arabic","Amiri","Traditional Arabic","Sakkal Majalla","Segoe UI",Tahoma,serif}
-.paper.gd .q{margin:34px 0}.paper.gd .qh{gap:12px;line-height:2.2}.paper.gd .ch{margin:10px 0}.paper.gd .ln{height:54px;min-height:54px;line-height:54px;border-bottom:2px dotted #888}.paper.gd .hint{font-size:19px;margin-top:8px}.paper.gd .ex{font-size:27px;line-height:2.4}.paper.gd .ex>div{margin-bottom:18px}.paper.gd h1{font-size:40px}.paper.gd .mbx{min-height:56px}.paper.gd .match{gap:16px 18px;font-size:26px}.paper.gd .match>div{padding:10px 16px}.paper.gd .mk{font-size:16px}.paper.gd .syl{font-size:40px}.paper.gd .ar{margin:16px 0}
-.sl.gd ul.bl{font-size:34px;line-height:1.7}.sl.gd ul.bl li{margin-bottom:22px}.sl.gd .cd .tt{font-size:30px}.sl.gd .cd .xx{font-size:26px;line-height:1.7}.sl.gd .cd{padding:16px 22px;gap:20px}.sl.gd .qq{font-size:34px;line-height:1.7}.sl.gd .ch{font-size:28px;padding:12px 18px;margin-bottom:14px}.sl.gd .tl .tt,.sl.gd .col .tt{font-size:28px}.sl.gd .tl .xx,.sl.gd .col .xx{font-size:24px;line-height:1.6}.sl.gd .vg div{font-size:26px;line-height:1.7}.sl.gd .pt{font-size:30px;line-height:1.7}.sl.gd .pc{font-size:25px;line-height:1.7}.sl.gd .why{font-size:24px;line-height:1.7}
+.paper.gd{font-size:30px;line-height:2.6;padding:60px 64px}.paper.gd[dir=rtl],.sl[dir=rtl]{font-family:"Noto Naskh Arabic","Amiri","Traditional Arabic","Sakkal Majalla","Segoe UI",Tahoma,serif}
+.paper.gd .q{margin:1.1em 0}.paper.gd .qh{gap:12px;line-height:inherit}.paper.gd .ch{margin:.4em 0}.paper.gd .ln{height:2.3em;min-height:2.3em;line-height:2.3em;border-bottom:2px dotted #888}.paper.gd .hint{font-size:.7em;margin-top:.3em;line-height:2}.paper.gd .ex{font-size:1.1em;line-height:inherit}.paper.gd .ex>div{margin-bottom:.6em}.paper.gd h1{font-size:1.6em;line-height:1.6}.paper.gd .sub2,.paper.gd .nd{font-size:.6em;line-height:2}.paper.gd .mbx{min-height:2em}.paper.gd .match{gap:.6em .7em;font-size:1em}.paper.gd .match>div{padding:.3em .5em;font-size:1em!important;line-height:1.8}.paper.gd .mk{font-size:.55em}.paper.gd .syl{font-size:1.5em}.paper.gd .ar{margin:.5em 0}.paper.gd .wsg{font-size:.9em}
+.fzbar{display:inline-flex;align-items:center;gap:4px;font-size:14px}.fzbar button{border:1px solid #d1d5db;background:#fff;border-radius:8px;padding:3px 9px;cursor:pointer;font:inherit;font-weight:700}
+.sl.gd ul.bl{font-size:38px;line-height:1.9}.sl.gd ul.bl li{margin-bottom:22px}.sl.gd .cd .tt{font-size:30px}.sl.gd .cd .xx{font-size:26px;line-height:1.7}.sl.gd .cd{padding:16px 22px;gap:20px}.sl.gd .qq{font-size:34px;line-height:1.7}.sl.gd .ch{font-size:28px;padding:12px 18px;margin-bottom:14px}.sl.gd .tl .tt,.sl.gd .col .tt{font-size:28px}.sl.gd .tl .xx,.sl.gd .col .xx{font-size:24px;line-height:1.6}.sl.gd .vg div{font-size:26px;line-height:1.7}.sl.gd .pt{font-size:30px;line-height:1.7}.sl.gd .pc{font-size:25px;line-height:1.7}.sl.gd .why{font-size:24px;line-height:1.7}
 .wsw{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-weight:700;margin-top:6px}
 @media(max-width:1240px){.chatbtn{display:inline-block}.wbchat{display:none;position:fixed;right:12px;top:80px;bottom:12px;height:auto;z-index:60}.wbchat.open{display:flex}}
 .tplrow{display:flex;align-items:flex-start;gap:16px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
@@ -916,6 +918,12 @@ function printAll(){
 
 /* ============ comptes ============ */
 function clearAuth(){try{localStorage.removeItem("seq.tok");}catch{}ACC=null;}
+async function checkBuild(){
+  try{const m=document.querySelector('meta[name=build]');if(!m||m.content==="__BUI"+"LD__")return;
+    const h=await (await fetch("/healthz",{cache:"no-store"})).json();
+    if(h.build&&h.build!==m.content&&!$("#newv")){const d=document.createElement("div");d.id="newv";d.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#111;color:#fff;padding:12px 18px;border-radius:12px;z-index:99999;font:600 15px system-ui;box-shadow:0 6px 24px rgba(0,0,0,.3)";d.innerHTML='Une nouvelle version est disponible. <a href="#" style="color:#7dd3a8;margin-left:8px" onclick="location.reload();return false">Recharger</a>';document.body.appendChild(d);}}catch{}
+}
+setInterval(checkBuild,120000);addEventListener("focus",checkBuild);
 async function boot(){
   if(TOK()){try{ACC=await api("/api/me",null,"GET");}catch(e){if(e.code==="auth")clearAuth();}}
   await loadPlan();
@@ -1213,7 +1221,7 @@ function paperHTML(edit,ans,D=W){
   }).join("");
   const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
   const ansCard=ans?`<div class="paper pans ${edit?"edit":""}${GD(D.level)}"${RTLA(D)} style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
-  return `<div class="paper ${edit?"edit":""}${GD(D.level)}"${RTLA(D)} style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
+  return `<div class="paper ${edit?"edit":""}${GD(D.level)}"${RTLA(D)} style="${themeStyle(D.theme)}${D.fz?`;font-size:${D.fz}px`:""}${D.lh?`;line-height:${D.lh}`:""}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
 }
 /* historique (annuler / rétablir), « Enregistré », assistant */
 let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
@@ -1268,11 +1276,15 @@ function wbView(){
    <button class="rb" id="undo" onclick="undoWB()" title="Annuler" disabled>↶</button><button class="rb" id="redo" onclick="redoWB()" title="Rétablir" disabled>↷</button><button class="rb" onclick="exportWB(false)" title="Imprimer">🖨</button>
    <div class="exp"><button class="btn sm" onclick="$('#expm').classList.toggle('on')">⬆ Exporter</button><div id="expm" class="expm"><button onclick="exportWB(false)">PDF élève</button><button onclick="exportWB(true)">PDF avec corrigé</button></div></div><button class="rb chatbtn" onclick="$('.wbchat').classList.toggle('open')" title="Assistant">💬</button></div>
   <div class="wbopts"><label>Thème <select onchange="W.theme=this.value;saveDoc(W);refreshPaper()">${Object.entries(THEMES).map(([k,v])=>`<option value="${k}" ${k===W.theme?"selected":""}>${v.n}</option>`).join("")}</select></label>
+   <span class="fzbar" title="Taille du texte et interligne">Texte <button onclick="fzSet(-1)">A−</button><button onclick="fzSet(1)">A+</button> Interligne <button onclick="lhSet(-1)">−</button><button onclick="lhSet(1)">+</button></span>
    <label class="ck"><input type="checkbox" ${W.showAns!==false?"checked":""} onchange="W.showAns=this.checked;saveDoc(W);refreshPaper()"> Afficher les réponses</label>
    ${W.sections.some(l=>!l.data)&&W.kind==="workbook"?`<button class="btn sm ghost" onclick="wstep=4;render();wbGenerate()">Générer les sections manquantes</button>`:""}</div>
   <div class="wbmain"><div class="wbpaper"></div><aside class="wbchat"><div class="cm" id="cm"></div><div class="ci"><select id="ctg" onchange="CT=+this.value" title="Section modifiée par l'assistant"></select><div class="r"><input id="cin" placeholder="Demander à Claude…" onkeydown="if(event.key==='Enter')chatSend()"><button class="btn sm" onclick="chatSend()">➤</button></div></div></aside></div>`;
   refreshPaper();
 }
+const clampN=(v,a,b)=>Math.max(a,Math.min(b,v));
+function fzSet(d){W.fz=clampN((W.fz||(EARLY(W.level)?30:16))+d*2,12,52);saveDoc(W);refreshPaper();}
+function lhSet(d){W.lh=clampN(+((W.lh||(EARLY(W.level)?2.6:1.5))+d*.2).toFixed(1),1.1,4);saveDoc(W);refreshPaper();}
 function wbBack(){W.kind==="sheet"?navFiches():navCahiers();}
 function exportWB(ans){
   const el=$("#print"),st=document.createElement("style");st.textContent="@page{size:A4;margin:14mm}";document.head.appendChild(st);

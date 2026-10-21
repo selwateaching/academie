@@ -1055,15 +1055,26 @@ def sheet():
     return jsonify({"title": out["title"], "section": out})
 
 
+def _build_id():
+    try:
+        with open(os.path.join(STATIC_DIR, "index.html"), "rb") as f:
+            return hashlib.sha1(f.read()).hexdigest()[:10]
+    except OSError:
+        return "0"
+
+
+BUILD = _build_id()
+
+
 @app.get("/")
 def index():
     with open(os.path.join(STATIC_DIR, "index.html"), encoding="utf-8") as f:
-        return Response(f.read(), mimetype="text/html", headers={"Cache-Control": "no-cache"})
+        return Response(f.read().replace("__BUILD__", BUILD), mimetype="text/html", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/healthz")
 def healthz():
-    return {"ok": True, "ai": bool(os.environ.get("ANTHROPIC_API_KEY"))}
+    return {"ok": True, "ai": bool(os.environ.get("ANTHROPIC_API_KEY")), "build": BUILD}
 
 
 @app.get("/<path:name>")
