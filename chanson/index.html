@@ -67,6 +67,8 @@
       <summary>Option : écriture par l'IA Claude (bien plus personnalisée)</summary>
       <label for="cle">Clé API Anthropic <small>(reste dans votre navigateur, jamais enregistrée)</small></label>
       <input id="cle" type="password" placeholder="sk-ant-…" autocomplete="off">
+      <label for="code">Code d'accès <small>(si on vous en a donné un)</small></label>
+      <input id="code" type="password" autocomplete="off">
       <div class="hint">Sans clé, l'application écrit un brouillon local et prépare une consigne à coller dans Claude ou ChatGPT.</div>
     </details>
 
@@ -204,13 +206,23 @@ function localLyrics(d) {
 }
 
 async function claudeLyrics(d, key) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
+  if (key) {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1500, messages: [{ role: 'user', content: buildPrompt(d) }] })
+    });
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error?.message || 'Erreur ' + r.status);
+    return (await r.json()).content.map(b => b.text || '').join('').trim();
+  }
+  // Serveur de l'application : la clé reste côté serveur
+  const r = await fetch('/api/ecrire', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: 'claude-sonnet-5-5', max_tokens: 1500, messages: [{ role: 'user', content: buildPrompt(d) }] })
+    headers: { 'content-type': 'application/json', 'X-Chanson-Code': $('code').value.trim() },
+    body: JSON.stringify({ prompt: buildPrompt(d) })
   });
-  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error?.message || 'Erreur ' + r.status);
-  return (await r.json()).content.map(b => b.text || '').join('').trim();
+  if (!r.ok) { const e = new Error((await r.json().catch(() => ({}))).error || 'Erreur ' + r.status); e.status = r.status; throw e; }
+  return (await r.json()).text;
 }
 
 async function generate() {
@@ -218,10 +230,11 @@ async function generate() {
   let text;
   btn.disabled = true; btn.textContent = 'Écriture en cours…';
   try {
-    text = key ? await claudeLyrics(d, key) : localLyrics(d);
+    text = await claudeLyrics(d, key);
   } catch (e) {
-    alert('L\'IA n\'a pas répondu (' + e.message + '). Un brouillon local est proposé à la place.');
-    text = localLyrics(d);
+    if (!key && ![403, 429].includes(e.status)) text = localLyrics(d);
+    else alert('L\'IA n\'a pas répondu (' + e.message + '). Un brouillon local est proposé à la place.');
+    text = text || localLyrics(d);
   }
   $('paroles').textContent = text;
   $('paroles').dir = d.langue === 'ar' ? 'rtl' : 'ltr';

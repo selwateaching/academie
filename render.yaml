@@ -48,6 +48,22 @@ services:
       # "test" = faux paiements. Passer à "live" uniquement pour de vrais paiements.
       - key: CHARGILY_MODE
         value: test
+  - type: web
+    name: chanson
+    runtime: python
+    rootDir: chanson
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app --workers 1 --threads 8 --timeout 120 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Facultatif : code d'accès pour que seuls vos proches puissent écrire une chanson
+      - key: CHANSON_ACCESS_CODE
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.7
 
 databases:
   - name: tadriss-db
