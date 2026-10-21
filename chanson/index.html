@@ -25,6 +25,8 @@
   button:disabled{opacity:.6;cursor:wait}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
   pre{unicode-bidi:plaintext;white-space:pre-wrap;font:inherit;margin:0;font-size:1.05rem}
+  .edit{border:1px dashed var(--line);border-radius:10px;padding:10px;outline:none}
+  .edit:focus{border-color:var(--accent);background:var(--bg)}
   h2{font-size:1.1rem;margin:0 0 10px;color:var(--accent)}
   details summary{cursor:pointer;color:var(--muted)}
   .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
@@ -63,6 +65,9 @@
         <select id="voix"><option>voix féminine</option><option>voix masculine</option><option>duo</option></select></div>
     </div>
 
+    <label for="extra">Précisions sur le style <small>(facultatif : instruments, rythme, ambiance… en français ou en anglais)</small></label>
+    <input id="extra" placeholder="ex : guitare douce, piano, tempo lent, voix chaude, refrain qui monte">
+
     <details style="margin-top:16px">
       <summary>Option : écriture par l'IA Claude (bien plus personnalisée)</summary>
       <label for="cle">Clé API Anthropic <small>(reste dans votre navigateur, jamais enregistrée)</small></label>
@@ -98,12 +103,12 @@
   </section>
 
   <section id="out" class="hidden">
-    <div class="card"><h2>Paroles</h2><pre id="paroles"></pre>
+    <div class="card"><h2>Paroles <small style="color:var(--muted);font-weight:normal">(touchez le texte pour le modifier)</small></h2><pre id="paroles" class="edit" contenteditable="plaintext-only" spellcheck="false"></pre>
       <div class="actions"><button class="alt" data-copy="paroles">Copier les paroles</button><button class="alt" id="reg">↻ Autre version</button></div></div>
-    <div class="card"><h2>Style pour générer la musique <small style="color:var(--muted)">(Suno, Udio…)</small></h2><pre id="suno"></pre>
+    <div class="card"><h2>Style pour générer la musique <small style="color:var(--muted);font-weight:normal">(Suno, Udio… — modifiable)</small></h2><pre id="suno" class="edit" contenteditable="plaintext-only" spellcheck="false"></pre>
       <div class="actions"><button class="alt" data-copy="suno">Copier le style</button></div>
       <p class="hint">Collez les paroles dans « Lyrics » et ce style dans « Style of music » sur Suno ou Udio pour obtenir la chanson audio.</p></div>
-    <div class="card"><h2>Consigne pour une IA (Claude, ChatGPT…)</h2><pre id="prompt"></pre>
+    <div class="card"><h2>Consigne pour une IA (Claude, ChatGPT…)</h2><pre id="prompt" class="edit" contenteditable="plaintext-only" spellcheck="false"></pre>
       <div class="actions"><button class="alt" data-copy="prompt">Copier la consigne</button></div></div>
   </section>
 </main>
@@ -118,7 +123,7 @@ function data() {
     nom: v('nom'), lien: v('lien'), occasion: v('occasion'), ambiance: v('ambiance'),
     souvenirs: v('souvenirs').split('\n').map(s => s.trim()).filter(Boolean),
     qualites: v('qualites').split(',').map(s => s.trim()).filter(Boolean),
-    message: v('message'), langue: v('langue'), style: v('style'), voix: v('voix')
+    message: v('message'), extra: v('extra'), langue: v('langue'), style: v('style'), voix: v('voix')
   };
 }
 
@@ -135,14 +140,14 @@ Contraintes :
 - Structure : [Couplet 1] [Pré-refrain] [Refrain] [Couplet 2] [Refrain] [Pont] [Refrain final]
 - Rimes naturelles, images simples et sensorielles, ton sincère, aucun cliché pesant
 - Prénom « ${d.nom} » présent dans le refrain
-- Style ${d.style}, ${d.voix} ; environ 3 minutes
+- Style ${d.style}${d.extra ? ' (' + d.extra + ')' : ''}, ${d.voix} ; environ 3 minutes
 - Les paroles doivent être entièrement en ${LANGS[d.langue].nom} (${LANGS[d.langue].note}), naturelles comme écrites par un locuteur natif, pas traduites mot à mot.\n- Donne uniquement les paroles avec les balises de structure.`;
 }
 
 function buildSuno(d) {
   const mood = { 'tendre et touchante':'tender, intimate', 'nostalgique':'nostalgic, warm', 'joyeuse et lumineuse':'uplifting, bright', 'mélancolique':'melancholic, emotional', 'pleine de gratitude':'heartfelt, grateful', 'romantique':'romantic, soft' }[d.ambiance];
   const voix = { 'voix féminine':'female vocals', 'voix masculine':'male vocals', 'duo':'duet vocals' }[d.voix];
-  return `${d.style}, ${mood}, ${voix}, ${LANGS[d.langue].suno} lyrics, emotional ballad, slow tempo, 70 bpm, warm production, building chorus`;
+  return `${d.style}, ${mood}, ${voix}, ${LANGS[d.langue].suno} lyrics, emotional ballad, slow tempo, 70 bpm, warm production, building chorus${d.extra ? ', ' + d.extra : ''}`;
 }
 
 const LANGS = {
