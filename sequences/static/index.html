@@ -84,6 +84,11 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .sl.act h2{font-size:30px;margin-bottom:10px}.sl .qq{font-size:26px;font-weight:600;margin:0 0 14px}
 .sl .ch{display:flex;gap:16px;align-items:center;background:var(--card);border:3px solid transparent;border-radius:14px;padding:7px 14px;margin-bottom:9px;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.06)}
 .sl .ch.ok{border-color:#16a34a;background:#e7f7ec}.sl .ch.ko{opacity:.55}
+.sl .lvl{display:inline-block;font-size:14px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px;background:#e0e7ff;color:#3730a3}.sl .lvl.l-easy{background:#dcfce7;color:#166534}.sl .lvl.l-hard{background:#fee2e2;color:#991b1b}
+.sl .wr{border:3px dashed rgba(0,0,0,.2);border-radius:14px;padding:30px 18px;font-size:20px;opacity:.5;margin-top:10px}.sl .why.ans{margin-bottom:10px}
+.sl .pk{display:flex;gap:12px;align-items:center;margin-bottom:12px}.sl .pb{background:var(--ac);color:#fff;border-radius:99px;padding:5px 16px;font-weight:700;font-size:18px}.sl .pdur{font-size:18px;font-weight:600}
+.sl .pt{background:var(--card);border-radius:14px;padding:16px 20px;font-size:23px;margin-bottom:12px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .pc{font-size:19px}.sl .pc ul{margin:6px 0 0 20px;padding:0}
+.xchips{display:flex;flex-wrap:wrap;gap:8px}.xchip{border:1.5px solid var(--bd,#d1d5db);background:#fff;border-radius:99px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.xchip.on{background:var(--ac,#2c6e49);color:#fff;border-color:transparent}
 .sl .why{margin-top:4px;padding:8px 16px;border-radius:14px;background:var(--card);border-left:6px solid #16a34a;font-size:18px}
 .sl .vg{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;align-content:start}
 .sl .vg div{background:var(--card);border-radius:14px;padding:12px 16px;font-size:19px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .vg b{display:block;color:var(--ti);font-size:21px}
@@ -410,7 +415,10 @@ const THEMES={
 const allThemes=()=>({...THEMES,...((typeof S!=="undefined"&&S&&S.custom)||{})});
 const FONTS=[["Trebuchet","'Trebuchet MS',system-ui,sans-serif"],["Segoe UI","'Segoe UI',system-ui,sans-serif"],["Georgia","Georgia,serif"],["Arial Black","'Arial Black',system-ui,sans-serif"],["Poppins","'Poppins',sans-serif"],["Nunito","'Nunito',sans-serif"],["Fredoka","'Fredoka',sans-serif"],["Lora","'Lora',serif"],["Playfair Display","'Playfair Display',serif"]];
 const themeStyle=k=>{const t=allThemes()[k]||THEMES.classique;return `--bg:${t.bg};--fg:${t.fg};--ti:${t.ti};--ac:${t.ac};--ac2:${t.ac2};--card:${t.card};--blob:${t.blob};--font:${t.font}`;};
-const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité",video:"Vidéo YouTube"};
+const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité",production:"Production",video:"Vidéo YouTube"};
+const PRODS={orale:["🎤","Production orale"],ecrite:["✍️","Production écrite"],application:["🧩","Exercices d'application"],debat:["💬","Débat"],projet:["🛠️","Projet"],lecture:["📖","Lecture"]};
+const LVLS={easy:"Facile",medium:"Intermédiaire",hard:"Difficile"};
+const EX0={on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"};
 const PICK=["text_image","list","timeline","steps","quote"];
 
 let S=null,step=1,msg="",page="";
@@ -438,7 +446,7 @@ const UPG={limit:["Limite atteinte","Vous avez utilisé toutes vos ressources. P
 function openUpgrade(k,extra){const [h,d]=UPG[k]||UPG.limit;modal(`<h2>${h}</h2><p>${esc(extra||d)}</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Plus tard</button><button class="btn" onclick="closeModal();goPricing()">Voir les plans</button></div>`);}
 function goPricing(){closeStudio();closeShow();page="pricing";render();scrollTo(0,0);}
 const blank=()=>({id:uid(),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
-  options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10},title:"",lessons:[]});
+  options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
 
 /* ---------- API ---------- */
 const TOK=()=>{try{return localStorage.getItem("seq.tok");}catch{return null;}};
@@ -529,7 +537,7 @@ function home(){
    <form class="hbar" onsubmit="heroGo(event)"><input id="hq" maxlength="300" placeholder="${PH[0]}" aria-label="Sujet de la séquence"><button class="go" type="submit">✨ Créer</button></form>
    <div class="opts"><select id="hl" aria-label="Niveau">${LEVELS.map(l=>`<option ${l==="6e"?"selected":""}>${l}</option>`).join("")}</select><select id="hg" aria-label="Langue">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option>${l}</option>`).join("")}</select></div>
    <div class="kinds"><span>Ou créez :</span><button class="chip2 kd" onclick="newSheet()">📄 Fiche d'activités</button><button class="chip2 kd" onclick="newWB()">📘 Cahier d'activités</button></div>
-   <div class="chips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
+   <div class="xchips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
    <div class="stats"><span>Séquences complètes</span><span>•</span><span>Diapositives illustrées</span><span>•</span><span>Export PowerPoint</span></div>
   </section>
   ${saved.some(x=>!isFolder(x))?`<section class="sec"><h2>Mes séquences</h2><div class="mine">${saved.filter(x=>!isFolder(x)).map(x=>`<div class="mc"><b>${esc(x.title||x.topic)}</b><small>${esc(x.level)} · ${metaOf(x)} · ${statusOf(x)}</small><div class="row2"><button class="btn sm" onclick="openS('${x.id}')">Ouvrir</button><button class="ib" title="Supprimer" onclick="del('${x.id}')">🗑</button></div></div>`).join("")}</div></section>`:""}
@@ -585,6 +593,31 @@ function themePicker(cur,fn){
   return `<div class="themes">${Object.entries(allThemes()).map(([k,t])=>`<button class="th ${k===cur?"on":""}" onclick="${fn}('${k}')"><div class="mini fit" style="${themeStyle(k)};background:var(--bg)"><div style="position:absolute;right:-12%;top:-30%;width:60%;height:90%;background:var(--blob);border-radius:50%"></div><div style="position:absolute;left:12%;top:24%;font:800 13px var(--font);color:var(--ti)">TITRE</div><div style="position:absolute;left:12%;top:52%;width:45%;height:8px;background:var(--fg);opacity:.5;border-radius:4px"></div><div style="position:absolute;left:12%;top:70%;width:30%;height:8px;background:var(--ac2);border-radius:4px"></div></div>${esc(t.n)}</button>`).join("")}<button class="th ${CAP().custom_themes?"":"lock"}" onclick="newTheme()"><div class="mini" style="display:grid;place-items:center;background:#f3f4f6;font-size:26px">＋</div>Personnalisé${CAP().custom_themes?"":'<span class="tag">MAX</span>'}</button></div>`;
 }
 function pickTheme(k){read2();S.theme=k;s2();}
+function exBlock(x){
+  const chip=(g,v,l,on)=>`<button type="button" class="xchip ${on?"on":""}" data-g="${g}" data-v="${v}" onclick="exPick(this)">${l}</button>`;
+  return `<div class="card" id="exb"><label class="chk" style="margin-top:0"><input type="checkbox" id="ex_on" ${x.on?"checked":""} onchange="$('#exbody').style.display=this.checked?'':'none'"><span><b>Activités et exercices</b><small>Exercices corrigés et productions, pour un résultat prêt à utiliser en classe</small></span></label>
+  <div id="exbody" style="${x.on?"":"display:none"}">
+  <label>Productions demandées <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label>
+  <div class="xchips">${Object.entries(PRODS).map(([k,v])=>chip("p",k,v[0]+" "+v[1],(x.prods||[]).includes(k))).join("")}</div>
+  <input id="ex_other" maxlength="200" placeholder="Autre : ex. affiche, saynète, carte mentale…" value="${esc(x.other||"")}" style="margin-top:8px">
+  <label>Difficulté des exercices</label>
+  <div class="xchips">${[["easy","Facile"],["medium","Intermédiaire"],["hard","Difficile"],["progressive","Progressif"]].map(([k,l])=>chip("l",k,l,x.level===k)).join("")}</div>
+  <label>Exercices par leçon</label>
+  <div class="xchips">${[3,5,8].map(n=>chip("n",n,n,+x.count===n)).join("")}</div>
+  <label>Niveau de détail</label>
+  <div class="xchips">${chip("d","concise","Concis",x.detail==="concise")}${chip("d","detailed","Détaillé",x.detail!=="concise")}</div>
+  <p class="sub" style="font-size:13px;margin:8px 0 0">« Détaillé » : consignes complètes, critères de réussite, grille d'évaluation et corrigés complets. Les exercices sont placés dans les diapositives et repris dans le cahier d'activités.</p></div></div>`;
+}
+function exPick(b){
+  const g=b.dataset.g;
+  if(g==="p"){b.classList.toggle("on");return;}
+  b.parentNode.querySelectorAll(".xchip").forEach(c=>c.classList.remove("on"));b.classList.add("on");
+}
+function readEx(){
+  const on=$("#ex_on");if(!on)return S.options.ex||EX0;
+  const pick=g=>[...document.querySelectorAll(`#exb .xchip.on[data-g=${g}]`)].map(c=>c.dataset.v);
+  return {on:on.checked,prods:pick("p"),other:$("#ex_other").value.trim(),level:pick("l")[0]||"progressive",count:+(pick("n")[0]||5),detail:pick("d")[0]||"detailed"};
+}
 function s2(){
   const o=S.options;
   $("#app").innerHTML=`${stepsBar()}<h2>Affinez votre séquence</h2><p class="sub">Tout est facultatif, on s'occupe du reste.</p>
@@ -598,9 +631,10 @@ function s2(){
   <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
   <label class="chk"><input type="checkbox" id="o2" ${o.vocabulary?"checked":""}><span>Vocabulaire clé<small>Mots importants avec leur définition</small></span></label>
   <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
+  ${exBlock(o.ex||EX0)}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
 }
-function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:Math.min(+$("#sl").value,CAP().slides)};}
+function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:Math.min(+$("#sl").value,CAP().slides),ex:readEx()};}
 async function outline(){
   read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
   try{
@@ -633,6 +667,12 @@ let running=false;
 function buildSlides(d){
   const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
   d.slides.forEach(x=>out.push(x));
+  const ex=d.exercises||[];
+  ex.forEach((q,i)=>out.push({layout:"activity",title:`Exercice ${i+1}${ex.length>1?" / "+ex.length:""}`,q,bullets:[],items:[],notes:""}));
+  (d.productions||[]).forEach(pr=>{
+    const n=[];if(pr.rubric?.length)n.push("Grille d'évaluation : "+pr.rubric.map(r=>`${r.criterion} (${r.points} pt${r.points>1?"s":""})`).join(" ; "));
+    if(pr.example)n.push("Exemple attendu : "+pr.example);
+    out.push({layout:"production",title:pr.title||(PRODS[pr.kind]||PRODS.ecrite)[1],prod:pr,bullets:[],items:[],notes:n.join("\n\n")});});
   const v=d.vocabulary||[];
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
@@ -680,7 +720,15 @@ function series(){
    <div class="card"><h3>📄 Activités</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Créez des ressources imprimables à partir de cette séquence.</p><button class="btn ghost w" onclick="sheetFromSeries()">📄 Fiche d'activités</button><button class="btn ghost w" onclick="wbFromSeries()">📘 Cahier d'activités</button></div>
    <div class="card"><h3>🗂️ Plan</h3><button class="btn ghost w" onclick="step=3;render()">Modifier le plan</button></div></aside></div>`;
 }
-function wbFromSeries(){const id=S.id;newWB();W.src="series";W.seriesId=id;wbFrom1();}
+function wbFromSeries(){
+  const x=S,id=x.id,ex=x.options?.ex;newWB();W.src="series";W.seriesId=id;
+  if(ex&&ex.on){
+    W.options.support=ex.level==="easy"||ex.level==="progressive";W.options.challenge=ex.level==="hard"||ex.level==="progressive";
+    const pl=[...(ex.prods||[]).map(k=>(PRODS[k]||[])[1]).filter(Boolean),ex.other].filter(Boolean);
+    W.instructions=`Reprends les exercices de la séquence avec leurs corrigés complets (niveau : ${({easy:"facile",medium:"intermédiaire",hard:"difficile",progressive:"progressif"})[ex.level]||"progressif"}).`+(pl.length?` Inclure des consignes pour : ${pl.join(", ")}, avec critères et grille d'évaluation.`:"");
+  }
+  wbFrom1();
+}
 function sheetFromSeries(){
   const x=S;newSheet();W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;
   W.instructions="Base-toi sur la séquence « "+x.title+" » : "+x.lessons.map(l=>l.title).join(" ; ")+".";wstep=1;render();
@@ -696,6 +744,7 @@ function normalize(sl){
   if(sl.layout==="text_image"&&!sl.bullets.length)sl.bullets=sl.items.map(i=>i.x?`${i.t} : ${i.x}`:i.t);
   if(sl.layout==="video"&&sl.url===undefined)sl.url="";
   if(sl.layout==="vocab"&&!sl.vocab)sl.vocab=[{term:"Mot",definition:"Définition"}];
+  if(sl.layout==="production"&&!sl.prod)sl.prod={kind:"ecrite",title:"",task:"Consigne de la production.",duration:"",criteria:["Critère de réussite"],example:"",rubric:[]};
   if(sl.layout==="activity"&&!sl.q)sl.q={q:"Question ?",choices:["Réponse A","Réponse B","Réponse C","Réponse D"],answer:0,why:""};
   return sl;
 }
@@ -718,7 +767,14 @@ function slideHTML(sl,o={}){
       b=`${t}<div class="vg">${sl.vocab.map((v,i)=>`<div><b>${E("vocab."+i+".term",v.term)}</b>${E("vocab."+i+".definition",v.definition,"span")}</div>`).join("")}</div>`;break;
     case "activity":{
       const rev=o.tab==="a",q=sl.q;
-      b=`${t}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
+      const open=!q.choices||!q.choices.length,lv=q.level&&LVLS[q.level]?`<span class="lvl l-${q.level}">${LVLS[q.level]}</span>`:"";
+      if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="wr">Réponse de l\'élève…</div>'}`;break;}
+      b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
+    case "production":{
+      const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
+      b=`${t}<div class="pk"><span class="pb">${pk[0]} ${pk[1]}</span>${pr.duration||ed?`<span class="pdur">⏱ ${E("prod.duration",pr.duration||"")}</span>`:""}</div>
+      <div class="pt">${E("prod.task",pr.task,"div")}</div>
+      ${(pr.criteria||[]).length?`<div class="pc"><b>Critères de réussite</b><ul>${pr.criteria.map((c,i)=>`<li>${E("prod.criteria."+i,c)}</li>`).join("")}</ul></div>`:""}`;break;}
     case "video":{
       const id=ytId(sl.url);
       b=`${t}<div class="vid">${o.thumb?"▶":id?`<iframe src="https://www.youtube-nocookie.com/embed/${id}" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`:"Collez un lien YouTube ci-dessous"}</div>${ed?`<div class="vurl">Lien : ${E("url",sl.url||"")}</div>`:""}`;break;}
@@ -790,7 +846,8 @@ function newSlide(){SL().splice(ST.n+1,0,{id:uid(),layout:"text_image",title:"No
 function addItem(d){
   const sl=SL()[ST.n];
   if(sl.layout==="vocab"){d>0?sl.vocab.push({term:"Mot",definition:"Définition"}):sl.vocab.length>1&&sl.vocab.pop();}
-  else if(sl.layout==="activity"){d>0?sl.q.choices.length<6&&sl.q.choices.push("Nouvelle réponse"):sl.q.choices.length>2&&(sl.q.choices.pop(),sl.q.answer=Math.min(sl.q.answer,sl.q.choices.length-1));}
+  else if(sl.layout==="production"){const c=sl.prod.criteria=sl.prod.criteria||[];d>0?c.length<6&&c.push("Nouveau critère"):c.length>0&&c.pop();}
+  else if(sl.layout==="activity"){if(!sl.q.choices.length)return;d>0?sl.q.choices.length<6&&sl.q.choices.push("Nouvelle réponse"):sl.q.choices.length>2&&(sl.q.choices.pop(),sl.q.answer=Math.min(sl.q.answer,sl.q.choices.length-1));}
   else if(ITEM_LAYOUTS.includes(sl.layout)){d>0?sl.items.length<6&&sl.items.push({t:"Titre",x:"Description"}):sl.items.length>1&&sl.items.pop();}
   else{d>0?sl.bullets.length<8&&sl.bullets.push("Nouveau point"):sl.bullets.length>0&&sl.bullets.pop();}
   save();studio();
@@ -831,7 +888,8 @@ function printAll(){
     case "list":case "steps":case "timeline":return `<ul>${x.items.map(i=>`<li><b>${esc(i.t)}</b> ${esc(i.x)}</li>`).join("")}</ul>`;
     case "quote":return `<blockquote>${esc(x.quote)} — ${esc(x.author)}</blockquote>`;
     case "vocab":return `<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
-    case "activity":return `<p>${esc(x.q.q)}</p><ol>${x.q.choices.map((c,j)=>`<li>${j===x.q.answer?"<b>":""}${esc(c)}${j===x.q.answer?" ✓</b>":""}</li>`).join("")}</ol><i>${esc(x.q.why)}</i>`;
+    case "production":{const r=x.prod;return `<p><b>${esc((PRODS[r.kind]||PRODS.ecrite)[1])}</b>${r.duration?" · "+esc(r.duration):""}</p><p>${esc(r.task)}</p><ul>${(r.criteria||[]).map(c=>`<li>${esc(c)}</li>`).join("")}</ul>${(r.rubric||[]).length?`<p><b>Grille :</b> ${r.rubric.map(z=>esc(z.criterion)+" ("+z.points+")").join(" ; ")}</p>`:""}${r.example?`<p><i>Exemple : ${esc(r.example)}</i></p>`:""}`;}
+    case "activity":if(!x.q.choices.length)return `<p>${esc(x.q.q)}</p><p><b>Réponse :</b> ${esc(x.q.open||"")}</p><i>${esc(x.q.why||"")}</i>`;return `<p>${esc(x.q.q)}</p><ol>${x.q.choices.map((c,j)=>`<li>${j===x.q.answer?"<b>":""}${esc(c)}${j===x.q.answer?" ✓</b>":""}</li>`).join("")}</ol><i>${esc(x.q.why)}</i>`;
     default:return `<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;}};
   $("#print").className="";$("#print").innerHTML=S.lessons.filter(l=>l.slides).map((l,i)=>`<h1>${i+1}. ${esc(l.title)}</h1>`+l.slides.map(x=>`<div class="s"><b>${esc(x.emoji||"")} ${esc(x.title||"")}</b>${txt(x)}${x.notes?`<i>Notes : ${esc(x.notes)}</i>`:""}</div>`).join("")).join("");
   window.print();
@@ -1330,8 +1388,13 @@ async function pptxSlide(pptx,sl,th){
       T("— "+(sl.author||""),{x:1,y:3.9,w:8,h:.6,fontSize:18,bold:true,color:hx(th.ti),align:"center"});break;
     case "vocab":
       (sl.vocab||[]).forEach((v,i)=>{const x=.5+(i%2)*4.6,y=1.4+Math.floor(i/2)*1.25;card(x,y,4.4,1.1);T([{text:v.term,options:{bold:true,breakLine:true,fontSize:15,color:hx(th.ti)}},{text:v.definition,options:{fontSize:12}}],{x:x+.1,y,w:4.2,h:1.1,valign:"middle"});});break;
+    case "production":{const r=sl.prod,pk=PRODS[r.kind]||PRODS.ecrite;
+      T(pk[1]+(r.duration?" · "+r.duration:""),{x:.5,y:1.25,w:9,h:.4,fontSize:14,bold:true,color:hx(th.ac)});
+      card(.5,1.7,9,1.5);T(r.task||"",{x:.65,y:1.7,w:8.7,h:1.5,fontSize:15,valign:"middle"});
+      if((r.criteria||[]).length)T([{text:"Critères de réussite",options:{bold:true,breakLine:true,fontSize:14,color:hx(th.ti)}},...r.criteria.map(c=>({text:c,options:{bullet:true,breakLine:true,fontSize:13}}))],{x:.5,y:3.35,w:9,h:1.8,valign:"top"});break;}
     case "activity":{const q=sl.q;
       T(q.q,{x:.5,y:1.3,w:9,h:.9,fontSize:20,bold:true,valign:"middle"});
+      if(!q.choices.length){notes=(notes?notes+"\n\n":"")+`Réponse attendue : ${q.open||""}${q.why?" — "+q.why:""}`;break;}
       q.choices.forEach((c,i)=>{const y=2.3+i*.62;card(.5,y,9,.52);badge(.58,y+.03,i+1,i,.46);T(c,{x:1.2,y,w:8.2,h:.52,fontSize:15,valign:"middle"});});
       notes=(notes?notes+"\n\n":"")+`Réponse : ${q.answer+1}. ${q.choices[q.answer]}${q.why?" — "+q.why:""}`;break;}
     case "video":

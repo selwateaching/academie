@@ -480,7 +480,7 @@ def list_contacts():
 
 # ---------------------------------------------------------------- nettoyage des diapositives
 
-LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video"}
+LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video", "production"}
 YT = re.compile(r"(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})")
 SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
             "text", "tspan", "defs", "lineargradient", "radialgradient", "stop"}
@@ -549,14 +549,59 @@ def clean_slide(x):
     if layout == "vocab":
         out["vocab"] = [{"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
                         for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
+    if layout == "production":
+        out["prod"] = clean_production(x.get("prod")) or {"kind": "ecrite", "title": "", "task": s(x.get("title"), 160) or "Consigne", "duration": "", "criteria": [], "example": "", "rubric": []}
     if layout == "activity":
         q = x.get("q") if isinstance(x.get("q"), dict) else {}
         ch = [s(c, 200) for c in q.get("choices") or []][:6]
         ans = q.get("answer")
-        out["q"] = {"q": s(q.get("q"), 400), "choices": ch,
+        lvl = s(q.get("level"), 20).lower()
+        out["q"] = {"q": s(q.get("q"), 600), "choices": ch,
                     "answer": ans if isinstance(ans, int) and 0 <= ans < len(ch) else 0,
-                    "why": s(q.get("why"), 500)}
+                    "open": s(q.get("open"), 900), "why": s(q.get("why"), 700), "level": lvl if lvl in LVL_FR else ""}
     return out
+
+
+PROD_KINDS = {
+    "orale": "production orale (exposé, dialogue, récitation, présentation…)",
+    "ecrite": "production écrite (rédaction, paragraphe, lettre, compte rendu…)",
+    "application": "exercices d'application (mise en pratique de la leçon)",
+    "debat": "débat ou discussion en classe",
+    "projet": "projet ou tâche complexe (recherche, affiche, maquette…)",
+    "lecture": "lecture et compréhension d'un document",
+}
+LEVELS_EX = {"easy": "facile", "medium": "intermédiaire", "hard": "difficile", "progressive": "progressif"}
+LVL_FR = {"facile", "intermédiaire", "difficile"}
+
+
+def clean_exercise(x):
+    if not isinstance(x, dict) or not x.get("q"):
+        return None
+    typ = x.get("type") if x.get("type") in ("qcm", "short", "fill", "long") else "short"
+    lvl = s(x.get("level"), 20).lower()
+    out = {"type": typ, "q": s(x.get("q"), 600), "why": s(x.get("why"), 700), "level": lvl if lvl in LVL_FR else ""}
+    if typ == "qcm":
+        ch = [s(c, 200) for c in x.get("choices") or []][:6]
+        a = x.get("answer")
+        if len(ch) < 2 or not (isinstance(a, int) and 0 <= a < len(ch)):
+            return None
+        out["choices"], out["answer"] = ch, a
+    else:
+        out["choices"], out["answer"], out["open"] = [], 0, s(x.get("answer"), 900)
+    return out
+
+
+def clean_production(x):
+    if not isinstance(x, dict) or not x.get("task"):
+        return None
+    kind = x.get("kind") if x.get("kind") in PROD_KINDS else "ecrite"
+    rub = []
+    for r in x.get("rubric") or []:
+        if isinstance(r, dict) and r.get("criterion"):
+            pts = r.get("points")
+            rub.append({"criterion": s(r.get("criterion"), 160), "points": pts if isinstance(pts, int) and 0 <= pts <= 20 else 1})
+    return {"kind": kind, "title": s(x.get("title"), 160), "task": s(x.get("task"), 1500), "duration": s(x.get("duration"), 60),
+            "criteria": [s(c, 240) for c in x.get("criteria") or [] if c][:6], "example": s(x.get("example"), 1500), "rubric": rub[:8]}
 
 
 SLIDE_FORMAT = (
@@ -629,12 +674,35 @@ def lesson():
     if opt.get("quiz", True):
         extras.append('"quiz": [{"q": "...", "choices": ["A","B","C","D"], "answer": 0, "why": "explication courte"}] (4 questions, "answer" = indice de la bonne réponse)')
     images = opt.get("images", True)
+    ex = opt.get("ex") if isinstance(opt.get("ex"), dict) else {}
+    ex_on = bool(ex.get("on"))
+    prods = [k for k in ex.get("prods", []) if k in PROD_KINDS][:6] if ex_on else []
+    other = s(ex.get("other"), 300) if ex_on else ""
+    n_ex = max(3, min(10, int(ex.get("count") or 5))) if ex_on else 0
+    lvl_key = ex.get("level") if ex.get("level") in LEVELS_EX else "progressive"
+    detailed = ex.get("detail", "detailed") != "concise"
+    extra_prompt = ""
+    if ex_on:
+        dist = {"easy": "tous de niveau « facile »", "medium": "tous de niveau « intermédiaire »", "hard": "tous de niveau « difficile »",
+                "progressive": "classés du plus facile au plus difficile (niveaux facile, puis intermédiaire, puis difficile)"}[lvl_key]
+        extra_prompt += (f'\nAjoute aussi "exercises": exactement {n_ex} exercices d\'application, {dist}, au format '
+                         '[{"type": "qcm | short | fill | long", "level": "facile | intermédiaire | difficile", "q": "énoncé", '
+                         '"choices": ["A","B","C","D"] (qcm), "answer": "réponse attendue (qcm : indice de la bonne réponse)", '
+                         '"why": "explication ' + ("détaillée en 2 ou 3 phrases" if detailed else "courte") + '"}].')
+        if prods or other:
+            wanted = "; ".join(PROD_KINDS[k] for k in prods) + (("; " if prods else "") + other if other else "")
+            extra_prompt += (f'\nAjoute "productions": une activité pour chacune de ces demandes : {wanted}. Format : '
+                             '[{"kind": "orale | ecrite | application | debat | projet | lecture", "title": "...", "task": "consigne '
+                             + ("détaillée avec les étapes à suivre" if detailed else "claire") + '", "duration": "ex. 15 min", '
+                             '"criteria": ["3 à 5 critères de réussite"], "example": "exemple de production attendue ' + ("(80 à 150 mots)" if detailed else "(court)") + '"'
+                             + (', "rubric": [{"criterion": "...", "points": 2}] (grille d\'évaluation de 3 à 5 critères)' if detailed else '') + '}]. '
+                             f'Niveau de difficulté des productions : {LEVELS_EX[lvl_key]}.')
     data, err = ask(
         f"{brief(b)}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
         f"Titre de la séquence : {s(b.get('title'), 160)}\nPlan complet :\n{outline_txt}\n\n"
         f"Écris maintenant la leçon {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
         "Ne répète pas le contenu des autres leçons.\n"
-        f"Format : {{\"title\": \"...\", \"slides\": [{SLIDE_FORMAT}], {', '.join(extras)}}}\n"
+        f"Format : {{\"title\": \"...\", \"slides\": [{SLIDE_FORMAT}], {', '.join(extras)}}}{extra_prompt}\n"
         f"Exactement {slides} diapositives, de l'accroche au bilan. Varie les mises en page "
         "(au moins une chronologie ou des étapes si le sujet s'y prête, une liste, et une citation si pertinent). "
         + (SVG_RULES + " Mets une illustration sur la plupart des diapositives text_image." if images
@@ -656,6 +724,8 @@ def lesson():
             for v in data.get("vocabulary", []) if isinstance(v, dict) and v.get("term")
         ][:12],
         "quiz": [],
+        "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:12] if ex_on else [],
+        "productions": [c for c in (clean_production(x) for x in data.get("productions", [])) if c][:8] if ex_on else [],
     }
     for q in data.get("quiz", []):
         if isinstance(q, dict) and isinstance(q.get("choices"), list) and isinstance(q.get("answer"), int):
