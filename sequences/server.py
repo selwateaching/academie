@@ -329,7 +329,7 @@ def open_session(email):
     return token
 
 
-PUBLIC_API = {"/api/outline", "/api/lesson", "/api/slide", "/api/workbook/outline", "/api/workbook/section", "/api/workbook/edit", "/api/sheet", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
+PUBLIC_API = {"/api/docx", "/api/outline", "/api/lesson", "/api/slide", "/api/workbook/outline", "/api/workbook/section", "/api/workbook/edit", "/api/sheet", "/api/plan", "/api/plan/subscribe", "/api/plan/cancel"}
 
 
 @app.before_request
@@ -1070,6 +1070,21 @@ BUILD = _build_id()
 def index():
     with open(os.path.join(STATIC_DIR, "index.html"), encoding="utf-8") as f:
         return Response(f.read().replace("__BUILD__", BUILD), mimetype="text/html", headers={"Cache-Control": "no-cache"})
+
+
+@app.post("/api/docx")
+def docx_export():
+    import base64
+    from docx_export import build_docx
+    b = request.get_json(silent=True) or {}
+    ser = b.get("series") if isinstance(b.get("series"), dict) else None
+    if not ser or not isinstance(ser.get("lessons"), list) or not any(isinstance(l, dict) and l.get("slides") for l in ser["lessons"]):
+        return error("invalid_request", "Aucune leçon générée à exporter.", 400)
+    try:
+        data = build_docx(ser)
+    except Exception as e:  # contenu inattendu : on le signale proprement
+        return error("export", f"Export Word impossible : {e}", 500)
+    return jsonify({"name": (s(ser.get("title"), 60) or "sequence"), "data": base64.b64encode(data).decode()})
 
 
 @app.get("/healthz")

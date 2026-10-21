@@ -732,7 +732,7 @@ function themeDots(cur,fn){
 function series(){
   const miss=S.lessons.filter(l=>!l.slides).length,first=S.lessons.findIndex(l=>l.slides),n=S.lessons.length;
   $("#app").innerHTML=`<div class="shead"><div><p class="crumbs" style="margin:0 0 6px"><a onclick="${ACC?"navSeqs()":"go('home')"}">← ${ACC?"Séquences":"Accueil"}</a></p><h1 style="margin:0">${esc(S.title)}</h1><p class="sub" style="margin:4px 0 0">${esc(S.level)} · ${n} ${n>1?"leçons":"leçon"} · ${statusOf(S)}</p></div>
-  <div class="sacts">${first>=0?`<button class="btn" onclick="play(${first},0)">▶ Enseigner</button>`:""}<button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF</button><button class="btn ghost" onclick="printAll()" title="Fiche texte avec notes de l'enseignant">📝 Notes</button></div></div>
+  <div class="sacts">${first>=0?`<button class="btn" onclick="play(${first},0)">▶ Enseigner</button>`:""}<button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint</button><button class="btn ghost" onclick="exportWord()" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF</button><button class="btn ghost" onclick="printAll()" title="Fiche texte avec notes de l'enseignant">📝 Notes</button></div></div>
   <div class="sgrid"><div class="smain"><div class="card" style="padding:4px 20px">${S.lessons.map((l,i)=>`<div class="srow"><div class="no">${i+1}</div><div class="tx"><b>${esc(l.slides?(l.slides[0]?.title||l.title):l.title)}</b><p>${esc(l.summary)}</p></div>
    <div class="bt">${l.slides?`<button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button><button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div></div>`).join("")}</div>
    ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} leçons manquantes</button>`:""}</div>
@@ -1467,6 +1467,15 @@ async function exportPptx(li){
     const blob=await pptx.write({outputType:"blob"});
     download(blob,fname(li==null?S.title:S.lessons[li].title)+".pptx");
   }catch(e){alert("Export PowerPoint impossible : "+(e&&e.message||e));}
+}
+async function exportWord(){
+  const ser=JSON.parse(JSON.stringify({title:S.title,level:S.level,language:S.language,topic:S.topic,lessons:S.lessons.filter(l=>l.slides).map(l=>({title:l.title,slides:l.slides.map(x=>{const y={...x};delete y.svg;return normalize(y);})}))}));
+  toast("Création du fichier Word…");
+  try{
+    const r=await api("/api/docx",{series:ser});
+    const bin=atob(r.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+    download(new Blob([u],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),fname(S.title)+".docx");
+  }catch(e){alert("Export Word impossible : "+e.message);}
 }
 /* PDF des diapositives : la boîte d'impression du navigateur, réglée sur des pages 16:9 */
 function exportPdf(li){
