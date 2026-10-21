@@ -49,6 +49,27 @@ services:
       - key: CHARGILY_MODE
         value: test
 
+  - type: web
+    name: chanson
+    runtime: python
+    rootDir: chanson
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app --workers 1 --threads 8 --timeout 600 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      # Paroles de la chanson (Claude)
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Musique + voix (ElevenLabs Music). Sans cette clé : mode démo (simple mélodie de test)
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      # Facultatif : code demandé avant de créer une chanson (protège vos crédits)
+      - key: CHANSON_ACCESS_CODE
+        sync: false
+
 databases:
   - name: tadriss-db
     plan: free

@@ -167,6 +167,30 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
 [dir=rtl] .serif{font-style:normal;font-weight:700;font-family:inherit}
 [dir=rtl] .eyebrow,[dir=rtl] .who,[dir=rtl] .occ,[dir=rtl] .queue h4,[dir=rtl] .cta{letter-spacing:0}
 [dir=rtl] .now-info h3{font-style:normal;font-family:inherit;font-weight:700}
+
+[hidden]{display:none!important}
+/* formulaire de création */
+.create{background:var(--cream)}
+.create form{display:grid;gap:16px;margin-top:28px}
+.create label{display:grid;gap:6px;font-size:.875rem;font-weight:600}
+.create input,.create select,.create textarea{font:inherit;font-weight:400;padding:12px 14px;border:1.5px solid rgba(26,25,23,.18);border-radius:12px;background:#fff;color:var(--charcoal);width:100%}
+.create textarea{min-height:150px;resize:vertical}
+.create input:focus,.create select:focus,.create textarea:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+.row2{display:grid;gap:16px}
+@media(min-width:560px){.row2{grid-template-columns:1fr 1fr}}
+.hint{font-weight:400;font-size:.75rem;color:rgba(26,25,23,.5)}
+.cta:disabled{opacity:.55;cursor:wait;transform:none}
+.status{margin-top:20px;text-align:center;font-weight:600;color:var(--gold-deep)}
+.status.err{color:#b3261e}
+.spin{display:inline-block;width:18px;height:18px;border:3px solid rgba(154,123,28,.25);border-top-color:var(--gold-deep);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-3px;margin-inline-end:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.result{margin-top:28px;background:#fff;border:1px solid #eee;border-radius:20px;padding:24px;text-align:center}
+.result h3{font:italic 400 1.6rem var(--serif);margin-bottom:12px}
+.result audio{width:100%;margin:8px 0 16px}
+.result pre{white-space:pre-wrap;font:inherit;text-align:start;background:var(--cream);border-radius:12px;padding:16px;font-size:.9rem;margin:16px 0}
+.result a.dl{display:inline-block;background:var(--charcoal);color:#fff;border-radius:99px;padding:12px 24px;font-weight:700;font-size:.875rem}
+.demo{font-size:.8rem;color:#b3261e;margin-top:12px}
+[dir=rtl] .result h3{font-style:normal;font-family:inherit;font-weight:700}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </style>
 </head>
@@ -222,6 +246,48 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
       <div class="step"><span class="num">3</span><div><span data-i18n="st3b"><b>Livrée par email</b></span><small style="color:var(--gold-light)"><span data-i18n="st3s">Produit numérique · en moins de 24 heures après le paiement</span></small></div></div>
     </div>
     <a class="cta gold" href="#" data-order><span data-i18n="cta_full">🎵 Créer ma chanson →</span></a>
+  </div>
+</section>
+
+<section class="create" id="creer">
+  <div class="wrap">
+    <h2 data-t="f_h">Créez votre chanson</h2>
+    <p class="sub" data-t="f_s">Racontez votre histoire : l'IA écrit les paroles, compose la musique et chante.</p>
+    <form id="songform">
+      <div class="row2">
+        <label><span data-t="f_name">Prénom de la personne</span><input id="f-name" required maxlength="60" autocomplete="off" data-t-ph="f_name_ph" placeholder="Ex. Sarah"></label>
+        <label><span data-t="f_for">Pour qui ?</span>
+          <select id="f-for">
+            <option value="Mari" data-t="c_Mari">Mari</option><option value="Femme" data-t="c_Femme">Femme</option>
+            <option value="Copain" data-t="c_Copain">Copain</option><option value="Copine" data-t="c_Copine">Copine</option>
+            <option value="Maman" data-t="c_Maman">Maman</option><option value="Papa" data-t="c_Papa">Papa</option>
+            <option value="Ami" data-t="c_Ami">Ami</option><option value="Autre" data-t="c_Autre">Autre</option>
+          </select></label>
+      </div>
+      <div class="row2">
+        <label><span data-t="f_style">Style musical</span>
+          <select id="f-style">
+            <option value="pop" data-t="st_pop">Pop émotion</option><option value="acoustic" data-t="st_acoustic">Acoustique / folk</option>
+            <option value="rnb" data-t="st_rnb">R&amp;B</option><option value="country" data-t="st_country">Country</option>
+            <option value="rock" data-t="st_rock">Rock ballade</option><option value="orient" data-t="st_orient">Oriental</option>
+          </select></label>
+        <label><span data-t="f_lang">Langue de la chanson</span>
+          <select id="f-lang"><option value="fr">Français</option><option value="ar">العربية</option></select></label>
+      </div>
+      <label><span data-t="f_story">Votre histoire</span>
+        <textarea id="f-story" required minlength="20" maxlength="2500" data-t-ph="f_story_ph" placeholder=""></textarea>
+        <span class="hint" data-t="f_hint">Souvenirs, anecdotes, qualités, ce que vous voulez lui dire. Plus c'est précis, plus la chanson est touchante.</span></label>
+      <label id="code-row" hidden><span data-t="f_code">Code d'accès</span><input id="f-code" autocomplete="off"></label>
+      <button class="cta" id="f-go" type="submit"><span data-t="f_go">🎵 Générer ma chanson</span></button>
+    </form>
+    <p class="status" id="f-status" role="status" aria-live="polite" hidden></p>
+    <div class="result" id="f-result" hidden>
+      <h3 id="r-title"></h3>
+      <audio id="r-audio" controls preload="none"></audio>
+      <pre id="r-lyrics"></pre>
+      <a class="dl" id="r-dl" href="#" data-t="f_dl">Télécharger</a>
+      <p class="demo" id="r-demo" hidden data-t="f_demo">Mode démo : aucune clé API de musique n'est configurée, ceci n'est qu'une mélodie de test.</p>
+    </div>
   </div>
 </section>
 
@@ -289,7 +355,7 @@ footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px a
 
 <script>
 /* ---- Configuration : à adapter / للتعديل ---- */
-var ORDER_URL = "https://chanson.onrender.com/"; // lien de commande / رابط الطلب
+var ORDER_URL = "#creer"; // formulaire de création sur la même page (serveur : server.py) // lien de commande / رابط الطلب
 var SONGS = [ // ajoutez vos fichiers audio dans "src" / أضف ملفاتك الصوتية في src
   {title:{fr:"À travers les années",ar:"عبر السنين"}, sub:{fr:"Pour Sarah · Ballade country",ar:"إلى سارة · أغنية كانتري هادئة"}, occ:{fr:"25e anniversaire",ar:"الذكرى الخامسة والعشرون"}, icon:"💍", color:"#7a5c1e", dur:"2:05", src:""},
   {title:{fr:"Le porche de papa",ar:"شرفة أبي"}, sub:{fr:"Pour papa · Folk acoustique",ar:"إلى أبي · فولك أكوستيك"}, occ:{fr:"Fête des pères",ar:"عيد الأب"}, icon:"🎸", color:"#2f4f6a", dur:"1:53", src:""},
@@ -382,9 +448,31 @@ function setLang(l){
   document.title=META[l].title;document.querySelector('meta[name=description]').content=META[l].desc;
   $('lang').textContent=META[l].lang;
   try{localStorage.setItem('lang',l)}catch(e){}
-  render();
+  render();applyForm();
+  if(!langTouched)$('f-lang').value=l;
 }
 $('lang').onclick=function(){setLang(lang==='ar'?'fr':'ar')};
+
+
+/* ---- Formulaire de création : textes ---- */
+var FT={
+ fr:{f_h:"Créez votre chanson",f_s:"Racontez votre histoire : l'IA écrit les paroles, compose la musique et chante.",f_name:"Prénom de la personne",f_name_ph:"Ex. Sarah",f_for:"Pour qui ?",f_style:"Style musical",f_lang:"Langue de la chanson",f_story:"Votre histoire",f_story_ph:"Ex. On s'est rencontrés à la fac en 2009, elle riait toujours trop fort à mes blagues…",f_hint:"Souvenirs, anecdotes, qualités, ce que vous voulez lui dire. Plus c'est précis, plus la chanson est touchante.",f_code:"Code d'accès",f_go:"🎵 Générer ma chanson",f_dl:"Télécharger",f_demo:"Mode démo : aucune clé API de musique n'est configurée, ceci n'est qu'une mélodie de test.",
+  st_pop:"Pop émotion",st_acoustic:"Acoustique / folk",st_rnb:"R&B",st_country:"Country",st_rock:"Rock ballade",st_orient:"Oriental",
+  c_Mari:"Mari",c_Femme:"Femme",c_Copain:"Copain",c_Copine:"Copine",c_Maman:"Maman",c_Papa:"Papa",c_Ami:"Ami",c_Autre:"Autre",
+  queued:"En attente…",lyrics:"Écriture des paroles…",music:"Composition et enregistrement… (1 à 3 minutes, gardez cette page ouverte)",
+  e_invalid:"Indiquez un prénom et une histoire un peu plus longue (20 caractères minimum).",e_rate:"Limite quotidienne atteinte, réessayez demain.",e_code:"Code d'accès incorrect.",e_gen:"La création a échoué, réessayez dans un instant.",e_net:"Problème de connexion, réessayez."},
+ ar:{f_h:"أنشئ أغنيتك",f_s:"احكِ قصتك: يكتب الذكاء الاصطناعي الكلمات ويؤلّف اللحن ويغنّي.",f_name:"اسم الشخص",f_name_ph:"مثال: سارة",f_for:"لمن؟",f_style:"النمط الموسيقي",f_lang:"لغة الأغنية",f_story:"قصتك",f_story_ph:"مثال: التقينا في الجامعة عام 2009، وكانت تضحك دائمًا بصوت عالٍ على نكاتي…",f_hint:"ذكريات، مواقف، صفات، وما تريد قوله له. كلما كانت التفاصيل أدقّ كانت الأغنية أكثر تأثيرًا.",f_code:"رمز الدخول",f_go:"🎵 أنشئ أغنيتي",f_dl:"تحميل",f_demo:"وضع تجريبي: لم يتم ضبط مفتاح موسيقى، وهذا مجرّد لحن اختباري.",
+  st_pop:"بوب عاطفي",st_acoustic:"أكوستيك / فولك",st_rnb:"آر أند بي",st_country:"كانتري",st_rock:"روك هادئ",st_orient:"شرقي",
+  c_Mari:"الزوج",c_Femme:"الزوجة",c_Copain:"الحبيب",c_Copine:"الحبيبة",c_Maman:"أمي",c_Papa:"أبي",c_Ami:"صديق",c_Autre:"آخر",
+  queued:"في الانتظار…",lyrics:"جارٍ كتابة الكلمات…",music:"جارٍ التلحين والتسجيل… (من دقيقة إلى 3 دقائق، أبقِ هذه الصفحة مفتوحة)",
+  e_invalid:"أدخل اسمًا وقصة أطول قليلًا (20 حرفًا على الأقل).",e_rate:"تم بلوغ الحد اليومي، حاول غدًا.",e_code:"رمز الدخول غير صحيح.",e_gen:"فشل الإنشاء، حاول بعد قليل.",e_net:"مشكلة في الاتصال، حاول مرة أخرى."}
+};
+function T(k){return FT[lang][k]}
+function applyForm(){
+  [].forEach.call(document.querySelectorAll('[data-t]'),function(el){el.textContent=T(el.dataset.t)});
+  [].forEach.call(document.querySelectorAll('[data-t-ph]'),function(el){el.placeholder=T(el.dataset.tPh)});
+}
+var langTouched=false;
 
 /* ---- Carrousel ---- */
 var track=$('track'),slides=track.children,dots=$('dots'),counter=$('counter');
@@ -398,11 +486,11 @@ $('next').onclick=function(){go(idx+1)};
 track.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1)});
 
 /* ---- Destinataire & liens de commande ---- */
-function orderHref(f){var u=ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'lang='+lang;return f?u+'&for='+encodeURIComponent(f):u}
+function orderHref(f){if(ORDER_URL.charAt(0)==='#')return ORDER_URL;var u=ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'lang='+lang;return f?u+'&for='+encodeURIComponent(f):u}
 var chosen='';
 function updateLinks(){$('hero-cta').href=orderHref(chosen);[].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref(chosen)})}
 [].forEach.call(document.querySelectorAll('.chip'),function(c){c.onclick=function(){
-  chosen=c.dataset['for'];[].forEach.call(document.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===c)});updateLinks();
+  chosen=c.dataset['for'];$('f-for').value=chosen;[].forEach.call(document.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===c)});updateLinks();
 }});
 
 /* ---- Lecteur ---- */
@@ -435,6 +523,34 @@ $('progress').onclick=function(e){if(!audio.duration)return;var r=this.getBoundi
 /* ---- CTA collant : apparaît quand le CTA du hero sort de l'écran ---- */
 var sticky=$('sticky');
 if('IntersectionObserver' in window){new IntersectionObserver(function(en){sticky.classList.toggle('show',!en[0].isIntersecting&&en[0].boundingClientRect.top<0)}).observe($('hero-cta'))}
+
+/* ---- Création de la chanson (API du serveur) ---- */
+$('f-lang').onchange=function(){langTouched=true};
+var busy=false;
+function showStatus(msg,err,spin){var st=$('f-status');st.hidden=!msg;st.className='status'+(err?' err':'');st.innerHTML='';if(spin){var i=document.createElement('span');i.className='spin';st.appendChild(i)}st.appendChild(document.createTextNode(msg||''))}
+function done(){busy=false;$('f-go').disabled=false}
+$('songform').onsubmit=function(ev){
+  ev.preventDefault();if(busy)return;busy=true;$('f-go').disabled=true;$('f-result').hidden=true;showStatus(T('queued'),false,true);
+  fetch('/api/songs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    name:$('f-name').value,recipient:$('f-for').value,style:$('f-style').value,lang:$('f-lang').value,story:$('f-story').value,code:$('f-code').value})})
+  .then(function(r){return r.json().then(function(j){return {s:r.status,j:j}})})
+  .then(function(x){
+    if(x.s===202)return poll(x.j.id,0);
+    if(x.j.error==='code'){$('code-row').hidden=false;showStatus(T('e_code'),true)}
+    else showStatus(T(x.j.error==='rate'?'e_rate':x.j.error==='invalid'?'e_invalid':'e_gen'),true);
+    done();
+  }).catch(function(){showStatus(T('e_net'),true);done()});
+};
+function poll(id,n){
+  fetch('/api/songs/'+id).then(function(r){return r.json()}).then(function(j){
+    if(j.status==='done'){
+      showStatus('');$('r-title').textContent='“'+j.title+'”';$('r-lyrics').textContent=j.lyrics;
+      $('r-audio').src=j.audio_url;$('r-dl').href=j.audio_url+'?dl=1';$('r-demo').hidden=!j.demo;
+      $('f-result').hidden=false;$('f-result').scrollIntoView({behavior:'smooth',block:'start'});done();
+    }else if(j.status==='error'||n>240){showStatus(T('e_gen'),true);done()}
+    else{showStatus(T(j.status)||T('queued'),false,true);setTimeout(function(){poll(id,n+1)},3000)}
+  }).catch(function(){setTimeout(function(){poll(id,n+1)},4000)});
+}
 
 setLang(lang);updateLinks();
 </script>
