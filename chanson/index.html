@@ -88,7 +88,8 @@
     <label for="audio">Ou ajoutez le fichier audio déjà fait <small>(mp3, wav, m4a…)</small></label>
     <input id="audio" type="file" accept="audio/*">
     <audio id="player" class="hidden" controls style="width:100%;margin-top:12px"></audio>
-    <p class="hint">Le fichier reste sur votre appareil : il sert à l'écouter ici, rien n'est envoyé.</p>
+    <p class="hint" id="musicinfo"></p>
+    <p class="hint">Vous avez déjà la musique mais pas les paroles ? Ajoutez-la ici, remplissez le formulaire, décrivez son rythme et son ambiance dans « Précisions sur le style », puis cliquez sur « Écrire ma chanson » : les paroles sont adaptées à la durée de la musique. Le fichier reste sur votre appareil, rien n'est envoyé.</p>
   </section>
 
   <section class="card" id="mix">
@@ -138,6 +139,7 @@
 const $ = id => document.getElementById(id);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
+let musicDur = 0;
 function data() {
   const v = id => $(id).value.trim();
   return {
@@ -162,7 +164,7 @@ Contraintes :
 - Rimes naturelles, images simples et sensorielles, ton sincère, aucun cliché pesant
 - Prénom « ${d.nom} » présent dans le refrain
 - Style ${d.style}${d.extra ? ' (' + d.extra + ')' : ''}, ${d.voix} ; environ 3 minutes
-- Les paroles doivent être entièrement en ${LANGS[d.langue].nom} (${LANGS[d.langue].note}), naturelles comme écrites par un locuteur natif, pas traduites mot à mot.\n- Donne uniquement les paroles avec les balises de structure.`;
+- Les paroles doivent être entièrement en ${LANGS[d.langue].nom} (${LANGS[d.langue].note}), naturelles comme écrites par un locuteur natif, pas traduites mot à mot.\n${musicDur ? `- La musique existe déjà et dure ${Math.floor(musicDur / 60)} min ${musicDur % 60} s : écris des paroles qui tiennent dans cette durée (environ ${Math.max(8, Math.round(musicDur / 4))} lignes chantées, ~4 secondes par ligne), avec des lignes de longueur régulière (6 à 10 syllabes) faciles à poser sur une mélodie.\n` : ''}- Donne uniquement les paroles avec les balises de structure.`;
 }
 
 function buildSuno(d) {
@@ -293,6 +295,7 @@ $('audio').addEventListener('change', e => {
   mixBlob = null;
   pl.src = URL.createObjectURL(f);
   pl.classList.remove('hidden');
+  pl.onloadedmetadata = () => { musicDur = isFinite(pl.duration) ? Math.round(pl.duration) : 0; $('musicinfo').textContent = musicDur ? '🎵 Musique détectée : ' + Math.floor(musicDur / 60) + ' min ' + String(musicDur % 60).padStart(2, '0') + ' s — les paroles seront écrites pour tenir sur cette durée.' : ''; };
   pl.play().catch(() => {});
 });
 let photoData = '';
