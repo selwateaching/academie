@@ -87,6 +87,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .sl .ch.ok{border-color:#16a34a;background:#e7f7ec}.sl .ch.ko{opacity:.55}
 .sl.lv-easy .in{border-top:12px solid #16a34a}.sl.lv-medium .in{border-top:12px solid #f59e0b}.sl.lv-hard .in{border-top:12px solid #dc2626}
 .sl .xlvl.l-medium{background:#fef3c7;color:#92400e}
+.sl .srcs{display:grid;gap:12px;flex:1;align-content:start}.sl .sr{background:var(--card);border-radius:14px;padding:12px 18px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .sr a{font-weight:800;font-size:22px;color:var(--ti);text-decoration:underline}.sl .su{font-size:15px;opacity:.7;word-break:break-all;margin-top:2px}.sl .sn{font-size:15px;opacity:.65;margin:8px 0 0}
 .sl .xlvl{display:inline-block;align-self:flex-start;font-size:14px;font-weight:700;padding:3px 12px;border-radius:99px;margin-bottom:6px;background:#e0e7ff;color:#3730a3}.sl .xlvl.l-easy{background:#dcfce7;color:#166534}.sl .xlvl.l-hard{background:#fee2e2;color:#991b1b}
 .sl .xwr{border:3px dashed rgba(0,0,0,.2);border-radius:14px;padding:30px 18px;font-size:20px;opacity:.5;margin-top:10px}.sl .why.ans{margin-bottom:10px}
 .sl .xpk{display:flex;align-self:flex-start;background:none;gap:12px;align-items:center;margin-bottom:12px}.sl .xpb{background:var(--ac);color:#fff;border-radius:99px;padding:5px 16px;font-weight:700;font-size:18px}.sl .xpdur{font-size:18px;font-weight:600}
@@ -427,7 +428,7 @@ const THEMES={
 const allThemes=()=>({...THEMES,...((typeof S!=="undefined"&&S&&S.custom)||{})});
 const FONTS=[["Trebuchet","'Trebuchet MS',system-ui,sans-serif"],["Segoe UI","'Segoe UI',system-ui,sans-serif"],["Georgia","Georgia,serif"],["Arial Black","'Arial Black',system-ui,sans-serif"],["Poppins","'Poppins',sans-serif"],["Nunito","'Nunito',sans-serif"],["Fredoka","'Fredoka',sans-serif"],["Lora","'Lora',serif"],["Playfair Display","'Playfair Display',serif"]];
 const themeStyle=k=>{const t=allThemes()[k]||THEMES.classique;return `--bg:${t.bg};--fg:${t.fg};--ti:${t.ti};--ac:${t.ac};--ac2:${t.ac2};--card:${t.card};--blob:${t.blob};--font:${t.font}`;};
-const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité",production:"Production",video:"Vidéo YouTube"};
+const LAYOUT_NAMES={title:"Titre",text_image:"Texte et image",list:"Liste",timeline:"Chronologie",steps:"Étapes",quote:"Citation",vocab:"Vocabulaire",activity:"Activité",production:"Production",sources:"Sources",video:"Vidéo YouTube"};
 const PRODS={orale:["🎤","Production orale"],ecrite:["✍️","Production écrite"],application:["🧩","Exercices d'application"],debat:["💬","Débat"],projet:["🛠️","Projet"],lecture:["📖","Lecture"]};
 const LVLS={easy:"Facile",medium:"Intermédiaire",hard:"Difficile"};
 const EX0={on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"};
@@ -458,7 +459,7 @@ const UPG={limit:["Limite atteinte","Vous avez utilisé toutes vos ressources. P
 function openUpgrade(k,extra){const [h,d]=UPG[k]||UPG.limit;modal(`<h2>${h}</h2><p>${esc(extra||d)}</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Plus tard</button><button class="btn" onclick="closeModal();goPricing()">Voir les plans</button></div>`);}
 function goPricing(){closeStudio();closeShow();page="pricing";render();scrollTo(0,0);}
 const blank=()=>({id:uid(),topic:"",level:"1AM (6e)",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
-  options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
+  options:{objectives:true,vocabulary:true,quiz:true,images:true,sources:true,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
 
 /* ---------- API ---------- */
 const TOK=()=>{try{return localStorage.getItem("seq.tok");}catch{return null;}};
@@ -644,13 +645,14 @@ function s2(){
   <input id="cur" maxlength="200" placeholder="Ex. Programme officiel, cycle 3 — sciences et technologie" value="${esc(S.curriculum||"")}" ${CAP().curriculum?"":'readonly onclick="openUpgrade(\'curriculum\')" class="lock"'}>
   <label>Contenu à inclure</label>
   <label class="chk"><input type="checkbox" id="o4" ${o.images?"checked":""}><span>Illustrations<small>Schémas dessinés par l'IA sur les diapositives (génération un peu plus longue)</small></span></label>
+  <label class="chk"><input type="checkbox" id="o5" ${o.sources!==false?"checked":""}><span>Sources fiables citées<small>Recherche web : liens vérifiés (institutions, universités, encyclopédies) sur une diapositive « Sources ». Génération un peu plus longue.</small></span></label>
   <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
   <label class="chk"><input type="checkbox" id="o2" ${o.vocabulary?"checked":""}><span>Vocabulaire clé<small>Mots importants avec leur définition</small></span></label>
   <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
   ${exBlock(o.ex||EX0)}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
 }
-function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:Math.min(+$("#sl").value,CAP().slides),ex:readEx()};}
+function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,sources:$("#o5").checked,slides:Math.min(+$("#sl").value,CAP().slides),ex:readEx()};}
 async function outline(){
   read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
   try{
@@ -696,6 +698,7 @@ function buildSlides(d){
   const v=d.vocabulary||[];
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
+  if((d.sources||[]).length)out.push({layout:"sources",title:"Sources",sources:d.sources,bullets:[],items:[],notes:"Liens trouvés par recherche web sur des sites réputés fiables, testés à la génération (consultés le "+d.sources[0].accessed+"). À vérifier avant diffusion."});
   out.forEach(x=>x.id=uid());
   return out;
 }
@@ -713,7 +716,7 @@ async function generate(){
   for(let i=0;i<S.lessons.length;i++){
     const l=S.lessons[i];if(l.slides)continue;
     l.busy=true;delete l.err;if(step===4)s4();
-    try{const d=await api("/api/lesson",{...payload(),index:i});l.slides=buildSlides(d);}
+    try{const d=await api("/api/lesson",{...payload(),index:i});l.slides=buildSlides(d);if(d.search==="unavailable"&&!window._nosrc){window._nosrc=1;toast("Recherche web indisponible sur le serveur : leçons créées sans sources.");}}
     catch(e){l.err=e.message;
       if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
       if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
@@ -763,6 +766,7 @@ function normalize(sl){
   if(ITEM_LAYOUTS.includes(sl.layout)&&!sl.items.length)sl.items=sl.bullets.map(b=>({t:b,x:""}));
   if(sl.layout==="text_image"&&!sl.bullets.length)sl.bullets=sl.items.map(i=>i.x?`${i.t} : ${i.x}`:i.t);
   if(sl.layout==="video"&&sl.url===undefined)sl.url="";
+  if(sl.layout==="sources"&&!sl.sources)sl.sources=[];
   if(sl.layout==="vocab"&&!sl.vocab)sl.vocab=[{term:"Mot",definition:"Définition"}];
   if(sl.layout==="production"&&!sl.prod)sl.prod={kind:"ecrite",title:"",task:"Consigne de la production.",duration:"",criteria:["Critère de réussite"],example:"",rubric:[]};
   if(sl.layout==="activity"&&!sl.q)sl.q={q:"Question ?",choices:["Réponse A","Réponse B","Réponse C","Réponse D"],answer:0,why:""};
@@ -790,6 +794,8 @@ function slideHTML(sl,o={}){
       const open=!q.choices||!q.choices.length,lv=q.level&&LVLS[q.level]?`<span class="xlvl l-${q.level}">${LVLS[q.level]}</span>`:"";
       if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="xwr">Réponse de l\'élève…</div>'}`;break;}
       b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
+    case "sources":
+      b=`${t}<div class="srcs">${sl.sources.length?sl.sources.map(v=>`<div class="sr"><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.title||v.site)}</a><div class="su">${esc(v.site)} · ${esc(v.url)}</div></div>`).join(""):'<p style="opacity:.6">Aucune source ajoutée.</p>'}</div><p class="sn">Liens trouvés par recherche web sur des sites réputés fiables et testés à la création${sl.sources[0]&&sl.sources[0].accessed?" (consultés le "+esc(sl.sources[0].accessed)+")":""}.</p>`;break;
     case "production":{
       const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
       b=`${t}<div class="xpk">${pr.level&&LVLS[pr.level]?`<span class="xlvl l-${pr.level}" style="margin:0">${LVLS[pr.level]}</span>`:""}<span class="xpb">${pk[0]} ${pk[1]}</span>${pr.duration||ed?`<span class="xpdur">⏱ ${E("prod.duration",pr.duration||"")}</span>`:""}</div>
@@ -908,6 +914,7 @@ function printAll(){
     case "list":case "steps":case "timeline":return `<ul>${x.items.map(i=>`<li><b>${esc(i.t)}</b> ${esc(i.x)}</li>`).join("")}</ul>`;
     case "quote":return `<blockquote>${esc(x.quote)} — ${esc(x.author)}</blockquote>`;
     case "vocab":return `<ul>${x.vocab.map(v=>`<li><b>${esc(v.term)}</b> : ${esc(v.definition)}</li>`).join("")}</ul>`;
+    case "sources":return `<ul>${(x.sources||[]).map(v=>`<li>${esc(v.title)} — ${esc(v.url)}</li>`).join("")}</ul>`;
     case "production":{const r=x.prod;return `<p><b>${esc((PRODS[r.kind]||PRODS.ecrite)[1])}</b>${r.duration?" · "+esc(r.duration):""}</p><p>${esc(r.task)}</p><ul>${(r.criteria||[]).map(c=>`<li>${esc(c)}</li>`).join("")}</ul>${(r.rubric||[]).length?`<p><b>Grille :</b> ${r.rubric.map(z=>esc(z.criterion)+" ("+z.points+")").join(" ; ")}</p>`:""}${r.example?`<p><i>Exemple : ${esc(r.example)}</i></p>`:""}`;}
     case "activity":if(!x.q.choices.length)return `<p>${esc(x.q.q)}</p><p><b>Réponse :</b> ${esc(x.q.open||"")}</p><i>${esc(x.q.why||"")}</i>`;return `<p>${esc(x.q.q)}</p><ol>${x.q.choices.map((c,j)=>`<li>${j===x.q.answer?"<b>":""}${esc(c)}${j===x.q.answer?" ✓</b>":""}</li>`).join("")}</ol><i>${esc(x.q.why)}</i>`;
     default:return `<ul>${(x.bullets||[]).map(b=>`<li>${esc(b)}</li>`).join("")}</ul>`;}};
@@ -1429,6 +1436,8 @@ async function pptxSlide(pptx,sl,th){
       T("— "+(sl.author||""),{x:1,y:3.9,w:8,h:.6,fontSize:18,bold:true,color:hx(th.ti),align:"center"});break;
     case "vocab":
       (sl.vocab||[]).forEach((v,i)=>{const x=.5+(i%2)*4.6,y=1.4+Math.floor(i/2)*1.25;card(x,y,4.4,1.1);T([{text:v.term,options:{bold:true,breakLine:true,fontSize:15,color:hx(th.ti)}},{text:v.definition,options:{fontSize:12}}],{x:x+.1,y,w:4.2,h:1.1,valign:"middle"});});break;
+    case "sources":
+      T([{text:"Liens vérifiés à la création",options:{italic:true,breakLine:true,fontSize:12}},...(sl.sources||[]).map(v=>({text:(v.title||v.site)+" — "+v.url,options:{bullet:true,breakLine:true,fontSize:14,hyperlink:{url:v.url}}}))],{x:.5,y:1.3,w:9,h:3.7,valign:"top",paraSpaceAfter:8});break;
     case "production":{const r=sl.prod,pk=PRODS[r.kind]||PRODS.ecrite;
       T(pk[1]+(r.duration?" · "+r.duration:""),{x:.5,y:1.25,w:9,h:.4,fontSize:14,bold:true,color:hx(th.ac)});
       card(.5,1.7,9,1.5);T(r.task||"",{x:.65,y:1.7,w:8.7,h:1.5,fontSize:15,valign:"middle"});

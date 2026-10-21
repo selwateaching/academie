@@ -69,6 +69,8 @@ AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « �
       'Intermédiaire': 'متوسط',
       'Difficile': 'صعب'}
 
+AR.update({'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
+
 
 class Builder:
     def __init__(self, series):
@@ -195,6 +197,25 @@ class Builder:
             c.paragraphs[0].paragraph_format.space_after = Pt(0)
         self.par(self.doc, "", after=2)
 
+    def link(self, p, text, url):
+        rid = p.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink", is_external=True)
+        h = OxmlElement("w:hyperlink")
+        h.set(qn("r:id"), rid)
+        r = OxmlElement("w:r")
+        rPr = OxmlElement("w:rPr")
+        c = OxmlElement("w:color")
+        c.set(qn("w:val"), "0563C1")
+        u = OxmlElement("w:u")
+        u.set(qn("w:val"), "single")
+        rPr.append(c)
+        rPr.append(u)
+        r.append(rPr)
+        tx = OxmlElement("w:t")
+        tx.text = text
+        r.append(tx)
+        h.append(r)
+        p._p.append(h)
+
     def lvl_tag(self, p, level):
         if level in LVL:
             self.run(p, "● " + self.L(LVL[level][0]) + "  ", True, self.size - 1, LVL[level][1])
@@ -306,6 +327,15 @@ class Builder:
             self.heading(self.L("Vérification des acquis"))
             for k, x in enumerate(quiz, 1):
                 self.exercise(k, x["q"], lvl=False)
+
+        srcs = [v for x in sl if x.get("layout") == "sources" for v in x.get("sources") or [] if isinstance(v, dict) and v.get("url")]
+        if srcs:
+            self.heading(self.L("Sources"))
+            for v in srcs:
+                p = self.par(self.doc, "", after=3)
+                self.link(p, t(v.get("title") or v.get("site"), 200), t(v["url"], 500))
+                self.run(p, f"  ({t(v.get('site'), 80)}" + (f", {self.L('consulté le')} {t(v.get('accessed'), 20)}" if v.get("accessed") else "") + ")",
+                         size=max(self.size - 2, 8), color=GREY)
 
         self.corriges(exo, quiz, prods, sl)
 

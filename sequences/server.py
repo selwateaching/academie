@@ -22,6 +22,10 @@ import random
 import re
 import unicodedata
 import secrets
+import socket
+import urllib.error
+import urllib.request
+from urllib.parse import urlparse
 import tempfile
 import threading
 import time
@@ -119,9 +123,88 @@ def s(value, limit):
     return str(value or "").strip()[:limit]
 
 
-def ask(prompt, max_tokens):
-    """Appelle Claude et renvoie (dict, None) ou (None, réponse d'erreur)."""
+# Sources citées : seuls les liens réellement renvoyés par la recherche web sont gardés (jamais écrits de mémoire par l'IA),
+# filtrés sur des sites réputés fiables, puis testés avant d'être affichés.
+TRUST_HIGH = ("unesco.org", "who.int", "un.org", "europa.eu", "oecd.org", "worldbank.org", "nature.com", "science.org", "cnrs.fr", "inserm.fr",
+              "education.gouv.fr", "eduscol.education.fr", "education.gov.dz", "mesrs.dz", "ons.dz", "esa.int", "cern.ch", "iea.org", "ipcc.ch",
+              "fao.org", "wmo.int", "bnf.fr", "gallica.bnf.fr", "onu.org", "iso.org", "royalsociety.org", "academie-sciences.fr")
+TRUST_MID = ("wikipedia.org", "britannica.com", "larousse.fr", "universalis.fr", "persee.fr", "cairn.info", "openedition.org", "hal.science",
+             "arxiv.org", "khanacademy.org", "lumni.fr", "sciencedirect.com", "springer.com", "jstor.org", "nationalgeographic.com",
+             "wolframalpha.com", "mathworld.wolfram.com", "scholarpedia.org", "ourworldindata.org", "futura-sciences.com", "scientificamerican.com")
+TRUST_TLD = re.compile(r"\.(gov|gouv|edu|ac)(\.[a-z]{2})?$|\.(gov|gouv|edu|ac)\.[a-z]{2}$|\.(gouv\.fr|gov\.dz|edu\.dz|univ-[a-z0-9-]+\.dz)$")
+
+
+def trust_score(url):
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except ValueError:
+        return 0
+    if not host or host == "localhost" or re.fullmatch(r"[\d.:]+", host):
+        return 0
+    host = host[4:] if host.startswith("www.") else host
+    if any(host == d or host.endswith("." + d) for d in TRUST_HIGH) or TRUST_TLD.search(host) or host.startswith("univ-"):
+        return 3
+    if any(host == d or host.endswith("." + d) for d in TRUST_MID):
+        return 2
+    return 0
+
+
+def link_alive(url):
+    """Faux seulement si la page est définitivement introuvable ; un site qui bloque les robots reste accepté."""
+    hdr = {"User-Agent": "Mozilla/5.0 (compatible; SequencesLinkCheck/1.0)", "Accept": "*/*"}
+    for method in ("HEAD", "GET"):
+        try:
+            req = urllib.request.Request(url, method=method, headers=hdr)
+            with urllib.request.urlopen(req, timeout=6) as r:
+                return r.status < 400
+        except urllib.error.HTTPError as e:
+            if e.code in (404, 410):
+                return False
+            if method == "HEAD" and e.code in (400, 403, 405, 501):
+                continue
+            return True
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            reason = getattr(e, "reason", e)
+            return not isinstance(reason, socket.gaierror)
+    return True
+
+
+def collect_sources(content, limit=4):
+    cited, found = [], []
+    for blk in content:
+        if blk.type == "text":
+            for c in getattr(blk, "citations", None) or []:
+                u = getattr(c, "url", None)
+                if u:
+                    cited.append((u, getattr(c, "title", "") or ""))
+        elif blk.type == "web_search_tool_result" and isinstance(getattr(blk, "content", None), list):
+            for r in blk.content:
+                if getattr(r, "url", None):
+                    found.append((r.url, getattr(r, "title", "") or ""))
+    seen, cand = set(), []
+    for rank, (u, ti) in enumerate(cited + found):
+        key = u.split("#")[0].rstrip("/")
+        sc = trust_score(u)
+        if key in seen or sc < 2 or not u.startswith(("http://", "https://")):
+            continue
+        seen.add(key)
+        cand.append((-(rank < len(cited)), -sc, rank, u, ti))
+    cand.sort()
+    out = []
+    for *_, u, ti in cand[:limit + 4]:
+        if len(out) >= limit:
+            break
+        if link_alive(u):
+            host = (urlparse(u).hostname or "").lower()
+            out.append({"title": s(ti, 200) or host, "url": u[:500], "site": host[4:] if host.startswith("www.") else host,
+                        "accessed": time.strftime("%d/%m/%Y")})
+    return out
+
+
+def ask(prompt, max_tokens, search=False):
+    """Appelle Claude et renvoie (dict, None) ou (None, réponse d'erreur). Avec search, g.sources reçoit les liens vérifiés."""
     global _client
+    g.sources, g.search_state = [], "off"
     if ACCESS_CODE and not hmac.compare_digest(
         request.headers.get("X-Seq-Code", "").encode(), ACCESS_CODE.encode()
     ):
@@ -132,26 +215,43 @@ def ask(prompt, max_tokens):
         return None, error("rate_limited", "Trop de générations. Réessayez plus tard.", 429)
     if _client is None:
         _client = anthropic.Anthropic(timeout=600.0)
-    try:
-        with _client.messages.stream(
-            model=MODEL, max_tokens=max_tokens, system=SYSTEM,
-            messages=[{"role": "user", "content": prompt}],
-        ) as stream:
-            msg = stream.get_final_message()
-    except anthropic.AuthenticationError:
-        return None, error("no_key", "Clé API invalide.", 503)
-    except anthropic.RateLimitError:
-        return None, error("rate_limited", "Limite de l'API Anthropic atteinte.", 429)
-    except anthropic.APIStatusError as e:
-        app.logger.warning("API %s: %s", e.status_code, e.message)
-        return None, error("upstream_error", "Erreur du service Claude.", 502)
-    except anthropic.APIConnectionError:
-        return None, error("upstream_error", "Connexion à Claude impossible.", 502)
+    tools = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 4}] if search else None
+    msg = None
+    for attempt in (0, 1):
+        use_tools = tools if attempt == 0 else None
+        messages = [{"role": "user", "content": prompt}]
+        blocks = []
+        try:
+            for _ in range(4):  # « pause_turn » : la recherche web peut demander plusieurs tours
+                kw = {"tools": use_tools} if use_tools else {}
+                with _client.messages.stream(model=MODEL, max_tokens=max_tokens, system=SYSTEM, messages=messages, **kw) as stream:
+                    msg = stream.get_final_message()
+                blocks += list(msg.content)
+                if msg.stop_reason != "pause_turn":
+                    break
+                messages = messages + [{"role": "assistant", "content": msg.content}]
+            break
+        except anthropic.AuthenticationError:
+            return None, error("no_key", "Clé API invalide.", 503)
+        except anthropic.RateLimitError:
+            return None, error("rate_limited", "Limite de l'API Anthropic atteinte.", 429)
+        except anthropic.APIStatusError as e:
+            if use_tools and e.status_code in (400, 403, 404):  # recherche web indisponible : on génère sans
+                app.logger.warning("Recherche web indisponible: %s", e.message)
+                g.search_state = "unavailable"
+                continue
+            app.logger.warning("API %s: %s", e.status_code, e.message)
+            return None, error("upstream_error", "Erreur du service Claude.", 502)
+        except anthropic.APIConnectionError:
+            return None, error("upstream_error", "Connexion à Claude impossible.", 502)
     if msg.stop_reason == "refusal":
         return None, error("refused", "Claude a refusé cette demande.", 422)
-    data = parse_json("".join(b.text for b in msg.content if b.type == "text"))
+    data = parse_json("".join(b.text for b in blocks if b.type == "text"))
     if not isinstance(data, dict):
         return None, error("invalid_json", "Réponse illisible, réessayez.", 422)
+    if search and g.search_state != "unavailable":
+        g.sources = collect_sources(blocks)
+        g.search_state = "ok" if g.sources else "none"
     return data, None
 
 
@@ -494,7 +594,7 @@ def list_contacts():
 
 # ---------------------------------------------------------------- nettoyage des diapositives
 
-LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video", "production"}
+LAYOUTS = {"title", "text_image", "list", "timeline", "steps", "quote", "vocab", "activity", "video", "production", "sources"}
 YT = re.compile(r"(?:youtu\.be/|youtube(?:-nocookie)?\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})")
 SVG_TAGS = {"svg", "g", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
             "text", "tspan", "defs", "lineargradient", "radialgradient", "stop"}
@@ -563,6 +663,9 @@ def clean_slide(x):
     if layout == "vocab":
         out["vocab"] = [{"term": s(v.get("term"), 80), "definition": s(v.get("definition"), 300)}
                         for v in x.get("vocab") or [] if isinstance(v, dict) and v.get("term")][:8]
+    if layout == "sources":
+        out["sources"] = [{"title": s(v.get("title"), 200), "url": s(v.get("url"), 500), "site": s(v.get("site"), 100), "accessed": s(v.get("accessed"), 20)}
+                          for v in x.get("sources") or [] if isinstance(v, dict) and str(v.get("url", "")).startswith(("http://", "https://"))][:6]
     if layout == "production":
         out["prod"] = clean_production(x.get("prod")) or {"kind": "ecrite", "title": "", "task": s(x.get("title"), 160) or "Consigne", "duration": "", "criteria": [], "example": "", "rubric": []}
     if layout == "activity":
@@ -720,8 +823,13 @@ def lesson():
                              + (f'Niveau de difficulté des productions : {LEVELS_EX[lvl_key]}.' if not diff else
                               'Pour CHAQUE demande, écris trois versions (une par niveau : facile très guidée, intermédiaire, difficile plus exigeante) '
                               'avec la consigne et les critères adaptés, et ajoute "level": "facile | intermédiaire | difficile" à chacune.'))
+    want_src = bool(opt.get("sources"))
+    src_prompt = ("\nRECHERCHE WEB : avant de rédiger, utilise la recherche web (4 requêtes au plus) pour vérifier les faits, dates, chiffres et définitions "
+                  "clés de cette leçon, en privilégiant des sources institutionnelles, universitaires ou encyclopédiques reconnues. "
+                  "N'invente aucun fait, date, chiffre ni citation : si un point n'est pas vérifié, reste général. "
+                  "Réponds ensuite uniquement par le JSON demandé.\n") if want_src else ""
     data, err = ask(
-        f"{brief(b)}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
+        f"{brief(b)}{src_prompt}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
         f"Titre de la séquence : {s(b.get('title'), 160)}\nPlan complet :\n{outline_txt}\n\n"
         f"Écris maintenant la leçon {idx + 1} : « {s(cur.get('title'), 160)} » ({s(cur.get('summary'), 600)}). "
         "Ne répète pas le contenu des autres leçons.\n"
@@ -731,6 +839,7 @@ def lesson():
         + (SVG_RULES + " Mets une illustration sur la plupart des diapositives text_image." if images
            else 'N\'inclus pas de champ "svg".'),
         64000,
+        search=want_src,
     )
     if err:
         return err
@@ -749,6 +858,8 @@ def lesson():
         "quiz": [],
         "exercises": [c for c in (clean_exercise(x) for x in data.get("exercises", [])) if c][:30] if ex_on else [],
         "diff": bool(diff),
+        "sources": list(getattr(g, "sources", []) or []) if want_src else [],
+        "search": getattr(g, "search_state", "off") if want_src else "off",
         "productions": [c for c in (clean_production(x) for x in data.get("productions", [])) if c][:24] if ex_on else [],
     }
     for q in data.get("quiz", []):

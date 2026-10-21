@@ -54,3 +54,11 @@ Les plafonds sont des constantes `PLANS` et `PRICES` dans `server.py`.
 - Pas de vrai paiement : avec `PAYMENT_MODE=demo` (défaut) n'importe qui peut activer Pro ou Max gratuitement ; `PAYMENT_MODE=off` ferme les abonnements.
 - Quotas, plafonds de leçons et de diapositives sont appliqués côté serveur. Les verrous Pro/Max (vidéos, thèmes, badge, programme) ne le sont que dans la page.
 - Le formulaire « Écoles » enregistre les messages ; `SEQ_ADMIN_CODE` permet de les lire via `/api/contact?code=…`.
+
+## Sources citées (recherche web)
+
+La case « Sources fiables citées » (réglages d'une séquence) active l'outil de recherche web de l'API Anthropic pendant la génération d'une leçon.
+Seuls les liens **renvoyés par la recherche** sont gardés, filtrés sur une liste de sites réputés fiables (`TRUST_HIGH`, `TRUST_MID`, domaines
+`.gov`, `.edu`, `.gouv.*`, `univ-*.dz`…), testés (404/410 écartés), puis placés sur une diapositive « Sources » (et dans le Word/PPTX/PDF).
+Prérequis : la recherche web doit être activée sur l'organisation Anthropic de la clé API (sinon la leçon est générée sans sources, avec un message).
+Elle est facturée en plus des jetons.
