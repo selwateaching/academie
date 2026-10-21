@@ -328,14 +328,18 @@ class Builder:
             for k, x in enumerate(quiz, 1):
                 self.exercise(k, x["q"], lvl=False)
 
-        srcs = [v for x in sl if x.get("layout") == "sources" for v in x.get("sources") or [] if isinstance(v, dict) and v.get("url")]
+        srcs = [v for x in sl if x.get("layout") == "sources" for v in x.get("sources") or [] if isinstance(v, dict) and (v.get("url") or v.get("title"))]
         if srcs:
             self.heading(self.L("Sources"))
             for v in srcs:
                 p = self.par(self.doc, "", after=3)
-                self.link(p, t(v.get("title") or v.get("site"), 200), t(v["url"], 500))
-                self.run(p, f"  ({t(v.get('site'), 80)}" + (f", {self.L('consulté le')} {t(v.get('accessed'), 20)}" if v.get("accessed") else "") + ")",
-                         size=max(self.size - 2, 8), color=GREY)
+                if v.get("url"):
+                    self.link(p, t(v.get("title") or v.get("site") or v["url"], 200), t(v["url"], 500))
+                    extra = ", ".join(x for x in (t(v.get("site"), 80), (self.L("consulté le") + " " + t(v.get("accessed"), 20)) if v.get("accessed") else "") if x)
+                    if extra:
+                        self.run(p, f"  ({extra})", size=max(self.size - 2, 8), color=GREY)
+                else:
+                    self.run(p, t(v.get("title"), 300))
 
         self.corriges(exo, quiz, prods, sl)
 

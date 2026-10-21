@@ -459,7 +459,7 @@ const UPG={limit:["Limite atteinte","Vous avez utilisé toutes vos ressources. P
 function openUpgrade(k,extra){const [h,d]=UPG[k]||UPG.limit;modal(`<h2>${h}</h2><p>${esc(extra||d)}</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Plus tard</button><button class="btn" onclick="closeModal();goPricing()">Voir les plans</button></div>`);}
 function goPricing(){closeStudio();closeShow();page="pricing";render();scrollTo(0,0);}
 const blank=()=>({id:uid(),topic:"",level:"1AM (6e)",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
-  options:{objectives:true,vocabulary:true,quiz:true,images:true,sources:true,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
+  options:{objectives:true,vocabulary:true,quiz:true,images:true,sources:false,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
 
 /* ---------- API ---------- */
 const TOK=()=>{try{return localStorage.getItem("seq.tok");}catch{return null;}};
@@ -480,7 +480,7 @@ async function api(path,body,method="POST"){
   }
   return d;
 }
-const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:S.options,title:S.title,
+const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:{...S.options,refs:parseRefs(S.refsText).map(r=>r.url?(r.title&&r.title!==r.site?r.title+" — ":"")+r.url:r.title)},title:S.title,
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
@@ -645,14 +645,25 @@ function s2(){
   <input id="cur" maxlength="200" placeholder="Ex. Programme officiel, cycle 3 — sciences et technologie" value="${esc(S.curriculum||"")}" ${CAP().curriculum?"":'readonly onclick="openUpgrade(\'curriculum\')" class="lock"'}>
   <label>Contenu à inclure</label>
   <label class="chk"><input type="checkbox" id="o4" ${o.images?"checked":""}><span>Illustrations<small>Schémas dessinés par l'IA sur les diapositives (génération un peu plus longue)</small></span></label>
-  <label class="chk"><input type="checkbox" id="o5" ${o.sources!==false?"checked":""}><span>Sources fiables citées<small>Recherche web : liens vérifiés (institutions, universités, encyclopédies) sur une diapositive « Sources ». Génération un peu plus longue.</small></span></label>
+  <label>Sources de référence <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label>
+  <textarea id="refs" maxlength="1500" placeholder="Un lien ou une référence par ligne. Ex. https://education.gov.dz/… ou « Programme de 1AP, MEN, 2023 »" style="min-height:84px">${esc(S.refsText||"")}</textarea>
+  <small style="color:var(--mut)">Elles seront citées sur une diapositive « Sources » (liens cliquables) et dans le Word. L'IA ne peut pas ouvrir les liens : le professeur reste responsable de leur contenu.</small>
   <label class="chk"><input type="checkbox" id="o1" ${o.objectives?"checked":""}><span>Objectifs d'apprentissage<small>Ce que les élèves sauront à la fin</small></span></label>
   <label class="chk"><input type="checkbox" id="o2" ${o.vocabulary?"checked":""}><span>Vocabulaire clé<small>Mots importants avec leur définition</small></span></label>
   <label class="chk"><input type="checkbox" id="o3" ${o.quiz?"checked":""}><span>Quiz de fin de leçon<small>4 questions à choix multiples avec explications</small></span></label></div>
   ${exBlock(o.ex||EX0)}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="read2();step=1;render()">Retour</button><button class="btn" id="go" onclick="outline()">Générer le plan</button></div>`;
 }
-function read2(){S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,sources:$("#o5").checked,slides:Math.min(+$("#sl").value,CAP().slides),ex:readEx()};}
+function parseRefs(txt){
+  return String(txt||"").split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,8).map(l=>{
+    const m=l.match(/https?:\/\/[^\s<>"')\]]+/);
+    if(!m)return {title:l.slice(0,300),url:"",site:"",accessed:""};
+    let host="";try{host=new URL(m[0]).hostname.replace(/^www\./,"");}catch{}
+    const title=l.replace(m[0],"").replace(/^[\s\-–—:|·,;()«»"]+|[\s\-–—:|·,;()«»"]+$/g,"");
+    return {title:(title||host).slice(0,300),url:m[0],site:host,accessed:""};
+  });
+}
+function read2(){if($("#refs"))S.refsText=$("#refs").value;S.framework=$("#fw").value;if(CAP().curriculum)S.curriculum=$("#cur").value.trim();S.options={objectives:$("#o1").checked,vocabulary:$("#o2").checked,quiz:$("#o3").checked,images:$("#o4").checked,slides:Math.min(+$("#sl").value,CAP().slides),ex:readEx()};}
 async function outline(){
   read2();msg="";const b=$("#go");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';
   try{
@@ -698,7 +709,8 @@ function buildSlides(d){
   const v=d.vocabulary||[];
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
-  if((d.sources||[]).length)out.push({layout:"sources",title:"Sources",sources:d.sources,bullets:[],items:[],notes:"Liens trouvés par recherche web sur des sites réputés fiables, testés à la génération (consultés le "+d.sources[0].accessed+"). À vérifier avant diffusion."});
+  const srcs=(d.sources&&d.sources.length)?d.sources:parseRefs(S.refsText);
+  if(srcs.length)out.push({layout:"sources",title:"Sources",sources:srcs,bullets:[],items:[],notes:"Sources de référence indiquées par l'enseignant."});
   out.forEach(x=>x.id=uid());
   return out;
 }
@@ -795,7 +807,7 @@ function slideHTML(sl,o={}){
       if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="xwr">Réponse de l\'élève…</div>'}`;break;}
       b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
     case "sources":
-      b=`${t}<div class="srcs">${sl.sources.length?sl.sources.map(v=>`<div class="sr"><a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.title||v.site)}</a><div class="su">${esc(v.site)} · ${esc(v.url)}</div></div>`).join(""):'<p style="opacity:.6">Aucune source ajoutée.</p>'}</div><p class="sn">Liens trouvés par recherche web sur des sites réputés fiables et testés à la création${sl.sources[0]&&sl.sources[0].accessed?" (consultés le "+esc(sl.sources[0].accessed)+")":""}.</p>`;break;
+      b=`${t}<div class="srcs">${sl.sources.length?sl.sources.map((v,i)=>`<div class="sr">${ed?`<b>${E("sources."+i+".title",v.title||"")}</b><div class="su">${E("sources."+i+".url",v.url||"")}</div>`:v.url?`<a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.title||v.site)}</a><div class="su">${esc(v.url)}</div>`:`<b>${esc(v.title)}</b>`}</div>`).join(""):'<p style="opacity:.6">Aucune source ajoutée.</p>'}</div><p class="sn">${sl.sources[0]&&sl.sources[0].accessed?"Liens trouvés par recherche web et testés (consultés le "+esc(sl.sources[0].accessed)+").":"Sources de référence indiquées par l'enseignant."}</p>`;break;
     case "production":{
       const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
       b=`${t}<div class="xpk">${pr.level&&LVLS[pr.level]?`<span class="xlvl l-${pr.level}" style="margin:0">${LVLS[pr.level]}</span>`:""}<span class="xpb">${pk[0]} ${pk[1]}</span>${pr.duration||ed?`<span class="xpdur">⏱ ${E("prod.duration",pr.duration||"")}</span>`:""}</div>

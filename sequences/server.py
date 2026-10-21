@@ -823,11 +823,16 @@ def lesson():
                              + (f'Niveau de difficulté des productions : {LEVELS_EX[lvl_key]}.' if not diff else
                               'Pour CHAQUE demande, écris trois versions (une par niveau : facile très guidée, intermédiaire, difficile plus exigeante) '
                               'avec la consigne et les critères adaptés, et ajoute "level": "facile | intermédiaire | difficile" à chacune.'))
-    want_src = bool(opt.get("sources"))
+    want_src = bool(opt.get("sources")) and os.environ.get("SEQ_WEB_SEARCH") == "1"  # recherche web payante : désactivée par défaut
+    refs = [s(r, 300) for r in (opt.get("refs") or []) if isinstance(r, str) and r.strip()][:8]
     src_prompt = ("\nRECHERCHE WEB : avant de rédiger, utilise la recherche web (4 requêtes au plus) pour vérifier les faits, dates, chiffres et définitions "
                   "clés de cette leçon, en privilégiant des sources institutionnelles, universitaires ou encyclopédiques reconnues. "
                   "N'invente aucun fait, date, chiffre ni citation : si un point n'est pas vérifié, reste général. "
                   "Réponds ensuite uniquement par le JSON demandé.\n") if want_src else ""
+    if refs:
+        src_prompt += ("\nSOURCES DE RÉFÉRENCE indiquées par l'enseignant (tu ne peux pas ouvrir les liens) :\n- " + "\n- ".join(refs) +
+                       "\nAppuie-toi sur ce que tu sais de ces références. N'invente aucun fait, date, chiffre ni citation : "
+                       "si un détail précis n'est pas sûr, reste général et mets-le dans les notes de l'enseignant comme « à vérifier dans la source ».\n")
     data, err = ask(
         f"{brief(b)}{src_prompt}\nCadre de leçon : {FRAMEWORKS.get(b.get('framework'), FRAMEWORKS['standard'])}\n\n"
         f"Titre de la séquence : {s(b.get('title'), 160)}\nPlan complet :\n{outline_txt}\n\n"
