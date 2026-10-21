@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fdfbf7">
+<title>Ma Chanson — Une chanson personnalisée qui les fera pleurer</title>
+<meta name="description" content="Surprenez votre proche avec une chanson sur-mesure de qualité studio. Racontez votre histoire, on compose la chanson. Livrée par email en moins de 24 heures.">
+<style>
+:root{
+  --cream:#fdfbf7; --charcoal:#1a1917; --gold:#d4af37; --gold-deep:#9a7b1c; --gold-light:#f0d98a;
+  --white:#fff; --green:#419e63;
+  --serif:Georgia,"Times New Roman",serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--cream);color:var(--charcoal);line-height:1.5;padding-bottom:88px}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+.wrap{max-width:720px;margin:0 auto;padding:0 24px}
+.serif{font-family:var(--serif);font-style:italic;font-weight:400}
+.gold-text{background:linear-gradient(90deg,var(--gold-deep),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep)}
+
+/* bandeau */
+.topbar{background:var(--gold-deep);color:#fff;text-align:center;font-size:.8125rem;font-weight:700;padding:8px 12px}
+.topbar a{display:block}
+.topbar u{text-underline-offset:2px;margin-left:6px}
+
+/* hero */
+.hero{background:linear-gradient(var(--cream),#fff);padding-bottom:32px;text-align:center}
+.brandrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:28px 0 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.875rem}
+.logo{width:28px;height:28px;border-radius:50%;background:var(--charcoal);color:#fff;display:grid;place-items:center;font:700 .875rem var(--serif)}
+.badge{font-size:.75rem;font-weight:700;color:var(--green);background:rgba(29,170,97,.1);padding:4px 12px;border-radius:99px}
+
+.carousel{position:relative;border-radius:28px;overflow:hidden;background:var(--charcoal);box-shadow:0 18px 40px -18px rgba(26,25,23,.35)}
+.track{display:flex;aspect-ratio:1/1;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.track::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:32px;color:#fff;text-align:center}
+.slide .emoji{font-size:4.5rem;line-height:1}
+.slide h3{font:italic 400 1.6rem var(--serif)}
+.slide p{max-width:22rem;font-size:.95rem;color:rgba(255,255,255,.7)}
+.s1{background:linear-gradient(135deg,#3a2f1c,#1a1917)}
+.s2{background:linear-gradient(135deg,#4a2a2e,#1a1917)}
+.s3{background:linear-gradient(135deg,#1f3340,#1a1917)}
+.s4{background:linear-gradient(135deg,#2a3d2c,#1a1917)}
+.s5{background:linear-gradient(135deg,#4a3a1a,#1a1917)}
+.counter{position:absolute;right:16px;top:16px;background:rgba(26,25,23,.55);color:#fff;font-size:.75rem;font-weight:700;padding:5px 11px;border-radius:99px;pointer-events:none}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.85);display:grid;place-items:center;font-size:1.2rem;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.nav:hover{background:#fff}
+.nav.prev{left:14px}.nav.next{right:14px}
+.dots{display:flex;justify-content:center;gap:8px;margin-top:12px}
+.dot{width:44px;height:44px;border-radius:12px;border:2.5px solid transparent;opacity:.55;display:grid;place-items:center;font-size:1.3rem;background:var(--charcoal);transition:.2s}
+.dot[aria-pressed=true]{border-color:var(--gold);opacity:1;transform:translateY(-2px)}
+@media(min-width:380px){.dot{width:56px;height:56px}}
+
+.hero-copy{padding-top:28px}
+h1{font-size:clamp(1.375rem,6vw,2.5rem);line-height:1.2;margin:12px 0}
+.lead{max-width:28rem;margin:0 auto 18px;color:rgba(26,25,23,.6);font-size:1.05rem}
+.who{margin-bottom:8px;font-size:.75rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-deep)}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:22rem;margin:0 auto 18px}
+.chip{border:2px solid rgba(26,25,23,.15);background:#fff;border-radius:99px;padding:6px 12px;font-size:.8125rem;font-weight:600;transition:.15s}
+.chip:hover,.chip[aria-pressed=true]{border-color:var(--gold);background:#fbf5e6;transform:translateY(-2px)}
+.cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:24rem;margin:0 auto;background:var(--charcoal);color:#fff;border-radius:99px;padding:16px 32px;font-size:.875rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 10px 25px rgba(0,0,0,.2);transition:.2s}
+.cta:hover{background:var(--gold-deep);transform:translateY(-2px)}
+.cta.gold{background:var(--gold);color:var(--charcoal)}
+.cta.gold:hover{background:var(--gold-light)}
+.fine{margin:16px 0;font-size:.75rem;color:rgba(26,25,23,.45);font-weight:500}
+.proof{font-size:.75rem;font-weight:600;color:rgba(26,25,23,.6)}
+.proof b{color:var(--gold-deep);font-size:.875rem;margin-right:6px}
+
+/* sections */
+section{padding:56px 0}
+h2{font-size:clamp(1.6rem,5vw,2.25rem);text-align:center;margin-bottom:8px;line-height:1.2}
+.steps{background:var(--charcoal);color:#fff}
+.steps h2 .serif{color:var(--gold)}
+.steplist{margin:32px 0;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);border-radius:16px;overflow:hidden}
+.step{display:flex;gap:16px;align-items:center;padding:16px 20px}
+.step+.step{border-top:1px solid rgba(255,255,255,.06)}
+.num{flex:none;width:40px;height:40px;border-radius:50%;background:var(--gold);color:var(--charcoal);display:grid;place-items:center;font-weight:700}
+.step small{display:block;font-size:.75rem;color:rgba(255,255,255,.4)}
+.reviews{background:#fff}
+.sub{text-align:center;font-size:.875rem;color:rgba(26,25,23,.5);margin-bottom:32px}
+.grid3{display:grid;gap:24px;max-width:1100px;margin:0 auto;padding:0 24px}
+@media(min-width:768px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{background:var(--cream);border:1px solid #eee;border-radius:16px;padding:24px}
+.card .stars{color:var(--gold);margin-bottom:12px;font-size:.875rem}
+.card p{font-size:.875rem;margin-bottom:16px}
+.who-line{display:flex;gap:8px;align-items:center;font-size:.75rem}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--charcoal);color:#fff;display:grid;place-items:center;font-weight:700}
+.who-line span{color:rgba(26,25,23,.4);display:block}
+
+/* player */
+.listen{background:linear-gradient(#121212,#1a1a1a);color:#fff}
+.listen h2 .serif{color:var(--gold)}
+.listen .sub{color:rgba(255,255,255,.4)}
+.player{max-width:1000px;margin:0 auto;padding:0 16px;display:grid;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.05);background:linear-gradient(#282828,#1f1f1f)}
+@media(min-width:1024px){.player{grid-template-columns:1fr 18rem}}
+.now{display:flex;gap:20px;align-items:center;padding:24px;flex-direction:column;text-align:center}
+@media(min-width:640px){.now{flex-direction:row;text-align:left}}
+.cover{flex:none;width:128px;height:128px;border-radius:12px;display:grid;place-items:center;font-size:3.2rem;box-shadow:0 10px 25px rgba(0,0,0,.4)}
+.now-info{flex:1;min-width:0;width:100%}
+.occ{font-size:.625rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.now-info h3{font:italic 400 1.25rem var(--serif);margin:2px 0}
+.meta{font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:12px}
+.bar{display:flex;gap:8px;align-items:center;font:.625rem ui-monospace,monospace;color:rgba(255,255,255,.3)}
+.progress{flex:1;height:4px;border-radius:99px;background:rgba(255,255,255,.1);cursor:pointer;position:relative}
+.progress i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--gold);width:0}
+.ctrl{display:flex;justify-content:center;gap:4px;margin-top:8px}
+@media(min-width:640px){.ctrl{justify-content:flex-start}}
+.ctrl button{width:36px;height:36px;border-radius:50%;color:rgba(255,255,255,.5)}
+.ctrl button:hover{background:rgba(255,255,255,.1);color:#fff}
+.ctrl .play{width:44px;height:44px;background:var(--gold);color:var(--charcoal)}
+.ctrl .play:hover{background:var(--gold-light);color:var(--charcoal)}
+.queue{border-top:1px solid rgba(255,255,255,.05)}
+@media(min-width:1024px){.queue{border-top:0;border-left:1px solid rgba(255,255,255,.05)}}
+.queue h4{display:flex;justify-content:space-between;background:rgba(255,255,255,.05);padding:8px 16px;font-size:.625rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.track-btn{display:flex;gap:12px;align-items:center;width:100%;padding:8px 16px;text-align:left}
+.track-btn:hover,.track-btn.on{background:rgba(255,255,255,.08)}
+.track-btn .mini{flex:none;width:32px;height:32px;border-radius:4px;display:grid;place-items:center}
+.track-btn b{display:block;font-size:.875rem;font-weight:500}
+.track-btn.on b{color:var(--gold)}
+.track-btn small{font-size:.625rem;color:rgba(255,255,255,.4)}
+.note{text-align:center;margin-top:24px;font-style:italic;font-size:.875rem;color:rgba(255,255,255,.6)}
+.guarantee{text-align:center;margin-top:12px;font-size:.75rem;font-weight:500;color:#4ade80}
+
+/* faq */
+.faq{background:var(--cream)}
+.faq h2{margin-bottom:40px}
+details{background:#fff;border:1px solid #e5e5e5;border-radius:12px;margin-bottom:16px;overflow:hidden}
+summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px;font-weight:600;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"⌄";color:#9ca3af;transition:transform .2s;font-size:1.2rem}
+details[open] summary::after{transform:rotate(180deg)}
+details div{padding:0 20px 20px;font-size:.875rem;color:rgba(26,25,23,.6)}
+.help{text-align:center;margin-top:32px;font-size:.875rem;color:rgba(26,25,23,.4)}
+.help a{text-decoration:underline}
+
+footer{border-top:1px solid #f0ede6;padding:40px 0;text-align:center}
+footer p{font-size:.875rem;color:rgba(26,25,23,.4);max-width:28rem;margin:12px auto 24px}
+.links{display:flex;justify-content:center;gap:24px;font-size:.75rem;color:rgba(26,25,23,.4);margin-bottom:24px}
+.links a:hover{color:var(--gold-deep)}
+.copy{font-size:.75rem;color:rgba(26,25,23,.3)}
+
+/* CTA collant mobile */
+.sticky{position:fixed;inset:auto 0 0;z-index:40;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-top:1px solid #e5e5e5;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));transition:.3s;transform:translateY(100%);opacity:0;pointer-events:none}
+.sticky.show{transform:none;opacity:1;pointer-events:auto}
+.sticky .cta{padding:14px;box-shadow:none}
+@media(min-width:1024px){.sticky{display:none}body{padding-bottom:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="topbar"><a href="#commander">🎁 2ᵉ version OFFERTE · <u>En profiter →</u></a></div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandrow">
+      <span class="brand"><span class="logo">M</span><span>Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span>
+      <span class="badge">● Express 2h disponible</span>
+    </div>
+
+    <div class="carousel" role="region" aria-roledescription="carrousel" aria-label="Comment se crée votre chanson">
+      <div class="track" id="track" tabindex="0" aria-label="Étapes de création de votre chanson">
+        <div class="slide s1"><span class="emoji">✍️</span><h3>Donnez-nous son prénom</h3><p>Pour qui est la chanson ? On commence par l'essentiel.</p></div>
+        <div class="slide s2"><span class="emoji">💞</span><h3>Un souvenir, une émotion</h3><p>Racontez en quelques lignes ce qui vous lie. C'est le cœur de la chanson.</p></div>
+        <div class="slide s3"><span class="emoji">🎹</span><h3>On compose et on enregistre</h3><p>Votre histoire devient paroles et mélodie, avec une production de qualité studio.</p></div>
+        <div class="slide s4"><span class="emoji">📩</span><h3>Reçue par email en 24h</h3><p>Un lien pour écouter, télécharger et partager.</p></div>
+        <div class="slide s5"><span class="emoji">😭</span><h3>Ils pleurent de joie</h3><p>Le moment que vous attendiez : leur réaction.</p></div>
+      </div>
+      <span class="counter" id="counter" aria-live="off">1 / 5</span>
+      <button class="nav prev" id="prev" aria-label="Étape précédente">‹</button>
+      <button class="nav next" id="next" aria-label="Étape suivante">›</button>
+    </div>
+    <div class="dots" id="dots" aria-label="Choisir une étape"></div>
+
+    <div class="hero-copy">
+      <p class="eyebrow">Le cadeau chanson n°1</p>
+      <h1>« Cette chanson m'a fait <span class="serif gold-text">pleurer</span> ! »</h1>
+      <p class="lead">Surprenez votre proche avec une chanson sur-mesure qu'il n'oubliera jamais.</p>
+      <p class="who">Pour qui est cette chanson ?</p>
+      <div class="chips" id="chips">
+        <button class="chip" data-for="Mari">Mari</button><button class="chip" data-for="Femme">Femme</button>
+        <button class="chip" data-for="Copain">Copain</button><button class="chip" data-for="Copine">Copine</button>
+        <button class="chip" data-for="Maman">Maman</button><button class="chip" data-for="Papa">Papa</button>
+        <button class="chip" data-for="Ami">Ami</button><button class="chip" data-for="Autre">Autre</button>
+      </div>
+      <a id="hero-cta" class="cta" href="#commander">🎵 Créer ma chanson →</a>
+      <p class="fine">Composée à partir de votre histoire · Livrée par email en moins de 24 heures</p>
+      <p class="proof"><b>★★★★★</b>Remplacez par votre vrai nombre de clients</p>
+    </div>
+  </div>
+</header>
+
+<section class="steps" id="commander">
+  <div class="wrap">
+    <h2>Comment fonctionne <span class="serif">Ma Chanson</span></h2>
+    <div class="steplist">
+      <div class="step"><span class="num">1</span><div><b>Racontez votre histoire</b><small>3 minutes</small></div></div>
+      <div class="step"><span class="num">2</span><div><b>Nous composons votre chanson</b><small>À partir de votre histoire</small></div></div>
+      <div class="step"><span class="num">3</span><div><b>Livrée par email</b><small style="color:var(--gold-light)">Produit numérique · en moins de 24 heures après le paiement</small></div></div>
+    </div>
+    <a class="cta gold" href="#" data-order>🎵 Créer ma chanson →</a>
+  </div>
+</section>
+
+<section class="reviews">
+  <h2>Ce que disent nos <span class="serif" style="color:var(--gold-deep)">clients</span></h2>
+  <p class="sub">De vraies histoires, de vraies personnes</p>
+  <div class="grid3">
+    <!-- À remplacer par de VRAIS avis clients -->
+    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°1 : mariage, émotion, effet waouh. »</p><div class="who-line"><span class="avatar">A</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
+    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°2 : cadeau pour un parent, larmes de joie. »</p><div class="who-line"><span class="avatar" style="background:var(--gold);color:var(--charcoal)">B</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
+    <div class="card"><p class="stars">★★★★★</p><p>« Avis client n°3 : demande en mariage, anniversaire… »</p><div class="who-line"><span class="avatar">C</span><div><b>Prénom N.</b><span>Client vérifié</span></div></div></div>
+  </div>
+</section>
+
+<section class="listen" id="listen">
+  <div class="wrap" style="max-width:1000px">
+    <h2>Écoutez ce que nous avons <span class="serif">créé</span></h2>
+    <p class="sub">Chansons réelles. Histoires réelles. Appuyez sur play.</p>
+    <audio id="audio" preload="none"></audio>
+    <div class="player">
+      <div class="now">
+        <div class="cover" id="cover"></div>
+        <div class="now-info">
+          <p class="occ" id="occ"></p>
+          <h3 id="title"></h3>
+          <p class="meta" id="meta"></p>
+          <div class="bar"><span id="cur">0:00</span><div class="progress" id="progress" role="slider" aria-label="Progression" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0"><i id="fill"></i></div><span id="dur">0:00</span></div>
+          <div class="ctrl">
+            <button id="pPrev" aria-label="Précédent">⏮</button>
+            <button id="pPlay" class="play" aria-label="Lecture">▶</button>
+            <button id="pNext" aria-label="Suivant">⏭</button>
+          </div>
+        </div>
+      </div>
+      <div class="queue"><h4><span>À venir</span><span id="count"></span></h4><div id="list"></div></div>
+    </div>
+    <p class="note">Imaginez leur visage quand ils entendent leur nom dans la chanson…</p>
+    <p class="guarantee">🛡️ Pas de larmes ? Garantie satisfait ou remboursé 60 jours, sans condition.</p>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="wrap">
+    <h2>Questions fréquentes</h2>
+    <details><summary>Qu'est-ce qui rend ces chansons spéciales ?</summary><div>Chaque chanson est écrite sur-mesure à partir de votre histoire : le prénom de votre proche, vos souvenirs partagés et les émotions que vous voulez transmettre. Aucun modèle, chaque chanson est unique.</div></details>
+    <details><summary>En combien de temps je reçois la chanson ?</summary><div>C'est un produit 100 % numérique : aucun envoi postal. Votre chanson est livrée par email en moins de 24 heures après le paiement, avec un lien pour l'écouter, la télécharger et la partager.</div></details>
+    <details><summary>Et si la chanson ne me plaît pas ?</summary><div>Garantie satisfait ou remboursé 60 jours, sans condition. Si vous n'êtes pas satisfait, on vous rembourse intégralement.</div></details>
+    <details><summary>Quels genres et styles sont disponibles ?</summary><div>Pop, acoustique, R&amp;B, country, rock, hip-hop, classique, jazz et plus encore. Vous choisissez l'ambiance qui colle le mieux à votre histoire.</div></details>
+    <details><summary>Comment la chanson est-elle créée ?</summary><div>Elle est composée à partir de votre histoire, puis produite pour un rendu de qualité studio, avec plusieurs contrôles qualité avant l'envoi.</div></details>
+    <details><summary>Puis-je diffuser la chanson lors d'un événement ?</summary><div>Oui ! La chanson vous appartient : mariages, anniversaires, cérémonies… partagez-la librement.</div></details>
+    <p class="help">Encore des questions ? <a href="mailto:contact@example.com">contact@example.com</a></p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="brand" style="justify-content:center"><span class="logo">M</span><span style="font-size:1.1rem">Ma<span class="serif" style="color:var(--gold-deep)">Chanson</span></span></span>
+    <p>Nous créons des chansons personnalisées pour célébrer vos proches et transformer vos souvenirs les plus précieux en musique.</p>
+    <div class="links"><a href="#">Conditions</a><a href="#">Confidentialité</a><a href="#">Remboursements</a><a href="mailto:contact@example.com">Contact</a></div>
+    <p class="copy">© 2026 Ma Chanson. Tous droits réservés.</p>
+  </div>
+</footer>
+
+<div class="sticky" id="sticky"><a class="cta" href="#" data-order style="max-width:none">Créer ma chanson →</a></div>
+
+<script>
+/* ---- Configuration : à adapter ---- */
+var ORDER_URL = "#commander"; // lien de commande / formulaire
+var SONGS = [ // ajoutez vos fichiers audio dans "src"
+  {title:"À travers les années", sub:"Pour Sarah · Ballade country", occ:"25e anniversaire", icon:"💍", color:"#7a5c1e", dur:"2:05", src:""},
+  {title:"Le porche de papa", sub:"Pour papa · Folk acoustique", occ:"Fête des pères", icon:"🎸", color:"#2f4f6a", dur:"1:53", src:""},
+  {title:"Toujours cette fille", sub:"Pour maman · Ballade pop", occ:"Anniversaire", icon:"🌹", color:"#7a2f45", dur:"2:08", src:""},
+  {title:"Ma petite fille", sub:"Pour papa · Ballade acoustique", occ:"Naissance", icon:"🧸", color:"#3d6a4a", dur:"1:59", src:""}
+];
+
+/* ---- Carrousel ---- */
+var track=document.getElementById('track'),slides=track.children,dots=document.getElementById('dots'),counter=document.getElementById('counter');
+var icons=['✍️','💞','🎹','📩','😭'],idx=0;
+icons.forEach(function(ic,i){var b=document.createElement('button');b.className='dot';b.textContent=ic;b.setAttribute('aria-label','Afficher l’étape '+(i+1));b.setAttribute('aria-pressed',i===0);b.onclick=function(){go(i)};dots.appendChild(b)});
+function go(i){idx=(i+slides.length)%slides.length;track.scrollTo({left:idx*track.clientWidth,behavior:'smooth'})}
+function sync(){var i=Math.round(track.scrollLeft/track.clientWidth);idx=i;counter.textContent=(i+1)+' / '+slides.length;[].forEach.call(dots.children,function(d,k){d.setAttribute('aria-pressed',k===i)})}
+track.addEventListener('scroll',sync,{passive:true});
+document.getElementById('prev').onclick=function(){go(idx-1)};
+document.getElementById('next').onclick=function(){go(idx+1)};
+track.addEventListener('keydown',function(e){if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1)});
+
+/* ---- Destinataire & liens de commande ---- */
+function orderHref(f){return f?ORDER_URL+(ORDER_URL.indexOf('?')>-1?'&':'?')+'for='+encodeURIComponent(f):ORDER_URL}
+var chosen='';
+[].forEach.call(document.querySelectorAll('.chip'),function(c){c.onclick=function(){
+  chosen=c.dataset['for'];[].forEach.call(document.querySelectorAll('.chip'),function(x){x.setAttribute('aria-pressed',x===c)});
+  document.getElementById('hero-cta').href=orderHref(chosen);
+  [].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref(chosen)});
+}});
+[].forEach.call(document.querySelectorAll('[data-order]'),function(a){a.href=orderHref('')});
+
+/* ---- Lecteur ---- */
+var audio=document.getElementById('audio'),cur=0,$=function(id){return document.getElementById(id)};
+function fmt(s){s=Math.floor(s||0);return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+function render(){
+  var s=SONGS[cur];$('cover').style.background=s.color;$('cover').textContent=s.icon;
+  $('occ').textContent=s.occ;$('title').textContent='“'+s.title+'”';$('meta').textContent=s.sub;$('dur').textContent=s.dur;$('cur').textContent='0:00';$('fill').style.width='0';
+  $('count').textContent=SONGS.length+' chansons';
+  $('list').innerHTML='';
+  SONGS.forEach(function(t,i){var b=document.createElement('button');b.className='track-btn'+(i===cur?' on':'');
+    b.innerHTML='<span class="mini" style="background:'+t.color+'">'+t.icon+'</span><span style="flex:1;min-width:0"><b></b><small></small></span><small>'+t.dur+'</small>';
+    b.querySelector('b').textContent=t.title;b.querySelectorAll('small')[0].textContent=t.sub;
+    b.onclick=function(){load(i,true)};$('list').appendChild(b)});
+}
+function load(i,play){cur=(i+SONGS.length)%SONGS.length;audio.pause();audio.src=SONGS[cur].src||'';render();if(play)toggle(true);else $('pPlay').textContent='▶'}
+function toggle(force){
+  if(!SONGS[cur].src){$('pPlay').textContent='▶';return}
+  if(force===true||audio.paused){audio.play();$('pPlay').textContent='⏸'}else{audio.pause();$('pPlay').textContent='▶'}
+}
+$('pPlay').onclick=function(){toggle()};
+$('pPrev').onclick=function(){load(cur-1,true)};
+$('pNext').onclick=function(){load(cur+1,true)};
+audio.addEventListener('timeupdate',function(){var p=audio.duration?audio.currentTime/audio.duration*100:0;$('fill').style.width=p+'%';$('progress').setAttribute('aria-valuenow',Math.round(p));$('cur').textContent=fmt(audio.currentTime)});
+audio.addEventListener('loadedmetadata',function(){$('dur').textContent=fmt(audio.duration)});
+audio.addEventListener('ended',function(){load(cur+1,true)});
+$('progress').onclick=function(e){if(!audio.duration)return;var r=this.getBoundingClientRect();audio.currentTime=(e.clientX-r.left)/r.width*audio.duration};
+render();
+
+/* ---- CTA collant : apparaît quand le CTA du hero sort de l'écran ---- */
+var sticky=$('sticky');
+if('IntersectionObserver' in window){new IntersectionObserver(function(en){sticky.classList.toggle('show',!en[0].isIntersecting&&en[0].boundingClientRect.top<0)}).observe($('hero-cta'))}
+</script>
+</body>
+</html>
