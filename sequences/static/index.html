@@ -822,7 +822,7 @@ function studio(){
   $("#studio").innerHTML=`<div class="top"><button class="btn sm" onclick="closeStudio()">←</button><b>${esc(S.lessons[ST.li].title)}</b>
    <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(allThemes()).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${esc(t.n)}</option>`).join("")}</select>
    <button class="btn sm" onclick="${(S.custom||{})[S.theme]?"editTheme(S.theme)":"newTheme()"}" title="Thème personnalisé (Max)">🎨</button>
-   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="exportPdf(${ST.li})" title="PDF des diapositives">⬇ PDF</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
+   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="exportWord(${ST.li})" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn sm" onclick="exportPdf(${ST.li})" title="PDF des diapositives">⬇ PDF</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
   <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme,thumb:true}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
   <div class="main"><div class="stage" id="stage"><div class="fit" id="big" style="width:100%;height:100%">${slideHTML(cur,{edit:true,theme:S.theme,tab:ST.tab})}</div></div>
    <div class="tools"><span style="font-size:13px;color:var(--mut)">${ST.n+1} / ${sl.length}</span>
@@ -1468,13 +1468,13 @@ async function exportPptx(li){
     download(blob,fname(li==null?S.title:S.lessons[li].title)+".pptx");
   }catch(e){alert("Export PowerPoint impossible : "+(e&&e.message||e));}
 }
-async function exportWord(){
-  const ser=JSON.parse(JSON.stringify({title:S.title,level:S.level,language:S.language,topic:S.topic,lessons:S.lessons.filter(l=>l.slides).map(l=>({title:l.title,slides:l.slides.map(x=>{const y={...x};delete y.svg;return normalize(y);})}))}));
+async function exportWord(li){
+  const ser=JSON.parse(JSON.stringify({title:S.title,level:S.level,language:S.language,topic:S.topic,lessons:(li==null?S.lessons.filter(l=>l.slides):[S.lessons[li]]).map(l=>({title:l.title,slides:l.slides.map(x=>{const y={...x};delete y.svg;return normalize(y);})}))}));
   toast("Création du fichier Word…");
   try{
     const r=await api("/api/docx",{series:ser});
     const bin=atob(r.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
-    download(new Blob([u],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),fname(S.title)+".docx");
+    download(new Blob([u],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),fname(li==null?S.title:S.lessons[li].title)+".docx");
   }catch(e){alert("Export Word impossible : "+e.message);}
 }
 /* PDF des diapositives : la boîte d'impression du navigateur, réglée sur des pages 16:9 */
