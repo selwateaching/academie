@@ -164,16 +164,36 @@ class Builder:
         self.par(self.doc, "", after=2)
 
     def lines(self, n, host=None):
-        for _ in range(n):
-            p = self.par(host or self.doc, " ", after=0)
-            pPr = p._p.get_or_add_pPr()
-            bd = OxmlElement("w:pBdr")
-            b = OxmlElement("w:bottom")
-            for k, v in (("val", "dotted"), ("sz", "6"), ("space", "1"), ("color", "888888")):
-                b.set(qn("w:" + k), v)
-            bd.append(b)
-            pPr.append(bd)
-            p.paragraph_format.line_spacing = 2.4 if self.big else 1.9
+        """Lignes de cahier : un tableau sans cadre dont chaque rangée a un trait en bas (Word fusionnerait des paragraphes bordés)."""
+        tb = self.doc.add_table(rows=n, cols=1)
+        tbl = tb._tbl
+        pr = tbl.tblPr
+        borders = OxmlElement("w:tblBorders")
+        for side in ("top", "left", "bottom", "right", "insideV"):
+            e = OxmlElement("w:" + side)
+            e.set(qn("w:val"), "nil")
+            borders.append(e)
+        for side in ("insideH", "bottom"):
+            e = OxmlElement("w:" + side)
+            for k, v in (("val", "single"), ("sz", "6"), ("space", "0"), ("color", "7DA7D9")):
+                e.set(qn("w:" + k), v)
+            borders.append(e)
+        pr.append(borders)
+        if self.rtl:
+            pr.append(OxmlElement("w:bidiVisual"))
+        h = 1.25 if self.big else 0.95
+        for row in tb.rows:
+            trPr = row._tr.get_or_add_trPr()
+            hh = OxmlElement("w:trHeight")
+            hh.set(qn("w:val"), str(int(h * 567)))
+            hh.set(qn("w:hRule"), "exact")
+            trPr.append(hh)
+            cant = OxmlElement("w:cantSplit")
+            trPr.append(cant)
+            c = row.cells[0]
+            c.width = Cm(18)
+            c.paragraphs[0].paragraph_format.space_after = Pt(0)
+        self.par(self.doc, "", after=2)
 
     def lvl_tag(self, p, level):
         if level in LVL:
@@ -330,7 +350,7 @@ class Builder:
             self.cell_text(b, "•  " + t(c, 240), first=False)
         self.par(self.doc, "", after=4)
         self.par(self.doc, self.L("Ma production :"), bold=True, color=TEAL)
-        self.lines(8)
+        self.lines(12 if not self.big else 9)
         self.par(self.doc, "", after=4)
 
     def corriges(self, exo, quiz, prods, sl):
