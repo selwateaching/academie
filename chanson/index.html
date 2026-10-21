@@ -91,6 +91,27 @@
     <p class="hint">Le fichier reste sur votre appareil : il sert à l'écouter ici, rien n'est envoyé.</p>
   </section>
 
+  <section class="card" id="mix">
+    <h2>🎹 Fond musical et mixage</h2>
+    <p class="hint" style="margin-top:0">Crée un fond musical doux (piano et nappes) dans votre ambiance, sans voix chantée. Vous pouvez y mélanger votre propre voix (vous chantez ou vous lisez les paroles) et obtenir un fichier audio prêt pour la page cadeau.</p>
+    <div class="row">
+      <div><label for="bpm">Tempo : <span id="bpmv">76</span> battements/min</label><input id="bpm" type="range" min="55" max="110" value="76"></div>
+      <div><label for="dur">Durée du fond <small>(sans voix)</small></label><select id="dur"><option value="1">1 minute</option><option value="2" selected>2 minutes</option><option value="3">3 minutes</option></select></div>
+    </div>
+    <label>Ma voix <small>(facultatif)</small></label>
+    <div class="actions" style="margin-top:4px"><button class="alt" id="rec" type="button">🎙️ Enregistrer ma voix</button></div>
+    <input id="voix" type="file" accept="audio/*" style="margin-top:10px">
+    <audio id="vplayer" class="hidden" controls style="width:100%;margin-top:10px"></audio>
+    <div class="row">
+      <div><label for="vv">Volume de la voix</label><input id="vv" type="range" min="0" max="150" value="100"></div>
+      <div><label for="mv">Volume de la musique</label><input id="mv" type="range" min="0" max="100" value="45"></div>
+    </div>
+    <div class="actions"><button id="mixbtn" type="button">🎶 Créer le fond / mixer</button></div>
+    <audio id="mplayer" class="hidden" controls style="width:100%;margin-top:12px"></audio>
+    <div class="actions hidden" id="mixout"><button class="alt" id="mixdl" type="button">Télécharger le mixage (.wav)</button></div>
+    <p class="hint" id="mixhint">Le mixage est automatiquement utilisé dans la « Page cadeau ». Le son est synthétisé simplement : pour une vraie chanson chantée, utilisez Suno ou Udio, puis ajoutez leur fichier plus haut.</p>
+  </section>
+
   <section class="card" id="cadeau">
     <h2>🎁 Page cadeau à envoyer</h2>
     <p class="hint" style="margin-top:0">Crée un seul fichier à envoyer (WhatsApp, e-mail…) : la personne l'ouvre et voit sa photo en fond, les paroles et peut écouter la chanson.</p>
@@ -269,6 +290,7 @@ $('usep').addEventListener('click', () => {
 $('audio').addEventListener('change', e => {
   const f = e.target.files[0], pl = $('player');
   if (!f) return;
+  mixBlob = null;
   pl.src = URL.createObjectURL(f);
   pl.classList.remove('hidden');
   pl.play().catch(() => {});
@@ -301,7 +323,7 @@ $('mk').addEventListener('click', async () => {
   if (!paroles) return alert('Affichez d\'abord des paroles (génération ou « Utiliser ces paroles »).');
   const nom = $('nom').value.trim(), dedi = $('dedi').value.trim();
   const rtl = /[\u0600-\u06FF]/.test(paroles);
-  const af = $('audio').files[0];
+  const af = mixBlob || $('audio').files[0];
   if (af && af.size > 20e6 && !confirm('Le fichier audio est lourd (' + Math.round(af.size / 1e6) + ' Mo) : la page sera difficile à envoyer. Continuer ?')) return;
   const audio = af ? await readFile(af) : '';
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(nom ? 'Pour ' + nom : 'Une chanson pour toi')}</title>
@@ -325,6 +347,104 @@ ${dedi ? '<p class="d">' + esc(dedi) + '</p>' : ''}</div></body></html>`;
   a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
   a.download = fname;
   a.click();
+});
+// ---------- Fond musical et mixage ----------
+const PROG = {
+  'tendre et touchante': ['Am', 'F', 'C', 'G'], 'nostalgique': ['Am', 'G', 'F', 'E'], 'joyeuse et lumineuse': ['C', 'G', 'Am', 'F'],
+  'mélancolique': ['Am', 'Dm', 'E', 'Am'], 'pleine de gratitude': ['G', 'D', 'Em', 'C'], 'romantique': ['C', 'Am', 'F', 'G']
+};
+const CHORD = { C: [48, 52, 55], D: [50, 54, 57], Dm: [50, 53, 57], Em: [52, 55, 59], E: [52, 56, 59], F: [53, 57, 60], G: [55, 59, 62], Am: [57, 60, 64] };
+const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+let mixBlob = null, voiceBlob = null, mixUrl = '';
+
+$('bpm').addEventListener('input', () => $('bpmv').textContent = $('bpm').value);
+$('voix').addEventListener('change', e => { const f = e.target.files[0]; if (f) setVoice(f); });
+function setVoice(b) { voiceBlob = b; const v = $('vplayer'); v.src = URL.createObjectURL(b); v.classList.remove('hidden'); }
+
+let recorder = null, chunks = [];
+$('rec').addEventListener('click', async () => {
+  if (recorder) { recorder.stop(); return; }
+  try {
+    const st = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recorder = new MediaRecorder(st); chunks = [];
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => { st.getTracks().forEach(t => t.stop()); setVoice(new Blob(chunks, { type: recorder.mimeType })); recorder = null; $('rec').textContent = '🎙️ Réenregistrer ma voix'; };
+    recorder.start(); $('rec').textContent = '⏹️ Arrêter l\'enregistrement';
+  } catch (e) { recorder = null; alert('Micro indisponible. Ajoutez plutôt un fichier avec le bouton ci-dessous.'); }
+});
+
+function wavBlob(buf) {
+  const x = buf.getChannelData(0), n = x.length, sr = buf.sampleRate;
+  let peak = 0.0001; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(x[i]));
+  const g = 0.92 / peak, v = new DataView(new ArrayBuffer(44 + n * 2));
+  const w = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, x[i] * g)) * 32767, true);
+  return new Blob([v], { type: 'audio/wav' });
+}
+
+async function renderMix() {
+  const sr = 32000, bpm = +$('bpm').value, beat = 60 / bpm, bar = beat * 4;
+  const prog = PROG[$('ambiance').value] || PROG['tendre et touchante'];
+  let vb = null, intro = 0, total = +$('dur').value * 60;
+  if (voiceBlob) {
+    vb = await new OfflineAudioContext(1, 1, sr).decodeAudioData(await voiceBlob.arrayBuffer());
+    intro = 4; total = intro + vb.duration + 5;
+  }
+  const ctx = new OfflineAudioContext(1, Math.ceil(total * sr), sr);
+  const mv = +$('mv').value / 100, vg = +$('vv').value / 100;
+  const bus = ctx.createGain(); bus.connect(ctx.destination);
+  bus.gain.setValueAtTime(0, 0); bus.gain.linearRampToValueAtTime(mv, 1.5);
+  bus.gain.setValueAtTime(mv, Math.max(2, total - 4)); bus.gain.linearRampToValueAtTime(0, total);
+  // réverbération simple
+  const ir = ctx.createBuffer(1, sr * 1.6, sr), d = ir.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.5);
+  const rv = ctx.createConvolver(); rv.buffer = ir; const wet = ctx.createGain(); wet.gain.value = 0.28; rv.connect(wet); wet.connect(bus);
+  const out = ctx.createGain(); out.connect(bus); out.connect(rv);
+  const note = (m, t, len, type, vol, dest = out) => {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = type; o.frequency.value = hz(m);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0005, t + len);
+    o.connect(g); g.connect(dest); o.start(t); o.stop(t + len + 0.05);
+  };
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(out);
+  const pat = [0, 1, 2, 1, 0, 1, 2, 1];
+  for (let b = 0; b * bar < total; b++) {
+    const t0 = b * bar, ch = CHORD[prog[b % 4]];
+    note(ch[0] - 12, t0, beat * 2.2, 'triangle', 0.32); note(ch[0] - 12, t0 + beat * 2, beat * 2, 'triangle', 0.26);
+    pat.forEach((k, i) => { const t = t0 + i * beat / 2, m = ch[k] + 12; note(m, t, beat * 1.6, 'triangle', 0.17); note(m + 12, t, beat, 'sine', 0.05); });
+    ch.forEach(m => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = hz(m); o.detune.value = (Math.random() - 0.5) * 12;
+      g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.045, t0 + bar * 0.35); g.gain.linearRampToValueAtTime(0, t0 + bar * 1.05);
+      o.connect(g); g.connect(lp); o.start(t0); o.stop(t0 + bar * 1.1); });
+  }
+  if (vb) {
+    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = vb; g.gain.value = vg;
+    const vr = ctx.createGain(); vr.gain.value = 0.18; s.connect(g); g.connect(ctx.destination); g.connect(vr); vr.connect(rv); s.start(intro);
+  }
+  return wavBlob(await ctx.startRendering());
+}
+
+$('mixbtn').addEventListener('click', async () => {
+  const b = $('mixbtn'); b.disabled = true; b.textContent = 'Création en cours…';
+  try {
+    mixBlob = await renderMix();
+    if (mixUrl) URL.revokeObjectURL(mixUrl);
+    mixUrl = URL.createObjectURL(mixBlob);
+    $('mplayer').src = mixUrl; $('mplayer').classList.remove('hidden'); $('mixout').classList.remove('hidden');
+    $('mplayer').play().catch(() => {});
+  } catch (e) { alert('Création impossible : ' + (e.message || e)); }
+  b.disabled = false; b.textContent = '🎶 Créer le fond / mixer';
+});
+
+$('mixdl').addEventListener('click', async () => {
+  if (!mixBlob) return;
+  const dl = window.claude ? await window.claude.use('downloads') : null;
+  if (dl) {
+    try { await dl.save({ filename: 'chanson-mixee.wav', data: mixBlob }); }
+    catch (e) { if (e.code !== 'declined') alert('Cet aperçu n\'autorise pas le téléchargement audio. Ouvrez l\'application sur chanson.onrender.com pour télécharger le .wav.'); }
+    return;
+  }
+  const a = document.createElement('a'); a.href = mixUrl; a.download = 'chanson-mixee.wav'; a.click();
 });
 </script>
 </body>
