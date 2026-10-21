@@ -30,7 +30,8 @@
   h2{font-size:1.1rem;margin:0 0 10px;color:var(--accent)}
   details summary{cursor:pointer;color:var(--muted)}
   .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
-  .hidden{display:none}
+  .hidden{display:none!important}
+  #pcount:not(.hidden){display:flex}
   .steps{margin:0 0 18px;padding-left:1.2em;color:var(--muted)}.steps a{color:var(--accent)}
   .final{position:sticky;bottom:12px;display:flex;justify-content:center;margin-top:8px;z-index:5}
   .final button{box-shadow:0 4px 18px rgba(0,0,0,.25);padding:14px 26px;font-size:1.05rem}
@@ -110,7 +111,7 @@
       <div><label for="dur">Durée du fond <small>(sans voix)</small></label><select id="dur"><option value="1">1 minute</option><option value="2" selected>2 minutes</option><option value="3">3 minutes</option></select></div>
     </div>
     <label>Ma voix <small>(facultatif)</small></label>
-    <div class="actions" style="margin-top:4px"><button class="alt" id="rec" type="button">🎙️ Enregistrer ma voix</button></div>
+    <div class="actions" style="margin-top:4px"><button class="alt" id="rec" type="button">🎙️ Enregistrer ma voix</button><button class="alt" id="prompt-open" type="button">📜 Prompteur (paroles qui défilent)</button></div>
     <input id="voix" type="file" accept="audio/*" style="margin-top:10px">
     <audio id="vplayer" class="hidden" controls style="width:100%;margin-top:10px"></audio>
     <div class="row">
@@ -146,6 +147,15 @@
   </section>
   <div class="final"><button type="button" id="goFinal">🎁 Obtenir ma chanson finale</button></div>
 </main>
+<div id="prompter" class="hidden" style="position:fixed;inset:0;z-index:50;background:#14101a;color:#fff;overflow:hidden">
+  <div id="pscroll" style="position:absolute;inset:0;overflow-y:scroll;scrollbar-width:none;padding:45vh 20px">
+    <pre id="ptext" style="text-align:center;font-size:clamp(1.3rem,4.5vw,2.2rem);line-height:1.7"></pre>
+  </div>
+  <div style="position:absolute;left:0;right:0;top:0;padding:10px;display:flex;gap:10px;justify-content:center;background:linear-gradient(#14101a,transparent)">
+    <button id="pgo" type="button">▶ Démarrer</button><button class="alt" id="pclose" type="button" style="color:#fff;border-color:#fff">✕ Fermer</button>
+  </div>
+  <div id="pcount" class="hidden" style="position:absolute;inset:0;align-items:center;justify-content:center;font-size:7rem;background:rgba(20,16,26,.7)"></div>
+</div>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -347,11 +357,11 @@ $('mk').addEventListener('click', async () => {
 .v{min-height:100vh;background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.7));padding:32px 16px;display:flex;flex-direction:column;align-items:center}
 h1{font-weight:normal;font-size:2rem;text-align:center;margin:.5em 0}audio{width:min(100%,520px)}.p{position:sticky;top:0;z-index:5;width:100%;display:flex;justify-content:center;padding:10px;margin-bottom:20px;background:rgba(0,0,0,.6)}
 pre{white-space:pre-wrap;font:inherit;font-size:1.15rem;line-height:1.7;text-align:center;max-width:560px;margin:0}
-.d{margin-top:32px;font-style:italic;opacity:.9}</style></head><body><div class="v">
+.d{margin-top:32px;font-style:italic;opacity:.9}.f{font-size:.85rem;opacity:.85;margin:6px 0}</style></head><body><div class="v">
 <h1>${esc(nom ? '🎶 Pour ' + nom : '🎶 Une chanson pour toi')}</h1>
-${audio ? '<div class="p"><audio controls src="' + audio + '"></audio></div>' : ''}
+${audio ? '<div class="p"><audio controls src="' + audio + '"></audio></div><label class="f"><input type="checkbox" id="fl" checked> Les paroles suivent la musique</label>' : ''}
 <pre dir="${rtl ? 'rtl' : 'ltr'}">${esc(paroles)}</pre>
-${dedi ? '<p class="d">' + esc(dedi) + '</p>' : ''}</div></body></html>`;
+${dedi ? '<p class="d">' + esc(dedi) + '</p>' : ''}</div>${audio ? '<script>var a=document.querySelector("audio"),f=document.getElementById("fl");a.addEventListener("timeupdate",function(){if(f.checked&&a.duration){var h=document.documentElement.scrollHeight-innerHeight;scrollTo({top:a.currentTime/a.duration*h,behavior:"smooth"})}});["wheel","touchmove"].forEach(function(e){addEventListener(e,function(){f.checked=false},{passive:true})});<\/script>' : ''}</body></html>`;
   const fname = 'cadeau-' + (nom || 'chanson').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9\u0600-\u06FF]+/g, '-') + '.html';
   const dl = window.claude ? await window.claude.use('downloads') : null;
   if (dl) {
@@ -469,6 +479,33 @@ function checklist() {
     .map(([ok, t, h]) => `<li>${ok ? '✅' : '⬜'} ${t}${ok ? '' : ' <small style="color:var(--muted)">— ' + h + '</small>'}</li>`).join('');
 }
 setInterval(checklist, 700); checklist();
+// ---------- Prompteur ----------
+let praf = 0, paudio = null;
+$('prompt-open').addEventListener('click', () => {
+  const t = $('paroles').textContent.trim();
+  if (!t) return alert('Affichez d\'abord des paroles.');
+  $('ptext').textContent = t; $('ptext').dir = /[؀-ۿ]/.test(t) ? 'rtl' : 'ltr';
+  $('pscroll').scrollTop = 0; $('prompter').classList.remove('hidden'); $('pgo').textContent = '▶ Démarrer';
+});
+function stopPrompter() { cancelAnimationFrame(praf); if (paudio) { paudio.pause(); paudio = null; } }
+$('pclose').addEventListener('click', () => { stopPrompter(); $('prompter').classList.add('hidden'); });
+$('pgo').addEventListener('click', async () => {
+  stopPrompter(); $('pscroll').scrollTop = 0;
+  const src = mixBlob || $('audio').files[0] || voiceBlob;
+  paudio = src ? new Audio(URL.createObjectURL(mixBlob || $('audio').files[0] || src)) : null;
+  const fallback = (+$('dur').value || 2) * 60;
+  for (let n = 3; n > 0; n--) { $('pcount').textContent = n; $('pcount').classList.remove('hidden'); await new Promise(r => setTimeout(r, 1000)); }
+  $('pcount').classList.add('hidden'); $('pgo').textContent = '↺ Recommencer';
+  const t0 = performance.now(), sc = $('pscroll');
+  if (paudio) paudio.play().catch(() => {});
+  const tick = () => {
+    const dur = paudio && isFinite(paudio.duration) && paudio.duration > 0 ? paudio.duration : fallback;
+    const cur = paudio && !paudio.paused ? paudio.currentTime : (performance.now() - t0) / 1000;
+    sc.scrollTop = Math.min(1, cur / dur) * (sc.scrollHeight - sc.clientHeight);
+    if (cur < dur) praf = requestAnimationFrame(tick);
+  };
+  tick();
+});
 </script>
 </body>
 </html>
