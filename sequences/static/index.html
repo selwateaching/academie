@@ -756,7 +756,21 @@ function series(){
    ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} leçons manquantes</button>`:""}</div>
   <aside class="sside"><div class="card"><h3>🎨 Thème</h3>${themeDots(S.theme,"setTheme")}</div>
    <div class="card"><h3>📄 Activités</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Créez des ressources imprimables à partir de cette séquence.</p><button class="btn ghost w" onclick="sheetFromSeries()">📄 Fiche d'activités</button><button class="btn ghost w" onclick="sheetFromSeries('comptine')">🎵 Comptine</button><button class="btn ghost w" onclick="wbFromSeries()">📘 Cahier d'activités</button></div>
+   <div class="card"><h3>📚 Sources</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Citez vos références (liens ou textes) sur une diapositive « Sources » à la fin de chaque leçon et dans le Word.</p><button class="btn ghost w" onclick="openSources()">📚 ${S.lessons.some(l=>(l.slides||[]).some(x=>x.layout==="sources"))?"Modifier les sources":"Ajouter des sources"}</button></div>
    <div class="card"><h3>🗂️ Plan</h3><button class="btn ghost w" onclick="step=3;render()">Modifier le plan</button></div></aside></div>`;
+}
+function openSources(){
+  const cur=S.lessons.flatMap(l=>l.slides||[]).find(x=>x.layout==="sources");
+  const txt=S.refsText||(cur?cur.sources.map(v=>v.url?(v.title&&v.title!==v.site?v.title+" — ":"")+v.url:v.title).join("\n"):"");
+  modal(`<h2>Sources de référence</h2><p class="sub">Un lien ou une référence par ligne. Ex. https://education.gov.dz/… ou « Programme de 2AS, MEN, 2023 ». Elles seront citées à la fin de chaque leçon et dans le Word.</p>
+  <textarea id="src_t" maxlength="1500" style="min-height:140px" placeholder="https://…">${esc(txt)}</textarea>
+  <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button><button class="btn" onclick="saveSources()">Enregistrer</button></div>`);
+}
+function saveSources(){
+  S.refsText=$("#src_t").value;const refs=parseRefs(S.refsText);
+  S.lessons.forEach(l=>{if(!l.slides)return;l.slides=l.slides.filter(x=>x.layout!=="sources");
+    if(refs.length)l.slides.push({id:uid(),layout:"sources",title:"Sources",sources:JSON.parse(JSON.stringify(refs)),bullets:[],items:[],notes:"Sources de référence indiquées par l'enseignant."});});
+  save();closeModal();render();toast(refs.length?"Sources ajoutées à toutes les leçons":"Sources retirées");
 }
 function wbFromSeries(){
   const x=S,id=x.id,ex=x.options?.ex;newWB();W.src="series";W.seriesId=id;
