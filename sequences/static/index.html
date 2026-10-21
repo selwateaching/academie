@@ -324,6 +324,9 @@ body.app #app.paperw{max-width:none}
 .match{display:grid;grid-template-columns:1fr 64px 1.5fr;gap:8px 10px;margin:10px 0;align-items:stretch}
 .match>div{border:1.5px solid var(--ac);border-radius:6px;padding:6px 10px;font-size:14px}.match .mbx{border-radius:6px;background:#fff}
 .wsg{border-collapse:collapse;margin:10px auto;font:700 18px/1 ui-monospace,Menlo,Consolas,monospace}.wsg td{width:30px;height:30px;text-align:center;border:1px solid #d1d5db}.wsg td.hl{background:#fde68a}
+.syl{border-collapse:collapse;margin:10px auto;font:700 30px/1.2 "Century Gothic","Comic Sans MS",system-ui,sans-serif}.syl td,.syl th{border:2px solid #d1d5db;padding:6px 14px;text-align:center;min-width:64px}.syl th{background:#f3f4f6;color:#dc2626}
+.trc{margin-top:8px;font:400 44px/1.1 "Century Gothic","Comic Sans MS",system-ui,sans-serif;letter-spacing:6px;color:#b9bec7;white-space:nowrap;overflow:hidden}.trc .mod{text-shadow:none;-webkit-text-stroke:1px #9ca3af;color:transparent}
+.ex>div{white-space:pre-line}
 .wsw{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-weight:700;margin-top:6px}
 @media(max-width:1240px){.chatbtn{display:inline-block}.wbchat{display:none;position:fixed;right:12px;top:80px;bottom:12px;height:auto;z-index:60}.wbchat.open{display:flex}}
 .tplrow{display:flex;align-items:flex-start;gap:16px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
@@ -402,7 +405,7 @@ const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{retur
 let warned=false;
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch{if(!warned){warned=true;alert("Espace de stockage du navigateur plein : supprimez d'anciennes séquences.");}}};
 let saved=load();
-const LEVELS=["Maternelle","CP","CE1","CE2","CM1","CM2","6e","5e","4e","3e","Seconde","Première","Terminale","Études supérieures","Adultes"];
+const LEVELS=["Préscolaire","1AP (CP)","2AP (CE1)","3AP (CE2)","4AP (CM1)","5AP (CM2)","1AM (6e)","2AM (5e)","3AM (4e)","4AM (3e)","1AS (Seconde)","2AS (Première)","3AS (Terminale)","Études supérieures","Adultes"];
 const FW=[["standard","Standard : modélisation, pratique guidée"],["jfn","Je fais / Nous faisons / Tu fais"],["5e","5E : engager, explorer, expliquer…"],["rosenshine","Principes de Rosenshine"],["imr","Introduction / Activité / Bilan"]];
 const THEMES={
   classique:{n:"Classique",bg:"#fdeee8",fg:"#1f2d3d",ti:"#0f766e",ac:"#0f766e",ac2:"#d68c45",card:"#ffffff",blob:"#fbd5c8",font:"'Trebuchet MS',system-ui,sans-serif"},
@@ -447,7 +450,7 @@ const UPG={limit:["Limite atteinte","Vous avez utilisé toutes vos ressources. P
  badge:["Badge « Créé avec Séquences »","Retirez le badge avec les plans Pro et Max."]};
 function openUpgrade(k,extra){const [h,d]=UPG[k]||UPG.limit;modal(`<h2>${h}</h2><p>${esc(extra||d)}</p><div class="nav"><button class="btn ghost" onclick="closeModal()">Plus tard</button><button class="btn" onclick="closeModal();goPricing()">Voir les plans</button></div>`);}
 function goPricing(){closeStudio();closeShow();page="pricing";render();scrollTo(0,0);}
-const blank=()=>({id:uid(),topic:"",level:"6e",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
+const blank=()=>({id:uid(),topic:"",level:"1AM (6e)",language:"français",count:5,instructions:"",framework:"standard",theme:"classique",
   options:{objectives:true,vocabulary:true,quiz:true,images:true,slides:10,ex:{on:true,prods:[],other:"",level:"progressive",count:5,detail:"detailed"}},title:"",lessons:[]});
 
 /* ---------- API ---------- */
@@ -525,6 +528,9 @@ const TPLICON={
  homework:TPLI('<path d="M6 24L24 8l18 16"/><path d="M11 21v19h26V21"/><circle cx="24" cy="26" r="5" stroke="#f59e0b"/><path d="M22 33h4" stroke="#f59e0b"/>'),
  end_test:TPLI('<circle cx="24" cy="19" r="12"/><path d="M24 12l2.2 4.6 5 .6-3.7 3.5 1 5L24 23.2l-4.5 2.5 1-5-3.7-3.5 5-.6z" stroke="#ea580c"/><path d="M17 29l-4 14 11-5 11 5-4-14" stroke="#9ca3af"/>'),
  cloze:TPLI('<path d="M7 12h34M7 22h12M27 22h14M7 32h34"/><path d="M20 24h6" stroke="#ea580c"/><path d="M7 42h18" stroke="#9ca3af"/>'),
+ comptine:TPLI('<circle cx="16" cy="34" r="5"/><circle cx="34" cy="30" r="5"/><path d="M21 34V12l18-4v22" stroke="#ea580c"/>'),
+ syllabes:TPLI('<rect x="6" y="8" width="36" height="32" rx="3"/><path d="M6 19h36M6 29h36M18 8v32M30 8v32" stroke="#9ca3af"/><path d="M10 16h4M22 16h4M34 16h4" stroke="#2563eb"/>'),
+ ecriture:TPLI('<path d="M7 38h34M7 26h34" stroke="#9ca3af" stroke-dasharray="3 3"/><path d="M12 38c0-14 6-22 12-22s4 14 12 14" stroke="#ea580c"/>'),
  exit_slip:TPLI('<path d="M5 14h38v7a3.5 3.5 0 000 7v7H5v-7a3.5 3.5 0 000-7z"/><path d="M30 14v21" stroke-dasharray="3 3" stroke="#9ca3af"/><path d="M13 22h12M13 28h8"/>')};
 const FOLDERI=`<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 14a3 3 0 013-3h11l5 6h16a3 3 0 013 3v18a3 3 0 01-3 3H8a3 3 0 01-3-3z"/></svg>`;
 const SUGG=[["☀️","Le système solaire"],["🌊","Le cycle de l'eau"],["🏛️","L'Empire romain"],["➗","Les fractions et les décimaux"],["🧬","La cellule"],["⚔️","Les Vikings"],["⚡","Électricité et circuits"],["📖","La poésie"],["🌍","Les volcans et les séismes"],["🥗","L'alimentation équilibrée"]];
@@ -537,7 +543,7 @@ function home(){
    <h1>Votre meilleure séquence.<br>À chaque leçon.</h1>
    <p class="sb">Alignée sur le programme, adaptée à chaque élève, prête en quelques minutes.</p>
    <form class="hbar" onsubmit="heroGo(event)"><input id="hq" maxlength="300" placeholder="${PH[0]}" aria-label="Sujet de la séquence"><button class="go" type="submit">✨ Créer</button></form>
-   <div class="opts"><select id="hl" aria-label="Niveau">${LEVELS.map(l=>`<option ${l==="6e"?"selected":""}>${l}</option>`).join("")}</select><select id="hg" aria-label="Langue">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option>${l}</option>`).join("")}</select></div>
+   <div class="opts"><select id="hl" aria-label="Niveau">${LEVELS.map(l=>`<option ${l==="1AM (6e)"?"selected":""}>${l}</option>`).join("")}</select><select id="hg" aria-label="Langue">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option>${l}</option>`).join("")}</select></div>
    <div class="kinds"><span>Ou créez :</span><button class="chip2 kd" onclick="newSheet()">📄 Fiche d'activités</button><button class="chip2 kd" onclick="newWB()">📘 Cahier d'activités</button></div>
    <div class="xchips">${SUGG.map(([e,s])=>`<button class="chip2" onclick="heroGo(null,'${s.replace(/'/g,"\\'")}')">${e} ${s}</button>`).join("")}</div>
    <div class="stats"><span>Séquences complètes</span><span>•</span><span>Diapositives illustrées</span><span>•</span><span>Export PowerPoint</span></div>
@@ -724,7 +730,7 @@ function series(){
    <div class="bt">${l.slides?`<button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button><button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div></div>`).join("")}</div>
    ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} leçons manquantes</button>`:""}</div>
   <aside class="sside"><div class="card"><h3>🎨 Thème</h3>${themeDots(S.theme,"setTheme")}</div>
-   <div class="card"><h3>📄 Activités</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Créez des ressources imprimables à partir de cette séquence.</p><button class="btn ghost w" onclick="sheetFromSeries()">📄 Fiche d'activités</button><button class="btn ghost w" onclick="wbFromSeries()">📘 Cahier d'activités</button></div>
+   <div class="card"><h3>📄 Activités</h3><p class="sub" style="margin:0 0 12px;font-size:14px">Créez des ressources imprimables à partir de cette séquence.</p><button class="btn ghost w" onclick="sheetFromSeries()">📄 Fiche d'activités</button><button class="btn ghost w" onclick="sheetFromSeries('comptine')">🎵 Comptine</button><button class="btn ghost w" onclick="wbFromSeries()">📘 Cahier d'activités</button></div>
    <div class="card"><h3>🗂️ Plan</h3><button class="btn ghost w" onclick="step=3;render()">Modifier le plan</button></div></aside></div>`;
 }
 function wbFromSeries(){
@@ -736,9 +742,9 @@ function wbFromSeries(){
   }
   wbFrom1();
 }
-function sheetFromSeries(){
-  const x=S;newSheet();W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;
-  W.instructions="Base-toi sur la séquence « "+x.title+" » : "+x.lessons.map(l=>l.title).join(" ; ")+".";wstep=1;render();
+function sheetFromSeries(tpl){
+  const x=S;newSheet(tpl);W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;
+  W.instructions="Base-toi sur la séquence « "+x.title+" » : "+x.lessons.map(l=>l.title).join(" ; ")+".";wstep=tpl?2:1;render();
 }
 function setTheme(k){S.theme=k;save();render();}
 
@@ -996,9 +1002,9 @@ function fitCovers(){
 }
 function setQ(v){Q=v;$("#grid").innerHTML=cards();fitCovers();}
 const gridBlock=(kind,fn,label)=>{GK=kind;return `<div class="rh"><h2>${kind===""&&FOLDER?esc((saved.find(f=>f.id===FOLDER)||{}).title||"Dossier"):"Ressources"}</h2><div class="acts"><label class="sbox">🔍<input placeholder="Rechercher…" value="${esc(Q)}" oninput="setQ(this.value)" aria-label="Rechercher"></label>${kind===""?`<button class="nbtn" onclick="createFolder()">Créer un dossier ＋</button>`:""}<button class="nbtn" onclick="${fn}">${label} ＋</button></div></div><div class="rgrid" id="grid">${cards()}</div>`;};
-const TPLIDS=["association","knowledge_check","reading_comprehension","practice_test","word_search","homework","end_test","cloze","exit_slip"];
+const TPLIDS=["comptine","syllabes","ecriture","association","knowledge_check","reading_comprehension","practice_test","word_search","homework","end_test","cloze","exit_slip"];
 Object.assign(TPL,{association:{n:"Association"},knowledge_check:{n:"Vérification des connaissances"},reading_comprehension:{n:"Compréhension de lecture"},
-  practice_test:{n:"Test d'entraînement",total:true},word_search:{n:"Mots mêlés"},homework:{n:"Fiche de devoirs"},end_test:{n:"Évaluation de fin de thème",total:true},cloze:{n:"Texte à trous"},exit_slip:{n:"Ticket de sortie"}});
+  practice_test:{n:"Test d'entraînement",total:true},word_search:{n:"Mots mêlés"},homework:{n:"Fiche de devoirs"},end_test:{n:"Évaluation de fin de thème",total:true},cloze:{n:"Texte à trous"},exit_slip:{n:"Ticket de sortie"},comptine:{n:"Comptine"},syllabes:{n:"Tableau des syllabes"},ecriture:{n:"Écriture des lettres"}});
 for(const k of TPLIDS)TPL[k].ic=TPLICON[k];
 const lastTpl=()=>{try{return localStorage.getItem("seq.lasttpl");}catch{return null;}};
 const tplRow=()=>`<div class="tplrow">${TPLIDS.map(id=>`<button class="tpl" onclick="newSheet('${id}')">${lastTpl()===id?'<span class="rec">Récent</span>':""}<div class="tic">${TPL[id].ic}</div><span>${TPL[id].n}</span></button>`).join("")}</div>`;
@@ -1034,7 +1040,7 @@ function dupSeries(id){const x=saved.find(s=>s.id===id),c=JSON.parse(JSON.string
 
 /* ============ cahiers d'activités ============ */
 const LEN={"4-6":{n:3,q:4,l:"4 – 6"},"7-12":{n:5,q:5,l:"7 – 12"},"13-20":{n:8,q:6,l:"13 – 20"},"21+":{n:12,q:7,l:"21+"}};
-const blankWB=()=>({id:uid(),kind:"workbook",title:"",topic:"",level:"6e",language:"français",instructions:"",curriculum:"",theme:"classique",src:"topic",seriesId:"",
+const blankWB=()=>({id:uid(),kind:"workbook",title:"",topic:"",level:"1AM (6e)",language:"français",instructions:"",curriculum:"",theme:"classique",src:"topic",seriesId:"",
   options:{explain:true,objectives:true,length:"7-12",support:false,challenge:false},sections:[],started:false});
 function newWB(){S=null;W=blankWB();wstep=1;page="wb";msg="";render();scrollTo(0,0);}
 const wbSteps=()=>`<ol class="steps">${["Source","Configuration","Plan"].map((n,i)=>{const c=Math.min(wstep,3);return `<li class="${i+1===c?"on":i+1<c?"done":""}">${n}</li>`;}).join("")}</ol>`;
@@ -1164,6 +1170,7 @@ function paperHTML(edit,ans,D=W){
     let a;
     if(q.type==="qcm"){const k=+q.answer||0;a=`<b>${LET[k]}</b> : ${fmt(q.choices[k]||"")}`;}
     else if(q.type==="match")a=`<div class="am">${q.pairs.map((pr,i)=>`<div><b>${i+1}-${LET[q.order.indexOf(i)]}</b> : ${esc(pr.term)} → ${fmt(pr.def)}</div>`).join("")}</div>`;
+    else if(q.type==="table"||q.type==="trace")a=q.answer?E(Q+".answer",q.answer):"Voir la fiche.";
     else if(q.type==="wordsearch")a=`Mots à retrouver : <b>${q.words.map(esc).join(", ")}</b>${wsGrid(q,true)}`;
     else a=E(Q+".answer",q.answer);
     const why=q.type==="match"||q.type==="wordsearch"?"":(q.why||edit?` <span class="why">— ${E(Q+".why",q.why||"")}</span>`:"");
@@ -1179,6 +1186,10 @@ function paperHTML(edit,ans,D=W){
       else if(q.type==="match"){
         const o=q.order;
         a=`<div class="match">${q.pairs.map((pr,i)=>`<div><b>${i+1}.</b> ${E(Q+".pairs."+i+".term",pr.term,"span","",true)}</div>${E(Q+".given."+i,(q.given||[])[i]||"","div","mbx")}<div><b>${LET[i]}.</b> ${E(Q+".pairs."+o[i]+".def",q.pairs[o[i]].def,"span","",true)}</div>`).join("")}</div>`;
+      }else if(q.type==="table"){
+        a=`<table class="syl">${(q.head||[]).length?`<tr>${q.head.map((h,c)=>`<th>${E(Q+".head."+c,h)}</th>`).join("")}</tr>`:""}${q.rows.map((r,ri)=>`<tr>${r.map((c,ci)=>`<td>${E(Q+".rows."+ri+"."+ci,c)}</td>`).join("")}</tr>`).join("")}</table>`;
+      }else if(q.type==="trace"){
+        a=q.traces.map((w,wi)=>`<div class="trc"><span class="mod">${esc((w+" ").repeat(Math.max(2,Math.min(7,Math.floor(14/(w.length+1))+1))))}</span></div><div class="ln"></div>`).join("");
       }else if(q.type==="wordsearch"){
         a=`${wsGrid(q,false)}<div class="wsw">${q.words.map((w,wi)=>`<span>${E(Q+".words."+wi,w)}</span>`).join("")}</div>`;
       }
@@ -1309,7 +1320,7 @@ document.addEventListener("click",e=>{
 
 /* ============ fiches d'activités ============ */
 function newSheet(tpl){if(tpl){try{localStorage.setItem("seq.lasttpl",tpl);}catch{}}
-  S=null;W={id:uid(),kind:"sheet",tpl:tpl||"",title:"",topic:"",level:"6e",language:"français",difficulty:"core",instructions:"",curriculum:"",theme:"classique",sections:[],options:{},started:false};
+  S=null;W={id:uid(),kind:"sheet",tpl:tpl||"",title:"",topic:"",level:"1AM (6e)",language:"français",difficulty:"core",instructions:"",curriculum:"",theme:"classique",sections:[],options:{},started:false};
   wstep=tpl?2:1;page="sh";msg="";render();scrollTo(0,0);
 }
 function shFlow(){W.sections.length&&W.sections[0].data&&wstep>2?wbView():(wstep===1?sh1:sh2)();}

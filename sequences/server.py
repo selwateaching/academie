@@ -165,6 +165,13 @@ def brief(b):
     if b.get("curriculum") and getattr(g, "ukey", None) and plan_of(g.ukey)[1]["curriculum"]:
         lines.append(f"Alignement sur le programme scolaire : {s(b['curriculum'], 200)}. "
                      "Rattache chaque leçon aux attendus de ce programme et à son vocabulaire.")
+    lv = s(b.get("level"), 80).lower()
+    if lv.startswith(("1ap", "2ap", "cp", "ce1", "maternelle")):
+        lines.append("Public de jeunes élèves apprenant à lire et à écrire (niveau CP, 1re année primaire en Algérie) : phrases très courtes, "
+                     "mots simples et fréquents, une seule notion à la fois, progression lettres → voyelles → syllabes (ba, be, bi, bo, bu) → mots → phrases. "
+                     "Utilise beaucoup d'exemples concrets, de comptines, de jeux de sons et d'images.")
+        if (b.get("language") or "").lower().startswith("arab"):
+            lines.append("En arabe : lettres, mouvements courts et longs (الحركات)، tableaux de syllabes avec fatha, damma, kasra, écriture des mots vocalisés.")
     if b.get("instructions"):
         lines.append(f"Consignes de l'enseignant : {s(b['instructions'], 3000)}")
     return "\n".join(lines)
@@ -772,7 +779,7 @@ def slide():
 
 # ---------------------------------------------------------------- cahiers d'activités
 
-QTYPES = {"qcm", "short", "fill", "long", "match", "wordsearch"}
+QTYPES = {"qcm", "short", "fill", "long", "match", "wordsearch", "table", "trace"}
 
 
 
@@ -809,7 +816,7 @@ def clean_section(x):
         return None
     qs = []
     for q in x.get("questions") or []:
-        if not isinstance(q, dict) or not (q.get("q") or q.get("type") in ("match", "wordsearch")):
+        if not isinstance(q, dict) or not (q.get("q") or q.get("type") in ("match", "wordsearch", "table", "trace")):
             continue
         typ = q.get("type") if q.get("type") in QTYPES else "short"
         item = {"type": typ, "q": s(q.get("q"), 600), "answer": s(q.get("answer"), 800),
@@ -822,6 +829,23 @@ def clean_section(x):
                 continue
             item["words"], item["grid"], item["placed"] = [p["word"] for p in placed], grid, placed
             item["q"] = item["q"] or "Retrouve les mots cachés dans la grille."
+            qs.append(item)
+            continue
+        if typ == "table":
+            rows = [[s(c, 14) for c in r][:8] for r in q.get("rows") or [] if isinstance(r, list) and r][:10]
+            if len(rows) < 1:
+                continue
+            item["rows"] = rows
+            item["head"] = [s(c, 14) for c in q.get("head") or []][:8]
+            item["q"] = item["q"] or "Lis le tableau à voix haute."
+            qs.append(item)
+            continue
+        if typ == "trace":
+            tr = [s(c, 12) for c in q.get("traces") or [] if c][:8]
+            if not tr:
+                continue
+            item["traces"] = tr
+            item["q"] = item["q"] or "Repasse sur les modèles, puis écris seul(e)."
             qs.append(item)
             continue
         if typ == "match":
@@ -974,6 +998,9 @@ SHEET_TEMPLATES = {
     "homework": ("Fiche de devoirs", "6 exercices progressifs et variés à faire à la maison", False),
     "end_test": ("Évaluation de fin de thème", "une évaluation sommative de 12 questions variées avec un barème (marks)", True),
     "cloze": ("Texte à trous", "un court texte (champ explanation) puis 8 phrases à compléter (type fill, avec ____)", False),
+    "comptine": ("Comptine", "une comptine ORIGINALE et rythmée (champ explanation : un paragraphe par couplet de 2 à 4 vers courts avec des rimes, 2 à 4 couplets, sur le thème) puis : 1 question short « gestes à mimer » avec les gestes, 3 phrases à compléter (type fill, avec ____, mots de la comptine), 1 exercice d'association (match) mot/sens ou mot/rime de 4 paires, 1 question long « dessine et recopie ton vers préféré ». Texte facile à mémoriser, vocabulaire adapté à l'âge", False),
+    "syllabes": ("Tableau des syllabes", "un travail sur les syllabes : un tableau de syllabes (type table, head = voyelles en en-tête, rows = une ligne par consonne avec les syllabes ba be bi bo bu…, cellules vides interdites, 4 à 6 lignes), puis une question table de 6 mots à lire découpés en syllabes (ex. ba-nane), 4 phrases courtes à lire (type short), 1 association (match) mot/syllabe initiale, 1 question fill pour compléter des mots avec la syllabe manquante", False),
+    "ecriture": ("Écriture des lettres", "un entraînement à l'écriture : une question de type trace avec 5 à 8 lettres, voyelles ou syllabes du thème à tracer et copier (champ traces), puis une question trace avec 4 mots simples du thème, puis 3 questions fill pour compléter des mots avec la lettre manquante, et un qcm pour reconnaître la lettre ou le son", False),
     "exit_slip": ("Ticket de sortie", "trois questions rapides (un qcm, une short, une long) pour vérifier la compréhension en fin de leçon", False),
 }
 SHEET_DIFF = {
@@ -1004,7 +1031,7 @@ def sheet():
         '"questions": [{"type": "qcm | short | fill | long | match | wordsearch", "q": "énoncé ou consigne", '
         '"choices": ["A","B","C","D"] (qcm), "pairs": [{"term": "notion", "def": "définition"}] (match, 4 à 6 paires), '
         '"words": ["MOT"] (wordsearch), "answer": "réponse attendue (qcm : indice de la bonne réponse)", "why": "explication courte de la bonne réponse, pour le corrigé", "marks": 1, '
-        '"hint": "indice (niveau Soutien)", "challenge": false}]}',
+        '"hint": "indice (niveau Soutien)", "challenge": false} ; type table : "head": ["a","e"], "rows": [["ba","be"]] ; type trace : "traces": ["a","e","i"]]}',
         8000,
     )
     if err:
