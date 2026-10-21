@@ -884,6 +884,7 @@ function newSlide(){SL().splice(ST.n+1,0,{id:uid(),layout:"text_image",title:"No
 function addItem(d){
   const sl=SL()[ST.n];
   if(sl.layout==="vocab"){d>0?sl.vocab.push({term:"Mot",definition:"Définition"}):sl.vocab.length>1&&sl.vocab.pop();}
+  else if(sl.layout==="sources"){d>0?sl.sources.length<8&&sl.sources.push({title:"Titre de la source",url:"https://",site:"",accessed:""}):sl.sources.pop();}
   else if(sl.layout==="production"){const c=sl.prod.criteria=sl.prod.criteria||[];d>0?c.length<6&&c.push("Nouveau critère"):c.length>0&&c.pop();}
   else if(sl.layout==="activity"){if(!sl.q.choices.length)return;d>0?sl.q.choices.length<6&&sl.q.choices.push("Nouvelle réponse"):sl.q.choices.length>2&&(sl.q.choices.pop(),sl.q.answer=Math.min(sl.q.answer,sl.q.choices.length-1));}
   else if(ITEM_LAYOUTS.includes(sl.layout)){d>0?sl.items.length<6&&sl.items.push({t:"Titre",x:"Description"}):sl.items.length>1&&sl.items.pop();}
