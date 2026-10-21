@@ -23,7 +23,7 @@
   button.alt{background:transparent;color:var(--accent);border:1px solid var(--accent)}
   button:disabled{opacity:.6;cursor:wait}
   .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-  pre{white-space:pre-wrap;font:inherit;margin:0;font-size:1.05rem}
+  pre{unicode-bidi:plaintext;white-space:pre-wrap;font:inherit;margin:0;font-size:1.05rem}
   h2{font-size:1.1rem;margin:0 0 10px;color:var(--accent)}
   details summary{cursor:pointer;color:var(--muted)}
   .hint{font-size:.85rem;color:var(--muted);margin-top:6px}
@@ -53,6 +53,8 @@
     <input id="qualites" placeholder="courageuse, drôle, généreuse">
     <label for="message">Ce que vous voulez lui dire vraiment</label>
     <textarea id="message" placeholder="Merci d'avoir toujours cru en moi. Je t'aime plus que les mots ne le disent."></textarea>
+    <label for="langue">Langue de la chanson</label>
+    <select id="langue"><option value="fr">Français</option><option value="es">Español (espagnol)</option><option value="ar">العربية (arabe)</option></select>
     <div class="row">
       <div><label for="style">Style musical</label>
         <select id="style"><option>pop douce</option><option>folk acoustique guitare</option><option>ballade piano</option><option>chanson française</option><option>acoustique intimiste</option><option>rnb soul</option><option>country</option><option>variété pop-rock</option></select></div>
@@ -91,12 +93,12 @@ function data() {
     nom: v('nom'), lien: v('lien'), occasion: v('occasion'), ambiance: v('ambiance'),
     souvenirs: v('souvenirs').split('\n').map(s => s.trim()).filter(Boolean),
     qualites: v('qualites').split(',').map(s => s.trim()).filter(Boolean),
-    message: v('message'), style: v('style'), voix: v('voix')
+    message: v('message'), langue: v('langue'), style: v('style'), voix: v('voix')
   };
 }
 
 function buildPrompt(d) {
-  return `Écris les paroles d'une chanson en français, ${d.ambiance}, à offrir à ${d.nom} (${d.lien}) pour ${d.occasion}.
+  return `Écris les paroles d'une chanson en ${LANGS[d.langue].nom}, ${d.ambiance}, à offrir à ${d.nom} (${d.lien}) pour ${d.occasion}.
 
 Souvenirs et détails à intégrer (concrets, sans les lister mécaniquement) :
 ${d.souvenirs.map(s => '- ' + s).join('\n') || '- (aucun précisé)'}
@@ -109,56 +111,73 @@ Contraintes :
 - Rimes naturelles, images simples et sensorielles, ton sincère, aucun cliché pesant
 - Prénom « ${d.nom} » présent dans le refrain
 - Style ${d.style}, ${d.voix} ; environ 3 minutes
-- Donne uniquement les paroles avec les balises de structure.`;
+- Les paroles doivent être entièrement en ${LANGS[d.langue].nom} (${LANGS[d.langue].note}), naturelles comme écrites par un locuteur natif, pas traduites mot à mot.\n- Donne uniquement les paroles avec les balises de structure.`;
 }
 
 function buildSuno(d) {
   const mood = { 'tendre et touchante':'tender, intimate', 'nostalgique':'nostalgic, warm', 'joyeuse et lumineuse':'uplifting, bright', 'mélancolique':'melancholic, emotional', 'pleine de gratitude':'heartfelt, grateful', 'romantique':'romantic, soft' }[d.ambiance];
   const voix = { 'voix féminine':'female vocals', 'voix masculine':'male vocals', 'duo':'duet vocals' }[d.voix];
-  return `${d.style}, ${mood}, ${voix}, French lyrics, emotional ballad, slow tempo, 70 bpm, warm production, building chorus`;
+  return `${d.style}, ${mood}, ${voix}, ${LANGS[d.langue].suno} lyrics, emotional ballad, slow tempo, 70 bpm, warm production, building chorus`;
 }
 
+const LANGS = {
+  fr: { nom: 'français', suno: 'French', note: 'langue courante et poétique' },
+  es: { nom: 'espagnol', suno: 'Spanish', note: 'espagnol neutre, compréhensible dans tous les pays' },
+  ar: { nom: 'arabe', suno: 'Arabic', note: 'arabe standard simple et chantant, ou dialecte si le contexte s\'y prête' }
+};
+
+const OCC = ['anniversaire', 'mariage', 'remerciement', 'départ / adieu', 'hommage / souvenir', 'réconciliation / pardon'];
+const TXT = {
+  fr: {
+    tags: ['Couplet 1', 'Pré-refrain', 'Refrain', 'Couplet 2', 'Pont', 'Refrain final'],
+    intro: ['Un an de plus et tout autant de lumière', 'Aujourd\'hui deux chemins n\'en font plus qu\'un', 'Il y a des mots qu\'on garde trop longtemps', 'Même si la route nous éloigne', 'Je ferme les yeux et tu es encore là', 'Il est temps de poser nos silences'],
+    introDef: 'Il y a des gens qui changent une vie',
+    memDef: ['les jours simples à tes côtés', 'ta façon de me regarder'], qualDef: ['unique', 'précieux(se)', 'lumineux(se)'], msgDef: 'merci d\'être là, je t\'aime',
+    c1: (i, m0, m1) => `${i},\nje repense à ${m0}.\nDans ma mémoire, ${m1},\net mon cœur s'adoucit rien qu'à y penser.`,
+    pre: () => `Les années passent, les saisons tournent,\nmais tu restes ce que j'ai de plus beau.`,
+    ref: [(n, q0, q1, m) => `${n}, si je pouvais t'offrir le monde,\nje te donnerais ces mots, ma chanson, ma ronde.\nTu es ${q0}, tu es ${q1},\n${m}.`,
+          (n, q0, q1, m) => `Oh ${n}, ce chant est pour toi,\npour tout ce que tu es, pour tout ce que tu m'as donné.\nTu es ${q0}, tu es ${q1},\n${m}.`],
+    c2: (m2, m3, q2) => `Je n'oublierai jamais ${m2},\nni ${m3} qui me suit partout.\nTu as été ${q2} quand j'en avais besoin,\net chaque jour je te le dois un peu plus.`,
+    pont: m => `Il y a tant de choses que je n'ai pas su dire,\nalors je les chante, tout bas, pour toi.\n${m}.`,
+    fin: n => `${n}… ${n}… c'est pour toi.`
+  },
+  es: {
+    tags: ['Verso 1', 'Pre-estribillo', 'Estribillo', 'Verso 2', 'Puente', 'Estribillo final'],
+    intro: ['Un año más y tanta luz a tu lado', 'Hoy dos caminos se vuelven uno solo', 'Hay palabras que se guardan demasiado tiempo', 'Aunque el camino nos separe', 'Cierro los ojos y sigues aquí', 'Es hora de dejar atrás los silencios'],
+    introDef: 'Hay personas que cambian una vida',
+    memDef: ['los días sencillos a tu lado', 'tu forma de mirarme'], qualDef: ['único/a', 'especial', 'luminoso/a'], msgDef: 'gracias por estar, te quiero',
+    c1: (i, m0, m1) => `${i},\nrecuerdo ${m0}.\nEn mi memoria, ${m1},\ny mi corazón se calma solo de pensarlo.`,
+    pre: () => `Pasan los años, giran las estaciones,\npero sigues siendo lo más bello que tengo.`,
+    ref: [(n, q0, q1, m) => `${n}, si pudiera regalarte el mundo entero,\nte daría esta canción y un "te quiero".\nEres ${q0}, eres ${q1},\n${m}.`,
+          (n, q0, q1, m) => `Oh ${n}, este canto es para ti,\npor todo lo que eres, por todo lo que me diste.\nEres ${q0}, eres ${q1},\n${m}.`],
+    c2: (m2, m3, q2) => `Nunca olvidaré ${m2},\nni ${m3}, que me acompaña siempre.\nFuiste ${q2} cuando más lo necesité,\ny cada día te lo agradezco más.`,
+    pont: m => `Hay tantas cosas que nunca supe decir,\nasí que las canto, bajito, para ti.\n${m}.`,
+    fin: n => `${n}… ${n}… esta canción es para ti.`
+  },
+  ar: {
+    tags: ['Verse 1', 'Pre-Chorus', 'Chorus', 'Verse 2', 'Bridge', 'Final Chorus'],
+    intro: ['عامٌ جديد ونورٌ أكثر', 'اليوم يصبح الطريقان طريقًا واحدًا', 'هناك كلمات نحتفظ بها طويلًا', 'حتى لو أبعدتنا الطرق', 'أغمض عينيّ فأراك هنا', 'حان وقت أن نترك الصمت خلفنا'],
+    introDef: 'هناك أناس يغيّرون حياتنا',
+    memDef: ['أيامنا البسيطة معك', 'نظرتك إليّ'], qualDef: ['مميز', 'غالٍ', 'مضيء'], msgDef: 'شكرًا لأنك موجود، أحبك',
+    c1: (i, m0, m1) => `${i}،\nأتذكّر ${m0}.\nفي ذاكرتي ${m1}،\nوقلبي يهدأ كلما تذكّرت.`,
+    pre: () => `تمرّ السنون وتتبدّل الفصول،\nوأنت أجمل ما لديّ.`,
+    ref: [(n, q0, q1, m) => `يا ${n}، لو أستطيع أن أهديك الدنيا كلها،\nلأهديتك هذه الأغنية من أعماق قلبي.\nأنت ${q0}، وأنت ${q1}،\n${m}.`,
+          (n, q0, q1, m) => `يا ${n}، هذا اللحن لك،\nلكل ما أنت عليه، ولكل ما منحتني.\nأنت ${q0}، وأنت ${q1}،\n${m}.`],
+    c2: (m2, m3, q2) => `لن أنسى أبدًا ${m2}،\nولا ${m3} الذي يرافقني أينما كنت.\nكنت ${q2} حين احتجت إليك،\nوكل يوم أدين لك بالمزيد.`,
+    pont: m => `أشياء كثيرة لم أعرف كيف أقولها،\nفأغنّيها همسًا من أجلك.\n${m}.`,
+    fin: n => `${n}… ${n}… هذه الأغنية لك.`
+  }
+};
+
 function localLyrics(d) {
-  const s = d.souvenirs, q = d.qualites;
-  const mem = i => s.length ? s[i % s.length].replace(/[.!]+$/, '').replace(/^./, c => c.toLowerCase()) : pick(['les jours simples à tes côtés', 'ta façon de me regarder']);
-  const qual = i => q.length ? q[i % q.length] : pick(['unique', 'précieux(se)', 'lumineux(se)']);
-  const msg = d.message.replace(/[.!]+$/, '') || 'merci d\'être là, je t\'aime';
-  const refrains = [
-    [`${d.nom}, si je pouvais t'offrir le monde,`, `je te donnerais ces mots, ma chanson, ma ronde.`, `Tu es ${qual(0)}, tu es ${qual(1)},`, `${msg}.`],
-    [`Oh ${d.nom}, ce chant est pour toi,`, `pour tout ce que tu es, pour tout ce que tu m'as donné.`, `Tu es ${qual(0)}, tu es ${qual(1)},`, `${msg}.`]
-  ];
-  const ref = pick(refrains).join('\n');
-  const intro = { 'anniversaire':'Un an de plus et tout autant de lumière', 'mariage':'Aujourd\'hui deux chemins n\'en font plus qu\'un', 'remerciement':'Il y a des mots qu\'on garde trop longtemps', 'départ / adieu':'Même si la route nous éloigne', 'hommage / souvenir':'Je ferme les yeux et tu es encore là', 'réconciliation / pardon':'Il est temps de poser nos silences' }[d.occasion] || 'Il y a des gens qui changent une vie';
-  return `[Couplet 1]
-${intro},
-je repense à ${mem(0)}.
-Dans ma mémoire, ${mem(1)},
-et mon cœur s'adoucit rien qu'à y penser.
-
-[Pré-refrain]
-Les années passent, les saisons tournent,
-mais tu restes ce que j'ai de plus beau.
-
-[Refrain]
-${ref}
-
-[Couplet 2]
-Je n'oublierai jamais ${mem(2)},
-ni ${mem(3)} qui me suit partout.
-Tu as été ${qual(2)} quand j'en avais besoin,
-et chaque jour je te le dois un peu plus.
-
-[Refrain]
-${ref}
-
-[Pont]
-Il y a tant de choses que je n'ai pas su dire,
-alors je les chante, tout bas, pour toi.
-${msg}.
-
-[Refrain final]
-${ref}
-${d.nom}… ${d.nom}… c'est pour toi.`;
+  const t = TXT[d.langue], s = d.souvenirs, q = d.qualites;
+  const mem = i => s.length ? s[i % s.length].replace(/[.!]+$/, '').replace(/^./, c => c.toLowerCase()) : t.memDef[i % t.memDef.length];
+  const qual = i => q.length ? q[i % q.length] : t.qualDef[i % t.qualDef.length];
+  const msg = d.message.replace(/[.!]+$/, '') || t.msgDef;
+  const ref = pick(t.ref)(d.nom, qual(0), qual(1), msg);
+  const k = OCC.indexOf(d.occasion), intro = k >= 0 ? t.intro[k] : t.introDef;
+  const [a, b, c, e, f, g] = t.tags;
+  return `[${a}]\n${t.c1(intro, mem(0), mem(1))}\n\n[${b}]\n${t.pre()}\n\n[${c}]\n${ref}\n\n[${e}]\n${t.c2(mem(2), mem(3), qual(2))}\n\n[${c}]\n${ref}\n\n[${f}]\n${t.pont(msg)}\n\n[${g}]\n${ref}\n${t.fin(d.nom)}`;
 }
 
 async function claudeLyrics(d, key) {
@@ -182,6 +201,7 @@ async function generate() {
     text = localLyrics(d);
   }
   $('paroles').textContent = text;
+  $('paroles').dir = d.langue === 'ar' ? 'rtl' : 'ltr';
   $('suno').textContent = buildSuno(d);
   $('prompt').textContent = buildPrompt(d);
   $('out').classList.remove('hidden');
