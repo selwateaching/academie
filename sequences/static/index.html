@@ -297,7 +297,7 @@ body.app #app.dashw{max-width:none;margin-right:0}
 .paper .obj{background:var(--blob);border-left:5px solid var(--ac);border-radius:8px;padding:8px 12px;margin:8px 0;font-weight:600}
 .paper .kw{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.paper .kw span{border:1px solid var(--ac);border-radius:99px;padding:1px 10px;font-size:14px;color:var(--ti);font-weight:600}
 .paper .ex p{margin:6px 0}
-.paper .q{margin:16px 0;break-inside:avoid}.paper .qh{display:flex;gap:8px;align-items:baseline}.paper .qn{font-weight:800;color:var(--ti);white-space:nowrap}.paper .mk{margin-left:auto;font-size:13px;color:#666;white-space:nowrap}
+.paper .q{margin:16px 0;break-inside:avoid}.paper .qh{display:flex;gap:8px;align-items:baseline}.paper .qn{font-weight:800;color:var(--ti);white-space:nowrap}.paper .mk{margin-inline-start:auto;font-size:13px;color:#666;white-space:nowrap}
 .paper .ch{padding-left:26px;margin:4px 0;position:relative}.paper .ch::before{content:"";position:absolute;left:4px;top:5px;width:14px;height:14px;border:2px solid #555;border-radius:3px}
 .paper .ln{border-bottom:1px dotted #777;height:28px}.paper .hint{font-size:14px;font-style:italic;color:#555;margin-top:4px}.paper .star{color:#d97706;font-weight:800;font-size:13px}
 .paper .ans{margin-top:30px;border-top:3px dashed var(--ac);padding-top:6px}.paper .ans li{margin:4px 0}
@@ -327,6 +327,8 @@ body.app #app.paperw{max-width:none}
 .syl{border-collapse:collapse;margin:10px auto;font:700 30px/1.2 "Century Gothic","Comic Sans MS",system-ui,sans-serif}.syl td,.syl th{border:2px solid #d1d5db;padding:6px 14px;text-align:center;min-width:64px}.syl th{background:#f3f4f6;color:#dc2626}
 .trc{margin-top:8px;font:400 44px/1.1 "Century Gothic","Comic Sans MS",system-ui,sans-serif;letter-spacing:6px;color:#b9bec7;white-space:nowrap;overflow:hidden}.trc .mod{text-shadow:none;-webkit-text-stroke:1px #9ca3af;color:transparent}
 .ex>div{white-space:pre-line}
+.paper[dir=rtl] .ln,.paper[dir=rtl] .qh{direction:rtl}.paper[dir=rtl] .del{margin-inline-start:6px}
+.paper[dir=rtl] .mk{direction:ltr}
 .wsw{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-weight:700;margin-top:6px}
 @media(max-width:1240px){.chatbtn{display:inline-block}.wbchat{display:none;position:fixed;right:12px;top:80px;bottom:12px;height:auto;z-index:60}.wbchat.open{display:flex}}
 .tplrow{display:flex;align-items:flex-start;gap:16px;overflow-x:auto;padding:4px 2px 14px;scroll-snap-type:x proximity}
@@ -795,7 +797,7 @@ function slideHTML(sl,o={}){
       b=`${t}<div class="body"><div class="txt"><ul class="bl">${sl.bullets.map((x,i)=>`<li>${E("bullets."+i,x)}</li>`).join("")}</ul></div><div class="art">${sl.svg?sl.svg:`<div class="big">${esc(sl.emoji||"💡")}</div>`}</div></div>`;
   }
   const tabs=sl.layout==="activity"?`<div class="tabs"><span data-tab="q" class="${o.tab!=="a"?"on":""}">Question</span><span data-tab="a" class="${o.tab==="a"?"on":""}">Réponse</span></div>`:"";
-  return `<div class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""} ${sl.lv?"lv-"+sl.lv:""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
+  return `<div ${S&&isRTL(S.language)?'dir="rtl" lang="ar" ':""}class="sl ${ed?"edit":""} ${sl.layout==="activity"?"act":""} ${sl.lv?"lv-"+sl.lv:""}" style="${themeStyle(o.theme)}">${tabs}<div class="in">${b}</div>${CAP().no_badge?"":'<div class="badge">Créé avec Séquences</div>'}</div>`;
 }
 function fit(box){
   const sl=box.firstElementChild;if(!sl)return;
@@ -1161,6 +1163,8 @@ function cleanHTML(html){
 const fmt=v=>String(v??"").startsWith(RICH)?cleanHTML(String(v).slice(1)):esc(v);
 const getPath=(o,p)=>p.split(".").reduce((c,k)=>c==null?c:c[k],o);
 const LET="ABCDEFGH";
+const isRTL=l=>/^(arab|عرب|hébr|persan)/i.test(l||"");
+const RTLA=l=>isRTL(l)?' dir="rtl" lang="ar"':"";
 function paperHTML(edit,ans,D=W){
   const E=(pth,txt,tag="span",cls="",rich=false)=>`<${tag} class="${cls}" ${edit?(rich?`contenteditable="true" data-r="1" data-w="${pth}"`:`contenteditable="plaintext-only" data-w="${pth}"${/\.marks$/.test(pth)?" data-num=\"1\"":""}`):""}>${rich?fmt(txt):esc(txt)}</${tag}>`;
   let n=0,sn=0,total=0;const sheet=D.kind==="sheet",secAns={};
@@ -1201,8 +1205,8 @@ function paperHTML(edit,ans,D=W){
       ${d.explanation?.length?`<div class="ex">${d.explanation.map((x,xi)=>E(P+".explanation."+xi,x,"div","",true)).join("")}</div>`:""}${qs}`;
   }).join("");
   const tag=sheet?`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}${D.tpl&&TPL[D.tpl]&&TPL[D.tpl].total?` · <b>Total : … / ${total}</b>`:""}</p>`:`<p class="sub2">${esc(D.level)} · ${esc(D.topic)}</p>`;
-  const ansCard=ans?`<div class="paper pans ${edit?"edit":""}" style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
-  return `<div class="paper ${edit?"edit":""}" style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
+  const ansCard=ans?`<div class="paper pans ${edit?"edit":""}"${RTLA(D.language)} style="${themeStyle(D.theme)}"><h1>Réponses</h1><p class="sub2">${esc(D.title)}</p>${D.sections.map((s,si)=>s.data?`${sheet&&D.sections.length===1?"":`<div class="as">${esc(s.data.title)}</div>`}${(secAns[si]||[]).join("")}`:"").join("")}</div>`:"";
+  return `<div class="paper ${edit?"edit":""}"${RTLA(D.language)} style="${themeStyle(D.theme)}">${E("title",D.title,"h1")}${tag}<div class="nd"><span>Nom : ${E("hdr.nom",(D.hdr||{}).nom||"","span","hv")}</span><span>Prénom : ${E("hdr.prenom",(D.hdr||{}).prenom||"","span","hv")}</span><span>Date : ${E("hdr.date",(D.hdr||{}).date||"","span","hv")}</span></div>${body}</div>${ansCard}`;
 }
 /* historique (annuler / rétablir), « Enregistré », assistant */
 let HIST={id:"",u:[],r:[]},CHAT=[],CT=0,CB=false,svT=null;
@@ -1383,7 +1387,7 @@ async function pptxSlide(pptx,sl,th){
   const cols=[th.ac,th.ac2,"#D6336C","#222222","#7E22CE","#0891B2"].map(hx);
   const s=pptx.addSlide();s.background={color:hx(th.bg)};
   s.addShape("ellipse",{x:6.6,y:-1.8,w:5.2,h:4.2,fill:{color:hx(th.blob)},line:{color:hx(th.blob)}});
-  const T=(txt,o)=>s.addText(txt,{fontFace:font,color:hx(th.fg),...o});
+  const rtl=isRTL(S&&S.language),T=(txt,o)=>s.addText(txt,{fontFace:font,color:hx(th.fg),...(rtl?{rtlMode:true,align:"right"}:{}),...o});
   const card=(x,y,w,h)=>s.addShape("roundRect",{x,y,w,h,fill:{color:hx(th.card)},line:{color:hx(th.blob),width:1},rectRadius:.12});
   const badge=(x,y,n,i,sz=.5)=>{s.addShape("roundRect",{x,y,w:sz,h:sz,fill:{color:cols[i%6]},line:{color:cols[i%6]},rectRadius:.08});T(String(n),{x,y,w:sz,h:sz,align:"center",valign:"middle",bold:true,color:"FFFFFF",fontSize:16});};
   let notes=sl.notes||"";
