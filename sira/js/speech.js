@@ -82,7 +82,8 @@
     return s;
   }
   function frVoices() {
-    var l = (window.speechSynthesis ? window.speechSynthesis.getVoices() : []).filter(function (x) { return (ENG ? /^en/i : /^fr/i).test(x.lang); });
+    var all = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    var l = all.filter(function (x) { return (ENG ? /^en/i : /^fr/i).test(String(x.lang).replace("_", "-")) || (ENG ? /english|anglais/i : /fran[cç]ais|french/i).test(x.name); });
     return l.sort(function (a, b) { return score(b) - score(a); });
   }
 
@@ -127,7 +128,17 @@
           : "");
     }
     fillVoices();
-    if (window.speechSynthesis) window.speechSynthesis.onvoiceschanged = fillVoices;
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = fillVoices;
+      /* Téléphones : la liste des voix arrive souvent tard et sans événement (iOS, Android) → on la relit */
+      var tries = 0, nvoices = frVoices().length;
+      var timer = setInterval(function () {
+        var n = frVoices().length;
+        if (n !== nvoices) { nvoices = n; fillVoices(); }
+        if (++tries > 20 || !document.getElementById("voice")) clearInterval(timer);
+      }, 500);
+      ["pointerdown", "focus"].forEach(function (ev) { sel.addEventListener(ev, function () { if (frVoices().length !== sel.options.length - (hasRec ? 1 : 0)) fillVoices(); }); });
+    }
     sel.onchange = function () { mode = sel.value; set(KEY_V, mode); if (!play.disabled) return; start(); };
 
     function clear() { paras.forEach(function (p) { p.classList.remove("speaking"); }); }
