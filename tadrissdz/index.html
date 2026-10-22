@@ -10114,87 +10114,167 @@ var PROG_DETAIL = {
       ]
     }
   },
-  "2AS": {
-    /* Transcrit depuis le sommaire officiel 2AS — table UNIQUE commune aux filières Sciences
-       expérimentales / Mathématiques / Techniques mathématiques / Gestion & Économie (26 semaines
-       x 3h = 78h). Les filières Lettres et philosophie / Langues étrangères ont un programme
-       différent à partir de la 2AS, non transcrit ici (génération IA en attendant). Ce sommaire ne
-       donne que les intitulés de séquence, le volume horaire et les pages du manuel — pas de détail
-       grammaire/lexique séquence par séquence comme pour le primaire/moyen, donc ces champs restent
-       vides ici plutôt que d'être inventés. */
-    "langue française": (function() {
-      var detail = {
-        projets: [
-          {
-            nom: "Projet 1 : Le discours objectivé",
-            tacheFinale: "Concevoir et réaliser un dossier documentaire pour présenter les grandes réalisations scientifiques et techniques de notre époque.",
-            sequences: [
-              { nom: "Séquence 1 : Produire un texte pour présenter un fait, une notion, un phénomène.", production: "Produire un texte pour présenter un fait, une notion, un phénomène. (15 heures)", pages: "76-83", dureeSemaines: 5 },
-              { nom: "Séquence 2 : Produire un texte pour démontrer, prouver un fait.", production: "Produire un texte pour démontrer, prouver un fait. (12 heures)", pages: "76-83", dureeSemaines: 4 }
-            ]
-          },
-          {
-            nom: "Projet 2 : Le plaidoyer et le réquisitoire",
-            tacheFinale: "Produire une petite pièce théâtrale pour la présenter au lycée. Cette pièce, qui opposera deux instances adverses, présentera un événement qui s'inscrit dans les grands tournants de la pensée humaine. (Exemple : Le procès de Galilée)",
-            sequences: [
-              { nom: "Séquence 1 : Produire un discours pour plaider en faveur d'une personne, d'une opinion ou d'une cause.", production: "Produire un discours pour plaider en faveur d'une personne, d'une opinion ou d'une cause. (12 heures)", pages: "84-91", dureeSemaines: 4 },
-              { nom: "Séquence 2 : Produire un texte pour dénoncer ou discréditer une personne, une opinion ou une cause.", production: "Produire un texte pour dénoncer ou discréditer une personne, une opinion ou une cause. (12 heures)", pages: "84-91", dureeSemaines: 4 }
-            ]
-          },
-          {
-            nom: "Projet 3 : La nouvelle d'anticipation / Le reportage touristique",
-            tacheFinale: "Constituer un recueil de nouvelles pour représenter un monde futur.",
-            sequences: [
-              { nom: "Séquence (La nouvelle d'anticipation) : Produire un récit d'anticipation.", production: "Produire un récit d'anticipation. (15 heures)", pages: "92-95", dureeSemaines: 5 },
-              { nom: "Séquence (Le reportage touristique et le récit de voyage) : Produire un reportage touristique pour faire connaître aux touristes une région d'Algérie.", production: "Produire un reportage touristique pour faire connaître aux touristes une région d'Algérie. (12 heures)", pages: "96-99", dureeSemaines: 4 }
-            ]
-          }
-        ]
-      };
-      return { parFiliere: { sciences_exp: detail, mathematiques: detail, techniques_maths: detail, gestion_eco: detail } };
-    })()
-  },
-  "3AS": {
-    /* Transcrit depuis le sommaire officiel 3AS — table pour les filières Lettres et philosophie /
-       Langues étrangères uniquement (26 semaines x 4h = 104h). Les autres filières (Sciences exp.,
-       Mathématiques, Techniques mathématiques, Gestion & Économie) ont un programme différent à ce
-       niveau, non transcrit ici (génération IA en attendant). Même remarque que pour le 2AS : seuls
-       intitulés/volume horaire/pages sont donnés par ce sommaire, pas de détail séquence par séquence. */
+  "1AS": {
+    /* Transcrit depuis le "Tableau synoptique" officiel du curriculum de français en secondaire
+       (Lettres/filière littéraire). Le 1AS est en tronc commun (tc_sciences/tc_lettres) ; ce tableau
+       ne couvre explicitement que le tronc commun Lettres — appliqué ici seulement à tc_lettres,
+       jamais à tc_sciences par défaut (dont le programme de français pourrait différer). Seuls
+       intitulés/pages sont donnés (pas de durée en heures ni de grammaire/lexique détaillés). */
     "langue française": {
       parFiliere: {
-        lettres_philo: { projets: [
+        tc_lettres: { projets: [
           {
-            nom: "Projet 1 : Textes et documents d'histoire",
-            tacheFinale: "Dans le cadre de la commémoration d'une date historique, réaliser une recherche documentaire puis en faire une synthèse de l'information à mettre à la disposition des élèves.",
+            nom: "Projet 1 : Réaliser une campagne d'information à l'intention des élèves du lycée",
+            tacheFinale: "Réaliser une campagne d'information à l'intention des élèves du lycée.",
             sequences: [
-              { nom: "Séquence 1 : Produire un texte pour informer d'un fait d'histoire de manière objective.", production: "Produire un texte pour informer d'un fait d'histoire de manière objective. (15 heures)", pages: "06-08", dureeSemaines: 4 },
-              { nom: "Séquence 2 : Produire un texte pour présenter un fait d'histoire en y introduisant des commentaires et/ou des témoignages.", production: "Produire un texte pour présenter un fait d'histoire en y introduisant des commentaires et/ou des témoignages. (20 heures)", pages: "06-08", dureeSemaines: 5 }
+              { nom: "Séquence 1 : Contracter des textes.", actes: "Exposer pour donner des informations sur divers sujets. (Objet d'étude : Vulgarisation scientifique)", lectureSyst: "Technique : La prise de notes.", pages: "5-25", dureeSemaines: 3 },
+              { nom: "Séquence 2 : Résumer à partir d'un plan détaillé.", actes: "Exposer pour donner des informations sur divers sujets. (Objet d'étude : Vulgarisation scientifique)", lectureSyst: "Technique : Le plan.", pages: "26-42", dureeSemaines: 3 },
+              { nom: "Séquence 3 : Résumer en fonction d'une intention de communication.", actes: "Exposer pour donner des informations sur divers sujets. (Objet d'étude : Vulgarisation scientifique)", lectureSyst: "Technique : Le résumé.", pages: "43-59", dureeSemaines: 3 },
+              { nom: "Séquence 4 : Questionner de façon pertinente.", actes: "Dialoguer pour se faire connaître et connaître l'autre. (Objet d'étude : L'interview)", lectureSyst: "Techniques : Le questionnaire, l'exposé oral, la lettre personnelle.", pages: "67-81", dureeSemaines: 3 },
+              { nom: "Séquence 5 : Rédiger une lettre personnelle.", actes: "Dialoguer pour se faire connaître et connaître l'autre. (Objet d'étude : L'interview)", pages: "82-91", dureeSemaines: 3 }
             ]
           },
           {
-            nom: "Projet 2 : Le débat d'idées",
-            tacheFinale: "Organiser un débat en classe pour confronter des points de vue sur un sujet d'actualité puis, en faire un compte rendu qui sera publié sur la page Facebook de l'établissement.",
+            nom: "Projet 2 : Rédiger une lettre ouverte à une autorité compétente pour la sensibiliser à un problème et lui proposer des solutions",
+            tacheFinale: "Rédiger une lettre ouverte à une autorité compétente pour la sensibiliser à un problème et lui proposer des solutions.",
             sequences: [
-              { nom: "Séquence 1 : Produire un texte pour convaincre ou persuader (s'inscrire dans un débat).", production: "Produire un texte pour convaincre ou persuader. (S'inscrire dans un débat.) (20 heures)", pages: "12-19", dureeSemaines: 5 },
-              { nom: "Séquence 2 : Produire un texte pour concéder et réfuter.", production: "Produire un texte pour concéder et réfuter. (16 heures)", pages: "12-19", dureeSemaines: 4 }
+              { nom: "Séquence 1 : Organiser son argumentation.", actes: "Argumenter pour défendre ou réfuter un point de vue. (Objet d'étude : Le discours argumentatif)", lectureSyst: "Techniques : Les plans du discours argumentatif, le C.V., la lettre administrative.", pages: "97-108", dureeSemaines: 3 },
+              { nom: "Séquence 2 : S'impliquer dans son discours.", actes: "Argumenter pour défendre ou réfuter un point de vue. (Objet d'étude : Le discours argumentatif)", pages: "109-117", dureeSemaines: 3 }
             ]
           },
           {
-            nom: "Projet 3 : L'appel",
-            tacheFinale: "Dans le cadre d'une journée citoyenne, rédiger des appels pour inciter les habitants de la région à faire preuve de civisme.",
+            nom: "Projet 3 : Ecrire une petite biographie romancée",
+            tacheFinale: "Ecrire une petite biographie romancée.",
             sequences: [
-              { nom: "Séquence : Produire un texte pour inciter le destinataire à agir.", production: "Produire un texte pour inciter le destinataire à agir. (18 heures)", pages: "20-23", dureeSemaines: 4 }
+              { nom: "Séquence 1 : Relater objectivement un événement.", actes: "Relater un événement en relation avec son vécu. (Objet d'étude : Le fait divers)", lectureSyst: "Techniques : La fiche de lecture, l'essai.", pages: "121-133", dureeSemaines: 3 },
+              { nom: "Séquence 2 : S'impliquer dans la relation d'événement.", actes: "Relater un événement en relation avec son vécu. (Objet d'étude : Le fait divers)", pages: "134-143", dureeSemaines: 3 },
+              { nom: "Séquence 3 : Organiser le récit chronologiquement.", actes: "Relater un événement fictif. (Objet d'étude : La nouvelle)", pages: "151-165", dureeSemaines: 3 },
+              { nom: "Séquence 4 : Déterminer des forces agissantes.", actes: "Relater un événement fictif. (Objet d'étude : La nouvelle)", pages: "166-170", dureeSemaines: 3 },
+              { nom: "Séquence 5 : Enrichir le récit par des énoncés descriptifs et des « dires ».", actes: "Relater un événement fictif. (Objet d'étude : La nouvelle)", pages: "171-188", dureeSemaines: 3 }
             ]
           },
           {
-            nom: "Projet 4 : La nouvelle fantastique",
-            tacheFinale: "Réaliser un recueil de nouvelles fantastiques à mettre à la disposition des élèves dans la bibliothèque du lycée.",
+            nom: "Transversal : Exprimer son individualité (à étudier durant toute l'année)",
+            tacheFinale: "Exprimer son individualité — le fait poétique.",
             sequences: [
-              { nom: "Séquence : Produire un récit fantastique.", production: "Produire un récit fantastique. (15 heures)", pages: "24-27", dureeSemaines: 4 }
+              { nom: "Séquence : Etude de quelques poèmes et chansons (textes et images).", actes: "Objet d'étude : Le fait poétique. Supports : poèmes et chansons, textes et images.", lectureSyst: "Techniques : Maîtriser quelques figures de style, grammaire de l'image.", dureeSemaines: 2 }
             ]
           }
         ] }
       }
+    }
+  },
+  "2AS": {
+    /* Transcrit depuis le "Tableau synoptique" officiel du curriculum de français en secondaire —
+       complète/corrige la version précédente (transcrite depuis un sommaire incomplet qui n'avait
+       que 2 des 3 séquences du Projet 1, et sans le Projet 4). Les Projets 1-3 + le transversal sont
+       communs à toutes les filières ; le Projet 4 ("pour les classes de lettres", précisé ainsi dans
+       le document officiel) n'est donné qu'aux filières Lettres et philosophie / Langues étrangères. */
+    "langue française": (function() {
+      var projetsCommuns = [
+        {
+          nom: "Projet 1 : Le discours objectivé",
+          tacheFinale: "Concevoir et réaliser un dossier documentaire pour présenter les grandes réalisations scientifiques et techniques de notre époque.",
+          sequences: [
+            { nom: "Séquence 1 : Présenter un fait, une notion, un phénomène.", actes: "Exposer pour présenter un fait.", lectureSyst: "Technique : La prise de notes à partir de l'écrit ou de l'oral.", pages: "17", dureeSemaines: 3 },
+            { nom: "Séquence 2 : Démontrer, prouver un fait.", actes: "Exposer pour présenter un fait.", lectureSyst: "Technique : Le dossier documentaire.", pages: "24", dureeSemaines: 3 },
+            { nom: "Séquence 3 : Commenter des représentations graphiques et/ou iconiques.", actes: "Exposer pour présenter un fait.", lectureSyst: "Technique : Les représentations graphiques.", pages: "33", dureeSemaines: 3 }
+          ]
+        },
+        {
+          nom: "Projet 2 : Le plaidoyer et le réquisitoire",
+          tacheFinale: "Mettre en scène un procès pour défendre des valeurs humaines.",
+          sequences: [
+            { nom: "Séquence 1 : Plaider une cause.", actes: "Argumenter pour plaider une cause ou la discréditer.", pages: "53", dureeSemaines: 3 },
+            { nom: "Séquence 2 : Dénoncer une opinion, un fait, un point de vue.", actes: "Argumenter pour plaider une cause ou la discréditer.", pages: "67", dureeSemaines: 3 },
+            { nom: "Séquence 3 : Débattre d'un sujet d'actualité.", actes: "Argumenter pour plaider une cause ou la discréditer.", lectureSyst: "Technique : L'exposé oral.", pages: "72", dureeSemaines: 3 }
+          ]
+        },
+        {
+          nom: "Projet 3 : Le reportage touristique et le récit de voyage / La nouvelle d'anticipation",
+          tacheFinale: "Présenter le lycée, le village, la ville ou le monde de ses rêves pour faire partager ses idées, ses aspirations.",
+          sequences: [
+            { nom: "Séquence 1 : Rédiger un récit de voyage.", actes: "Relater pour informer et agir sur le destinataire. (Objet d'étude : Le reportage touristique et le récit de voyage)", pages: "88", dureeSemaines: 3 },
+            { nom: "Séquence 2 : Produire un texte touristique à partir d'un reportage.", actes: "Relater pour informer et agir sur le destinataire. (Objet d'étude : Le reportage touristique et le récit de voyage)", pages: "103", dureeSemaines: 3 },
+            { nom: "Séquence 3 : Rédiger un texte d'anticipation.", actes: "Relater pour se représenter un monde futur. (Objet d'étude : La nouvelle d'anticipation)", pages: "112", dureeSemaines: 3 },
+            { nom: "Séquence 4 : Imaginer et présenter le monde de demain.", actes: "Relater pour se représenter un monde futur. (Objet d'étude : La nouvelle d'anticipation)", lectureSyst: "Technique : La fiche de lecture.", pages: "127", dureeSemaines: 3 }
+          ]
+        },
+        {
+          nom: "Transversal : Exprimer son individualité (à étudier durant toute l'année)",
+          tacheFinale: "Exprimer son individualité — le fait poétique.",
+          sequences: [
+            { nom: "Séquence : Etude de quelques poèmes et chansons (textes et images).", actes: "Objet d'étude : Le fait poétique. Supports : poèmes et chansons, textes et images.", lectureSyst: "Techniques : Maîtriser quelques figures de style, grammaire de l'image.", dureeSemaines: 2 }
+          ]
+        }
+      ];
+      var projetTheatralLettres = {
+        nom: "Projet 4 : Le discours théâtral (classes de lettres)",
+        tacheFinale: "Mettre en scène un spectacle pour émouvoir ou donner à réfléchir. (Pour les classes de lettres.)",
+        sequences: [
+          { nom: "Séquence 1 : Scénariser un texte.", actes: "Dialoguer pour raconter.", pages: "154", dureeSemaines: 3 },
+          { nom: "Séquence 2 : Elaborer une saynète à partir d'une bande dessinée.", actes: "Dialoguer pour raconter.", pages: "172", dureeSemaines: 3 },
+          { nom: "Séquence 3 : Transposer un récit en dialogue.", actes: "Dialoguer pour raconter.", lectureSyst: "Technique : La dramatisation.", pages: "174", dureeSemaines: 3 }
+        ]
+      };
+      var detailCommun = { projets: projetsCommuns };
+      var detailLettres = { projets: projetsCommuns.slice(0, 3).concat([projetTheatralLettres], projetsCommuns.slice(3)) };
+      return { parFiliere: { sciences_exp: detailCommun, mathematiques: detailCommun, techniques_maths: detailCommun, gestion_eco: detailCommun, lettres_philo: detailLettres, langues_etr: detailLettres } };
+    })()
+  },
+  "3AS": {
+    /* Transcrit depuis le "Tableau synoptique" officiel — complète/corrige la version précédente
+       (transcrite depuis un sommaire incomplet : il manquait une séquence au Projet 3 "L'appel" et
+       deux séquences au Projet 4 "La nouvelle fantastique"). Toujours pour les filières Lettres et
+       philosophie / Langues étrangères ; les autres filières ont un programme différent à ce niveau,
+       non transcrit (génération IA en attendant). */
+    "langue française": {
+      parFiliere: (function() {
+        var detail = { projets: [
+          {
+            nom: "Projet 1 : Textes et documents d'histoire",
+            tacheFinale: "Dans le cadre de la commémoration d'une journée historique, réaliser une recherche documentaire puis faire la synthèse de l'information à mettre à la disposition des élèves dans la bibliothèque de l'établissement.",
+            sequences: [
+              { nom: "Séquence 1 : Informer d'un fait d'Histoire.", actes: "Exposer des faits et manifester son esprit critique.", pages: "11", dureeSemaines: 3 },
+              { nom: "Séquence 2 : Introduire un témoignage dans un fait d'Histoire.", actes: "Exposer des faits et manifester son esprit critique.", pages: "20", dureeSemaines: 3 },
+              { nom: "Séquence 3 : Analyser et commenter un fait d'Histoire.", actes: "Exposer des faits et manifester son esprit critique.", lectureSyst: "Technique : La synthèse de document.", pages: "43", dureeSemaines: 3 }
+            ]
+          },
+          {
+            nom: "Projet 2 : Le débat d'idées",
+            tacheFinale: "Organiser un débat d'idées puis en faire un compte-rendu.",
+            sequences: [
+              { nom: "Séquence 1 : S'inscrire dans un débat : convaincre ou persuader.", actes: "Dialoguer pour confronter des points de vue.", pages: "65", dureeSemaines: 3 },
+              { nom: "Séquence 2 : Prendre position dans un débat : concéder et réfuter.", actes: "Dialoguer pour confronter des points de vue.", lectureSyst: "Technique : Le compte rendu.", pages: "90", dureeSemaines: 3 }
+            ]
+          },
+          {
+            nom: "Projet 3 : L'appel",
+            tacheFinale: "Dans le cadre d'une journée « portes ouvertes », exposer des panneaux sur lesquels seront reportés des appels afin de mobiliser les apprenants et les visiteurs autour de causes humanitaires.",
+            sequences: [
+              { nom: "Séquence 1 : Comprendre l'enjeu de l'appel et structurer ce dernier.", actes: "Argumenter pour faire réagir.", lectureSyst: "Technique : La lettre de motivation.", pages: "127", dureeSemaines: 3 },
+              { nom: "Séquence 2 : Inciter son interlocuteur à agir.", actes: "Argumenter pour faire réagir.", lectureSyst: "Technique : La technique de prise de parole.", pages: "139", dureeSemaines: 3 }
+            ]
+          },
+          {
+            nom: "Projet 4 : La Nouvelle fantastique",
+            tacheFinale: "Rédiger une Nouvelle fantastique pour exprimer son imaginaire et provoquer trouble et questionnement chez le lecteur.",
+            sequences: [
+              { nom: "Séquence 1 : Introduire le fantastique dans un cadre réaliste.", actes: "Rédiger une nouvelle pour exprimer son imaginaire et provoquer trouble et questionnement chez le lecteur.", pages: "169", dureeSemaines: 3 },
+              { nom: "Séquence 2 : Exprimer son imaginaire dans une Nouvelle fantastique.", actes: "Rédiger une nouvelle pour exprimer son imaginaire et provoquer trouble et questionnement chez le lecteur.", pages: "185", dureeSemaines: 3 },
+              { nom: "Séquence 3 : Comprendre l'enjeu de la Nouvelle fantastique.", actes: "Rédiger une nouvelle pour exprimer son imaginaire et provoquer trouble et questionnement chez le lecteur.", lectureSyst: "Technique : La fiche de lecture.", pages: "197", dureeSemaines: 3 }
+            ]
+          },
+          {
+            nom: "Transversal : Exprimer son individualité (à étudier durant toute l'année)",
+            tacheFinale: "Exprimer son individualité — le fait poétique.",
+            sequences: [
+              { nom: "Séquence : Analyse et étude de quelques poèmes et chansons engagés.", actes: "Objet d'étude : Le fait poétique. Supports : poésie et chansons engagés, textes et images (slogan publicitaire).", lectureSyst: "Techniques : Maîtriser quelques figures de style, grammaire de l'image.", dureeSemaines: 2 }
+            ]
+          }
+        ] };
+        return { lettres_philo: detail, langues_etr: detail };
+      })()
     }
   },
   "2AM": {
@@ -10264,7 +10344,6 @@ var PROG_DETAIL = {
     }
   }
 };
-PROG_DETAIL["3AS"]["langue française"].parFiliere.langues_etr = PROG_DETAIL["3AS"]["langue française"].parFiliere.lettres_philo;
 function getDetailOfficielProga(niveauKey, mat, filiereVal) {
   var parNiveau = PROG_DETAIL[niveauKey];
   if (!parNiveau) return null;
