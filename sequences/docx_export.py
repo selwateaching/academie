@@ -24,6 +24,7 @@ FONT, FONT_CS = "Calibri", "Arial"
 PAGE_W = 17.4  # cm utiles
 
 PROV_OWN = "Cours élaboré à partir du texte fourni par l'enseignant."
+PROV_INSPIRE = "Texte inédit rédigé par une IA en s'inspirant du document fourni par l'enseignant."
 PROV = ("Ce cours a été rédigé par une IA à partir de connaissances générales : aucune source n'a été consultée en direct. "
         "Les liens ci-dessous ouvrent des recherches pour vérifier chaque notion.")
 TODO = "À compléter"
@@ -50,6 +51,7 @@ AR = {
     "Donner la consigne de production et les critères de réussite.": "إعطاء تعليمة الإنتاج ومعايير النجاح.", "Réalisent la production.": "ينجزون الإنتاج.",
     "Évaluer les acquis (questions de vérification).": "تقويم المكتسبات (أسئلة التحقق).", "Répondent aux questions.": "يجيبون عن الأسئلة.",
     "Réalisent les exercices.": "ينجزون التمارين.", TODO: "يُكمله الأستاذ(ة)",
+    PROV_INSPIRE: "نصٌّ جديد كتبه الذكاء الاصطناعي مستلهما الوثيقة التي قدّمها الأستاذ.",
     PROV_OWN: "أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.",
     PROV: "كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.",
 }
@@ -584,7 +586,7 @@ class Builder:
                 self.run(p, t(v.get("title"), 300))
         if prov:
             self.par(self.doc, self.L("Provenance du contenu"), True, color=TEAL_D, after=2, before=6, keep=True)
-            self.par(self.doc, self.L(PROV_OWN if prov.get("src") else PROV), italic=True, size=self.size - 1.5, color=GREY, after=3)
+            self.par(self.doc, self.L((PROV_INSPIRE if prov.get("mode") == "inspire" else PROV_OWN) if prov.get("src") else PROV), italic=True, size=self.size - 1.5, color=GREY, after=3)
             if prov.get("works"):
                 self.par(self.doc, self.L("Références à consulter") + " : " + " · ".join(t(w, 120) for w in prov["works"]), size=self.size - 1, after=3)
             wl = {"arab": "ar", "angl": "en", "espag": "es", "allem": "de"}.get(t(self.s.get("language")).lower()[:5].rstrip("e"), "fr")

@@ -593,12 +593,12 @@ function del(id){const f=saved.find(x=>x.id===id);if(f&&isFolder(f)){if(!confirm
 
 /* ---------- étape 1 : sujet ---------- */
 function withOwnText(doc,data){
-  if(!data||!doc.srcText||!doc.srcText.trim()||doc.srcOnly===false||doc.srcMode==="rewrite")return data;
+  if(!data||!doc.srcText||!doc.srcText.trim()||doc.srcOnly===false||["rewrite","inspire"].includes(doc.srcMode))return data;
   const paras=doc.srcText.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,80);
   data.explanation=(doc.srcTitle?[RICH+"<b>"+esc(doc.srcTitle)+"</b>"]:[]).concat(paras);
   return data;
 }
-const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||"",srcMode:O.srcMode==="rewrite"?"rewrite":"verbatim"}:{};
+const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||"",srcMode:["rewrite","inspire"].includes(O.srcMode)?O.srcMode:"verbatim"}:{};
 function srcBlock(n){
   const O=n==="S"?S:W;
   return `<div class="card" id="srcb"><label>Texte de départ <small style="font-weight:400;color:var(--mut)">(facultatif : collez votre propre texte ou importez un fichier)</small></label>
@@ -606,6 +606,7 @@ function srcBlock(n){
   <textarea id="stx" maxlength="20000" style="min-height:130px;margin-top:8px" placeholder="Collez ici le texte que vous avez choisi : extrait, article, poème, énoncé…" oninput="${n}.srcText=this.value;srcCount()">${esc(O.srcText||"")}</textarea>
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0"><label class="btn sm ghost" style="cursor:pointer;margin:0">📎 Importer un PDF, Word ou .txt<input type="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" style="display:none" onchange="importText(this,'${n}')"></label><small id="sinfo" style="color:var(--mut)"></small></div>
   <div id="smode" style="margin:6px 0"><label class="chk"><input type="radio" name="smode_${n}" value="verbatim" ${O.srcMode!=="rewrite"?"checked":""} onchange="${n}.srcMode='verbatim'"><span>C'est un texte à lire : l'utiliser tel quel<small>Votre texte est repris mot pour mot comme texte support</small></span></label>
+  <label class="chk"><input type="radio" name="smode_${n}" value="inspire" ${O.srcMode==="inspire"?"checked":""} onchange="${n}.srcMode='inspire'"><span>S'inspirer de ce texte : créer un texte inédit<small>L'IA écrit un texte original (même sujet, mêmes informations, phrases différentes) et cite votre texte comme source d'inspiration</small></span></label>
   <label class="chk"><input type="radio" name="smode_${n}" value="rewrite" ${O.srcMode==="rewrite"?"checked":""} onchange="${n}.srcMode='rewrite'"><span>C'est un cours ou des notes : rédiger un texte support à partir de ce document<small>L'IA écrit un vrai texte à lire (150 à 250 mots) à partir de vos idées, définitions et exemples</small></span></label></div>
   <label class="chk"><input type="checkbox" ${O.srcOnly!==false?"checked":""} onchange="${n}.srcOnly=this.checked"><span>Travailler uniquement sur ce texte<small>Toute la leçon, les exercices et les corrigés portent sur ce texte, sans rien ajouter d'extérieur. Vous êtes responsable des droits du texte.</small></span></label></div>`;
 }
@@ -734,7 +735,7 @@ const PROV_FR="Ce cours a été rédigé par une IA à partir de connaissances g
 const PROV_AR="كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.";
 function buildSlides(d){
   const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
-  const srcOn=S.srcText&&S.srcText.trim()&&S.srcOnly!==false,own=srcOn&&S.srcMode!=="rewrite";
+  const srcOn=S.srcText&&S.srcText.trim()&&S.srcOnly!==false,own=srcOn&&!["rewrite","inspire"].includes(S.srcMode);
   if(own){
     const paras=S.srcText.trim().split(/\n+/).filter(x=>x.trim()),total=S.srcText.trim().split(/\s+/).length,per=Math.max(110,Math.ceil(total/5));
     const chunks=[];let cur=[],w=0;
@@ -758,8 +759,8 @@ function buildSlides(d){
   const v=d.vocabulary||[];
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
-  const srcs=(d.sources&&d.sources.length)?d.sources:parseRefs(S.refsText),prov=d.references||null;
-  if(srcs.length||prov||srcOn)out.push({layout:"sources",title:"Sources",sources:srcs,prov:srcOn?{keywords:[],works:[],src:true}:prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
+  const srcs=((d.sources&&d.sources.length)?d.sources:parseRefs(S.refsText)).concat(srcOn&&S.srcMode==="inspire"?[{title:"Texte inspiré de : "+(S.srcTitle||"document fourni par l'enseignant"),url:"",site:"",accessed:""}]:[]),prov=d.references||null;
+  if(srcs.length||prov||srcOn)out.push({layout:"sources",title:"Sources",sources:srcs,prov:srcOn?{keywords:[],works:[],src:true,mode:S.srcMode==="inspire"?"inspire":""}:prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
   out.forEach(x=>x.id=uid());
   return out;
 }
@@ -875,7 +876,7 @@ function slideHTML(sl,o={}){
     case "sources":{
       const pv=sl.prov,L=S&&S.language,ar=docRTL(S);
       const own=sl.sources.length?`<div class="srcs">${sl.sources.map((v,i)=>`<div class="sr">${ed?`<b>${E("sources."+i+".title",v.title||"")}</b><div class="su">${E("sources."+i+".url",v.url||"")}</div>`:v.url?`<a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.title||v.site)}</a><div class="su">${esc(v.url)}</div>`:`<b>${esc(v.title)}</b>`}</div>`).join("")}</div>`:"";
-      const pb=pv?`<div class="prov"><b>${ar?"مصدر المحتوى":"Provenance du contenu"}</b><p>${pv.src?(ar?"أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.":"Cours élaboré à partir du texte fourni par l'enseignant."):(ar?PROV_AR:PROV_FR)}</p>${(pv.works||[]).length?`<p><b>${ar?"مراجع يُنصح بها":"Références à consulter"} :</b> ${pv.works.map(esc).join(" · ")}</p>`:""}${(pv.keywords||[]).length?`<p class="kws"><b>${ar?"للتحقق":"Pour vérifier"} :</b> ${pv.keywords.map(k=>`<span>${esc(k)} <a href="${wikiURL(k,L)}" target="_blank" rel="noopener noreferrer">Wikipédia</a> <a href="${scholarURL(k)}" target="_blank" rel="noopener noreferrer">Scholar</a></span>`).join("")}</p>`:""}</div>`:"";
+      const pb=pv?`<div class="prov"><b>${ar?"مصدر المحتوى":"Provenance du contenu"}</b><p>${pv.src?(pv.mode==="inspire"?(ar?"نصٌّ جديد كتبه الذكاء الاصطناعي مستلهما الوثيقة التي قدّمها الأستاذ.":"Texte inédit rédigé par une IA en s'inspirant du document fourni par l'enseignant."):(ar?"أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.":"Cours élaboré à partir du texte fourni par l'enseignant.")):(ar?PROV_AR:PROV_FR)}</p>${(pv.works||[]).length?`<p><b>${ar?"مراجع يُنصح بها":"Références à consulter"} :</b> ${pv.works.map(esc).join(" · ")}</p>`:""}${(pv.keywords||[]).length?`<p class="kws"><b>${ar?"للتحقق":"Pour vérifier"} :</b> ${pv.keywords.map(k=>`<span>${esc(k)} <a href="${wikiURL(k,L)}" target="_blank" rel="noopener noreferrer">Wikipédia</a> <a href="${scholarURL(k)}" target="_blank" rel="noopener noreferrer">Scholar</a></span>`).join("")}</p>`:""}</div>`:"";
       b=`${t}${own}${pb}${!pv&&!sl.sources.length?'<p style="opacity:.6">Aucune source ajoutée.</p>':""}${sl.sources[0]&&sl.sources[0].accessed?`<p class="sn">Liens trouvés par recherche web et testés (consultés le ${esc(sl.sources[0].accessed)}).</p>`:own?'<p class="sn">Sources de référence indiquées par l\'enseignant.</p>':""}`;break;}
     case "production":{
       const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
