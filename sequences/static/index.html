@@ -792,7 +792,7 @@ function themeDots(cur,fn){
 function series(){
   const miss=S.lessons.filter(l=>!l.slides).length,first=S.lessons.findIndex(l=>l.slides),n=S.lessons.length;
   $("#app").innerHTML=`<div class="shead"><div><p class="crumbs" style="margin:0 0 6px"><a onclick="${ACC?"navSeqs()":"go('home')"}">← ${ACC?"Séquences":"Accueil"}</a></p><h1 style="margin:0">${esc(S.title)}</h1><p class="sub" style="margin:4px 0 0">${esc(S.level)} · ${n} ${n>1?"leçons":"leçon"} · ${statusOf(S)}</p></div>
-  <div class="sacts">${first>=0?`<button class="btn" onclick="play(${first},0)">▶ Enseigner</button>`:""}<button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint</button><button class="btn ghost" onclick="exportWord()" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF</button><button class="btn ghost" onclick="printAll()" title="Fiche texte avec notes de l'enseignant">📝 Notes</button></div></div>
+  <div class="sacts">${first>=0?`<button class="btn" onclick="play(${first},0)">▶ Enseigner</button>`:""}<button class="btn ghost" onclick="exportPptx()">⬇ PowerPoint</button><button class="btn ghost" onclick="chooseWord()" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn ghost" onclick="exportPdf()">⬇ PDF</button><button class="btn ghost" onclick="printAll()" title="Fiche texte avec notes de l'enseignant">📝 Notes</button></div></div>
   <div class="sgrid"><div class="smain"><div class="card" style="padding:4px 20px">${S.lessons.map((l,i)=>`<div class="srow"><div class="no">${i+1}</div><div class="tx"><b>${esc(l.slides?(l.slides[0]?.title||l.title):l.title)}</b><p>${esc(l.summary)}</p></div>
    <div class="bt">${l.slides?`<button class="btn sm ghost" onclick="openStudio(${i})">✏ Modifier</button><button class="btn sm" onclick="play(${i})">▶ Enseigner</button>`:`<span class="pill e">Non générée</span>`}</div></div>`).join("")}</div>
    ${miss?`<button class="btn" onclick="step=4;render();generate()">Générer les ${miss} leçons manquantes</button>`:""}</div>
@@ -905,7 +905,7 @@ function studio(){
   $("#studio").innerHTML=`<div class="top"><button class="btn sm" onclick="closeStudio()">←</button><b>${esc(S.lessons[ST.li].title)}</b>
    <select onchange="S.theme=this.value;save();studio()" title="Thème">${Object.entries(allThemes()).map(([k,t])=>`<option value="${k}" ${k===S.theme?"selected":""}>${esc(t.n)}</option>`).join("")}</select>
    <button class="btn sm" onclick="${(S.custom||{})[S.theme]?"editTheme(S.theme)":"newTheme()"}" title="Thème personnalisé (Max)">🎨</button>
-   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="exportWord(${ST.li})" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn sm" onclick="exportPdf(${ST.li})" title="PDF des diapositives">⬇ PDF</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
+   <button class="btn sm" onclick="exportPptx(${ST.li})" title="PowerPoint, compatible Google Slides">⬇ PPTX</button><button class="btn sm" onclick="chooseWord(${ST.li})" title="Fiche pédagogique modifiable dans Word">⬇ Word</button><button class="btn sm" onclick="exportPdf(${ST.li})" title="PDF des diapositives">⬇ PDF</button><button class="btn sm pri" onclick="play(${ST.li},${ST.n})">▶ Enseigner</button></div>
   <div class="sbody"><div class="thumbs" id="thumbs">${sl.map((x,i)=>`<div class="thumb ${i===ST.n?"on":""}" onclick="ST.n=${i};ST.tab='q';studio()">${fitBox(slideHTML(x,{theme:S.theme,thumb:true}),"100%","0",'th-fit')}<span class="k">${i+1}</span></div>`).join("")}</div>
   <div class="main"><div class="stage" id="stage"><div class="fit" id="big" style="width:100%;height:100%">${slideHTML(cur,{edit:true,theme:S.theme,tab:ST.tab})}</div></div>
    <div class="tools"><span style="font-size:13px;color:var(--mut)">${ST.n+1} / ${sl.length}</span>
@@ -1562,13 +1562,22 @@ async function exportPptx(li){
     download(blob,fname(li==null?S.title:S.lessons[li].title)+".pptx");
   }catch(e){alert("Export PowerPoint impossible : "+(e&&e.message||e));}
 }
-async function exportWord(li){
+function chooseWord(li){
+  const a=li==null?"":li;
+  modal(`<h2>Télécharger en Word</h2><p class="sub">Choisissez la version à télécharger. Les deux sont modifiables dans Word.</p>
+  <button class="opt" onclick="closeModal();exportWord(${a===""?"null":a},'teacher')"><span class="ic">👩‍🏫</span><span><b>Version enseignant</b><small>Fiche pédagogique complète : en-tête à compléter, déroulement, corrigés sous chaque exercice, notes</small></span></button>
+  <button class="opt" onclick="closeModal();exportWord(${a===""?"null":a},'student')"><span class="ic">🧒</span><span><b>Version élève</b><small>Fiche de travail à imprimer : texte, exercices et productions, sans corrigés</small></span></button>
+  <button class="opt" onclick="closeModal();exportWord(${a===""?"null":a},'both')"><span class="ic">📄</span><span><b>Les deux versions</b><small>Deux fichiers téléchargés</small></span></button>
+  <div class="nav"><button class="btn ghost" onclick="closeModal()">Annuler</button></div>`);
+}
+async function exportWord(li,mode="teacher"){
+  if(mode==="both"){await exportWord(li,"teacher");await exportWord(li,"student");return;}
   const ser=JSON.parse(JSON.stringify({title:S.title,level:S.level,language:S.language,topic:S.topic,lessons:(li==null?S.lessons.filter(l=>l.slides):[S.lessons[li]]).map(l=>({title:l.title,slides:l.slides.map(x=>{const y={...x};delete y.svg;return normalize(y);})}))}));
   toast("Création du fichier Word…");
   try{
-    const r=await api("/api/docx",{series:ser});
+    const r=await api("/api/docx",{series:ser,mode});
     const bin=atob(r.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
-    download(new Blob([u],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),fname(li==null?S.title:S.lessons[li].title)+".docx");
+    download(new Blob([u],{type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"}),fname(li==null?S.title:S.lessons[li].title)+(mode==="student"?" - élève":" - enseignant")+".docx");
   }catch(e){alert("Export Word impossible : "+e.message);}
 }
 /* PDF des diapositives : la boîte d'impression du navigateur, réglée sur des pages 16:9 */

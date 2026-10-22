@@ -1237,7 +1237,7 @@ def docx_export():
     if not ser or not isinstance(ser.get("lessons"), list) or not any(isinstance(l, dict) and l.get("slides") for l in ser["lessons"]):
         return error("invalid_request", "Aucune leçon générée à exporter.", 400)
     try:
-        data = build_docx(ser)
+        data = build_docx(ser, "student" if b.get("mode") == "student" else "teacher")
     except Exception as e:  # contenu inattendu : on le signale proprement
         return error("export", f"Export Word impossible : {e}", 500)
     return jsonify({"name": (s(ser.get("title"), 60) or "sequence"), "data": base64.b64encode(data).decode()})
