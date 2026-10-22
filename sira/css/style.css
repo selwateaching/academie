@@ -218,3 +218,6 @@ section.block{padding:3rem 1.2rem 0}
 @media(max-width:820px){
   .nav{display:flex;order:3;flex-basis:100%;justify-content:flex-start;margin:0;padding-bottom:.2rem}
 }
+
+.audio select{max-width:230px}
+@media(max-width:560px){.audio .rate{width:100%}.audio select{max-width:none;flex:1}}
