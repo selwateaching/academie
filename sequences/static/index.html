@@ -615,7 +615,7 @@ async function importText(inp,n){
   try{
     const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=rej;r.readAsDataURL(f);});
     const d=await api("/api/extract",{name:f.name,data});
-    O.srcText=(O.srcText?O.srcText.trim()+"\n\n":"")+d.text;if(!O.srcTitle)O.srcTitle=f.name.replace(/\.[^.]+$/,"");
+    O.srcText=(O.srcText?O.srcText.trim()+"\n\n":"")+d.text;if(!O.srcTitle){const nm=f.name.replace(/\.[^.]+$/,"").replace(/[-_]+/g," ").replace(/^[\d\s]+/,"").trim();if(nm.length>2)O.srcTitle=nm.charAt(0).toUpperCase()+nm.slice(1);}
     $("#stx").value=O.srcText;srcCount();info.textContent=d.truncated?"Texte tronqué à 20 000 caractères.":"Fichier importé.";
   }catch(e){info.textContent=e.message;}
   inp.value="";

@@ -70,6 +70,24 @@ ORD = {
 }
 
 
+PUA_BULLETS = "\uf0a7\uf0b7\uf076\uf0d8\uf0fc\uf02d\uf0a8\uf06c"
+
+
+def clean_text(s):
+    """Retire les caractères de puces propres à Word/PDF (affichés en « ? ») et les espaces multiples."""
+    s = "".join("•" if c in PUA_BULLETS else ("" if "\ue000" <= c <= "\uf8ff" else c) for c in str(s or ""))
+    s = re.sub(r"^[ \t]*•[ \t]*", "• ", s, flags=re.M)
+    return re.sub(r"[ \t\u00a0]{2,}", " ", s)
+
+
+def clean_title(s):
+    s = t(s, 200)
+    if " " not in s and re.search(r"[-_]", s):  # nom de fichier : « 7970-Mise-en-place » -> « Mise en place »
+        s = re.sub(r"^[\d\s_-]+", "", re.sub(r"[-_]+", " ", s)).strip()
+        s = s[:1].upper() + s[1:]
+    return s
+
+
 def t(x, n=2000):
     return str(x or "").strip()[:n]
 
@@ -304,7 +322,7 @@ class Builder:
         for side in ("bottom", "insideH"):
             bd.append(el(side, val="single", sz=6, space=0, color="7DA7D9"))
         put(pr, bd)
-        h = 1.25 if self.big else 0.95
+        h = 1.0 if self.big else 0.78
         for row in tb.rows:
             put(row._tr.get_or_add_trPr(), el("trHeight", val=int(h * 567), hRule="exact"))
             row.cells[0].paragraphs[0].paragraph_format.space_after = Pt(0)
@@ -350,7 +368,7 @@ class Builder:
             [("Titre", t(lesson.get("title")), 3)],
             [("Compétence globale", None, 3)],
             [("Compétence terminale", None, 3)],
-            [("Activité", None, 1), ("Support", t(sup.get("title"), 120) if sup else None, 1)],
+            [("Activité", None, 1), ("Support", t(clean_title(sup.get("title")), 120) if sup else None, 1)],
             [("Durée", "1 h" if not self.rtl else "ساعة", 1), ("Séance", f"{i + 1} / {n}", 1)],
         ]
         w = [3.2, 5.5, 3.2, 5.5]
@@ -387,17 +405,12 @@ class Builder:
             self.bullet(self.doc, b)
 
     def support_block(self, sup):
-        self.heading(self.L("Texte support") + (" — " + t(sup.get("title"), 160) if sup.get("title") else ""))
-        tb = self.table(1, 1, [PAGE_W], borders=None, margins=(140, 240))
-        c = tb.rows[0].cells[0]
-        self.shade(c, "FBFAF4")
-        put(c._tc.get_or_add_tcPr(), self._cell_bar())
-        k = 0
-        for para in t(sup.get("text"), 20000).split("\n"):
+        self.heading(self.L("Texte support") + (" — " + clean_title(sup.get("title")) if sup.get("title") else ""))
+        # des paragraphes (et non un tableau) : un long texte doit pouvoir passer d'une page à l'autre
+        for para in clean_text(t(sup.get("text"), 20000)).split("\n"):
             if para.strip():
-                self.cell(c, para.strip(), False, self.size + (2 if self.big else 0.5), first=(k == 0), after=6)
-                k += 1
-        self.gap(6)
+                self.par(self.doc, para.strip(), False, self.size + (2 if self.big else 0.5), after=5, shade="FBFAF4", bar=TEAL, indent=0.4, before=0)
+        self.gap(8)
 
     def _cell_bar(self):
         tcb = el("tcBorders")
@@ -477,7 +490,7 @@ class Builder:
             self.par(self.doc, f"{'abcdef'[j % 6]})   {t(c, 300)}", after=1, indent=0.9)
         if not q.get("choices"):
             self.gap(2)
-            self.lines(2)
+            self.lines(1 if t(q.get("type")) == "fill" else 2)
         self.corrige(q)
 
     def _tabs(self, pos):
@@ -529,7 +542,7 @@ class Builder:
             self.cell(b, "•  " + t(c, 240), False, self.size - 1, first=False, after=2)
         self.gap(6)
         self.par(self.doc, self.L("Ma production :"), True, color=TEAL, after=2, keep=True)
-        self.lines(10 if not self.big else 7)
+        self.lines(7 if not self.big else 5)
         if self.teacher:
             if pr.get("example"):
                 p = self.par(self.doc, "", after=4, shade=GREEN_L, bar=GREEN, indent=0.4)
@@ -604,7 +617,7 @@ class Builder:
         exo = [x for x in acts if not t(x.get("title")).lower().startswith("vérification")]
         quiz = [x for x in acts if x not in exo]
         sups = [x for x in sl if x.get("layout") == "support" and t(x.get("text"))]
-        sup = ({"title": re.sub(r"\s*\(\d+/\d+\)$", "", t(sups[0].get("title"))), "text": "\n".join(t(x.get("text"), 3000) for x in sups)} if sups else None)
+        sup = ({"title": clean_title(re.sub(r"\s*\(\d+/\d+\)$", "", t(sups[0].get("title")))), "text": "\n".join(t(x.get("text"), 3000) for x in sups)} if sups else None)
         prods = [x for x in sl if x.get("layout") == "production" and isinstance(x.get("prod"), dict)]
         srcs = [v for x in sl if x.get("layout") == "sources" for v in x.get("sources") or [] if isinstance(v, dict) and (v.get("url") or v.get("title"))]
         prov = next((x.get("prov") for x in sl if x.get("layout") == "sources" and isinstance(x.get("prov"), dict)), None)

@@ -1295,6 +1295,8 @@ def extract_text():
                 text = raw.decode("cp1252", "replace")
     except Exception:
         return error("invalid_request", "Fichier illisible. Utilisez un PDF, un Word (.docx) ou un fichier texte.", 422)
+    text = "".join("•" if c in "\uf0a7\uf0b7\uf076\uf0d8\uf0fc\uf02d\uf0a8\uf06c" else ("" if "\ue000" <= c <= "\uf8ff" else c) for c in text)
+    text = re.sub(r"[ \t\u00a0]{2,}", " ", text)
     if name.endswith(".pdf"):
         text = unwrap_lines(text)
     text = re.sub(r"[ \t]+\n", "\n", text)
