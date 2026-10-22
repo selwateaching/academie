@@ -39,7 +39,7 @@
       var list = ch.filter(function (c) { return c.period === p.id; });
       out.push({ icon: p.icon, name: p.label, desc: "Réussir tous les quiz de cette période", ok: list.every(function (c) { return done(c.id); }) });
     });
-    out.push({ icon: "👥", name: "Compagnon", desc: "Réussir les 15 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
+    out.push({ icon: "👥", name: "Compagnon", desc: "Réussir les 30 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
     out.push({ icon: "📖", name: "Famille et thèmes", desc: "Réussir les 16 quiz sur la famille et les thèmes", ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
     out.push({ icon: "🏆", name: "Gardien de la Sira", desc: "Réussir les 25 quiz des chapitres", ok: ch.every(function (c) { return done(c.id); }) });
     return out;

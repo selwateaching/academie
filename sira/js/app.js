@@ -143,7 +143,7 @@
         return '<a class="card" href="#/chapitres/' + p.id + '"><span class="num">' + p.icon + "</span><h3>" + esc(p.label) + "</h3><p>" +
           list.length + " chapitres · " + esc(list[0].date.replace(/^avant /, "")) + " → " + esc(list[list.length - 1].date) + "</p></a>";
       }).join("") + "</div></section>" +
-      '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Quinze portraits : ceux qui ont marché, combattu et prié à ses côtés.</p><div class="grid">' +
+      '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Trente portraits : ceux qui ont marché, combattu et prié à ses côtés.</p><div class="grid">' +
       [101, 102, 105, 113].map(function (id) { return card(CO[id - 101]); }).join("") + '</div><p><a class="btn ghost" href="#/compagnons">Voir tous les compagnons</a></p></section>' +
       '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Les épouses, les enfants, le caractère du Prophète ﷺ et la vie à Médine.</p><div class="grid">' +
       [201, 204, 208, 211].map(function (id) { return card(TH[id - 201]); }).join("") + '</div><p><a class="btn ghost" href="#/themes">Voir toutes les fiches</a></p></section>' +
@@ -177,7 +177,7 @@
   }
 
   function viewCompanions() {
-    app.innerHTML = '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Quinze portraits de compagnons et de compagnes. Chaque fiche se termine par un quiz.</p><div class="grid">' + CO.map(card).join("") + "</div></section>";
+    app.innerHTML = '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Trente portraits de compagnons et de compagnes. Chaque fiche se termine par un quiz.</p><div class="grid">' + CO.map(card).join("") + "</div></section>";
   }
 
   function viewThemes() {
