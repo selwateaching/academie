@@ -37,7 +37,7 @@
     return '<a class="card' + (isRead(c.id) ? " done" : "") + '" href="#/chapitre/' + c.id + '">' +
       '<span class="num">' + String(c.id).padStart(2, "0") + '</span>' +
       "<h3>" + esc(c.title) + "</h3><p>" + esc(c.sub) + "</p>" +
-      '<div class="meta"><span>' + esc(c.date) + "</span><span>" + minutes(c) + " min</span></div></a>";
+      '<div class="meta"><span>' + esc(c.date) + "</span><span>" + (SiraQuiz.stars(c.id) !== null ? '<span class="stars sm">' + SiraQuiz.starStr(SiraQuiz.stars(c.id)) + "</span> · " : "") + minutes(c) + " min</span></div></a>";
   }
 
   /* ---------- Audio (synthèse vocale du navigateur) ---------- */
@@ -128,6 +128,7 @@
       '<div class="stat"><b>3</b><span>grandes périodes</span></div>' +
       '<div class="stat"><b>63</b><span>années de vie</span></div>' +
       '<div class="stat"><b>' + done + "/" + CH.length + "</b><span>chapitres lus</span></div></div>" +
+      '<section class="block wrap"><h2>Vos récompenses</h2><p class="lead">Chaque chapitre se termine par un quiz.</p>' + SiraQuiz.rewardsHtml(true) + '<p><a class="btn ghost" href="#/recompenses">Voir tous mes badges</a></p></section>' +
       '<section class="block wrap"><h2>Choisissez votre période</h2><p class="lead">Trois grandes étapes, du berceau à l\'adieu.</p><div class="grid">' +
       PER.map(function (p) {
         var list = CH.filter(function (c) { return c.period === p.id; });
@@ -188,6 +189,7 @@
         '<label class="rate"><input type="checkbox" id="auto"> Enchaîner</label></div>' +
         '<p class="audio-note" id="audioNote"></p>' : '<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>') +
       '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>" +
+      '<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/' + id + '">Passer le quiz</a></div>' +
       '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? "✓ Marqué comme lu" : "Marquer comme lu") + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
       (prev ? '<a class="btn ghost" href="#/chapitre/' + prev.id + '">← <span><small>Précédent</small>' + esc(prev.title) + "</span></a>" : "<span></span>") +
@@ -227,6 +229,7 @@
   function route() {
     var fromAudio = /\?audio=1/.test(location.hash);
     if (!fromAudio) stopSpeech();
+    SiraQuiz.stop();
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
@@ -235,10 +238,13 @@
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
     if (page === "chapitre") viewChapter(parseInt(h[1], 10));
+    else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
+    else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
     else if (page === "chronologie") viewTimeline();
     else if (page === "recherche") viewList("", decodeURIComponent(h.slice(1).join("/")));
     else viewHome();
+    SiraQuiz.updateTrophy();
     window.scrollTo(0, 0);
     app.focus({ preventScroll: true });
     document.title = page === "chapitre" && CH[parseInt(h[1], 10) - 1]
