@@ -237,11 +237,18 @@
   }
 
   var t;
+  /* Recherche pendant la frappe : on affiche les résultats sans changer de page (pas de hashchange),
+     donc sans repasser par route() qui déplace le focus ; l'adresse est mise à jour discrètement. */
   qInput.addEventListener("input", function () {
     clearTimeout(t);
     t = setTimeout(function () {
       var v = qInput.value.trim();
-      location.hash = v ? "#/recherche/" + encodeURIComponent(v) : "#/chapitres";
+      if (!v) { location.hash = "#/chapitres"; return; }
+      try { history.replaceState(null, "", "#/recherche/" + encodeURIComponent(v)); } catch (e) { location.hash = "#/recherche/" + encodeURIComponent(v); return; }
+      SiraQuiz.stop();
+      Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) { a.classList.remove("on"); });
+      viewList("", v);
+      if (document.activeElement !== qInput) qInput.focus();
     }, 250);
   });
   document.getElementById("tickerClose").onclick = function () {
