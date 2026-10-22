@@ -40,6 +40,74 @@
       '<div class="meta"><span>' + esc(c.date) + "</span><span>" + minutes(c) + " min</span></div></a>";
   }
 
+  /* ---------- Audio (synthèse vocale du navigateur) ---------- */
+  var SPEECH = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+  var AUTO_KEY = "sira-fr:auto", RATE_KEY = "sira-fr:rate";
+
+  function frVoice() {
+    var v = window.speechSynthesis.getVoices().filter(function (x) { return /^fr/i.test(x.lang); });
+    if (!v.length) return null;
+    // privilégier une voix de qualité (réseau / « naturelle ») puis fr-FR
+    v.sort(function (a, b) {
+      function sc(x) { return (/natural|online|google|premium|enhanced/i.test(x.name) ? 2 : 0) + (/fr[-_]FR/i.test(x.lang) ? 1 : 0); }
+      return sc(b) - sc(a);
+    });
+    return v[0];
+  }
+  function stopSpeech() { if (SPEECH) { window.speechSynthesis.cancel(); window._siraSpeakId = (window._siraSpeakId || 0) + 1; } }
+
+  function setupAudio(c, next) {
+    var play = document.getElementById("play"), pause = document.getElementById("pause"), stop = document.getElementById("stop");
+    var rate = document.getElementById("rate"), auto = document.getElementById("auto"), note = document.getElementById("audioNote");
+    var paras = Array.prototype.slice.call(document.querySelectorAll("#prose p"));
+    var texts = [c.title + ". " + c.sub + "."].concat(c.paras);
+    var myId;
+    rate.value = store(true, RATE_KEY) || "1";
+    auto.checked = store(true, AUTO_KEY) === "1";
+    rate.onchange = function () { store(false, RATE_KEY, rate.value); };
+    auto.onchange = function () { store(false, AUTO_KEY, auto.checked ? "1" : "0"); };
+    window.speechSynthesis.onvoiceschanged = function () { note.textContent = frVoice() ? "" : "Aucune voix française trouvée sur cet appareil."; };
+    if (!frVoice() && window.speechSynthesis.getVoices().length) note.textContent = "Aucune voix française trouvée sur cet appareil : installez-en une dans les réglages de votre système.";
+
+    function clear() { paras.forEach(function (p) { p.classList.remove("speaking"); }); }
+    function ui(on) { play.disabled = on; pause.disabled = !on; stop.disabled = !on; pause.textContent = "⏸ Pause"; }
+    function speak(i) {
+      if (window._siraSpeakId !== myId) return;
+      clear();
+      if (i >= texts.length) {
+        ui(false);
+        if (auto.checked && next) location.hash = "#/chapitre/" + next.id + "?audio=1";
+        return;
+      }
+      if (i > 0) { paras[i - 1].classList.add("speaking"); paras[i - 1].scrollIntoView({ block: "center", behavior: "smooth" }); }
+      var u = new SpeechSynthesisUtterance(texts[i]);
+      var v = frVoice();
+      u.lang = v ? v.lang : "fr-FR";
+      if (v) u.voice = v;
+      u.rate = parseFloat(rate.value) || 1;
+      u.onend = function () { speak(i + 1); };
+      u.onerror = function (e) { if (e.error !== "canceled" && e.error !== "interrupted") ui(false); };
+      window.speechSynthesis.speak(u);
+    }
+    function start() {
+      window.speechSynthesis.cancel();
+      window._siraSpeakId = (window._siraSpeakId || 0) + 1;
+      myId = window._siraSpeakId;
+      ui(true);
+      speak(0);
+    }
+    play.onclick = start;
+    pause.onclick = function () {
+      var ss = window.speechSynthesis;
+      if (ss.paused) { ss.resume(); pause.textContent = "⏸ Pause"; } else { ss.pause(); pause.textContent = "▶ Reprendre"; }
+    };
+    stop.onclick = function () { stopSpeech(); clear(); ui(false); };
+    if (/audio=1/.test(location.hash)) {
+      history.replaceState(null, "", location.hash.replace(/\?audio=1/, ""));
+      setTimeout(start, 300);
+    }
+  }
+
   /* ---------- Vues ---------- */
   function viewHome() {
     var done = readSet().length;
@@ -114,6 +182,11 @@
       "<h1>" + esc(c.title) + '</h1><p class="sub">' + esc(c.sub) + "</p>" +
       '<div class="facts"><span>📅 ' + esc(c.date) + "</span><span>⏱ " + minutes(c) + " min de lecture</span><span>Chapitre " + c.id + " / " + CH.length + "</span></div>" +
       '<div class="tools" role="group" aria-label="Taille du texte"><button id="fsm" aria-label="Réduire le texte">A−</button><button id="fsp" aria-label="Agrandir le texte">A+</button></div>' +
+      (SPEECH ? '<div class="audio" role="group" aria-label="Lecture audio"><button class="btn gold" id="play">🔊 Écouter ce chapitre</button>' +
+        '<button class="btn ghost" id="pause" disabled>⏸ Pause</button><button class="btn ghost" id="stop" disabled>⏹ Arrêter</button>' +
+        '<label class="rate">Vitesse <select id="rate"><option value="0.8">0,8×</option><option value="0.9">0,9×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option><option value="1.3">1,3×</option></select></label>' +
+        '<label class="rate"><input type="checkbox" id="auto"> Enchaîner</label></div>' +
+        '<p class="audio-note" id="audioNote"></p>' : '<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>') +
       '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>" +
       '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? "✓ Marqué comme lu" : "Marquer comme lu") + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
@@ -143,6 +216,7 @@
       bar.style.width = pct + "%";
       if (pct > 92 && !isRead(id)) { setRead(id, true); mark.textContent = "✓ Marqué comme lu"; }
     }
+    if (SPEECH) setupAudio(c, next);
     window.removeEventListener("scroll", window._siraScroll || function () {});
     window._siraScroll = onScroll;
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -151,8 +225,10 @@
 
   /* ---------- Routeur ---------- */
   function route() {
+    var fromAudio = /\?audio=1/.test(location.hash);
+    if (!fromAudio) stopSpeech();
     window.removeEventListener("scroll", window._siraScroll || function () {});
-    var h = location.hash.replace(/^#\/?/, "").split("/");
+    var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
     var nav = page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {

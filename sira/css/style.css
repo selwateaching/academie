@@ -98,6 +98,14 @@ section.block{padding:3rem 0 0}
 .tl-item a:hover h3{color:var(--gold2)}
 .tl-period{margin:1.8rem 0 .4rem;color:var(--gold2);font:700 1.4rem "Cormorant Garamond",serif}
 
+/* ---- Audio ---- */
+.audio{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:0 0 .5rem;padding:.8rem;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius)}
+.audio .btn{padding:.5rem 1rem;font-size:.9rem}
+.audio .rate{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+.audio select{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem}
+.audio-note{font-size:.8rem;color:var(--muted);margin:0 0 1rem}
+.prose p.speaking{background:rgba(214,165,74,.14);box-shadow:-.6rem 0 0 rgba(214,165,74,.14),.6rem 0 0 rgba(214,165,74,.14);border-radius:4px}
+
 /* ---- Lecteur ---- */
 .progress{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0;z-index:50}
 .reader{max-width:720px;margin:0 auto;padding:2rem 1.2rem 1rem}
