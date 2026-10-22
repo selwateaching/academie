@@ -28,7 +28,7 @@
   };
   document.documentElement.lang = lang;
   if (lang === "en") {
-    ["ui", "content-1", "content-2", "content-3", "quiz-1", "quiz-2", "quiz-3", "lex", "audio-manifest"].forEach(function (f) {
+    ["ui", "content-1", "content-2", "content-3", "content-4", "quiz-1", "quiz-2", "quiz-3", "quiz-4", "lex", "audio-manifest"].forEach(function (f) {
       document.write('<script src="js/en/' + f + '.js"><\/script>');
     });
   }

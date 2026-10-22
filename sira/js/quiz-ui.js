@@ -49,7 +49,7 @@
     });
     out.push({ art: "palm", name: T("Compagnon"), desc: T("Réussir les 30 quiz sur les compagnons"), ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
     out.push({ art: "book", name: T("Famille et thèmes"), desc: T("Réussir les 16 quiz sur la famille et les thèmes"), ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
-    out.push({ art: "rites", name: T("Rites et fêtes"), desc: T("Réussir les 8 quiz sur les rites et les fêtes"), ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
+    out.push({ art: "rites", name: T("Rites et fêtes"), desc: T("Réussir les 14 quiz sur les rites et les fêtes"), ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
     out.push({ art: "trophy", name: T("Gardien de la Sirah"), desc: T("Réussir les 25 quiz des chapitres"), ok: ch.every(function (c) { return done(c.id); }) });
     return out;
   }

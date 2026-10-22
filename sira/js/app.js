@@ -127,7 +127,7 @@
   }
 
   function viewRites() {
-    app.innerHTML = T('<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">Huit fiches sur l\'appel à la prière, la qibla, le vendredi, le jeûne, la zakat, le pèlerinage, les deux fêtes et la prière du Prophète ﷺ. Chaque fiche se termine par un quiz.</p><div class="grid">') + RI.map(card).join("") + "</div></section>";
+    app.innerHTML = T('<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">Quatorze fiches sur l\'appel à la prière, la qibla, le vendredi, le jeûne, la zakat, le pèlerinage, les deux fêtes, la prière du Prophète ﷺ, les ablutions, ce qui les annule, les cinq prières pas à pas, ce qui annule la prière et les erreurs à éviter. Chaque fiche se termine par un quiz.</p><div class="grid">') + RI.map(card).join("") + "</div></section>";
   }
 
   function viewTimeline() {

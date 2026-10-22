@@ -238,7 +238,8 @@
     206: { f: ["scale", "mosque"] }, 207: { f: ["tent", "dates"] }, 208: { f: ["mosque", "palm"], t: "dawn" }, 209: { f: ["book", "mosque"] }, 210: { f: ["mosque", "dates"] },
     211: { f: ["book"], t: "night" }, 212: { f: ["scroll", "fortress"] }, 213: { f: ["battle", "fortress"], t: "sunset", m: "mount" }, 214: { f: ["caravan"], t: "night" }, 215: { f: ["palm", "caravan"], t: "dawn" },
     216: { f: ["scroll", "mosque"] }, 301: { f: ["mosque"], t: "dawn" }, 302: { f: ["mosque", "kaaba"] }, 303: { f: ["mosque", "palm"] }, 305: { f: ["scale", "dates"] },
-    307: { f: ["dates", "kaaba"], t: "dawn" }, 308: { f: ["mosque"], t: "night" }
+    307: { f: ["dates", "kaaba"], t: "dawn" }, 308: { f: ["mosque"], t: "night" },
+    309: { f: ["well", "palm"], t: "dawn" }, 310: { f: ["well", "mosque"] }, 311: { f: ["mosque"], t: "sunset" }, 312: { f: ["mosque", "kaaba"], t: "dawn" }, 313: { f: ["mosque", "scale"] }, 314: { f: ["mosque", "palm"], t: "night" }
   };
 
   /* ---------- Composition ---------- */

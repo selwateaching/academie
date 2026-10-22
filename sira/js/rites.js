@@ -57,6 +57,48 @@ window.RITES = [
       "Le Prophète ﷺ prie en groupe de préférence : « La prière en groupe est supérieure à la prière isolée de vingt-sept degrés. » Avant de commencer, il redresse les rangs en disant : « Redressez-vous : ne vous écartez pas, vos cœurs divergeraient. »",
       "Il prie aussi la nuit, avec de longues récitations, au point que ses pieds en enflent. Aïcha lui demande pourquoi, alors que Dieu lui a pardonné ses fautes ; il répond : « Ne dois-je pas être un serviteur reconnaissant ? » Il disait : « Fais-nous reposer par elle, ô Bilal », en parlant de l'appel à la prière, et que la prière était la joie de ses yeux.",
       "Quand il entend pleurer un bébé, il écourte sa prière pour ne pas inquiéter la mère. La prière, pour lui, ne sépare pas de la vie : elle est un temps de repos, de lien avec Dieu, et la mesure de la vie quotidienne."
+    ] },
+  { id: 309, period: "rites", title: "Les ablutions (woudou)", sub: "Comment se purifier avant la prière", date: "Rite de tous les jours",
+    paras: [
+      "Avant de prier, le musulman doit être en état de pureté. Dieu dit dans le Coran (sourate 5, verset 6) : « Lavez vos visages et vos mains jusqu'aux coudes, passez les mains mouillées sur vos têtes et lavez vos pieds jusqu'aux chevilles. » Le Prophète ﷺ dit aussi que Dieu n'accepte pas la prière de celui qui est en état d'impureté tant qu'il n'a pas fait ses ablutions.",
+      "Voici les gestes, tels que les décrit Uthman en reprenant ceux du Prophète ﷺ. On a l'intention dans le cœur, on dit « Bismillah », puis on se lave les mains trois fois, on se rince la bouche et on aspire un peu d'eau dans le nez, trois fois. On lave le visage trois fois, puis le bras droit et le bras gauche jusqu'aux coudes, trois fois chacun. On passe les mains mouillées sur la tête une fois, avec les oreilles, puis on lave le pied droit et le pied gauche jusqu'aux chevilles, trois fois chacun.",
+      "Tous les gestes n'ont pas le même statut. Sont obligatoires : laver le visage, laver les bras jusqu'aux coudes, essuyer la tête et laver les pieds jusqu'aux chevilles, comme le dit le verset. Les autres, comme se laver les mains au début, se rincer la bouche, répéter trois fois ou se frotter les dents avec le siwak, sont recommandés. Le Prophète ﷺ demande de ne pas gaspiller l'eau, même au bord d'une rivière.",
+      "Quand il n'y a pas d'eau ou qu'on ne peut pas s'en servir, on fait le tayammum : on frappe la terre propre avec les mains, puis on s'essuie le visage et les mains. Après certaines causes, un lavage complet du corps, le ghusl, est nécessaire. Le Prophète ﷺ annonce que, le Jour du Jugement, sa communauté sera reconnue à l'éclat de son visage et de ses membres, à cause des traces des ablutions."
+    ] },
+  { id: 310, period: "rites", title: "Ce qui annule les ablutions", sub: "Les causes de la perte de pureté", date: "Rite de tous les jours",
+    paras: [
+      "Les ablutions restent valables jusqu'à ce qu'une cause les annule. Mais le doute ne suffit pas : un compagnon se plaint au Prophète ﷺ de croire sentir quelque chose pendant sa prière. Il répond de ne pas quitter sa prière tant qu'il n'a pas entendu un bruit ou senti une odeur. Règle utile : la certitude ne disparaît pas à cause d'un doute.",
+      "Les savants s'accordent sur plusieurs causes. Tout ce qui sort des deux voies naturelles annule les ablutions : l'urine, les selles et les gaz. Perdre conscience les annule aussi : un sommeil profond, un évanouissement ou l'ivresse. Un simple somnolement assis, en restant conscient, ne les annule pas.",
+      "Sur d'autres points, les écoles juridiques n'ont pas le même avis : toucher son sexe avec la main, toucher son épouse, manger de la viande de chameau, un saignement abondant ou un vomissement important. Il faut alors suivre l'avis de son école ou demander à un savant de confiance. Ces différences sont connues et respectées depuis les premiers siècles.",
+      "Quand les ablutions sont annulées, on les refait simplement, sans avoir besoin du ghusl. Le ghusl, lavage de tout le corps, est exigé après un rapport conjugal, après une émission de sperme, à la fin des règles et après l'accouchement. Tant qu'on n'est pas purifié, on ne prie pas, on ne fait pas le tour de la Kaaba et, selon la majorité des savants, on ne touche pas le Coran en papier."
+    ] },
+  { id: 311, period: "rites", title: "Les cinq prières", sub: "Horaires et nombre de rak'as", date: "Rite de tous les jours",
+    paras: [
+      "Cinq prières sont obligatoires chaque jour. Elles ont été prescrites lors du voyage nocturne. Le Prophète ﷺ les compare à un fleuve qui coule devant la porte de quelqu'un : s'il s'y lave cinq fois par jour, il ne lui reste aucune saleté. Elles se font à des heures précises, que l'appel à la prière annonce.",
+      "La prière de l'aube (Fajr) compte 2 rak'as et va de l'aube jusqu'au lever du soleil. Celle du milieu du jour (Dhuhr) en compte 4, dès que le soleil a passé son point le plus haut. Celle de l'après-midi (Asr) en compte 4. Celle du coucher du soleil (Maghrib) en compte 3, et celle de la nuit (Isha) en compte 4. Cela fait 17 rak'as obligatoires par jour.",
+      "Le vendredi, la prière du Joumou'a remplace celle du milieu du jour : 2 rak'as, précédées de deux discours. En voyage, on peut raccourcir les prières de 4 rak'as à 2 et regrouper le Dhuhr avec l'Asr, le Maghrib avec l'Isha. Il y a aussi des prières surérogatoires. Les deux rak'as avant l'aube valent, dit le Prophète ﷺ, mieux que le monde et ce qu'il contient. Le witr, de nombre impair, termine la nuit.",
+      "Celui qui s'endort ou oublie une prière la fait dès qu'il s'en souvient. La prière est obligatoire pour tout musulman adulte et sain d'esprit ; le malade prie assis ou couché. On apprend aux enfants à prier dès sept ans. Et la prière faite en groupe vaut vingt-sept fois celle que l'on fait seul."
+    ] },
+  { id: 312, period: "rites", title: "Comment faire la prière", sub: "Pas à pas, de l'intention au salut", date: "Rite de tous les jours",
+    paras: [
+      "Le Prophète ﷺ dit : « Priez comme vous m'avez vu prier. » Avant de commencer, on est en état de pureté, le corps et les vêtements propres, dans une tenue pudique, face à la qibla, l'heure de la prière venue. On a l'intention de prier dans son cœur : il n'y a pas de formule à dire à voix haute.",
+      "Debout, on lève les mains à hauteur des épaules en disant « Allahu akbar », puis on pose la main droite sur la gauche, sur la poitrine. On récite la basmala puis la sourate Al-Fatiha : le Prophète ﷺ dit que la prière n'est pas valable sans elle. Aux deux premières rak'as, on ajoute une autre sourate ou quelques versets.",
+      "On dit « Allahu akbar » et l'on s'incline, le dos droit, les mains sur les genoux, en disant trois fois « Gloire à mon Seigneur, le Très Grand ». On se redresse, puis on se prosterne : front, nez, paumes, genoux et orteils touchent le sol, en disant trois fois « Gloire à mon Seigneur, le Très Haut ». On s'assoit un instant, puis on se prosterne une seconde fois. Cela fait une rak'a. C'est dans la prosternation, dit le Prophète ﷺ, que l'on est le plus proche de Dieu.",
+      "À la fin de la deuxième rak'a, et à la dernière, on s'assoit pour le tashahhud, une formule de témoignage, suivie d'une prière sur le Prophète ﷺ. On termine en tournant la tête à droite, puis à gauche, en disant « Que la paix et la miséricorde de Dieu soient sur vous ». Après la prière, on glorifie Dieu : trente-trois fois « Subhanallah », trente-trois fois « Alhamdulillah » et trente-quatre fois « Allahu akbar »."
+    ] },
+  { id: 313, period: "rites", title: "Ce qui annule la prière", sub: "Les causes d'invalidité", date: "Rite de tous les jours",
+    paras: [
+      "Une prière invalide doit être refaite. Les savants distinguent trois niveaux : les piliers (comme la Fatiha, l'inclinaison ou la prosternation), les obligations et les gestes recommandés. Oublier un geste recommandé ne change rien. Oublier une obligation se répare par deux prosternations d'oubli, les sujud as-sahw. Oublier un pilier oblige à refaire la rak'a.",
+      "Parmi les causes qui annulent la prière, selon l'avis des savants : perdre ses ablutions ; parler volontairement, car on parlait dans la prière jusqu'à ce que Dieu ordonne de se tenir en silence ; manger ou boire ; se détourner de la qibla avec tout le corps ; découvrir volontairement les parties du corps qui doivent être couvertes.",
+      "Annulent aussi la prière : bouger beaucoup et à plusieurs reprises sans nécessité, éclater de rire, abandonner volontairement un pilier ou une condition, ajouter volontairement une rak'a, ou décider de couper sa prière. À l'inverse, n'annulent pas la prière : un petit geste, une toux, un éternuement, des larmes d'émotion. Le Prophète ﷺ a même prié en portant sa petite-fille Umama.",
+      "Quand on doute du nombre de rak'as, on retient le nombre le plus sûr, le plus petit, on termine la prière puis on fait les deux prosternations d'oubli. Si les ablutions sont perdues pendant la prière, on sort, on les refait et on recommence. Ces règles varient un peu selon les écoles : pour un cas précis, on interroge un savant."
+    ] },
+  { id: 314, period: "rites", title: "Les erreurs fréquentes dans la prière", sub: "Ce qu'il faut éviter", date: "Rite de tous les jours",
+    paras: [
+      "La première erreur est la hâte. Un homme prie à toute vitesse dans la mosquée. Le Prophète ﷺ lui dit trois fois : « Retourne prier, car tu n'as pas prié. » Il lui enseigne alors à se calmer dans chaque position : l'inclinaison, le redressement, la prosternation, l'assise. Prier sans prendre le temps de se poser est comme picorer.",
+      "D'autres erreurs concernent la tenue. Devancer l'imam, en s'inclinant ou en se relevant avant lui, est répréhensible. Il faut aussi serrer les rangs, sans laisser de vide : le Prophète ﷺ dit que les rangs bien droits font partie de la perfection de la prière. Lever les yeux vers le ciel pendant la prière est interdit, et regarder à droite et à gauche détourne le cœur.",
+      "On évite de passer devant quelqu'un qui prie : le Prophète ﷺ dit que, s'il savait la gravité de sa faute, il préférerait attendre quarante plutôt que de passer. Celui qui prie peut placer un objet devant lui comme repère. On évite aussi de venir à la mosquée en ayant mangé de l'ail ou de l'oignon crus, qui gênent les autres, et de prier avec un besoin pressant ou devant un repas prêt.",
+      "Enfin, la prière demande de la présence du cœur : comprendre ce qu'on récite aide à ne pas s'égarer. Ne pas retarder la prière sans excuse jusqu'à la fin de son temps, et l'apprendre auprès de quelqu'un qui la connaît bien. Si l'on se trompe, on ne se décourage pas : le Prophète ﷺ demande de faciliter et non de compliquer, et Dieu est miséricordieux."
     ] }
 ];
 
@@ -116,5 +158,47 @@ Object.assign(window.QUIZ, {
  ["Que dit-il de la prière en groupe ?","Elle est supérieure de vingt-sept degrés","Elle est facultative","Elle est interdite","Elle est égale à la prière isolée"],
  ["Que fait-il avant la prière commune ?","Il redresse les rangs","Il appelle un témoin","Il sort les armes","Il ferme les portes"],
  ["Pourquoi prie-t-il la nuit jusqu'à enfler les pieds ?","Pour être un serviteur reconnaissant","Pour sa peur","Par habitude","Par obligation royale"]
+],
+309: [
+ ["Que dit le Coran de se purifier avant la prière ?", "Il demande de laver le visage, les bras et les pieds et d'essuyer la tête", "Il demande seulement de se laver les mains", "Il ne demande rien", "Il demande de se laver tout le corps"],
+ ["Combien de fois lave-t-on d'ordinaire chaque partie ?", "Trois fois", "Une seule fois", "Dix fois", "Sept fois"],
+ ["Quel geste est obligatoire ?", "Laver le visage", "Se frotter les dents avec le siwak", "Dire « Bismillah » à voix haute", "Se laver trois fois les mains au début"],
+ ["Que fait-on quand il n'y a pas d'eau ?", "Le tayammum, avec de la terre propre", "On ne prie pas", "On se parfume", "On attend la nuit"],
+ ["Que recommande le Prophète ﷺ à propos de l'eau ?", "Ne pas la gaspiller, même au bord d'une rivière", "La garder pour le lendemain", "La réchauffer", "La boire avant les ablutions"]
+],
+310: [
+ ["Que doit faire celui qui doute d'avoir perdu ses ablutions pendant la prière ?", "Continuer, tant qu'il n'est pas certain", "Arrêter aussitôt", "Faire le ghusl", "Demander à son voisin"],
+ ["Laquelle de ces causes annule les ablutions de l'avis de tous ?", "L'urine, les selles ou les gaz", "Un bâillement", "Un éternuement", "Une marche rapide"],
+ ["Que faut-il refaire quand les ablutions sont annulées ?", "Les ablutions", "Le ghusl", "Le tayammum", "Rien"],
+ ["Quand le ghusl est-il exigé ?", "Après un rapport conjugal, par exemple", "Après avoir mangé", "Après avoir marché", "Après avoir parlé"],
+ ["Comment appelle-t-on le lavage de tout le corps ?", "Le ghusl", "Le woudou", "Le tayammum", "Le siwak"]
+],
+311: [
+ ["Combien de prières sont obligatoires par jour ?", "Cinq", "Trois", "Sept", "Dix"],
+ ["Combien de rak'as compte la prière de l'aube ?", "Deux", "Trois", "Quatre", "Cinq"],
+ ["Combien de rak'as compte la prière du coucher du soleil (Maghrib) ?", "Trois", "Deux", "Quatre", "Cinq"],
+ ["Combien de rak'as obligatoires par jour au total ?", "Dix-sept", "Dix", "Vingt", "Cinq"],
+ ["Que fait celui qui oublie une prière ?", "Il la fait dès qu'il s'en souvient", "Il ne la fait plus", "Il attend le lendemain", "Il la remplace par un jeûne"]
+],
+312: [
+ ["Faut-il dire l'intention de la prière à voix haute ?", "Non, elle est dans le cœur", "Oui, toujours", "Oui, trois fois", "Seulement le vendredi"],
+ ["Quelle sourate est récitée à chaque rak'a ?", "Al-Fatiha", "Al-Baqara", "Yasin", "Al-Ikhlas seulement"],
+ ["Comment appelle-t-on l'inclinaison dans la prière ?", "Le rukû'", "Le sujûd", "Le tashahhud", "Le salam"],
+ ["Quel moment de la prière est le plus proche de Dieu, selon le Prophète ﷺ ?", "La prosternation", "Le salut", "L'inclinaison", "Le début debout"],
+ ["Comment termine-t-on la prière ?", "En saluant à droite puis à gauche", "En se levant sans rien dire", "En faisant une prosternation de plus", "En levant les mains au ciel"]
+],
+313: [
+ ["Que doit-on faire d'une prière invalide ?", "La refaire", "L'oublier", "La remplacer par un jeûne", "La terminer et ne rien faire"],
+ ["Quelle est la réparation d'une obligation oubliée ?", "Deux prosternations d'oubli", "Un jeûne", "Une aumône", "Un pèlerinage"],
+ ["Laquelle de ces choses annule la prière ?", "Manger ou boire volontairement", "Tousser", "Verser une larme", "Un petit geste"],
+ ["Que fait le Prophète ﷺ en priant, selon un hadith célèbre ?", "Il porte sa petite-fille Umama", "Il fait tomber son manteau", "Il mange des dattes", "Il parle à Bilal"],
+ ["Que fait-on en cas de doute sur le nombre de rak'as ?", "On retient le nombre le plus sûr, le plus petit", "On arrête la prière", "On choisit le plus grand", "On recommence toujours"]
+],
+314: [
+ ["Quelle est la première erreur citée ?", "Se hâter sans se calmer dans chaque position", "Prier à la mosquée", "Prier le matin", "Prier à voix basse"],
+ ["Que dit le Prophète ﷺ à l'homme qui prie trop vite ?", "Retourne prier, car tu n'as pas prié", "Tu as bien prié", "Prie plus fort", "Prie debout seulement"],
+ ["Que signifie devancer l'imam ?", "S'incliner ou se relever avant lui", "Arriver en avance", "Prier derrière lui", "Prier seul"],
+ ["Pourquoi évite-t-on de passer devant quelqu'un qui prie ?", "C'est une faute grave", "Cela le fait rire", "Cela l'oblige à sortir", "C'est permis"],
+ ["Que faut-il éviter de manger avant de venir à la mosquée ?", "De l'ail ou de l'oignon crus", "Du pain", "Des dattes", "Du miel"]
 ]
 });
