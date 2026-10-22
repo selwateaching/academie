@@ -369,7 +369,7 @@ class Builder:
             [("Compétence globale", None, 3)],
             [("Compétence terminale", None, 3)],
             [("Activité", None, 1), ("Support", t(clean_title(sup.get("title")), 120) if sup else None, 1)],
-            [("Durée", "1 h" if not self.rtl else "ساعة", 1), ("Séance", f"{i + 1} / {n}", 1)],
+            [("Durée", t(lesson.get("duration")) or ("1 h" if not self.rtl else "ساعة"), 1), ("Séance", f"{i + 1} / {n}", 1)],
         ]
         w = [3.2, 5.5, 3.2, 5.5]
         tb = self.table(len(rows), 4, w, borders=LINE, margins=(80, 120))
@@ -465,7 +465,10 @@ class Builder:
     def answer_text(self, q):
         ch = q.get("choices") or []
         if ch:
-            k = int(q.get("answer") or 0) % len(ch)
+            try:
+                k = int(q.get("answer") or 0) % len(ch)
+            except (TypeError, ValueError):
+                k = max(0, "abcdef".find(t(q.get("answer"), 1).lower())) % len(ch)
             return f"{'abcdef'[k % 6]}) {t(ch[k], 300)}"
         return t(q.get("open"), 900)
 
