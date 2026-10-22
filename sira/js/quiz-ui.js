@@ -7,14 +7,14 @@
     { min: 3000, name: "Chercheur" }, { min: 5000, name: "Savant" }, { min: 7500, name: "Gardien de la Sira" }
   ];
   var timer = null;
-  function kind(id) { return id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
-  function listOf(id) { var k = kind(id); return k === "th" ? window.THEMES : k === "co" ? window.COMPANIONS : window.CHAPTERS; }
-  function offOf(id) { var k = kind(id); return k === "th" ? 201 : k === "co" ? 101 : 1; }
+  function kind(id) { return id >= 300 ? "ri" : id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
+  function listOf(id) { var k = kind(id); return k === "ri" ? window.RITES : k === "th" ? window.THEMES : k === "co" ? window.COMPANIONS : window.CHAPTERS; }
+  function offOf(id) { var k = kind(id); return k === "ri" ? 301 : k === "th" ? 201 : k === "co" ? 101 : 1; }
   function itemOf(id) { return listOf(id)[id - offOf(id)]; }
   function nextOf(id) { return listOf(id)[id - offOf(id) + 1]; }
-  function hrefOf(id) { var k = kind(id); return (k === "th" ? "#/theme/" : k === "co" ? "#/compagnon/" : "#/chapitre/") + id; }
-  function iconOf(id) { var k = kind(id); return k === "th" ? "📖" : k === "co" ? "👤" : String(id).padStart(2, "0"); }
-  function allItems() { return window.CHAPTERS.concat(window.COMPANIONS || [], window.THEMES || []); }
+  function hrefOf(id) { var k = kind(id); return (k === "ri" ? "#/rite/" : k === "th" ? "#/theme/" : k === "co" ? "#/compagnon/" : "#/chapitre/") + id; }
+  function iconOf(id) { var k = kind(id); return k === "ri" ? "🕌" : k === "th" ? "📖" : k === "co" ? "👤" : String(id).padStart(2, "0"); }
+  function allItems() { return window.CHAPTERS.concat(window.COMPANIONS || [], window.THEMES || [], window.RITES || []); }
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
@@ -41,6 +41,7 @@
     });
     out.push({ icon: "👥", name: "Compagnon", desc: "Réussir les 30 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
     out.push({ icon: "📖", name: "Famille et thèmes", desc: "Réussir les 16 quiz sur la famille et les thèmes", ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
+    out.push({ icon: "🕌", name: "Rites et fêtes", desc: "Réussir les 8 quiz sur les rites et les fêtes", ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
     out.push({ icon: "🏆", name: "Gardien de la Sira", desc: "Réussir les 25 quiz des chapitres", ok: ch.every(function (c) { return done(c.id); }) });
     return out;
   }
@@ -61,7 +62,7 @@
       app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>Question <b>' + (i + 1) + "</b> sur " + order.length + "</span><span class=\"q-pts\">" + pts + " pts</span></div>" +
         '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="q-time"><span><b id="qt">' + SECONDS + '</b> s</span><span class="muted">⚡ Plus vite = plus de points</span></div><div class="bar thin"><i id="tb" style="width:100%"></i></div>' +
-        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((kind(id) === "th" ? "Fiche" : kind(id) === "co" ? "Compagnon" : "Chapitre " + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
+        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((kind(id) === "th" || kind(id) === "ri" ? "Fiche" : kind(id) === "co" ? "Compagnon" : "Chapitre " + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
         '<div class="q-opts" role="group" aria-label="Réponses">' + opts.map(function (o) { return '<button class="opt" data-v="' + esc(o) + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
         '<button class="skip" id="skip">⏭ Je ne sais pas (passer)</button><p class="q-fb" id="fb" aria-live="polite"></p></div></div>';
       Array.prototype.forEach.call(app().querySelectorAll(".opt"), function (b) { b.onclick = function () { answer(b.getAttribute("data-v"), b); }; });

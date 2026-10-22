@@ -2,13 +2,14 @@
   "use strict";
   var app = document.getElementById("app");
   var qInput = document.getElementById("q");
-  var CH = window.CHAPTERS, PER = window.PERIODS, CO = window.COMPANIONS, TH = window.THEMES;
-  function kindOf(id) { return id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
-  function hrefOf(id) { var k = kindOf(id); return (k === "th" ? "#/theme/" : k === "co" ? "#/compagnon/" : "#/chapitre/") + id; }
+  var CH = window.CHAPTERS, PER = window.PERIODS, CO = window.COMPANIONS, TH = window.THEMES, RI = window.RITES;
+  function kindOf(id) { return id >= 300 ? "ri" : id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
+  function hrefOf(id) { var k = kindOf(id); return (k === "ri" ? "#/rite/" : k === "th" ? "#/theme/" : k === "co" ? "#/compagnon/" : "#/chapitre/") + id; }
   var KIND = {
     ch: { list: CH, off: 1, back: "#/chapitres", end: "Fin du récit — tous les chapitres", fact: "Chapitre", icon: null },
     co: { list: CO, off: 101, back: "#/compagnons", end: "Tous les compagnons", fact: "Portrait", icon: "👤", crumb: "Compagnons" },
-    th: { list: TH, off: 201, back: "#/themes", end: "Toutes les fiches", fact: "Fiche", icon: "📖", crumb: "Famille et thèmes" }
+    th: { list: TH, off: 201, back: "#/themes", end: "Toutes les fiches", fact: "Fiche", icon: "📖", crumb: "Famille et thèmes" },
+    ri: { list: RI, off: 301, back: "#/rites", end: "Toutes les fiches", fact: "Fiche", icon: "🕌", crumb: "Rites et fêtes" }
   };
   var KEY = "sira-fr:read", KEY_FS = "sira-fr:fs";
 
@@ -147,6 +148,9 @@
       [101, 102, 105, 113].map(function (id) { return card(CO[id - 101]); }).join("") + '</div><p><a class="btn ghost" href="#/compagnons">Voir tous les compagnons</a></p></section>' +
       '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Les épouses, les enfants, le caractère du Prophète ﷺ et la vie à Médine.</p><div class="grid">' +
       [201, 204, 208, 211].map(function (id) { return card(TH[id - 201]); }).join("") + '</div><p><a class="btn ghost" href="#/themes">Voir toutes les fiches</a></p></section>' +
+      '<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">La prière, le jeûne, la zakat, le pèlerinage et les deux fêtes.</p><div class="grid">' +
+      [301, 304, 306, 307].map(function (id) { return card(RI[id - 301]); }).join("") + '</div><p><a class="btn ghost" href="#/rites">Voir tous les rites</a></p></section>' +
+      '<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Où tout s\'est passé : La Mecque, Médine, Badr, Khaybar, Tabuk…</p><p><a class="btn gold" href="#/lieux">Ouvrir la carte</a></p></section>' +
       '<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">' +
       [4, 14, 16, 21, 24, 25].map(function (id) { return card(CH[id - 1]); }).join("") + "</div></section>";
   }
@@ -162,7 +166,7 @@
       PER.map(function (p) {
         return '<button class="chip" aria-pressed="' + (period === p.id) + '" data-p="' + p.id + '">' + p.icon + " " + esc(p.label) + "</button>";
       }).join("");
-    var colist = qn && !period ? CO.concat(TH).filter(function (c) { return norm(c.title + " " + c.sub + " " + c.paras.join(" ")).indexOf(qn) !== -1; }) : [];
+    var colist = qn && !period ? CO.concat(TH, RI).filter(function (c) { return norm(c.title + " " + c.sub + " " + c.paras.join(" ")).indexOf(qn) !== -1; }) : [];
     list = list.concat(colist);
     app.innerHTML = '<section class="block wrap"><h2>' + (qn ? "Résultats pour « " + esc(query) + " »" : "Tous les chapitres") + "</h2>" +
       '<p class="lead">' + list.length + (qn ? " résultat" : " chapitre") + (list.length > 1 ? "s" : "") + "</p>" +
@@ -182,6 +186,10 @@
 
   function viewThemes() {
     app.innerHTML = '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Seize fiches sur la famille du Prophète ﷺ, son caractère, la vie à Médine et quelques épisodes importants. Chaque fiche se termine par un quiz.</p><div class="grid">' + TH.map(card).join("") + "</div></section>";
+  }
+
+  function viewRites() {
+    app.innerHTML = '<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">Huit fiches sur l\'appel à la prière, la qibla, le vendredi, le jeûne, la zakat, le pèlerinage, les deux fêtes et la prière du Prophète ﷺ. Chaque fiche se termine par un quiz.</p><div class="grid">' + RI.map(card).join("") + "</div></section>";
   }
 
   function viewTimeline() {
@@ -256,7 +264,7 @@
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
-    var nav = page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
@@ -265,6 +273,9 @@
     else if (page === "compagnons") viewCompanions();
     else if (page === "theme") viewChapter(parseInt(h[1], 10));
     else if (page === "themes") viewThemes();
+    else if (page === "rite") viewChapter(parseInt(h[1], 10));
+    else if (page === "rites") viewRites();
+    else if (page === "lieux") SiraPlaces.view(h[1] || "");
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
@@ -274,7 +285,7 @@
     SiraQuiz.updateTrophy();
     window.scrollTo(0, 0);
     app.focus({ preventScroll: true });
-    var cur = page === "chapitre" ? CH[parseInt(h[1], 10) - 1] : page === "compagnon" ? CO[parseInt(h[1], 10) - 101] : page === "theme" ? TH[parseInt(h[1], 10) - 201] : null;
+    var cur = page === "chapitre" ? CH[parseInt(h[1], 10) - 1] : page === "compagnon" ? CO[parseInt(h[1], 10) - 101] : page === "theme" ? TH[parseInt(h[1], 10) - 201] : page === "rite" ? RI[parseInt(h[1], 10) - 301] : null;
     document.title = cur
       ? cur.title + " — Le Monde de la Sira"
       : "Le Monde de la Sira — La vie du Prophète ﷺ en 25 récits";

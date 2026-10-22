@@ -125,7 +125,7 @@ Object.assign(window.QUIZ, {
  ["Comment le Coran appelle-t-il les épouses du Prophète ﷺ ?","Les mères des croyants","Les compagnes du Prophète ﷺ","Les gardiennes de la maison","Les veuves de Médine"]
 ],
 202: [
- ["Combien d'enfants le Prophète ﷺ a-t-il eus ?","Sept","Deux","Quatre","Douze"],
+ ["Combien d'enfants le Prophète ﷺ a-t-il eus, selon la tradition la plus répandue ?","Sept","Deux","Quatre","Douze"],
  ["Pourquoi l'appelle-t-on « Abu al-Qasim » ?","Son fils aîné s'appelait Qasim","Son père s'appelait Qasim","Son grand-père s'appelait Qasim","C'est le nom d'une ville"],
  ["Qui a épousé successivement Ruqayya puis Umm Kulthum ?","Uthman","Ali","Abu Bakr","Omar"],
  ["Quelle est la mère d'Ibrahim, son dernier fils ?","Maryam la Copte","Khadija","Aïcha","Safiyya"],
@@ -191,7 +191,7 @@ Object.assign(window.QUIZ, {
  ["Combien d'années dure la révélation du Coran ?","Vingt-trois ans","Dix ans","Un an","Cent jours"],
  ["Qui est l'un des secrétaires de la révélation ?","Zayd ibn Thabit","Bilal","Hamza","Khalid"],
  ["Quand Jibril révise-t-il le Coran avec le Prophète ﷺ ?","Chaque Ramadan","Chaque vendredi","Chaque jour","Chaque mois sacré"],
- ["Qui fait rassembler le Coran en un recueil ?","Abu Bakr","Omar","Uthman","Ali"],
+ ["Qui fait rassembler pour la première fois le Coran en un recueil, après la bataille d'al-Yamama ?","Abu Bakr","Omar","Uthman","Ali"],
  ["Que fait Uthman ?","Il envoie des exemplaires identiques dans les grandes villes","Il détruit le recueil","Il traduit le Coran","Il l'interdit"]
 ],
 212: [
