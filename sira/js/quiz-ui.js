@@ -7,6 +7,10 @@
     { min: 3000, name: "Chercheur" }, { min: 5000, name: "Savant" }, { min: 7500, name: "Gardien de la Sira" }
   ];
   var timer = null;
+  function itemOf(id) { return id >= 100 ? window.COMPANIONS[id - 101] : window.CHAPTERS[id - 1]; }
+  function nextOf(id) { return id >= 100 ? window.COMPANIONS[id - 100] : window.CHAPTERS[id]; }
+  function hrefOf(id) { return (id >= 100 ? "#/compagnon/" : "#/chapitre/") + id; }
+  function allItems() { return window.CHAPTERS.concat(window.COMPANIONS || []); }
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
@@ -31,6 +35,7 @@
       var list = ch.filter(function (c) { return c.period === p.id; });
       out.push({ icon: p.icon, name: p.label, desc: "Réussir tous les quiz de cette période", ok: list.every(function (c) { return done(c.id); }) });
     });
+    out.push({ icon: "👥", name: "Compagnon", desc: "Réussir les 15 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
     out.push({ icon: "🏆", name: "Gardien de la Sira", desc: "Réussir les 25 quiz", ok: ch.every(function (c) { return done(c.id); }) });
     return out;
   }
@@ -40,7 +45,7 @@
 
   function view(id) {
     stop();
-    var ch = window.CHAPTERS[id - 1], qs = window.QUIZ && window.QUIZ[id];
+    var ch = itemOf(id), qs = window.QUIZ && window.QUIZ[id];
     if (!ch || !qs) { location.hash = "#/chapitres"; return; }
     var order = shuffle(qs), i = 0, score = 0, pts = 0, left = SECONDS, locked = false;
 
@@ -51,7 +56,7 @@
       app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>Question <b>' + (i + 1) + "</b> sur " + order.length + "</span><span class=\"q-pts\">" + pts + " pts</span></div>" +
         '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="q-time"><span><b id="qt">' + SECONDS + '</b> s</span><span class="muted">⚡ Plus vite = plus de points</span></div><div class="bar thin"><i id="tb" style="width:100%"></i></div>' +
-        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc("Chapitre " + ch.id + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
+        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((id >= 100 ? "Compagnon" : "Chapitre " + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
         '<div class="q-opts" role="group" aria-label="Réponses">' + opts.map(function (o) { return '<button class="opt" data-v="' + esc(o) + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
         '<button class="skip" id="skip">⏭ Je ne sais pas (passer)</button><p class="q-fb" id="fb" aria-live="polite"></p></div></div>';
       Array.prototype.forEach.call(app().querySelectorAll(".opt"), function (b) { b.onclick = function () { answer(b.getAttribute("data-v"), b); }; });
@@ -94,7 +99,7 @@
       save(s);
       var xpAfter = totalXp(), lvB = levelInfo(xpBefore), lvA = levelInfo(xpAfter);
       var newB = badges().filter(function (b) { return b.ok && badgesBefore.indexOf(b.name) === -1; });
-      var next = window.CHAPTERS[id];
+      var next = nextOf(id);
       var msg = stars === 3 ? "Parfait, aucune erreur !" : stars >= 1 ? "Bien joué !" : "Relisez le chapitre et réessayez.";
       app().innerHTML = '<div class="quiz wrap"><div class="q-card result"><div class="stars big" aria-label="' + stars + ' étoiles sur 3">' + starStr(stars) + "</div>" +
         "<h2>" + msg + "</h2><p class=\"lead\">" + score + " bonne" + (score > 1 ? "s" : "") + " réponse" + (score > 1 ? "s" : "") + " sur " + order.length + " · <b>" + pts + " points</b></p>" +
@@ -102,7 +107,7 @@
         (lvA.index > lvB.index ? '<p class="reward">🎉 Nouveau niveau : <b>' + esc(lvA.name) + "</b></p>" : "") +
         newB.map(function (b) { return '<p class="reward">' + b.icon + " Badge débloqué : <b>" + esc(b.name) + "</b></p>"; }).join("") +
         '<div class="cta c"><button class="btn gold" id="again">↻ Rejouer</button>' +
-        (next ? '<a class="btn ghost" href="#/chapitre/' + next.id + '">Chapitre suivant →</a>' : "") +
+        (next ? '<a class="btn ghost" href="' + hrefOf(next.id) + '">' + (id >= 100 ? "Portrait suivant" : "Chapitre suivant") + " →</a>" : "") + '<a class="btn ghost" href="' + hrefOf(id) + '">Relire</a>' +
         '<a class="btn ghost" href="#/recompenses">🏆 Mes récompenses</a></div></div></div>';
       document.getElementById("again").onclick = function () { view(id); };
       updateTrophy();
@@ -115,7 +120,7 @@
     var stars = Object.keys(s).reduce(function (a, k) { return a + (s[k].stars || 0); }, 0);
     var h = '<div class="rw"><div class="rw-lv"><span class="rw-icon">🏆</span><div><small>Niveau ' + (lv.index + 1) + '</small><b>' + esc(lv.name) + '</b></div><div class="rw-xp"><b>' + xp + "</b> pts</div></div>" +
       '<div class="bar"><i style="width:' + lv.pct + '%"></i></div><p class="muted small">' + (lv.next ? "Encore " + (lv.next.min - xp) + " points pour devenir « " + esc(lv.next.name) + " »" : "Niveau maximum atteint !") + "</p>" +
-      '<div class="rw-stats"><span>⭐ ' + stars + " / " + window.CHAPTERS.length * 3 + " étoiles</span><span>✓ " + done + " / " + window.CHAPTERS.length + " quiz réussis</span></div>";
+      '<div class="rw-stats"><span>⭐ ' + stars + " / " + allItems().length * 3 + " étoiles</span><span>✓ " + done + " / " + allItems().length + " quiz réussis</span></div>";
     if (!compact) h += '<h3>Badges</h3><div class="badges">' + badges().map(function (b) {
       return '<div class="badge-c' + (b.ok ? " on" : "") + '"><span>' + b.icon + "</span><b>" + esc(b.name) + "</b><small>" + esc(b.desc) + "</small></div>";
     }).join("") + "</div>";
@@ -123,11 +128,11 @@
   }
   function rewardsView() {
     stop();
-    var ch = window.CHAPTERS, s = load();
+    var ch = allItems(), s = load();
     app().innerHTML = '<section class="block wrap"><h2>Mes récompenses</h2><p class="lead">Répondez aux quiz pour gagner des points, des étoiles et des badges.</p>' + rewardsHtml(false) +
       "<h3>Étoiles par chapitre</h3><div class=\"grid\">" + ch.map(function (c) {
         var r = s[c.id];
-        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + String(c.id).padStart(2, "0") + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + " pts" : "Pas encore joué") + "</span><span>Jouer →</span></div></a>";
+        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + (c.id >= 100 ? "👤" : String(c.id).padStart(2, "0")) + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + " pts" : "Pas encore joué") + "</span><span>Jouer →</span></div></a>";
       }).join("") + "</div></section>";
   }
   function updateTrophy() {

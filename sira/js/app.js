@@ -2,7 +2,9 @@
   "use strict";
   var app = document.getElementById("app");
   var qInput = document.getElementById("q");
-  var CH = window.CHAPTERS, PER = window.PERIODS;
+  var CH = window.CHAPTERS, PER = window.PERIODS, CO = window.COMPANIONS;
+  function isCo(id) { return id >= 100; }
+  function hrefOf(id) { return (isCo(id) ? "#/compagnon/" : "#/chapitre/") + id; }
   var KEY = "sira-fr:read", KEY_FS = "sira-fr:fs";
 
   function store(get, k, v) {
@@ -34,8 +36,8 @@
   }
 
   function card(c) {
-    return '<a class="card' + (isRead(c.id) ? " done" : "") + '" href="#/chapitre/' + c.id + '">' +
-      '<span class="num">' + String(c.id).padStart(2, "0") + '</span>' +
+    return '<a class="card' + (isRead(c.id) ? " done" : "") + '" href="' + hrefOf(c.id) + '">' +
+      '<span class="num">' + (isCo(c.id) ? "👤" : String(c.id).padStart(2, "0")) + '</span>' +
       "<h3>" + esc(c.title) + "</h3><p>" + esc(c.sub) + "</p>" +
       '<div class="meta"><span>' + esc(c.date) + "</span><span>" + (SiraQuiz.stars(c.id) !== null ? '<span class="stars sm">' + SiraQuiz.starStr(SiraQuiz.stars(c.id)) + "</span> · " : "") + minutes(c) + " min</span></div></a>";
   }
@@ -76,7 +78,7 @@
       clear();
       if (i >= texts.length) {
         ui(false);
-        if (auto.checked && next) location.hash = "#/chapitre/" + next.id + "?audio=1";
+        if (auto.checked && next) location.hash = hrefOf(next.id) + "?audio=1";
         return;
       }
       if (i > 0) { paras[i - 1].classList.add("speaking"); paras[i - 1].scrollIntoView({ block: "center", behavior: "smooth" }); }
@@ -110,7 +112,7 @@
 
   /* ---------- Vues ---------- */
   function viewHome() {
-    var done = readSet().length;
+    var done = readSet().filter(function (x) { return x < 100; }).length;
     var next = CH.filter(function (c) { return !isRead(c.id); })[0] || CH[0];
     var label = done === 0 ? "Commencer la lecture" : done >= CH.length ? "Relire depuis le début" : "Reprendre : chapitre " + next.id;
     var target = done >= CH.length ? CH[0] : next;
@@ -135,6 +137,8 @@
         return '<a class="card" href="#/chapitres/' + p.id + '"><span class="num">' + p.icon + "</span><h3>" + esc(p.label) + "</h3><p>" +
           list.length + " chapitres · " + esc(list[0].date.replace(/^avant /, "")) + " → " + esc(list[list.length - 1].date) + "</p></a>";
       }).join("") + "</div></section>" +
+      '<section class="block wrap"><h2>Les compagnons du Prophète</h2><p class="lead">Quinze portraits : ceux qui ont marché, combattu et prié à ses côtés.</p><div class="grid">' +
+      [101, 102, 105, 113].map(function (id) { return card(CO[id - 101]); }).join("") + '</div><p><a class="btn ghost" href="#/compagnons">Voir tous les compagnons</a></p></section>' +
       '<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">' +
       [4, 14, 16, 21, 24, 25].map(function (id) { return card(CH[id - 1]); }).join("") + "</div></section>";
   }
@@ -150,6 +154,8 @@
       PER.map(function (p) {
         return '<button class="chip" aria-pressed="' + (period === p.id) + '" data-p="' + p.id + '">' + p.icon + " " + esc(p.label) + "</button>";
       }).join("");
+    var colist = qn && !period ? CO.filter(function (c) { return norm(c.title + " " + c.sub + " " + c.paras.join(" ")).indexOf(qn) !== -1; }) : [];
+    list = list.concat(colist);
     app.innerHTML = '<section class="block wrap"><h2>' + (qn ? "Résultats pour « " + esc(query) + " »" : "Tous les chapitres") + "</h2>" +
       '<p class="lead">' + list.length + " chapitre" + (list.length > 1 ? "s" : "") + "</p>" +
       '<div class="chips">' + chips + "</div>" +
@@ -160,6 +166,10 @@
         location.hash = p ? "#/chapitres/" + p : "#/chapitres";
       });
     });
+  }
+
+  function viewCompanions() {
+    app.innerHTML = '<section class="block wrap"><h2>Les compagnons du Prophète</h2><p class="lead">Quinze portraits de compagnons et de compagnes. Chaque fiche se termine par un quiz.</p><div class="grid">' + CO.map(card).join("") + "</div></section>";
   }
 
   function viewTimeline() {
@@ -174,14 +184,15 @@
   }
 
   function viewChapter(id) {
-    var c = CH[id - 1];
+    var isC = isCo(id), LIST = isC ? CO : CH, idx = isC ? id - 101 : id - 1;
+    var c = LIST[idx];
     if (!c) return viewList();
-    var prev = CH[id - 2], next = CH[id];
+    var prev = LIST[idx - 1], next = LIST[idx + 1];
     var fs = parseFloat(store(true, KEY_FS)) || 1.1;
     app.innerHTML = '<div class="progress" id="bar"></div><article class="reader">' +
-      '<div class="crumbs"><a href="#/">Accueil</a> › <a href="#/chapitres/' + c.period + '">' + esc(periodLabel(c.period)) + "</a> › Chapitre " + c.id + "</div>" +
+      '<div class="crumbs"><a href="#/">Accueil</a> › ' + (isC ? '<a href="#/compagnons">Compagnons</a> › ' + esc(c.title) : '<a href="#/chapitres/' + c.period + '">' + esc(periodLabel(c.period)) + "</a> › Chapitre " + c.id) + "</div>" +
       "<h1>" + esc(c.title) + '</h1><p class="sub">' + esc(c.sub) + "</p>" +
-      '<div class="facts"><span>📅 ' + esc(c.date) + "</span><span>⏱ " + minutes(c) + " min de lecture</span><span>Chapitre " + c.id + " / " + CH.length + "</span></div>" +
+      '<div class="facts"><span>📅 ' + esc(c.date) + "</span><span>⏱ " + minutes(c) + " min de lecture</span><span>" + (isC ? "Portrait " + (idx + 1) + " / " + CO.length : "Chapitre " + c.id + " / " + CH.length) + "</span></div>" +
       '<div class="tools" role="group" aria-label="Taille du texte"><button id="fsm" aria-label="Réduire le texte">A−</button><button id="fsp" aria-label="Agrandir le texte">A+</button></div>' +
       (SPEECH ? '<div class="audio" role="group" aria-label="Lecture audio"><button class="btn gold" id="play">🔊 Écouter ce chapitre</button>' +
         '<button class="btn ghost" id="pause" disabled>⏸ Pause</button><button class="btn ghost" id="stop" disabled>⏹ Arrêter</button>' +
@@ -192,8 +203,8 @@
       '<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/' + id + '">Passer le quiz</a></div>' +
       '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? "✓ Marqué comme lu" : "Marquer comme lu") + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
-      (prev ? '<a class="btn ghost" href="#/chapitre/' + prev.id + '">← <span><small>Précédent</small>' + esc(prev.title) + "</span></a>" : "<span></span>") +
-      (next ? '<a class="btn gold" href="#/chapitre/' + next.id + '"><span><small>Suivant</small>' + esc(next.title) + "</span> →</a>" : '<a class="btn gold" href="#/chapitres">Fin du récit — tous les chapitres</a>') +
+      (prev ? '<a class="btn ghost" href="' + hrefOf(prev.id) + '">← <span><small>Précédent</small>' + esc(prev.title) + "</span></a>" : "<span></span>") +
+      (next ? '<a class="btn gold" href="' + hrefOf(next.id) + '"><span><small>Suivant</small>' + esc(next.title) + "</span> →</a>" : '<a class="btn gold" href="' + (isC ? "#/compagnons" : "#/chapitres") + '">' + (isC ? "Tous les compagnons" : "Fin du récit — tous les chapitres") + "</a>") +
       "</nav></article>";
 
     var prose = document.getElementById("prose");
@@ -233,11 +244,13 @@
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
-    var nav = page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "compagnons" || page === "compagnon" ? "co" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
     if (page === "chapitre") viewChapter(parseInt(h[1], 10));
+    else if (page === "compagnon") viewChapter(parseInt(h[1], 10));
+    else if (page === "compagnons") viewCompanions();
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
@@ -247,8 +260,9 @@
     SiraQuiz.updateTrophy();
     window.scrollTo(0, 0);
     app.focus({ preventScroll: true });
-    document.title = page === "chapitre" && CH[parseInt(h[1], 10) - 1]
-      ? CH[parseInt(h[1], 10) - 1].title + " — Le Monde de la Sira"
+    var cur = page === "chapitre" ? CH[parseInt(h[1], 10) - 1] : page === "compagnon" ? CO[parseInt(h[1], 10) - 101] : null;
+    document.title = cur
+      ? cur.title + " — Le Monde de la Sira"
       : "Le Monde de la Sira — La vie du Prophète ﷺ en 25 récits";
   }
 
