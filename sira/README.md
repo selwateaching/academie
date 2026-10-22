@@ -42,3 +42,16 @@ Les illustrations de paragraphes sont composées d'après les mots-clés du text
 `js/lexique-data.js` contient 151 entrées (termes religieux, personnes et tribus, lieux, événements, vie quotidienne, compagnons) : terme, écriture arabe, définition courte, lien « en savoir plus » et formes repérées dans les textes. Dans les chapitres et les fiches, la première apparition de chaque mot est soulignée ; un appui ouvre une fenêtre avec la définition, la prononciation et un bouton « Écouter » (fichiers `audio/lexique/<mot>.mp3`). La page `#/lexique` permet de chercher, de filtrer par catégorie et de parcourir l'index alphabétique.
 
 Pour ajouter un mot : une ligne `E(...)` dans `lexique-data.js`, puis régénérer l'audio du lexique : `python tools/generate_audio.py 0 1 audio lexique` et `node tools/make_audio_manifest.js`.
+
+## English version
+
+The whole site is bilingual (French by default). The **EN / FR** button in the header switches language (stored in the browser; `?lang=en` also works).
+
+- `js/i18n.js` (loaded first) defines `window.LANG` and `T()`, which translates interface strings (dictionary `js/en/ui.js`, keyed by the French text). In English it also loads `js/en/*.js`.
+- `js/en/content-1..3.js`: English texts of the 79 pages; `js/en/quiz-1..3.js`: English quizzes; `js/en/lex.js`: glossary, map labels, categories and the English pronunciation lexicon (`speechLex`).
+- `js/i18n-apply.js` replaces the French data in place and keeps the original in `it.fr` (illustrations use the French keywords).
+- English recorded voice: `audio/en/` (Kokoro-82M, voice `af_heart`), listed in `js/en/audio-manifest.js`. To regenerate:
+
+      node tools/prepare_texts.js en > texts.json
+      VOICE=af_heart LANG_CODE=en-us python tools/generate_audio.py 0 4 audio/en   # shards 0..3
+      node tools/make_audio_manifest.js en

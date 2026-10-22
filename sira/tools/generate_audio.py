@@ -1,4 +1,4 @@
-# Génère audio/<id>/<n>.mp3 avec Kokoro-82M (voix ff_siwis). Usage : python generate_audio.py <fragment> <nb_fragments> <dossier_sortie>
+# Génère audio/<id>/<n>.mp3 avec Kokoro-82M (voix ff_siwis ; anglais : VOICE=af_heart LANG_CODE=en-us). Usage : python generate_audio.py <fragment> <nb_fragments> <dossier_sortie>
 # Prérequis : pip install kokoro-onnx soundfile ; modèle kokoro-v1.0.onnx et voices-v1.0.bin (github.com/thewh1teagle/kokoro-onnx, release model-files-v1.0) ; ffmpeg ; texts.json (voir prepare_texts.js).
 import sys, json, os, subprocess, numpy as np
 import onnxruntime as ort
@@ -21,7 +21,7 @@ for i, n, t in jobs:
     path = f"{out_root}/{i}/{n}.mp3"
     if os.path.exists(path) and os.path.getsize(path) > 2000: continue
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    audio, sr = k.create(t, voice="ff_siwis", speed=1.0, lang="fr-fr")
+    audio, sr = k.create(t, voice=os.environ.get("VOICE","ff_siwis"), speed=1.0, lang=os.environ.get("LANG_CODE","fr-fr"))
     audio = np.asarray(audio, dtype=np.float32)
     rms = float(np.sqrt(np.mean(audio**2))) or 1e-6
     audio = np.clip(audio * (0.12 / rms), -0.97, 0.97)
