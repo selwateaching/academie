@@ -47,7 +47,7 @@ window.COMPANIONS = [
   { id: 107, period: "compagnons", title: "Hamza ibn Abd al-Muttalib", sub: "Le lion de Dieu", date: "mort en 625",
     paras: [
       "Hamza est l'oncle du Prophète, à peine plus âgé que lui, et son frère de lait. Grand chasseur et homme redouté, il est respecté dans toute La Mecque. Il se convertit après avoir frappé Abu Jahl, qui avait insulté son neveu.",
-      "Son adhésion donne du courage aux musulmans opprimés : Quraysh sait désormais que le Prophète a, dans sa famille, un défenseur qui ne recule pas. Il émigre à Médine avec le Prophète.",
+      "Son adhésion donne du courage aux musulmans opprimés : Quraysh sait désormais que le Prophète a, dans sa famille, un défenseur qui ne recule pas. Il émigre à Médine peu après les premiers départs.",
       "À Badr, il se distingue dans le premier duel et tue plusieurs combattants ennemis. Le Prophète l'appelle « le lion de Dieu et de Son Messager ». À Uhud, il combat avec bravoure avant d'être atteint par la lance de Wahshi, esclave au service d'un chef mecquois.",
       "Le Prophète, profondément affligé, lui fait des adieux émus. Hamza est enterré à Uhud et est appelé « le maître des martyrs ». Wahshi se convertira plus tard, et le Prophète lui pardonnera, tout en lui demandant de ne plus se montrer devant lui."
     ] },

@@ -157,7 +157,7 @@
     var colist = qn && !period ? CO.filter(function (c) { return norm(c.title + " " + c.sub + " " + c.paras.join(" ")).indexOf(qn) !== -1; }) : [];
     list = list.concat(colist);
     app.innerHTML = '<section class="block wrap"><h2>' + (qn ? "Résultats pour « " + esc(query) + " »" : "Tous les chapitres") + "</h2>" +
-      '<p class="lead">' + list.length + " chapitre" + (list.length > 1 ? "s" : "") + "</p>" +
+      '<p class="lead">' + list.length + (qn ? " résultat" : " chapitre") + (list.length > 1 ? "s" : "") + "</p>" +
       '<div class="chips">' + chips + "</div>" +
       (list.length ? '<div class="grid">' + list.map(card).join("") + "</div>" : '<p class="empty">Aucun chapitre ne correspond. Essayez un autre mot.</p>') + "</section>";
     Array.prototype.forEach.call(app.querySelectorAll(".chip"), function (b) {
