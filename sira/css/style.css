@@ -295,3 +295,7 @@ section.block{padding:3rem 1.2rem 0}
 .lx.flash{animation:lxflash 2.2s ease-out;border-color:var(--gold)}
 @keyframes lxflash{0%{box-shadow:0 0 0 4px rgba(240,183,46,.9)}100%{box-shadow:0 0 0 0 rgba(240,183,46,0)}}
 .lx-hit{margin:0 0 1rem;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+
+/* ---- Bouton de langue ---- */
+.lang{flex:none;min-width:2.6rem;height:2.4rem;border-radius:12px;border:1.5px solid var(--gold);background:linear-gradient(135deg,rgba(255,226,122,.25),rgba(240,183,46,.12));color:var(--gold2);font:700 .85rem Inter,sans-serif;letter-spacing:.04em;cursor:pointer}
+.lang:hover{background:var(--gold);color:var(--ink)}

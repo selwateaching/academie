@@ -25,13 +25,17 @@
     "Kulthum": "Koultoum", "Amin": "Amine", "Anas": "Anass", "Affan": "Affane", "Ahl": "Ahle", "Thabit": "Tabit", "Thawr": "Taour", "Thaqif": "Taqif", "Yathrib": "Yatrib", "Harith": "Haritte", "Haritha": "Harita", "Hind": "Hinnde", "Ifk": "Ifque", "Ramadan": "Ramadane", "calife": "kalif", "califes": "kalifes", "califat": "kalifat", "dos": "dau", "moud": "mou", "rythme": "ritme",
     "'umra": "oumra", "hadiths": "hadites", "hadith": "hadite", "zakat": "zakate", "adhan": "adhane", "suhur": "souhour", "ihram": "ihrame", "muezzin": "mouézine", "mubahala": "moubahala", "i'tikaf": "itikaf"
   };
+  var ENG = window.LANG === "en";
+  if (ENG) LEX = (window.EN && window.EN.speechLex) || {};
   Object.keys(LEX).forEach(function (k) { /* variantes avec majuscule (début de phrase) */
     var c = k.charAt(0); if (c !== c.toUpperCase() && /[a-zà-ÿ]/.test(c)) { var K = c.toUpperCase() + k.slice(1), v = LEX[k]; if (!LEX[K]) LEX[K] = v.charAt(0).toUpperCase() + v.slice(1); }
   });
   var keys = Object.keys(LEX).sort(function (a, b) { return b.length - a.length; });
   var LEXRE = new RegExp("(?<![\\p{L}])(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\p{L}])", "gu");
   var ELISION = { l: 1, d: 1, j: 1, m: 1, n: 1, s: 1, t: 1, c: 1, qu: 1, jusqu: 1, lorsqu: 1, puisqu: 1, quoiqu: 1, quelqu: 1, aujourd: 1 };
-  var PRAYER = "que la paix et les bénédictions de Dieu soient sur lui";
+  var PRAYER = ENG ? "peace and blessings of God be upon him" : "que la paix et les bénédictions de Dieu soient sur lui";
+  var AB = ENG ? "audio/en/" : "audio/";
+  function MAN() { return (ENG ? window.SIRA_AUDIO_EN : window.SIRA_AUDIO) || null; }
 
   /* Retourne le texte à dire à voix haute (l'affichage, lui, n'est pas modifié). */
   function prepare(t) {
@@ -39,6 +43,11 @@
     t = t.replace(/,\s*([,.;:!?])/g, "$1").replace(/,,+/g, ",");
     t = t.replace(LEXRE, function (m) { return LEX[m]; });
     // apostrophe interne d'un nom arabe (hors élisions françaises) : on la supprime, sinon la voix épelle les lettres
+    if (ENG) {
+      // anglais : on garde les contractions et possessifs (Prophet's, don't), on retire l'apostrophe des noms arabes restants
+      t = t.replace(/\b([A-Z][\p{L}]+)['’]([\p{L}]+)\b/gu, function (m, a, b) { return /^(s|t|re|ve|ll|d|m)$/.test(b) ? m : a + b; });
+      return t;
+    }
     t = t.replace(/([\p{L}]+)['’]([\p{L}]+)/gu, function (m, a, b) { return ELISION[a.toLowerCase()] ? m : a + b; });
     t = t.replace(/([\p{L}]+)['’](?![\p{L}])/gu, function (m, a) { return /\s$/.test(m) ? m : a; });
     // « w » et « sh » se lisent mal en français
@@ -67,13 +76,13 @@
     else if (/online/i.test(n)) s += 80;
     if (/enhanced|premium|siri|neural/i.test(n)) s += 90;
     if (/google/i.test(n)) s += 60;
-    if (/amélie|thomas|audrey|aurélie|denise|henri|vivienne|remy|rémy|eloise|éloïse/i.test(n)) s += 25;
-    if (/fr[-_]FR/i.test(v.lang)) s += 10;
+    if (/amélie|thomas|audrey|aurélie|denise|henri|vivienne|remy|rémy|eloise|éloïse|aria|jenny|guy|sonia|ryan|libby|emma|andrew|brian|samantha|karen|moira|tessa|serena|oliver/i.test(n)) s += 25;
+    if (/fr[-_]FR|en[-_](US|GB)/i.test(v.lang)) s += 10;
     if (/hortense|paul|julie|microsoft (?!.*(online|natural))/i.test(n) && !/online|natural/i.test(n)) s -= 20;
     return s;
   }
   function frVoices() {
-    var l = (window.speechSynthesis ? window.speechSynthesis.getVoices() : []).filter(function (x) { return /^fr/i.test(x.lang); });
+    var l = (window.speechSynthesis ? window.speechSynthesis.getVoices() : []).filter(function (x) { return (ENG ? /^en/i : /^fr/i).test(x.lang); });
     return l.sort(function (a, b) { return score(b) - score(a); });
   }
 
@@ -88,8 +97,8 @@
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (audioEl) { audioEl.onended = null; audioEl.onerror = null; audioEl.pause(); audioEl = null; }
   }
-  function recorded(id) { return !!(window.SIRA_AUDIO && window.SIRA_AUDIO.ids && window.SIRA_AUDIO.ids.indexOf(id) !== -1); }
-  function supported() { return ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) || !!(window.SIRA_AUDIO && window.SIRA_AUDIO.ids && window.SIRA_AUDIO.ids.length); }
+  function recorded(id) { var m = MAN(); return !!(m && m.ids && m.ids.indexOf(id) !== -1); }
+  function supported() { return ("speechSynthesis" in window && "SpeechSynthesisUtterance" in window) || !!(MAN() && MAN().ids && MAN().ids.length); }
 
   function setup(c, next, hrefOf) {
     var $ = function (i) { return document.getElementById(i); };
@@ -105,16 +114,16 @@
 
     function fillVoices() {
       var voices = frVoices(), saved = get(KEY_V), html = "";
-      if (hasRec) html += '<option value="rec">Voix enregistrée (naturelle)</option>';
+      if (hasRec) html += T('<option value="rec">Voix enregistrée (naturelle)</option>');
       voices.forEach(function (v) { html += '<option value="' + v.name.replace(/"/g, "&quot;") + '">' + v.name.replace(/</g, "&lt;") + "</option>"; });
-      sel.innerHTML = html || '<option value="">Aucune voix française</option>';
+      sel.innerHTML = html || T('<option value="">Aucune voix française</option>');
       var wanted = saved && Array.prototype.some.call(sel.options, function (o) { return o.value === saved; }) ? saved : hasRec ? "rec" : (voices[0] ? voices[0].name : "");
       sel.value = wanted; mode = wanted;
       var best = voices[0];
       note.textContent = wanted === "rec" ? "" : !voices.length
-        ? "Aucune voix française trouvée sur cet appareil : installez-en une dans les réglages du système."
+        ? T("Aucune voix française trouvée sur cet appareil : installez-en une dans les réglages du système.")
         : (best && !/natural|online|enhanced|premium|neural|google/i.test(best.name)
-          ? "Astuce : dans Microsoft Edge, la voix « Natural » (Denise, Henri) est bien plus naturelle que les voix classiques de Windows."
+          ? T("Astuce : dans Microsoft Edge, la voix « Natural » (Denise, Henri) est bien plus naturelle que les voix classiques de Windows.")
           : "");
     }
     fillVoices();
@@ -131,12 +140,12 @@
       if (gen !== my) return;
       if (i >= texts.length) return finish();
       highlight(i);
-      audioEl = new Audio("audio/" + c.id + "/" + i + ".mp3");
+      audioEl = new Audio(AB + c.id + "/" + i + ".mp3");
       audioEl.playbackRate = parseFloat(rate.value) || 1;
       audioEl.onended = function () { setTimeout(function () { playRec(i + 1); }, 250); };
       audioEl.onerror = function () { hasRec = false; fillVoices(); start(); };
       audioEl.play().catch(function () { ui(false); });
-      if (i + 1 < texts.length) { var pre = new Audio(); pre.preload = "auto"; pre.src = "audio/" + c.id + "/" + (i + 1) + ".mp3"; }
+      if (i + 1 < texts.length) { var pre = new Audio(); pre.preload = "auto"; pre.src = AB + c.id + "/" + (i + 1) + ".mp3"; }
     }
 
     /* voix de l'appareil : phrase par phrase */
@@ -150,7 +159,7 @@
         var it = items[n];
         if (it.first) highlight(it.i);
         var u = new SpeechSynthesisUtterance(it.s);
-        u.lang = voice ? voice.lang : "fr-FR"; if (voice) u.voice = voice;
+        u.lang = voice ? voice.lang : (ENG ? "en-US" : "fr-FR"); if (voice) u.voice = voice;
         u.rate = parseFloat(rate.value) || 1; u.pitch = 1;
         var nextItem = items[n + 1];
         u.onend = function () { if (nextItem && nextItem.first) setTimeout(function () { step(n + 1); }, 350); else step(n + 1); };
@@ -162,9 +171,9 @@
     function start() { stop(); my = gen; ui(true); if (mode === "rec") playRec(0); else playTTS(); }
     play.onclick = start;
     pause.onclick = function () {
-      if (mode === "rec" && audioEl) { if (audioEl.paused) { audioEl.play(); pause.textContent = "⏸ Pause"; } else { audioEl.pause(); pause.textContent = "▶ Reprendre"; } return; }
+      if (mode === "rec" && audioEl) { if (audioEl.paused) { audioEl.play(); pause.textContent = "⏸ Pause"; } else { audioEl.pause(); pause.textContent = T("▶ Reprendre"); } return; }
       var ss = window.speechSynthesis;
-      if (ss.paused) { ss.resume(); pause.textContent = "⏸ Pause"; } else { ss.pause(); pause.textContent = "▶ Reprendre"; }
+      if (ss.paused) { ss.resume(); pause.textContent = "⏸ Pause"; } else { ss.pause(); pause.textContent = T("▶ Reprendre"); }
     };
     stopB.onclick = function () { stop(); clear(); ui(false); };
     if (/audio=1/.test(location.hash)) { history.replaceState(null, "", location.hash.replace(/\?audio=1/, "")); setTimeout(start, 300); }
@@ -173,16 +182,16 @@
   /* Prononciation d'un mot du lexique : fichier enregistré s'il existe, sinon voix de l'appareil. */
   function say(key, text) {
     stop();
-    var terms = window.SIRA_AUDIO && window.SIRA_AUDIO.terms;
+    var terms = MAN() && MAN().terms;
     function tts() {
       if (!window.speechSynthesis) return;
       var u = new SpeechSynthesisUtterance(prepare(text)), voices = frVoices(), saved = get(KEY_V);
       var v = voices.filter(function (x) { return x.name === saved; })[0] || voices[0];
-      u.lang = v ? v.lang : "fr-FR"; if (v) u.voice = v; u.rate = 0.9;
+      u.lang = v ? v.lang : (ENG ? "en-US" : "fr-FR"); if (v) u.voice = v; u.rate = 0.9;
       window.speechSynthesis.speak(u);
     }
     if (terms && terms.indexOf(key) !== -1) {
-      audioEl = new Audio("audio/lexique/" + key + ".mp3");
+      audioEl = new Audio(AB + "lexique/" + key + ".mp3");
       audioEl.onerror = tts;
       audioEl.play().catch(tts);
     } else tts();

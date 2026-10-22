@@ -6,7 +6,7 @@
   function Y(lat) { return +((LAT0 - lat) * K).toFixed(1); }
   function pts(a) { return a.map(function (p) { return X(p[0]) + "," + Y(p[1]); }).join(" "); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
-  function ch(id, label) { return { href: "#/chapitre/" + id, label: label || "Chapitre " + id }; }
+  function ch(id, label) { return { href: "#/chapitre/" + id, label: label || T("Chapitre ") + id }; }
 
   /* [lon, lat] */
   var SEA = [[34.3, 27.8], [33.8, 27.2], [33.93, 26.75], [34.9, 25.1], [35.5, 23.9], [36.2, 22.5], [37.22, 19.6], [39.45, 15.6], [42.7, 13.0], [43.5, 12.6], [43.25, 13.3], [42.95, 14.8], [42.8, 16.3], [42.55, 16.9], [41.08, 19.13], [39.17, 21.5], [39.03, 22.8], [38.06, 24.09], [37.27, 25.02], [36.46, 26.23], [35.69, 27.35], [34.95, 29.3], [35.0, 29.55], [34.8, 28.9], [34.5, 28.0]];
@@ -52,12 +52,12 @@
   function view(sel) {
     var app = document.getElementById("app");
     var cur = PLACES.filter(function (p) { return p.id === sel; })[0] || PLACES[0];
-    var svg = '<svg viewBox="0 0 ' + W + " " + H + '" class="map" role="img" aria-label="Carte schématique du Hedjaz et de ses environs">' +
+    var svg = '<svg viewBox="0 0 ' + W + " " + H + T('" class="map" role="img" aria-label="Carte schématique du Hedjaz et de ses environs">') +
       '<rect width="' + W + '" height="' + H + '" class="m-land"/>' +
       '<polygon points="' + pts(MED) + '" class="m-sea"/><polygon points="' + pts(SEA) + '" class="m-sea"/>' +
-      '<text x="' + X(37.9) + '" y="' + Y(20.4) + '" class="m-lbl" transform="rotate(48 ' + X(37.9) + " " + Y(20.4) + ')">Mer Rouge</text>' +
-      '<text x="' + X(33.3) + '" y="' + Y(32.6) + '" class="m-lbl">Méditerranée</text>' +
-      '<text x="' + X(41.6) + '" y="' + Y(26.5) + '" class="m-land-lbl">ARABIE</text>' +
+      '<text x="' + X(37.9) + '" y="' + Y(20.4) + '" class="m-lbl" transform="rotate(48 ' + X(37.9) + " " + Y(20.4) + T(')">Mer Rouge</text>') +
+      '<text x="' + X(33.3) + '" y="' + Y(32.6) + T('" class="m-lbl">Méditerranée</text>') +
+      '<text x="' + X(41.6) + '" y="' + Y(26.5) + T('" class="m-land-lbl">ARABIE</text>') +
       '<polyline points="' + pts(HIJRA) + '" class="m-route"/>' +
       PLACES.map(function (p) {
         var on = p.id === cur.id;
@@ -71,10 +71,10 @@
         p.links.map(function (l) { return '<a class="btn ghost" href="' + l.href + '">' + esc(l.label) + "</a>"; }).join("") + "</div>";
     }
 
-    app.innerHTML = '<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Touchez un lieu pour voir ce qui s\'y est passé. Carte schématique : les distances et les côtes sont approximatives.</p>' +
-      '<div class="m-wrap"><div class="m-box">' + svg + '<p class="muted small">Pointillés : la route de l\'Hégire (tracé approximatif).</p></div>' +
+    app.innerHTML = T('<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Touchez un lieu pour voir ce qui s\'y est passé. Carte schématique : les distances et les côtes sont approximatives.</p>') +
+      '<div class="m-wrap"><div class="m-box">' + svg + T('<p class="muted small">Pointillés : la route de l\'Hégire (tracé approximatif).</p></div>') +
       '<aside class="m-panel" id="mp" aria-live="polite">' + panel(cur) + '</aside></div>' +
-      '<h3>Tous les lieux</h3><div class="chips">' + PLACES.map(function (p) { return '<button class="chip" data-id="' + p.id + '" aria-pressed="' + (p.id === cur.id) + '">' + p.icon + " " + esc(p.name) + "</button>"; }).join("") + "</div></section>";
+      T('<h3>Tous les lieux</h3><div class="chips">') + PLACES.map(function (p) { return '<button class="chip" data-id="' + p.id + '" aria-pressed="' + (p.id === cur.id) + '">' + p.icon + " " + esc(p.name) + "</button>"; }).join("") + "</div></section>";
 
     function select(id) {
       var p = PLACES.filter(function (x) { return x.id === id; })[0]; if (!p) return;

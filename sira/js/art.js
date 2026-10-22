@@ -307,11 +307,12 @@
     return o + "</svg>";
   }
 
-  function itemText(it) { return [it.title, it.sub].concat(it.paras).join(" "); }
+  function src(it) { return it.fr || it; }
+  function itemText(it) { var s = src(it); return [s.title, s.sub].concat(s.paras).join(" "); }
   window.SiraArt = {
-    hero: function (it) { return compose({ seed: "h" + it.id, text: itemText(it), title: it.title + " " + it.sub, man: HERO[it.id] }); },
-    panel: function (it, i) { return compose({ seed: "p" + it.id + "-" + i, text: it.paras[i], title: it.title }); },
-    thumb: function (it) { return compose({ seed: "h" + it.id, text: itemText(it), title: it.title + " " + it.sub, man: HERO[it.id] }); },
+    hero: function (it) { return compose({ seed: "h" + it.id, text: itemText(it), title: src(it).title + " " + src(it).sub, man: HERO[it.id] }); },
+    panel: function (it, i) { return compose({ seed: "p" + it.id + "-" + i, text: src(it).paras[i], title: src(it).title }); },
+    thumb: function (it) { return compose({ seed: "h" + it.id, text: itemText(it), title: src(it).title + " " + src(it).sub, man: HERO[it.id] }); },
     _compose: compose
   };
 })();

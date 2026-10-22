@@ -3,8 +3,8 @@
   "use strict";
   var KEY = "sira-fr:quiz", SECONDS = 20, BASE = 100, BONUS = 50;
   var LEVELS = [
-    { min: 0, name: "Curieux" }, { min: 500, name: "Lecteur" }, { min: 1500, name: "Étudiant" },
-    { min: 3000, name: "Chercheur" }, { min: 5000, name: "Savant" }, { min: 7500, name: "Gardien de la Sirah" }
+    { min: 0, name: T("Curieux") }, { min: 500, name: T("Lecteur") }, { min: 1500, name: T("Étudiant") },
+    { min: 3000, name: T("Chercheur") }, { min: 5000, name: T("Savant") }, { min: 7500, name: T("Gardien de la Sirah") }
   ];
   var timer = null;
   function kind(id) { return id >= 300 ? "ri" : id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
@@ -18,6 +18,14 @@
 
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  function scoreLine(n, total) {
+    if (window.LANG === "en") return n + " correct answer" + (n > 1 ? "s" : "") + " out of " + total;
+    return n + " bonne" + (n > 1 ? "s" : "") + " réponse" + (n > 1 ? "s" : "") + " sur " + total;
+  }
+  function nextLevelText(n, name) {
+    if (window.LANG === "en") return n + " more points to become “" + name + "”";
+    return "Encore " + n + " points pour devenir « " + name + " »";
+  }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function starsFor(score, total) { return score === total ? 3 : score >= total - 1 ? 2 : score >= Math.ceil(total * 0.6) ? 1 : 0; }
@@ -32,17 +40,17 @@
   function badges() {
     var s = load(), ch = window.CHAPTERS, ids = Object.keys(s), out = [];
     function done(id) { return s[id] && s[id].stars >= 1; }
-    out.push({ art: "sprout", name: "Premier pas", desc: "Réussir un premier quiz", ok: ids.some(done) });
-    out.push({ art: "target", name: "Sans faute", desc: "Obtenir 3 étoiles sur un chapitre", ok: ids.some(function (k) { return s[k].stars === 3; }) });
-    out.push({ art: "bolt", name: "Éclair", desc: "Dépasser 700 points sur un chapitre", ok: ids.some(function (k) { return s[k].pts >= 700; }) });
+    out.push({ art: "sprout", name: T("Premier pas"), desc: T("Réussir un premier quiz"), ok: ids.some(done) });
+    out.push({ art: "target", name: T("Sans faute"), desc: T("Obtenir 3 étoiles sur un chapitre"), ok: ids.some(function (k) { return s[k].stars === 3; }) });
+    out.push({ art: "bolt", name: T("Éclair"), desc: T("Dépasser 700 points sur un chapitre"), ok: ids.some(function (k) { return s[k].pts >= 700; }) });
     (window.PERIODS || []).forEach(function (p) {
       var list = ch.filter(function (c) { return c.period === p.id; });
-      out.push({ art: ({ avant: "moon", mecque: "kaaba", medine: "mosque" })[p.id] || "moon", name: p.label, desc: "Réussir tous les quiz de cette période", ok: list.every(function (c) { return done(c.id); }) });
+      out.push({ art: ({ avant: "moon", mecque: "kaaba", medine: "mosque" })[p.id] || "moon", name: p.label, desc: T("Réussir tous les quiz de cette période"), ok: list.every(function (c) { return done(c.id); }) });
     });
-    out.push({ art: "palm", name: "Compagnon", desc: "Réussir les 30 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
-    out.push({ art: "book", name: "Famille et thèmes", desc: "Réussir les 16 quiz sur la famille et les thèmes", ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
-    out.push({ art: "rites", name: "Rites et fêtes", desc: "Réussir les 8 quiz sur les rites et les fêtes", ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
-    out.push({ art: "trophy", name: "Gardien de la Sirah", desc: "Réussir les 25 quiz des chapitres", ok: ch.every(function (c) { return done(c.id); }) });
+    out.push({ art: "palm", name: T("Compagnon"), desc: T("Réussir les 30 quiz sur les compagnons"), ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
+    out.push({ art: "book", name: T("Famille et thèmes"), desc: T("Réussir les 16 quiz sur la famille et les thèmes"), ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
+    out.push({ art: "rites", name: T("Rites et fêtes"), desc: T("Réussir les 8 quiz sur les rites et les fêtes"), ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
+    out.push({ art: "trophy", name: T("Gardien de la Sirah"), desc: T("Réussir les 25 quiz des chapitres"), ok: ch.every(function (c) { return done(c.id); }) });
     return out;
   }
 
@@ -59,12 +67,12 @@
       locked = false; left = SECONDS;
       var q = order[i], opts = shuffle(q.slice(1));
       var pct = Math.round((i / order.length) * 100);
-      app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>Question <b>' + (i + 1) + "</b> sur " + order.length + "</span><span class=\"q-pts\">" + pts + " pts</span></div>" +
+      app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>Question <b>' + (i + 1) + T("</b> sur ") + order.length + "</span><span class=\"q-pts\">" + pts + " pts</span></div>" +
         '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
-        '<div class="q-time"><span><b id="qt">' + SECONDS + '</b> s</span><span class="muted">⚡ Plus vite = plus de points</span></div><div class="bar thin"><i id="tb" style="width:100%"></i></div>' +
-        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((kind(id) === "th" || kind(id) === "ri" ? "Fiche" : kind(id) === "co" ? "Compagnon" : "Chapitre " + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
+        '<div class="q-time"><span><b id="qt">' + SECONDS + T('</b> s</span><span class="muted">⚡ Plus vite = plus de points</span></div><div class="bar thin"><i id="tb" style="width:100%"></i></div>') +
+        '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((kind(id) === "th" || kind(id) === "ri" ? T("Fiche") : kind(id) === "co" ? T("Compagnon") : T("Chapitre ") + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
         '<div class="q-opts" role="group" aria-label="Réponses">' + opts.map(function (o) { return '<button class="opt" data-v="' + esc(o) + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
-        '<button class="skip" id="skip">⏭ Je ne sais pas (passer)</button><p class="q-fb" id="fb" aria-live="polite"></p></div></div>';
+        T('<button class="skip" id="skip">⏭ Je ne sais pas (passer)</button><p class="q-fb" id="fb" aria-live="polite"></p></div></div>');
       Array.prototype.forEach.call(app().querySelectorAll(".opt"), function (b) { b.onclick = function () { answer(b.getAttribute("data-v"), b); }; });
       document.getElementById("skip").onclick = function () { answer(null); };
       stop();
@@ -88,10 +96,10 @@
       document.getElementById("skip").disabled = true;
       if (ok) {
         var gain = BASE + Math.round(BONUS * Math.max(0, left) / SECONDS);
-        score++; pts += gain; fb.className = "q-fb good"; fb.textContent = "✓ Bonne réponse ! +" + gain + " points";
+        score++; pts += gain; fb.className = "q-fb good"; fb.textContent = T("✓ Bonne réponse ! +") + gain + T(" points");
       } else {
         if (btn) btn.classList.add("bad");
-        fb.className = "q-fb bad"; fb.textContent = timeout ? "⏱ Temps écoulé. La bonne réponse est surlignée." : v === null ? "La bonne réponse est surlignée." : "✗ Ce n'est pas la bonne réponse.";
+        fb.className = "q-fb bad"; fb.textContent = timeout ? T("⏱ Temps écoulé. La bonne réponse est surlignée.") : v === null ? T("La bonne réponse est surlignée.") : T("✗ Ce n'est pas la bonne réponse.");
       }
       setTimeout(function () { i++; if (i < order.length) render(); else finish(); }, ok ? 1100 : 1800);
     }
@@ -106,15 +114,15 @@
       var xpAfter = totalXp(), lvB = levelInfo(xpBefore), lvA = levelInfo(xpAfter);
       var newB = badges().filter(function (b) { return b.ok && badgesBefore.indexOf(b.name) === -1; });
       var next = nextOf(id);
-      var msg = stars === 3 ? "Parfait, aucune erreur !" : stars >= 1 ? "Bien joué !" : "Relisez le chapitre et réessayez.";
-      app().innerHTML = '<div class="quiz wrap"><div class="q-card result"><div class="stars big" aria-label="' + stars + ' étoiles sur 3">' + starStr(stars) + "</div>" +
-        "<h2>" + msg + "</h2><p class=\"lead\">" + score + " bonne" + (score > 1 ? "s" : "") + " réponse" + (score > 1 ? "s" : "") + " sur " + order.length + " · <b>" + pts + " points</b></p>" +
-        (improved && prev.pts ? '<p class="q-fb good">Nouveau record personnel !</p>' : !improved && prev.pts ? '<p class="muted">Votre meilleur score reste de ' + prev.pts + " points.</p>" : "") +
-        (lvA.index > lvB.index ? '<p class="reward"><span class="rw-m">' + SiraMedals.level(lvA.index) + "</span><span>Nouveau niveau : <b>" + esc(lvA.name) + "</b></span></p>" : "") +
-        newB.map(function (b) { return '<p class="reward"><span class="rw-m">' + SiraMedals.badge(b.art, true) + "</span><span>Badge débloqué : <b>" + esc(b.name) + "</b></span></p>"; }).join("") +
-        '<div class="cta c"><button class="btn gold" id="again">↻ Rejouer</button>' +
-        (next ? '<a class="btn ghost" href="' + hrefOf(next.id) + '">' + (kind(id) === "ch" ? "Chapitre suivant" : kind(id) === "co" ? "Portrait suivant" : "Fiche suivante") + " →</a>" : "") + '<a class="btn ghost" href="' + hrefOf(id) + '">Relire</a>' +
-        '<a class="btn ghost" href="#/recompenses">🏆 Mes récompenses</a></div></div></div>';
+      var msg = stars === 3 ? T("Parfait, aucune erreur !") : stars >= 1 ? T("Bien joué !") : T("Relisez le chapitre et réessayez.");
+      app().innerHTML = '<div class="quiz wrap"><div class="q-card result"><div class="stars big" aria-label="' + stars + T(' étoiles sur 3">') + starStr(stars) + "</div>" +
+        "<h2>" + msg + "</h2><p class=\"lead\">" + scoreLine(score, order.length) + " · <b>" + pts + " " + T("points").trim() + "</b></p>" +
+        (improved && prev.pts ? T('<p class="q-fb good">Nouveau record personnel !</p>') : !improved && prev.pts ? T('<p class="muted">Votre meilleur score reste de ') + prev.pts + " points.</p>" : "") +
+        (lvA.index > lvB.index ? '<p class="reward"><span class="rw-m">' + SiraMedals.level(lvA.index) + T("</span><span>Nouveau niveau : <b>") + esc(lvA.name) + "</b></span></p>" : "") +
+        newB.map(function (b) { return '<p class="reward"><span class="rw-m">' + SiraMedals.badge(b.art, true) + T("</span><span>Badge débloqué : <b>") + esc(b.name) + "</b></span></p>"; }).join("") +
+        T('<div class="cta c"><button class="btn gold" id="again">↻ Rejouer</button>') +
+        (next ? '<a class="btn ghost" href="' + hrefOf(next.id) + '">' + (kind(id) === "ch" ? T("Chapitre suivant") : kind(id) === "co" ? T("Portrait suivant") : T("Fiche suivante")) + " →</a>" : "") + '<a class="btn ghost" href="' + hrefOf(id) + T('">Relire</a>') +
+        T('<a class="btn ghost" href="#/recompenses">🏆 Mes récompenses</a></div></div></div>');
       document.getElementById("again").onclick = function () { view(id); };
       updateTrophy();
     }
@@ -124,21 +132,21 @@
   function rewardsHtml(compact) {
     var xp = totalXp(), lv = levelInfo(xp), s = load(), done = Object.keys(s).filter(function (k) { return s[k].stars >= 1; }).length;
     var stars = Object.keys(s).reduce(function (a, k) { return a + (s[k].stars || 0); }, 0);
-    var h = '<div class="rw"><div class="rw-lv"><span class="rw-icon">' + SiraMedals.level(lv.index) + '</span><div><small>Niveau ' + (lv.index + 1) + '</small><b>' + esc(lv.name) + '</b></div><div class="rw-xp"><b>' + xp + "</b> pts</div></div>" +
-      '<div class="bar"><i style="width:' + lv.pct + '%"></i></div><p class="muted small">' + (lv.next ? "Encore " + (lv.next.min - xp) + " points pour devenir « " + esc(lv.next.name) + " »" : "Niveau maximum atteint !") + "</p>" +
-      '<div class="rw-stats"><span>⭐ ' + stars + " / " + allItems().length * 3 + " étoiles</span><span>✓ " + done + " / " + allItems().length + " quiz réussis</span></div>";
-    if (!compact) h += '<h3>Badges</h3><div class="badges">' + badges().map(function (b) {
-      return '<div class="badge-c' + (b.ok ? " on" : "") + '"><span class="bm">' + SiraMedals.badge(b.art, b.ok) + "</span><b>" + esc(b.name) + "</b><small>" + esc(b.desc) + "</small><em>" + (b.ok ? "✓ Obtenu" : "À débloquer") + "</em></div>";
+    var h = '<div class="rw"><div class="rw-lv"><span class="rw-icon">' + SiraMedals.level(lv.index) + T('</span><div><small>Niveau ') + (lv.index + 1) + '</small><b>' + esc(lv.name) + '</b></div><div class="rw-xp"><b>' + xp + "</b> pts</div></div>" +
+      '<div class="bar"><i style="width:' + lv.pct + '%"></i></div><p class="muted small">' + (lv.next ? nextLevelText(lv.next.min - xp, esc(lv.next.name)) : T("Niveau maximum atteint !")) + "</p>" +
+      '<div class="rw-stats"><span>⭐ ' + stars + " / " + allItems().length * 3 + T(" étoiles</span><span>✓ ") + done + " / " + allItems().length + T(" quiz réussis</span></div>");
+    if (!compact) h += T('<h3>Badges</h3><div class="badges">') + badges().map(function (b) {
+      return '<div class="badge-c' + (b.ok ? " on" : "") + '"><span class="bm">' + SiraMedals.badge(b.art, b.ok) + "</span><b>" + esc(b.name) + "</b><small>" + esc(b.desc) + "</small><em>" + (b.ok ? T("✓ Obtenu") : T("À débloquer")) + "</em></div>";
     }).join("") + "</div>";
     return h + "</div>";
   }
   function rewardsView() {
     stop();
     var ch = allItems(), s = load();
-    app().innerHTML = '<section class="block wrap"><h2>Mes récompenses</h2><p class="lead">Répondez aux quiz pour gagner des points, des étoiles et des badges.</p>' + rewardsHtml(false) +
-      "<h3>Étoiles par chapitre</h3><div class=\"grid\">" + ch.map(function (c) {
+    app().innerHTML = T('<section class="block wrap"><h2>Mes récompenses</h2><p class="lead">Répondez aux quiz pour gagner des points, des étoiles et des badges.</p>') + rewardsHtml(false) +
+      T("<h3>Étoiles par chapitre</h3><div class=\"grid\">") + ch.map(function (c) {
         var r = s[c.id];
-        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + iconOf(c.id) + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + " pts" : "Pas encore joué") + "</span><span>Jouer →</span></div></a>";
+        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + iconOf(c.id) + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + " pts" : T("Pas encore joué")) + T("</span><span>Jouer →</span></div></a>");
       }).join("") + "</div></section>";
   }
   function updateTrophy() {

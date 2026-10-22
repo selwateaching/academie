@@ -41,9 +41,9 @@
     btn.classList.add("on");
     pop = document.createElement("div"); pop.className = "glpop"; pop.setAttribute("role", "dialog"); pop.setAttribute("aria-label", e.t);
     var p = pron(e);
-    pop.innerHTML = '<div class="gp-h"><b>' + esc(e.t) + "</b>" + (e.a ? '<span class="gp-ar" lang="ar" dir="rtl">' + esc(e.a) + "</span>" : "") + '<button type="button" class="gp-x" aria-label="Fermer">×</button></div>' +
-      '<p class="gp-d">' + esc(e.d) + "</p>" + (p ? '<p class="gp-p">Se prononce : <i>' + esc(p) + "</i></p>" : "") +
-      '<div class="gp-a"><button type="button" class="gp-say" data-say="' + e.k + '">🔊 Écouter</button>' + (e.l ? '<a href="' + e.l + '">En savoir plus</a>' : "") + '<a href="#/lexique/' + e.k + '">Voir dans le lexique</a></div>';
+    pop.innerHTML = '<div class="gp-h"><b>' + esc(e.t) + "</b>" + (e.a ? '<span class="gp-ar" lang="ar" dir="rtl">' + esc(e.a) + "</span>" : "") + '<button type="button" class="gp-x" aria-label="' + T("Fermer") + '">×</button></div>' +
+      '<p class="gp-d">' + esc(e.d) + "</p>" + (p ? T('<p class="gp-p">Se prononce : <i>') + esc(p) + "</i></p>" : "") +
+      '<div class="gp-a"><button type="button" class="gp-say" data-say="' + e.k + T('">🔊 Écouter</button>') + (e.l ? '<a href="' + e.l + T('">En savoir plus</a>') : "") + '<a href="#/lexique/' + e.k + T('">Voir dans le lexique</a></div>');
     document.body.appendChild(pop); openedAt = Date.now();
     if (window.innerWidth > 700) {
       var r = btn.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
@@ -74,11 +74,11 @@
   function view(sel) {
     var app = document.getElementById("app"), cat = "", q = "";
     var order = L.slice().sort(function (a, b) { return sortKey(a) < sortKey(b) ? -1 : sortKey(a) > sortKey(b) ? 1 : 0; });
-    app.innerHTML = '<section class="block wrap"><h2>Lexique</h2><p class="lead">' + L.length + ' mots, noms et lieux expliqués simplement. Touchez 🔊 pour entendre la prononciation. Dans les textes, les mots soulignés ouvrent une petite explication.</p>' +
-      '<label class="lx-search"><span class="sr-only">Chercher un mot</span><input id="lxq" type="search" placeholder="Chercher un mot : hégire, qibla, Quraysh…" autocomplete="off"></label>' +
-      '<div class="chips" id="lxc"></div><nav class="lx-az" id="lxaz" aria-label="Index alphabétique"></nav><div id="lxl"></div></section>';
+    app.innerHTML = T('<section class="block wrap"><h2>Lexique</h2><p class="lead">') + L.length + T(' mots, noms et lieux expliqués simplement. Touchez 🔊 pour entendre la prononciation. Dans les textes, les mots soulignés ouvrent une petite explication.</p>') +
+      T('<label class="lx-search"><span class="sr-only">Chercher un mot</span><input id="lxq" type="search" placeholder="Chercher un mot : hégire, qibla, Quraysh…" autocomplete="off"></label>') +
+      '<div class="chips" id="lxc"></div><nav class="lx-az" id="lxaz" aria-label="' + T("Index alphabétique") + '"></nav><div id="lxl"></div></section>';
     function chips() {
-      var h = '<button class="chip" data-c="" aria-pressed="' + (cat === "") + '">Tous</button>';
+      var h = '<button class="chip" data-c="" aria-pressed="' + (cat === "") + T('">Tous</button>');
       Object.keys(CAT).forEach(function (k) { h += '<button class="chip" data-c="' + k + '" aria-pressed="' + (cat === k) + '">' + esc(CAT[k]) + "</button>"; });
       document.getElementById("lxc").innerHTML = h;
       Array.prototype.forEach.call(document.querySelectorAll("#lxc .chip"), function (b) { b.onclick = function () { cat = b.getAttribute("data-c"); chips(); render(); }; });
@@ -96,10 +96,10 @@
       document.getElementById("lxl").innerHTML = letters.length ? letters.map(function (l) {
         return '<h3 class="lx-l" id="lx-' + (l === "#" ? "x" : l) + '">' + l + '</h3><div class="lx-grid">' + groups[l].map(function (e) {
           var p = pron(e);
-          return '<article class="lx" id="g-' + e.k + '"><header><h4>' + esc(e.t) + "</h4>" + (e.a ? '<span class="lx-ar" lang="ar" dir="rtl">' + esc(e.a) + "</span>" : "") + '<button type="button" class="lx-say" data-say="' + e.k + '" aria-label="Écouter ' + esc(e.t) + '">🔊</button></header>' +
-            (p ? '<p class="lx-pr">Se prononce : <i>' + esc(p) + "</i></p>" : "") + "<p>" + esc(e.d) + '</p><footer><span class="lx-cat">' + esc(CAT[e.c]) + "</span>" + (e.l ? '<a href="' + e.l + '">En savoir plus →</a>' : "") + "</footer></article>";
+          return '<article class="lx" id="g-' + e.k + '"><header><h4>' + esc(e.t) + "</h4>" + (e.a ? '<span class="lx-ar" lang="ar" dir="rtl">' + esc(e.a) + "</span>" : "") + '<button type="button" class="lx-say" data-say="' + e.k + T('" aria-label="Écouter ') + esc(e.t) + '">🔊</button></header>' +
+            (p ? T('<p class="lx-pr">Se prononce : <i>') + esc(p) + "</i></p>" : "") + "<p>" + esc(e.d) + '</p><footer><span class="lx-cat">' + esc(CAT[e.c]) + "</span>" + (e.l ? '<a href="' + e.l + T('">En savoir plus →</a>') : "") + "</footer></article>";
         }).join("") + "</div>";
-      }).join("") : '<p class="empty">Aucun mot ne correspond. Essayez une autre écriture.</p>';
+      }).join("") : T('<p class="empty">Aucun mot ne correspond. Essayez une autre écriture.</p>');
       Array.prototype.forEach.call(document.querySelectorAll("#lxaz a"), function (a) {
         a.onclick = function (ev) { ev.preventDefault(); var t = document.getElementById("lx-" + (a.getAttribute("data-l") === "#" ? "x" : a.getAttribute("data-l"))); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); };
       });
