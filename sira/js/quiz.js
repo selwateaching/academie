@@ -8,7 +8,7 @@ window.QUIZ = {
  ["Quels deux empires rivaux entouraient l'Arabie ?","Byzance et la Perse","Rome et l'Égypte","La Perse et l'Inde","Byzance et l'Abyssinie"]
 ],
 2: [
- ["Comment appelle-t-on l'année de la naissance de Muhammad ?","L'année de l'Éléphant","L'année de la Tristesse","L'année de l'Hégire","L'année des délégations"],
+ ["Comment appelle-t-on l'année de la naissance de Mouhammed ﷺ ?","L'année de l'Éléphant","L'année de la Tristesse","L'année de l'Hégire","L'année des délégations"],
  ["Comment s'appelait son père ?","Abdallah","Abu Talib","Abd al-Muttalib","Hamza"],
  ["Quelle nourrice bédouine l'a élevé ?","Halima as-Sa'diyya","Khadija","Fatima","Aïcha"],
  ["À quel âge perd-il sa mère Amina ?","Six ans","Deux ans","Dix ans","Douze ans"],
@@ -17,7 +17,7 @@ window.QUIZ = {
 3: [
  ["Quel surnom les Mecquois lui donnent-ils ?","Al-Amin (le digne de confiance)","As-Siddiq (le véridique)","Al-Faruq (celui qui distingue)","Dhu an-Nurayn"],
  ["Dans quelle ville de Syrie le moine Bahira le remarque-t-il ?","Bosra","Damas","Alep","Jérusalem"],
- ["Quel âge a Muhammad lorsqu'il épouse Khadija ?","Vingt-cinq ans","Quinze ans","Trente-cinq ans","Quarante ans"],
+ ["Quel âge a Mouhammed ﷺ lorsqu'il épouse Khadija ?","Vingt-cinq ans","Quinze ans","Trente-cinq ans","Quarante ans"],
  ["Comment règle-t-il la querelle de la Pierre noire ?","Il la pose sur son manteau, porté par les chefs de clans","Il la garde chez lui","Il tire au sort","Il confie la décision à Abu Talib"],
  ["Quel pacte de jeunesse défend les opprimés ?","Le pacte des Fudul","Le pacte d'Aqaba","Le traité de Hudaybiyya","Le serment de Ridwan"]
 ],
@@ -31,7 +31,7 @@ window.QUIZ = {
 5: [
  ["Qui est la première personne à croire en lui ?","Khadija","Aïcha","Fatima","Sumayya"],
  ["Quel jeune cousin, élevé chez lui, embrasse l'islam très tôt ?","Ali","Omar","Uthman","Bilal"],
- ["Quel affranchi, fils adoptif du Prophète, fait partie des premiers croyants ?","Zayd ibn Haritha","Bilal","Ammar","Salman"],
+ ["Quel affranchi, fils adoptif du Prophète ﷺ, fait partie des premiers croyants ?","Zayd ibn Haritha","Bilal","Ammar","Salman"],
  ["Quelle maison sert de lieu de rencontre discret ?","La maison d'al-Arqam","La maison d'Abu Bakr","La maison d'Abu Talib","La maison de Khadija"],
  ["Combien de temps l'appel reste-t-il discret ?","Environ trois ans","Dix ans","Un an","Sept ans"]
 ],
@@ -59,13 +59,13 @@ window.QUIZ = {
 9: [
  ["Qui Hamza frappe-t-il avec son arc ?","Abu Jahl","Abu Lahab","Walid ibn al-Mughira","Umayya ibn Khalaf"],
  ["Quel métier ou qualité caractérise Hamza ?","Un chasseur réputé et redouté","Un marchand de dattes","Un poète","Un berger"],
- ["Chez qui Omar se rend-il d'abord, avant de voir le Prophète ?","Chez sa sœur Fatima et son mari","Chez Abu Bakr","Chez Abu Talib","Chez Khadija"],
+ ["Chez qui Omar se rend-il d'abord, avant de voir le Prophète ﷺ ?","Chez sa sœur Fatima et son mari","Chez Abu Bakr","Chez Abu Talib","Chez Khadija"],
  ["Quelle sourate lisent sa sœur et son mari ?","Ta-Ha","Maryam","Yasin","Al-Ikhlas"],
  ["Que permettent ces deux conversions aux musulmans ?","Prier ouvertement près de la Kaaba","Quitter La Mecque","Déclarer la guerre","Fonder Médine"]
 ],
 10: [
  ["Combien de temps dure le boycott ?","Trois ans","Un an","Dix ans","Six mois"],
- ["Où les clans du Prophète se retirent-ils ?","Dans le ravin d'Abu Talib","À Taïf","Dans la grotte de Hira","À Mina"],
+ ["Où les clans du Prophète ﷺ se retirent-ils ?","Dans le ravin d'Abu Talib","À Taïf","Dans la grotte de Hira","À Mina"],
  ["Quels clans sont visés par le boycott ?","Les Banu Hashim et les Banu al-Muttalib","Les Banu Umayya","Les Banu Makhzum","Les Banu Zuhra"],
  ["Que découvre-t-on sur la charte du boycott, selon la tradition ?","Elle a été rongée par des termites, sauf le nom de Dieu","Elle a été volée","Elle a été brûlée","Elle a changé d'écriture"],
  ["De quoi se nourrissent-ils pendant la disette ?","De feuilles et de cuir","De poisson","De miel","De fruits de Taïf"]
@@ -73,7 +73,7 @@ window.QUIZ = {
 11: [
  ["Quelles deux personnes meurent peu avant l'Hégire, en 619 ?","Abu Talib et Khadija","Hamza et Omar","Abu Bakr et Ali","Halima et Amina"],
  ["Comment nomme-t-on cette année ?","L'année de la tristesse","L'année de l'Éléphant","L'année du Pardon","L'année de la victoire"],
- ["Quelle ville le Prophète visite-t-il pour chercher un appui ?","Taïf","Médine","Jérusalem","Bosra"],
+ ["Quelle ville le Prophète ﷺ visite-t-il pour chercher un appui ?","Taïf","Médine","Jérusalem","Bosra"],
  ["Que propose l'ange des montagnes ?","Écraser la ville entre deux monts","Ouvrir la mer","Déplacer la Kaaba","Réunir les tribus"],
  ["Combien d'années Khadija l'a-t-elle soutenu ?","Environ vingt-cinq ans","Cinq ans","Dix ans","Quarante ans"]
 ],
@@ -85,14 +85,14 @@ window.QUIZ = {
  ["Quel compagnon reçoit le surnom « as-Siddiq » ?","Abu Bakr","Omar","Ali","Uthman"]
 ],
 13: [
- ["Où le Prophète rencontre-t-il les hommes de Yathrib ?","À Aqaba, près de Mina","À Hira","À Taïf","À Badr"],
+ ["Où le Prophète ﷺ rencontre-t-il les hommes de Yathrib ?","À Aqaba, près de Mina","À Hira","À Taïf","À Badr"],
  ["De quelle ville viennent ces hommes ?","Yathrib (Médine)","Taïf","Khaybar","Damas"],
- ["Qui le Prophète envoie-t-il enseigner à Médine ?","Mus'ab ibn Umayr","Ali","Bilal","Khalid"],
+ ["Qui le Prophète ﷺ envoie-t-il enseigner à Médine ?","Mus'ab ibn Umayr","Ali","Bilal","Khalid"],
  ["Combien de chefs sont désignés comme garants de la communauté ?","Douze","Trois","Quarante","Soixante-dix"],
- ["À quoi s'engagent-ils lors du second pacte ?","Protéger le Prophète comme leurs familles","Payer un tribut","Quitter Médine","Attaquer Quraysh"]
+ ["À quoi s'engagent-ils lors du second pacte ?","Protéger le Prophète ﷺ comme leurs familles","Payer un tribut","Quitter Médine","Attaquer Quraysh"]
 ],
 14: [
- ["Qui dort dans le lit du Prophète la nuit du départ ?","Ali","Abu Bakr","Omar","Zayd"],
+ ["Qui dort dans le lit du Prophète ﷺ la nuit du départ ?","Ali","Abu Bakr","Omar","Zayd"],
  ["Dans quelle grotte se cachent-ils trois jours ?","La grotte de Thawr","La grotte de Hira","La grotte d'Uhud","La grotte de Quba"],
  ["Qui l'accompagne dans l'émigration ?","Abu Bakr","Omar","Hamza","Bilal"],
  ["Quelle mosquée est fondée à leur arrivée près de Médine ?","La mosquée de Quba","La mosquée al-Aqsa","La mosquée de Taïf","La mosquée d'Uhud"],
@@ -113,7 +113,7 @@ window.QUIZ = {
  ["Que peuvent faire certains prisonniers instruits pour être libérés ?","Apprendre à lire à dix enfants de Médine","Payer en or","Quitter l'Arabie","Servir dans l'armée"]
 ],
 17: [
- ["Combien d'archers le Prophète poste-t-il sur la colline ?","Cinquante","Dix","Cent","Vingt"],
+ ["Combien d'archers le Prophète ﷺ poste-t-il sur la colline ?","Cinquante","Dix","Cent","Vingt"],
  ["Pourquoi la situation se retourne-t-elle ?","Les archers quittent leur poste pour le butin","Les chevaux s'enfuient","La nuit tombe","Une tempête éclate"],
  ["Quel chef, alors dans le camp ennemi, attaque à revers ?","Khalid ibn al-Walid","Abu Jahl","Amr ibn al-As","Ikrima ibn Abi Jahl"],
  ["Qui tue Hamza ?","Wahshi","Abu Sufyan","Khalid","Suhayl"],
@@ -128,7 +128,7 @@ window.QUIZ = {
 ],
 19: [
  ["Où est conclu le traité de 628 ?","À Hudaybiyya","À Badr","À Uhud","À Khaybar"],
- ["Combien de compagnons accompagnent le Prophète, environ ?","1 400","313","10 000","30 000"],
+ ["Combien de compagnons accompagnent le Prophète ﷺ, environ ?","1 400","313","10 000","30 000"],
  ["Comment s'appelle le serment prêté sous l'arbre ?","Bay'at ar-Ridwan","Bay'at al-Aqaba","Pacte des Fudul","Charte de Médine"],
  ["Quelle est la durée de la trêve ?","Dix ans","Un an","Trois ans","Vingt ans"],
  ["Qui négocie pour Quraysh ?","Suhayl ibn Amr","Abu Jahl","Walid","Khalid"]
@@ -136,14 +136,14 @@ window.QUIZ = {
 20: [
  ["Quelle oasis fortifiée est conquise en l'an 7 ?","Khaybar","Taïf","Tabuk","Hunayn"],
  ["Qui revient d'Abyssinie à cette époque ?","Ja'far ibn Abi Talib et ses compagnons","Abu Bakr","Omar","Hamza"],
- ["À qui le Prophète envoie-t-il des lettres ?","Aux grands souverains de son temps","Aux seuls chefs arabes","Aux seuls Mecquois","À personne"],
+ ["À qui le Prophète ﷺ envoie-t-il des lettres ?","Aux grands souverains de son temps","Aux seuls chefs arabes","Aux seuls Mecquois","À personne"],
  ["Quel souverain déchire la lettre avec colère ?","Khosro","Le Négus","Héraclius","Le Muqawqis"],
  ["Que permet la trêve de Hudaybiyya ?","Diffuser le message plus librement","Attaquer La Mecque","Fermer les frontières","Quitter l'Arabie"]
 ],
 21: [
  ["Combien d'hommes marchent sur La Mecque, environ ?","Dix mille","Trois cents","Mille","Cent mille"],
  ["Quel ancien adversaire se convertit à l'approche de l'armée ?","Abu Sufyan","Abu Jahl","Abu Lahab","Walid"],
- ["Quelle phrase le Prophète adresse-t-il à Quraysh ?","« Allez, vous êtes libres »","« Rendez-vous ! »","« Payez le tribut »","« Quittez la ville »"],
+ ["Quelle phrase le Prophète ﷺ adresse-t-il à Quraysh ?","« Allez, vous êtes libres »","« Rendez-vous ! »","« Payez le tribut »","« Quittez la ville »"],
  ["Qui appelle à la prière depuis le toit de la Kaaba ?","Bilal","Omar","Abu Bakr","Ali"],
  ["Que fait-on des idoles autour de la Kaaba ?","Elles sont détruites","Elles sont vendues","Elles sont cachées","Elles sont gardées"]
 ],
@@ -151,7 +151,7 @@ window.QUIZ = {
  ["Combien de musulmans combattent à Hunayn, environ ?","Douze mille","Trois cents","Mille","Trente mille"],
  ["Quelles tribus attaquent les musulmans ?","Hawazin et Thaqif","Quraysh","Les Ghatafan","Les Banu Qurayza"],
  ["Qui rassemble les compagnons à pleine voix ?","Son oncle al-Abbas","Abu Bakr","Hamza","Omar"],
- ["Que décide le Prophète pour Taïf après le siège ?","Il lève le siège et prie pour eux","Il détruit la ville","Il l'occupe de force","Il l'ignore"],
+ ["Que décide le Prophète ﷺ pour Taïf après le siège ?","Il lève le siège et prie pour eux","Il détruit la ville","Il l'occupe de force","Il l'ignore"],
  ["Pourquoi certains Ansar murmurent-ils ?","À cause de la répartition du butin","À cause d'un impôt","À cause d'un exil","À cause d'une défaite"]
 ],
 23: [
@@ -162,14 +162,14 @@ window.QUIZ = {
  ["Comment appelle-t-on l'an 9 ?","L'année des délégations","L'année de la tristesse","L'année de l'Éléphant","L'année de la Tranchée"]
 ],
 24: [
- ["Où le Prophète prononce-t-il son grand sermon ?","Sur le mont Arafat","À Médine","Sur le mont Safa","À Hira"],
+ ["Où le Prophète ﷺ prononce-t-il son grand sermon ?","Sur le mont Arafat","À Médine","Sur le mont Safa","À Hira"],
  ["Qu'abolit-il dans ce sermon ?","Les vengeances et l'usure préislamiques","La prière","Le pèlerinage","Le commerce"],
  ["Quels deux guides laisse-t-il aux croyants ?","Le Livre de Dieu et sa Sunna","Ses épées et ses biens","Ses fils et ses épouses","Ses lettres et sa mosquée"],
  ["Que proclame le verset révélé à Arafat ?","Que la religion est parachevée","Le jeûne","Le butin","Le changement de direction de prière"],
  ["Qu'est-ce qui distingue les gens entre eux, selon le sermon ?","La seule piété","La richesse","La naissance","La tribu"]
 ],
 25: [
- ["Dans quelle maison le Prophète passe-t-il ses derniers jours ?","Celle d'Aïcha","Celle de Khadija","Celle d'Abu Bakr","Celle d'Omar"],
+ ["Dans quelle maison le Prophète ﷺ passe-t-il ses derniers jours ?","Celle d'Aïcha","Celle de Khadija","Celle d'Abu Bakr","Celle d'Omar"],
  ["Quel âge avait-il à sa mort ?","Soixante-trois ans","Cinquante ans","Soixante-dix ans","Quarante ans"],
  ["Qui dirige la prière pendant sa maladie ?","Abu Bakr","Omar","Ali","Bilal"],
  ["Qui calme la foule en disant « Dieu est vivant et ne meurt pas » ?","Abu Bakr","Omar","Ali","Uthman"],

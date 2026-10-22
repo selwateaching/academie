@@ -34,7 +34,7 @@
     return Math.max(1, Math.round(w / 200));
   }
   function norm(s) {
-    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ﷺ/g, "").replace(/mouhammed/g, "muhammad");
   }
   function periodLabel(id) {
     return PER.filter(function (p) { return p.id === id; })[0].label;
@@ -67,7 +67,8 @@
     var play = document.getElementById("play"), pause = document.getElementById("pause"), stop = document.getElementById("stop");
     var rate = document.getElementById("rate"), auto = document.getElementById("auto"), note = document.getElementById("audioNote");
     var paras = Array.prototype.slice.call(document.querySelectorAll("#prose p"));
-    var texts = [c.title + ". " + c.sub + "."].concat(c.paras);
+    var PRAYER = "que la paix et les bénédictions de Dieu soient sur lui";
+    var texts = [c.title + ". " + c.sub + "."].concat(c.paras).map(function (t) { return t.replace(/ ?ﷺ/g, ", " + PRAYER + ","); });
     var myId;
     rate.value = store(true, RATE_KEY) || "1";
     auto.checked = store(true, AUTO_KEY) === "1";
@@ -127,7 +128,7 @@
       "<h1>Découvrez la vie du Prophète <em>ﷺ</em> d'une manière différente</h1>" +
       "<p>Ici, on ne se contente pas de dates : on suit un homme, ses proches, ses épreuves et ses victoires, de l'orphelin de La Mecque au guide d'une communauté. Une lecture simple, claire et fidèle aux sources.</p>" +
       '<div class="cta"><a class="btn gold" href="#/chapitre/' + target.id + '">' + label + '</a><a class="btn ghost" href="#/chapitres">Tous les chapitres</a></div></div>' +
-      '<div class="cover" aria-hidden="true"><div><div class="tag">Collection Sira</div><h2>La vie du Prophète</h2></div>' +
+      '<div class="cover" aria-hidden="true"><div><div class="tag">Collection Sira</div><h2>La vie du Prophète ﷺ</h2></div>' +
       '<svg viewBox="0 0 200 120"><path d="M10 110h180M30 110V70a20 20 0 0 1 40 0v40M80 110V50a20 20 0 0 1 40 0v60M130 110V75a18 18 0 0 1 36 0v35M100 10v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>' +
       '<div class="foot">De La Mecque à Médine · 570 – 632</div></div></div></section>' +
       '<div class="wrap stats">' +
@@ -142,9 +143,9 @@
         return '<a class="card" href="#/chapitres/' + p.id + '"><span class="num">' + p.icon + "</span><h3>" + esc(p.label) + "</h3><p>" +
           list.length + " chapitres · " + esc(list[0].date.replace(/^avant /, "")) + " → " + esc(list[list.length - 1].date) + "</p></a>";
       }).join("") + "</div></section>" +
-      '<section class="block wrap"><h2>Les compagnons du Prophète</h2><p class="lead">Quinze portraits : ceux qui ont marché, combattu et prié à ses côtés.</p><div class="grid">' +
+      '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Quinze portraits : ceux qui ont marché, combattu et prié à ses côtés.</p><div class="grid">' +
       [101, 102, 105, 113].map(function (id) { return card(CO[id - 101]); }).join("") + '</div><p><a class="btn ghost" href="#/compagnons">Voir tous les compagnons</a></p></section>' +
-      '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Les épouses, les enfants, le caractère du Prophète et la vie à Médine.</p><div class="grid">' +
+      '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Les épouses, les enfants, le caractère du Prophète ﷺ et la vie à Médine.</p><div class="grid">' +
       [201, 204, 208, 211].map(function (id) { return card(TH[id - 201]); }).join("") + '</div><p><a class="btn ghost" href="#/themes">Voir toutes les fiches</a></p></section>' +
       '<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">' +
       [4, 14, 16, 21, 24, 25].map(function (id) { return card(CH[id - 1]); }).join("") + "</div></section>";
@@ -176,11 +177,11 @@
   }
 
   function viewCompanions() {
-    app.innerHTML = '<section class="block wrap"><h2>Les compagnons du Prophète</h2><p class="lead">Quinze portraits de compagnons et de compagnes. Chaque fiche se termine par un quiz.</p><div class="grid">' + CO.map(card).join("") + "</div></section>";
+    app.innerHTML = '<section class="block wrap"><h2>Les compagnons du Prophète ﷺ</h2><p class="lead">Quinze portraits de compagnons et de compagnes. Chaque fiche se termine par un quiz.</p><div class="grid">' + CO.map(card).join("") + "</div></section>";
   }
 
   function viewThemes() {
-    app.innerHTML = '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Seize fiches sur la famille du Prophète, son caractère, la vie à Médine et quelques épisodes importants. Chaque fiche se termine par un quiz.</p><div class="grid">' + TH.map(card).join("") + "</div></section>";
+    app.innerHTML = '<section class="block wrap"><h2>Famille et thèmes</h2><p class="lead">Seize fiches sur la famille du Prophète ﷺ, son caractère, la vie à Médine et quelques épisodes importants. Chaque fiche se termine par un quiz.</p><div class="grid">' + TH.map(card).join("") + "</div></section>";
   }
 
   function viewTimeline() {
