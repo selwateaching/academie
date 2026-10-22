@@ -592,6 +592,12 @@ function del(id){const f=saved.find(x=>x.id===id);if(f&&isFolder(f)){if(!confirm
   if(confirm("Supprimer cette ressource ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
+function withOwnText(doc,data){
+  if(!data||!doc.srcText||!doc.srcText.trim()||doc.srcOnly===false)return data;
+  const paras=doc.srcText.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,80);
+  data.explanation=(doc.srcTitle?[RICH+"<b>"+esc(doc.srcTitle)+"</b>"]:[]).concat(paras);
+  return data;
+}
 const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||""}:{};
 function srcBlock(n){
   const O=n==="S"?S:W;
@@ -1228,8 +1234,9 @@ async function wbGenerate(){
     const l=doc.sections[i];if(l.data)continue;
     l.busy=true;delete l.err;if(here())wb4();
     try{
-      l.data=await api("/api/workbook/section",{topic:doc.topic,level:doc.level,language:doc.language,instructions:doc.instructions,curriculum:doc.curriculum,title:doc.title,context:ctx,index:i,
+      l.data=await api("/api/workbook/section",{...srcPart(doc),topic:doc.topic,level:doc.level,language:doc.language,instructions:doc.instructions,curriculum:doc.curriculum,title:doc.title,context:ctx,index:i,
         sections:doc.sections.map(x=>({title:x.title,summary:x.summary})),options:{explain:o.explain,objectives:o.objectives,support:o.support,challenge:o.challenge,questions:LEN[o.length].q}});
+      if(i===0)withOwnText(doc,l.data);
     }catch(e){l.err=e.message;
       if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
       if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
@@ -1450,7 +1457,7 @@ async function shGenerate(){
   const doc=W;$("#app").innerHTML=`<div class="card" style="text-align:center;padding:50px 20px;margin-top:40px"><div class="spin" style="width:34px;height:34px;border-width:4px"></div><h2 style="margin-top:18px">Création de votre fiche…</h2><p class="sub">Cela prend quelques secondes.</p></div>`;
   try{
     const r=await api("/api/sheet",{...srcPart(doc),template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum});
-    doc.title=r.title;doc.sections=[{title:r.title,summary:"",data:r.section}];doc.started=true;saveDoc(doc);loadPlan();
+    doc.title=r.title;doc.sections=[{title:r.title,summary:"",data:withOwnText(doc,r.section)}];doc.started=true;saveDoc(doc);loadPlan();
     if(W===doc){page="wb";wstep=5;render();toast("Document prêt ! Votre fiche a été créée.");}
   }catch(e){
     if(e.code==="limit")openUpgrade("limit",e.message);
