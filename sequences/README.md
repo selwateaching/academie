@@ -70,3 +70,9 @@ Séquences, fiches d'activités et cahiers acceptent un texte choisi par l'ensei
 un Word .docx ou un .txt via `/api/extract`, lecture côté serveur avec `pypdf`/`python-docx`, 8 Mo et 60 pages maximum).
 Avec « Travailler uniquement sur ce texte », le prompt impose de n'utiliser que ce texte ; il est repris tel quel sur des diapositives
 « Texte support » (découpées automatiquement) et dans la fiche Word. Un PDF scanné (image) n'est pas lisible : il faut coller le texte.
+
+## Aide : notice et assistant
+
+`help_content.py` contient la notice (source unique). La page « Aide » l'affiche (recherche, rubriques dépliables) et l'assistant 💬 répond d'abord
+**gratuitement** depuis la notice (correspondance de mots) ; s'il ne trouve rien, il appelle un petit modèle (`SEQ_HELP_MODEL`, par défaut `claude-haiku-5-5`,
+500 jetons, 40 questions/heure/IP) en lui donnant la notice comme seule connaissance. Sans clé API, il renvoie vers la page Aide et Contact.

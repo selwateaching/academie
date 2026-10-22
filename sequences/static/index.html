@@ -93,6 +93,16 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 .sl .xwr{border:3px dashed rgba(0,0,0,.2);border-radius:14px;padding:30px 18px;font-size:20px;opacity:.5;margin-top:10px}.sl .why.ans{margin-bottom:10px}
 .sl .xpk{display:flex;align-self:flex-start;background:none;gap:12px;align-items:center;margin-bottom:12px}.sl .xpb{background:var(--ac);color:#fff;border-radius:99px;padding:5px 16px;font-weight:700;font-size:18px}.sl .xpdur{font-size:18px;font-weight:600}
 .sl .xpt{background:var(--card);border-radius:14px;padding:16px 20px;font-size:23px;margin-bottom:12px;box-shadow:0 4px 0 rgba(0,0,0,.06)}.sl .xpc{font-size:19px}.sl .xpc ul{margin:6px 0 0 20px;padding:0}
+.hlp{max-width:820px;margin:0 auto}.hlp h1{margin:0 0 4px}.hsearch{width:100%;margin:14px 0}.hq0{background:#eaf5f3;border-radius:12px;padding:12px 16px;margin-bottom:18px}
+.hsec{background:#fff;border:1px solid var(--bd,#e5e7eb);border-radius:14px;padding:6px 18px 10px;margin-bottom:14px}.hsec h2{font-size:19px;margin:12px 0 6px}
+.hsec details{border-top:1px solid #eef0f2;padding:8px 0}.hsec summary{cursor:pointer;font-weight:600}.hsec details p{margin:8px 0 2px;line-height:1.55;color:#374151}
+#hbtn{position:fixed;right:18px;bottom:18px;z-index:900;border:0;border-radius:99px;background:#2c6e49;color:#fff;font:700 15px system-ui;padding:12px 18px;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer;display:flex;gap:8px;align-items:center}
+#hbtn span{font-size:14px}#hpanel{position:fixed;right:18px;bottom:76px;z-index:901;width:360px;max-width:calc(100vw - 24px);height:min(520px,calc(100vh - 110px));background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden}
+#hpanel.on{display:flex}#hpanel .hh{background:#2c6e49;color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center}#hpanel .hh span{display:flex;gap:12px;align-items:center}#hpanel .hh a{color:#d1fae5;font-size:13px}#hpanel .hh button{background:none;border:0;color:#fff;font-size:16px;cursor:pointer}
+#hmsgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f7f8f7}.hm{max-width:86%;padding:9px 13px;border-radius:14px;font-size:14.5px;line-height:1.5}.hm.assistant{background:#fff;border:1px solid #e5e7eb;align-self:flex-start}.hm.user{background:#2c6e49;color:#fff;align-self:flex-end}
+#hchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px;background:#f7f8f7}#hchips button{border:1px solid #2c6e49;color:#2c6e49;background:#fff;border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
+#hpanel .hin{display:flex;gap:8px;padding:10px;border-top:1px solid #e5e7eb}#hpanel .hin input{flex:1;margin:0}#hpanel .hin button{border:0;background:#2c6e49;color:#fff;border-radius:10px;padding:0 14px;cursor:pointer}
+@media print{#hbtn,#hpanel{display:none!important}}
 .xchips{display:flex;flex-wrap:wrap;gap:8px}.xchip{border:1.5px solid var(--bd,#d1d5db);background:#fff;border-radius:99px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.xchip.on{background:var(--ac,#2c6e49);color:#fff;border-color:transparent}
 .sl .why{margin-top:4px;padding:8px 16px;border-radius:14px;background:var(--card);border-left:6px solid #16a34a;font-size:18px}
 .sl .vg{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;align-content:start}
@@ -398,7 +408,7 @@ header nav a{white-space:nowrap}header .chip{white-space:nowrap;padding:5px 10px
 <script src="/pptxgen.bundle.js" defer></script>
 </head>
 <body>
-<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="navFiches()">Fiches</a><a onclick="navCahiers()">Cahiers</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
+<header><button class="logo" onclick="go('home')">📚 Séquences</button><nav><a onclick="go('home')">Accueil</a><a onclick="navFiches()">Fiches</a><a onclick="navCahiers()">Cahiers</a><a onclick="goPricing()">Tarifs</a><a onclick="goHelp()">Aide</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a><button class="chip pchip" onclick="goPricing()"></button><button class="chip" onclick="openAuth('register')" style="background:var(--g);color:#fff">Inscription gratuite</button></nav></header>
 <aside id="side"></aside>
 <main id="app"></main>
 <div id="modal" onclick="if(event.target===this)closeModal()"></div>
@@ -502,8 +512,9 @@ function render(){
   const landing=!ACC&&!S&&page==="";
   document.body.classList.toggle("home",landing);document.body.classList.toggle("app",!!ACC);
   $("#app").classList.toggle("home",landing);$("#app").classList.toggle("serw",!!S&&step===5);$("#app").classList.toggle("paperw",page==="wb"&&wstep===5);$("#app").classList.toggle("wide",page==="pricing"&&!ACC);
-  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="seqs"||page==="lecons"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
+  $("#app").classList.toggle("dashw",!!ACC&&(page==="pricing"||page==="help"||page==="seqs"||page==="lecons"||page==="cahiers"||page==="fiches"||(!S&&page==="")));
   side();
+  if(page==="help")return helpPage();
   if(page==="pricing")return pricing();
   if(page==="fiches"&&!W)return shList();
   if(page==="sh"&&W)return shFlow();
@@ -517,7 +528,7 @@ const errBox=()=>msg?`<div class="err">${esc(msg)}</div>`:"";
 
 /* ---------- accueil ---------- */
 const svgi=(d,s=22)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-const NAVI={home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',lesson:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8l1.2 2.8L16 12l-2.8 1.2L12 16l-1.2-2.8L8 12l2.8-1.2z"/>',
+const NAVI={help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1.1-1.5 2.3"/><path d="M12 17.3v.1"/>',home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',lesson:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 8l1.2 2.8L16 12l-2.8 1.2L12 16l-1.2-2.8L8 12l2.8-1.2z"/>',
  seq:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 012-2h10"/>',sheet:'<rect x="4" y="3" width="13" height="18" rx="2"/><path d="M8 8h5M8 12h5M8 16h3"/><path d="M17 15l3 3-4 2z"/>',
  book:'<path d="M5 4h12a2 2 0 012 2v14H7a2 2 0 01-2-2z"/><path d="M9 8h6M9 12h6"/>',price:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>'};
 const G="#2c6e49",K="#4b5563";
@@ -547,7 +558,7 @@ const PH=["Le cycle de l'eau…","Les fractions…","La Révolution française�
 let phTimer=null;
 function home(){
   $("#app").innerHTML=`<section class="th-hero">
-   <div class="hn"><div class="l"><a onclick="navFiches()">Fiches d'activités</a><a onclick="navCahiers()">Cahiers d'activités</a><a onclick="goPricing()">Tarifs</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div><div class="r"><button class="ghostw" style="display:block" onclick="openAuth('register')">Inscription gratuite</button></div></div>
+   <div class="hn"><div class="l"><a onclick="navFiches()">Fiches d'activités</a><a onclick="navCahiers()">Cahiers d'activités</a><a onclick="goPricing()">Tarifs</a><a onclick="goHelp()">Aide</a><a onclick="openContact()">Contact</a><a onclick="openAuth('login')">Connexion</a></div><div class="r"><button class="ghostw" style="display:block" onclick="openAuth('register')">Inscription gratuite</button></div></div>
    <div class="wm">📚 Séquences</div>
    <h1>Votre meilleure séquence.<br>À chaque leçon.</h1>
    <p class="sb">Alignée sur le programme, adaptée à chaque élève, prête en quelques minutes.</p>
@@ -1010,6 +1021,43 @@ function printAll(){
 
 /* ============ comptes ============ */
 function clearAuth(){try{localStorage.removeItem("seq.tok");}catch{}ACC=null;}
+/* ============ notice et assistant ============ */
+let HELPDATA=null,HCHAT=[],HOPEN=false,HBUSY=false;
+const HQUICK=["Comment créer mon premier cours ?","Quelle différence entre séquence et cahier ?","Comment avoir les corrigés ?","Comment utiliser mon propre texte ?"];
+function goHelp(){closeStudio();closeShow();S=null;W=null;page="help";render();scrollTo(0,0);}
+async function loadHelp(){if(HELPDATA)return HELPDATA;try{HELPDATA=await api("/api/help/notice",null,"GET");}catch{HELPDATA=[];}return HELPDATA;}
+const nl2br=s=>esc(s).replace(/\n/g,"<br>");
+async function helpPage(){
+  $("#app").innerHTML=`<div class="hlp"><h1>Aide et notice</h1><p class="sub">Tout pour bien démarrer, expliqué simplement.</p><div class="spin" style="margin:30px auto"></div></div>`;
+  const D=await loadHelp();if(page!=="help")return;
+  $("#app").innerHTML=`<div class="hlp"><h1>Aide et notice</h1><p class="sub">Tout pour bien démarrer, expliqué simplement. Une question ? <a href="#" onclick="openHelpChat();return false">Demandez à l'assistant 💬</a></p>
+  <input class="hsearch" id="hq" placeholder="🔍 Rechercher dans l'aide (ex. corrigés, PDF, arabe…)" oninput="helpFilter(this.value)">
+  <div class="hq0"><b>En bref :</b> 1) créez une séquence → 2) relisez le plan → 3) enseignez, modifiez ou téléchargez (PowerPoint, PDF, Word) → 4) créez un cahier ou une fiche pour les élèves.</div>
+  <div id="hlist">${D.map(sec=>`<section class="hsec" data-t="${esc((sec.title+" "+sec.items.map(i=>i.q+" "+i.a).join(" ")).toLowerCase())}"><h2>${sec.icon} ${esc(sec.title)}</h2>${sec.items.map(it=>`<details><summary>${esc(it.q)}</summary><p>${nl2br(it.a)}</p></details>`).join("")}</section>`).join("")}</div>
+  <p class="sub" style="margin-top:20px">Vous ne trouvez pas ? <a href="#" onclick="openHelpChat();return false">Posez votre question à l'assistant</a> ou <a href="#" onclick="openContact();return false">écrivez-nous</a>.</p></div>`;
+}
+function helpFilter(v){v=v.trim().toLowerCase();document.querySelectorAll("#hlist .hsec").forEach(s=>{const ok=!v||s.dataset.t.includes(v);s.style.display=ok?"":"none";if(v&&ok)s.querySelectorAll("details").forEach(d=>d.open=d.textContent.toLowerCase().includes(v));});}
+function helpWidget(){
+  if($("#hbtn"))return;
+  const b=document.createElement("button");b.id="hbtn";b.title="Aide";b.setAttribute("aria-label","Ouvrir l'assistant d'aide");b.innerHTML="💬<span>Aide</span>";b.onclick=()=>HOPEN?closeHelpChat():openHelpChat();document.body.appendChild(b);
+  const p=document.createElement("div");p.id="hpanel";p.innerHTML=`<div class="hh"><b>Assistant Séquences</b><span><a href="#" onclick="goHelp();closeHelpChat();return false">Notice</a><button onclick="closeHelpChat()" aria-label="Fermer">✕</button></span></div><div id="hmsgs"></div><div class="hq" id="hchips"></div><div class="hin"><input id="hinp" maxlength="500" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')helpSend()"><button onclick="helpSend()" aria-label="Envoyer">➤</button></div>`;document.body.appendChild(p);
+}
+function hAdd(role,txt){HCHAT.push({role,content:txt});const m=$("#hmsgs");if(!m)return;const d=document.createElement("div");d.className="hm "+role;d.innerHTML=nl2br(txt);m.appendChild(d);m.scrollTop=m.scrollHeight;}
+function openHelpChat(){
+  helpWidget();HOPEN=true;$("#hpanel").classList.add("on");
+  if(!HCHAT.length){hAdd("assistant","Bonjour 👋 Je suis l'assistant de Séquences. Je réponds aux questions sur l'utilisation du site. Que voulez-vous faire ?");}
+  $("#hchips").innerHTML=HQUICK.map(q=>`<button onclick="helpSend(this.textContent)">${esc(q)}</button>`).join("");
+  setTimeout(()=>{const i=$("#hinp");if(i)i.focus();},50);
+}
+function closeHelpChat(){HOPEN=false;const p=$("#hpanel");if(p)p.classList.remove("on");}
+async function helpSend(q){
+  const i=$("#hinp"),msg=(q||i.value).trim();if(!msg||HBUSY)return;i.value="";$("#hchips").innerHTML="";
+  const hist=HCHAT.slice(-8);hAdd("user",msg);HBUSY=true;
+  const m=$("#hmsgs"),w=document.createElement("div");w.className="hm assistant";w.innerHTML='<span class="spin"></span>';m.appendChild(w);m.scrollTop=m.scrollHeight;
+  try{const r=await api("/api/help",{message:msg,history:hist});w.remove();hAdd("assistant",r.answer);}
+  catch(e){w.remove();hAdd("assistant",e.message||"Je n'arrive pas à répondre pour le moment. Consultez la page Aide.");}
+  HBUSY=false;
+}
 async function checkBuild(){
   try{const m=document.querySelector('meta[name=build]');if(!m||m.content==="__BUI"+"LD__")return;
     const h=await (await fetch("/healthz",{cache:"no-store"})).json();
@@ -1017,6 +1065,7 @@ async function checkBuild(){
 }
 setInterval(checkBuild,120000);addEventListener("focus",checkBuild);
 async function boot(){
+  helpWidget();
   if(TOK()){try{ACC=await api("/api/me",null,"GET");}catch(e){if(e.code==="auth")clearAuth();}}
   await loadPlan();
   if(ACC)await syncSeries();
@@ -1066,7 +1115,7 @@ function side(){
   const a=(on,fn,ic,lab)=>`<a class="${on&&!pr?"on":""}" onclick="${fn}">${svgi(NAVI[ic])} ${lab}</a>`;
   el.innerHTML=`<div class="av">${esc(ini)}</div><div class="nm">${esc(nm)}</div>
   <nav>${a(home,"FOLDER='';go('home')","home","Accueil")}${a(lec,"navLecons()","lesson","Leçons")}${a(seqs,"navSeqs()","seq","Séquences")}${a(fic,"navFiches()","sheet","Fiches d'activités")}${a(cah,"navCahiers()","book","Cahiers d'activités")}
-  <a class="${pr?"on":""}" onclick="goPricing()">${svgi(NAVI.price)} Tarifs</a><a onclick="openContact()">${svgi(NAVI.mail)} Contact</a></nav>
+  <a class="${pr?"on":""}" onclick="goPricing()">${svgi(NAVI.price)} Tarifs</a><a class="${page==='help'?'on':''}" onclick="goHelp()">${svgi(NAVI.help)} Aide</a><a onclick="openContact()">${svgi(NAVI.mail)} Contact</a></nav>
   <div class="promos"><div class="pcard org"><b>Séquences pour les établissements</b><small>Aidez vos collègues</small><button onclick="openContact(true)">Essai gratuit</button></div>
   <div class="pcard"><b>Votre plan</b><small class="plantxt"></small><button onclick="goPricing()">Voir les plans</button></div></div>
   <button class="logout" onclick="logout()">Déconnexion</button>`;

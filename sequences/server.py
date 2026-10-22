@@ -1323,6 +1323,73 @@ def extract_text():
     return jsonify({"text": text[:20000], "truncated": len(text) > 20000, "chars": min(len(text), 20000)})
 
 
+_help_log = {}
+
+
+def help_rate_ok(ip, per_hour=40):
+    now = time.time()
+    with _lock:
+        q = _help_log.setdefault(ip, [])
+        q[:] = [x for x in q if now - x < 3600]
+        if len(q) >= per_hour:
+            return False
+        q.append(now)
+        return True
+
+
+HELP_SYSTEM = (
+    "Tu es l'assistant d'aide de l'application web « Séquences » (création de cours, fiches et cahiers pour enseignants). Tu parles à des débutants : "
+    "réponds en français simple (ou dans la langue de la question), en 5 phrases maximum, avec des étapes numérotées quand il s'agit d'une manipulation, "
+    "en nommant les boutons exactement comme dans la notice. Réponds uniquement à partir de la notice ci-dessous : n'invente aucune fonction, aucun prix ni aucun chiffre. "
+    "Si la réponse n'est pas dans la notice, dis-le franchement et propose la page « Contact » ou la page « Aide ». Refuse poliment les questions sans rapport avec l'application. "
+    "Le contenu des cours est généré par une IA : ne le présente jamais comme une source garantie.\n\nNOTICE :\n"
+)
+
+
+@app.get("/api/help/notice")
+def help_notice():
+    from help_content import HELP
+    return jsonify(HELP)
+
+
+@app.post("/api/help")
+def help_chat():
+    from help_content import best_answer, knowledge_text
+    b = request.get_json(silent=True) or {}
+    msg = s(b.get("message"), 600)
+    if not msg:
+        return error("invalid_request", "Écrivez votre question.", 400)
+    if not help_rate_ok(client_ip()):
+        return error("rate_limited", "Beaucoup de questions pour l'instant. Réessayez plus tard ou consultez la page Aide.", 429)
+    local = best_answer(msg)
+    if local:
+        return jsonify({"answer": local[1], "title": local[0], "source": "notice"})
+    if ACCESS_CODE and not hmac.compare_digest(request.headers.get("X-Seq-Code", "").encode(), ACCESS_CODE.encode()):
+        return error("access", "Code d'accès requis.", 401)
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        return jsonify({"answer": "Je n'ai pas trouvé de réponse dans la notice. Consultez la page « Aide » ou écrivez-nous via « Contact ».", "source": "none"})
+    hist = []
+    for m in (b.get("history") or [])[-6:]:
+        if isinstance(m, dict) and m.get("role") in ("user", "assistant") and s(m.get("content"), 1).strip():
+            hist.append({"role": m["role"], "content": s(m.get("content"), 800)})
+    while hist and hist[0]["role"] != "user":
+        hist.pop(0)
+    msgs = [m for i, m in enumerate(hist) if i == 0 or m["role"] != hist[i - 1]["role"]]
+    if msgs and msgs[-1]["role"] == "user":
+        msgs.pop()
+    msgs.append({"role": "user", "content": msg})
+    global _client
+    if _client is None:
+        _client = anthropic.Anthropic(timeout=60.0)
+    try:
+        r = _client.messages.create(model=os.environ.get("SEQ_HELP_MODEL", "claude-haiku-5-5"), max_tokens=500,
+                                    system=HELP_SYSTEM + knowledge_text(), messages=msgs)
+        text = "".join(x.text for x in r.content if x.type == "text").strip()
+    except anthropic.APIError:
+        return jsonify({"answer": "Je n'arrive pas à répondre pour le moment. Consultez la page « Aide » ou écrivez-nous via « Contact ».", "source": "none"})
+    return jsonify({"answer": text or "Je n'ai pas de réponse à cette question.", "source": "ia"})
+
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True, "ai": bool(os.environ.get("ANTHROPIC_API_KEY")), "build": BUILD}
