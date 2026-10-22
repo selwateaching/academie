@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playwrite+FR+Moderne:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onload="if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}"></script>
 <style>
 /* ===== TOKENS APP ===== */
 :root{
@@ -1772,6 +1773,16 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         </div>
         <div class="fg"><label class="fl" data-fl="objectifs">Objectifs pédagogiques</label><textarea class="fta" id="crsObj" style="min-height:60px" placeholder="Ex: Savoir résoudre une équation du 1er degré à une inconnue..."></textarea></div>
         <div class="fg"><label class="fl" data-fl="prerequis">Prérequis</label><input class="fi" id="crsPrereq" placeholder="Ex: Maîtrise des opérations de base, priorités opératoires..."></div>
+        <div class="fg" style="background:var(--tp,#E6F4EE);border-radius:10px;padding:.7rem .9rem;">
+          <label class="fl" data-fl="sourcetexte" style="margin-bottom:.4rem;display:block;">📄 Texte source (optionnel) — pour baser le cours sur un vrai document</label>
+          <div style="font-size:.76rem;color:var(--ink3);margin-bottom:.5rem;" id="crsSourceHelp">Colle un texte, ou importe un PDF : l'IA n'inventera plus les faits, elle se basera sur ce document.</div>
+          <textarea class="fta" id="crsSourceTexte" style="min-height:70px" placeholder="Colle ici un extrait, un article, un texte de manuel..."></textarea>
+          <div style="display:flex;align-items:center;gap:.6rem;margin-top:.5rem;flex-wrap:wrap;">
+            <button class="btn bo bsm" type="button" onclick="document.getElementById('crsSourcePdf').click()" id="crsSourcePdfBtn">📎 Importer un PDF</button>
+            <input type="file" id="crsSourcePdf" accept="application/pdf" style="display:none" onchange="onCrsSourcePdf(this)">
+            <span style="font-size:.74rem;color:var(--ink3)" id="crsSourceStatus"></span>
+          </div>
+        </div>
         <button class="btn bt" style="width:100%" id="btnGCrs" onclick="genCours()"><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:1.05em;height:1.05em;vertical-align:-2px;display:inline-block"><defs><linearGradient id="genBulb2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0CD6E"/><stop offset="1" stop-color="#D4AF37"/></linearGradient></defs><path d="M50 14a24 24 0 0 0-13 44c3 2 5 6 5 10h16c0-4 2-8 5-10a24 24 0 0 0-13-44z" fill="url(#genBulb2)"/><rect x="40" y="72" width="20" height="8" rx="3" fill="#8A6D00"/><rect x="42" y="82" width="16" height="6" rx="3" fill="#6B5300"/><path d="M50 4 v10M32 14 l7 7M68 14 l-7 7" stroke="#00A060" stroke-width="4" stroke-linecap="round"/></svg> Générer le cours</button>
         <div id="crsQuotaInfo" style="display:none;align-items:center;gap:.5rem;margin-top:.6rem;font-size:.72rem;color:var(--ink3);">
           <div class="quota-bar" style="flex:1;max-width:120px;"><div class="quota-fill" id="crsQuotaBar" style="width:0%"></div></div>
@@ -4438,7 +4449,8 @@ function switchLang() {
         diffcomptine: isAR ? 'مستوى الصعوبة' : 'Niveau de difficulté',
         langcomptine: isAR ? 'لغة الأنشودة' : 'Langue de la comptine',
         objectifs: isAR ? 'الأهداف التربوية' : 'Objectifs pédagogiques',
-        prerequis: isAR ? 'المكتسبات القبلية' : 'Prérequis'
+        prerequis: isAR ? 'المكتسبات القبلية' : 'Prérequis',
+        sourcetexte: isAR ? '📄 نص مصدر (اختياري) — لتأسيس الدرس على وثيقة حقيقية' : '📄 Texte source (optionnel) — pour baser le cours sur un vrai document'
       };
       crsCards[0].querySelectorAll('.fl[data-fl]').forEach(function(lb){
         var key = lb.getAttribute('data-fl');
@@ -4447,6 +4459,9 @@ function switchLang() {
       if (typeof updateCrsTLabel === 'function') updateCrsTLabel();
       var crsObj = document.getElementById('crsObj'); if (crsObj) crsObj.placeholder = isAR ? 'مثال: حل معادلة من الدرجة الأولى بمجهول واحد...' : 'Ex: Savoir résoudre une équation du 1er degré à une inconnue...';
       var crsPrereq = document.getElementById('crsPrereq'); if (crsPrereq) crsPrereq.placeholder = isAR ? 'مثال: العمليات الأساسية، أولويات العمليات...' : 'Ex: Maîtrise des opérations de base, priorités opératoires...';
+      var crsSourceHelp = document.getElementById('crsSourceHelp'); if (crsSourceHelp) crsSourceHelp.textContent = isAR ? 'الصق نصًا أو استورد PDF : لن يخترع الذكاء الاصطناعي الوقائع بعد الآن، سيعتمد على هذه الوثيقة.' : 'Colle un texte, ou importe un PDF : l\'IA n\'inventera plus les faits, elle se basera sur ce document.';
+      var crsSourceTexte = document.getElementById('crsSourceTexte'); if (crsSourceTexte) crsSourceTexte.placeholder = isAR ? 'الصق هنا مقتطفًا أو مقالًا أو نصًا من الكتاب المدرسي...' : 'Colle ici un extrait, un article, un texte de manuel...';
+      var crsSourcePdfBtn = document.getElementById('crsSourcePdfBtn'); if (crsSourcePdfBtn) crsSourcePdfBtn.textContent = isAR ? '📎 استيراد PDF' : '📎 Importer un PDF';
       var crsType = document.getElementById('crsType');
       if (crsType) {
         /* Recalé par value (pas par position) : un ajout/retrait d'option ne doit jamais décaler les libellés des autres. */
@@ -5402,9 +5417,10 @@ function tbA() { var m = { dash:'mEleve', eleves:'mEleve', notes:'mNote', dossie
    clairement entre "Depuis la progression" (pré-rempli) et un sujet libre, sans qu'un reste de
    la dernière séquence choisie (ex: Objectifs pédagogiques) ne s'invite dans la génération suivante. */
 function resetFormulaireCrs() {
-  ['crsT','crsObj','crsPrereq','crsProjet','crsSequence','crsActeParole','crsActivite'].forEach(function(id) {
+  ['crsT','crsObj','crsPrereq','crsProjet','crsSequence','crsActeParole','crsActivite','crsSourceTexte'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.value = '';
   });
+  var crsSourceStatusReset = document.getElementById('crsSourceStatus'); if (crsSourceStatusReset) crsSourceStatusReset.textContent = '';
   var typeEl = document.getElementById('crsType'); if (typeEl) typeEl.value = 'fiche_peda';
   var oralEl = document.getElementById('crsOralMode'); if (oralEl) oralEl.checked = false;
   onCrsTypeChange();
@@ -10809,6 +10825,44 @@ function tcVeutCursive() {
   return /cursiv|écriture attachée|ecriture attachee|lettres attachées|lettres attachees/.test(txt);
 }
 var TC_CURSIVE_INSTRUCTION = '\n\n=== ÉCRITURE CURSIVE DEMANDÉE (document d\'écriture pour élèves) ===\nRègles obligatoires de mise en forme :\n- Dans le texte (explications, exemples), chaque mot à montrer en cursive est entouré de <span class=\"tc-cursive\">...</span>.\n- Pour chaque modèle à repasser, utilise UNE ligne d\'écriture : <div class=\"tc-trace-line\">a a a a a a a</div> (8 à 10 fois la lettre, ou 3 à 4 mots courts). Le modèle s\'affiche en grand, en gris clair, sur des lignes Seyès.\n- Juste après chaque modèle, ajoute 1 ou 2 lignes vides pour écrire seul : <div class=\"tc-seyes\"></div>.\n- Ne mets JAMAIS tc-trace-line ou tc-seyes à l\'intérieur d\'un encadré (tc-box, tc-example...) : place-les directement dans le document, sous une consigne courte.\n- Progression type pour une fiche d\'écriture : lettres rondes (a c o d q g), puis lettres à pont (m n), puis boucles (l e b h k f), puis petits mots, puis une courte phrase.\n- N\'écris JAMAIS \"(cursive)\" ou \"(script)\" en toutes lettres : utilise uniquement ces balises. Les consignes restent en écriture normale.';
+/* Texte source (optionnel) pour Cours IA : extrait un PDF côté navigateur (pdf.js), sans l'envoyer
+   à aucun serveur, pour remplir le champ "Texte source" que genCours() transmet ensuite à l'IA
+   comme base factuelle — but : réduire les hallucinations sur des sujets précis (dates, chiffres...). */
+var CRS_SOURCE_MAXLEN = 15000; /* plafond en caractères, pour ne pas faire exploser le coût/la taille du prompt */
+function crsExtractPdfText(file, cb) {
+  if (typeof pdfjsLib === 'undefined') { cb(null, CURRENT_LANG==='ar'?'مكتبة قراءة PDF غير متوفرة بعد، أعد المحاولة بعد لحظات.':'Bibliothèque de lecture PDF pas encore chargée, réessaie dans quelques instants.'); return; }
+  var reader = new FileReader();
+  reader.onerror = function() { cb(null, CURRENT_LANG==='ar'?'تعذرت قراءة الملف.':'Impossible de lire ce fichier.'); };
+  reader.onload = function() {
+    pdfjsLib.getDocument({ data: new Uint8Array(reader.result) }).promise.then(function(pdf) {
+      var pagePromises = [];
+      for (var p = 1; p <= pdf.numPages; p++) {
+        pagePromises.push(pdf.getPage(p).then(function(page) {
+          return page.getTextContent().then(function(tc) { return tc.items.map(function(it){ return it.str; }).join(' '); });
+        }));
+      }
+      Promise.all(pagePromises).then(function(textes) { cb(textes.join('\n\n').trim(), null); })
+        .catch(function() { cb(null, CURRENT_LANG==='ar'?'تعذرت قراءة محتوى هذا PDF.':'Impossible de lire le contenu de ce PDF.'); });
+    }).catch(function() { cb(null, CURRENT_LANG==='ar'?'تعذر فتح هذا الملف كـ PDF.':'Impossible d\'ouvrir ce fichier comme PDF.'); });
+  };
+  reader.readAsArrayBuffer(file);
+}
+function onCrsSourcePdf(input) {
+  var statusEl = document.getElementById('crsSourceStatus');
+  var f = input.files && input.files[0];
+  if (!f) return;
+  if (statusEl) statusEl.textContent = CURRENT_LANG==='ar'?'⏳ قراءة PDF…':'⏳ Lecture du PDF…';
+  crsExtractPdfText(f, function(texte, err) {
+    input.value = '';
+    if (err || !texte) { if (statusEl) statusEl.textContent = '⚠️ ' + (err || (CURRENT_LANG==='ar'?'لم يتم العثور على نص في هذا PDF (ربما يحتاج OCR).':'Aucun texte trouvé dans ce PDF (peut-être un scan nécessitant une OCR).')); return; }
+    var ta = document.getElementById('crsSourceTexte');
+    var tronque = texte.length > CRS_SOURCE_MAXLEN;
+    if (ta) ta.value = texte.slice(0, CRS_SOURCE_MAXLEN);
+    if (statusEl) statusEl.textContent = (CURRENT_LANG==='ar'
+      ? ('✅ تم استيراد PDF (' + Math.round(texte.length/1000) + ' ألف حرف)' + (tronque?' — تم الاقتصار على الجزء الأول':'') + '. يمكنك التحقق/التعديل أدناه.')
+      : ('✅ PDF importé (' + Math.round(texte.length/1000) + ' Ko de texte)' + (tronque?' — tronqué aux premiers '+Math.round(CRS_SOURCE_MAXLEN/1000)+' Ko':'') + '. Vérifie/édite le texte ci-dessous si besoin.'));
+  });
+}
 async function genCours(extraInstruction) {
   var titre=document.getElementById('crsT').value.trim(); if (!titre){N(T('entrez_titre'),'err');return;}
   var q = { autorise: true };
@@ -11048,6 +11102,14 @@ async function genCours(extraInstruction) {
       visualSystem;
   }
   if (crsFiliereTxt) prompt += crsFiliereTxt;
+  /* Texte source optionnel (collé ou importé depuis un PDF) : quand il est rempli, on force l'IA à
+     baser tous les faits précis dessus plutôt que sur ses connaissances générales — le but direct
+     étant de réduire les hallucinations (dates/chiffres/noms inventés) sur un sujet précis. */
+  var crsSourceEl = document.getElementById('crsSourceTexte');
+  var crsSourceTxt = crsSourceEl ? crsSourceEl.value.trim() : '';
+  if (crsSourceTxt) {
+    prompt += '\n\n=== TEXTE SOURCE FOURNI PAR L\'ENSEIGNANT — À UTILISER COMME BASE FACTUELLE ===\n"""\n' + crsSourceTxt.slice(0, CRS_SOURCE_MAXLEN) + '\n"""\nRègle absolue : pour tout fait précis (dates, chiffres, noms propres, lieux, événements), base-toi UNIQUEMENT sur ce texte source — n\'invente rien qui n\'y figure pas et ne complète pas avec des connaissances externes pour ces faits précis. Tu peux reformuler pédagogiquement, simplifier, réorganiser et illustrer avec des exemples qui restent fidèles au texte, mais le contenu factuel doit venir de ce texte. Si le texte source ne couvre pas un aspect nécessaire, dis-le explicitement plutôt que d\'inventer.';
+  }
   /* La durée demandée (30min/1h/2h/3h) ne changeait jamais la limite de longueur de réponse de l'IA,
      fixe quel que soit le "Durée" choisi — un cours de "2h" demandait donc autant de contenu qu'un cours
      de "1h" dans le même budget de tokens, et se faisait couper net ("3 lignes" pour un cours de 2h sur
