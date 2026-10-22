@@ -31,7 +31,7 @@
     var c = k.charAt(0); if (c !== c.toUpperCase() && /[a-zà-ÿ]/.test(c)) { var K = c.toUpperCase() + k.slice(1), v = LEX[k]; if (!LEX[K]) LEX[K] = v.charAt(0).toUpperCase() + v.slice(1); }
   });
   var keys = Object.keys(LEX).sort(function (a, b) { return b.length - a.length; });
-  var LEXRE = new RegExp("(?<![\\p{L}])(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\p{L}])", "gu");
+  var LEXRE = new RegExp("(^|[^\\p{L}])(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\p{L}])", "gu");
   var ELISION = { l: 1, d: 1, j: 1, m: 1, n: 1, s: 1, t: 1, c: 1, qu: 1, jusqu: 1, lorsqu: 1, puisqu: 1, quoiqu: 1, quelqu: 1, aujourd: 1 };
   var PRAYER = ENG ? "peace and blessings of God be upon him" : "que la paix et les bénédictions de Dieu soient sur lui";
   var AB = ENG ? "audio/en/" : "audio/";
@@ -41,7 +41,7 @@
   function prepare(t) {
     t = t.replace(/ ?ﷺ/g, ", " + PRAYER + ",");
     t = t.replace(/,\s*([,.;:!?])/g, "$1").replace(/,,+/g, ",");
-    t = t.replace(LEXRE, function (m) { return LEX[m]; });
+    t = t.replace(LEXRE, function (m, p, w) { return p + LEX[w]; });
     // apostrophe interne d'un nom arabe (hors élisions françaises) : on la supprime, sinon la voix épelle les lettres
     if (ENG) {
       // anglais : on garde les contractions et possessifs (Prophet's, don't), on retire l'apostrophe des noms arabes restants
@@ -58,7 +58,7 @@
   /* Découpe en phrases courtes (plus naturelles, et évite les coupures des voix longues). */
   function sentences(t) {
     var out = [];
-    t.split(/(?<=[.!?…])\s+(?=[«"“A-ZÀ-Ý])/).forEach(function (s) {
+    t.replace(/([.!?…])\s+(?=[«"“A-ZÀ-Ý])/g, "$1\u0001").split("\u0001").forEach(function (s) {
       s = s.trim(); if (!s) return;
       while (s.length > 200) {
         var cut = s.lastIndexOf(", ", 190); if (cut < 60) cut = s.lastIndexOf(" ", 190); if (cut < 60) break;

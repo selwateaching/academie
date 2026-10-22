@@ -12,7 +12,7 @@
     e.f.forEach(function (f) { var k = f.toLocaleLowerCase("fr"); if (!MAP[k]) { MAP[k] = e.k; forms.push(f); } });
   });
   forms.sort(function (a, b) { return b.length - a.length; });
-  var RE = forms.length ? new RegExp("(?<![\\p{L}])(?:" + forms.map(rx).join("|") + ")(?![\\p{L}])", "giu") : null;
+  var RE = forms.length ? new RegExp("(^|[^\\p{L}])(" + forms.map(rx).join("|") + ")(?![\\p{L}])", "giu") : null;
 
   /* Texte brut -> HTML, avec les mots du lexique soulignés (première apparition de chaque mot par page). */
   function annotate(raw, ctx) {
@@ -20,10 +20,11 @@
     if (!RE) return esc(raw);
     var out = "", last = 0, n = 0, m; RE.lastIndex = 0;
     while ((m = RE.exec(raw))) {
-      var k = MAP[m[0].toLocaleLowerCase("fr")];
+      var k = MAP[m[2].toLocaleLowerCase("fr")];
       if (!k || used[k] || skip[k] || n >= cap) continue;
-      out += esc(raw.slice(last, m.index)) + '<button type="button" class="gl" data-g="' + k + '">' + esc(m[0]) + "</button>";
-      last = m.index + m[0].length; used[k] = 1; n++;
+      var at = m.index + m[1].length;
+      out += esc(raw.slice(last, at)) + '<button type="button" class="gl" data-g="' + k + '">' + esc(m[2]) + "</button>";
+      last = at + m[2].length; used[k] = 1; n++;
     }
     return out + esc(raw.slice(last));
   }
