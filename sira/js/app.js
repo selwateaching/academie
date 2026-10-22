@@ -42,8 +42,8 @@
   }
 
   function card(c) {
-    return '<a class="card' + (isRead(c.id) ? " done" : "") + '" href="' + hrefOf(c.id) + '">' +
-      '<span class="num">' + (KIND[kindOf(c.id)].icon || String(c.id).padStart(2, "0")) + '</span>' +
+    return '<a class="card pic' + (isRead(c.id) ? " done" : "") + '" href="' + hrefOf(c.id) + '">' +
+      '<div class="thumb">' + SiraArt.thumb(c) + '<span class="num">' + (KIND[kindOf(c.id)].icon || String(c.id).padStart(2, "0")) + "</span></div>" +
       "<h3>" + esc(c.title) + "</h3><p>" + esc(c.sub) + "</p>" +
       '<div class="meta"><span>' + esc(c.date) + "</span><span>" + (SiraQuiz.stars(c.id) !== null ? '<span class="stars sm">' + SiraQuiz.starStr(SiraQuiz.stars(c.id)) + "</span> · " : "") + minutes(c) + " min</span></div></a>";
   }
@@ -147,6 +147,7 @@
     app.innerHTML = '<div class="progress" id="bar"></div><article class="reader">' +
       '<div class="crumbs"><a href="#/">Accueil</a> › ' + (kd !== "ch" ? '<a href="' + K.back + '">' + K.crumb + "</a> › " + esc(c.title) : '<a href="#/chapitres/' + c.period + '">' + esc(periodLabel(c.period)) + "</a> › Chapitre " + c.id) + "</div>" +
       "<h1>" + esc(c.title) + '</h1><p class="sub">' + esc(c.sub) + "</p>" +
+      '<figure class="hero-art">' + SiraArt.hero(c) + "</figure>" +
       '<div class="facts"><span>📅 ' + esc(c.date) + "</span><span>⏱ " + minutes(c) + " min de lecture</span><span>" + (kd !== "ch" ? K.fact + " " + (idx + 1) + " / " + LIST.length : "Chapitre " + c.id + " / " + CH.length) + "</span></div>" +
       '<div class="tools" role="group" aria-label="Taille du texte"><button id="fsm" aria-label="Réduire le texte">A−</button><button id="fsp" aria-label="Agrandir le texte">A+</button></div>' +
       (SPEECH ? '<div class="audio" role="group" aria-label="Lecture audio"><button class="btn gold" id="play">🔊 Écouter ce chapitre</button>' +
@@ -155,7 +156,7 @@
         '<label class="rate">Vitesse <select id="rate"><option value="0.8">0,8×</option><option value="0.9">0,9×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option><option value="1.3">1,3×</option></select></label>' +
         '<label class="rate"><input type="checkbox" id="auto"> Enchaîner</label></div>' +
         '<p class="audio-note" id="audioNote"></p>' : '<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>') +
-      '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p) { return "<p>" + esc(p) + "</p>"; }).join("") + "</div>" +
+      '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p, i) { return '<figure class="panel">' + SiraArt.panel(c, i) + "</figure><p>" + esc(p) + "</p>"; }).join("") + "</div>" +
       '<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/' + id + '">Passer le quiz</a></div>' +
       '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? "✓ Marqué comme lu" : "Marquer comme lu") + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +

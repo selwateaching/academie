@@ -30,3 +30,9 @@ La prononciation des noms arabes est réglée par un lexique (`js/speech.js`, ob
     node tools/make_audio_manifest.js          # met à jour js/audio-manifest.js
 
 Prérequis : `pip install kokoro-onnx soundfile`, ffmpeg, et les fichiers du modèle `kokoro-v1.0.onnx` et `voices-v1.0.bin` (non versionnés).
+
+## Illustrations
+
+Chaque page a une illustration d'en-tête et une illustration par paragraphe (`js/art.js`), dessinées en vectoriel : paysages, lieux et objets (désert, Kaaba, mosquée de palmes, caravanes, grotte, bateau, étendards…). **Le Prophète ﷺ, les compagnons et les autres prophètes ne sont jamais représentés** : aucune image ne montre de personnage ni de visage.
+
+Les illustrations de paragraphes sont composées d'après les mots-clés du texte (moment de la journée, décor, objets). Les décors d'en-tête sont choisis à la main dans le tableau `HERO`. Pour changer l'illustration d'une page, modifier son entrée dans `HERO` (`f` = objets, `t` = moment, `m` = décor).
