@@ -8132,7 +8132,16 @@ var PROG = {
         "الفصل 3 : المتتاليات العددية — مدخل",
         "الفصل 4 : الهندسة في الفضاء",
         "الفصل 5 : الاحتمالات"
-      ]
+      ],
+      "parFiliere": {
+        "langues_etr": [
+          "المحور 1 : الإحصاء (الوسط الحسابي، المدى)",
+          "المحور 2 : الاحتمالات (احتمال حدث، الحدث المضاد)",
+          "المحور 3 : الدوال (مجموعة التعريف، اتجاه التغير)",
+          "المحور 4 : المتتاليات (المتتالية الحسابية، المتتالية الهندسية)",
+          "المحور 5 : النسب المئوية والمؤشرات (النسبة المئوية، المؤشرات)"
+        ]
+      }
     },
     {
       "mat": "Langue française 📖",
@@ -8495,8 +8504,17 @@ function filiereInstructionTxt(filiereVal) {
   var label = FILIERES_LABELS[filiereVal] || filiereVal;
   return '\n\nIMPORTANT — Filière : ' + label + '. En Algérie, le programme de cette matière diffère sensiblement selon la filière à partir de la 2AS (volume horaire, profondeur des notions, parfois absence de certaines notions selon la filière). Adapte impérativement le contenu — profondeur, notions traitées, exemples — à cette filière précise, et non à un contenu générique toutes filières confondues.';
 }
+/* Certaines matières (surtout Mathématiques à partir de la 2AS) ont un contenu qui diffère
+   nettement selon la filière (ex: filière Langues étrangères très allégée vs Sciences/Maths).
+   m.chapitres reste la liste par défaut (toutes filières sans variante connue) ; m.parFiliere
+   permet de surcharger pour une filière précise quand on a la donnée officielle. */
+function progChapitresPourFiliere(m, filiereVal) {
+  return (m.parFiliere && filiereVal && m.parFiliere[filiereVal]) ? m.parFiliere[filiereVal] : m.chapitres;
+}
 function rProg() {
   var nv = document.getElementById('progNiveau').value;
+  var filiereSelProg = document.getElementById('progFiliere');
+  var filiereValProg = (filiereSelProg && filiereSelProg.style.display !== 'none') ? filiereSelProg.value : '';
   // Filter by prof's subject
   var profMat = D.s.mat || '';
   var data = PROG[nv] || PROG['4AM'];
@@ -8511,7 +8529,8 @@ function rProg() {
   }
   data = filtered;
   document.getElementById('progGrid').innerHTML = data.map(function(m,i) {
-    return '<div class="prog-mat"><div class="prog-mat-h" onclick="tgProg(this)"><span style="font-size:1.1rem;margin-right:.3rem">📚</span>'+m.mat+'<span style="margin-left:auto;font-size:.8rem;color:var(--ink3)">'+m.chapitres.length+' chapitres ▸</span></div><div class="prog-mat-body'+(i===0?' open':'')+'">'+m.chapitres.map(function(c,j) { return '<div class="prog-chap"><span style="font-size:.83rem;">'+c+'</span><div style="display:flex;gap:5px"><button class="btn bxs bt" onclick="useProg(\''+c.replace(/'/g,"\\'")+'\')" title="'+T('utiliser_ia_tooltip')+'">IA</button></div></div>'; }).join('')+'</div></div>';
+    var chaps = progChapitresPourFiliere(m, filiereValProg);
+    return '<div class="prog-mat"><div class="prog-mat-h" onclick="tgProg(this)"><span style="font-size:1.1rem;margin-right:.3rem">📚</span>'+m.mat+'<span style="margin-left:auto;font-size:.8rem;color:var(--ink3)">'+chaps.length+' chapitres ▸</span></div><div class="prog-mat-body'+(i===0?' open':'')+'">'+chaps.map(function(c,j) { return '<div class="prog-chap"><span style="font-size:.83rem;">'+c+'</span><div style="display:flex;gap:5px"><button class="btn bxs bt" onclick="useProg(\''+c.replace(/'/g,"\\'")+'\')" title="'+T('utiliser_ia_tooltip')+'">IA</button></div></div>'; }).join('')+'</div></div>';
   }).join('');
 }
 function tgProg(el) { var b = el.nextElementSibling; b.classList.toggle('open'); }
