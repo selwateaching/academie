@@ -1243,6 +1243,29 @@ def docx_export():
     return jsonify({"name": (s(ser.get("title"), 60) or "sequence"), "data": base64.b64encode(data).decode()})
 
 
+def unwrap_lines(text):
+    """Un PDF coupe les lignes en plein milieu des phrases : on recolle les lignes d'un même paragraphe."""
+    out = []
+    for para in re.split(r"\n\s*\n", text):
+        cur = ""
+        for line in (l.strip() for l in para.split("\n")):
+            if not line:
+                continue
+            if cur and (cur.endswith("-") and len(cur) > 3 and cur[-2].isalpha() and line[:1].islower()):
+                cur = cur[:-1] + line  # mot coupé par un tiret en fin de ligne
+            elif cur and not re.search(r"[.!?…:;»”)]$", cur) and len(cur) > 35:
+                cur += " " + line
+            elif cur:
+                out.append(cur)
+                cur = line
+            else:
+                cur = line
+        if cur:
+            out.append(cur)
+        out.append("")
+    return "\n".join(out)
+
+
 @app.post("/api/extract")
 def extract_text():
     import base64
@@ -1272,6 +1295,8 @@ def extract_text():
                 text = raw.decode("cp1252", "replace")
     except Exception:
         return error("invalid_request", "Fichier illisible. Utilisez un PDF, un Word (.docx) ou un fichier texte.", 422)
+    if name.endswith(".pdf"):
+        text = unwrap_lines(text)
     text = re.sub(r"[ \t]+\n", "\n", text)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     if len(text) < 30:

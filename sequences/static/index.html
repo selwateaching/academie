@@ -736,7 +736,8 @@ function buildSlides(d){
     const chunks=[];let cur=[],w=0;
     for(const p of paras){const n=p.split(/\s+/).length;if(cur.length&&w+n>per){chunks.push(cur.join("\n"));cur=[];w=0;}cur.push(p);w+=n;}
     if(cur.length)chunks.push(cur.join("\n"));
-    chunks.forEach((c,i)=>out.push({layout:"support",title:(S.srcTitle||"Texte support")+(chunks.length>1?` (${i+1}/${chunks.length})`:""),text:c,bullets:[],items:[],notes:"Texte fourni par l'enseignant : à lire silencieusement puis à voix haute."}));
+    const first=paras[0]&&paras[0].length<=90&&!/[.]$/.test(paras[0])?paras[0]:"";
+    chunks.forEach((c,i)=>out.push({layout:"support",title:(S.srcTitle||first||"Texte support")+(chunks.length>1?` (${i+1}/${chunks.length})`:""),text:c,bullets:[],items:[],notes:"Texte fourni par l'enseignant : à lire silencieusement puis à voix haute."}));
   }
   if(!own&&d.support&&d.support.text)out.push({layout:"support",title:d.support.title||"Texte support",text:d.support.text,bullets:[],items:[],notes:"Texte support : à lire silencieusement puis à voix haute."});
   d.slides.forEach(x=>out.push(x));

@@ -72,7 +72,7 @@ AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « �
       'Intermédiaire': 'متوسط',
       'Difficile': 'صعب'}
 
-AR.update({PROV_OWN: 'أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.', 'Provenance du contenu': 'مصدر المحتوى', 'Références à consulter': 'مراجع يُنصح بها', PROV: 'كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.', 'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
+AR.update({"Corrigés : voir la dernière partie du document (réservée à l'enseignant).": 'الإجابات النموذجية: انظر الجزء الأخير من الوثيقة (خاص بالأستاذ).', PROV_OWN: 'أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.', 'Provenance du contenu': 'مصدر المحتوى', 'Références à consulter': 'مراجع يُنصح بها', PROV: 'كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.', 'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
 
 
 class Builder:
@@ -336,6 +336,8 @@ class Builder:
 
         if exo:
             self.heading(self.L("Exercices"))
+            self.par(self.doc, self.L("Corrigés : voir la dernière partie du document (réservée à l'enseignant)."), italic=True,
+                     size=max(self.size - 2, 8), color=GREY, after=4)
             for k, x in enumerate(exo, 1):
                 self.exercise(k, x["q"])
 
