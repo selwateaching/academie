@@ -301,7 +301,7 @@ section.block{padding:3rem 1.2rem 0}
 .lang:hover{background:var(--gold);color:var(--ink)}
 
 /* PC : fenêtres moyennes — le menu passe sur sa propre ligne, entièrement visible (rien de caché) */
-@media(max-width:1360px) and (min-width:821px){
+@media(max-width:1720px) and (min-width:821px){
   .topbar{flex-wrap:wrap}
   .nav{order:3;flex-basis:100%;flex-wrap:wrap;justify-content:center;overflow:visible;margin:0;padding:.1rem 0 .2rem;row-gap:.2rem}
   .nav a:first-child,.nav a:last-child{margin:0}
