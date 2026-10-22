@@ -137,6 +137,75 @@
   E("oasis", "Oasis", "واحة", "vie", "Lieu du désert où il y a de l'eau et des palmiers.", "", ["oasis"]);
   E("etendard", "Étendard", "الراية", "vie", "Grand drapeau porté à la guerre. Celui du Prophète ﷺ était noir, l'autre était blanc.", "#/chapitre/20", ["étendard", "étendards"]);
 
+  /* ---------- Mots les plus recherchés (islam au quotidien) ---------- */
+  E("charia", "Charia (shari'a)", "الشريعة", "rel", "Le « chemin » tracé par Dieu : l'ensemble des règles et des valeurs de l'islam, tirées du Coran et de la Sunna, qui guident la prière, la morale, les relations entre les gens et la justice. Ses règles précises sont étudiées par les savants (le fiqh).", "", ["charia", "Charia"], "chariâ");
+  E("fiqh", "Fiqh", "الفقه", "rel", "La science qui étudie les règles pratiques de l'islam (prière, jeûne, commerce, famille…) à partir du Coran et de la Sunna. Le mot signifie « compréhension ».", "", ["fiqh"], "fikh");
+  E("halal", "Halal", "حلال", "rel", "Ce qui est permis par Dieu. Se dit surtout de la nourriture, mais aussi des actes et des gains.", "", ["halal"]);
+  E("haram", "Haram", "حرام", "rel", "Ce qui est interdit par Dieu. Le mot désigne aussi ce qui est sacré : la Mosquée sacrée de La Mecque est « al-Masjid al-Haram ».", "", ["haram"]);
+  E("fatwa", "Fatwa", "فتوى", "rel", "Avis religieux donné par un savant qualifié (un mufti) en réponse à une question précise. Ce n'est pas un jugement ni un ordre : c'est un éclairage sur ce que dit la religion.", "", ["fatwa", "fatwas"]);
+  E("ijtihad", "Ijtihad", "اجتهاد", "rel", "L'effort de réflexion d'un savant pour trouver la règle de l'islam sur une question nouvelle, quand il n'y a pas de texte clair du Coran ou de la Sunna.", "", ["ijtihad"], "idjtihad");
+  E("imam", "Imam", "إمام", "rel", "Celui qui dirige la prière en commun. Le mot désigne aussi un guide religieux ou un grand savant.", "", ["imam", "imams"]);
+  E("ulema", "Savants (oulémas)", "علماء", "rel", "Les spécialistes de la religion : ceux qui ont étudié le Coran, les hadiths et le fiqh. « Ulama » est le pluriel de « alim », celui qui sait.", "", ["oulémas", "ulémas", "savants"], "oulémas");
+  E("cheikh", "Cheikh", "شيخ", "rel", "Titre de respect donné à un savant, à un maître ou à un ancien.", "", ["cheikh", "sheikh"], "cheikh");
+  E("mufti", "Mufti", "مفتي", "rel", "Savant qui a le droit de donner des fatwas, c'est-à-dire des avis religieux.", "", ["mufti", "muftis"]);
+  E("tawhid", "Tawhid", "التوحيد", "rel", "L'unicité de Dieu : croire que Dieu est unique, sans associé ni égal. C'est le cœur du message de tous les prophètes.", "", ["tawhid"], "taouhid");
+  E("shirk", "Shirk", "الشرك", "rel", "Associer à Dieu d'autres divinités ou prier autre que Lui. C'est ce que faisaient les polythéistes de La Mecque avec leurs idoles.", "", ["shirk"], "chirk");
+  E("iman", "Iman", "الإيمان", "rel", "La foi : croire en Dieu, en ses anges, en ses livres, en ses prophètes, au Jour dernier et au destin.", "", ["iman"], "imane");
+  E("ihsan", "Ihsan", "الإحسان", "rel", "Faire le bien avec excellence. Le Prophète ﷺ le définit ainsi : adorer Dieu comme si on le voyait, car si on ne le voit pas, Lui nous voit.", "", ["ihsan"], "ihsane");
+  E("taqwa", "Taqwa", "التقوى", "rel", "La conscience de Dieu : craindre de lui désobéir et chercher à lui plaire. On la traduit souvent par « piété ».", "", ["taqwa"], "taqoua");
+  E("tawba", "Tawba (repentir)", "التوبة", "rel", "Revenir vers Dieu après une faute : la regretter, l'arrêter et décider de ne plus la refaire. Dieu pardonne à celui qui se repent sincèrement.", "", ["tawba", "repentir"], "tawba");
+  E("dua", "Doua (invocation)", "دعاء", "rel", "La prière personnelle : demander à Dieu avec ses propres mots, à tout moment et dans toute langue.", "", ["doua", "dua", "invocation", "invocations"], "doua");
+  E("dhikr", "Dhikr", "ذكر", "rel", "Le rappel de Dieu : le fait de prononcer son nom et de le louer (« Subhanallah », « Alhamdulillah », « Allahu akbar »), pour garder le cœur éveillé.", "", ["dhikr"], "zikr");
+  E("basmala", "Basmala", "البسملة", "rel", "La phrase « Bismillah ir-Rahman ir-Rahim » (« Au nom de Dieu, le Tout Miséricordieux, le Très Miséricordieux »). Les musulmans la disent avant de commencer une action ; elle ouvre toutes les sourates sauf une.", "", ["basmala", "Bismillah"], "basmala");
+  E("hamdala", "Alhamdulillah", "الحمد لله", "rel", "« Louange à Dieu » : ce que l'on dit pour remercier Dieu, dans le bonheur comme dans l'épreuve.", "", ["Alhamdulillah", "hamdala"], "Alhamdoulillah");
+  E("subhanallah", "Subhanallah", "سبحان الله", "rel", "« Gloire à Dieu » : on le dit pour célébrer sa perfection, souvent devant quelque chose d'admirable.", "", ["Subhanallah"], "Soubhanallah");
+  E("takbir", "Takbir (Allahu akbar)", "تكبير", "rel", "La phrase « Allahu akbar » (« Dieu est le plus grand »), dite au début de la prière, dans l'appel à la prière et pendant les fêtes.", "", ["takbir", "Allahu akbar"], "Allahou akbar");
+  E("inchallah", "Inchallah", "إن شاء الله", "rel", "« Si Dieu le veut » : on le dit en parlant de l'avenir, car seul Dieu sait ce qui arrivera.", "", ["inchallah", "Insha'Allah"], "Inchallah");
+  E("salam", "Salam", "السلام", "vie", "La salutation des musulmans : « As-salamu alaykum » (« que la paix soit sur vous »), à laquelle on répond « wa alaykum as-salam ». Le Prophète ﷺ recommande de la répandre.", "", ["salam", "As-salamu alaykum"], "salam");
+  E("wudu", "Woudou (ablutions)", "وضوء", "rel", "La purification faite avec de l'eau avant la prière : on se lave les mains, la bouche, le nez, le visage, les avant-bras, on passe la main sur la tête et on se lave les pieds.", "", ["woudou", "ablutions", "wudu"], "woudou");
+  E("ghusl", "Ghusl", "غسل", "rel", "Le grand lavage de tout le corps, exigé dans certains cas avant la prière, et recommandé avant la prière du vendredi et des fêtes.", "", ["ghusl"], "ghoussl");
+  E("tayammum", "Tayammum", "تيمم", "rel", "La purification avec de la terre propre ou de la poussière, quand on n'a pas d'eau ou qu'on ne peut pas s'en servir.", "", ["tayammum"], "tayammoum");
+  E("rakaa", "Rak'a", "ركعة", "rel", "Une unité de la prière : debout, inclinaison (rukû'), puis deux prosternations (sujûd). La prière de l'aube compte deux rak'as, celle de la nuit quatre.", "", ["rak'a", "rak'as", "rakaa"], "rakaa");
+  E("sujud", "Sujud (prosternation)", "سجود", "rel", "Le moment de la prière où l'on pose le front à terre pour s'incliner devant Dieu. Le Prophète ﷺ dit qu'on est alors au plus près de Lui.", "", ["sujud", "prosternation", "prosternations"], "soudjoud");
+  E("tarawih", "Tarawih", "تراويح", "rel", "Les prières surérogatoires que l'on fait la nuit pendant le Ramadan, après la prière du soir.", "#/rite/304", ["tarawih"], "taraouih");
+  E("tahajjud", "Tahajjud", "تهجد", "rel", "La prière faite pendant la nuit, après avoir dormi. Le Prophète ﷺ la faisait régulièrement.", "", ["tahajjud"], "tahadjdjoud");
+  E("witr", "Witr", "وتر", "rel", "Prière de nombre impair qui termine les prières de la nuit.", "", ["witr"], "witr");
+  E("janaza", "Janaza", "جنازة", "rel", "La prière faite pour une personne décédée, debout et sans prosternation, avant son enterrement.", "", ["janaza"], "djanaza");
+  E("sadaqajariya", "Sadaqa jariya", "صدقة جارية", "rel", "L'aumône continue : une bonne action dont le bienfait dure, comme creuser un puits, planter un arbre ou construire une école.", "", ["sadaqa jariya", "aumône continue"], "sadaqa djariya");
+  E("tafsir", "Tafsir", "تفسير", "rel", "L'explication du Coran : le sens des versets, les circonstances de leur révélation et leur message.", "", ["tafsir"], "tafsir");
+  E("tajwid", "Tajwid", "تجويد", "rel", "Les règles de la belle récitation du Coran : prononcer chaque lettre exactement et respecter les pauses et les allongements.", "", ["tajwid"], "tadjwid");
+  E("hafiz", "Hafiz", "حافظ", "rel", "Celui qui connaît le Coran par cœur. Du vivant du Prophète ﷺ, plusieurs compagnons l'avaient appris en entier.", "", ["hafiz"], "hafiz");
+  E("mushaf", "Mushaf", "مصحف", "rel", "Le livre du Coran, avec ses pages réunies. Le premier exemplaire complet est rassemblé sous Abu Bakr.", "", ["mushaf"], "mouchaf");
+  E("fatiha", "Al-Fatiha", "الفاتحة", "rel", "« L'Ouverture » : la première sourate du Coran, composée de sept versets, récitée dans chaque rak'a de la prière.", "", ["al-Fatiha", "Fatiha"], "Al-Fatiha");
+  E("isnad", "Isnad", "إسناد", "rel", "La chaîne des personnes qui ont transmis un hadith, du dernier narrateur jusqu'au Prophète ﷺ. Les savants vérifient sa solidité.", "", ["isnad"], "isnad");
+  E("sahih", "Sahih", "صحيح", "rel", "Qualificatif d'un hadith authentique, dont la chaîne de transmission est solide. Les recueils de Bukhari et de Muslim s'appellent « Sahih ».", "", ["sahih"], "sahih");
+  E("madhhab", "Madhhab (école juridique)", "مذهب", "rel", "Une école de fiqh : une manière d'étudier et de classer les règles. Les quatre écoles sunnites sont celles d'Abu Hanifa, de Malik, d'ash-Shafi'i et d'Ahmad ibn Hanbal.", "", ["madhhab", "madhhabs"], "madhab");
+  E("sunnites", "Sunnites et chiites", "سنة", "rel", "Les deux grands courants de l'islam. Ils se séparent après la mort du Prophète ﷺ, au sujet de sa succession : les sunnites suivent les quatre premiers califes, les chiites considèrent qu'Ali devait lui succéder. Les deux croient au même Coran.", "", ["sunnites", "chiites", "sunnite", "chiite"], "sunnites et chiites");
+  E("umma", "Umma", "أمة", "rel", "La communauté de tous les musulmans, au-delà des pays, des langues et des tribus.", "", ["umma", "oumma"], "oumma");
+  E("jihad", "Jihad", "جهاد", "rel", "Le mot signifie « effort ». Il désigne d'abord l'effort sur soi-même pour devenir meilleur, puis l'effort pour défendre sa communauté, dans un cadre précis de règles. Le Prophète ﷺ dit que le meilleur jihad est de dire une parole juste devant un dirigeant injuste.", "", ["jihad"], "djihad");
+  E("fitna", "Fitna", "فتنة", "rel", "Une épreuve, un trouble ou une division qui met la foi ou la communauté à l'épreuve.", "", ["fitna"], "fitna");
+  E("hijab", "Hijab", "حجاب", "vie", "Le mot signifie « voile » ou « rideau ». Il désigne le vêtement pudique des musulmanes et, plus largement, la pudeur.", "", ["hijab"], "hidjab");
+  E("mahr", "Mahr (dot)", "مهر", "vie", "Le don que le mari offre à sa femme lors du mariage. Il lui appartient entièrement.", "", ["mahr", "dot"], "mahr");
+  E("nikah", "Nikah", "نكاح", "vie", "Le contrat de mariage en islam, conclu avec le consentement des deux époux et devant témoins.", "", ["nikah"], "nikah");
+  E("riba", "Riba", "ربا", "vie", "L'intérêt pris sur un prêt, que l'islam interdit. Le Coran demande de prêter sans exiger de gain.", "", ["riba"], "riba");
+  E("waqf", "Waqf", "وقف", "vie", "Un bien (terre, maison, puits) donné pour toujours à une œuvre utile, comme une mosquée ou une école. Le premier waqf est celui d'Umar, à Khaybar.", "", ["waqf"], "waqf");
+  E("fitra", "Fitra", "فطرة", "rel", "La nature pure avec laquelle chaque être humain naît, tournée vers Dieu et le bien.", "", ["fitra"], "fitra");
+  E("anges", "Anges (malaika)", "ملائكة", "rel", "Êtres créés de lumière, qui obéissent à Dieu. Jibril apporte la révélation ; d'autres notent les actes des gens.", "", ["anges", "ange"], "anges");
+  E("jinn", "Djinns", "جن", "rel", "Des créatures invisibles créées de feu, qui, comme les humains, peuvent croire ou non. Une sourate du Coran porte leur nom.", "", ["djinns", "djinn"], "djinn");
+  E("qadar", "Qadar (destin)", "قدر", "rel", "Le décret de Dieu : croire que Dieu connaît et a écrit tout ce qui arrive, tout en laissant à l'homme la responsabilité de ses actes.", "", ["qadar", "destin"], "qadar");
+  E("jannah", "Paradis (Jannah)", "جنة", "rel", "La demeure de bonheur promise par Dieu aux croyants, dans l'au-delà.", "", ["Paradis", "paradis"], "Djanna");
+  E("jahannam", "Enfer (Jahannam)", "جهنم", "rel", "Le lieu du châtiment dans l'au-delà, pour ceux qui ont refusé la vérité et fait le mal sans se repentir.", "", ["Enfer", "enfer"], "Djahannam");
+  E("qiyama", "Jour du Jugement (Qiyama)", "قيامة", "rel", "Le jour où tous les êtres reviendront à la vie pour rendre compte de leurs actes devant Dieu.", "", ["Jour du Jugement", "Jour dernier", "Résurrection"], "Qiyama");
+  E("barzakh", "Barzakh", "برزخ", "rel", "L'état entre la mort et la résurrection, dans lequel les défunts attendent le Jour du Jugement.", "", ["barzakh"], "barzakh");
+  E("nabi", "Nabi et Rasul", "نبي", "rel", "Un « nabi » est un prophète ; un « rasul » est un messager, chargé d'apporter un livre ou une loi. Mouhammed ﷺ est les deux, et le dernier des prophètes.", "", ["nabi", "rasul"], "nabi et rassoul");
+  E("ahlbayt", "Ahl al-bayt", "أهل البيت", "per", "Les « gens de la maison » : la famille du Prophète ﷺ, c'est-à-dire ses épouses, ses enfants et ses proches.", "", ["Ahl al-bayt"], "Ahl al-bayt");
+  E("mawlid", "Mawlid", "مولد", "evt", "La naissance du Prophète ﷺ, que beaucoup de musulmans commémorent le 12 de Rabi' al-awwal. Les avis des savants diffèrent sur la manière de la célébrer.", "", ["Mawlid"], "Mawlid");
+  E("achoura", "Achoura", "عاشوراء", "evt", "Le 10e jour du mois de Muharram. Le Prophète ﷺ y jeûnait et a recommandé ce jeûne, en souvenir de la délivrance de Musa et de son peuple.", "", ["Achoura", "Ashura"], "Achoura");
+  E("minbar", "Minbar", "منبر", "vie", "La chaire de la mosquée, d'où l'imam prononce le discours du vendredi. Le premier minbar est celui de la mosquée du Prophète ﷺ, à Médine.", "", ["minbar"], "minbar");
+  E("mihrab", "Mihrab", "محراب", "vie", "La niche creusée dans le mur d'une mosquée, qui indique la direction de la qibla.", "", ["mihrab"], "mihrab");
+  E("minaret", "Minaret", "منارة", "vie", "La tour de la mosquée, d'où l'on lance l'appel à la prière. Du temps du Prophète ﷺ, Bilal appelait du toit d'une maison voisine.", "", ["minaret", "minarets"], "minaret");
+  E("kafir", "Kafir", "كافر", "rel", "Celui qui refuse la foi ou ne croit pas. Le mot veut dire « celui qui cache » (la vérité).", "", ["kafir", "kuffar"], "kafir");
+
   /* ---------- Compagnons (liés aux portraits) ---------- */
   var CF = {
     101: ["Abu Bakr as-Siddiq", "Abu Bakr"], 102: ["Omar ibn al-Khattab", "Omar"], 103: ["Uthman ibn Affan", "Uthman"], 104: ["Ali ibn Abi Talib", "Ali"], 105: ["Bilal"], 106: ["Salman al-Farisi", "Salman"],

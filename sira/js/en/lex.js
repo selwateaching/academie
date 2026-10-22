@@ -1034,6 +1034,579 @@ Object.assign(window.EN, {
     "Usama"
    ],
    "s": ""
+  },
+  "charia": {
+   "t": "Sharia",
+   "d": "Literally “the path” set by God: the body of rules and values of Islam, drawn from the Quran and the Sunna, that guide worship, morals, relations between people and justice. Scholars study its detailed rules (fiqh).",
+   "f": [
+    "Sharia",
+    "sharia"
+   ],
+   "s": "shah-ree-ah"
+  },
+  "fiqh": {
+   "t": "Fiqh",
+   "d": "The science that studies the practical rules of Islam (prayer, fasting, trade, family…) from the Quran and the Sunna. The word means “understanding”.",
+   "f": [
+    "fiqh"
+   ],
+   "s": "fick"
+  },
+  "halal": {
+   "t": "Halal",
+   "d": "What God permits. Said above all of food, but also of actions and earnings.",
+   "f": [
+    "halal"
+   ],
+   "s": "ha-laal"
+  },
+  "haram": {
+   "t": "Haram",
+   "d": "What God forbids. The word also means sacred: the Sacred Mosque of Mecca is “al-Masjid al-Haram”.",
+   "f": [
+    "haram"
+   ],
+   "s": "ha-raam"
+  },
+  "fatwa": {
+   "t": "Fatwa",
+   "d": "A religious opinion given by a qualified scholar (a mufti) in answer to a specific question. It is not a verdict or an order: it explains what the religion says.",
+   "f": [
+    "fatwa",
+    "fatwas"
+   ],
+   "s": ""
+  },
+  "ijtihad": {
+   "t": "Ijtihad",
+   "d": "The effort of reasoning by a scholar to find the ruling of Islam on a new question, when there is no clear text in the Quran or the Sunna.",
+   "f": [
+    "ijtihad"
+   ],
+   "s": "ij-tee-had"
+  },
+  "imam": {
+   "t": "Imam",
+   "d": "The person who leads the congregational prayer. The word also means a religious guide or a great scholar.",
+   "f": [
+    "imam",
+    "imams"
+   ],
+   "s": "ee-maam"
+  },
+  "ulema": {
+   "t": "Scholars (ulama)",
+   "d": "The specialists of religion: those who have studied the Quran, the hadiths and fiqh. “Ulama” is the plural of “alim”, the one who knows.",
+   "f": [
+    "ulama",
+    "scholars"
+   ],
+   "s": "oo-le-maa"
+  },
+  "cheikh": {
+   "t": "Sheikh",
+   "d": "A title of respect given to a scholar, a teacher or an elder.",
+   "f": [
+    "sheikh",
+    "shaykh"
+   ],
+   "s": "shaykh"
+  },
+  "mufti": {
+   "t": "Mufti",
+   "d": "A scholar entitled to issue fatwas, that is, religious opinions.",
+   "f": [
+    "mufti",
+    "muftis"
+   ],
+   "s": ""
+  },
+  "tawhid": {
+   "t": "Tawhid",
+   "d": "The oneness of God: believing that God is one, without partner or equal. It is the heart of the message of all the prophets.",
+   "f": [
+    "tawhid"
+   ],
+   "s": "taw-heed"
+  },
+  "shirk": {
+   "t": "Shirk",
+   "d": "Associating other deities with God or praying to anything other than Him. It is what the polytheists of Mecca did with their idols.",
+   "f": [
+    "shirk"
+   ],
+   "s": "shirk"
+  },
+  "iman": {
+   "t": "Iman",
+   "d": "Faith: believing in God, His angels, His books, His prophets, the Last Day and destiny.",
+   "f": [
+    "iman"
+   ],
+   "s": "ee-maan"
+  },
+  "ihsan": {
+   "t": "Ihsan",
+   "d": "Doing good with excellence. The Prophet ﷺ defined it thus: to worship God as if you see Him, for if you do not see Him, He sees you.",
+   "f": [
+    "ihsan"
+   ],
+   "s": "ih-saan"
+  },
+  "taqwa": {
+   "t": "Taqwa",
+   "d": "God-consciousness: being careful not to disobey Him and seeking to please Him. Often translated as “piety”.",
+   "f": [
+    "taqwa"
+   ],
+   "s": "tak-waa"
+  },
+  "tawba": {
+   "t": "Tawba (repentance)",
+   "d": "Returning to God after a wrong: regretting it, stopping it and resolving not to repeat it. God forgives the one who repents sincerely.",
+   "f": [
+    "tawba",
+    "repentance"
+   ],
+   "s": "taw-ba"
+  },
+  "dua": {
+   "t": "Dua (supplication)",
+   "d": "Personal prayer: asking God in one's own words, at any time and in any language.",
+   "f": [
+    "dua",
+    "supplication",
+    "supplications"
+   ],
+   "s": "du-aa"
+  },
+  "dhikr": {
+   "t": "Dhikr",
+   "d": "The remembrance of God: pronouncing His name and praising Him (“Subhanallah”, “Alhamdulillah”, “Allahu akbar”), to keep the heart awake.",
+   "f": [
+    "dhikr"
+   ],
+   "s": "zikr"
+  },
+  "basmala": {
+   "t": "Basmala",
+   "d": "The phrase “Bismillah ir-Rahman ir-Rahim” (“In the name of God, the Most Merciful, the Most Compassionate”). Muslims say it before starting an action; it opens every surah but one.",
+   "f": [
+    "basmala",
+    "Bismillah"
+   ],
+   "s": "bis-mil-laah"
+  },
+  "hamdala": {
+   "t": "Alhamdulillah",
+   "d": "“Praise be to God”: what one says to thank God, in happiness as in hardship.",
+   "f": [
+    "Alhamdulillah"
+   ],
+   "s": "al-ham-du-lil-laah"
+  },
+  "subhanallah": {
+   "t": "Subhanallah",
+   "d": "“Glory be to God”: said to celebrate His perfection, often before something wonderful.",
+   "f": [
+    "Subhanallah"
+   ],
+   "s": "sub-haan-al-laah"
+  },
+  "takbir": {
+   "t": "Takbir (Allahu akbar)",
+   "d": "The phrase “Allahu akbar” (“God is the greatest”), said at the start of the prayer, in the call to prayer and during the festivals.",
+   "f": [
+    "takbir",
+    "Allahu akbar"
+   ],
+   "s": "al-laa-hu ak-bar"
+  },
+  "inchallah": {
+   "t": "Insha'Allah",
+   "d": "“If God wills”: said when speaking of the future, because only God knows what will happen.",
+   "f": [
+    "Insha'Allah",
+    "inshallah"
+   ],
+   "s": "in-shaa-al-laah"
+  },
+  "salam": {
+   "t": "Salam",
+   "d": "The greeting of Muslims: “As-salamu alaykum” (“peace be upon you”), answered with “wa alaykum as-salam”. The Prophet ﷺ advised spreading it.",
+   "f": [
+    "salam",
+    "As-salamu alaykum"
+   ],
+   "s": "sa-laam"
+  },
+  "wudu": {
+   "t": "Wudu (ablution)",
+   "d": "The washing done with water before prayer: hands, mouth, nose, face, forearms, wiping the head and washing the feet.",
+   "f": [
+    "wudu",
+    "ablution",
+    "ablutions"
+   ],
+   "s": "woo-doo"
+  },
+  "ghusl": {
+   "t": "Ghusl",
+   "d": "The full washing of the whole body, required in certain cases before prayer, and recommended before the Friday and festival prayers.",
+   "f": [
+    "ghusl"
+   ],
+   "s": "ghoosl"
+  },
+  "tayammum": {
+   "t": "Tayammum",
+   "d": "Purification with clean earth or dust, when there is no water or it cannot be used.",
+   "f": [
+    "tayammum"
+   ],
+   "s": "ta-yam-mum"
+  },
+  "rakaa": {
+   "t": "Rak'a",
+   "d": "One unit of the prayer: standing, bowing (ruku), then two prostrations (sujud). The dawn prayer has two rak'as, the night prayer four.",
+   "f": [
+    "rak'a",
+    "rak'as",
+    "rakat"
+   ],
+   "s": "rak-aa"
+  },
+  "sujud": {
+   "t": "Sujud (prostration)",
+   "d": "The moment of the prayer when one puts the forehead on the ground to bow before God. The Prophet ﷺ said that one is then closest to Him.",
+   "f": [
+    "sujud",
+    "prostration",
+    "prostrations"
+   ],
+   "s": "soo-jood"
+  },
+  "tarawih": {
+   "t": "Tarawih",
+   "d": "The voluntary prayers performed at night during Ramadan, after the night prayer.",
+   "f": [
+    "tarawih"
+   ],
+   "s": "ta-raa-weeh"
+  },
+  "tahajjud": {
+   "t": "Tahajjud",
+   "d": "The prayer performed during the night, after sleeping. The Prophet ﷺ prayed it regularly.",
+   "f": [
+    "tahajjud"
+   ],
+   "s": "ta-haj-jud"
+  },
+  "witr": {
+   "t": "Witr",
+   "d": "A prayer of an odd number of rak'as that closes the night prayers.",
+   "f": [
+    "witr"
+   ],
+   "s": "witr"
+  },
+  "janaza": {
+   "t": "Janaza",
+   "d": "The prayer for a deceased person, said standing and without prostration, before the burial.",
+   "f": [
+    "janaza"
+   ],
+   "s": "ja-naa-za"
+  },
+  "sadaqajariya": {
+   "t": "Sadaqa jariya",
+   "d": "Ongoing charity: a good deed whose benefit continues, such as digging a well, planting a tree or building a school.",
+   "f": [
+    "sadaqa jariya",
+    "ongoing charity"
+   ],
+   "s": "sa-da-qa jaa-ree-ya"
+  },
+  "tafsir": {
+   "t": "Tafsir",
+   "d": "The explanation of the Quran: the meaning of the verses, the circumstances of their revelation and their message.",
+   "f": [
+    "tafsir"
+   ],
+   "s": "taf-seer"
+  },
+  "tajwid": {
+   "t": "Tajwid",
+   "d": "The rules of beautiful Quran recitation: pronouncing each letter exactly and respecting the pauses and the lengthening.",
+   "f": [
+    "tajwid"
+   ],
+   "s": "taj-weed"
+  },
+  "hafiz": {
+   "t": "Hafiz",
+   "d": "Someone who knows the whole Quran by heart. In the Prophet's ﷺ lifetime, several Companions had memorised it entirely.",
+   "f": [
+    "hafiz"
+   ],
+   "s": "haa-fiz"
+  },
+  "mushaf": {
+   "t": "Mushaf",
+   "d": "The written copy of the Quran, with its pages gathered together. The first complete copy was assembled under Abu Bakr.",
+   "f": [
+    "mushaf"
+   ],
+   "s": "mus-haf"
+  },
+  "fatiha": {
+   "t": "Al-Fatiha",
+   "d": "“The Opening”: the first surah of the Quran, made of seven verses, recited in every rak'a of the prayer.",
+   "f": [
+    "al-Fatiha",
+    "Fatiha"
+   ],
+   "s": "al-faa-ti-ha"
+  },
+  "isnad": {
+   "t": "Isnad",
+   "d": "The chain of people who passed on a hadith, from the last narrator back to the Prophet ﷺ. Scholars check its reliability.",
+   "f": [
+    "isnad"
+   ],
+   "s": "is-naad"
+  },
+  "sahih": {
+   "t": "Sahih",
+   "d": "A label for an authentic hadith, with a sound chain of transmission. The collections of Bukhari and Muslim are each called “Sahih”.",
+   "f": [
+    "sahih"
+   ],
+   "s": "sa-heeh"
+  },
+  "madhhab": {
+   "t": "Madhhab (school of law)",
+   "d": "A school of fiqh: a method of studying and classifying the rules. The four Sunni schools are those of Abu Hanifa, Malik, ash-Shafi'i and Ahmad ibn Hanbal.",
+   "f": [
+    "madhhab",
+    "madhhabs"
+   ],
+   "s": "mad-hab"
+  },
+  "sunnites": {
+   "t": "Sunnis and Shias",
+   "d": "The two great branches of Islam. They separated after the death of the Prophet ﷺ over his succession: Sunnis follow the first four caliphs, Shias hold that Ali should have succeeded him. Both believe in the same Quran.",
+   "f": [
+    "Sunnis",
+    "Shias",
+    "Sunni",
+    "Shia"
+   ],
+   "s": "soo-neez and shee-as"
+  },
+  "umma": {
+   "t": "Umma",
+   "d": "The community of all Muslims, beyond countries, languages and tribes.",
+   "f": [
+    "umma",
+    "ummah"
+   ],
+   "s": "oom-ma"
+  },
+  "jihad": {
+   "t": "Jihad",
+   "d": "The word means “striving”. It means first the effort one makes on oneself to become better, then the effort to defend one's community, within precise rules. The Prophet ﷺ said that the best jihad is a word of truth spoken before an unjust ruler.",
+   "f": [
+    "jihad"
+   ],
+   "s": "ji-haad"
+  },
+  "fitna": {
+   "t": "Fitna",
+   "d": "A trial, disorder or division that puts faith or the community to the test.",
+   "f": [
+    "fitna"
+   ],
+   "s": "fit-na"
+  },
+  "hijab": {
+   "t": "Hijab",
+   "d": "The word means “veil” or “curtain”. It refers to the modest dress of Muslim women and, more broadly, to modesty.",
+   "f": [
+    "hijab"
+   ],
+   "s": "hi-jaab"
+  },
+  "mahr": {
+   "t": "Mahr (dowry)",
+   "d": "The gift the husband gives his wife at the marriage. It belongs entirely to her.",
+   "f": [
+    "mahr",
+    "dowry"
+   ],
+   "s": "mahr"
+  },
+  "nikah": {
+   "t": "Nikah",
+   "d": "The marriage contract in Islam, concluded with the consent of both spouses and in front of witnesses.",
+   "f": [
+    "nikah"
+   ],
+   "s": "ni-kaah"
+  },
+  "riba": {
+   "t": "Riba",
+   "d": "Interest taken on a loan, which Islam forbids. The Quran asks believers to lend without demanding a profit.",
+   "f": [
+    "riba"
+   ],
+   "s": "ree-baa"
+  },
+  "waqf": {
+   "t": "Waqf",
+   "d": "A property (land, house, well) given permanently to a useful cause, such as a mosque or a school. The first waqf is Umar's, at Khaybar.",
+   "f": [
+    "waqf"
+   ],
+   "s": "waqf"
+  },
+  "fitra": {
+   "t": "Fitra",
+   "d": "The pure nature with which every human being is born, turned towards God and goodness.",
+   "f": [
+    "fitra"
+   ],
+   "s": "fit-ra"
+  },
+  "anges": {
+   "t": "Angels (malaika)",
+   "d": "Beings created from light, who obey God. Jibril brings the revelation; others record people's deeds.",
+   "f": [
+    "angels",
+    "angel"
+   ],
+   "s": "angels"
+  },
+  "jinn": {
+   "t": "Jinn",
+   "d": "Invisible creatures created from fire who, like humans, may believe or not. A surah of the Quran bears their name.",
+   "f": [
+    "jinn"
+   ],
+   "s": "jinn"
+  },
+  "qadar": {
+   "t": "Qadar (destiny)",
+   "d": "The decree of God: believing that God knows and has written all that happens, while leaving people responsible for their actions.",
+   "f": [
+    "qadar",
+    "destiny"
+   ],
+   "s": "qa-dar"
+  },
+  "jannah": {
+   "t": "Paradise (Jannah)",
+   "d": "The home of happiness promised by God to the believers in the afterlife.",
+   "f": [
+    "Paradise",
+    "paradise"
+   ],
+   "s": "jan-na"
+  },
+  "jahannam": {
+   "t": "Hell (Jahannam)",
+   "d": "The place of punishment in the afterlife, for those who rejected the truth and did evil without repenting.",
+   "f": [
+    "Hell",
+    "hell",
+    "the Fire"
+   ],
+   "s": "ja-han-nam"
+  },
+  "qiyama": {
+   "t": "Day of Judgement (Qiyama)",
+   "d": "The day when all beings will be brought back to life to account for their deeds before God.",
+   "f": [
+    "Day of Judgement",
+    "Last Day",
+    "Resurrection"
+   ],
+   "s": "qi-yaa-ma"
+  },
+  "barzakh": {
+   "t": "Barzakh",
+   "d": "The state between death and resurrection, in which the deceased await the Day of Judgement.",
+   "f": [
+    "barzakh"
+   ],
+   "s": "bar-zakh"
+  },
+  "nabi": {
+   "t": "Nabi and Rasul",
+   "d": "A “nabi” is a prophet; a “rasul” is a messenger, charged with bringing a scripture or a law. Muhammad ﷺ is both, and the last of the prophets.",
+   "f": [
+    "nabi",
+    "rasul"
+   ],
+   "s": "na-bee and ra-sool"
+  },
+  "ahlbayt": {
+   "t": "Ahl al-bayt",
+   "d": "The “people of the house”: the family of the Prophet ﷺ, that is, his wives, his children and his close relatives.",
+   "f": [
+    "Ahl al-bayt"
+   ],
+   "s": "ahl al-bayt"
+  },
+  "mawlid": {
+   "t": "Mawlid",
+   "d": "The birth of the Prophet ﷺ, which many Muslims commemorate on 12 Rabi' al-awwal. Scholars differ on how to observe it.",
+   "f": [
+    "Mawlid"
+   ],
+   "s": "maw-lid"
+  },
+  "achoura": {
+   "t": "Ashura",
+   "d": "The 10th day of the month of Muharram. The Prophet ﷺ fasted on it and recommended this fast, in memory of the deliverance of Musa and his people.",
+   "f": [
+    "Ashura"
+   ],
+   "s": "aa-shoo-raa"
+  },
+  "minbar": {
+   "t": "Minbar",
+   "d": "The pulpit of the mosque, from which the imam gives the Friday sermon. The first minbar was in the Prophet's ﷺ mosque in Medina.",
+   "f": [
+    "minbar"
+   ],
+   "s": "min-bar"
+  },
+  "mihrab": {
+   "t": "Mihrab",
+   "d": "The niche set in the wall of a mosque, which shows the direction of the qibla.",
+   "f": [
+    "mihrab"
+   ],
+   "s": "mih-raab"
+  },
+  "minaret": {
+   "t": "Minaret",
+   "d": "The tower of the mosque, from which the call to prayer is made. In the Prophet's ﷺ time, Bilal called from the roof of a neighbouring house.",
+   "f": [
+    "minaret",
+    "minarets"
+   ],
+   "s": "min-a-ret"
+  },
+  "kafir": {
+   "t": "Kafir",
+   "d": "Someone who rejects faith or does not believe. The word means “one who covers” (the truth).",
+   "f": [
+    "kafir",
+    "kuffar"
+   ],
+   "s": "kaa-fir"
   }
  },
  "cf": {
