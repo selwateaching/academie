@@ -481,7 +481,7 @@ async function api(path,body,method="POST"){
   }
   return d;
 }
-const payload=()=>({curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:{...S.options,refs:parseRefs(S.refsText).map(r=>r.url?(r.title&&r.title!==r.site?r.title+" — ":"")+r.url:r.title)},title:S.title,
+const payload=()=>({...srcPart(S),curriculum:S.curriculum||"",topic:S.topic,level:S.level,language:S.language,instructions:S.instructions,framework:S.framework,options:{...S.options,refs:parseRefs(S.refsText).map(r=>r.url?(r.title&&r.title!==r.site?r.title+" — ":"")+r.url:r.title)},title:S.title,
   lessons:S.lessons.map(l=>({title:l.title,summary:l.summary}))});
 
 /* ---------- navigation ---------- */
@@ -592,6 +592,28 @@ function del(id){const f=saved.find(x=>x.id===id);if(f&&isFolder(f)){if(!confirm
   if(confirm("Supprimer cette ressource ?")){saved=saved.filter(x=>x.id!==id);persist();if(ACC)api("/api/series/"+id,null,"DELETE").catch(()=>{});closeModal();render();}}
 
 /* ---------- étape 1 : sujet ---------- */
+const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||""}:{};
+function srcBlock(n){
+  const O=n==="S"?S:W;
+  return `<div class="card" id="srcb"><label>Texte de départ <small style="font-weight:400;color:var(--mut)">(facultatif : collez votre propre texte ou importez un fichier)</small></label>
+  <input maxlength="160" placeholder="Titre du texte (facultatif)" value="${esc(O.srcTitle||"")}" oninput="${n}.srcTitle=this.value">
+  <textarea id="stx" maxlength="20000" style="min-height:130px;margin-top:8px" placeholder="Collez ici le texte que vous avez choisi : extrait, article, poème, énoncé…" oninput="${n}.srcText=this.value;srcCount()">${esc(O.srcText||"")}</textarea>
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0"><label class="btn sm ghost" style="cursor:pointer;margin:0">📎 Importer un PDF, Word ou .txt<input type="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" style="display:none" onchange="importText(this,'${n}')"></label><small id="sinfo" style="color:var(--mut)"></small></div>
+  <label class="chk"><input type="checkbox" ${O.srcOnly!==false?"checked":""} onchange="${n}.srcOnly=this.checked"><span>Travailler uniquement sur ce texte<small>Toute la leçon, les exercices et les corrigés portent sur ce texte, sans rien ajouter d'extérieur. Vous êtes responsable des droits du texte.</small></span></label></div>`;
+}
+function srcCount(){const e=$("#sinfo"),x=$("#stx");if(e&&x)e.textContent=x.value.trim()?x.value.trim().split(/\s+/).length+" mots":"";}
+async function importText(inp,n){
+  const f=inp.files[0];if(!f)return;const O=n==="S"?S:W,info=$("#sinfo");
+  if(f.size>8*1024*1024){info.textContent="Fichier trop volumineux (8 Mo maximum).";return;}
+  info.textContent="Lecture du fichier…";
+  try{
+    const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=rej;r.readAsDataURL(f);});
+    const d=await api("/api/extract",{name:f.name,data});
+    O.srcText=(O.srcText?O.srcText.trim()+"\n\n":"")+d.text;if(!O.srcTitle)O.srcTitle=f.name.replace(/\.[^.]+$/,"");
+    $("#stx").value=O.srcText;srcCount();info.textContent=d.truncated?"Texte tronqué à 20 000 caractères.":"Fichier importé.";
+  }catch(e){info.textContent=e.message;}
+  inp.value="";
+}
 function s1(){
   $("#app").innerHTML=`${stepsBar()}<h2>Choisissez le sujet de votre séquence</h2><p class="sub">Soyez aussi précis que vous voulez.</p>
   <div class="card"><label>Sujet de la séquence</label><input id="topic" maxlength="300" placeholder="Ex. Le système solaire, les fractions, la Révolution française…" value="${esc(S.topic)}">
@@ -600,10 +622,11 @@ function s1(){
   <label>Nombre de leçons</label><select id="count">${[1,2,3,4,5,6,7,8,9,10,12,15,20,25].map(n=>`<option ${n==S.count?"selected":""} ${n>CAP().series?"disabled":""}>${n}${n>CAP().series?" 🔒":""}</option>`).join("")}</select>
   <small style="color:var(--mut)">Votre formule : séquences jusqu'à ${CAP().series} leçons. <a href="#" onclick="goPricing();return false">Voir les plans</a></small>
   <label>Consignes supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea id="ins" maxlength="3000" placeholder="Thèmes à aborder, contraintes, programme à suivre…">${esc(S.instructions)}</textarea></div>
+  ${srcBlock("S")}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="go('home')">Annuler</button><button class="btn" onclick="from1()">Continuer</button></div>`;
 }
 function read1(){S.topic=$("#topic").value.trim();S.level=$("#level").value;S.language=$("#lang").value;S.count=Math.min(parseInt($("#count").value),CAP().series);S.instructions=$("#ins").value.trim();}
-function from1(){read1();if(!S.topic){msg="Saisissez un sujet.";return s1();}msg="";step=2;render();}
+function from1(){read1();if(!S.topic&&S.srcText&&S.srcText.trim())S.topic=(S.srcTitle||S.srcText.trim().slice(0,70)).trim();if(!S.topic){msg="Saisissez un sujet.";return s1();}msg="";step=2;render();}
 
 /* ---------- étape 2 : réglages ---------- */
 function themePicker(cur,fn){
@@ -701,7 +724,15 @@ const PROV_FR="Ce cours a été rédigé par une IA à partir de connaissances g
 const PROV_AR="كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.";
 function buildSlides(d){
   const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
-  if(d.support&&d.support.text)out.push({layout:"support",title:d.support.title||"Texte support",text:d.support.text,bullets:[],items:[],notes:"Texte support : à lire silencieusement puis à voix haute."});
+  const own=S.srcText&&S.srcText.trim()&&S.srcOnly!==false;
+  if(own){
+    const paras=S.srcText.trim().split(/\n+/).filter(x=>x.trim()),total=S.srcText.trim().split(/\s+/).length,per=Math.max(110,Math.ceil(total/5));
+    const chunks=[];let cur=[],w=0;
+    for(const p of paras){const n=p.split(/\s+/).length;if(cur.length&&w+n>per){chunks.push(cur.join("\n"));cur=[];w=0;}cur.push(p);w+=n;}
+    if(cur.length)chunks.push(cur.join("\n"));
+    chunks.forEach((c,i)=>out.push({layout:"support",title:(S.srcTitle||"Texte support")+(chunks.length>1?` (${i+1}/${chunks.length})`:""),text:c,bullets:[],items:[],notes:"Texte fourni par l'enseignant : à lire silencieusement puis à voix haute."}));
+  }
+  if(!own&&d.support&&d.support.text)out.push({layout:"support",title:d.support.title||"Texte support",text:d.support.text,bullets:[],items:[],notes:"Texte support : à lire silencieusement puis à voix haute."});
   d.slides.forEach(x=>out.push(x));
   const ex=d.exercises||[];
   const RK={easy:0,medium:1,hard:2,"":1},byL=a=>[...a].sort((x,y)=>RK[x.level||""]-RK[y.level||""]);
@@ -717,7 +748,7 @@ function buildSlides(d){
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
   const srcs=(d.sources&&d.sources.length)?d.sources:parseRefs(S.refsText),prov=d.references||null;
-  if(srcs.length||prov)out.push({layout:"sources",title:"Sources",sources:srcs,prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
+  if(srcs.length||prov||own)out.push({layout:"sources",title:"Sources",sources:srcs,prov:own?{keywords:[],works:[],src:true}:prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
   out.forEach(x=>x.id=uid());
   return out;
 }
@@ -829,11 +860,11 @@ function slideHTML(sl,o={}){
       if(open){b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${rev?`<div class="why ans"><b>Réponse attendue :</b> ${E("q.open",q.open||"")}</div>${q.why||ed?`<div class="why"><b>Explication :</b> ${E("q.why",q.why||"")}</div>`:""}`:'<div class="xwr">Réponse de l\'élève…</div>'}`;break;}
       b=`${t}${lv}<p class="qq">${E("q.q",q.q)}</p>${q.choices.map((c,i)=>`<div class="ch ${rev?(i===q.answer?"ok":"ko"):""}" ${ed&&rev?`data-ans="${i}" title="Cliquer pour marquer comme bonne réponse"`:""}><div class="num c${i%4}" ${ed&&rev?"":'style="pointer-events:none"'}>${i+1}</div>${E("q.choices."+i,c)}${rev&&i===q.answer?" ✓":""}</div>`).join("")}${rev?`<div class="why"><b>Explication :</b> ${E("q.why",q.why)}</div>`:""}`;break;}
     case "support":
-      b=`${t}<div class="stx">${E("text",sl.text||"","div")}</div>`;break;
+      {const n=(sl.text||"").trim().split(/\s+/).length,fs=n>230?16:n>170?19:n>120?22:0;b=`${t}<div class="stx" ${fs?`style="font-size:${fs}px;line-height:1.55"`:""}>${E("text",sl.text||"","div")}</div>`;}break;
     case "sources":{
       const pv=sl.prov,L=S&&S.language,ar=docRTL(S);
       const own=sl.sources.length?`<div class="srcs">${sl.sources.map((v,i)=>`<div class="sr">${ed?`<b>${E("sources."+i+".title",v.title||"")}</b><div class="su">${E("sources."+i+".url",v.url||"")}</div>`:v.url?`<a href="${esc(v.url)}" target="_blank" rel="noopener noreferrer">${esc(v.title||v.site)}</a><div class="su">${esc(v.url)}</div>`:`<b>${esc(v.title)}</b>`}</div>`).join("")}</div>`:"";
-      const pb=pv?`<div class="prov"><b>${ar?"مصدر المحتوى":"Provenance du contenu"}</b><p>${ar?PROV_AR:PROV_FR}</p>${(pv.works||[]).length?`<p><b>${ar?"مراجع يُنصح بها":"Références à consulter"} :</b> ${pv.works.map(esc).join(" · ")}</p>`:""}${(pv.keywords||[]).length?`<p class="kws"><b>${ar?"للتحقق":"Pour vérifier"} :</b> ${pv.keywords.map(k=>`<span>${esc(k)} <a href="${wikiURL(k,L)}" target="_blank" rel="noopener noreferrer">Wikipédia</a> <a href="${scholarURL(k)}" target="_blank" rel="noopener noreferrer">Scholar</a></span>`).join("")}</p>`:""}</div>`:"";
+      const pb=pv?`<div class="prov"><b>${ar?"مصدر المحتوى":"Provenance du contenu"}</b><p>${pv.src?(ar?"أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.":"Cours élaboré à partir du texte fourni par l'enseignant."):(ar?PROV_AR:PROV_FR)}</p>${(pv.works||[]).length?`<p><b>${ar?"مراجع يُنصح بها":"Références à consulter"} :</b> ${pv.works.map(esc).join(" · ")}</p>`:""}${(pv.keywords||[]).length?`<p class="kws"><b>${ar?"للتحقق":"Pour vérifier"} :</b> ${pv.keywords.map(k=>`<span>${esc(k)} <a href="${wikiURL(k,L)}" target="_blank" rel="noopener noreferrer">Wikipédia</a> <a href="${scholarURL(k)}" target="_blank" rel="noopener noreferrer">Scholar</a></span>`).join("")}</p>`:""}</div>`:"";
       b=`${t}${own}${pb}${!pv&&!sl.sources.length?'<p style="opacity:.6">Aucune source ajoutée.</p>':""}${sl.sources[0]&&sl.sources[0].accessed?`<p class="sn">Liens trouvés par recherche web et testés (consultés le ${esc(sl.sources[0].accessed)}).</p>`:own?'<p class="sn">Sources de référence indiquées par l\'enseignant.</p>':""}`;break;}
     case "production":{
       const pr=sl.prod,pk=PRODS[pr.kind]||PRODS.ecrite;
@@ -1127,13 +1158,14 @@ function wb1(){
   :`<div class="card"><label>Sujet du cahier</label><input maxlength="300" placeholder="Ex. Les fractions, la photosynthèse…" value="${esc(W.topic)}" oninput="W.topic=this.value">
    <div class="row"><div><label>Niveau</label><select onchange="W.level=this.value">${LEVELS.map(l=>`<option ${l===W.level?"selected":""}>${l}</option>`).join("")}</select></div>
    <div><label>Langue</label><select onchange="W.language=this.value">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===W.language?"selected":""}>${l}</option>`).join("")}</select></div></div></div>`}
+  ${W.src==="topic"?srcBlock("W"):""}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="navCahiers()">Annuler</button><button class="btn" onclick="wbFrom1()">Continuer</button></div>`;
 }
 function wbFrom1(){
   if(W.src==="series"){
     const x=saved.find(s=>s.id===W.seriesId);if(!x){msg="Choisissez une séquence.";return wb1();}
     W.topic=x.topic||x.title;W.level=x.level;W.language=x.language;W.title=x.title;
-  }else if(!W.topic.trim()){msg="Saisissez un sujet.";return wb1();}
+  }else{if(!W.topic.trim()&&W.srcText&&W.srcText.trim())W.topic=(W.srcTitle||W.srcText.trim().slice(0,70)).trim();if(!W.topic.trim()){msg="Saisissez un sujet.";return wb1();}}
   msg="";wstep=2;render();
 }
 function togWB(k){W.options[k]=!W.options[k];wb2();}
@@ -1159,7 +1191,7 @@ async function wbOutline(){
   const b=$("#wgo");b.disabled=true;b.innerHTML='<span class="spin"></span> Création du plan…';msg="";
   try{
     const n=Math.min(LEN[W.options.length].n,CAP().series);
-    const d=await api("/api/workbook/outline",{topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,sections:n,context:W.src==="series"?seriesContext(W.seriesId):""});
+    const d=await api("/api/workbook/outline",{...srcPart(W),topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,sections:n,context:W.src==="series"?seriesContext(W.seriesId):""});
     W.title=d.title;W.sections=d.sections.map(x=>({...x}));wstep=3;saveDoc(W);render();
   }catch(e){msg=e.message;wb2();}
 }
@@ -1302,7 +1334,7 @@ const FMT=`<div class="fmtbar" onmousedown="if(!event.target.closest('select,inp
  <label class="colbtn" title="Couleur du texte"><span>A</span><input type="color" value="#b91c1c" oninput="fcolor(this.value)"></label><span class="sep"></span>
  <button onclick="fcmd('insertUnorderedList')" title="Liste à puces">• ≡</button><button onclick="fcmd('insertOrderedList')" title="Liste numérotée">1. ≡</button><button onclick="fcmd('justifyLeft')" title="Aligner à gauche">⇤</button><button onclick="fcmd('justifyCenter')" title="Centrer">↔</button><span class="sep"></span><button class="bt-d" onclick="fdel()" title="Supprimer la question">🗑</button></div>`;
 function refreshPaper(){const b=$(".wbpaper");if(b){b.innerHTML=FMT+paperHTML(true,W.showAns!==false)+`<div class="addsec"><button onclick="openAddSection()">✨ Ajouter une section</button></div>`;}updBar();chatRender();}
-const briefWB=()=>({topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,title:W.title});
+const briefWB=()=>({...srcPart(W),topic:W.topic,level:W.level,language:W.language,instructions:W.instructions,curriculum:W.curriculum,title:W.title});
 function chatRender(){
   const cm=$("#cm");if(!cm)return;const nm=ACC?(ACC.name||ACC.email.split("@")[0]).split(" ")[0]:"";
   cm.innerHTML=CHAT.length?CHAT.map(m=>`<div class="bub ${m.r}">${esc(m.t)}</div>`).join("")+(CB?'<div class="bub a"><span class="spin"></span></div>':""):
@@ -1410,13 +1442,14 @@ function sh2(){
   <div><label>Langue</label><select onchange="W.language=this.value">${["français","anglais","arabe","espagnol","allemand"].map(l=>`<option ${l===W.language?"selected":""}>${l}</option>`).join("")}</select></div></div>
   <label>Difficulté</label><div class="lens">${Object.entries(DIFFN).map(([k,v])=>`<button class="${W.difficulty===k?"on":""}" onclick="W.difficulty='${k}';sh2()">${v}</button>`).join("")}</div>
   <label>Instructions supplémentaires <small style="font-weight:400;color:var(--mut)">(facultatif)</small></label><textarea maxlength="3000" oninput="W.instructions=this.value" placeholder="Notions à couvrir, contraintes…">${esc(W.instructions)}</textarea></div>
+  ${srcBlock("W")}
   ${errBox()}<div class="nav"><button class="btn ghost" onclick="navFiches()">Annuler</button><button class="btn" onclick="shStart()">Générer la fiche</button></div>`;
 }
-function shStart(){if(!W.topic.trim()){msg="Saisissez un sujet.";return sh2();}msg="";shGenerate();}
+function shStart(){if(!W.topic.trim()&&W.srcText&&W.srcText.trim())W.topic=(W.srcTitle||W.srcText.trim().slice(0,70)).trim();if(!W.topic.trim()){msg="Saisissez un sujet.";return sh2();}msg="";shGenerate();}
 async function shGenerate(){
   const doc=W;$("#app").innerHTML=`<div class="card" style="text-align:center;padding:50px 20px;margin-top:40px"><div class="spin" style="width:34px;height:34px;border-width:4px"></div><h2 style="margin-top:18px">Création de votre fiche…</h2><p class="sub">Cela prend quelques secondes.</p></div>`;
   try{
-    const r=await api("/api/sheet",{template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum});
+    const r=await api("/api/sheet",{...srcPart(doc),template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum});
     doc.title=r.title;doc.sections=[{title:r.title,summary:"",data:r.section}];doc.started=true;saveDoc(doc);loadPlan();
     if(W===doc){page="wb";wstep=5;render();toast("Document prêt ! Votre fiche a été créée.");}
   }catch(e){

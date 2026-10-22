@@ -63,3 +63,10 @@ Ils sont cités sur une diapositive « Sources » (liens cliquables, modifiable)
 
 Option payante, désactivée par défaut : `SEQ_WEB_SEARCH=1` active l'outil de recherche web de l'API Anthropic (facturé en plus des jetons)
 quand le client envoie `options.sources`; il n'y a pas de case dans l'interface.
+
+## Texte de départ (coller ou importer)
+
+Séquences, fiches d'activités et cahiers acceptent un texte choisi par l'enseignant (zone « Texte de départ » : coller, ou importer un PDF,
+un Word .docx ou un .txt via `/api/extract`, lecture côté serveur avec `pypdf`/`python-docx`, 8 Mo et 60 pages maximum).
+Avec « Travailler uniquement sur ce texte », le prompt impose de n'utiliser que ce texte ; il est repris tel quel sur des diapositives
+« Texte support » (découpées automatiquement) et dans la fiche Word. Un PDF scanné (image) n'est pas lisible : il faut coller le texte.

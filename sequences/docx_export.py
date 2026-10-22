@@ -23,6 +23,7 @@ def t(x, n=2000):
     return str(x or "").strip()[:n]
 
 
+PROV_OWN = "Cours élaboré à partir du texte fourni par l'enseignant."
 PROV = "Ce cours a été rédigé par une IA à partir de connaissances générales : aucune source n'a été consultée en direct. Les liens ci-dessous ouvrent des recherches pour vérifier chaque notion."
 AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « …… » sont modifiables (compétences, support, durée, enseignant). Les autres contenus sont générés et modifiables aussi.": 'يملأ الأستاذ(ة) الخانات « …… » مباشرة في Word (الكفاءات، السند، المدة، الأستاذ). باقي المحتويات مولَّدة وقابلة للتعديل أيضا.',
       'Présenter et faire expliquer le vocabulaire clé (tableau ci-dessous).': 'عرض المفردات الأساسية وشرحها (الجدول أدناه).',
@@ -71,7 +72,7 @@ AR = {"À compléter par l'enseignant(e) directement dans Word : les cases « �
       'Intermédiaire': 'متوسط',
       'Difficile': 'صعب'}
 
-AR.update({'Provenance du contenu': 'مصدر المحتوى', 'Références à consulter': 'مراجع يُنصح بها', PROV: 'كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.', 'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
+AR.update({PROV_OWN: 'أُعدّ هذا الدرس انطلاقا من النص الذي قدّمه الأستاذ.', 'Provenance du contenu': 'مصدر المحتوى', 'Références à consulter': 'مراجع يُنصح بها', PROV: 'كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.', 'Texte support': 'النص السند', 'Découverte du support': 'اكتشاف السند', 'Faire lire le texte support (silencieusement puis à voix haute), vérifier la compréhension.': 'قراءة النص السند (صامتة ثم جهرية) والتحقق من الفهم.', 'Lisent le texte et répondent oralement.': 'يقرؤون النص ويجيبون شفهيا.', 'Sources': 'المصادر', 'consulté le': 'تاريخ الاطلاع'})
 
 
 class Builder:
@@ -232,7 +233,8 @@ class Builder:
         acts = [x for x in sl if x.get("layout") == "activity" and isinstance(x.get("q"), dict)]
         exo = [x for x in acts if not t(x.get("title")).lower().startswith("vérification")]
         quiz = [x for x in acts if x not in exo]
-        sup = next((x for x in sl if x.get("layout") == "support" and t(x.get("text"))), None)
+        sups = [x for x in sl if x.get("layout") == "support" and t(x.get("text"))]
+        sup = ({"title": re.sub(r"\s*\(\d+/\d+\)$", "", t(sups[0].get("title"))), "text": "\n".join(t(x.get("text"), 3000) for x in sups)} if sups else None)
         prods = [x for x in sl if x.get("layout") == "production" and isinstance(x.get("prod"), dict)]
 
         tb = self.table(1, 1)
@@ -275,7 +277,7 @@ class Builder:
             self.heading(self.L("Texte support") + (" : " + t(sup.get("title"), 160) if sup.get("title") else ""))
             tbs = self.table(1, 1)
             self.shade(tbs.rows[0].cells[0], "FFFBEA")
-            for k, para in enumerate(t(sup.get("text"), 3000).split("\n")):
+            for k, para in enumerate(t(sup.get("text"), 20000).split("\n")):
                 if para.strip():
                     self.cell_text(tbs.rows[0].cells[0], para.strip(), size=self.size + (2 if self.big else 1), first=(k == 0))
             self.par(self.doc, "", after=4)
@@ -360,7 +362,7 @@ class Builder:
                     self.run(p, t(v.get("title"), 300))
             if prov:
                 self.par(self.doc, self.L("Provenance du contenu"), bold=True, color=TEAL)
-                self.par(self.doc, self.L(PROV), italic=True, size=max(self.size - 1, 9), color=GREY, after=3)
+                self.par(self.doc, self.L(PROV_OWN if prov.get("src") else PROV), italic=True, size=max(self.size - 1, 9), color=GREY, after=3)
                 if prov.get("works"):
                     self.par(self.doc, self.L("Références à consulter") + " : " + " · ".join(t(w, 120) for w in prov["works"]), after=3)
                 wl = {"arab": "ar", "angl": "en", "espag": "es", "allem": "de"}.get(t(self.s.get("language")).lower()[:5].rstrip("e"), "fr")
