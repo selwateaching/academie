@@ -593,18 +593,20 @@ function del(id){const f=saved.find(x=>x.id===id);if(f&&isFolder(f)){if(!confirm
 
 /* ---------- étape 1 : sujet ---------- */
 function withOwnText(doc,data){
-  if(!data||!doc.srcText||!doc.srcText.trim()||doc.srcOnly===false)return data;
+  if(!data||!doc.srcText||!doc.srcText.trim()||doc.srcOnly===false||doc.srcMode==="rewrite")return data;
   const paras=doc.srcText.trim().split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,80);
   data.explanation=(doc.srcTitle?[RICH+"<b>"+esc(doc.srcTitle)+"</b>"]:[]).concat(paras);
   return data;
 }
-const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||""}:{};
+const srcPart=O=>O&&O.srcText&&O.srcText.trim()?{text:O.srcText.slice(0,14000),textOnly:O.srcOnly!==false,srcTitle:O.srcTitle||"",srcMode:O.srcMode==="rewrite"?"rewrite":"verbatim"}:{};
 function srcBlock(n){
   const O=n==="S"?S:W;
   return `<div class="card" id="srcb"><label>Texte de départ <small style="font-weight:400;color:var(--mut)">(facultatif : collez votre propre texte ou importez un fichier)</small></label>
   <input maxlength="160" placeholder="Titre du texte (facultatif)" value="${esc(O.srcTitle||"")}" oninput="${n}.srcTitle=this.value">
   <textarea id="stx" maxlength="20000" style="min-height:130px;margin-top:8px" placeholder="Collez ici le texte que vous avez choisi : extrait, article, poème, énoncé…" oninput="${n}.srcText=this.value;srcCount()">${esc(O.srcText||"")}</textarea>
   <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0"><label class="btn sm ghost" style="cursor:pointer;margin:0">📎 Importer un PDF, Word ou .txt<input type="file" accept=".pdf,.docx,.txt,.md,application/pdf,text/plain" style="display:none" onchange="importText(this,'${n}')"></label><small id="sinfo" style="color:var(--mut)"></small></div>
+  <div id="smode" style="margin:6px 0"><label class="chk"><input type="radio" name="smode_${n}" value="verbatim" ${O.srcMode!=="rewrite"?"checked":""} onchange="${n}.srcMode='verbatim'"><span>C'est un texte à lire : l'utiliser tel quel<small>Votre texte est repris mot pour mot comme texte support</small></span></label>
+  <label class="chk"><input type="radio" name="smode_${n}" value="rewrite" ${O.srcMode==="rewrite"?"checked":""} onchange="${n}.srcMode='rewrite'"><span>C'est un cours ou des notes : rédiger un texte support à partir de ce document<small>L'IA écrit un vrai texte à lire (150 à 250 mots) à partir de vos idées, définitions et exemples</small></span></label></div>
   <label class="chk"><input type="checkbox" ${O.srcOnly!==false?"checked":""} onchange="${n}.srcOnly=this.checked"><span>Travailler uniquement sur ce texte<small>Toute la leçon, les exercices et les corrigés portent sur ce texte, sans rien ajouter d'extérieur. Vous êtes responsable des droits du texte.</small></span></label></div>`;
 }
 function srcCount(){const e=$("#sinfo"),x=$("#stx");if(e&&x)e.textContent=x.value.trim()?x.value.trim().split(/\s+/).length+" mots":"";}
@@ -616,7 +618,9 @@ async function importText(inp,n){
     const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]||"");r.onerror=rej;r.readAsDataURL(f);});
     const d=await api("/api/extract",{name:f.name,data});
     O.srcText=(O.srcText?O.srcText.trim()+"\n\n":"")+d.text;if(!O.srcTitle){const nm=f.name.replace(/\.[^.]+$/,"").replace(/[-_]+/g," ").replace(/^[\d\s]+/,"").trim();if(nm.length>2)O.srcTitle=nm.charAt(0).toUpperCase()+nm.slice(1);}
-    $("#stx").value=O.srcText;srcCount();info.textContent=d.truncated?"Texte tronqué à 20 000 caractères.":"Fichier importé.";
+    const notes=(d.text.match(/(Déroulement|Objectifs?\s*:|S[ée]ance|Comp[ée]tence|Consigne|Activit[ée]|Phase|Projet\s*\d)/gi)||[]).length>=3;
+    O.srcMode=notes?"rewrite":"verbatim";const rd=document.querySelector(`input[name=smode_${n}][value=${O.srcMode}]`);if(rd)rd.checked=true;
+    $("#stx").value=O.srcText;srcCount();info.textContent=(notes?"Ce document ressemble à un cours : un texte support sera rédigé à partir de lui (changez ci-dessous si besoin). ":"")+(d.truncated?"Texte tronqué à 20 000 caractères.":"Fichier importé.");
   }catch(e){info.textContent=e.message;}
   inp.value="";
 }
@@ -730,7 +734,7 @@ const PROV_FR="Ce cours a été rédigé par une IA à partir de connaissances g
 const PROV_AR="كُتب هذا الدرس بواسطة الذكاء الاصطناعي اعتمادا على معارف عامة، دون الاطلاع على أي مصدر مباشر. تؤدي الروابط أدناه إلى عمليات بحث للتحقق من كل مفهوم.";
 function buildSlides(d){
   const out=[{layout:"title",title:d.title,emoji:"📖",bullets:d.objectives||[],notes:"",items:[]}];
-  const own=S.srcText&&S.srcText.trim()&&S.srcOnly!==false;
+  const srcOn=S.srcText&&S.srcText.trim()&&S.srcOnly!==false,own=srcOn&&S.srcMode!=="rewrite";
   if(own){
     const paras=S.srcText.trim().split(/\n+/).filter(x=>x.trim()),total=S.srcText.trim().split(/\s+/).length,per=Math.max(110,Math.ceil(total/5));
     const chunks=[];let cur=[],w=0;
@@ -755,7 +759,7 @@ function buildSlides(d){
   for(let i=0;i<v.length;i+=6)out.push({layout:"vocab",title:"Vocabulaire clé",vocab:v.slice(i,i+6),bullets:[],items:[],notes:""});
   (d.quiz||[]).forEach((q,i)=>out.push({layout:"activity",title:`Vérification des acquis ${i+1}/${d.quiz.length}`,q,bullets:[],items:[],notes:""}));
   const srcs=(d.sources&&d.sources.length)?d.sources:parseRefs(S.refsText),prov=d.references||null;
-  if(srcs.length||prov||own)out.push({layout:"sources",title:"Sources",sources:srcs,prov:own?{keywords:[],works:[],src:true}:prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
+  if(srcs.length||prov||srcOn)out.push({layout:"sources",title:"Sources",sources:srcs,prov:srcOn?{keywords:[],works:[],src:true}:prov,bullets:[],items:[],notes:srcs.length?"Sources de référence indiquées par l'enseignant.":"Provenance du contenu : généré par IA, sans source consultée en direct ; liens de vérification."});
   out.forEach(x=>x.id=uid());
   return out;
 }
