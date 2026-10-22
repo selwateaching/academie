@@ -307,3 +307,10 @@ section.block{padding:3rem 1.2rem 0}
   .nav a:first-child,.nav a:last-child{margin:0}
   .search{margin-left:auto}
 }
+
+/* Paroles du Prophète ﷺ */
+.sy-cat{margin:1rem 0 .4rem;color:var(--muted);font-size:.9rem}
+.sy-h{margin:1.8rem 0 .6rem;font-family:"Cormorant Garamond",serif;font-size:1.5rem;color:var(--gold)}
+.saying{margin:0 0 .8rem;padding:1rem 1.2rem;background:rgba(255,255,255,.05);border:1px solid var(--line);border-inline-start:4px solid var(--gold);border-radius:var(--radius)}
+.saying blockquote{margin:0 0 .4rem;font:500 1.1rem/1.55 Lora,serif;color:var(--text)}
+.saying figcaption{font-size:.8rem;color:var(--muted)}

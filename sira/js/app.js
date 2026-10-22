@@ -86,6 +86,7 @@
       T('<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">La prière, le jeûne, la zakat, le pèlerinage et les deux fêtes.</p><div class="grid">') +
       [301, 304, 306, 307].map(function (id) { return card(RI[id - 301]); }).join("") + T('</div><p><a class="btn ghost" href="#/rites">Voir tous les rites</a></p></section>') +
       T('<section class="block wrap"><h2>Lexique</h2><p class="lead">Un mot difficile ? Plus de cent mots, noms et lieux expliqués simplement, avec la prononciation.</p><p><a class="btn gold" href="#/lexique">Ouvrir le lexique</a></p></section>') +
+      T('<section class="block wrap"><h2>Paroles du Prophète ﷺ</h2><p class="lead">Des dictons célèbres du Prophète ﷺ, classés par thème : foi, caractère, famille, science, charité…</p><p><a class="btn gold" href="#/paroles">Lire les paroles</a></p></section>') +
       T('<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Où tout s\'est passé : La Mecque, Médine, Badr, Khaybar, Tabuk…</p><p><a class="btn gold" href="#/lieux">Ouvrir la carte</a></p></section>') +
       T('<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">') +
       [4, 14, 16, 21, 24, 25].map(function (id) { return card(CH[id - 1]); }).join("") + "</div></section>";
@@ -204,7 +205,7 @@
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
-    var nav = page === "lexique" ? "lx" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
@@ -217,6 +218,7 @@
     else if (page === "rites") viewRites();
     else if (page === "lieux") SiraPlaces.view(h[1] || "");
     else if (page === "lexique") SiraLexique.view(h[1] || "");
+    else if (page === "paroles") SiraParoles.view(h[1] || "");
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
