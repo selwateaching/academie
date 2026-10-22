@@ -226,8 +226,10 @@
     else if (page === "recherche") viewList("", decodeURIComponent(h.slice(1).join("/")));
     else viewHome();
     SiraQuiz.updateTrophy();
-    window.scrollTo(0, 0);
-    app.focus({ preventScroll: true });
+    if (!(page === "recherche" && document.activeElement === qInput)) { /* on ne quitte pas la zone de saisie pendant la frappe */
+      window.scrollTo(0, 0);
+      app.focus({ preventScroll: true });
+    }
     var cur = page === "chapitre" ? CH[parseInt(h[1], 10) - 1] : page === "compagnon" ? CO[parseInt(h[1], 10) - 101] : page === "theme" ? TH[parseInt(h[1], 10) - 201] : page === "rite" ? RI[parseInt(h[1], 10) - 301] : null;
     document.title = cur
       ? cur.title + T(" — Le Monde de la Sirah")
