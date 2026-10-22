@@ -7,22 +7,22 @@
   var LEX = {
     "Mouhammed": "Mouhammade", "Abu": "Abou", "Umm": "Oumm", "Omar": "Oumar", "Banu": "Banou",
     "Quraysh": "Qoraïch", "Qurayza": "Qouraïza", "Qaynuqa": "Qaïnouqa", "Khuza'a": "Khouzaa",
-    "Jibril": "Djibril", "Ja'far": "Djaafar", "Jabal": "Djabal", "Jahl": "Djahl", "Jahsh": "Djahch", "Jarrah": "Djarrah", "Jurmuz": "Djourmouz", "Juwayriyya": "Djouaïriya",
+    "Jibril": "Djibril", "Ja'far": "Djaafar", "Jabal": "Djabal", "Jahl": "Djahle", "Jahsh": "Djahch", "Jarrah": "Djarrah", "Jurmuz": "Djourmouz", "Juwayriyya": "Djouaïriya",
     "Khadija": "Khadidja", "Khaybar": "Khaïbar", "Khazraj": "Khazradj", "Khuwaylid": "Khouaïlid", "Khuzayma": "Khouzaïma", "Ka'b": "Kaab",
     "Mada'in": "Madaïne", "Mas'ud": "Massoud", "Mi'raj": "Miradj", "Isra'": "Israa", "Isra": "Israa", "Bay'at": "Baya", "Baqi'": "Baqi",
     "Mu'adh": "Mouaz", "Mu'attal": "Mouattal", "Mu'awiya": "Mouawiya", "Mu'ta": "Mouta", "Mus'ab": "Mousab", "Musa": "Moussa",
     "Rabi'a": "Rabia", "Rabi'": "Rabi", "Sa'd": "Saad", "Sa'diyya": "Saadiya", "Zam'a": "Zamaa", "Lu'lu'a": "Loulouaa", "Lu'lu": "Loulou",
-    "Hudaybiyya": "Houdaïbiya", "Hudayr": "Houdaïr", "Hunayn": "Hounaïn", "Hurayra": "Houraïra", "Husayn": "Houssaïn", "Hasan": "Hassan", "Hashim": "Hachim", "Hisham": "Hicham",
+    "Hudaybiyya": "Houdaïbiya", "Hudayr": "Houdaïr", "Hunayn": "Hounaïne", "Hurayra": "Houraïra", "Husayn": "Houssaïne", "Hasan": "Hassane", "Hassan": "Hassane", "Hashim": "Hachim", "Hisham": "Hicham",
     "Hajar": "Hadjar", "Hijja": "Hidjdja", "Hajj": "Hadj", "Harun": "Haroune", "Hawazin": "Haouazine", "Hubab": "Houbab",
-    "Idris": "Idriss", "Isa": "Issa", "Sufyan": "Soufiane", "Suhayl": "Souhaïl", "Sulaym": "Soulaïm", "Sumayya": "Soumaya", "Suffa": "Soufa", "Sunna": "Sounna", "Suraqa": "Souraqa",
+    "Idris": "Idriss", "Isa": "Issa", "Sufyan": "Soufiane", "Suhayl": "Souhaïl", "Sulaym": "Soulaïm", "Sumayya": "Soumaya", "Suffa": "Soufa", "Sunna": "Souna", "Suraqa": "Souraqa",
     "Siffin": "Siffine", "Safiyya": "Safiya", "Safwan": "Safouane", "Salman": "Salmane", "Tabuk": "Tabouk", "Ubayda": "Oubaïda", "Ubaydillah": "Oubaïdillah", "Ubayy": "Oubaï",
-    "Uhud": "Ouhoud", "Umayr": "Oumaïr", "Umays": "Oumaïs", "Umayya": "Oumaya", "Uraiqit": "Ouraïqit", "Usama": "Ousama", "Usayd": "Ousaïd", "Uthman": "Outhmane",
+    "Uhud": "Ouhoud", "Umayr": "Oumaïr", "Umays": "Oumaïs", "Umayya": "Oumaya", "Uraiqit": "Ouraïqit", "Usama": "Ousama", "Usayd": "Ousaïd", "Uthman": "Outmane",
     "Yasir": "Yassir", "Yusuf": "Youssouf", "Zayd": "Zaïd", "Zaynab": "Zaïnab", "Zubayr": "Zoubaïr", "Zuhayr": "Zouhaïr",
     "Qadisiyya": "Qadissiya", "Qasim": "Qassim", "Quba": "Qouba", "Quhafa": "Qouhafa", "Rahman": "Rahmane", "Ridwan": "Ridouane", "Rumah": "Roumah", "Ruqayya": "Rouqaya",
-    "Mundhir": "Moundhir", "Muqawqis": "Mouqawqis", "Muljam": "Mouldjam", "Muhajirun": "Mouhadjiroune", "Mustaliq": "Moustaliq", "Muttalib": "Mouttalib", "Muzdalifa": "Mouzdalifa", "Makhzum": "Makhzoum",
-    "Maymuna": "Maïmouna", "Maysara": "Maïsara", "Najran": "Nadjrane", "Nitaqayn": "Nitaqaïn", "Nurayn": "Nouraïn", "Nur": "Nour", "Nuh": "Nouh",
+    "Mundhir": "Mondhir", "Muqawqis": "Mouqawqis", "Muljam": "Mouldjam", "Muhajirun": "Mouhadjiroune", "Mustaliq": "Moustaliq", "Muttalib": "Mouttalib", "Muzdalifa": "Mouzdalifa", "Makhzum": "Makhzoum",
+    "Maymuna": "Maïmouna", "Maysara": "Maïsara", "Najran": "Nadjrane", "Nitaqayn": "Nitaqaïne", "Nurayn": "Nouraïne", "Nur": "Nour", "Nuh": "Nouh",
     "Ashhal": "Achhal", "Awwam": "Awam", "Ayyub": "Ayyoub", "Dhu": "Dhou", "Dujana": "Doujana", "Faruq": "Farouk", "Fudul": "Foudoul", "Ghatafan": "Ghatafane",
-    "Kulthum": "Koulthoum", "Amin": "Amine", "Anas": "Anass", "Affan": "Affane", "Ahl": "Ahl",
+    "Kulthum": "Koultoum", "Amin": "Amine", "Anas": "Anass", "Affan": "Affane", "Ahl": "Ahle", "Thabit": "Tabit", "Thawr": "Taour", "Thaqif": "Taqif", "Yathrib": "Yatrib", "Harith": "Haritte", "Haritha": "Harita", "Hind": "Hinnde", "Ifk": "Ifque", "Ramadan": "Ramadane", "calife": "kalif", "califes": "kalifes", "califat": "kalifat", "dos": "dau", "moud": "mou", "rythme": "ritme",
     "'umra": "oumra", "hadiths": "hadites", "hadith": "hadite", "zakat": "zakate", "adhan": "adhane", "suhur": "souhour", "ihram": "ihrame", "muezzin": "mouézine", "mubahala": "moubahala", "i'tikaf": "itikaf"
   };
   var keys = Object.keys(LEX).sort(function (a, b) { return b.length - a.length; });
@@ -131,8 +131,9 @@
       audioEl = new Audio("audio/" + c.id + "/" + i + ".mp3");
       audioEl.playbackRate = parseFloat(rate.value) || 1;
       audioEl.onended = function () { setTimeout(function () { playRec(i + 1); }, 250); };
-      audioEl.onerror = function () { mode = ""; fillVoices(); sel.value = (frVoices()[0] || {}).name || ""; mode = sel.value; start(); };
+      audioEl.onerror = function () { hasRec = false; fillVoices(); start(); };
       audioEl.play().catch(function () { ui(false); });
+      if (i + 1 < texts.length) { var pre = new Audio(); pre.preload = "auto"; pre.src = "audio/" + c.id + "/" + (i + 1) + ".mp3"; }
     }
 
     /* voix de l'appareil : phrase par phrase */
