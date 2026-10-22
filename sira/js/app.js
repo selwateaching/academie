@@ -64,7 +64,7 @@
       "<h1>Découvrez la vie du Prophète <em>ﷺ</em> d'une manière différente</h1>" +
       "<p>Ici, on ne se contente pas de dates : on suit un homme, ses proches, ses épreuves et ses victoires, de l'orphelin de La Mecque au guide d'une communauté. Une lecture simple, claire et fidèle aux sources.</p>" +
       '<div class="cta"><a class="btn gold" href="#/chapitre/' + target.id + '">' + label + '</a><a class="btn ghost" href="#/chapitres">Tous les chapitres</a></div></div>' +
-      '<div class="cover" aria-hidden="true"><div><div class="tag">Collection Sira</div><h2>La vie du Prophète ﷺ</h2></div>' +
+      '<div class="cover" aria-hidden="true"><div><div class="tag">Collection Sirah</div><h2>La vie du Prophète ﷺ</h2></div>' +
       '<svg viewBox="0 0 200 120"><path d="M10 110h180M30 110V70a20 20 0 0 1 40 0v40M80 110V50a20 20 0 0 1 40 0v60M130 110V75a18 18 0 0 1 36 0v35M100 10v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>' +
       '<div class="foot">De La Mecque à Médine · 570 – 632</div></div></div></section>' +
       '<div class="wrap stats">' +
@@ -85,6 +85,7 @@
       [201, 204, 208, 211].map(function (id) { return card(TH[id - 201]); }).join("") + '</div><p><a class="btn ghost" href="#/themes">Voir toutes les fiches</a></p></section>' +
       '<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">La prière, le jeûne, la zakat, le pèlerinage et les deux fêtes.</p><div class="grid">' +
       [301, 304, 306, 307].map(function (id) { return card(RI[id - 301]); }).join("") + '</div><p><a class="btn ghost" href="#/rites">Voir tous les rites</a></p></section>' +
+      '<section class="block wrap"><h2>Lexique</h2><p class="lead">Un mot difficile ? Plus de cent mots, noms et lieux expliqués simplement, avec la prononciation.</p><p><a class="btn gold" href="#/lexique">Ouvrir le lexique</a></p></section>' +
       '<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Où tout s\'est passé : La Mecque, Médine, Badr, Khaybar, Tabuk…</p><p><a class="btn gold" href="#/lieux">Ouvrir la carte</a></p></section>' +
       '<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">' +
       [4, 14, 16, 21, 24, 25].map(function (id) { return card(CH[id - 1]); }).join("") + "</div></section>";
@@ -105,6 +106,7 @@
     list = list.concat(colist);
     app.innerHTML = '<section class="block wrap"><h2>' + (qn ? "Résultats pour « " + esc(query) + " »" : "Tous les chapitres") + "</h2>" +
       '<p class="lead">' + list.length + (qn ? " résultat" : " chapitre") + (list.length > 1 ? "s" : "") + "</p>" +
+      (qn && SiraLexique.search(query, 6).length ? '<div class="lx-hit"><b>Dans le lexique :</b> ' + SiraLexique.search(query, 6).map(function (e) { return '<a class="chip" href="#/lexique/' + e.k + '">' + esc(e.t) + "</a>"; }).join(" ") + "</div>" : "") +
       '<div class="chips">' + chips + "</div>" +
       (list.length ? '<div class="grid">' + list.map(card).join("") + "</div>" : '<p class="empty">Aucun chapitre ne correspond. Essayez un autre mot.</p>') + "</section>";
     Array.prototype.forEach.call(app.querySelectorAll(".chip"), function (b) {
@@ -144,6 +146,7 @@
     if (!c) return viewList();
     var prev = LIST[idx - 1], next = LIST[idx + 1];
     var fs = parseFloat(store(true, KEY_FS)) || 1.1;
+    var lctx = { used: {}, skip: kd === "co" ? (function () { var o = {}; o["c" + id] = 1; return o; })() : {} };
     app.innerHTML = '<div class="progress" id="bar"></div><article class="reader">' +
       '<div class="crumbs"><a href="#/">Accueil</a> › ' + (kd !== "ch" ? '<a href="' + K.back + '">' + K.crumb + "</a> › " + esc(c.title) : '<a href="#/chapitres/' + c.period + '">' + esc(periodLabel(c.period)) + "</a> › Chapitre " + c.id) + "</div>" +
       "<h1>" + esc(c.title) + '</h1><p class="sub">' + esc(c.sub) + "</p>" +
@@ -156,7 +159,7 @@
         '<label class="rate">Vitesse <select id="rate"><option value="0.8">0,8×</option><option value="0.9">0,9×</option><option value="1" selected>1×</option><option value="1.15">1,15×</option><option value="1.3">1,3×</option></select></label>' +
         '<label class="rate"><input type="checkbox" id="auto"> Enchaîner</label></div>' +
         '<p class="audio-note" id="audioNote"></p>' : '<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>') +
-      '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p, i) { return '<figure class="panel">' + SiraArt.panel(c, i) + "</figure><p>" + esc(p) + "</p>"; }).join("") + "</div>" +
+      '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p, i) { return '<figure class="panel">' + SiraArt.panel(c, i) + "</figure><p>" + SiraLexique.annotate(p, lctx) + "</p>"; }).join("") + "</div>" +
       '<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/' + id + '">Passer le quiz</a></div>' +
       '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? "✓ Marqué comme lu" : "Marquer comme lu") + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
@@ -201,7 +204,7 @@
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
-    var nav = page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "lexique" ? "lx" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
@@ -213,6 +216,7 @@
     else if (page === "rite") viewChapter(parseInt(h[1], 10));
     else if (page === "rites") viewRites();
     else if (page === "lieux") SiraPlaces.view(h[1] || "");
+    else if (page === "lexique") SiraLexique.view(h[1] || "");
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
@@ -224,8 +228,8 @@
     app.focus({ preventScroll: true });
     var cur = page === "chapitre" ? CH[parseInt(h[1], 10) - 1] : page === "compagnon" ? CO[parseInt(h[1], 10) - 101] : page === "theme" ? TH[parseInt(h[1], 10) - 201] : page === "rite" ? RI[parseInt(h[1], 10) - 301] : null;
     document.title = cur
-      ? cur.title + " — Le Monde de la Sira"
-      : "Le Monde de la Sira — La vie du Prophète ﷺ en 25 récits";
+      ? cur.title + " — Le Monde de la Sirah"
+      : "Le Monde de la Sirah — La vie du Prophète ﷺ en 25 récits";
   }
 
   var t;

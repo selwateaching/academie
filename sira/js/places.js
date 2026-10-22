@@ -1,4 +1,4 @@
-/* Cartes et lieux : carte schématique (non à l'échelle) des lieux de la Sira. */
+/* Cartes et lieux : carte schématique (non à l'échelle) des lieux de la Sirah. */
 (function () {
   "use strict";
   var W = 450, H = 720, K = 36, LON0 = 33, LAT0 = 33.5;

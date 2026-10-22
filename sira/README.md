@@ -1,4 +1,4 @@
-# Le Monde de la Sira
+# Le Monde de la Sirah
 
 Version française, inspirée de SirahBooks, de la vie du Prophète Mouhammed ﷺ : 25 chapitres, de l'Arabie préislamique à sa mort, puis 30 portraits de compagnons 16 fiches sur la famille du Prophète, son caractère et la vie à Médine, 8 fiches sur les rites et les fêtes, et une carte schématique des lieux, rédigés en français. Chaque chapitre et chaque portrait a un quiz de 5 questions (points, étoiles, niveaux, badges) et une lecture audio.
 
@@ -36,3 +36,9 @@ Prérequis : `pip install kokoro-onnx soundfile`, ffmpeg, et les fichiers du mod
 Chaque page a une illustration d'en-tête et une illustration par paragraphe (`js/art.js`), dessinées en vectoriel : paysages, lieux et objets (désert, Kaaba, mosquée de palmes, caravanes, grotte, bateau, étendards…). **Le Prophète ﷺ, les compagnons et les autres prophètes ne sont jamais représentés** : aucune image ne montre de personnage ni de visage.
 
 Les illustrations de paragraphes sont composées d'après les mots-clés du texte (moment de la journée, décor, objets). Les décors d'en-tête sont choisis à la main dans le tableau `HERO`. Pour changer l'illustration d'une page, modifier son entrée dans `HERO` (`f` = objets, `t` = moment, `m` = décor).
+
+## Lexique
+
+`js/lexique-data.js` contient 151 entrées (termes religieux, personnes et tribus, lieux, événements, vie quotidienne, compagnons) : terme, écriture arabe, définition courte, lien « en savoir plus » et formes repérées dans les textes. Dans les chapitres et les fiches, la première apparition de chaque mot est soulignée ; un appui ouvre une fenêtre avec la définition, la prononciation et un bouton « Écouter » (fichiers `audio/lexique/<mot>.mp3`). La page `#/lexique` permet de chercher, de filtrer par catégorie et de parcourir l'index alphabétique.
+
+Pour ajouter un mot : une ligne `E(...)` dans `lexique-data.js`, puis régénérer l'audio du lexique : `python tools/generate_audio.py 0 1 audio lexique` et `node tools/make_audio_manifest.js`.

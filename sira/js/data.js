@@ -1,4 +1,4 @@
-/* La Sira du Prophète ﷺ Mouhammed ﷺ — récit en 25 chapitres.
+/* La Sirah du Prophète ﷺ Mouhammed ﷺ — récit en 25 chapitres.
    Sources principales : Ibn Ishaq / Ibn Hisham, Ibn Sa'd, at-Tabari, recueils de hadiths.
    Les dates avant l'Hégire sont approximatives. */
 window.PERIODS = [
@@ -230,7 +230,7 @@ window.CHAPTERS = [
       "Peu après son retour à Médine, le Prophète ﷺ tombe malade. Il fait ses adieux aux martyrs d'Uhud, demande pardon à ses compagnons de ce qu'il aurait pu leur faire, et choisit de passer ses derniers jours dans la maison d'Aïcha, avec l'accord de ses épouses.",
       "Trop faible pour diriger la prière, il demande qu'Abu Bakr la dirige. Un matin, en voyant les fidèles en rangs, il sourit de bonheur. Il meurt un lundi du mois de Rabi' al-awwal de l'an 11, la tête sur Aïcha, à l'âge de soixante-trois ans. Ses derniers mots rapportés : « Plutôt la Compagnie suprême. »",
       "Médine est plongée dans la stupeur. Omar refuse d'y croire. Abu Bakr arrive, embrasse le visage du Prophète ﷺ, puis s'adresse à la foule : « Que ceux qui adoraient Mouhammed ﷺ sachent que Mouhammed ﷺ est mort. Et que ceux qui adorent Dieu sachent que Dieu est vivant et ne meurt pas. » Il récite le verset : « Mouhammed ﷺ n'est qu'un messager... »",
-      "Le Prophète ﷺ est enterré dans la chambre où il est mort, à l'emplacement de l'actuelle Mosquée du Prophète ﷺ. Vingt-trois ans de mission ont transformé une société tribale en une communauté fondée sur la foi, la justice et la miséricorde. Son message lui survit, et la Sira reste, pour des millions de croyants, un exemple de patience, de droiture et de compassion."
+      "Le Prophète ﷺ est enterré dans la chambre où il est mort, à l'emplacement de l'actuelle Mosquée du Prophète ﷺ. Vingt-trois ans de mission ont transformé une société tribale en une communauté fondée sur la foi, la justice et la miséricorde. Son message lui survit, et la Sirah reste, pour des millions de croyants, un exemple de patience, de droiture et de compassion."
     ]
   }
 ];

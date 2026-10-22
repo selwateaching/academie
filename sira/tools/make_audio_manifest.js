@@ -1,7 +1,7 @@
 /* Écrit js/audio-manifest.js : liste des pages dont tous les fichiers audio existent (audio/<id>/0..n.mp3). */
 const fs = require("fs"), path = require("path");
 global.window = {};
-["data", "quiz", "companions", "companions2", "themes", "rites"].forEach(f => require(path.join(__dirname, "..", "js", f + ".js")));
+["data", "quiz", "companions", "companions2", "themes", "rites", "lexique-data"].forEach(f => require(path.join(__dirname, "..", "js", f + ".js")));
 const items = [].concat(window.CHAPTERS, window.COMPANIONS, window.THEMES, window.RITES);
 const root = path.join(__dirname, "..", "audio");
 const ids = items.filter(it => {
@@ -11,6 +11,7 @@ const ids = items.filter(it => {
   }
   return true;
 }).map(it => it.id);
+const terms = window.LEXIQUE.list.map(e => e.k).filter(k => { const f = path.join(root, "lexique", k + ".mp3"); return fs.existsSync(f) && fs.statSync(f).size > 1000; });
 fs.writeFileSync(path.join(__dirname, "..", "js", "audio-manifest.js"),
-  "/* Généré par tools/make_audio_manifest.js : pages disposant d'une voix enregistrée. */\nwindow.SIRA_AUDIO = " + JSON.stringify({ version: 1, ids }) + ";\n");
-console.log(ids.length + " pages avec audio sur " + items.length);
+  "/* Généré par tools/make_audio_manifest.js : pages disposant d'une voix enregistrée. */\nwindow.SIRA_AUDIO = " + JSON.stringify({ version: 1, ids, terms }) + ";\n");
+console.log(ids.length + " pages avec audio sur " + items.length + " ; " + terms.length + " mots du lexique");

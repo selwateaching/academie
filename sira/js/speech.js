@@ -25,6 +25,9 @@
     "Kulthum": "Koultoum", "Amin": "Amine", "Anas": "Anass", "Affan": "Affane", "Ahl": "Ahle", "Thabit": "Tabit", "Thawr": "Taour", "Thaqif": "Taqif", "Yathrib": "Yatrib", "Harith": "Haritte", "Haritha": "Harita", "Hind": "Hinnde", "Ifk": "Ifque", "Ramadan": "Ramadane", "calife": "kalif", "califes": "kalifes", "califat": "kalifat", "dos": "dau", "moud": "mou", "rythme": "ritme",
     "'umra": "oumra", "hadiths": "hadites", "hadith": "hadite", "zakat": "zakate", "adhan": "adhane", "suhur": "souhour", "ihram": "ihrame", "muezzin": "mouézine", "mubahala": "moubahala", "i'tikaf": "itikaf"
   };
+  Object.keys(LEX).forEach(function (k) { /* variantes avec majuscule (début de phrase) */
+    var c = k.charAt(0); if (c !== c.toUpperCase() && /[a-zà-ÿ]/.test(c)) { var K = c.toUpperCase() + k.slice(1), v = LEX[k]; if (!LEX[K]) LEX[K] = v.charAt(0).toUpperCase() + v.slice(1); }
+  });
   var keys = Object.keys(LEX).sort(function (a, b) { return b.length - a.length; });
   var LEXRE = new RegExp("(?<![\\p{L}])(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\p{L}])", "gu");
   var ELISION = { l: 1, d: 1, j: 1, m: 1, n: 1, s: 1, t: 1, c: 1, qu: 1, jusqu: 1, lorsqu: 1, puisqu: 1, quoiqu: 1, quelqu: 1, aujourd: 1 };
@@ -167,5 +170,23 @@
     if (/audio=1/.test(location.hash)) { history.replaceState(null, "", location.hash.replace(/\?audio=1/, "")); setTimeout(start, 300); }
   }
 
-  window.SiraAudio = { setup: setup, stop: stop, supported: supported, prepare: prepare, sentences: sentences, frVoices: frVoices };
+  /* Prononciation d'un mot du lexique : fichier enregistré s'il existe, sinon voix de l'appareil. */
+  function say(key, text) {
+    stop();
+    var terms = window.SIRA_AUDIO && window.SIRA_AUDIO.terms;
+    function tts() {
+      if (!window.speechSynthesis) return;
+      var u = new SpeechSynthesisUtterance(prepare(text)), voices = frVoices(), saved = get(KEY_V);
+      var v = voices.filter(function (x) { return x.name === saved; })[0] || voices[0];
+      u.lang = v ? v.lang : "fr-FR"; if (v) u.voice = v; u.rate = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+    if (terms && terms.indexOf(key) !== -1) {
+      audioEl = new Audio("audio/lexique/" + key + ".mp3");
+      audioEl.onerror = tts;
+      audioEl.play().catch(tts);
+    } else tts();
+  }
+
+  window.SiraAudio = { say: say, setup: setup, stop: stop, supported: supported, prepare: prepare, sentences: sentences, frVoices: frVoices };
 })();

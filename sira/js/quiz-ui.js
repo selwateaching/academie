@@ -4,7 +4,7 @@
   var KEY = "sira-fr:quiz", SECONDS = 20, BASE = 100, BONUS = 50;
   var LEVELS = [
     { min: 0, name: "Curieux" }, { min: 500, name: "Lecteur" }, { min: 1500, name: "Étudiant" },
-    { min: 3000, name: "Chercheur" }, { min: 5000, name: "Savant" }, { min: 7500, name: "Gardien de la Sira" }
+    { min: 3000, name: "Chercheur" }, { min: 5000, name: "Savant" }, { min: 7500, name: "Gardien de la Sirah" }
   ];
   var timer = null;
   function kind(id) { return id >= 300 ? "ri" : id >= 200 ? "th" : id >= 100 ? "co" : "ch"; }
@@ -42,7 +42,7 @@
     out.push({ art: "palm", name: "Compagnon", desc: "Réussir les 30 quiz sur les compagnons", ok: (window.COMPANIONS || []).every(function (c) { return done(c.id); }) });
     out.push({ art: "book", name: "Famille et thèmes", desc: "Réussir les 16 quiz sur la famille et les thèmes", ok: (window.THEMES || []).every(function (c) { return done(c.id); }) });
     out.push({ art: "rites", name: "Rites et fêtes", desc: "Réussir les 8 quiz sur les rites et les fêtes", ok: (window.RITES || []).every(function (c) { return done(c.id); }) });
-    out.push({ art: "trophy", name: "Gardien de la Sira", desc: "Réussir les 25 quiz des chapitres", ok: ch.every(function (c) { return done(c.id); }) });
+    out.push({ art: "trophy", name: "Gardien de la Sirah", desc: "Réussir les 25 quiz des chapitres", ok: ch.every(function (c) { return done(c.id); }) });
     return out;
   }
 

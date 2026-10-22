@@ -9,7 +9,12 @@ so = ort.SessionOptions(); so.intra_op_num_threads = 1; so.inter_op_num_threads 
 sess = ort.InferenceSession("model/kokoro-v1.0.onnx", sess_options=so, providers=["CPUExecutionProvider"])
 k = Kokoro.from_session(sess, "model/voices-v1.0.bin")
 texts = json.load(open("texts.json"))
-jobs = [(int(i), n, t) for i, ts in texts.items() for n, t in enumerate(ts)]
+only = sys.argv[4] if len(sys.argv) > 4 else None
+jobs = []
+for i, ts in texts.items():
+    if only and i != only: continue
+    if isinstance(ts, dict): jobs += [(i, k, t) for k, t in ts.items()]
+    else: jobs += [(i, str(n), t) for n, t in enumerate(ts)]
 jobs = [j for idx, j in enumerate(sorted(jobs)) if idx % nshards == shard]
 done = 0
 for i, n, t in jobs:
