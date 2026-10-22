@@ -16,7 +16,7 @@
     });
     var btn = document.getElementById("langbtn");
     if (btn) {
-      btn.textContent = window.LANG === "en" ? "FR" : "EN";
+      btn.textContent = window.LANG === "en" ? "🌐 Français" : "🌐 English";
       btn.setAttribute("aria-label", window.LANG === "en" ? "Passer en français" : "Switch to English");
       btn.setAttribute("title", window.LANG === "en" ? "Français" : "English");
       btn.onclick = function () { window.SiraI18n.set(window.LANG === "en" ? "fr" : "en"); };
