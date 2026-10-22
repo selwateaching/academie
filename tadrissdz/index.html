@@ -8119,9 +8119,9 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Projet 1 : Dossier documentaire scientifique/technique",
-        "Projet 2 : Petite pièce théâtrale",
-        "Projet 3 : Production littéraire / nouvelles / récit"
+        "Projet 1 : Le discours objectivé (Sc. exp./Maths/Tech. maths/Gestion-éco)",
+        "Projet 2 : Le plaidoyer et le réquisitoire (Sc. exp./Maths/Tech. maths/Gestion-éco)",
+        "Projet 3 : La nouvelle d'anticipation / Le reportage touristique (Sc. exp./Maths/Tech. maths/Gestion-éco)"
       ]
     },
     {
@@ -8252,9 +8252,10 @@ var PROG = {
     {
       "mat": "Langue française 📖",
       "chapitres": [
-        "Projet 1 : Textes et documents d'Histoire",
-        "Projet 2 : Le débat d'idées",
-        "Projet 3 : L'appel"
+        "Projet 1 : Textes et documents d'histoire (Lettres-philo/Langues étrangères)",
+        "Projet 2 : Le débat d'idées (Lettres-philo/Langues étrangères)",
+        "Projet 3 : L'appel (Lettres-philo/Langues étrangères)",
+        "Projet 4 : La nouvelle fantastique (Lettres-philo/Langues étrangères)"
       ]
     },
     {
@@ -10112,14 +10113,106 @@ var PROG_DETAIL = {
         }
       ]
     }
+  },
+  "2AS": {
+    /* Transcrit depuis le sommaire officiel 2AS — table UNIQUE commune aux filières Sciences
+       expérimentales / Mathématiques / Techniques mathématiques / Gestion & Économie (26 semaines
+       x 3h = 78h). Les filières Lettres et philosophie / Langues étrangères ont un programme
+       différent à partir de la 2AS, non transcrit ici (génération IA en attendant). Ce sommaire ne
+       donne que les intitulés de séquence, le volume horaire et les pages du manuel — pas de détail
+       grammaire/lexique séquence par séquence comme pour le primaire/moyen, donc ces champs restent
+       vides ici plutôt que d'être inventés. */
+    "langue française": (function() {
+      var detail = {
+        projets: [
+          {
+            nom: "Projet 1 : Le discours objectivé",
+            tacheFinale: "Concevoir et réaliser un dossier documentaire pour présenter les grandes réalisations scientifiques et techniques de notre époque.",
+            sequences: [
+              { nom: "Séquence 1 : Produire un texte pour présenter un fait, une notion, un phénomène.", production: "Produire un texte pour présenter un fait, une notion, un phénomène. (15 heures)", pages: "76-83", dureeSemaines: 5 },
+              { nom: "Séquence 2 : Produire un texte pour démontrer, prouver un fait.", production: "Produire un texte pour démontrer, prouver un fait. (12 heures)", pages: "76-83", dureeSemaines: 4 }
+            ]
+          },
+          {
+            nom: "Projet 2 : Le plaidoyer et le réquisitoire",
+            tacheFinale: "Produire une petite pièce théâtrale pour la présenter au lycée. Cette pièce, qui opposera deux instances adverses, présentera un événement qui s'inscrit dans les grands tournants de la pensée humaine. (Exemple : Le procès de Galilée)",
+            sequences: [
+              { nom: "Séquence 1 : Produire un discours pour plaider en faveur d'une personne, d'une opinion ou d'une cause.", production: "Produire un discours pour plaider en faveur d'une personne, d'une opinion ou d'une cause. (12 heures)", pages: "84-91", dureeSemaines: 4 },
+              { nom: "Séquence 2 : Produire un texte pour dénoncer ou discréditer une personne, une opinion ou une cause.", production: "Produire un texte pour dénoncer ou discréditer une personne, une opinion ou une cause. (12 heures)", pages: "84-91", dureeSemaines: 4 }
+            ]
+          },
+          {
+            nom: "Projet 3 : La nouvelle d'anticipation / Le reportage touristique",
+            tacheFinale: "Constituer un recueil de nouvelles pour représenter un monde futur.",
+            sequences: [
+              { nom: "Séquence (La nouvelle d'anticipation) : Produire un récit d'anticipation.", production: "Produire un récit d'anticipation. (15 heures)", pages: "92-95", dureeSemaines: 5 },
+              { nom: "Séquence (Le reportage touristique et le récit de voyage) : Produire un reportage touristique pour faire connaître aux touristes une région d'Algérie.", production: "Produire un reportage touristique pour faire connaître aux touristes une région d'Algérie. (12 heures)", pages: "96-99", dureeSemaines: 4 }
+            ]
+          }
+        ]
+      };
+      return { parFiliere: { sciences_exp: detail, mathematiques: detail, techniques_maths: detail, gestion_eco: detail } };
+    })()
+  },
+  "3AS": {
+    /* Transcrit depuis le sommaire officiel 3AS — table pour les filières Lettres et philosophie /
+       Langues étrangères uniquement (26 semaines x 4h = 104h). Les autres filières (Sciences exp.,
+       Mathématiques, Techniques mathématiques, Gestion & Économie) ont un programme différent à ce
+       niveau, non transcrit ici (génération IA en attendant). Même remarque que pour le 2AS : seuls
+       intitulés/volume horaire/pages sont donnés par ce sommaire, pas de détail séquence par séquence. */
+    "langue française": {
+      parFiliere: {
+        lettres_philo: { projets: [
+          {
+            nom: "Projet 1 : Textes et documents d'histoire",
+            tacheFinale: "Dans le cadre de la commémoration d'une date historique, réaliser une recherche documentaire puis en faire une synthèse de l'information à mettre à la disposition des élèves.",
+            sequences: [
+              { nom: "Séquence 1 : Produire un texte pour informer d'un fait d'histoire de manière objective.", production: "Produire un texte pour informer d'un fait d'histoire de manière objective. (15 heures)", pages: "06-08", dureeSemaines: 4 },
+              { nom: "Séquence 2 : Produire un texte pour présenter un fait d'histoire en y introduisant des commentaires et/ou des témoignages.", production: "Produire un texte pour présenter un fait d'histoire en y introduisant des commentaires et/ou des témoignages. (20 heures)", pages: "06-08", dureeSemaines: 5 }
+            ]
+          },
+          {
+            nom: "Projet 2 : Le débat d'idées",
+            tacheFinale: "Organiser un débat en classe pour confronter des points de vue sur un sujet d'actualité puis, en faire un compte rendu qui sera publié sur la page Facebook de l'établissement.",
+            sequences: [
+              { nom: "Séquence 1 : Produire un texte pour convaincre ou persuader (s'inscrire dans un débat).", production: "Produire un texte pour convaincre ou persuader. (S'inscrire dans un débat.) (20 heures)", pages: "12-19", dureeSemaines: 5 },
+              { nom: "Séquence 2 : Produire un texte pour concéder et réfuter.", production: "Produire un texte pour concéder et réfuter. (16 heures)", pages: "12-19", dureeSemaines: 4 }
+            ]
+          },
+          {
+            nom: "Projet 3 : L'appel",
+            tacheFinale: "Dans le cadre d'une journée citoyenne, rédiger des appels pour inciter les habitants de la région à faire preuve de civisme.",
+            sequences: [
+              { nom: "Séquence : Produire un texte pour inciter le destinataire à agir.", production: "Produire un texte pour inciter le destinataire à agir. (18 heures)", pages: "20-23", dureeSemaines: 4 }
+            ]
+          },
+          {
+            nom: "Projet 4 : La nouvelle fantastique",
+            tacheFinale: "Réaliser un recueil de nouvelles fantastiques à mettre à la disposition des élèves dans la bibliothèque du lycée.",
+            sequences: [
+              { nom: "Séquence : Produire un récit fantastique.", production: "Produire un récit fantastique. (15 heures)", pages: "24-27", dureeSemaines: 4 }
+            ]
+          }
+        ] }
+      }
+    }
   }
 };
-function getDetailOfficielProga(niveauKey, mat) {
+PROG_DETAIL["3AS"]["langue française"].parFiliere.langues_etr = PROG_DETAIL["3AS"]["langue française"].parFiliere.lettres_philo;
+function getDetailOfficielProga(niveauKey, mat, filiereVal) {
   var parNiveau = PROG_DETAIL[niveauKey];
   if (!parNiveau) return null;
   var keys = MATIERE_PROG_KEYS[(mat || '').toLowerCase()] || [(mat || '').toLowerCase()];
   for (var i = 0; i < keys.length; i++) {
-    if (parNiveau[keys[i]]) return parNiveau[keys[i]];
+    var entry = parNiveau[keys[i]];
+    if (!entry) continue;
+    /* Certains niveaux (lycée) ont un programme qui diffère par filière : l'entrée est alors
+       {parFiliere:{...}} plutôt qu'un {projets:[...]} direct. On ne renvoie le détail officiel que
+       si la filière choisie y figure explicitement — jamais de "au hasard" entre filières, dont les
+       programmes peuvent être très différents (volume horaire, séquences...). Sans filière connue,
+       on laisse la génération IA prendre le relais plutôt que de deviner. */
+    if (entry.parFiliere) return (filiereVal && entry.parFiliere[filiereVal]) ? entry.parFiliere[filiereVal] : null;
+    return entry;
   }
   return null;
 }
@@ -10171,12 +10264,13 @@ async function genProgaIA() {
      quand il existe pour ce niveau/matière, on l'applique directement — sans passer par l'IA ni
      consommer de quota — pour une fidélité garantie au document officiel plutôt qu'une génération
      qui pourrait reformuler. */
-  var detailOfficiel = !filiereVal ? getDetailOfficielProga(niveauKey, mat) : null;
+  var detailOfficiel = getDetailOfficielProga(niveauKey, mat, filiereVal);
   if (detailOfficiel) {
     var cidCibleDetail = progaClasseId();
     var ancienProjetsDetail = D.progression.filter(function(p){ return p.cid === cidCibleDetail; });
     if (ancienProjetsDetail.length) {
-      var remplaceDetail = await appConfirm(CURRENT_LANG==='ar'?('استبدال تدرج هذا القسم ببرنامج '+niveauKey+' الرسمي المفصل ؟'):('Remplacer la progression actuelle de cette classe par le programme officiel '+niveauKey+' détaillé ?'));
+      var niveauFiliereTxt = niveauKey + (filiereIA ? ' — ' + filiereIA : '');
+      var remplaceDetail = await appConfirm(CURRENT_LANG==='ar'?('استبدال تدرج هذا القسم ببرنامج '+niveauFiliereTxt+' الرسمي المفصل ؟'):('Remplacer la progression actuelle de cette classe par le programme officiel '+niveauFiliereTxt+' détaillé ?'));
       if (!remplaceDetail) return;
     }
     var nextIdDetail = D.progression.length ? Math.max.apply(null, D.progression.map(function(p){ return p.id; }))+1 : 1;
