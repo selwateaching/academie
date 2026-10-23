@@ -91,6 +91,49 @@
     airetri: () => svg(360, 160, `<path d="M60 130L260 130L150 30Z" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".08"/>
       ${L(150, 30, 150, 130, C.rouge, 2.5).replace('/>', ' stroke-dasharray="6 5"/>')}<path d="M150 118H162V130" stroke="${C.rouge}" stroke-width="2"/>
       ${T(160, 82, 'h', `fill="${C.rouge}" font-size="16"`)}${T(160, 150, 'base b')}${T(300, 85, 'A = b × h ÷ 2', 'font-size="14"')}`),
+    balance: () => svg(360, 170, `<path d="M180 150V50M130 150H230" stroke="currentColor" stroke-width="4"/><path d="M70 62L290 62" stroke="${C.brand}" stroke-width="4"/>
+      <path d="M70 62L50 112H110Z M290 62L270 112H330Z" stroke="currentColor" stroke-width="2.5" fill="${C.brand}" fill-opacity=".08"/>
+      ${T(80, 132, 'x + 3', `fill="${C.rouge}" font-size="14"`)}${T(300, 132, '8', `fill="${C.vert}" font-size="15"`)}
+      ${T(180, 36, 'x + 3 = 8  →  x = 8 − 3 = 5', 'font-size="14"')}${T(180, 166, 'même opération des deux côtés', 'font-size="11"')}`),
+    stats: () => svg(360, 180, `${ARROW('a7', 'currentColor')}<path d="M40 150V14" stroke="currentColor" stroke-width="2.5" marker-end="url(#a7)"/><path d="M40 150H346" stroke="currentColor" stroke-width="2.5"/>
+      ${[[60, 60, C.bleu, '8'], [118, 100, C.vert, '12'], [176, 40, C.or, '6'], [234, 78, C.rouge, '10'], [292, 120, C.brand, '14']].map(([x, h, c, v], i) => `<rect class="pulse" style="animation-delay:${i * 0.25}s" x="${x}" y="${150 - h}" width="38" height="${h}" fill="${c}" fill-opacity=".7"/>${T(x + 19, 144 - h, v, 'font-size="12"')}`).join('')}
+      ${T(180, 172, 'moyenne = somme des valeurs ÷ nombre de valeurs', 'font-size="12"')}`),
+    urne: () => svg(360, 170, `<path d="M110 40L120 130Q180 150 240 130L250 40" stroke="currentColor" stroke-width="3.5"/>
+      ${[[140, 110, C.rouge], [170, 118, C.rouge], [200, 112, C.bleu], [225, 100, C.rouge], [155, 88, C.bleu], [190, 86, C.rouge], [215, 70, C.bleu]].map(([x, y, c], i) => `<circle class="pop" style="animation-delay:${i * 0.2}s" cx="${x}" cy="${y}" r="10" fill="${c}"/>`).join('')}
+      ${T(310, 80, '4 rouges', `fill="${C.rouge}" font-size="13"`)}${T(310, 100, '3 bleues', `fill="${C.bleu}" font-size="13"`)}${T(180, 22, 'P(rouge) = 4 ÷ 7', 'font-size="15"')}${T(180, 166, 'probabilité = cas favorables ÷ cas possibles', 'font-size="11"')}`),
+    alternes: () => svg(360, 180, `<path d="M20 60H340M20 130H340" stroke="currentColor" stroke-width="3"/><path d="M110 170L250 20" stroke="${C.brand}" stroke-width="3.5"/>
+      <path class="pop" d="M190 60L214 60A24 24 0 0 0 206 44" stroke="${C.rouge}" stroke-width="3"/><path class="pop" style="animation-delay:.5s" d="M170 130L146 130A24 24 0 0 0 154 146" stroke="${C.rouge}" stroke-width="3"/>
+      ${T(222, 82, 'a', `fill="${C.rouge}" font-size="15"`)}${T(140, 122, 'a', `fill="${C.rouge}" font-size="15"`)}
+      ${T(300, 50, '(d₁)', 'font-size="12"')}${T(300, 120, '(d₂)', 'font-size="12"')}${T(180, 176, 'd₁ ∥ d₂ : les angles alternes-internes sont égaux', 'font-size="12"')}`),
+    prisme: () => svg(360, 180, `<path d="M70 70L190 70L190 140L70 140Z M70 70L120 40L240 40L190 70 M240 40L240 110L190 140" stroke="${C.brand}" stroke-width="3.5" fill="${C.brand}" fill-opacity=".07"/>
+      <path d="M70 140L120 110L240 110M120 40V110" stroke="${C.gris}" stroke-width="1.8" stroke-dasharray="5 5"/>
+      ${T(130, 162, 'base', 'font-size="12"')}${T(282, 82, 'hauteur', `fill="${C.rouge}" font-size="12"`)}${T(300, 140, 'V = aire × h', 'font-size="13"')}`),
+    algo: () => svg(360, 170, `${ARROW('a8', 'currentColor')}${[['début', 14, C.vert], ['répéter ×4', 100, C.or], ['avancer 50', 186, C.bleu], ['fin', 272, C.rouge]].map(([t, x, c], i) => `<rect class="pulse" style="animation-delay:${i * 0.3}s" x="${x}" y="48" width="74" height="44" rx="10" fill="${c}" fill-opacity=".2" stroke="${c}" stroke-width="3"/>${T(x + 37, 75, t, 'font-size="10"')}`).join('')}
+      <path d="M88 70H100M174 70H186M260 70H272" stroke="currentColor" stroke-width="2.5" marker-end="url(#a8)"/>
+      ${T(180, 130, 'un programme = une suite d’instructions', 'font-size="13"')}${T(180, 152, 'tourner de 90° quatre fois : on trace un carré', 'font-size="11"')}`),
+    son: () => svg(360, 170, `<rect x="24" y="64" width="26" height="42" rx="6" fill="${C.gris}"/>${[1, 2, 3, 4].map((i) => `<circle class="wv" style="animation-delay:${i * 0.5}s" cx="62" cy="85" r="${i * 10}" stroke="${C.bleu}" stroke-width="3"/>`).join('')}
+      <path d="M270 70A22 22 0 0 1 270 100M285 60A36 36 0 0 1 285 110" stroke="${C.gris}" stroke-width="2"/><circle cx="318" cy="85" r="12" fill="${C.or}" fill-opacity=".4" stroke="${C.or}" stroke-width="3"/>
+      ${T(37, 128, 'source', 'font-size="12"')}${T(318, 118, 'oreille', 'font-size="12"')}${T(180, 160, 'dans l’air ≈ 340 m/s ; rien dans le vide', 'font-size="12"')}`),
+    energie: () => svg(360, 170, `${ARROW('a9', C.rouge)}${[['soleil', '☀️', 10], ['panneau', '🔋', 130], ['lampe', '💡', 250]].map(([t, e, x]) => `<rect x="${x}" y="40" width="100" height="70" rx="12" stroke="currentColor" stroke-width="2.5" fill="${C.or}" fill-opacity=".12"/><text x="${x + 50}" y="82" font-size="30" text-anchor="middle" stroke="none">${e}</text>${T(x + 50, 128, t, 'font-size="12"')}`).join('')}
+      <path class="dash" d="M112 75H128M232 75H248" stroke="${C.rouge}" stroke-width="3.5" marker-end="url(#a9)"/>${T(120, 30, 'rayonnante', 'font-size="10"')}${T(240, 30, 'électrique', 'font-size="10"')}${T(180, 160, 'l’énergie se convertit, elle ne disparaît pas', 'font-size="12"')}`),
+    force: () => svg(360, 170, `${ARROW('a10', C.rouge)}${ARROW('a11', C.bleu)}<rect x="130" y="70" width="100" height="50" rx="6" fill="${C.gris}" fill-opacity=".3" stroke="${C.gris}" stroke-width="3"/><path d="M20 130H340" stroke="currentColor" stroke-width="3"/>
+      <path class="pulse" d="M60 95H128" stroke="${C.rouge}" stroke-width="5" marker-end="url(#a10)"/>${T(80, 80, 'poussée', `fill="${C.rouge}" font-size="12"`)}
+      <path d="M180 120V160" stroke="${C.bleu}" stroke-width="5" marker-end="url(#a11)"/>${T(220, 156, 'poids', `fill="${C.bleu}" font-size="12"`)}${T(180, 20, 'une force : un point, une direction, un sens, une valeur', 'font-size="12"')}`),
+    lune: () => svg(360, 170, `<circle cx="50" cy="85" r="26" fill="${C.or}" fill-opacity=".5" stroke="${C.or}" stroke-width="3"/>${T(50, 130, 'Soleil', 'font-size="12"')}
+      <path class="dash" d="M85 70H170M85 85H170M85 100H170" stroke="${C.or}" stroke-width="2.5"/>
+      <circle cx="200" cy="85" r="22" fill="${C.bleu}" fill-opacity=".35" stroke="${C.bleu}" stroke-width="3"/>${T(200, 130, 'Terre', 'font-size="12"')}
+      <circle cx="290" cy="85" r="12" fill="#1e293b" stroke="${C.gris}" stroke-width="2"/><path d="M290 73A12 12 0 0 0 290 97Z" fill="#fff" stroke="none"/>${T(290, 118, 'Lune', 'font-size="12"')}
+      <path d="M200 40A110 50 0 0 1 290 40" stroke="${C.gris}" stroke-width="1.5" stroke-dasharray="5 5"/>${T(180, 160, 'une moitié de la Lune est toujours éclairée', 'font-size="11"')}`),
+    oeil: () => svg(360, 170, `<circle cx="40" cy="85" r="18" fill="${C.or}" fill-opacity=".35" stroke="${C.or}" stroke-width="3"/><rect x="100" y="50" width="22" height="70" rx="6" fill="${C.vert}" fill-opacity=".5" stroke="${C.vert}" stroke-width="3"/>
+      <path class="dash" d="M60 80L100 78M122 82L270 84" stroke="${C.or}" stroke-width="2.5"/><ellipse cx="300" cy="85" rx="30" ry="20" stroke="currentColor" stroke-width="3"/><circle cx="300" cy="85" r="9" fill="${C.brand}"/>
+      ${T(40, 125, 'source', 'font-size="11"')}${T(111, 138, 'objet', 'font-size="11"')}${T(300, 125, 'œil', 'font-size="11"')}${T(180, 160, 'on voit un objet quand sa lumière entre dans l’œil', 'font-size="12"')}`),
+    air: () => svg(360, 170, `<rect x="30" y="40" width="300" height="34" stroke="currentColor" stroke-width="2.5"/><rect class="pulse" x="30" y="40" width="234" height="34" fill="${C.bleu}" fill-opacity=".4"/><rect class="pulse" style="animation-delay:.5s" x="264" y="40" width="63" height="34" fill="${C.rouge}" fill-opacity=".45"/>
+      ${T(147, 62, 'diazote N₂ ≈ 78 %', 'font-size="13"')}${T(296, 62, 'O₂ 21 %', 'font-size="11"')}${T(180, 110, 'un mélange : ≈ 4/5 de diazote, 1/5 de dioxygène', 'font-size="12"')}${T(180, 132, 'le dioxygène entretient la combustion', 'font-size="12"')}`),
+    conservation: () => svg(360, 170, `<path d="M180 150V60M130 150H230" stroke="currentColor" stroke-width="4"/><path d="M60 60H300" stroke="${C.brand}" stroke-width="4"/>
+      <path d="M60 60L40 112H110Z M300 60L280 112H340Z" stroke="currentColor" stroke-width="2.5" fill="${C.brand}" fill-opacity=".08"/>
+      ${T(75, 132, 'glaçon 50 g', 'font-size="11"')}${T(310, 132, 'eau 50 g', 'font-size="11"')}${T(180, 32, 'la masse se conserve quand l’état change', 'font-size="13"')}${T(180, 166, 'le volume, lui, peut changer', 'font-size="11"')}`),
+    goutte: () => svg(360, 170, `<path class="pop" d="M180 24C180 24 130 84 130 112A50 50 0 0 0 230 112C230 84 180 24 180 24Z" stroke="${C.bleu}" stroke-width="4" fill="${C.bleu}" fill-opacity=".25"/>
+      ${T(180, 118, 'H₂O', `fill="${C.bleu}" font-size="18"`)}${T(300, 70, 'sulfate de', 'font-size="11"')}${T(300, 84, 'cuivre blanc', 'font-size="11"')}${T(300, 100, '→ bleu', `fill="${C.bleu}" font-size="12"`)}${T(60, 80, 'eau potable', 'font-size="12"')}${T(60, 98, '≠ eau pure', 'font-size="12"')}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -355,6 +398,161 @@
       ],
       recap: ['Décantation : laisser reposer.', 'Filtration : retenir un solide.', 'Évaporation : récupérer le soluté.', 'Distillation : récupérer le solvant.'],
       quiz: [Q('Pour récupérer le sel de l’eau salée, on utilise :', ['la filtration', 'l’évaporation'], 1), Q('Pour retenir du sable dans de l’eau, on utilise :', ['la filtration', 'la distillation'], 0)] },
+    { id: 'm5-litteral', subj: 'maths', level: '5e', icon: '🔤', title: 'Le calcul littéral et les équations',
+      intro: 'Une lettre peut remplacer un nombre : c’est la clé pour écrire des formules et résoudre des problèmes.',
+      steps: [
+        S('Une expression littérale', 'Une <b>expression littérale</b> contient des lettres. Le périmètre d’un carré de côté c s’écrit <b>4 × c</b>, ou simplement <b>4c</b>. Si c = 3, alors 4c = 12.'),
+        S('Réduire', 'On regroupe les termes de même nature : 3x + 5x = <b>8x</b>. Mais 3x + 5 ne se réduit pas, car ce ne sont pas les mêmes termes.'),
+        S('La distributivité', 'On multiplie le facteur devant la parenthèse par chaque terme : <b>k × (a + b) = k × a + k × b</b>. Exemple : 3 × (x + 4) = 3x + 12.'),
+        S('Résoudre une équation', 'Résoudre x + 3 = 8, c’est trouver la valeur de x. On fait la <b>même opération des deux côtés</b>, comme sur une balance : x = 8 − 3 = 5. On vérifie : 5 + 3 = 8.', 'balance'),
+      ],
+      recap: ['4c veut dire 4 × c.', 'On réduit les termes de même nature.', 'k(a + b) = ka + kb.', 'Une équation garde l’équilibre : même opération des deux côtés.'],
+      quiz: [Q('3x + 5x = ?', ['8x', '8x²', '15x'], 0), Q('Solution de x + 6 = 10 :', ['x = 4', 'x = 16', 'x = 6'], 0)] },
+
+    { id: 'm5-statistiques', subj: 'maths', level: '5e', icon: '📊', title: 'Les statistiques',
+      intro: 'Pour comprendre une série de données (notes, tailles, ventes), on la résume avec quelques nombres et un diagramme.',
+      steps: [
+        S('Effectif et fréquence', 'L’<b>effectif</b> d’une valeur est le nombre de fois où elle apparaît. La <b>fréquence</b> est l’effectif divisé par l’effectif total. Si 6 élèves sur 30 ont 12, la fréquence de 12 est 6 ÷ 30 = 0,2, soit 20 %.'),
+        S('Le diagramme en barres', 'Chaque valeur a une barre dont la hauteur représente son effectif. On lit tout de suite la valeur la plus fréquente.', 'stats'),
+        S('La moyenne', 'La <b>moyenne</b> est la somme des valeurs divisée par leur nombre. Notes : 10, 12, 14. Moyenne = (10 + 12 + 14) ÷ 3 = 12.'),
+        S('L’étendue', 'L’<b>étendue</b> est la différence entre la plus grande et la plus petite valeur. Notes de 6 à 17 : étendue = 17 − 6 = 11.'),
+      ],
+      recap: ['Fréquence = effectif ÷ effectif total.', 'Moyenne = somme ÷ nombre de valeurs.', 'Étendue = plus grande − plus petite.'],
+      quiz: [Q('Moyenne de 8, 10 et 12 :', ['9', '10', '12'], 1), Q('Étendue de la série 4, 9, 15 :', ['11', '15', '19'], 0)] },
+
+    { id: 'm5-probabilites', subj: 'maths', level: '5e', icon: '🎲', title: 'Les probabilités',
+      intro: 'On ne peut pas prévoir le résultat d’un lancer de dé, mais on peut mesurer ses chances.',
+      steps: [
+        S('Une expérience aléatoire', 'Une expérience est <b>aléatoire</b> quand on connaît tous les résultats possibles mais pas celui qui sortira : un dé, une pièce, une urne.'),
+        S('Calculer une probabilité', 'Si tous les résultats ont la même chance : <b>probabilité = nombre de cas favorables ÷ nombre de cas possibles</b>. Dans l’urne : 4 boules rouges sur 7, donc P(rouge) = 4 ÷ 7.', 'urne'),
+        S('Entre 0 et 1', 'Une probabilité est toujours un nombre <b>entre 0 et 1</b>. 0 : événement impossible. 1 : événement certain. Un dé à 6 faces donne P(6) = 1 ÷ 6.'),
+        S('L’événement contraire', 'La probabilité qu’un événement n’arrive pas vaut <b>1 − sa probabilité</b>. Si P(pluie) = 0,3, alors P(pas de pluie) = 0,7.'),
+      ],
+      recap: ['P = cas favorables ÷ cas possibles.', '0 ≤ P ≤ 1.', 'P(contraire) = 1 − P.'],
+      quiz: [Q('Un dé : probabilité d’obtenir un nombre pair ?', ['1/6', '1/2', '1/3'], 1), Q('Une probabilité peut valoir :', ['1,5', '−0,2', '0,8'], 2)] },
+
+    { id: 'm5-angles', subj: 'maths', level: '5e', icon: '📐', title: 'Angles et droites parallèles',
+      intro: 'Quand une droite en coupe deux autres, les angles formés obéissent à des règles précises.',
+      steps: [
+        S('Angles opposés par le sommet', 'Quand deux droites se coupent, les angles <b>opposés par le sommet</b> sont égaux.'),
+        S('Angles alternes-internes', 'Une droite coupe deux autres droites. Les angles placés de part et d’autre de la sécante, à l’intérieur, sont <b>alternes-internes</b>. Si les deux droites sont parallèles, ils sont égaux.', 'alternes'),
+        S('Angles correspondants', 'Les angles situés du même côté de la sécante, l’un en haut et l’autre en bas, sont <b>correspondants</b>. Ils sont égaux si les droites sont parallèles.'),
+        S('Démontrer le parallélisme', 'La règle marche aussi dans l’autre sens : si deux angles alternes-internes sont égaux, alors les droites sont <b>parallèles</b>.'),
+      ],
+      recap: ['Opposés par le sommet : égaux.', 'Droites parallèles : alternes-internes égaux.', 'Droites parallèles : correspondants égaux.'],
+      quiz: [Q('Deux droites parallèles, un angle alterne-interne de 55°. L’autre mesure :', ['35°', '55°', '125°'], 1), Q('Des angles opposés par le sommet sont :', ['égaux', 'complémentaires'], 0)] },
+
+    { id: 'm5-prismes', subj: 'maths', level: '5e', icon: '🧊', title: 'Prismes et cylindres',
+      intro: 'Une boîte, un tube, une canette : ces solides s’étudient avec leurs faces et leur patron.',
+      steps: [
+        S('Le prisme droit', 'Un <b>prisme droit</b> a deux bases identiques et parallèles, reliées par des faces rectangulaires. Un pavé droit est un prisme dont la base est un rectangle.', 'prisme'),
+        S('Le cylindre', 'Un <b>cylindre de révolution</b> a deux bases qui sont des disques identiques, et une surface latérale courbe. Une canette est un cylindre.'),
+        S('Le patron', 'Le <b>patron</b> est la figure plane qui, pliée, donne le solide. Le patron d’un cylindre est un rectangle entouré de deux disques. Le rectangle a pour longueur le périmètre du disque.'),
+        S('Compter les faces', 'Un prisme dont la base a n côtés possède n + 2 faces : le prisme à base triangulaire a 5 faces, le pavé en a 6.'),
+      ],
+      recap: ['Prisme : deux bases identiques + faces rectangulaires.', 'Cylindre : deux disques + une surface courbe.', 'Patron : le solide « déplié ».'],
+      quiz: [Q('Combien de faces a un prisme à base triangulaire ?', ['4', '5', '6'], 1), Q('Les bases d’un cylindre sont :', ['des carrés', 'des disques'], 1)] },
+
+    { id: 'm5-algo', subj: 'maths', level: '5e', icon: '💻', title: 'Algorithmes et programmation',
+      intro: 'Un programme, c’est une recette : des instructions simples, dans le bon ordre.',
+      steps: [
+        S('Une suite d’instructions', 'Un <b>algorithme</b> est une suite d’instructions à exécuter dans l’ordre pour obtenir un résultat. Une recette de cuisine en est un bon exemple.', 'algo'),
+        S('Les variables', 'Une <b>variable</b> est une boîte qui contient une valeur et qui porte un nom. Par exemple, <b>score = 0</b>, puis <b>score = score + 1</b> : la valeur passe à 1.'),
+        S('Répéter', 'Au lieu de recopier la même instruction, on utilise une <b>boucle</b> : « répéter 4 fois : avancer de 50 puis tourner de 90° » trace un carré.'),
+        S('Tester une condition', 'Avec <b>si… alors… sinon…</b>, le programme choisit : « si score &gt; 10 alors afficher Gagné, sinon afficher Perdu ». Dans Scratch, on assemble ces blocs.'),
+      ],
+      recap: ['Un algorithme respecte un ordre.', 'Une variable contient une valeur.', 'Une boucle répète.', '« Si… alors… sinon » permet de choisir.'],
+      quiz: [Q('Pour tracer un carré, on répète 4 fois : avancer puis tourner de…', ['45°', '90°', '180°'], 1), Q('score = 3 puis score = score + 2. Le score vaut :', ['3', '2', '5'], 2)] },
+
+    /* -------------------------------------------------------------- PHYSIQUE (suite) */
+    { id: 'p5-son', subj: 'physique', level: '5e', icon: '🔊', title: 'Le son',
+      intro: 'Une voix, une guitare, un tonnerre : tout son vient d’un objet qui vibre.',
+      steps: [
+        S('La source vibre', 'Un son est produit par un objet qui <b>vibre</b> : la corde d’une guitare, la peau d’un tambour, les cordes vocales. On peut sentir la vibration en touchant sa gorge en parlant.'),
+        S('Il se propage', 'La vibration se transmet de proche en proche dans la matière : l’air, l’eau, un solide. C’est un <b>milieu matériel</b>. Dans le <b>vide</b>, le son ne se propage pas : dans l’espace, c’est le silence.', 'son'),
+        S('La vitesse du son', 'Dans l’air, le son va à environ <b>340 m/s</b>. C’est bien plus lent que la lumière. Pendant un orage, on voit l’éclair avant d’entendre le tonnerre : 3 secondes de retard, c’est environ 1 kilomètre.'),
+        S('Fort ou aigu', 'Un son plus ou moins <b>fort</b> dépend de l’amplitude de la vibration. Un son plus ou moins <b>aigu</b> dépend de sa fréquence, en hertz (Hz). L’oreille humaine entend de 20 Hz à 20 000 Hz.'),
+      ],
+      recap: ['Son = vibration.', 'Il lui faut un milieu matériel : pas de son dans le vide.', 'Dans l’air : environ 340 m/s.', 'Fort = grande amplitude, aigu = haute fréquence.'],
+      quiz: [Q('Le son se propage dans :', ['le vide', 'l’air'], 1), Q('Une corde qui vibre plus vite donne un son plus :', ['grave', 'aigu'], 1)] },
+
+    { id: 'p5-energie', subj: 'physique', level: '5e', icon: '🔋', title: 'L’énergie et ses conversions',
+      intro: 'Pour rouler, s’éclairer ou chauffer, il faut de l’énergie. Elle ne disparaît pas : elle change de forme.',
+      steps: [
+        S('Des sources d’énergie', 'Les sources d’énergie sont le soleil, le vent, l’eau, le pétrole, le gaz, le charbon, l’uranium, le bois. Certaines sont <b>renouvelables</b>, comme le soleil et le vent. Les énergies <b>fossiles</b> (pétrole, gaz, charbon) s’épuisent.'),
+        S('Des formes d’énergie', 'L’énergie existe sous plusieurs formes : <b>chimique</b> (aliments, pile), <b>électrique</b>, <b>lumineuse</b>, <b>thermique</b> (chaleur), <b>mécanique</b> (mouvement).'),
+        S('Les conversions', 'Un objet convertit une forme d’énergie en une autre. Un panneau solaire transforme l’énergie lumineuse en énergie électrique. Une lampe transforme l’électrique en lumineuse et en chaleur.', 'energie'),
+        S('Elle se conserve', 'On ne crée ni ne détruit l’énergie : elle est seulement <b>transformée</b> ou <b>transférée</b>. On l’exprime en joules (J).'),
+      ],
+      recap: ['Il y a des sources renouvelables et des sources fossiles.', 'Formes : chimique, électrique, lumineuse, thermique, mécanique.', 'L’énergie se convertit, elle se conserve.'],
+      quiz: [Q('Une énergie renouvelable :', ['le pétrole', 'le vent'], 1), Q('Un panneau solaire convertit :', ['lumière → électricité', 'électricité → lumière'], 0)] },
+
+    { id: 'p5-forces', subj: 'physique', level: '5e', icon: '🏋️', title: 'Les forces et les interactions',
+      intro: 'Pousser, tirer, tomber : quand deux objets agissent l’un sur l’autre, on parle d’interaction.',
+      steps: [
+        S('Une interaction', 'Quand un objet agit sur un autre, ils sont en <b>interaction</b>. Un footballeur pousse le ballon, et le ballon agit aussi sur le pied. L’interaction peut se faire à <b>distance</b> (aimant, gravité) ou par <b>contact</b>.'),
+        S('Une force, c’est un vecteur', 'On représente une <b>force</b> par une flèche. Elle est décrite par quatre éléments : son <b>point d’application</b>, sa <b>direction</b>, son <b>sens</b> et sa <b>valeur</b>, en newtons (N).', 'force'),
+        S('Le poids', 'Le <b>poids</b> d’un objet est la force avec laquelle la Terre l’attire. Il est vertical et dirigé vers le bas. La <b>masse</b> (en kg) ne change pas selon le lieu, mais le poids change : sur la Lune, il est six fois plus faible.'),
+        S('Les effets d’une force', 'Une force peut <b>mettre en mouvement</b>, <b>arrêter</b>, changer la <b>trajectoire</b> ou <b>déformer</b> un objet.'),
+      ],
+      recap: ['Interaction : à distance ou par contact.', 'Force : point, direction, sens, valeur (en N).', 'Poids : vertical, vers le bas.', 'Masse ≠ poids.'],
+      quiz: [Q('Une force se mesure en :', ['kilogrammes', 'newtons'], 1), Q('Le poids est dirigé :', ['vers le haut', 'vers le bas'], 1)] },
+
+    { id: 'p5-terre-lune', subj: 'physique', level: '5e', icon: '🌙', title: 'La Terre, le Soleil et la Lune',
+      intro: 'La Lune change de forme au fil du mois. Pourtant, elle est toujours à moitié éclairée.',
+      steps: [
+        S('Une source et des objets éclairés', 'Le Soleil est une <b>source primaire</b> : il produit sa lumière. La Terre et la Lune sont des objets <b>éclairés</b> : ils renvoient la lumière du Soleil. À chaque instant, la moitié de leur surface qui est tournée vers le Soleil est éclairée.', 'lune'),
+        S('La Lune tourne autour de la Terre', 'La Lune fait le tour de la Terre en environ <b>27 jours</b>, et un mois lunaire dure environ 29 jours et demi. Selon sa position, on voit une partie différente de sa face éclairée : ce sont les <b>phases</b>.'),
+        S('Les phases', 'Nouvelle lune : on ne la voit pas. Premier quartier, pleine lune, dernier quartier : on voit de plus en plus, puis de moins en moins, de sa face éclairée. Le cycle se répète.'),
+        S('Les éclipses', 'Une <b>éclipse de Lune</b> a lieu quand la Lune passe dans l’ombre de la Terre. Une <b>éclipse de Soleil</b> a lieu quand la Lune passe entre le Soleil et nous et cache le Soleil.'),
+      ],
+      recap: ['Le Soleil produit de la lumière.', 'La Lune la renvoie : elle est toujours à moitié éclairée.', 'Les phases viennent de sa position autour de la Terre.', 'Éclipse = alignement des trois astres.'],
+      quiz: [Q('Quelle source produit sa propre lumière ?', ['la Lune', 'le Soleil'], 1), Q('Éclipse de Soleil : c’est la … qui cache le Soleil.', ['Lune', 'Terre'], 0)] },
+
+    { id: 'p5-lumiere-vision', subj: 'physique', level: '5e', icon: '👁️', title: 'La lumière et la vision',
+      intro: 'On voit un objet parce que de la lumière qui vient de lui entre dans notre œil.',
+      steps: [
+        S('Source ou objet diffusant', 'Une <b>source</b> produit de la lumière (Soleil, lampe). Un <b>objet diffusant</b>, comme ce livre, renvoie dans toutes les directions la lumière qu’il reçoit. Dans le noir, on ne voit pas ce qui n’est pas éclairé.'),
+        S('Voir', 'On voit un objet quand la lumière qu’il envoie, directement ou après diffusion, <b>entre dans notre œil</b>. La lumière se propage en ligne droite.', 'oeil'),
+        S('Une vitesse énorme', 'La lumière va à environ <b>300 000 km/s</b> dans le vide ou dans l’air. Elle fait le tour de la Terre en une fraction de seconde. La lumière du Soleil met environ 8 minutes à nous parvenir.'),
+        S('L’année-lumière', 'Pour mesurer les distances dans l’espace, on utilise l’<b>année-lumière</b> : c’est la distance que parcourt la lumière en un an, environ 9 500 milliards de kilomètres.'),
+      ],
+      recap: ['On voit quand la lumière entre dans l’œil.', 'Elle se propage en ligne droite.', '300 000 km/s.', 'Année-lumière = unité de distance.'],
+      quiz: [Q('La lumière se propage :', ['en ligne droite', 'en zigzag'], 0), Q('L’année-lumière est une unité de :', ['temps', 'distance'], 1)] },
+
+    /* ---------------------------------------------------------------- CHIMIE (suite) */
+    { id: 'c5-air', subj: 'chimie', level: '5e', icon: '🌬️', title: 'L’air qui nous entoure',
+      intro: 'On ne le voit pas, mais l’air est de la matière. Il a une masse et il est un mélange de gaz.',
+      steps: [
+        S('L’air est de la matière', 'L’air a une <b>masse</b> : un litre d’air pèse environ 1,3 g. Il occupe un volume, il se comprime dans une seringue fermée et il s’échappe d’un ballon qui se dégonfle.'),
+        S('Sa composition', 'L’air est un <b>mélange</b> d’environ <b>78 % de diazote</b>, <b>21 % de dioxygène</b>, et d’un peu d’autres gaz, dont la vapeur d’eau et le dioxyde de carbone.', 'air'),
+        S('Le dioxygène', 'Le <b>dioxygène</b> est nécessaire à la respiration et à la <b>combustion</b>. Une bougie couverte d’un verre s’éteint quand le dioxygène est consommé.'),
+        S('Tester le dioxyde de carbone', 'Le <b>dioxyde de carbone</b> trouble l’<b>eau de chaux</b>. Il se forme lors d’une combustion et de la respiration : en soufflant dans l’eau de chaux avec une paille, elle devient laiteuse.'),
+      ],
+      recap: ['L’air a une masse.', 'Environ 78 % de diazote et 21 % de dioxygène.', 'Le dioxygène permet la combustion.', 'Le dioxyde de carbone trouble l’eau de chaux.'],
+      quiz: [Q('Le gaz le plus abondant dans l’air est :', ['le diazote', 'le dioxygène'], 0), Q('Quel gaz trouble l’eau de chaux ?', ['le dioxygène', 'le dioxyde de carbone'], 1)] },
+
+    { id: 'c5-conservation', subj: 'chimie', level: '5e', icon: '⚖️', title: 'Conservation de la masse et du volume',
+      intro: 'Quand un glaçon fond, que devient sa masse ? Et son volume ?',
+      steps: [
+        S('La masse se conserve', 'Lors d’un <b>changement d’état</b>, la masse ne change pas. 50 g de glace qui fond donnent 50 g d’eau liquide. On n’a rien perdu : les particules sont les mêmes.', 'conservation'),
+        S('Le volume peut changer', 'Le <b>volume</b>, lui, peut changer : l’eau qui gèle <b>augmente</b> de volume. C’est pour cela qu’une bouteille pleine d’eau peut éclater au congélateur.'),
+        S('Après un mélange', 'Quand on mélange deux liquides ou qu’on dissout un solide, la <b>masse totale</b> est la somme des masses : 100 g d’eau + 5 g de sucre font 105 g. Les <b>volumes</b> ne s’additionnent pas toujours exactement.'),
+        S('Un contre-exemple apparent', 'Une bougie qui brûle perd de la masse : en réalité, la cire est devenue des gaz qui s’échappent dans l’air. Si on les recueillait, la masse serait conservée.'),
+      ],
+      recap: ['La masse se conserve lors d’un changement d’état.', 'Le volume peut varier.', 'Mélange : on additionne les masses.'],
+      quiz: [Q('120 g de glace fondent. L’eau obtenue pèse :', ['100 g', '120 g', '140 g'], 1), Q('Quand l’eau gèle, son volume :', ['diminue', 'augmente'], 1)] },
+
+    { id: 'c5-eau', subj: 'chimie', level: '5e', icon: '🚰', title: 'L’eau : potable ou pure ?',
+      intro: 'Une eau limpide est-elle forcément pure ? Pas du tout : l’eau du robinet est un mélange.',
+      steps: [
+        S('Eau pure et eau potable', 'L’<b>eau pure</b> ne contient que des molécules d’eau (H₂O). L’<b>eau potable</b> peut être bue sans danger : elle contient des sels minéraux en petite quantité, c’est donc un mélange.', 'goutte'),
+        S('Le trajet de l’eau', 'Pour rendre l’eau potable, on la <b>filtre</b>, on la fait décanter, puis on la <b>désinfecte</b> (souvent au chlore) avant de la distribuer.'),
+        S('Reconnaître l’eau', 'Le <b>sulfate de cuivre anhydre</b>, blanc, devient <b>bleu</b> en présence d’eau. L’eau pure bout à 100 °C et gèle à 0 °C. Ce sont des tests sûrs.'),
+        S('Préserver l’eau', 'L’eau douce est une ressource limitée. On la préserve en évitant le gaspillage et en ne polluant pas les rivières.'),
+      ],
+      recap: ['Eau pure = seulement H₂O.', 'Eau potable = mélange sans danger.', 'Le sulfate de cuivre blanc bleuit au contact de l’eau.'],
+      quiz: [Q('Le sulfate de cuivre anhydre devient … en présence d’eau.', ['rouge', 'bleu'], 1), Q('L’eau du robinet est :', ['de l’eau pure', 'un mélange'], 1)] },
   ];
 
   const SUBJECTS = [
