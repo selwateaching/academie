@@ -31,15 +31,20 @@
     if (f !== "" || row.length) { row.push(f); rows.push(row); }
     return rows;
   }
-  var cache = null;
+  var cache = null, TTL = 5 * 60 * 1000;
+  var PROFIL_AR = { "un enfant": "طفل", "un adolescent": "مراهق", "un parent ou un enseignant": "ولي أمر أو معلّم", "un adulte": "بالغ" };
+  function profil(w) { /* « Un adolescent / A teenager » -> la partie dans la langue du site */
+    var a = String(w || "").split(/\s*\/\s*/), fr = (a[0] || "").trim(), en = (a[1] || a[0] || "").trim();
+    return window.LANG === "ar" ? (PROFIL_AR[fr.toLowerCase()] || en) : window.LANG === "en" ? en : fr;
+  }
   function reviews(cb) {
     if (!CSV) return cb([]);
     if (cache) return cb(cache);
-    try { var s = sessionStorage.getItem("sira-fr:avis"); if (s) { cache = JSON.parse(s); return cb(cache); } } catch (e) {}
-    fetch(CSV, { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
-      var out = parseCSV(t).filter(function (r) { return r.length >= 2 && /^[1-5]/.test((r[0] || "").trim()) && (r[1] || "").trim().length > 2; })
-        .map(function (r) { return { n: parseInt(r[0], 10), c: r[1].trim().slice(0, 400), w: (r[2] || "").trim().slice(0, 60) }; });
-      cache = out; try { sessionStorage.setItem("sira-fr:avis", JSON.stringify(out)); } catch (e) {}
+    try { var s = JSON.parse(sessionStorage.getItem("sira-fr:avis2") || "null"); if (s && s.t && Date.now() - s.t < TTL && s.d && s.d.length) { cache = s.d; return cb(cache); } } catch (e) {}
+    fetch(CSV + (CSV.indexOf("?") > -1 ? "&" : "?") + "t=" + Math.floor(Date.now() / 60000), { cache: "no-store" }).then(function (r) { return r.ok ? r.text() : ""; }).then(function (t) {
+      var out = parseCSV(t).filter(function (r) { return r.length >= 2 && /^[1-5]\s*$/.test((r[0] || "").trim()) && (r[1] || "").trim().length > 2; })
+        .map(function (r) { return { n: parseInt(r[0], 10), c: r[1].trim().slice(0, 400), w: profil(r[2]).slice(0, 60) }; });
+      if (out.length) { cache = out; try { sessionStorage.setItem("sira-fr:avis2", JSON.stringify({ t: Date.now(), d: out })); } catch (e) {} }
       cb(out);
     }).catch(function () { cb([]); });
   }
