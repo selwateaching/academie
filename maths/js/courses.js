@@ -284,6 +284,54 @@
       <circle cx="150" cy="140" r="5" fill="${C.rouge}"/><circle cx="180" cy="140" r="5" fill="${C.bleu}"/><circle cx="210" cy="140" r="5" fill="${C.vert}"/>
       <ellipse class="pulse" cx="150" cy="80" rx="8" ry="12" fill="${C.rouge}" fill-opacity=".55"/><ellipse class="pulse" cx="180" cy="50" rx="8" ry="12" fill="${C.bleu}" fill-opacity=".55"/><ellipse class="pulse" cx="210" cy="100" rx="8" ry="12" fill="${C.vert}" fill-opacity=".55"/>
       ${T(60, 100, 'éluant', 'font-size="12"')}${T(300, 60, 'espèces séparées', 'font-size="12"')}${T(300, 80, 'rapport frontal', 'font-size="11"')}${T(180, 176, 'même hauteur : même espèce', 'font-size="11"')}`),
+    discri: () => svg(360, 190, `${ARROW('q1', 'currentColor')}<path d="M180 180V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#q1)"/><path d="M15 100H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#q1)"/>
+      <path class="draw" pathLength="100" d="M90 20C120 150 160 160 180 160C200 160 240 150 270 20" stroke="${C.rouge}" stroke-width="4"/>
+      <circle class="pop" cx="128" cy="100" r="5" fill="${C.or}"/><circle class="pop" cx="232" cy="100" r="5" fill="${C.or}"/>
+      ${T(100, 88, 'x₁', 'font-size="12"')}${T(262, 88, 'x₂', 'font-size="12"')}${T(180, 182, 'Δ = b² − 4ac &gt; 0 : deux racines', 'font-size="11"')}${T(290, 36, 'ax² + bx + c', `fill="${C.rouge}" font-size="13"`)}`),
+    tangente: () => svg(360, 190, `${ARROW('t1', 'currentColor')}<path d="M30 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#t1)"/><path d="M15 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#t1)"/>
+      <path class="draw" pathLength="100" d="M50 150C110 150 150 70 210 60S300 40 330 30" stroke="${C.brand}" stroke-width="4"/>
+      <path class="dash" d="M110 140L260 40" stroke="${C.rouge}" stroke-width="3"/><circle class="pop" cx="185" cy="90" r="6" fill="${C.or}"/>
+      ${T(185, 112, 'A', 'font-size="13"')}${T(290, 30, 'tangente en A', `fill="${C.rouge}" font-size="12"`)}${T(180, 186, 'pente de la tangente = f ′(a)', 'font-size="12"')}`),
+    suite: () => svg(360, 170, `${ARROW('s1', 'currentColor')}<path d="M30 145H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#s1)"/><path d="M30 145V10" stroke="currentColor" stroke-width="2.5"/>
+      ${[0, 1, 2, 3, 4, 5].map((i) => `<circle class="pop" style="animation-delay:${i * 0.2}s" cx="${60 + i * 50}" cy="${125 - i * 18}" r="6" fill="${C.bleu}"/>${T(60 + i * 50, 162, 'u' + '₀₁₂₃₄₅'[i], 'font-size="11"')}`).join('')}
+      ${T(180, 22, 'suite arithmétique : on ajoute toujours r', 'font-size="12"')}`),
+    cercleTrigo: () => svg(360, 190, `<circle cx="150" cy="95" r="70" stroke="currentColor" stroke-width="2.5"/><path d="M60 95H240M150 15V175" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <path class="draw" pathLength="100" d="M150 95L199 45" stroke="${C.rouge}" stroke-width="3.5"/><circle cx="199" cy="45" r="6" fill="${C.or}"/>
+      <path d="M199 45V95" stroke="${C.vert}" stroke-width="3.5"/><path d="M150 95H199" stroke="${C.bleu}" stroke-width="3.5"/>
+      ${T(224, 38, 'M', 'font-size="13"')}${T(176, 112, 'cos x', `fill="${C.bleu}" font-size="12"`)}${T(222, 76, 'sin x', `fill="${C.vert}" font-size="12"`)}${T(177, 78, 'x', 'font-size="12"')}${T(300, 100, 'rayon 1', 'font-size="12"')}${T(300, 124, 'cos² x + sin² x = 1', 'font-size="11"')}`),
+    prodscal: () => svg(360, 170, `${ARROW('v1', C.rouge)}${ARROW('v2', C.bleu)}<path class="pulse" d="M60 130L250 130" stroke="${C.rouge}" stroke-width="4" marker-end="url(#v1)"/><path d="M60 130L170 50" stroke="${C.bleu}" stroke-width="4" marker-end="url(#v2)"/>
+      <path d="M170 50V130" stroke="${C.gris}" stroke-width="2" stroke-dasharray="4 4"/><path d="M60 130H170" stroke="${C.vert}" stroke-width="6"/>
+      ${T(255, 150, 'u', `fill="${C.rouge}" font-size="13"`)}${T(180, 44, 'v', `fill="${C.bleu}" font-size="13"`)}${T(115, 150, 'projection', `fill="${C.vert}" font-size="11"`)}${T(180, 14, 'u · v = ‖u‖ × ‖v‖ × cos θ', 'font-size="12"')}`),
+    arbre: () => svg(360, 180, `<path d="M40 90L130 45M40 90L130 135M130 45L240 20M130 45L240 70M130 135L240 110M130 135L240 160" stroke="currentColor" stroke-width="2.5"/>
+      ${[[40, 90, ''], [130, 45, 'A'], [130, 135, 'Ā'], [240, 20, 'B'], [240, 70, 'B̄'], [240, 110, 'B'], [240, 160, 'B̄']].map(([x, y, s]) => `<circle class="pop" cx="${x}" cy="${y}" r="6" fill="${C.brand}"/>${T(x + 18, y + 4, s, 'font-size="12"')}`).join('')}
+      ${T(70, 58, 'P(A)', 'font-size="11"')}${T(70, 128, 'P(Ā)', 'font-size="11"')}${T(188, 26, 'P_A(B)', 'font-size="11"')}${T(180, 178, 'P(A ∩ B) = P(A) × P_A(B)', 'font-size="12"')}`),
+    newton2: () => svg(360, 160, `${ARROW('n1', C.rouge)}${ARROW('n2', C.bleu)}<path d="M20 120H340" stroke="currentColor" stroke-width="3"/><rect class="pulse" x="140" y="80" width="60" height="40" rx="6" fill="${C.or}" fill-opacity=".3" stroke="${C.or}" stroke-width="3"/>
+      <path d="M170 100H270" stroke="${C.rouge}" stroke-width="5" marker-end="url(#n1)"/><path d="M170 100H80" stroke="${C.bleu}" stroke-width="3" marker-end="url(#n2)" stroke-dasharray="6 4"/>
+      ${T(285, 94, 'ΣF', `fill="${C.rouge}" font-size="13"`)}${T(60, 94, 'a', `fill="${C.bleu}" font-size="13"`)}${T(180, 148, 'ΣF = m × a : même direction et même sens', 'font-size="12"')}`),
+    energieChute: () => svg(360, 180, `${ARROW('e1', C.rouge)}<path d="M180 20V150" stroke="${C.gris}" stroke-width="2" stroke-dasharray="4 4"/><path d="M60 160H300" stroke="currentColor" stroke-width="3"/>
+      <circle cx="180" cy="26" r="10" fill="${C.or}"/><circle class="pulse" cx="180" cy="90" r="10" fill="${C.or}" fill-opacity=".6"/><circle cx="180" cy="148" r="10" fill="${C.or}"/>
+      <rect x="230" y="20" width="60" height="12" fill="${C.vert}"/><rect x="230" y="84" width="30" height="12" fill="${C.vert}"/><rect x="260" y="84" width="30" height="12" fill="${C.rouge}"/><rect x="230" y="142" width="60" height="12" fill="${C.rouge}"/>
+      ${T(110, 30, 'Ep max', `fill="${C.vert}" font-size="12"`)}${T(110, 94, 'Ep + Ec', 'font-size="12"')}${T(110, 152, 'Ec max', `fill="${C.rouge}" font-size="12"`)}${T(180, 176, 'Em = Ec + Ep reste constante (sans frottements)', 'font-size="11"')}`),
+    diffraction: () => svg(360, 170, `<path d="M30 20V70M30 100V150" stroke="currentColor" stroke-width="5"/>
+      ${[0, 1, 2, 3, 4].map((i) => `<path class="wv" style="animation-delay:${i * 0.3}s" d="M${70 + i * 16} 30V140" stroke="${C.bleu}" stroke-width="2"/>`).join('')}
+      ${[0, 1, 2].map((i) => `<path class="wv" style="animation-delay:${i * 0.3}s" d="M${190 + i * 34} 45A${40 + i * 30} ${40 + i * 30} 0 0 1 ${190 + i * 34} 125" stroke="${C.vert}" stroke-width="2.5"/>`).join('')}
+      ${T(80, 162, 'onde incidente', 'font-size="11"')}${T(280, 162, 'diffraction : l’onde s’étale', 'font-size="11"')}${T(30, 90, 'fente', 'font-size="11"')}`),
+    niveaux: () => svg(360, 190, `${ARROW('l1', C.rouge)}<path d="M80 150H200" stroke="currentColor" stroke-width="4"/><path d="M80 100H200" stroke="currentColor" stroke-width="4"/><path d="M80 60H200" stroke="currentColor" stroke-width="4"/><path d="M80 34H200" stroke="currentColor" stroke-width="4"/>
+      <path class="flow" d="M110 62V146" stroke="${C.rouge}" stroke-width="3" marker-end="url(#l1)" pathLength="100"/><circle class="pulse" cx="110" cy="150" r="6" fill="${C.or}"/>
+      <path class="wv" d="M130 100L180 140" stroke="${C.bleu}" stroke-width="3" stroke-dasharray="3 5"/>
+      ${T(40, 154, 'E₁', 'font-size="12"')}${T(40, 104, 'E₂', 'font-size="12"')}${T(40, 64, 'E₃', 'font-size="12"')}${T(280, 80, 'photon émis', `fill="${C.rouge}" font-size="12"`)}${T(280, 102, 'ΔE = h × ν', 'font-size="12"')}${T(280, 124, 'ΔE = E₃ − E₁', 'font-size="11"')}`),
+    titrage: () => svg(360, 190, `${ARROW('i1', 'currentColor')}<path d="M40 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#i1)"/><path d="M25 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#i1)"/>
+      <path class="draw" pathLength="100" d="M50 150C150 148 180 140 190 90S210 40 330 36" stroke="${C.rouge}" stroke-width="4"/>
+      <path d="M190 165V90" stroke="${C.gris}" stroke-width="2" stroke-dasharray="4 4"/><circle class="pop" cx="190" cy="90" r="6" fill="${C.or}"/>
+      ${T(230, 112, 'équivalence', `fill="${C.or}" font-size="12"`)}${T(190, 182, 'V', 'font-size="12"')}${T(22, 16, 'pH', 'font-size="12"')}${T(290, 154, 'volume versé V', 'font-size="11"')}`),
+    redox: () => svg(360, 170, `${ARROW('r1', C.rouge)}<rect x="30" y="50" width="100" height="60" rx="10" fill="${C.bleu}" fill-opacity=".2" stroke="${C.bleu}" stroke-width="3"/><rect x="230" y="50" width="100" height="60" rx="10" fill="${C.or}" fill-opacity=".2" stroke="${C.or}" stroke-width="3"/>
+      <path class="flow" d="M135 70H225" stroke="${C.rouge}" stroke-width="3" marker-end="url(#r1)" pathLength="100"/>${T(180, 62, 'e⁻', `fill="${C.rouge}" font-size="14"`)}
+      ${T(80, 76, 'réducteur', 'font-size="12"')}${T(80, 96, 'cède des e⁻', 'font-size="11"')}${T(280, 76, 'oxydant', 'font-size="12"')}${T(280, 96, 'capte des e⁻', 'font-size="11"')}
+      ${T(80, 134, 'oxydation', `fill="${C.bleu}" font-size="12"`)}${T(280, 134, 'réduction', `fill="${C.or}" font-size="12"`)}${T(180, 160, 'Ox + n e⁻ = Red', 'font-size="12"')}`),
+    alcane: () => svg(360, 160, `${[0, 1, 2].map((i) => `<circle cx="${100 + i * 70}" cy="80" r="14" fill="${C.brand}" fill-opacity=".3" stroke="${C.brand}" stroke-width="3"/>${T(100 + i * 70, 85, 'C')}`).join('')}${L(114, 80, 156, 80)}${L(184, 80, 226, 80)}
+      ${[[100, 40], [100, 120], [170, 40], [170, 120], [240, 40], [240, 120], [50, 80], [290, 80]].map(([x, y]) => `<circle class="pop" cx="${x}" cy="${y}" r="9" fill="${C.bleu}" fill-opacity=".4" stroke="${C.bleu}" stroke-width="2"/>${T(x, y + 4, 'H', 'font-size="10"')}`).join('')}
+      ${L(100, 66, 100, 49, C.bleu, 2)}${L(100, 94, 100, 111, C.bleu, 2)}${L(170, 66, 170, 49, C.bleu, 2)}${L(170, 94, 170, 111, C.bleu, 2)}${L(240, 66, 240, 49, C.bleu, 2)}${L(240, 94, 240, 111, C.bleu, 2)}${L(59, 80, 86, 80, C.bleu, 2)}${L(254, 80, 281, 80, C.bleu, 2)}
+      ${T(180, 156, 'propane C₃H₈ : CₙH₂ₙ₊₂, chaîne carbonée', 'font-size="12"')}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -1402,6 +1450,206 @@
       ],
       recap: ['Température de fusion, masse volumique : propres à une espèce.', 'Chromatographie : même hauteur, même espèce.', 'A = k × C.'],
       quiz: [Q('En chromatographie, deux taches à la même hauteur indiquent :', ['la même espèce', 'deux espèces différentes'], 0), Q('L’absorbance est proportionnelle à la :', ['concentration', 'température'], 0)] },
+    /* ================================================================ 1re : MATHS */
+    { id: 'm1-second-degre', subj: 'maths', level: '1re', icon: '🏔️', title: 'Le second degré',
+      intro: 'Une fonction du second degré a pour courbe une parabole. Le discriminant dit combien de fois elle coupe l’axe.',
+      steps: [
+        S('La forme générale', 'Un trinôme du second degré s’écrit <b>ax² + bx + c</b> avec a ≠ 0. Sa courbe est une <b>parabole</b> : tournée vers le haut si a &gt; 0, vers le bas si a &lt; 0.', 'parabole'),
+        S('Le discriminant', 'On calcule <b>Δ = b² − 4ac</b>. Si Δ &gt; 0 : deux racines x₁ et x₂ ; si Δ = 0 : une racine double ; si Δ &lt; 0 : aucune racine réelle.', 'discri'),
+        S('Les racines', 'Si Δ &gt; 0, les racines sont <b>x = (−b ± √Δ) ÷ 2a</b>. Exemple : x² − 5x + 6, Δ = 25 − 24 = 1, donc x = (5 ± 1) ÷ 2 : les racines sont 2 et 3.'),
+        S('Signe et forme factorisée', 'Le trinôme est du signe de <b>a</b> à l’extérieur des racines et du signe contraire entre elles. Avec les racines : ax² + bx + c = <b>a(x − x₁)(x − x₂)</b>. Le sommet de la parabole est en x = −b ÷ 2a.'),
+      ],
+      recap: ['Δ = b² − 4ac.', 'Δ > 0 : deux racines (−b ± √Δ) ÷ 2a.', 'Signe de a à l’extérieur des racines.'],
+      quiz: [Q('Pour x² − 5x + 6, les racines sont :', ['2 et 3', '1 et 6', '−2 et −3'], 0), Q('Si Δ < 0, le trinôme a :', ['aucune racine réelle', 'deux racines', 'une racine double'], 0), Q('Le sommet est en x =', ['−b ÷ 2a', 'b ÷ a', 'c ÷ a'], 0)] },
+
+    { id: 'm1-derivation', subj: 'maths', level: '1re', icon: '📉', title: 'Dérivation',
+      intro: 'La dérivée mesure la pente de la courbe en un point : la vitesse à laquelle la fonction varie.',
+      steps: [
+        S('Le nombre dérivé', 'Le <b>nombre dérivé</b> f ′(a) est la pente de la <b>tangente</b> à la courbe au point d’abscisse a. C’est la limite du taux de variation (f(a+h) − f(a)) ÷ h quand h tend vers 0.', 'tangente'),
+        S('Les dérivées usuelles', 'Constante : 0 · x : 1 · x² : 2x · xⁿ : n·xⁿ⁻¹ · 1/x : −1/x² · √x : 1 ÷ (2√x).'),
+        S('Les règles de calcul', '(u + v)′ = u′ + v′ · (k·u)′ = k·u′ · <b>(u·v)′ = u′v + uv′</b> · (u/v)′ = (u′v − uv′) ÷ v².'),
+        S('Équation de la tangente', 'La tangente en a a pour équation <b>y = f ′(a)(x − a) + f(a)</b>. Exemple : f(x) = x² en a = 2 : f ′(2) = 4, f(2) = 4, donc y = 4(x − 2) + 4 = 4x − 4.'),
+      ],
+      recap: ['f ′(a) = pente de la tangente.', '(xⁿ)′ = n·xⁿ⁻¹.', 'Tangente : y = f ′(a)(x − a) + f(a).'],
+      quiz: [Q('La dérivée de x³ est :', ['3x²', 'x²', '3x'], 0), Q('f ′(a) représente :', ['la pente de la tangente', 'l’aire sous la courbe', 'la valeur de f(a)'], 0), Q('La tangente de x² en 2 est :', ['y = 4x − 4', 'y = 2x', 'y = 4x'], 0)] },
+
+    { id: 'm1-variations', subj: 'maths', level: '1re', icon: '📊', title: 'Variations et extremums',
+      intro: 'Le signe de la dérivée indique si la fonction monte ou descend.',
+      steps: [
+        S('Signe de la dérivée', 'Si f ′(x) &gt; 0 sur un intervalle, f est <b>croissante</b>. Si f ′(x) &lt; 0, f est <b>décroissante</b>. Si f ′(x) = 0 sur tout l’intervalle, f est constante.', 'parabole'),
+        S('Tableau de variations', 'On résume : on étudie le signe de f ′, puis on place des flèches ↗ ou ↘ dans un tableau, avec les valeurs de f aux points importants.'),
+        S('Extremums', 'Si f ′ s’annule <b>en changeant de signe</b> en a, f(a) est un <b>extremum</b> local : un maximum si f passe de ↗ à ↘, un minimum si f passe de ↘ à ↗.'),
+        S('Un exemple', 'f(x) = x² − 4x. f ′(x) = 2x − 4, qui s’annule en 2. f décroît avant 2, croît après : <b>minimum f(2) = −4</b>.'),
+      ],
+      recap: ['f ′ > 0 : f croissante.', 'f ′ s’annule en changeant de signe : extremum.', 'Tableau de variations = signe de f ′ + flèches.'],
+      quiz: [Q('Si f ′(x) < 0, f est :', ['décroissante', 'croissante', 'constante'], 0), Q('Le minimum de x² − 4x est :', ['−4', '4', '0'], 0)] },
+
+    { id: 'm1-suites', subj: 'maths', level: '1re', icon: '🔢', title: 'Les suites arithmétiques et géométriques',
+      intro: 'Une suite est une liste de nombres rangés : u₀, u₁, u₂… Deux modèles simples décrivent beaucoup de situations.',
+      steps: [
+        S('Définir une suite', 'On peut définir une suite par une <b>formule explicite</b> uₙ = f(n) ou par une <b>relation de récurrence</b> uₙ₊₁ = f(uₙ) avec un premier terme.', 'suite'),
+        S('Suite arithmétique', 'On ajoute toujours la même <b>raison r</b> : uₙ₊₁ = uₙ + r. Alors <b>uₙ = u₀ + n·r</b>. Exemple : u₀ = 3, r = 2 : 3, 5, 7, 9…'),
+        S('Suite géométrique', 'On multiplie toujours par la même <b>raison q</b> : uₙ₊₁ = q·uₙ. Alors <b>uₙ = u₀ × qⁿ</b>. Exemple : u₀ = 2, q = 3 : 2, 6, 18, 54… (modèle d’une croissance de +200 % à chaque étape).'),
+        S('Sens de variation', 'Arithmétique : croissante si r &gt; 0. Géométrique de premier terme positif : croissante si q &gt; 1, décroissante si 0 &lt; q &lt; 1. On peut aussi étudier le signe de uₙ₊₁ − uₙ.'),
+      ],
+      recap: ['Arithmétique : uₙ = u₀ + n·r.', 'Géométrique : uₙ = u₀ × qⁿ.', 'Étudier uₙ₊₁ − uₙ pour la variation.'],
+      quiz: [Q('Suite arithmétique, u₀ = 3, r = 2 : u₁₀ =', ['23', '30', '13'], 0), Q('Suite géométrique, u₀ = 2, q = 3 : u₃ =', ['54', '18', '27'], 0), Q('Une suite géométrique avec q > 1 et u₀ > 0 est :', ['croissante', 'décroissante'], 0)] },
+
+    { id: 'm1-trigo', subj: 'maths', level: '1re', icon: '🎯', title: 'Trigonométrie : le cercle et les radians',
+      intro: 'Le cercle trigonométrique transforme les angles en nombres : le cosinus et le sinus.',
+      steps: [
+        S('Le cercle trigonométrique', 'C’est le cercle de <b>rayon 1</b>. Pour un angle x, le point M du cercle a pour abscisse <b>cos x</b> et pour ordonnée <b>sin x</b>.', 'cercleTrigo'),
+        S('Les radians', 'On mesure aussi les angles en <b>radians</b> : un tour complet vaut 2π rad, donc 180° = π rad. Ainsi 90° = π/2, 60° = π/3, 45° = π/4, 30° = π/6.'),
+        S('Valeurs à connaître', 'cos 0 = 1, sin 0 = 0 · cos π/6 = √3/2, sin π/6 = 1/2 · cos π/4 = sin π/4 = √2/2 · cos π/3 = 1/2, sin π/3 = √3/2 · cos π/2 = 0, sin π/2 = 1.'),
+        S('Relations', '<b>cos² x + sin² x = 1</b> (théorème de Pythagore dans le cercle). Aussi cos(−x) = cos x, sin(−x) = −sin x, et cos(π − x) = −cos x, sin(π − x) = sin x.'),
+      ],
+      recap: ['M(cos x ; sin x) sur le cercle de rayon 1.', '180° = π rad.', 'cos² x + sin² x = 1.'],
+      quiz: [Q('cos² x + sin² x vaut :', ['1', '0', '2'], 0), Q('π/3 radians valent :', ['60°', '30°', '90°'], 0), Q('sin(π/6) =', ['1/2', '√3/2', '1'], 0)] },
+
+    { id: 'm1-produit-scalaire', subj: 'maths', level: '1re', icon: '✖️', title: 'Le produit scalaire',
+      intro: 'Le produit scalaire de deux vecteurs est un nombre. Il sert à mesurer des angles et à tester la perpendicularité.',
+      steps: [
+        S('Définition', 'Pour deux vecteurs u et v : <b>u · v = ‖u‖ × ‖v‖ × cos θ</b>, où θ est l’angle entre eux. Le résultat est un <b>nombre</b>, pas un vecteur.', 'prodscal'),
+        S('Avec les coordonnées', 'Si u(x ; y) et v(x′ ; y′) : <b>u · v = x·x′ + y·y′</b>. Exemple : u(2 ; 3) et v(4 ; −1) donnent 8 − 3 = 5.'),
+        S('Orthogonalité', 'Deux vecteurs sont <b>orthogonaux</b> (perpendiculaires) si et seulement si <b>u · v = 0</b>. Exemple : u(2 ; 3) et v(−3 ; 2) : −6 + 6 = 0, donc perpendiculaires.'),
+        S('Calculer un angle', 'cos θ = (u · v) ÷ (‖u‖ × ‖v‖). Avec u(1 ; 0) et v(1 ; 1) : u · v = 1, ‖u‖ = 1, ‖v‖ = √2, donc cos θ = √2/2 et θ = 45°.'),
+      ],
+      recap: ['u · v = ‖u‖‖v‖cos θ.', 'u · v = xx′ + yy′.', 'u · v = 0 : vecteurs orthogonaux.'],
+      quiz: [Q('Le produit scalaire de u(2 ; 3) et v(4 ; −1) est :', ['5', '11', '8'], 0), Q('Deux vecteurs sont perpendiculaires si leur produit scalaire vaut :', ['0', '1', '−1'], 0)] },
+
+    { id: 'm1-proba-cond', subj: 'maths', level: '1re', icon: '🌳', title: 'Probabilités conditionnelles',
+      intro: 'Quand on sait déjà qu’un événement s’est produit, la probabilité d’un autre peut changer.',
+      steps: [
+        S('Probabilité conditionnelle', 'La probabilité de B sachant A est <b>P_A(B) = P(A ∩ B) ÷ P(A)</b>, avec P(A) ≠ 0. On se restreint à l’univers où A est réalisé.', 'arbre'),
+        S('L’arbre pondéré', 'Chaque branche porte une probabilité. Sur un chemin, on <b>multiplie</b> : P(A ∩ B) = P(A) × P_A(B). La somme des branches qui partent d’un même nœud vaut 1.'),
+        S('Les probabilités totales', 'Si A et Ā partagent l’univers : <b>P(B) = P(A) × P_A(B) + P(Ā) × P_Ā(B)</b>. On additionne les chemins qui mènent à B.'),
+        S('Indépendance', 'A et B sont <b>indépendants</b> si P(A ∩ B) = P(A) × P(B), c’est-à-dire si savoir A ne change pas la probabilité de B : P_A(B) = P(B).'),
+      ],
+      recap: ['P_A(B) = P(A ∩ B) ÷ P(A).', 'Chemin : on multiplie. Plusieurs chemins : on additionne.', 'Indépendants : P(A ∩ B) = P(A) × P(B).'],
+      quiz: [Q('Sur un chemin d’un arbre, on :', ['multiplie les probabilités', 'additionne les probabilités'], 0), Q('P(A) = 0,4 et P_A(B) = 0,5. Alors P(A ∩ B) =', ['0,2', '0,9', '0,8'], 0)] },
+
+    /* ================================================================ 1re : PHYSIQUE */
+    { id: 'p1-newton', subj: 'physique', level: '1re', icon: '🚀', title: 'Les lois de Newton',
+      intro: 'La deuxième loi de Newton relie la force résultante et la façon dont la vitesse change.',
+      steps: [
+        S('Le vecteur variation de vitesse', 'Quand la vitesse change, le vecteur vitesse varie : Δv = v₂ − v₁. L’accélération moyenne est a = Δv ÷ Δt, en m/s².'),
+        S('Deuxième loi de Newton', 'Dans un référentiel galiléen : <b>ΣF = m × a</b>. La somme des forces est de même direction et de même sens que l’accélération ; m est la masse en kg.', 'newton2'),
+        S('Troisième loi', 'Si A exerce une force sur B, alors B exerce sur A une force <b>opposée</b> : même direction, sens contraire, même valeur (principe des actions réciproques).'),
+        S('Un exemple', 'Une voiture de 1 000 kg soumise à une force résultante de 2 000 N accélère de a = 2 000 ÷ 1 000 = <b>2 m/s²</b> : sa vitesse augmente de 2 m/s chaque seconde.'),
+      ],
+      recap: ['ΣF = m × a.', 'ΣF et a ont même direction et même sens.', 'Actions réciproques : forces opposées.'],
+      quiz: [Q('Une force résultante de 2 000 N sur 1 000 kg donne :', ['2 m/s²', '0,5 m/s²', '2 000 m/s²'], 0), Q('Si ΣF = 0, le vecteur vitesse :', ['reste constant', 'augmente'], 0)] },
+
+    { id: 'p1-travail-energie', subj: 'physique', level: '1re', icon: '🏗️', title: 'Travail d’une force et énergie cinétique',
+      intro: 'Une force qui déplace un objet lui transfère de l’énergie : on l’appelle le travail.',
+      steps: [
+        S('Le travail d’une force', 'Pour une force constante F et un déplacement AB : <b>W = F × AB × cos α</b>, en joules (J), où α est l’angle entre la force et le déplacement. Le travail est moteur si α &lt; 90°, résistant si α &gt; 90°.'),
+        S('L’énergie cinétique', 'Un objet de masse m et de vitesse v possède l’énergie <b>Ec = ½ m v²</b> (en joules, avec v en m/s). Doubler la vitesse multiplie l’énergie par 4.'),
+        S('Le théorème de l’énergie cinétique', 'La variation d’énergie cinétique est égale à la somme des travaux des forces : <b>ΔEc = ΣW</b>. Un travail moteur fait gagner de la vitesse ; un travail résistant en fait perdre.'),
+        S('Exemple', 'Une voiture de 1 000 kg roule à 20 m/s : Ec = ½ × 1 000 × 20² = <b>200 000 J</b>. Pour l’arrêter, il faut que les freins fournissent un travail résistant de −200 000 J.'),
+      ],
+      recap: ['W = F × AB × cos α.', 'Ec = ½ m v².', 'ΔEc = ΣW.'],
+      quiz: [Q('L’énergie cinétique de 1 000 kg à 20 m/s est :', ['200 000 J', '20 000 J', '400 000 J'], 0), Q('Si on double la vitesse, Ec est multipliée par :', ['4', '2', '8'], 0)] },
+
+    { id: 'p1-energie-mecanique', subj: 'physique', level: '1re', icon: '🎢', title: 'Énergie potentielle et énergie mécanique',
+      intro: 'Dans une chute, l’énergie de position se transforme en énergie de mouvement.',
+      steps: [
+        S('Énergie potentielle de pesanteur', 'Un objet de masse m à la hauteur z possède <b>Epp = m × g × z</b>. Elle augmente quand l’objet monte, diminue quand il descend.'),
+        S('L’énergie mécanique', 'C’est la somme <b>Em = Ec + Epp</b>. Elle mesure l’énergie totale de l’objet liée à son mouvement et à sa position.', 'energieChute'),
+        S('Conservation', 'Si seules des forces <b>conservatives</b> (comme le poids) travaillent, <b>Em est constante</b> : ce que l’objet perd en hauteur, il le gagne en vitesse. Avec des frottements, Em diminue : l’énergie est transférée sous forme de chaleur.'),
+        S('Exemple', 'Un objet de 1 kg lâché de 5 m (g = 10 N/kg) : Epp = 50 J. En bas, Epp = 0 et Ec = 50 J, donc ½ × 1 × v² = 50 et <b>v = 10 m/s</b>.'),
+      ],
+      recap: ['Epp = m g z.', 'Em = Ec + Epp.', 'Sans frottements, Em reste constante.'],
+      quiz: [Q('Un objet de 1 kg lâché de 5 m arrive en bas à :', ['10 m/s', '5 m/s', '50 m/s'], 0), Q('Avec des frottements, l’énergie mécanique :', ['diminue', 'reste constante'], 0)] },
+
+    { id: 'p1-ondes', subj: 'physique', level: '1re', icon: '🌊', title: 'Les ondes : diffraction et interférences',
+      intro: 'Les ondes se comportent comme des vagues : elles contournent les obstacles et se combinent.',
+      steps: [
+        S('Une onde transporte de l’énergie', 'Une <b>onde</b> est la propagation d’une perturbation sans transport de matière. Elle est caractérisée par sa période T, sa fréquence f = 1/T et sa <b>longueur d’onde λ = v × T</b>.'),
+        S('La diffraction', 'Quand une onde rencontre une ouverture ou un obstacle de taille <b>comparable à sa longueur d’onde</b>, elle s’étale et change de direction : c’est la <b>diffraction</b>.', 'diffraction'),
+        S('Les interférences', 'Deux ondes de même fréquence qui se rencontrent s’additionnent : <b>interférences constructives</b> (ondes en phase, amplitude plus grande) ou <b>destructives</b> (ondes en opposition, amplitude nulle).'),
+        S('Le son et la lumière', 'La diffraction et les interférences de la lumière (franges alternées claires et sombres) montrent que la lumière a un comportement ondulatoire. Le son se diffracte aussi : on entend derrière un mur.'),
+      ],
+      recap: ['λ = v × T.', 'Diffraction : l’onde s’étale par une ouverture de taille proche de λ.', 'Interférences : constructives ou destructives.'],
+      quiz: [Q('La diffraction est marquée quand l’ouverture est :', ['de taille proche de λ', 'beaucoup plus grande que λ'], 0), Q('Des interférences destructives donnent :', ['une amplitude nulle', 'une amplitude double'], 0)] },
+
+    { id: 'p1-photon', subj: 'physique', level: '1re', icon: '💡', title: 'Photons et niveaux d’énergie',
+      intro: 'La lumière est aussi faite de grains d’énergie, les photons. Les atomes n’émettent que certaines couleurs.',
+      steps: [
+        S('Le photon', 'Un <b>photon</b> est un grain de lumière d’énergie <b>E = h × ν = h × c ÷ λ</b>, avec h = 6,63 × 10⁻³⁴ J·s, c = 3,00 × 10⁸ m/s. Plus la longueur d’onde est courte, plus l’énergie est grande.'),
+        S('Niveaux d’énergie', 'L’énergie d’un atome est <b>quantifiée</b> : il n’existe que des niveaux E₁, E₂, E₃… bien précis.', 'niveaux'),
+        S('Émission et absorption', 'En passant d’un niveau élevé à un niveau plus bas, l’atome <b>émet</b> un photon d’énergie ΔE = E₃ − E₁. Il peut aussi <b>absorber</b> un photon d’énergie exactement égale à l’écart entre deux niveaux.'),
+        S('Les spectres', 'Chaque élément a ses propres niveaux, donc ses propres raies : le spectre de raies est son empreinte. L’électronvolt (1 eV = 1,6 × 10⁻¹⁹ J) est l’unité pratique de ces énergies.', 'raies'),
+      ],
+      recap: ['E = h × c ÷ λ.', 'Niveaux d’énergie quantifiés.', 'ΔE = énergie du photon émis ou absorbé.'],
+      quiz: [Q('Un photon de longueur d’onde plus courte a une énergie :', ['plus grande', 'plus petite'], 0), Q('Un atome qui émet un photon passe :', ['d’un niveau haut à un niveau bas', 'd’un niveau bas à un niveau haut'], 0)] },
+
+    { id: 'p1-champs', subj: 'physique', level: '1re', icon: '🧲', title: 'Champs et forces à distance',
+      intro: 'Certaines forces agissent sans contact : la pesanteur, l’électricité, le magnétisme.',
+      steps: [
+        S('Un champ, c’est quoi ?', 'Un <b>champ</b> associe à chaque point de l’espace une grandeur : le champ de pesanteur g, le champ électrique E, le champ magnétique B. On le représente par des lignes de champ.'),
+        S('La force de gravitation', 'Deux masses m₁ et m₂ à distance d s’attirent avec la force <b>F = G × m₁ × m₂ ÷ d²</b>, avec G = 6,67 × 10⁻¹¹ N·m²/kg². Doubler la distance divise la force par 4.'),
+        S('La force électrique', 'Deux charges q₁ et q₂ exercent la force <b>F = k × |q₁ × q₂| ÷ d²</b> (loi de Coulomb), attractive si les charges sont de signes contraires, répulsive sinon. Dans un champ E, une charge q subit F = q × E.'),
+        S('Champ de pesanteur', 'Près de la Terre, g ≈ 9,8 N/kg : le poids est P = m × g. Sur la Lune, g ≈ 1,6 N/kg : le même objet y pèse 6 fois moins, sa masse ne change pas.'),
+      ],
+      recap: ['Gravitation : F = G m₁ m₂ ÷ d².', 'Coulomb : F = k |q₁q₂| ÷ d².', 'Charges de même signe : répulsion.'],
+      quiz: [Q('Si on double la distance, la force de gravitation est :', ['divisée par 4', 'divisée par 2', 'doublée'], 0), Q('Deux charges de même signe :', ['se repoussent', 's’attirent'], 0)] },
+
+    /* ================================================================ 1re : CHIMIE */
+    { id: 'c1-oxydoreduction', subj: 'chimie', level: '1re', icon: '🔋', title: 'Oxydoréduction',
+      intro: 'Quand des électrons passent d’une espèce à une autre, il y a une réaction d’oxydoréduction.',
+      steps: [
+        S('Oxydant et réducteur', 'Un <b>oxydant</b> est une espèce qui peut <b>capter</b> des électrons. Un <b>réducteur</b> est une espèce qui peut en <b>céder</b>. Un couple s’écrit Ox/Red avec la demi-équation Ox + n e⁻ = Red.', 'redox'),
+        S('Exemples de couples', 'Cu²⁺/Cu : Cu²⁺ + 2 e⁻ = Cu · Zn²⁺/Zn : Zn²⁺ + 2 e⁻ = Zn · Fe³⁺/Fe²⁺ : Fe³⁺ + e⁻ = Fe²⁺ · H⁺/H₂ : 2 H⁺ + 2 e⁻ = H₂.'),
+        S('Écrire la réaction', 'On combine deux demi-équations pour que les <b>électrons échangés se compensent</b>. Exemple : Zn + Cu²⁺ → Zn²⁺ + Cu. Le zinc est oxydé (il cède 2 e⁻), le cuivre II est réduit (il capte 2 e⁻).'),
+        S('La pile', 'Dans une <b>pile</b>, les deux demi-réactions se font dans des compartiments séparés : les électrons circulent dans le circuit extérieur, de l’électrode négative (où a lieu l’oxydation) vers la positive (où a lieu la réduction).'),
+      ],
+      recap: ['Oxydant : capte des e⁻.', 'Réducteur : cède des e⁻.', 'Oxydation à l’anode, réduction à la cathode.'],
+      quiz: [Q('Un réducteur est une espèce qui :', ['cède des électrons', 'capte des électrons'], 0), Q('Dans Zn + Cu²⁺ → Zn²⁺ + Cu, le zinc est :', ['oxydé', 'réduit'], 0)] },
+
+    { id: 'c1-titrage', subj: 'chimie', level: '1re', icon: '🧫', title: 'Dosage par titrage',
+      intro: 'Pour connaître la concentration d’une solution, on la fait réagir avec une solution connue jusqu’à l’équivalence.',
+      steps: [
+        S('Le principe', 'On verse peu à peu un réactif <b>titrant</b> (de concentration connue) dans la solution à doser, jusqu’à ce que le réactif à doser soit entièrement consommé. Le titrage repose sur une réaction rapide et totale.', 'titrage'),
+        S('L’équivalence', 'À l’<b>équivalence</b>, les réactifs ont été introduits dans les proportions de l’équation : le réactif titré et le réactif titrant sont <b>tous deux entièrement consommés</b>. On la repère par un changement de couleur, de pH ou de conductivité.'),
+        S('Le calcul', 'Pour une réaction 1 : 1, à l’équivalence : <b>C × V = C_titrant × V_équivalent</b>. Exemple : 10,0 mL de vinaigre dosés par de la soude à 0,10 mol/L ; V_éq = 12,0 mL : C = 0,10 × 12,0 ÷ 10,0 = <b>0,12 mol/L</b>.'),
+        S('Si les coefficients diffèrent', 'Il faut utiliser le tableau d’avancement : à l’équivalence, n(réactif titré) ÷ a = n(titrant) ÷ b, où a et b sont les coefficients stœchiométriques.'),
+      ],
+      recap: ['Titrant de concentration connue.', 'Équivalence : réactifs tous deux consommés.', 'Réaction 1 : 1 : C × V = C_t × V_éq.'],
+      quiz: [Q('À l’équivalence :', ['les deux réactifs sont entièrement consommés', 'il ne reste que le titrant'], 0), Q('10,0 mL dosés par 0,10 mol/L avec V_éq = 12,0 mL (1 : 1) donnent C =', ['0,12 mol/L', '0,083 mol/L', '1,2 mol/L'], 0)] },
+
+    { id: 'c1-organique', subj: 'chimie', level: '1re', icon: '⛓️', title: 'Chimie organique : alcanes et alcools',
+      intro: 'La chimie organique étudie les molécules construites sur des chaînes d’atomes de carbone.',
+      steps: [
+        S('Les alcanes', 'Les <b>alcanes</b> ne contiennent que du carbone et de l’hydrogène, liés par des liaisons simples : formule <b>CₙH₂ₙ₊₂</b>. Méthane CH₄, éthane C₂H₆, propane C₃H₈, butane C₄H₁₀.', 'alcane'),
+        S('Nommer', 'Le nom vient du nombre d’atomes de carbone de la chaîne : <b>méth</b> (1), <b>éth</b> (2), <b>prop</b> (3), <b>but</b> (4), <b>pent</b> (5), <b>hex</b> (6), suivi de la terminaison <b>-ane</b>. Une ramification se nomme avec un préfixe : 2-méthylpropane.'),
+        S('Les alcools', 'Un <b>alcool</b> porte un groupe hydroxyle <b>–OH</b> sur un carbone. Éthanol : CH₃–CH₂–OH. Le nom se termine par <b>-ol</b>. Les alcools sont solubles dans l’eau quand leur chaîne est courte.'),
+        S('Propriétés', 'Plus la chaîne est longue, plus la température d’ébullition est élevée. Le groupe –OH crée des liaisons hydrogène : un alcool bout à une température plus haute que l’alcane de même taille.'),
+      ],
+      recap: ['Alcane : CₙH₂ₙ₊₂.', 'méth, éth, prop, but, pent, hex.', 'Alcool : groupe –OH, nom en -ol.'],
+      quiz: [Q('La formule du propane est :', ['C₃H₈', 'C₃H₆', 'C₂H₆'], 0), Q('Un alcool contient le groupe :', ['–OH', '–COOH'], 0)] },
+
+    { id: 'c1-combustion', subj: 'chimie', level: '1re', icon: '🔥', title: 'Les combustions',
+      intro: 'Brûler un carburant, c’est le faire réagir avec le dioxygène en libérant de l’énergie.',
+      steps: [
+        S('Une réaction avec le dioxygène', 'Une <b>combustion</b> est une réaction entre un combustible (méthane, propane, essence, bois…) et le dioxygène. Il faut trois ingrédients : combustible, comburant (O₂) et une énergie d’activation (étincelle, flamme).'),
+        S('Combustion complète', 'Avec assez de dioxygène, un hydrocarbure produit du <b>dioxyde de carbone et de l’eau</b>. Exemple : CH₄ + 2 O₂ → CO₂ + 2 H₂O.'),
+        S('Combustion incomplète', 'Avec trop peu de dioxygène, on obtient aussi du <b>monoxyde de carbone CO</b> (gaz toxique, inodore) et du carbone (suie). D’où le danger d’un chauffage mal ventilé.'),
+        S('Énergie et climat', 'La combustion libère de l’énergie (réaction exothermique) mais aussi du CO₂, un gaz à effet de serre. Brûler 1 kg d’essence rejette environ 3 kg de CO₂.'),
+      ],
+      recap: ['Combustible + dioxygène → énergie.', 'Complète : CO₂ + H₂O.', 'Incomplète : CO toxique et suie.'],
+      quiz: [Q('Une combustion complète d’un hydrocarbure donne :', ['CO₂ et H₂O', 'CO et suie'], 0), Q('Le monoxyde de carbone est :', ['toxique et inodore', 'inoffensif'], 0)] },
+
+    { id: 'c1-energie-reaction', subj: 'chimie', level: '1re', icon: '🌡️', title: 'Énergie des réactions chimiques',
+      intro: 'Une réaction chimique casse des liaisons et en forme d’autres : cela libère ou absorbe de l’énergie.',
+      steps: [
+        S('Casser et former des liaisons', 'Casser une liaison demande de l’énergie ; en former une en libère. L’énergie d’une liaison (en kJ/mol) est celle qu’il faut fournir pour casser une mole de ces liaisons.'),
+        S('Exothermique et endothermique', 'Si on libère plus d’énergie qu’on en dépense, la réaction est <b>exothermique</b> (elle chauffe : combustion). Dans le cas contraire, elle est <b>endothermique</b> (elle refroidit : poche de froid instantané).'),
+        S('Le pouvoir calorifique', 'Le <b>pouvoir calorifique</b> d’un combustible est l’énergie libérée par la combustion d’une unité de masse. Pour l’essence : environ 45 MJ/kg ; pour le bois sec : environ 15 MJ/kg ; pour le dihydrogène : environ 120 MJ/kg.'),
+        S('Un calcul', 'L’énergie libérée par n moles de réactif est <b>E = n × énergie molaire de réaction</b>. Si on brûle 0,5 mol de méthane (890 kJ/mol) : E = 0,5 × 890 = <b>445 kJ</b>.'),
+      ],
+      recap: ['Casser des liaisons coûte, en former libère.', 'Exothermique : libère de l’énergie.', 'E = n × énergie molaire.'],
+      quiz: [Q('Une combustion est une réaction :', ['exothermique', 'endothermique'], 0), Q('0,5 mol de méthane (890 kJ/mol) libère :', ['445 kJ', '890 kJ', '1 780 kJ'], 0)] },
   ];
 
   const SUBJECTS = [
@@ -1411,7 +1659,7 @@
   ];
   const LEVELS_COURS = [
     { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ', ready: true },
-    { id: '2nde', label: '2nde', ready: true }, { id: '1re', label: '1ʳᵉ' }, { id: 'term', label: 'Terminale' },
+    { id: '2nde', label: '2nde', ready: true }, { id: '1re', label: '1ʳᵉ', ready: true }, { id: 'term', label: 'Terminale' },
   ];
 
   window.COURSES = COURSES; window.COURSE_SUBJECTS = SUBJECTS; window.COURSE_LEVELS = LEVELS_COURS;
