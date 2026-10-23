@@ -1932,7 +1932,7 @@
     { id: 'secondaire', label: 'Secondaire', icon: '🎓' },
   ];
   const LEVELS_COURS = [
-    { id: 'CP', label: 'CP', cycle: 'primaire' }, { id: 'CE1', label: 'CE1', cycle: 'primaire' }, { id: 'CE2', label: 'CE2', cycle: 'primaire' },
+    { id: 'GS', label: 'GS', cycle: 'primaire' }, { id: 'CP', label: 'CP', cycle: 'primaire' }, { id: 'CE1', label: 'CE1', cycle: 'primaire' }, { id: 'CE2', label: 'CE2', cycle: 'primaire' },
     { id: 'CM1', label: 'CM1', cycle: 'primaire' }, { id: 'CM2', label: 'CM2', cycle: 'primaire' },
     { id: '6e', label: '6ᵉ', cycle: 'moyen' }, { id: '5e', label: '5ᵉ', cycle: 'moyen', ready: true }, { id: '4e', label: '4ᵉ', cycle: 'moyen', ready: true }, { id: '3e', label: '3ᵉ', cycle: 'moyen', ready: true },
     { id: '2nde', label: '2nde', cycle: 'secondaire', ready: true }, { id: '1re', label: '1ʳᵉ', cycle: 'secondaire', ready: true }, { id: 'term', label: 'Terminale', cycle: 'secondaire', ready: true },
