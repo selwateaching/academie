@@ -53,5 +53,30 @@
     ],
   });
 
+  /* ------------------------------------------------------------ 3e */
+  EXTRA.push({
+    id: '3e', art: 'ma', short: '3ᵉ', name: 'Troisième', color: '#2e6873', age: '14-15 ans',
+    blurb: 'PGCD, identités remarquables, équations et systèmes, fonctions, trigonométrie, probabilités : prépare le brevet.',
+    domains: [
+      { name: 'Nombres et calculs', cats: [
+        { name: 'Arithmétique', skills: [['PGCD de deux nombres', 'gcdQ', {}], ['Décomposition en facteurs premiers', 'primeFact', {}], ['Simplifier une fraction', 'fracSimplify', {}]] },
+        { name: 'Racines et puissances', skills: [['Simplifier une racine carrée', 'sqrtQ', { kinds: ['simp'] }], ['Puissances de 10 négatives', 'powInt', { kinds: ['neg10'] }], ['Notation scientifique', 'sci', {}]] },
+        { name: 'Calcul littéral', skills: [['Développer (x + a)(x + b)', 'litDev', { kinds: ['double'] }], ['Développer avec une identité remarquable', 'idRem', { kinds: ['sq+', 'sq-', 'prod'] }], ['Factoriser avec un facteur commun', 'litFact', {}], ['Factoriser avec une identité remarquable', 'idRem', { kinds: ['fsq', 'fdiff'] }]] },
+        { name: 'Équations et inéquations', skills: [['Résoudre ax + b = cx + d', 'eq1', { kinds: ['both'] }], ['Équation produit nul', 'prodNul', {}], ['Résoudre une inéquation', 'ineq', {}], ['Résoudre un système', 'sys2', {}]] },
+        { name: 'Fonctions', skills: [['Calculer une image', 'fnImage', { kinds: ['image', 'quad'] }], ['Trouver un antécédent', 'fnImage', { kinds: ['antecedent'] }], ['Coefficient d’une fonction linéaire', 'fnAff', { kinds: ['coef'] }], ['Coefficient directeur d’une droite', 'fnAff', { kinds: ['slope'] }], ['Ordonnée à l’origine', 'fnAff', { kinds: ['interc'] }]] },
+        { name: 'Statistiques et probabilités', skills: [['Quartiles', 'quart', { kinds: ['q1', 'q3'] }], ['Deux tirages avec remise', 'probaTwo', {}], ['Événement contraire', 'probaCompl', {}]] },
+      ] },
+      { name: 'Grandeurs et mesures', cats: [
+        { name: 'Solides et transformations', skills: [['Volume d’une boule', 'vol2', { kinds: ['sph'] }], ['Agrandissement et réduction : aires', 'homothety', { kinds: ['area'] }], ['Agrandissement et réduction : volumes', 'homothety', { kinds: ['vol'] }]] },
+        { name: 'Vitesses', skills: [['Vitesse, distance, durée', 'speed', { kinds: ['v', 'd', 't'] }]] },
+      ] },
+      { name: 'Espace et géométrie', cats: [
+        { name: 'Pythagore et Thalès', skills: [['Calculer un côté avec Pythagore', 'pyth', { kinds: ['hyp', 'side'] }], ['Réciproque de Pythagore', 'pythRecip', {}], ['Calculer une longueur avec Thalès', 'thales', { kinds: ['ac', 'mn'] }]] },
+        { name: 'Trigonométrie', skills: [['Cosinus, sinus et tangente', 'trigo', { kinds: ['cos', 'sin', 'tan'] }], ['Calculer un côté avec la trigonométrie', 'trigo', { kinds: ['side'] }], ['Calculer un angle', 'trigo', { kinds: ['angle'] }]] },
+        { name: 'Polygones réguliers', skills: [['Angle au centre', 'polyAngle', { kinds: ['central'] }], ['Angle d’un polygone régulier', 'polyAngle', { kinds: ['inner'] }]] },
+      ] },
+    ],
+  });
+
   root.CATALOG_EXTRA = EXTRA;
 }(typeof window !== 'undefined' ? window : globalThis));

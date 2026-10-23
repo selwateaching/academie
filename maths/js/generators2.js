@@ -198,6 +198,7 @@
     if (k === 'prism') { const A = R(5, 40), h = R(3, 12); return num(t('x.vol.prism', { A: m(A), h: m(h) }), '', A * h, t('x.vol.prism.exp', { A: m(A), h: m(h), r: m(A * h) })); }
     if (k === 'cyl') { const r = R(2, 8), h = R(3, 12), v = round(3.14 * r * r * h, 2); return num(t('x.vol.cyl', { r: m(r), h: m(h) }), '', v, t('x.vol.cyl.exp', { r: m(r), h: m(h), r2: m(r * r), r3: m(fmt(v)) })); }
     if (k === 'pyr') { const A = R(4, 30), h = R(2, 8) * 3; return num(t('x.vol.pyr', { A: m(A), h: m(h) }), '', (A * h) / 3, t('x.vol.pyr.exp', { A: m(A), h: m(h), r: m((A * h) / 3) })); }
+    if (k === 'sph') { const r = R(1, 3) * 3, v = round((4 * 3.14 * r * r * r) / 3, 2); return num(t('x.vol.sph', { r: m(r) }), '', v, t('x.vol.sph.exp', { r: m(r), r3: m(r * r * r), v: m(fmt(v)) })); }
     const r = R(2, 4) * 3, h = R(2, 9) * 3, v = round((3.14 * r * r * h) / 3, 2);
     return num(t('x.vol.cone', { r: m(r), h: m(h) }), '', v, t('x.vol.cone.exp', { r: m(r), h: m(h), r3: m(fmt(v)) }));
   };
@@ -301,6 +302,7 @@
       const cand = [fracStr(ac, z), fracStr(ab, z), fracStr(ac, ab), fracStr(ab, ac), fracStr(z, ab), fracStr(z, ac)].filter((q) => !eqf(q));
       return { q: t('x.trig.q.' + k), vis: f({ AB: ab + ' cm', AC: ac + ' cm', BC: z + ' cm' }), kind: 'choice', ans, choices: mc(ans, cand, fracLabel), exp: t('x.trig.exp.' + k, { r: fracLabel(ans) }) };
     }
+    if (k === 'angle') { const o = pick([['cos', '0,5', 60], ['sin', '0,5', 30], ['tan', '1', 45]]); return num(t('x.trig.angle.q', { f: o[0], v: m(o[1]) }), '', o[2], t('x.trig.angle.exp', { f: o[0], v: m(o[1]), a: m(o[2]) })); }
     // calculer un côté à partir d'un rapport décimal exact
     const s = R(2, 6), [x1, y1, z1] = [3 * s, 4 * s, 5 * s], kind = pick(['cos', 'sin']);
     const ratio = kind === 'cos' ? 0.8 : 0.6, ans = kind === 'cos' ? y1 : x1;
@@ -327,6 +329,85 @@
     }
   };
   GEN.probaCompl = () => { const pc = R(1, 19) * 5; return num(t('x.compl.q', { p: m(pc) }), '', 100 - pc, t('x.compl.exp', { p: m(pc), r: m(100 - pc) })); };
+
+  /* ===================================================================== 3e */
+  const gcdSteps = (a, b) => { const out = []; while (b) { out.push(`${a} = ${b} × ${Math.floor(a / b)} + ${a % b}`); [a, b] = [b, a % b]; } return out.join(' ; '); };
+
+  GEN.gcdQ = () => {
+    let g, p, q; do { g = R(2, 12); p = R(2, 12); q = R(2, 12); } while (p === q || gcd(p, q) !== 1);
+    const a = g * Math.max(p, q), b = g * Math.min(p, q);
+    return num(t('x.gcd.q', { a: m(a), b: m(b) }), '', g, t('x.gcd.exp', { steps: m(gcdSteps(a, b)), r: m(g) }));
+  };
+  GEN.primeFact = () => {
+    const PR = [2, 3, 5, 7]; let f, n;
+    do { f = PR.map((pp) => (R(0, 2) === 0 ? 0 : R(1, pp === 2 ? 3 : 2))); n = PR.reduce((a, pp, i) => a * Math.pow(pp, f[i]), 1); } while (n < 12 || n > 500 || f.filter((x) => x).length < 2);
+    const lab = (ff) => PR.map((pp, i) => (ff[i] ? (ff[i] > 1 ? sup(pp, ff[i]) : String(pp)) : null)).filter(Boolean).join(' × ');
+    const wr = [], tweak = (i, d) => { const g2 = f.slice(); g2[i] = Math.max(0, g2[i] + d); return g2; };
+    f.forEach((x, i) => { if (x) { wr.push(lab(tweak(i, 1)), lab(tweak(i, -1))); } });
+    const ans = lab(f);
+    return { q: t('x.pf.q', { n: m(n) }), kind: 'choice', ans, choices: mc(ans, wr.filter((w) => w && w !== ans), (x) => m(x)), exp: t('x.pf.exp', { n: m(n), r: m(ans) }) };
+  };
+  GEN.idRem = (p) => {
+    const k = pick(p.kinds), a = R(2, 9), A = a * a;
+    if (k === 'sq+') { const ans = P([1, 2 * a, A]); return { q: t('x.dev.q'), expr: m(`(x + ${a})²`), kind: 'choice', ans, choices: mc(ans, [P([1, 0, A]), P([1, a, A]), P([1, 2 * a, 2 * a]), P([1, 2 * a, -A])], (x) => m(x)), exp: t('x.id.sqp.exp', { a: m(a), r: m(ans) }) }; }
+    if (k === 'sq-') { const ans = P([1, -2 * a, A]); return { q: t('x.dev.q'), expr: m(`(x − ${a})²`), kind: 'choice', ans, choices: mc(ans, [P([1, 0, A]), P([1, 2 * a, A]), P([1, -2 * a, -A]), P([1, -a, A])], (x) => m(x)), exp: t('x.id.sqm.exp', { a: m(a), r: m(ans) }) }; }
+    if (k === 'prod') { const ans = P([1, 0, -A]); return { q: t('x.dev.q'), expr: m(`(x + ${a})(x − ${a})`), kind: 'choice', ans, choices: mc(ans, [P([1, 0, A]), P([1, -2 * a, -A]), P([1, 2 * a, -A]), P([1, a, -a])], (x) => m(x)), exp: t('x.id.prod.exp', { a: m(a), a2: m(A), r: m(ans) }) }; }
+    if (k === 'fsq') { const ans = `(x + ${a})²`; return { q: t('x.fact.q'), expr: m(P([1, 2 * a, A])), kind: 'choice', ans, choices: mc(ans, [`(x − ${a})²`, `(x + ${2 * a})²`, `(x + ${a})(x − ${a})`, `(x + ${A})²`], (x) => m(x)), exp: t('x.id.fsq.exp', { a: m(a), r: m(ans) }) }; }
+    const ans = `(x − ${a})(x + ${a})`; return { q: t('x.fact.q'), expr: m(P([1, 0, -A])), kind: 'choice', ans, choices: mc(ans, [`(x − ${a})²`, `(x + ${a})²`, `(x − ${A})(x + ${A})`, `(x − ${a})(x − ${a})`], (x) => m(x)), exp: t('x.id.fdiff.exp', { a: m(a), a2: m(A), r: m(ans) }) };
+  };
+  GEN.prodNul = () => {
+    let a, b; do { a = nz(-9, 9); b = nz(-9, 9); } while (a === b);
+    const s1 = -a, s2 = -b, r = Math.min(s1, s2);
+    return num(t('x.prodNul.q'), m(`(x ${plus(a)})(x ${plus(b)}) = 0`), r, t('x.prodNul.exp', { a: m(plus(a)), b: m(plus(b)), s1: m(fmt(s1)), s2: m(fmt(s2)), r: m(fmt(r)) }));
+  };
+  GEN.sys2 = () => {
+    const x = nz(-6, 9), y = nz(-6, 9), ask = pick(['x', 'y']), type = R(1, 2);
+    let e1, e2, exp;
+    if (type === 1) { const s = x + y, d = x - y; e1 = `x + y = ${fmt(s)}`; e2 = `x − y = ${fmt(d)}`; exp = t('x.sys.exp1', { s: m(fmt(s)), d: m(fmt(d)), t2: m(fmt(s + d)), x: m(fmt(x)), y: m(fmt(y)) }); }
+    else { const A = 2 * x + y, B = x + y; e1 = `2x + y = ${fmt(A)}`; e2 = `x + y = ${fmt(B)}`; exp = t('x.sys.exp2', { A: m(fmt(A)), B: m(fmt(B)), x: m(fmt(x)), y: m(fmt(y)) }); }
+    return { q: t('x.sys.q.' + ask), expr: `<div>${m(e1)}</div><div>${m(e2)}</div>`, kind: 'num', ans: ask === 'x' ? x : y, exp };
+  };
+  GEN.fnImage = (p) => {
+    const k = pick(p.kinds), a = nz(-6, 6), b = nz(-9, 9), x = nz(-6, 6);
+    if (k === 'image') return num(t('x.fn.image', { f: m(P([a, b])), x: m(fmt(x)) }), '', a * x + b, t('x.fn.image.exp', { x: m(fmt(x)), sub: m(`${fmt(a)} × ${sgn(x)} ${plus(b)}`), r: m(fmt(a * x + b)) }));
+    if (k === 'quad') { const a2 = nz(-3, 3), x2 = nz(-5, 5); return num(t('x.fn.image', { f: m(P([a2, 0, b])), x: m(fmt(x2)) }), '', a2 * x2 * x2 + b, t('x.fn.image.exp', { x: m(fmt(x2)), sub: m(`${fmt(a2)} × ${sgn(x2)}² ${plus(b)}`), r: m(fmt(a2 * x2 * x2 + b)) })); }
+    const c = a * x + b;
+    return num(t('x.fn.ante', { f: m(P([a, b])), c: m(fmt(c)) }), '', x, t('x.fn.ante.exp', { f: m(P([a, b])), c: m(fmt(c)), b: m(sgn(b)), a: m(fmt(a)), r: m(fmt(x)) }));
+  };
+  GEN.fnAff = (p) => {
+    const k = pick(p.kinds), a = nz(-6, 6), x1 = R(1, 5), dx = R(1, 4), x2 = x1 + dx, b = nz(-9, 9);
+    if (k === 'coef') return num(t('x.aff.coef', { x: m(x1), y: m(fmt(a * x1)) }), '', a, t('x.aff.coef.exp', { x: m(x1), y: m(fmt(a * x1)), r: m(fmt(a)) }));
+    const y1 = a * x1 + b, y2 = a * x2 + b;
+    if (k === 'slope') return num(t('x.aff.slope', { A: m(pair(x1, y1)), B: m(pair(x2, y2)) }), '', a, t('x.aff.slope.exp', { dy: m(`${fmt(y2)} − ${sgn(y1)} = ${fmt(y2 - y1)}`), dx: m(`${x2} − ${x1} = ${dx}`), r: m(fmt(a)) }));
+    return num(t('x.aff.interc', { a: m(fmt(a)), A: m(pair(x1, y1)) }), '', b, t('x.aff.interc.exp', { y: m(fmt(y1)), a: m(fmt(a)), x: m(x1), r: m(fmt(b)) }));
+  };
+  GEN.ineq = () => {
+    const a = nz(-7, 7), b = nz(-9, 9), x0 = nz(-6, 8), c = a * x0 + b, op = pick(['<', '≤', '>', '≥']);
+    const flip = { '<': '>', '≤': '≥', '>': '<', '≥': '≤' }, op2 = a > 0 ? op : flip[op], upper = op2 === '<' || op2 === '≤';
+    const r = op2 === '<' ? x0 - 1 : op2 === '>' ? x0 + 1 : x0;
+    return num(t(upper ? 'x.ineq.max' : 'x.ineq.min'), m(`${P([a, b])} ${op} ${fmt(c)}`), r, t('x.ineq.exp', { d: m(`${fmt(a)}x ${op} ${fmt(c - b)}`), a: m(fmt(a)), fl: t(a > 0 ? 'x.ineq.same' : 'x.ineq.flip'), s: m(`x ${op2} ${fmt(x0)}`), r: m(fmt(r)) }));
+  };
+  GEN.homothety = (p) => {
+    const k = pick(p.kinds), f = pick([2, 3, 4, 5, 0.5]);
+    if (k === 'area') { const A = R(2, 30), r = round(A * f * f, 4); return num(t('x.homo.area', { k: m(fmt(f)), A: m(A) }), '', r, t('x.homo.area.exp', { k: m(fmt(f)), A: m(A), k2: m(fmt(round(f * f, 4))), r: m(fmt(r)) })); }
+    const V = R(2, 20), r = round(V * f * f * f, 4); return num(t('x.homo.vol', { k: m(fmt(f)), V: m(V) }), '', r, t('x.homo.vol.exp', { k: m(fmt(f)), V: m(V), k3: m(fmt(round(f * f * f, 4))), r: m(fmt(r)) }));
+  };
+  GEN.quart = (p) => {
+    const k = pick(p.kinds), n = R(7, 11), arr = shuf(Array.from({ length: 30 }, (_, i) => i + 1)).slice(0, n), s = arr.slice().sort((a, b) => a - b);
+    const rank = k === 'q1' ? Math.ceil(n / 4) : Math.ceil((3 * n) / 4), val = s[rank - 1];
+    return num(t('x.quart.q.' + k), m(arr.join(' ; ')), val, t('x.quart.exp.' + k, { s: m(s.join(' ; ')), n: m(n), x: m(fmt(k === 'q1' ? n / 4 : (3 * n) / 4)), k: m(rank), r: m(val) }));
+  };
+  GEN.probaTwo = () => {
+    const r = R(1, 4), b = R(1, 4), n = r + b, ans = fracStr(r * r, n * n), eqf = (q) => { const [x, y] = String(q).split('/').map(Number); return x * n * n === r * r * (y || 1); };
+    const wr = [fracStr(r, n), fracStr(2 * r, n), fracStr(r * r, n), fracStr(2 * r * b, n * n), fracStr(r * b, n * n)].filter((q) => !eqf(q));
+    const vis = `<div class="emojis">${'🔴'.repeat(r)}${'🔵'.repeat(b)}</div>`;
+    return { q: t('x.two.q'), vis, kind: 'choice', ans, choices: mc(ans, wr, fracLabel), exp: t('x.two.exp', { r: m(r), n: m(n), a: fracLabel(ans) }) };
+  };
+  GEN.polyAngle = (p) => {
+    const k = pick(p.kinds), n = pick([5, 6, 8, 9, 10, 12]), c = 360 / n;
+    if (k === 'central') return num(t('x.poly.central', { n: m(n) }), '', c, t('x.poly.central.exp', { n: m(n), r: m(c) }));
+    return num(t('x.poly.inner', { n: m(n) }), '', 180 - c, t('x.poly.inner.exp', { n: m(n), c: m(c), r: m(180 - c) }));
+  };
 
   root.MathsGen2 = { t };
 }(typeof window !== 'undefined' ? window : globalThis));

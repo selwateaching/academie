@@ -31,5 +31,18 @@
     'Théorème de Pythagore': 'نظرية فيثاغورس', 'Calculer l’hypoténuse': 'حساب الوتر', 'Calculer un côté de l’angle droit': 'حساب ضلع من ضلعي الزاوية القائمة', 'Réciproque de Pythagore': 'عكس نظرية فيثاغورس',
     'Théorème de Thalès': 'نظرية طالس', 'Calculer une longueur avec Thalès': 'حساب طول بنظرية طالس',
     'Cosinus': 'جيب التمام', 'Cosinus d’un angle aigu': 'جيب تمام زاوية حادة', 'Calculer un côté avec le cosinus': 'حساب ضلع باستعمال جيب التمام',
+    /* 3e */
+    'PGCD, identités remarquables, équations et systèmes, fonctions, trigonométrie, probabilités : prépare le brevet.': 'القاسم المشترك الأكبر، المتطابقات الهامة، المعادلات والجمل، الدوال، حساب المثلثات، الاحتمالات : تحضير لشهادة التعليم المتوسط.',
+    'Arithmétique': 'الحساب', 'PGCD de deux nombres': 'القاسم المشترك الأكبر لعددين', 'Décomposition en facteurs premiers': 'التحليل إلى جداء عوامل أولية',
+    'Racines et puissances': 'الجذور والقوى', 'Simplifier une racine carrée': 'تبسيط جذر تربيعي',
+    'Développer avec une identité remarquable': 'النشر بمتطابقة هامة', 'Factoriser avec une identité remarquable': 'التحليل بمتطابقة هامة',
+    'Équations et inéquations': 'المعادلات والمتراجحات', 'Équation produit nul': 'معادلة الجداء المعدوم', 'Résoudre une inéquation': 'حلّ متراجحة', 'Résoudre un système': 'حلّ جملة معادلتين',
+    'Fonctions': 'الدوال', 'Calculer une image': 'حساب صورة', 'Trouver un antécédent': 'إيجاد سابق', 'Coefficient d’une fonction linéaire': 'معامل دالة خطية', 'Coefficient directeur d’une droite': 'معامل توجيه مستقيم', 'Ordonnée à l’origine': 'الترتيبة عند المبدأ',
+    'Quartiles': 'الأرباع', 'Deux tirages avec remise': 'سحبان مع الإعادة',
+    'Solides et transformations': 'المجسّمات والتحويلات', 'Volume d’une boule': 'حجم كرة', 'Agrandissement et réduction : aires': 'التكبير والتصغير : المساحات', 'Agrandissement et réduction : volumes': 'التكبير والتصغير : الحجوم',
+    'Vitesses': 'السرعات', 'Vitesse, distance, durée': 'السرعة والمسافة والمدة',
+    'Pythagore et Thalès': 'فيثاغورس وطالس', 'Calculer un côté avec Pythagore': 'حساب ضلع بنظرية فيثاغورس',
+    'Trigonométrie': 'حساب المثلثات', 'Cosinus, sinus et tangente': 'جيب التمام والجيب والظل', 'Calculer un côté avec la trigonométrie': 'حساب ضلع بحساب المثلثات', 'Calculer un angle': 'حساب زاوية',
+    'Polygones réguliers': 'المضلعات المنتظمة', 'Angle au centre': 'الزاوية المركزية', 'Angle d’un polygone régulier': 'زاوية مضلع منتظم',
   });
 }(typeof window !== 'undefined' ? window : globalThis));
