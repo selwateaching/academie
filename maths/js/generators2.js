@@ -52,7 +52,7 @@
   const symChoices = () => ['<', '=', '>'].map((s) => ({ v: s, label: m(s) }));
   const yesNo = () => [{ v: 'y', label: t('yes') }, { v: 'n', label: t('no') }];
   const pair = (a, b) => `(${fmt(a)} ; ${fmt(b)})`;
-  const svg = (w, h, inner) => `<svg class="fig" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img">${inner}</svg>`;
+  const svg = (w, h, inner) => `<svg class="fig" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" direction="ltr" style="direction:ltr">${inner}</svg>`;
   const txt = (x, y, s, o = {}) => `<text x="${x}" y="${y}" font-size="${o.s || 14}" text-anchor="${o.a || 'middle'}" fill="${o.c || '#334155'}" font-family="system-ui,sans-serif">${s}</text>`;
   const num = (q, expr, ans, exp, vis) => ({ q, expr, vis, kind: 'num', ans, exp });
 
@@ -197,6 +197,7 @@
     const k = pick(p.kinds);
     if (k === 'prism') { const A = R(5, 40), h = R(3, 12); return num(t('x.vol.prism', { A: m(A), h: m(h) }), '', A * h, t('x.vol.prism.exp', { A: m(A), h: m(h), r: m(A * h) })); }
     if (k === 'cyl') { const r = R(2, 8), h = R(3, 12), v = round(3.14 * r * r * h, 2); return num(t('x.vol.cyl', { r: m(r), h: m(h) }), '', v, t('x.vol.cyl.exp', { r: m(r), h: m(h), r2: m(r * r), r3: m(fmt(v)) })); }
+    if (k === 'pyr') { const A = R(4, 30), h = R(2, 8) * 3; return num(t('x.vol.pyr', { A: m(A), h: m(h) }), '', (A * h) / 3, t('x.vol.pyr.exp', { A: m(A), h: m(h), r: m((A * h) / 3) })); }
     const r = R(2, 4) * 3, h = R(2, 9) * 3, v = round((3.14 * r * r * h) / 3, 2);
     return num(t('x.vol.cone', { r: m(r), h: m(h) }), '', v, t('x.vol.cone.exp', { r: m(r), h: m(h), r3: m(fmt(v)) }));
   };
@@ -222,6 +223,110 @@
     const [x, y, z] = shuf([a, b, c]), big = Math.max(a, b, c), s = a + b + c - big;
     return { q: t('x.tri.q'), expr: m(`${x} cm ; ${y} cm ; ${z} cm`), kind: 'choice', ans: big < s ? 'y' : 'n', choices: yesNo(), exp: t(big < s ? 'x.tri.y' : 'x.tri.n', { big: m(big), s: m(s) }) };
   };
+
+  /* ===================================================================== 4e */
+  const sup = (a, n) => `${a}<sup>${n}</sup>`;
+  const base = (a) => (a < 0 ? `(${fmt(a)})` : fmt(a));
+  const spaced = (s) => { const [i, d] = String(s).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (d ? ',' + d : ''); };
+  const TRIPLES = [[3, 4, 5], [6, 8, 10], [5, 12, 13], [8, 15, 17], [9, 12, 15], [7, 24, 25], [12, 16, 20], [15, 20, 25], [20, 21, 29], [10, 24, 26]];
+
+  /* Priorités avec des nombres relatifs */
+  GEN.relExpr = () => {
+    const k = R(0, 2), a = nz(-9, 9), b = nz(-9, 9), c = nz(-9, 9);
+    if (k === 0) { const r = a + b * c; return num(t('x.calc'), m(`${sgn(a)} + ${sgn(b)} × ${sgn(c)} = ${box}`), r, t('x.relExpr.e0', { b: m(sgn(b)), c: m(sgn(c)), p: m(fmt(b * c)), a: m(sgn(a)), r: m(fmt(r)) })); }
+    if (k === 1) { const r = a - b * c; return num(t('x.calc'), m(`${sgn(a)} − ${sgn(b)} × ${sgn(c)} = ${box}`), r, t('x.relExpr.e1', { b: m(sgn(b)), c: m(sgn(c)), p: m(fmt(b * c)), a: m(sgn(a)), r: m(fmt(r)) })); }
+    const r = (a + b) * c; return num(t('x.calc'), m(`(${fmt(a)} + ${sgn(b)}) × ${sgn(c)} = ${box}`), r, t('x.relExpr.e2', { a: m(fmt(a)), b: m(sgn(b)), s: m(fmt(a + b)), c: m(sgn(c)), r: m(fmt(r)) }));
+  };
+
+  /* Puissances */
+  GEN.powInt = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'neg10') { const n = R(1, 6), v = round(Math.pow(10, -n), 8); return num(t('x.pow.neg10'), m(`${sup('10', '−' + n)} = ${box}`), v, t('x.pow.neg10.exp', { n: m(n), r: m(fmt(v)) })); }
+    if (k === 'rule') { const a = R(2, 9), x = R(2, 9), y = R(2, 9); return num(t('x.pow.rule'), m(`${sup(a, x)} × ${sup(a, y)} = ${sup(a, box)}`), x + y, t('x.pow.rule.exp', { x: m(x), y: m(y), r: m(x + y) })); }
+    if (k === 'div') { const a = R(2, 9), y = R(2, 6), x = y + R(1, 7); return num(t('x.pow.rule'), m(`${sup(a, x)} ÷ ${sup(a, y)} = ${sup(a, box)}`), x - y, t('x.pow.div.exp', { x: m(x), y: m(y), r: m(x - y) })); }
+    const a = pick([-5, -4, -3, -2, 2, 3, 4, 5, 10]), n = R(2, 4), v = Math.pow(a, n);
+    return num(t('x.pow.calc'), m(`${sup(base(a), n)} = ${box}`), v, t('x.pow.calc.exp', { e: m(Array(n).fill(base(a)).join(' × ')), r: m(fmt(v)) }));
+  };
+  GEN.sci = () => {
+    const mant = R(11, 99) / 10, e = pick([-6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7]), v = String(round(mant * Math.pow(10, e), 12));
+    const label = (x) => m(x), L = (mm, ee) => `${fmt(mm)} × ${sup('10', ee)}`;
+    const ans = L(mant, e), wr = [L(mant, e + 1), L(mant, e - 1), L(mant * 10, e - 1), L(mant, -e), L(round(mant / 10, 2), e + 1)];
+    return { q: t('x.sci.q'), expr: m(e > 0 ? spaced(v) : fmt(v)), kind: 'choice', ans, choices: mc(ans, wr, label), exp: t('x.sci.exp', { r: m(ans) }) };
+  };
+  GEN.sqrtQ = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'perfect') { const n = R(2, 20); return num(t('x.calc'), m(`√${n * n} = ${box}`), n, t('x.sqrt.perfect.exp', { n: m(n), s: m(n * n) })); }
+    if (k === 'between') {
+      let n; do { n = R(2, 150); } while (Number.isInteger(Math.sqrt(n)));
+      const a = Math.floor(Math.sqrt(n)), L = (x) => `${x} ${t('x.and')} ${x + 1}`, ans = L(a);
+      return { q: t('x.sqrt.between.q'), expr: m(`√${n}`), kind: 'choice', ans, choices: mc(ans, [L(a - 1), L(a + 1), L(a + 2), L(Math.max(1, Math.floor(n / 10)))], (x) => m(x)), exp: t('x.sqrt.between.exp', { a: m(a), a2: m(a * a), b: m(a + 1), b2: m((a + 1) * (a + 1)), n: m(n) }) };
+    }
+    const kk = R(2, 7), b = pick([2, 3, 5, 6, 7]), n = kk * kk * b, L = (x, y) => `${x}√${y}`, ans = L(kk, b);
+    return { q: t('x.sqrt.simp.q'), expr: m(`√${n}`), kind: 'choice', ans, choices: mc(ans, [L(kk + 1, b), L(b, kk), L(kk, b + 1), L(kk * kk, b), L(1, n)].filter((x) => x !== L(1, n) || b === 1), (x) => m(x)), exp: t('x.sqrt.simp.exp', { n: m(n), k2: m(kk * kk), b: m(b), k: m(kk), r: m(ans) }) };
+  };
+
+  /* Factoriser */
+  GEN.litFact = () => {
+    const k = R(2, 9), a = R(1, 5), b = nz(-9, 9), e = P([k * a, k * b]), ans = `${k}(${P([a, b])})`;
+    return { q: t('x.fact.q'), expr: m(e), kind: 'choice', ans, choices: mc(ans, [`${k}(${P([a, k * b])})`, `${k}(${P([a, -b])})`, `${k}(${P([k * a, b])})`, `${k}(${P([a, b + k])})`], (x) => m(x)), exp: t('x.fact.exp', { k: m(k), r: m(ans) }) };
+  };
+
+  /* Théorème de Pythagore */
+  const triFig = (lab, o = {}) => svg(280, 140, `<polygon points="50,115 50,22 240,115" fill="#e0e7ff" stroke="#3730a3" stroke-width="2.5"/><rect x="50" y="103" width="12" height="12" fill="none" stroke="#3730a3"/>${txt(36, 125, 'A', { a: 'end' })}${txt(36, 22, 'B', { a: 'end' })}${txt(250, 126, 'C', { a: 'start' })}${txt(42, 72, lab.AB, { a: 'end', c: lab.AB === '?' ? '#dc2626' : '#334155' })}${txt(145, 134, lab.AC, { c: lab.AC === '?' ? '#dc2626' : '#334155' })}${txt(158, 60, lab.BC, { a: 'start', c: lab.BC === '?' ? '#dc2626' : '#334155' })}`);
+  GEN.pyth = (p) => {
+    const k = pick(p.kinds), [x, y, z] = pick(TRIPLES), legs = shuf([x, y]), [ab, ac] = legs;
+    if (k === 'hyp') return { q: t('x.pyth.hyp.q'), vis: triFig({ AB: ab + ' cm', AC: ac + ' cm', BC: '?' }), kind: 'num', ans: z, exp: t('x.pyth.hyp.exp', { a: m(ab), b: m(ac), s: m(ab * ab + ac * ac), r: m(z) }) };
+    return { q: t('x.pyth.side.q'), vis: triFig({ AB: ab + ' cm', AC: '?', BC: z + ' cm' }), kind: 'num', ans: ac, exp: t('x.pyth.side.exp', { c: m(z), a: m(ab), d: m(z * z - ab * ab), r: m(ac) }) };
+  };
+  GEN.pythRecip = () => {
+    const [x, y, z] = pick(TRIPLES), good = pick([true, false]), zz = good ? z : z + pick([-1, 1]), sq = x * x + y * y;
+    return { q: t('x.recip.q', { a: m(x), b: m(y), c: m(zz) }), kind: 'choice', ans: zz * zz === sq ? 'y' : 'n', choices: yesNo(), exp: t(zz * zz === sq ? 'x.recip.y' : 'x.recip.n', { c: m(zz), c2: m(zz * zz), a: m(x), b: m(y), s: m(sq) }) };
+  };
+
+  /* Théorème de Thalès */
+  GEN.thales = (p) => {
+    const k = pick(p.kinds), pr = pick([[2, 3], [3, 5], [2, 5], [3, 4], [1, 3], [4, 5], [2, 7]]), s = R(1, 4), u = R(1, 4), [a, b] = pr;
+    const AM = a * s, AB = b * s, AN = a * u, AC = b * u, MN = a * R(2, 5), BC = (b * MN) / a;
+    const f = svg(280, 140, `<polygon points="140,12 40,125 250,125" fill="#fef9c3" stroke="#854d0e" stroke-width="2.5"/><line x1="${140 - 100 * a / b}" y1="${12 + 113 * a / b}" x2="${140 + 110 * a / b}" y2="${12 + 113 * a / b}" stroke="#854d0e" stroke-width="2.5"/>${txt(140, 8, 'A')}${txt(30, 135, 'B')}${txt(262, 135, 'C')}${txt(140 - 100 * a / b - 10, 12 + 113 * a / b + 4, 'M')}${txt(140 + 110 * a / b + 12, 12 + 113 * a / b + 4, 'N')}`);
+    if (k === 'ac') return { q: t('x.thales.ac', { AM: m('AM = ' + AM), AB: m('AB = ' + AB), AN: m('AN = ' + AN) }), vis: f, kind: 'num', ans: AC, exp: t('x.thales.ac.exp', { AM: m(AM), AB: m(AB), AN: m(AN), r: m(AC) }) };
+    return { q: t('x.thales.mn', { AM: m('AM = ' + AM), AB: m('AB = ' + AB), BC: m('BC = ' + BC) }), vis: f, kind: 'num', ans: MN, exp: t('x.thales.mn.exp', { AM: m(AM), AB: m(AB), BC: m(BC), r: m(MN) }) };
+  };
+
+  /* Trigonométrie dans le triangle rectangle */
+  GEN.trigo = (p) => {
+    const k = pick(p.kinds), [x, y, z] = pick(TRIPLES.slice(0, 7)), [ab, ac] = shuf([x, y]);
+    const f = (lab) => triFig(lab);
+    if (k === 'cos' || k === 'sin' || k === 'tan') {
+      const nu = { cos: ab, sin: ac, tan: ac }[k], de = { cos: z, sin: z, tan: ab }[k], ans = fracStr(nu, de), eqf = (q) => { const [n1, d1] = String(q).split('/').map(Number); return n1 * de === nu * (d1 || 1); };
+      const cand = [fracStr(ac, z), fracStr(ab, z), fracStr(ac, ab), fracStr(ab, ac), fracStr(z, ab), fracStr(z, ac)].filter((q) => !eqf(q));
+      return { q: t('x.trig.q.' + k), vis: f({ AB: ab + ' cm', AC: ac + ' cm', BC: z + ' cm' }), kind: 'choice', ans, choices: mc(ans, cand, fracLabel), exp: t('x.trig.exp.' + k, { r: fracLabel(ans) }) };
+    }
+    // calculer un côté à partir d'un rapport décimal exact
+    const s = R(2, 6), [x1, y1, z1] = [3 * s, 4 * s, 5 * s], kind = pick(['cos', 'sin']);
+    const ratio = kind === 'cos' ? 0.8 : 0.6, ans = kind === 'cos' ? y1 : x1;
+    return num(t('x.trig.side.' + kind, { c: m(z1), r: m(fmt(ratio)) }), '', ans, t('x.trig.side.exp.' + kind, { c: m(z1), r: m(fmt(ratio)), a: m(ans) }));
+  };
+
+  /* Vitesse, distance, durée */
+  GEN.speed = (p) => {
+    const k = pick(p.kinds), v = pick([30, 40, 45, 50, 60, 72, 80, 90, 100, 120]), tt = pick([0.5, 1, 1.5, 2, 2.5, 3, 4]), d = round(v * tt);
+    if (k === 'v') return num(t('x.speed.v', { d: m(fmt(d)), t: m(fmt(tt)) }), '', v, t('x.speed.v.exp', { d: m(fmt(d)), t: m(fmt(tt)), r: m(v) }));
+    if (k === 'd') return num(t('x.speed.d', { v: m(v), t: m(fmt(tt)) }), '', d, t('x.speed.d.exp', { v: m(v), t: m(fmt(tt)), r: m(fmt(d)) }));
+    return num(t('x.speed.t', { v: m(v), d: m(fmt(d)) }), '', tt, t('x.speed.t.exp', { v: m(v), d: m(fmt(d)), r: m(fmt(tt)) }));
+  };
+
+  /* Moyenne pondérée */
+  GEN.wmean = () => {
+    for (let g = 0; g < 500; g++) {
+      const vals = shuf([6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18]).slice(0, 3).sort((a, b) => a - b), eff = [R(1, 6), R(1, 6), R(1, 6)];
+      const tot = eff[0] + eff[1] + eff[2], sum = vals.reduce((a, v, i) => a + v * eff[i], 0), mean = sum / tot;
+      if (!Number.isInteger(mean * 10)) continue;
+      const cell = 'style="border:1px solid #cbd5e1;padding:4px 12px"', row = (a) => `<tr>${a.map((c, i) => `<td ${cell}>${i === 0 ? '<b>' + c + '</b>' : c}</td>`).join('')}</tr>`;
+      const vis = `<table style="border-collapse:collapse;margin:6px 0">${row([t('x.wmean.note'), ...vals])}${row([t('x.wmean.eff'), ...eff])}</table>`;
+      return { q: t('x.wmean.q'), vis, kind: 'num', ans: mean, exp: t('x.wmean.exp', { s: m(vals.map((v, i) => `${v} × ${eff[i]}`).join(' + ')), sum: m(sum), tot: m(tot), r: m(fmt(mean)) }) };
+    }
+  };
+  GEN.probaCompl = () => { const pc = R(1, 19) * 5; return num(t('x.compl.q', { p: m(pc) }), '', 100 - pc, t('x.compl.exp', { p: m(pc), r: m(100 - pc) })); };
 
   root.MathsGen2 = { t };
 }(typeof window !== 'undefined' ? window : globalThis));

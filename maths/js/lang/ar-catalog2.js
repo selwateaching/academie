@@ -18,5 +18,18 @@
     'Aires et volumes': 'المساحات والحجوم', 'Aire d’un parallélogramme': 'مساحة متوازي الأضلاع', 'Volume d’un prisme droit': 'حجم منشور قائم', 'Volume d’un cylindre': 'حجم أسطوانة',
     'Angles complémentaires': 'الزوايا المتتامة', 'Angles supplémentaires': 'الزوايا المتكاملة', 'Triangle isocèle': 'المثلث المتساوي الساقين', 'Angles d’un parallélogramme': 'زوايا متوازي الأضلاع', 'Inégalité triangulaire': 'المتباينة المثلثية',
     'Symétrie centrale': 'التناظر المركزي', 'Symétrique d’un point par rapport à l’origine': 'نظيرة نقطة بالنسبة إلى المبدأ',
+    /* 4e */
+    'Puissances, racines carrées, calcul littéral, équations, Pythagore, Thalès, cosinus et vitesses.': 'القوى، الجذور التربيعية، الحساب الحرفي، المعادلات، فيثاغورس، طالس، جيب التمام والسرعات.',
+    'Relatifs et fractions': 'الأعداد النسبية والكسور', 'Priorités avec des nombres relatifs': 'أولويات العمليات مع الأعداد النسبية',
+    'Puissances': 'القوى', 'Calculer une puissance': 'حساب قوة', 'Produit de puissances': 'جداء قوى', 'Quotient de puissances': 'حاصل قسمة قوى', 'Puissances de 10 négatives': 'القوى السالبة للعدد 10', 'Notation scientifique': 'الكتابة العلمية',
+    'Racines carrées': 'الجذور التربيعية', 'Racine carrée d’un carré parfait': 'الجذر التربيعي لمربع كامل', 'Encadrer une racine carrée': 'حصر جذر تربيعي',
+    'Développer k(ax + b)': 'نشر k(ax + b)', 'Développer (x + a)(x + b)': 'نشر (x + a)(x + b)', 'Factoriser avec un facteur commun': 'التحليل بعامل مشترك',
+    'Résoudre ax + b = cx + d': 'حلّ المعادلة ax + b = cx + d',
+    'Proportionnalité et pourcentages': 'التناسبية والنسب المئوية', 'Calculer une vitesse': 'حساب سرعة', 'Distance et durée': 'المسافة والمدة',
+    'Moyenne pondérée': 'المتوسط المرجّح', 'Événement contraire': 'الحدث المعاكس',
+    'Volumes': 'الحجوم', 'Volume d’une pyramide': 'حجم هرم', 'Volume d’un cône': 'حجم مخروط',
+    'Théorème de Pythagore': 'نظرية فيثاغورس', 'Calculer l’hypoténuse': 'حساب الوتر', 'Calculer un côté de l’angle droit': 'حساب ضلع من ضلعي الزاوية القائمة', 'Réciproque de Pythagore': 'عكس نظرية فيثاغورس',
+    'Théorème de Thalès': 'نظرية طالس', 'Calculer une longueur avec Thalès': 'حساب طول بنظرية طالس',
+    'Cosinus': 'جيب التمام', 'Cosinus d’un angle aigu': 'جيب تمام زاوية حادة', 'Calculer un côté avec le cosinus': 'حساب ضلع باستعمال جيب التمام',
   });
 }(typeof window !== 'undefined' ? window : globalThis));
