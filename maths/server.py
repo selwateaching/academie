@@ -383,7 +383,7 @@ def create_app(database_url=None):
 
     # ---------- paiements ----------
     def plan_label(level):
-        return "Famille" if level == db.FAMILY else level.upper()
+        return db.PLAN_NAMES.get(level) or level.upper()
 
     @app.post("/api/checkout")
     def checkout():
@@ -487,7 +487,7 @@ def create_app(database_url=None):
     @app.get("/pay/demo/<cid>")
     def demo_page(cid):
         p = demo_payment(cid)
-        return DEMO_PAGE.format(level=("Famille" if p["level"] == db.FAMILY else p["level"].upper()), amount=p["amount"], cid=cid)
+        return DEMO_PAGE.format(level=(db.PLAN_NAMES.get(p["level"]) or p["level"].upper()), amount=p["amount"], cid=cid)
 
     @app.post("/pay/demo/<cid>/confirm")
     def demo_confirm(cid):

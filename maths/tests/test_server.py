@@ -196,6 +196,13 @@ class PaymentTests(Base):
         ok = self.post("/api/progress", {"skills": {"cm1-D2": {"score": 10}, "cp-D2": {"score": 10}}}).get_json()
         self.assertEqual((ok["saved"], ok["refused"]), (1, ["cp-D2"]))
 
+    def test_lycee_plans(self):
+        self.register()
+        prices = self.c.get("/api/me").get_json()["config"]["prices"]
+        self.assertEqual([prices[k] for k in ("2nde", "1re", "term")], [500, 500, 500])
+        self.pay_demo("term")
+        self.assertEqual(list(self.c.get("/api/me").get_json()["subscriptions"]), ["term"])
+
     def test_family_plan_unlocks_every_level(self):
         self.register()
         self.assertEqual(self.c.get("/api/me").get_json()["config"]["prices"]["fam"], 600)
