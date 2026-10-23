@@ -87,6 +87,7 @@
       [301, 304, 306, 307].map(function (id) { return card(RI[id - 301]); }).join("") + T('</div><p><a class="btn ghost" href="#/rites">Voir tous les rites</a></p></section>') +
       T('<section class="block wrap"><h2>Lexique</h2><p class="lead">Un mot difficile ? Plus de cent mots, noms et lieux expliqués simplement, avec la prononciation.</p><p><a class="btn gold" href="#/lexique">Ouvrir le lexique</a></p></section>') +
       '<section class="block wrap">' + SiraAvis.cta() + '</section>' +
+      T('<section class="block wrap"><h2>Horaires de prière et calendrier</h2><p class="lead">Les heures des cinq prières selon votre position, la direction de la qibla, le calendrier hégirien et les fêtes.</p><p><a class="btn gold" href="#/horaires">🕌 Horaires de prière</a> <a class="btn gold" href="#/calendrier">🌙 Calendrier hégirien</a></p></section>') +
       T('<section class="block wrap"><h2>Paroles du Prophète ﷺ</h2><p class="lead">Des dictons célèbres du Prophète ﷺ, classés par thème : foi, caractère, famille, science, charité…</p><p><a class="btn gold" href="#/paroles">Lire les paroles</a></p></section>') +
       T('<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Où tout s\'est passé : La Mecque, Médine, Badr, Khaybar, Tabuk…</p><p><a class="btn gold" href="#/lieux">Ouvrir la carte</a></p></section>') +
       T('<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">') +

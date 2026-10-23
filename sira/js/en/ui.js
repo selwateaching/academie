@@ -170,5 +170,6 @@ window.EN_UI = {
  "Touchez pour entrer": "Tap to enter",
  "Avis": "Feedback",
  "Horaires": "Prayer times",
- "Calendrier": "Calendar"
+ "Calendrier": "Calendar",
+ "<section class=\"block wrap\"><h2>Horaires de prière et calendrier</h2><p class=\"lead\">Les heures des cinq prières selon votre position, la direction de la qibla, le calendrier hégirien et les fêtes.</p><p><a class=\"btn gold\" href=\"#/horaires\">🕌 Horaires de prière</a> <a class=\"btn gold\" href=\"#/calendrier\">🌙 Calendrier hégirien</a></p></section>": "<section class=\"block wrap\"><h2>Prayer times and calendar</h2><p class=\"lead\">The times of the five prayers for your location, the qibla direction, the Hijri calendar and the festivals.</p><p><a class=\"btn gold\" href=\"#/horaires\">🕌 Prayer times</a> <a class=\"btn gold\" href=\"#/calendrier\">🌙 Hijri calendar</a></p></section>"
 };
