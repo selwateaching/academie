@@ -291,7 +291,7 @@ main{flex:1;outline:none}
 .chd{display:flex;gap:12px;align-items:center;padding:10px 16px;background:color-mix(in srgb,var(--c) 12%,#fff)}
 .chd h3{flex:1;font-size:1.05rem;color:var(--c)}.chd .n{width:32px;height:32px;border-radius:50%;background:var(--c);color:#fff;display:grid;place-items:center;font-weight:800;flex:none}
 .cbd{padding:14px 18px;line-height:1.65}.cbd p{margin:0 0 8px}.cbd ul{margin:0;padding-inline-start:20px}.cbd li{margin:4px 0}
-.cfig{display:block;width:100%;max-width:440px;margin:12px auto 4px;color:var(--ink)}
+.cfig{direction:ltr;display:block;width:100%;max-width:440px;margin:12px auto 4px;color:var(--ink)}
 .cstep.recap{--c:#d97706;background:#fff9db}.cstep.recap .chd{background:#fdecab}
 .cq{margin:12px 0;padding-bottom:10px;border-bottom:1px dashed #e5e7eb}.cch{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
 .cch .btn.good{background:#16a34a;color:#fff}.cch .btn.bad{background:#ef4444;color:#fff}.cres{font-weight:700;min-height:1.4em}

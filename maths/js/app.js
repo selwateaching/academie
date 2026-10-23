@@ -516,15 +516,30 @@
     document.querySelectorAll('.cstep.speaking').forEach((n) => n.classList.remove('speaking'));
     const b = $('#cPlay'); if (b) b.textContent = '▶ ' + T('Écouter le cours');
   }
-  const plain = (h) => h.replace(/<span class="frac"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g, '$1 sur $2').replace(/<br>/g, '. ').replace(/<[^>]+>/g, '')
+  const plainAr = (h) => h.replace(/<span class="frac"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g, '$1 على $2').replace(/<br>/g, '. ').replace(/<[^>]+>/g, '')
+    .replace(/&gt;/g, ' أكبر من ').replace(/&lt;/g, ' أصغر من ').replace(/km\/h/g, ' كيلومتر في الساعة ').replace(/m\/s/g, ' متر في الثانية ').replace(/km\/s/g, ' كيلومتر في الثانية ')
+    .replace(/°C/g, ' درجة مئوية').replace(/°/g, ' درجة').replace(/cm²/g, ' سنتيمتر مربع').replace(/cm³/g, ' سنتيمتر مكعب').replace(/dm³/g, ' ديسيمتر مكعب')
+    .replace(/×/g, ' ضرب ').replace(/÷/g, ' مقسوم على ').replace(/−/g, ' ناقص ').replace(/=/g, ' يساوي ').replace(/\+/g, ' زائد ').replace(/≈/g, ' يساوي تقريبًا ').replace(/π/g, ' باي ')
+    .replace(/(\d)\s*%/g, '$1 في المئة').replace(/\s+/g, ' ').trim();
+  const plainFr = (h) => h.replace(/<span class="frac"><span>(.*?)<\/span><span>(.*?)<\/span><\/span>/g, '$1 sur $2').replace(/<br>/g, '. ').replace(/<[^>]+>/g, '')
     .replace(/&gt;/g, ' supérieur à ').replace(/&lt;/g, ' inférieur à ').replace(/km\/h/g, ' kilomètres par heure ').replace(/m\/s/g, ' mètres par seconde ').replace(/km\/s/g, ' kilomètres par seconde ')
     .replace(/°C/g, ' degrés Celsius').replace(/°/g, ' degrés').replace(/cm²/g, ' centimètres carrés').replace(/cm³/g, ' centimètres cubes').replace(/dm³/g, ' décimètres cubes')
     .replace(/×/g, ' fois ').replace(/÷/g, ' divisé par ').replace(/−/g, ' moins ').replace(/=/g, ' égale ').replace(/\+/g, ' plus ').replace(/≈/g, ' environ ').replace(/π/g, ' pi ')
     .replace(/(\d)\s*%/g, '$1 pour cent').replace(/\s+/g, ' ').trim();
+  const plain = (h) => (lang === 'ar' ? plainAr(h) : plainFr(h));
+  const hasArVoice = () => !!synth && synth.getVoices().some((x) => /^ar/i.test(x.lang));
+  const canSpeak = () => !!synth && (lang !== 'ar' || hasArVoice());
+  if (synth) synth.addEventListener('voiceschanged', () => { if (lang === 'ar' && /^#\/cours/.test(location.hash)) route(); });
+  const hasAr = (c) => !!(window.AR_COURSES && window.AR_COURSES[c.id]);
+  const cl = (c) => { // version du cours dans la langue de l'interface
+    const a = lang === 'ar' && hasAr(c) ? window.AR_COURSES[c.id] : null; if (!a) return c;
+    return Object.assign({}, c, { title: a.title, intro: a.intro, recap: a.recap, steps: c.steps.map((x, i) => Object.assign({}, x, a.steps[i])), quiz: c.quiz.map((q, i) => Object.assign({}, q, a.quiz[i])) });
+  };
+  const figT = (h) => (lang === 'ar' && window.AR_FIGS ? h.replace(/(<text[^>]*>)([^<]*)(<\/text>)/g, (m, x, t, y) => x + (window.AR_FIGS[t] || t) + y) : h);
   function say(text, token, onEnd) {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'fr-FR'; u.rate = 0.95;
-    const v = synth.getVoices().find((x) => /^fr/i.test(x.lang)); if (v) u.voice = v;
+    u.lang = lang === 'ar' ? 'ar-SA' : 'fr-FR'; u.rate = 0.95;
+    const v = synth.getVoices().find((x) => (lang === 'ar' ? /^ar/i : /^fr/i).test(x.lang)); if (v) u.voice = v;
     u.onend = () => { if (speech.token === token) onEnd(); };
     u.onerror = () => { if (speech.token === token) onEnd(); };
     synth.speak(u);
@@ -546,26 +561,27 @@
     stopSpeak();
     document.title = T('Cours — Tadriss-Maths');
     const chips = COURSE_LEVELS.map((l) => `<span class="pill ${l.ready ? 'on' : 'off'}" style="${l.ready ? 'background:#3b3a8f' : ''}">${l.label}${l.ready ? '' : ` <small>${T('bientôt')}</small>`}</span>`).join('');
-    const secs = COURSE_SUBJECTS.map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${c.title}</b><small>${c.level} · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span></a>`).join('')}</div></section>`).join('');
+    const secs = COURSE_SUBJECTS.map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span></a>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-2.jpg" alt="" width="44" height="44">${T('Cours illustrés')}</h1><p>${T('Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.')}</p></div>
       <div class="pills" style="margin:10px 0">${chips}</div>
-      ${lang === 'ar' ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
-      ${synth ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
+      ${lang === 'ar' && COURSES.some((c) => !hasAr(c)) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
+      ${canSpeak() ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
       ${secs}</div>`, 'cours');
   }
 
   function pageCourse(id) {
     stopSpeak();
-    const c = COURSES.find((x) => x.id === id); if (!c) return pageCourses();
+    const raw = COURSES.find((x) => x.id === id); if (!raw) return pageCourses();
+    const c = cl(raw);
     const sj = COURSE_SUBJECTS.find((s) => s.id === c.subj);
-    const idx = COURSES.filter((x) => x.subj === c.subj), pos = idx.indexOf(c);
-    const prev = idx[pos - 1], nextC = idx[pos + 1];
+    const idx = COURSES.filter((x) => x.subj === c.subj), pos = idx.indexOf(raw);
+    const prev = idx[pos - 1] && cl(idx[pos - 1]), nextC = idx[pos + 1] && cl(idx[pos + 1]);
     document.title = `${c.title} — Tadriss-Maths`;
-    const steps = c.steps.map((s, i) => `<section class="cstep" data-i="${i}"><div class="chd"><span class="n">${i + 1}</span><h3>${s.h}</h3>${synth ? `<button class="btn ghost sm" data-say="${i}" aria-label="${T('Écouter cette étape')}">🔊</button>` : ''}</div><div class="cbd"><p>${s.p}</p>${s.fig ? courseFig(s.fig) : ''}</div></section>`).join('');
+    const steps = c.steps.map((s, i) => `<section class="cstep" data-i="${i}"><div class="chd"><span class="n">${i + 1}</span><h3>${s.h}</h3>${canSpeak() ? `<button class="btn ghost sm" data-say="${i}" aria-label="${T('Écouter cette étape')}">🔊</button>` : ''}</div><div class="cbd"><p>${s.p}</p>${s.fig ? figT(courseFig(s.fig)) : ''}</div></section>`).join('');
     const quiz = c.quiz.map((q, qi) => `<div class="cq" data-q="${qi}"><p><b>${qi + 1}.</b> ${q.q}</p><div class="cch">${q.choices.map((ch, ci) => `<button class="btn ghost" data-a="${ci}">${ch}</button>`).join('')}</div><p class="cres" aria-live="polite"></p></div>`).join('');
-    show(`<div class="wrap narrow cours" style="--c:${sj.color}"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sj.icon} ${T(sj.label)} › ${c.level}</div>
+    show(`<div class="wrap narrow cours" style="--c:${sj.color}"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sj.icon} ${T(sj.label)} › <bdi>${c.level}</bdi></div>
       <div class="chead"><span class="cic big">${c.icon}</span><div><h1>${c.title}</h1><p>${c.intro}</p></div></div>
-      ${lang === 'ar' ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
+      ${lang === 'ar' && !hasAr(raw) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
       <section class="stage" id="stage" aria-live="polite"><div class="sdots" id="sDots"></div><div class="sbody" id="sBody"></div>
         <div class="sctl"><button class="btn ghost" id="sPrev" aria-label="${T('Précédent')}">⏮</button><button class="btn big" id="sPlay">▶ ${T('Lancer le cours animé')}</button><button class="btn ghost" id="sNext" aria-label="${T('Suivant')}">⏭</button></div></section>
       <h2 class="section-t cs-t">${T('Le cours en détail')}</h2>
@@ -573,15 +589,15 @@
       <section class="cstep recap"><div class="chd"><span class="n">★</span><h3>${T('À retenir')}</h3></div><div class="cbd"><ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul></div></section>
       <section class="panel"><h2>${T('Petit quiz')}</h2>${quiz}</section>
       <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'cours');
-    const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `Étape ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
-      { text: `À retenir. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
+    const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
+      { text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
     // lecteur animé : introduction, une étape à la fois, puis « à retenir »
     let lastFig = c.steps.find((s) => s.fig);
     lastFig = lastFig ? lastFig.fig : '';
     let carry = '';
     const items = [{ h: c.title, p: c.intro, fig: lastFig, big: !lastFig, icon: c.icon, text: `${c.title}. ${plain(c.intro)}` },
-      ...c.steps.map((s, i) => { if (s.fig) carry = s.fig; return { h: s.h, p: s.p, fig: carry, big: !carry, n: i + 1, text: `Étape ${i + 1}. ${plain(s.h)}. ${plain(s.p)}` }; }),
-      { h: 'À retenir', p: `<ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul>`, fig: '', n: '★', text: `À retenir. ${c.recap.map(plain).join('. ')}` }];
+      ...c.steps.map((s, i) => { if (s.fig) carry = s.fig; return { h: s.h, p: s.p, fig: carry, big: !carry, n: i + 1, text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}` }; }),
+      { h: T('À retenir'), p: `<ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul>`, fig: '', n: '★', text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}` }];
     let cur = 0, playing = false, timer = null;
     const dots = $('#sDots'), body = $('#sBody'), sp = $('#sPlay');
     dots.innerHTML = items.map((_, i) => `<button class="sd" data-d="${i}" aria-label="${i + 1}"></button>`).join('');
@@ -589,14 +605,14 @@
     const draw = (i) => {
       cur = i; const it = items[i];
       dots.querySelectorAll('.sd').forEach((d, k) => d.classList.toggle('on', k === i));
-      body.innerHTML = `<div class="sstep"><div class="sh">${it.icon ? `<span class="cic big">${it.icon}</span>` : `<span class="n">${it.n}</span>`}<h2>${it.h}</h2></div><div class="sp">${it.p}</div>${it.fig ? courseFig(it.fig) : it.big ? `<div class="sbig" aria-hidden="true">${c.icon}</div>` : ''}</div>`;
+      body.innerHTML = `<div class="sstep"><div class="sh">${it.icon ? `<span class="cic big">${it.icon}</span>` : `<span class="n">${it.n}</span>`}<h2>${it.h}</h2></div><div class="sp">${it.p}</div>${it.fig ? figT(courseFig(it.fig)) : it.big ? `<div class="sbig" aria-hidden="true">${c.icon}</div>` : ''}</div>`;
       body.querySelectorAll('.cfig > *').forEach((n, k) => { n.style.setProperty('--k', k); });
     };
     const goto = (i) => { i = Math.max(0, Math.min(items.length - 1, i)); const was = playing; stopPlayer(); draw(i); if (was) start(i); };
     const start = (i) => {
       stopPlayer(); playing = true; sp.textContent = '⏸ ' + T('Pause'); draw(i); const token = speech.token;
       const after = () => { if (!playing || speech.token !== token) return; if (cur >= items.length - 1) { stopPlayer(); return; } timer = setTimeout(() => { if (playing && speech.token === token) { start(cur + 1); } }, 700); };
-      if (synth) say(items[i].text, token, after); else timer = setTimeout(after, Math.max(3500, items[i].text.length * 55));
+      if (canSpeak()) say(items[i].text, token, after); else timer = setTimeout(after, Math.max(3500, items[i].text.length * 55));
     };
     sp.onclick = () => { if (playing) stopPlayer(); else start(cur >= items.length - 1 ? 0 : cur); };
     $('#sPrev').onclick = () => goto(cur - 1); $('#sNext').onclick = () => goto(cur + 1);
