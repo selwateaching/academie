@@ -134,11 +134,11 @@
     <div class="pills" style="margin:14px 0">${COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === homeCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-hcy="${cy.id}" aria-pressed="${cy.id === homeCycle}">${cy.icon} ${T(cy.label)}</button>`).join('')}</div>
     <section class="levels">${COURSE_LEVELS.filter((l) => l.cycle === homeCycle).map((l) => {
       const lv = LEVELS.find((x) => x.id === l.id.toLowerCase()), nc = COURSES.filter((c) => c.level === l.id).length;
-      const color = lv ? lv.color : '#3b3a8f', n = lv ? implemented(lv).length : 0, d = lv ? doneCount(lv) : 0;
+      const color = lv ? lv.color : (l.color || '#3b3a8f'), n = lv ? implemented(lv).length : 0, d = lv ? doneCount(lv) : 0;
       const exBtn = lv ? `<a class="btn" style="background:${color}" href="#/niveau/${lv.id}">📝 ${T('Exercices de maths ({n})', { n: lv.skillList.length })}</a>` : `<span class="pill off">📝 ${T('Exercices')} <small>${T('bientôt')}</small></span>`;
-      const coBtn = nc ? `<a class="btn" style="background:#3b3a8f" href="#/cours/niv-${l.id}">🎬 ${T('Cours illustrés ({n})', { n: nc })}</a>` : `<span class="pill off">🎬 ${T('Cours')} <small>${T('bientôt')}</small></span>`;
+      const coBtn = nc ? `<a class="btn" style="background:${color}" href="#/cours/niv-${l.id}">🎬 ${T('Cours illustrés ({n})', { n: nc })}</a>` : `<span class="pill off">🎬 ${T('Cours')} <small>${T('bientôt')}</small></span>`;
       const body = lv ? `<h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p><p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p><span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${color}"></i></span>` : `<h2>${T('Réussir en {short}', { short: l.label })}</h2><p>${T('Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.')}</p>`;
-      return `<div class="lv"><span class="lv-badge" style="background:${color}"><bdi>${lv ? sh(lv) : l.label}</bdi></span>${lv ? `<img class="lv-photo" src="/img/niveau-${lv.id}.jpg" alt="" loading="lazy" width="150" height="170">` : ''}
+      return `<div class="lv"><span class="lv-badge" style="background:${color}"><bdi>${lv ? sh(lv) : l.label}</bdi></span><img class="lv-photo" src="/img/niveau-${l.id.toLowerCase()}.jpg" alt="" loading="lazy" width="150" height="170">
         <span class="lv-body">${body}</span><span class="lv-go" style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">${exBtn}${coBtn}</span></div>`;
     }).join('')}</section></div>`, 'maths');
     document.querySelectorAll('[data-hcy]').forEach((b) => b.addEventListener('click', () => { homeCycle = b.dataset.hcy; pageHome(); }));
