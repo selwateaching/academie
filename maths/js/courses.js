@@ -1935,7 +1935,7 @@
     { id: 'GS', label: 'GS', cycle: 'primaire' }, { id: 'CP', label: 'CP', cycle: 'primaire' }, { id: 'CE1', label: 'CE1', cycle: 'primaire' }, { id: 'CE2', label: 'CE2', cycle: 'primaire' },
     { id: 'CM1', label: 'CM1', cycle: 'primaire' }, { id: 'CM2', label: 'CM2', cycle: 'primaire' },
     { id: '6e', label: '6ᵉ', cycle: 'moyen' }, { id: '5e', label: '5ᵉ', color: '#8cb420', cycle: 'moyen', ready: true }, { id: '4e', label: '4ᵉ', color: '#8d8862', cycle: 'moyen', ready: true }, { id: '3e', label: '3ᵉ', color: '#2e6873', cycle: 'moyen', ready: true },
-    { id: '2nde', label: '2nde', color: '#5e2050', cycle: 'secondaire', ready: true }, { id: '1re', label: '1ʳᵉ', color: '#c4451c', cycle: 'secondaire', ready: true }, { id: 'term', label: 'Terminale', color: '#404889', cycle: 'secondaire', ready: true },
+    { id: '2nde', label: '2nde', color: '#5e2050', cycle: 'secondaire', ready: true }, { id: '1re', label: '1ʳᵉ', color: '#c4451c', cycle: 'secondaire', ready: true }, { id: 'term', label: 'Ter', full: 'Terminale', color: '#404889', cycle: 'secondaire', ready: true },
   ];
 
 
