@@ -167,5 +167,6 @@ window.EN_UI = {
  "Paroles": "Sayings",
  "<section class=\"block wrap\"><h2>Paroles du Prophète ﷺ</h2><p class=\"lead\">Des dictons célèbres du Prophète ﷺ, classés par thème : foi, caractère, famille, science, charité…</p><p><a class=\"btn gold\" href=\"#/paroles\">Lire les paroles</a></p></section>": "<section class=\"block wrap\"><h2>Sayings of the Prophet ﷺ</h2><p class=\"lead\">Famous sayings of the Prophet ﷺ, grouped by theme: faith, character, family, knowledge, charity…</p><p><a class=\"btn gold\" href=\"#/paroles\">Read the sayings</a></p></section>",
  "Au nom de Dieu, le Tout Miséricordieux, le Très Miséricordieux": "In the name of God, the Most Merciful, the Most Compassionate",
- "Touchez pour entrer": "Tap to enter"
+ "Touchez pour entrer": "Tap to enter",
+ "Avis": "Feedback"
 };

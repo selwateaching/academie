@@ -361,3 +361,8 @@ body.is-home .basmala{display:none}
 .ticker{justify-content:center;padding:.15rem 3rem .15rem 3rem}
 .tk-ar{font:700 1.1rem/1.8 Amiri,"Noto Naskh Arabic",serif;color:rgba(255,233,168,.85);direction:rtl}
 .marquee,.basmala{display:none!important}
+
+/* Avis */
+.avis-li{margin:1rem 0 1.4rem;padding-inline-start:1.2rem;line-height:1.9}
+.avis-dua{margin-top:1.5rem;font-style:italic;color:var(--gold)}
+.avis-cta{margin-top:1.2rem}

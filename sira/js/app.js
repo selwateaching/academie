@@ -86,6 +86,7 @@
       T('<section class="block wrap"><h2>Rites et fêtes</h2><p class="lead">La prière, le jeûne, la zakat, le pèlerinage et les deux fêtes.</p><div class="grid">') +
       [301, 304, 306, 307].map(function (id) { return card(RI[id - 301]); }).join("") + T('</div><p><a class="btn ghost" href="#/rites">Voir tous les rites</a></p></section>') +
       T('<section class="block wrap"><h2>Lexique</h2><p class="lead">Un mot difficile ? Plus de cent mots, noms et lieux expliqués simplement, avec la prononciation.</p><p><a class="btn gold" href="#/lexique">Ouvrir le lexique</a></p></section>') +
+      '<section class="block wrap">' + SiraAvis.cta() + '</section>' +
       T('<section class="block wrap"><h2>Paroles du Prophète ﷺ</h2><p class="lead">Des dictons célèbres du Prophète ﷺ, classés par thème : foi, caractère, famille, science, charité…</p><p><a class="btn gold" href="#/paroles">Lire les paroles</a></p></section>') +
       T('<section class="block wrap"><h2>Cartes et lieux</h2><p class="lead">Où tout s\'est passé : La Mecque, Médine, Badr, Khaybar, Tabuk…</p><p><a class="btn gold" href="#/lieux">Ouvrir la carte</a></p></section>') +
       T('<section class="block wrap"><h2>Pour commencer</h2><p class="lead">Quelques passages incontournables.</p><div class="grid">') +
@@ -162,7 +163,7 @@
         '<p class="audio-note" id="audioNote"></p>' : T('<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>')) +
       '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p, i) { return '<figure class="panel">' + SiraArt.panel(c, i) + "</figure><p>" + SiraLexique.annotate(p, lctx) + "</p>"; }).join("") + "</div>" +
       T('<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/') + id + T('">Passer le quiz</a></div>') +
-      '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? T("✓ Marqué comme lu") : T("Marquer comme lu")) + "</button>" +
+      SiraAvis.cta() + '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? T("✓ Marqué comme lu") : T("Marquer comme lu")) + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
       (prev ? '<a class="btn ghost" href="' + hrefOf(prev.id) + T('">← <span><small>Précédent</small>') + esc(prev.title) + "</span></a>" : "<span></span>") +
       (next ? '<a class="btn gold" href="' + hrefOf(next.id) + T('"><span><small>Suivant</small>') + esc(next.title) + "</span> →</a>" : '<a class="btn gold" href="' + K.back + '">' + K.end + "</a>") +
@@ -206,7 +207,7 @@
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
     document.body.classList.toggle("is-home", page === "");
-    var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "avis" ? "av" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
@@ -220,6 +221,7 @@
     else if (page === "lieux") SiraPlaces.view(h[1] || "");
     else if (page === "lexique") SiraLexique.view(h[1] || "");
     else if (page === "paroles") SiraParoles.view(h[1] || "");
+    else if (page === "avis") SiraAvis.view();
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");
