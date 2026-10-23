@@ -76,3 +76,10 @@ Avec « Travailler uniquement sur ce texte », le prompt impose de n'utiliser qu
 `help_content.py` contient la notice (source unique). La page « Aide » l'affiche (recherche, rubriques dépliables) et l'assistant 💬 répond d'abord
 **gratuitement** depuis la notice (correspondance de mots) ; s'il ne trouve rien, il appelle un petit modèle (`SEQ_HELP_MODEL`, par défaut `claude-haiku-5-5`,
 500 jetons, 40 questions/heure/IP) en lui donnant la notice comme seule connaissance. Sans clé API, il renvoie vers la page Aide et Contact.
+
+## Avancement et vitesse de génération
+
+`/api/lesson`, `/api/sheet` et `/api/workbook/section` répondent en NDJSON quand le client envoie `Accept: application/x-ndjson` (décorateur `streamable`) :
+des lignes `{"p": caractères reçus}` puis `{"done":1,"status","body"}`. L'interface en tire une barre de progression réelle (attendu = moyenne des 5 dernières générations,
+gardée dans le navigateur), le temps écoulé et une estimation du temps restant. Les leçons d'une séquence sont créées 3 par 3 (les générations en cours comptent dans le quota) ;
+pour un cahier, la 1re section passe seule (elle compte dans le quota) puis les suivantes 3 par 3.

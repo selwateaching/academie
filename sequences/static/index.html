@@ -103,6 +103,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--g);border-color:
 #hchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px;background:#f7f8f7}#hchips button{border:1px solid #2c6e49;color:#2c6e49;background:#fff;border-radius:99px;padding:5px 11px;font-size:13px;cursor:pointer}
 #hpanel .hin{display:flex;gap:8px;padding:10px;border-top:1px solid #e5e7eb}#hpanel .hin input{flex:1;margin:0}#hpanel .hin button{border:0;background:#2c6e49;color:#fff;border-radius:10px;padding:0 14px;cursor:pointer}
 @media print{#hbtn,#hpanel{display:none!important}}
+.lbar{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:7px 0 3px}.lbar i{display:block;height:100%;background:linear-gradient(90deg,#2c6e49,#4aa174);border-radius:99px;transition:width .5s ease}.lst{font-size:13px;color:#6b7280;font-weight:400}
+.lrow{align-items:center}
 .xchips{display:flex;flex-wrap:wrap;gap:8px}.xchip{border:1.5px solid var(--bd,#d1d5db);background:#fff;border-radius:99px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}.xchip.on{background:var(--ac,#2c6e49);color:#fff;border-color:transparent}
 .sl .why{margin-top:4px;padding:8px 16px;border-radius:14px;background:var(--card);border-left:6px solid #16a34a;font-size:18px}
 .sl .vg{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;align-content:start}
@@ -475,11 +477,21 @@ const blank=()=>({id:uid(),topic:"",level:"1AM (6e)",language:"français",count:
 /* ---------- API ---------- */
 const TOK=()=>{try{return localStorage.getItem("seq.tok");}catch{return null;}};
 let ACC=null,AUTH_AFTER=null;
-async function api(path,body,method="POST"){
+async function streamFetch(path,opt,onP){
+  const r=await fetch(path,opt);
+  if(!r.body||!/ndjson/.test(r.headers.get("content-type")||""))return r;
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf="",res=null;
+  for(;;){const {done,value}=await rd.read();if(done)break;buf+=dec.decode(value,{stream:true});
+    let i;while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(!line)continue;
+      let m;try{m=JSON.parse(line);}catch{continue;}if(m.p!=null&&onP)onP(m.p);if(m.done)res=m;}}
+  if(!res)throw new Error("Connexion interrompue pendant la génération. Réessayez.");
+  return {status:res.status,ok:res.status<400,json:async()=>JSON.parse(res.body)};
+}
+async function api(path,body,method="POST",onP=null){
   const hdr={"Content-Type":"application/json","X-Seq-Device":DEV};
   const code=localStorage.getItem("seq.code");if(code)hdr["X-Seq-Code"]=code;
   const tok=TOK();if(tok)hdr["Authorization"]="Bearer "+tok;
-  const go=()=>fetch(path,{method,headers:hdr,body:body==null?undefined:JSON.stringify(body)});
+  const go=onP?()=>streamFetch(path,{method,headers:{...hdr,Accept:"application/x-ndjson"},body:body==null?undefined:JSON.stringify(body)},onP):()=>fetch(path,{method,headers:hdr,body:body==null?undefined:JSON.stringify(body)});
   let r=await go(),d=await r.json().catch(()=>({}));
   if(r.status===401&&d.code==="access"){
     const c=prompt("Code d'accès :");if(!c)throw new Error("Code d'accès requis.");
@@ -776,27 +788,54 @@ function buildSlides(d){
   return out;
 }
 function s4(){
-  const done=S.lessons.filter(l=>l.slides).length,n=S.lessons.length;
-  $("#app").innerHTML=`${stepsBar()}<h2>Création de vos leçons</h2><p class="sub">Gardez cet onglet ouvert, cela prend quelques minutes.</p>
-  <div class="card"><b>${done} sur ${n} leçons prêtes</b><div class="bar"><i style="width:${done/n*100}%"></i></div>
-  ${S.lessons.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b></div>${
+  const L=S.lessons,done=L.filter(l=>l.slides).length,n=L.length,part=L.reduce((a,l)=>a+(l.busy?(l.pct||0)/100:0),0),all=Math.round((done+part)/n*100);
+  $("#app").innerHTML=`${stepsBar()}<h2>Création de vos leçons</h2><p class="sub">Gardez cet onglet ouvert. Les leçons sont créées trois par trois pour aller plus vite.</p>
+  <div class="card"><b>${done} sur ${n} leçons prêtes</b> <span class="lst" style="float:right">${running?etaText(L,"lesson",3):""}</span><div class="bar"><i style="width:${all}%"></i></div>
+  ${L.map((l,i)=>`<div class="lrow"><div style="flex:1;min-width:0"><b>${i+1}. ${esc(l.title)}</b>${l.busy?lbar(l,"lesson"):""}</div>${
     l.slides?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="retry(${i})">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}
-  ${S.lessons.some(l=>l.err)?`<div class="err">${esc(S.lessons.find(l=>l.err).err)}</div>`:""}</div>
+  ${L.some(l=>l.err)?`<div class="err">${esc(L.find(l=>l.err).err)}</div>`:""}</div>
   <div class="nav"><button class="btn ghost" onclick="step=3;render()" ${running?"disabled":""}>Retour au plan</button><button class="btn" onclick="step=5;render()" ${done?"":"disabled"}>Voir la séquence</button></div>`;
+}
+/* ---------- avancement de la génération ---------- */
+const EXPC={lesson:20000,sheet:6000,section:7000};
+function expc(k){try{const a=JSON.parse(localStorage.getItem("seq.expc."+k)||"[]");return a.length?a.reduce((x,y)=>x+y,0)/a.length:EXPC[k];}catch{return EXPC[k];}}
+function noteExpc(k,n,ms){try{const a=JSON.parse(localStorage.getItem("seq.expc."+k)||"[]");a.push(n);localStorage.setItem("seq.expc."+k,JSON.stringify(a.slice(-5)));
+  const d=JSON.parse(localStorage.getItem("seq.dur."+k)||"[]");d.push(ms);localStorage.setItem("seq.dur."+k,JSON.stringify(d.slice(-5)));}catch{}}
+function avgDur(k,def){try{const d=JSON.parse(localStorage.getItem("seq.dur."+k)||"[]");return d.length?d.reduce((x,y)=>x+y,0)/d.length:def;}catch{return def;}}
+const pctOf=(k,n)=>Math.max(2,Math.min(96,Math.round(n/expc(k)*100)));
+const STAGES={lesson:[[8,"Préparation de la leçon…"],[45,"Rédaction du cours et des diapositives…"],[70,"Exercices et corrigés…"],[90,"Productions, vocabulaire et quiz…"],[101,"Dernières vérifications…"]],
+  sheet:[[12,"Lecture de votre demande…"],[85,"Rédaction des questions et des corrigés…"],[101,"Mise en page…"]],
+  section:[[12,"Préparation de la section…"],[85,"Rédaction des questions et des corrigés…"],[101,"Mise en page…"]]};
+const stageOf=(k,p)=>(STAGES[k].find(s=>p<s[0])||STAGES[k].at(-1))[1];
+const mmss=ms=>{const s=Math.max(0,Math.floor(ms/1000));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");};
+const lbar=(l,k)=>`<div class="lbar"><i style="width:${l.pct||2}%"></i></div><small class="lst">${stageOf(k,l.pct||0)} · ${l.pct||0} % · ${mmss(Date.now()-l.t0)}</small>`;
+function etaText(list,k,conc){
+  const busy=list.filter(l=>l.busy),queued=list.filter(l=>!l.busy&&!l.slides&&!l.data&&!l.err).length,avg=avgDur(k,k==="lesson"?110000:40000);
+  if(!busy.length&&!queued)return "";
+  let rem=0;for(const l of busy){const el=Date.now()-l.t0,p=l.pct||0;rem=Math.max(rem,p>=12?el*(100-p)/p:Math.max(avg-el,avg*.3));}
+  const tot=rem+Math.ceil(queued/conc)*avg;return tot>8000?`Environ ${tot>90000?Math.round(tot/60000)+" min":Math.round(tot/1000)+" s"} restantes (estimation)`:"Presque terminé…";
 }
 async function generate(){
   if(running)return;running=true;
-  for(let i=0;i<S.lessons.length;i++){
-    const l=S.lessons[i];if(l.slides)continue;
-    l.busy=true;delete l.err;if(step===4)s4();
-    try{const d=await api("/api/lesson",{...payload(),index:i});l.slides=buildSlides(d);if(d.search==="unavailable"&&!window._nosrc){window._nosrc=1;toast("Recherche web indisponible sur le serveur : leçons créées sans sources.");}}
-    catch(e){l.err=e.message;
-      if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
-      if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
-    l.busy=false;save();loadPlan();if(step===4)s4();
-  }
-  running=false;if(step===4)s4();
-  if(S.lessons.every(l=>l.slides)&&step===4){step=5;render();}
+  const ser=S,todo=ser.lessons.map((l,i)=>i).filter(i=>!ser.lessons[i].slides),t0=Date.now();let stop=false;
+  const tick=setInterval(()=>{if(step===4&&S===ser)s4();},1000);
+  const worker=async()=>{
+    while(!stop){
+      const i=todo.shift();if(i===undefined)break;
+      const l=ser.lessons[i];l.busy=true;l.pct=2;l.t0=Date.now();delete l.err;if(step===4&&S===ser)s4();
+      try{
+        const d=await api("/api/lesson",{...payload(),index:i},"POST",n=>{l.chars=n;l.pct=pctOf("lesson",n);});
+        l.slides=buildSlides(d);noteExpc("lesson",l.chars||expc("lesson"),Date.now()-l.t0);
+        if(d.search==="unavailable"&&!window._nosrc){window._nosrc=1;toast("Recherche web indisponible sur le serveur : leçons créées sans sources.");}
+      }catch(e){l.err=e.message;
+        if(e.code==="limit"){stop=true;openUpgrade("limit",e.message);}
+        else if(["access","no_key","rate_limited","device"].includes(e.code))stop=true;}
+      l.busy=false;l.pct=0;save();loadPlan();if(step===4&&S===ser)s4();
+    }
+  };
+  await Promise.all([worker(),worker(),worker()]);
+  clearInterval(tick);running=false;if(step===4&&S===ser)s4();
+  if(ser.lessons.every(l=>l.slides)&&step===4&&S===ser){step=5;render();}
 }
 function retry(i){delete S.lessons[i].err;generate();}
 
@@ -1275,29 +1314,34 @@ function wbStart(){
 }
 let wrunning=false;
 function wb4(){
-  const done=W.sections.filter(l=>l.data).length,n=W.sections.length;
-  $("#app").innerHTML=`${wbSteps()}<h2>Création de votre cahier</h2><p class="sub">Gardez cet onglet ouvert, cela prend quelques minutes.</p>
-  <div class="card"><b>${done} sur ${n} sections prêtes</b><div class="bar"><i style="width:${done/n*100}%"></i></div>
-  ${W.sections.map((l,i)=>`<div class="lrow"><div><b>${i+1}. ${esc(l.title)}</b></div>${l.data?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="W.sections[${i}].err=null;wbGenerate()">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}
-  ${W.sections.some(l=>l.err)?`<div class="err">${esc(W.sections.find(l=>l.err).err)}</div>`:""}</div>
+  const L=W.sections,done=L.filter(l=>l.data).length,n=L.length,part=L.reduce((a,l)=>a+(l.busy?(l.pct||0)/100:0),0),all=Math.round((done+part)/n*100);
+  $("#app").innerHTML=`${wbSteps()}<h2>Création de votre cahier</h2><p class="sub">Gardez cet onglet ouvert. La première section est créée seule, puis les suivantes trois par trois.</p>
+  <div class="card"><b>${done} sur ${n} sections prêtes</b> <span class="lst" style="float:right">${wrunning?etaText(L,"section",3):""}</span><div class="bar"><i style="width:${all}%"></i></div>
+  ${L.map((l,i)=>`<div class="lrow"><div style="flex:1;min-width:0"><b>${i+1}. ${esc(l.title)}</b>${l.busy?lbar(l,"section"):""}</div>${l.data?'<span class="pill">Prête</span>':l.err?`<span><span class="pill e" title="${esc(l.err)}">Échec</span> <button class="btn sm ghost" onclick="W.sections[${i}].err=null;wbGenerate()">Réessayer</button></span>`:l.busy?'<span class="pill w"><span class="spin"></span> En cours</span>':'<span class="pill w">En attente</span>'}</div>`).join("")}
+  ${L.some(l=>l.err)?`<div class="err">${esc(L.find(l=>l.err).err)}</div>`:""}</div>
   <div class="nav"><button class="btn ghost" onclick="wstep=3;render()" ${wrunning?"disabled":""}>Retour au plan</button><button class="btn" onclick="wstep=5;render()" ${done?"":"disabled"}>Voir le cahier</button></div>`;
 }
 async function wbGenerate(){
   if(wrunning)return;wrunning=true;const doc=W,here=()=>W===doc&&page==="wb"&&wstep===4;
-  const ctx=doc.src==="series"?seriesContext(doc.seriesId):"",o=doc.options;
-  for(let i=0;i<doc.sections.length;i++){
-    const l=doc.sections[i];if(l.data)continue;
-    l.busy=true;delete l.err;if(here())wb4();
+  const ctx=doc.src==="series"?seriesContext(doc.seriesId):"",o=doc.options;let stop=false;
+  const tick=setInterval(()=>{if(here())wb4();},1000);
+  const run=async i=>{
+    const l=doc.sections[i];l.busy=true;l.pct=2;l.t0=Date.now();delete l.err;if(here())wb4();
     try{
       l.data=await api("/api/workbook/section",{...srcPart(doc),topic:doc.topic,level:doc.level,language:doc.language,instructions:doc.instructions,curriculum:doc.curriculum,title:doc.title,context:ctx,index:i,
-        sections:doc.sections.map(x=>({title:x.title,summary:x.summary})),options:{explain:o.explain,objectives:o.objectives,support:o.support,challenge:o.challenge,questions:LEN[o.length].q}});
+        sections:doc.sections.map(x=>({title:x.title,summary:x.summary})),options:{explain:o.explain,objectives:o.objectives,support:o.support,challenge:o.challenge,questions:LEN[o.length].q}},"POST",n=>{l.chars=n;l.pct=pctOf("section",n);});
+      noteExpc("section",l.chars||expc("section"),Date.now()-l.t0);
       if(i===0)withOwnText(doc,l.data);
     }catch(e){l.err=e.message;
-      if(e.code==="limit"){l.busy=false;openUpgrade("limit",e.message);break;}
-      if(["access","no_key","rate_limited","device"].includes(e.code)){l.busy=false;break;}}
-    l.busy=false;saveDoc(doc);if(i===0)loadPlan();if(here())wb4();
-  }
-  wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();toast("Document prêt ! Votre cahier a été créé.");}else wb4();}
+      if(e.code==="limit"){stop=true;openUpgrade("limit",e.message);}
+      else if(["access","no_key","rate_limited","device"].includes(e.code))stop=true;}
+    l.busy=false;l.pct=0;saveDoc(doc);if(i===0)loadPlan();if(here())wb4();
+  };
+  const idxs=doc.sections.map((l,i)=>i).filter(i=>!doc.sections[i].data);
+  if(idxs[0]===0){await run(idxs.shift());}  /* la première section compte dans le quota : elle passe seule */
+  const worker=async()=>{while(!stop){const i=idxs.shift();if(i===undefined)break;await run(i);}};
+  await Promise.all([worker(),worker(),worker()]);
+  clearInterval(tick);wrunning=false;if(here()){if(doc.sections.every(l=>l.data)){wstep=5;render();toast("Document prêt ! Votre cahier a été créé.");}else wb4();}
 }
 const RICH="\u0001",OKCOL=/^(#[0-9a-f]{3,8}|rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\))$/i;
 function cleanHTML(html){
@@ -1509,12 +1553,15 @@ function sh2(){
 }
 function shStart(){if(!W.topic.trim()&&W.srcText&&W.srcText.trim())W.topic=(W.srcTitle||W.srcText.trim().slice(0,70)).trim();if(!W.topic.trim()){msg="Saisissez un sujet.";return sh2();}msg="";shGenerate();}
 async function shGenerate(){
-  const doc=W;$("#app").innerHTML=`<div class="card" style="text-align:center;padding:50px 20px;margin-top:40px"><div class="spin" style="width:34px;height:34px;border-width:4px"></div><h2 style="margin-top:18px">Création de votre fiche…</h2><p class="sub">Cela prend quelques secondes.</p></div>`;
+  const doc=W;$("#app").innerHTML=`<div class="card" style="text-align:center;padding:50px 20px;margin-top:40px"><div class="spin" style="width:34px;height:34px;border-width:4px"></div><h2 style="margin-top:18px">Création de votre fiche…</h2><div class="lbar" style="max-width:420px;margin:16px auto 6px"><i id="shp" style="width:2%"></i></div><p class="sub" id="shs">Lecture de votre demande… · 0:00</p></div>`;
+  let shN=0;const sh0=Date.now(),shT=setInterval(()=>{const e=$("#shs");if(e)e.textContent=e.dataset.s+" · "+mmss(Date.now()-sh0);},1000);
   try{
-    const r=await api("/api/sheet",{...srcPart(doc),template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum});
+    const r=await api("/api/sheet",{...srcPart(doc),template:doc.tpl,topic:doc.topic,level:doc.level,language:doc.language,difficulty:doc.difficulty,instructions:doc.instructions,curriculum:doc.curriculum},"POST",n=>{shN=n;const p=pctOf("sheet",n),b=$("#shp"),e=$("#shs");if(b)b.style.width=p+"%";if(e){e.dataset.s=stageOf("sheet",p)+" "+p+" %";e.textContent=e.dataset.s+" · "+mmss(Date.now()-sh0);}});
+    clearInterval(shT);noteExpc("sheet",shN||expc("sheet"),Date.now()-sh0);
     doc.title=r.title;doc.sections=[{title:r.title,summary:"",data:withOwnText(doc,r.section)}];doc.started=true;saveDoc(doc);loadPlan();
     if(W===doc){page="wb";wstep=5;render();toast("Document prêt ! Votre fiche a été créée.");}
   }catch(e){
+    clearInterval(shT);
     if(e.code==="limit")openUpgrade("limit",e.message);
     if(W===doc){msg=e.message;page="sh";wstep=2;doc.sections=[];render();}
   }

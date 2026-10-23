@@ -14,6 +14,8 @@ Variables d'environnement :
   SEQ_ADMIN_CODE     facultatif : code pour lire les messages du formulaire « Écoles » (/api/contact?code=…)
 """
 
+import functools
+import queue
 import hashlib
 import hmac
 import io
@@ -35,7 +37,7 @@ import xml.etree.ElementTree as ET
 
 import anthropic
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask import Flask, Response, g, jsonify, request, send_from_directory
+from flask import stream_with_context, copy_current_request_context, Flask, Response, g, jsonify, request, send_from_directory
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 MODEL = os.environ.get("SEQ_MODEL", "claude-sonnet-5-5")
@@ -226,6 +228,11 @@ def ask(prompt, max_tokens, search=False):
             for _ in range(4):  # « pause_turn » : la recherche web peut demander plusieurs tours
                 kw = {"tools": use_tools} if use_tools else {}
                 with _client.messages.stream(model=MODEL, max_tokens=max_tokens, system=SYSTEM, messages=messages, **kw) as stream:
+                    prog = getattr(g, "progress", None)
+                    if prog:  # avancement réel : nombre de caractères reçus de l'IA
+                        for chunk in stream.text_stream:
+                            g.chars = getattr(g, "chars", 0) + len(chunk)
+                            prog(g.chars)
                     msg = stream.get_final_message()
                 blocks += list(msg.content)
                 if msg.stop_reason != "pause_turn":
@@ -797,8 +804,87 @@ def outline():
     return jsonify({"title": s(data.get("title"), 160) or s(b.get("topic"), 160), "lessons": lessons})
 
 
+def streamable(fn):
+    """Si le client demande du NDJSON, la réponse est envoyée au fil de l'eau : des lignes {"p": caractères} puis {"done": 1, "status", "body"}."""
+    @functools.wraps(fn)
+    def wrapper(*a, **kw):
+        if "ndjson" not in request.headers.get("Accept", "").lower():
+            return fn(*a, **kw)
+        snap = {k: getattr(g, k, None) for k in ("ukey", "acct", "dev")}
+        q = queue.Queue()
+
+        def work():
+            for k, v in snap.items():
+                setattr(g, k, v)
+            g.progress = lambda n: q.put(("p", n))
+            try:
+                resp = app.make_response(fn(*a, **kw))
+                q.put(("done", resp.status_code, resp.get_data(as_text=True)))
+            except Exception:
+                app.logger.exception("Erreur de génération")
+                q.put(("done", 500, json.dumps({"error": "Erreur interne, réessayez.", "code": "internal"})))
+
+        threading.Thread(target=copy_current_request_context(work), daemon=True).start()
+
+        def gen():
+            last = 0.0
+            while True:
+                try:
+                    item = q.get(timeout=12)
+                except queue.Empty:
+                    yield json.dumps({"hb": 1}) + "\n"  # garde la connexion ouverte
+                    continue
+                if item[0] == "p":
+                    latest = item[1]
+                    while True:  # on ne garde que le dernier avancement
+                        try:
+                            nxt = q.get_nowait()
+                        except queue.Empty:
+                            break
+                        if nxt[0] == "p":
+                            latest = nxt[1]
+                        else:
+                            item = nxt
+                            break
+                    if item[0] == "p":
+                        if time.time() - last >= 0.4:
+                            last = time.time()
+                            yield json.dumps({"p": latest}) + "\n"
+                        continue
+                if item[0] == "done":
+                    yield json.dumps({"done": 1, "status": item[1], "body": item[2]}) + "\n"
+                    return
+
+        return Response(stream_with_context(gen()), mimetype="application/x-ndjson",
+                        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+    return wrapper
+
+
+_inflight = {}
+
+
 @app.post("/api/lesson")
+@streamable
 def lesson():
+    """Plusieurs leçons peuvent être générées en parallèle : les générations en cours comptent dans le quota."""
+    pname, cfg = plan_of(g.ukey)
+    with _ulock:
+        _, _, used, resets = usage_info(user_rec(g.ukey), time.time())
+        running = _inflight.get(g.ukey, 0)
+        if used + running >= cfg["limit"]:
+            when = time.strftime("%d/%m", time.localtime(resets)) if resets else "bientôt"
+            msg = ("Vous avez créé toutes vos ressources gratuites pour cette semaine."
+                   if pname == "free" else "Vous avez atteint votre limite mensuelle de ressources.")
+            return error("limit", f"{msg} Votre quota se réinitialise vers le {when}.", 429)
+        _inflight[g.ukey] = running + 1
+    try:
+        return lesson_impl()
+    finally:
+        with _ulock:
+            _inflight[g.ukey] = max(0, _inflight.get(g.ukey, 1) - 1)
+
+
+def lesson_impl():
     b = request.get_json(silent=True) or {}
     plan = b.get("lessons")
     try:
@@ -1085,6 +1171,7 @@ def workbook_outline():
 
 
 @app.post("/api/workbook/section")
+@streamable
 def workbook_section():
     b = request.get_json(silent=True) or {}
     plan = b.get("sections")
@@ -1193,6 +1280,7 @@ SHEET_DIFF = {
 
 
 @app.post("/api/sheet")
+@streamable
 def sheet():
     b = request.get_json(silent=True) or {}
     tpl = SHEET_TEMPLATES.get(b.get("template"))

@@ -14,7 +14,8 @@ HELP = [
          "a": "Non pour essayer : vous pouvez créer des séquences sans compte. Un compte (e-mail et mot de passe) sert à retrouver vos séquences sur un autre ordinateur et à garder votre historique. "
               "Cliquez sur « Inscription gratuite » en haut à droite."},
         {"q": "Combien de temps dure la génération ?",
-         "a": "Compter une à deux minutes par leçon, davantage si vous demandez beaucoup d'exercices ou d'illustrations. Gardez l'onglet ouvert pendant la génération."},
+         "a": "Compter une à deux minutes par leçon, davantage si vous demandez beaucoup d'exercices ou d'illustrations. Les leçons sont créées trois par trois, et chaque leçon a sa barre de progression avec le temps écoulé et une estimation du temps restant. "
+              "Pour aller plus vite : décochez « Illustrations » à l'étape « Réglages », choisissez moins d'exercices par leçon, ou moins de diapositives. Gardez l'onglet ouvert pendant la génération."},
     ]},
     {"id": "docs", "title": "Quels documents puis-je créer ?", "icon": "📄", "items": [
         {"q": "Quelle différence entre séquence, fiche d'activités et cahier d'activités ?",
