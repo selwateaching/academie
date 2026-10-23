@@ -395,6 +395,16 @@ class AdminResetTests(Base):
         self.assertEqual(ko.status_code, 401)
 
 
+class AdminCreateTests(Base):
+    def test_reset_creates_missing_admin_account(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "Boss@B.dz", "ADMIN_RESET_PASSWORD": "nouveau-mdp-1"}):
+            server.reset_admin_password(self.app.engine)
+            c = self.app.test_client()
+            r = c.post("/api/login", json={"email": "boss@b.dz", "password": "nouveau-mdp-1"}, headers=H)
+            self.assertEqual(r.status_code, 200)
+            self.assertTrue(r.get_json()["user"]["admin"])
+
+
 class AdminPasswordTests(Base):
     def test_admin_sets_temp_password(self):
         with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "boss@b.dz"}):

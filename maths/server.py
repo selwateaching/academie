@@ -45,8 +45,16 @@ def reset_admin_password(engine):
         return
     with engine.begin() as conn:
         for mail in [e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()]:
-            conn.execute(db.users.update().where(db.users.c.email == mail)
-                         .values(pw_hash=generate_password_hash(new_pw)))
+            row = conn.execute(select(db.users.c.id).where(db.users.c.email == mail)).first()
+            if row:
+                conn.execute(db.users.update().where(db.users.c.email == mail)
+                             .values(pw_hash=generate_password_hash(new_pw)))
+                print(f"ADMIN_RESET_PASSWORD : mot de passe remplacé pour {mail}")
+            else:  # le compte n'existe pas encore : on le crée, avec un profil, pour pouvoir se connecter
+                uid = conn.execute(db.users.insert().values(email=mail, pw_hash=generate_password_hash(new_pw),
+                                                            created_at=db.now())).inserted_primary_key[0]
+                conn.execute(db.profiles.insert().values(user_id=uid, name="Admin", level="cm1", created_at=db.now()))
+                print(f"ADMIN_RESET_PASSWORD : compte créé pour {mail}")
 
 
 def create_app(database_url=None):
