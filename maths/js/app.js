@@ -368,11 +368,11 @@
         ${valid('fam') ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</p>` : ''}
         <button class="btn" data-buy="fam">${valid('fam') ? T('Prolonger d’un mois') : T('Choisir le forfait Famille')}</button></div>` : ''}
       <div class="prices">${LEVELS.map((lv) => `<div class="pcard" style="--c:${lv.color}"><div class="pbadge" style="background:${lv.color}">${sh(lv)}</div><div class="pamount"><b>${price(lv.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
-        <p>${T('{n} compétences avec exercices, correction immédiate, suivi et récompenses.', { n: implemented(lv).length })}</p>
+        <p>${T('{n} compétences avec exercices, correction immédiate, suivi et récompenses.', { n: implemented(lv).length })}${COURSES.some((c) => c.level === lv.id) ? ' ' + T('Les {c} cours illustrés du niveau sont inclus.', { c: COURSES.filter((c) => c.level === lv.id).length }) : ''}</p>
         ${valid(lv.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[lv.id]) })}</p>` : ''}
         <button class="btn" style="background:${lv.color}" data-buy="${lv.id}">${valid(lv.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
-      <h2 style="margin:22px 0 8px">${T('Lycée : 2nde, 1re, Terminale')}</h2>
-      <div class="prices">${COURSE_LEVELS.filter((l) => l.cycle === 'secondaire' && l.ready).map((l) => `<div class="pcard" style="--c:${l.color}"><div class="pbadge" style="background:${l.color}"><bdi>${l.label}</bdi></div><div class="pamount"><b>${price(l.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
+      ${COURSE_LEVELS.some((l) => l.cycle === 'secondaire' && l.ready && !lvOf(l.id)) ? `<h2 style="margin:22px 0 8px">${T('Lycée : 2nde, 1re, Terminale')}</h2>` : ''}
+      <div class="prices">${COURSE_LEVELS.filter((l) => l.cycle === 'secondaire' && l.ready && !lvOf(l.id)).map((l) => `<div class="pcard" style="--c:${l.color}"><div class="pbadge" style="background:${l.color}"><bdi>${l.label}</bdi></div><div class="pamount"><b>${price(l.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
         <p>${T('{n} cours illustrés en maths, physique et chimie, avec schémas animés, voix et quiz.', { n: COURSES.filter((c) => c.level === l.id).length })}</p>
         ${valid(l.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</p>` : ''}
         <button class="btn" style="background:${l.color}" data-buy="${l.id}">${valid(l.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
