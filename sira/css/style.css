@@ -482,3 +482,21 @@ html[lang="ar"] .avis-h{font-family:Amiri,serif}
 .avis-st{color:#e0a526;letter-spacing:.1em;font-size:1.05rem}
 .avis-card blockquote{margin:.4rem 0;font-style:italic;line-height:1.55}
 .avis-card figcaption{font-size:.8rem;color:var(--muted)}
+
+/* ---- Menu plus lisible : onglets en pastilles, texte foncé, onglet actif plein, petites icônes ---- */
+.topbar{background:#e7d8bf;border-bottom:2px solid rgba(80,50,30,.28);box-shadow:0 2px 8px rgba(60,35,15,.12)}
+.nav{gap:.35rem}
+.nav a{display:inline-flex;align-items:center;gap:.35rem;color:var(--text);font-weight:600;font-size:.95rem;padding:.4rem .85rem;border:1px solid rgba(80,50,30,.22);border-radius:999px;background:rgba(255,255,255,.55);transition:background .15s,color .15s,border-color .15s}
+.nav a:hover{background:#fff;border-color:var(--gold);color:var(--text)}
+.nav a.on{background:var(--gold);border-color:var(--gold);color:#fff;box-shadow:0 2px 6px rgba(80,50,30,.35)}
+.nav a::before{font-size:1rem;line-height:1}
+.nav a[data-nav="home"]::before{content:"🏠"}.nav a[data-nav="list"]::before{content:"📖"}.nav a[data-nav="co"]::before{content:"👥"}
+.nav a[data-nav="th"]::before{content:"🧩"}.nav a[data-nav="ri"]::before{content:"🕌"}.nav a[data-nav="pl"]::before{content:"🗺️"}
+.nav a[data-nav="pa"]::before{content:"💬"}.nav a[data-nav="ho"]::before{content:"🕐"}.nav a[data-nav="ca"]::before{content:"📅"}
+.nav a[data-nav="lx"]::before{content:"🔤"}.nav a[data-nav="timeline"]::before{content:"⏳"}.nav a[data-nav="rewards"]::before{content:"🏆"}
+.nav a[data-nav="av"]::before{content:"⭐"}
+.brand b{color:#7a4a1e}
+.search{background:#fff;border-color:rgba(80,50,30,.3)}
+.lg-o{color:#5a4330;font-weight:700}
+.lg-o.on{color:var(--ink)}
+.lang{background:rgba(255,255,255,.55);border:1px solid rgba(80,50,30,.4)}
