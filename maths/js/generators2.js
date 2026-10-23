@@ -41,7 +41,7 @@
     });
     return out || '0';
   };
-  const fracStr = (n, d) => { const g = gcd(n, d) || 1; return d / g === 1 ? String(n / g) : `${n / g}/${d / g}`; };
+  const fracStr = (n, d) => { const g = gcd(n, d) || 1; let N = n / g, D = d / g; if (D < 0) { N = -N; D = -D; } return D === 1 ? String(N) : `${N}/${D}`; };
   const fracLabel = (s) => { const [a, b] = String(s).split('/'); return b === undefined ? m(fmt(a)) : frac(a, b); };
   // choix multiples : la bonne réponse + des fausses (distinctes), au plus 4 au total
   function mc(correct, wrongs, labelf = (v) => m(v)) {
@@ -517,7 +517,7 @@
     // tangente en x = k de f(x) = ax² + bx + c
     const a2 = nz(-3, 3), b2 = nz(-5, 5), c2 = nz(-6, 6), x = nz(-3, 3), mm = 2 * a2 * x + b2, y0 = a2 * x * x + b2 * x + c2, pp = y0 - mm * x, L = (u, v) => `y = ${P([u, v])}`, ans = L(mm, pp);
     const wr = [L(mm, y0), L(-mm, pp), L(mm, -pp), L(y0, mm), L(mm, pp + mm), L(mm + 1, pp), L(mm, pp + 1), L(mm - 1, pp - 1)].filter((z) => z !== ans);
-    return { q: t('x.tan.q', { x: m(fmt(x)) }), expr: m(`f(x) = ${P([a2, b2, c2])}`), kind: 'choice', ans, choices: mc(ans, wr, (z) => m(z)), exp: t('x.tan.exp', { y0: m(fmt(y0)), m: m(fmt(mm)), x: m(fmt(x)), r: m(ans) }) };
+    return { q: t('x.tan.q', { x: m(fmt(x)) }), expr: m(`f(x) = ${P([a2, b2, c2])}`), kind: 'choice', ans, choices: mc(ans, wr, (z) => m(z)), exp: t('x.tan.exp', { y0: m(fmt(y0)), m: m(fmt(mm)), x: m(fmt(x)), xm: m(x < 0 ? `x + ${fmt(-x)}` : `x − ${x}`), r: m(ans) }) };
   };
   GEN.derivZero = (p) => {
     const a = nz(-3, 3), x0 = nz(-4, 4), b = -2 * a * x0, c = nz(-6, 6);
@@ -575,6 +575,78 @@
     if (k === 'prod') return num(t('x.pow.rule'), m(`${e(a)} × ${e(b)} = ${sup('e', box)}`), a + b, t('x.expo.prod', { a: m(fmt(a)), b: m(fmt(b)), r: m(fmt(a + b)) }));
     if (k === 'quot') return num(t('x.pow.rule'), m(`${e(a)} ÷ ${e(b)} = ${sup('e', box)}`), a - b, t('x.expo.quot', { a: m(fmt(a)), b: m(fmt(b)), r: m(fmt(a - b)) }));
     const a2 = R(2, 5), b2 = R(2, 4); return num(t('x.pow.rule'), m(`(${e(a2)})<sup>${b2}</sup> = ${sup('e', box)}`), a2 * b2, t('x.expo.pow', { a: m(a2), b: m(b2), r: m(a2 * b2) }));
+  };
+
+  /* ===================================================================== Terminale */
+  const INF = '+∞', NINF = '−∞';
+  GEN.limit = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'rat') {
+      const a = nz(-6, 6), b = nz(-6, 6), c = nz(-6, 6), d = R(1, 5), e = nz(-6, 6), f = nz(-6, 6), ans = fracStr(a, d);
+      const eqf = (z) => { const [x, y] = String(z).split('/').map(Number); return x * d === a * (y || 1); };
+      const wr = [fracStr(b, e), String(a), fracStr(d, a), '0', fracStr(a + b, d + e), 'INF'].filter((z) => !eqf(z));
+      return { q: t('x.lim.rat.q'), expr: m(`f(x) = (${P([a, b, c])}) ÷ (${P([d, e, f])})`), kind: 'choice', ans, choices: mc(ans, wr, (z) => (z === 'INF' ? m(INF) : fracLabel(z))), exp: t('x.lim.rat.exp', { a: m(fmt(a)), d: m(fmt(d)), r: fracLabel(ans) }) };
+    }
+    if (k === 'poly') {
+      const n = pick([2, 3]), a = nz(-4, 4), cs = [a, nz(-5, 5), nz(-5, 5), nz(-5, 5)].slice(0, n + 1), ans = a > 0 ? INF : NINF;
+      return { q: t('x.lim.poly.q'), expr: m(`f(x) = ${P(cs)}`), kind: 'choice', ans, choices: mc(ans, [a > 0 ? NINF : INF, '0', String(a)], (z) => m(z.replace('-', '−'))), exp: t('x.lim.poly.exp', { t: m(P([a, ...Array(n).fill(0)])), r: m(ans) }) };
+    }
+    const q = pick([0.5, 0.8, 0.25, -0.5, 2, 3, 1.5]), ans = Math.abs(q) < 1 ? '0' : INF;
+    return { q: t('x.lim.geo.q'), expr: m(`u<sub>n</sub> = ${fmt(q)}<sup>n</sup>`), kind: 'choice', ans, choices: mc(ans, ['0', '1', INF, NINF], (z) => m(z)), exp: t(Math.abs(q) < 1 ? 'x.lim.geo.exp0' : 'x.lim.geo.expinf', { q: m(fmt(q)) }) };
+  };
+  GEN.deriv2 = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'pow') {
+      const n = R(2, 4), a = nz(-3, 3), b = nz(-5, 5), base = P([a, b]), L = (c, e) => `${fmt(c)}(${base})${e === 1 ? '' : `<sup>${e}</sup>`}`, ans = L(n * a, n - 1);
+      return { q: t('x.d2.q'), expr: m(`f(x) = (${base})<sup>${n}</sup>`), kind: 'choice', ans, choices: mc(ans, [L(n, n - 1), L(n * a, n), L(a, n - 1), L(n * a, n + 1)], (z) => m(z)), exp: t('x.d2.pow.exp', { n: m(n), a: m(fmt(a)), r: m(ans) }) };
+    }
+    if (k === 'exp') {
+      const a = nz(-4, 4), b = nz(-5, 5), ex = P([a, b]), E = (c) => `${c === 1 ? '' : fmt(c)}e<sup>${ex}</sup>`, ans = E(a);
+      return { q: t('x.d2.q'), expr: m(`f(x) = e<sup>${ex}</sup>`), kind: 'choice', ans, choices: mc(ans, [E(1), E(-a), `${ex}e<sup>${ex}</sup>`, E(a * a)], (z) => m(z)), exp: t('x.d2.exp.exp', { a: m(fmt(a)), r: m(ans) }) };
+    }
+    const a = nz(-4, 4), b = nz(-5, 5), ax = P([a, b]), key = (nn, dd) => `${nn}|${dd}`, lab = (z) => { const [x, y] = z.split('|'); return frac(x, y); }, ans = key(a, ax);
+    return { q: t('x.d2.q'), expr: m(`f(x) = ln(${ax})`), kind: 'choice', ans, choices: mc(ans, [key(1, ax), key(ax, a), key(a, 'x'), key(-a, ax)], lab), exp: t('x.d2.ln.exp', { a: m(fmt(a)), ax: m(ax) }) };
+  };
+  GEN.primit = (p) => {
+    const kk = nz(-3, 3), j = nz(-4, 4), c = nz(-6, 6), a = 3 * kk, b = 2 * j;
+    if (p && p.integral) {
+      const lo = R(0, 2), hi = lo + R(1, 3), F = (x) => kk * x ** 3 + j * x ** 2 + c * x, r = F(hi) - F(lo);
+      return num(t('x.integ.q'), m(`∫<sub>${lo}</sub><sup>${hi}</sup> (${P([a, b, c])}) dx`), r, t('x.integ.exp', { F: m(`${P([kk, j, c, 0])}`), hi: m(hi), lo: m(lo), Fh: m(fmt(F(hi))), Fl: m(fmt(F(lo))), r: m(fmt(r)) }));
+    }
+    const ans = P([kk, j, c, 0]);
+    return { q: t('x.prim.q'), expr: m(`f(x) = ${P([a, b, c])}`), kind: 'choice', ans, choices: mc(ans, [P([a, b, c, 0]), P([kk, b, c, 0]), P([a, j, c, 0]), P([kk, j, 0, 0]), P([kk, j, c, c])], (z) => m(z)), exp: t('x.prim.exp', { r: m(ans) }) };
+  };
+  GEN.lnRule = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'sum') { const a = R(2, 9), b = R(2, 9); return num(t('x.ln.q'), m(`ln ${a} + ln ${b} = ln(${box})`), a * b, t('x.ln.sum.exp', { a: m(a), b: m(b), r: m(a * b) })); }
+    if (k === 'diff') { const b = R(2, 5), q = R(2, 6); return num(t('x.ln.q'), m(`ln ${b * q} − ln ${b} = ln(${box})`), q, t('x.ln.diff.exp', { a: m(b * q), b: m(b), r: m(q) })); }
+    if (k === 'pow') { const a = R(2, 5), n = R(2, 3); return num(t('x.ln.q'), m(`${n} ln ${a} = ln(${box})`), a ** n, t('x.ln.pow.exp', { n: m(n), a: m(a), r: m(a ** n) })); }
+    const kk = nz(-5, 8); return num(t('x.ln.q2'), m(`ln(e<sup>${fmt(kk)}</sup>) = ${box}`), kk, t('x.ln.exp.exp', { k: m(fmt(kk)) }));
+  };
+  GEN.expEq = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'exp') { const a = nz(-4, 4), b = nz(-6, 6), x = nz(-4, 5), c = a * x + b; return num(t('x.solve'), m(`e<sup>${P([a, b])}</sup> = e<sup>${fmt(c)}</sup>`), x, t('x.eqexp.exp', { l: m(P([a, b])), c: m(fmt(c)), b: m(sgn(b)), a: m(fmt(a)), r: m(fmt(x)) })); }
+    let a, b, x, c; do { a = R(1, 4); b = nz(-6, 6); x = nz(-3, 6); c = a * x + b; } while (c <= 0 || a * x + b <= 0);
+    return num(t('x.solve'), m(`ln(${P([a, b])}) = ln(${c})`), x, t('x.eqln.exp', { l: m(P([a, b])), c: m(c), b: m(sgn(b)), a: m(a), r: m(fmt(x)) }));
+  };
+  const fact = (n) => (n <= 1 ? 1 : n * fact(n - 1));
+  GEN.comb = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'fact') { const n = R(3, 7); return num(t('x.comb.fact', { n: m(n) }), '', fact(n), t('x.comb.fact.exp', { n: m(n), e: m(Array.from({ length: n }, (_, i) => n - i).join(' × ')), r: m(fact(n)) })); }
+    if (k === 'arr') { const n = R(4, 8), kk = R(2, 3), r = fact(n) / fact(n - kk); return num(t('x.comb.arr', { n: m(n), k: m(kk) }), '', r, t('x.comb.arr.exp', { e: m(Array.from({ length: kk }, (_, i) => n - i).join(' × ')), r: m(r) })); }
+    if (k === 'binom') { const n = R(4, 9), kk = R(2, 3), r = fact(n) / (fact(kk) * fact(n - kk)); return num(t('x.comb.binom', { n: m(n), k: m(kk) }), '', r, t('x.comb.binom.exp', { n: m(n), k: m(kk), e: m(Array.from({ length: kk }, (_, i) => n - i).join(' × ')), kf: m(fact(kk)), r: m(r) })); }
+    const n = R(2, 5), kk = R(2, 4); return num(t('x.comb.list', { n: m(n), k: m(kk) }), '', n ** kk, t('x.comb.list.exp', { e: m(Array(kk).fill(n).join(' × ')), r: m(n ** kk) }));
+  };
+  GEN.binomLaw = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'p') { const n = R(2, 4), kk = R(0, n), r = round(fact(n) / (fact(kk) * fact(n - kk)) / 2 ** n, 4); return num(t('x.bin.p', { n: m(n), k: m(kk) }), '', r, t('x.bin.p.exp', { n: m(n), k: m(kk), c: m(fact(n) / (fact(kk) * fact(n - kk))), d: m(2 ** n), r: m(fmt(r)) })); }
+    const n = pick([10, 20, 40, 50]), pp = pick([0.1, 0.2, 0.25, 0.5]), r = round(n * pp, 3); return num(t('x.bin.e', { n: m(n), p: m(fmt(pp)) }), '', r, t('x.bin.e.exp', { n: m(n), p: m(fmt(pp)), r: m(fmt(r)) }));
+  };
+  GEN.space = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'dot') { const v = () => [nz(-4, 4), nz(-4, 4), nz(-4, 4)], u = v(), w = v(), r = u[0] * w[0] + u[1] * w[1] + u[2] * w[2]; return num(t('x.dot.q', { u: m(`u(${u.map(fmt).join(' ; ')})`), v: m(`v(${w.map(fmt).join(' ; ')})`) }), '', r, t('x.dot3.exp', { sub: m(`${fmt(u[0])} × ${sgn(w[0])} + ${sgn(u[1])} × ${sgn(w[1])} + ${sgn(u[2])} × ${sgn(w[2])}`), r: m(fmt(r)) })); }
+    const [x, y, z, nn] = pick([[1, 2, 2, 3], [2, 3, 6, 7], [2, 6, 9, 11], [4, 4, 7, 9], [1, 4, 8, 9]]), sg = () => pick([-1, 1]), u = [sg() * x, sg() * y, sg() * z];
+    return num(t('x.norm.q', { u: m(`u(${u.map(fmt).join(' ; ')})`) }), '', nn, t('x.norm3.exp', { s: m(x * x + y * y + z * z), r: m(nn) }));
   };
 
   root.MathsGen2 = { t };

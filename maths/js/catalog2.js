@@ -124,5 +124,26 @@
     ],
   });
 
+  /* ------------------------------------------------------------ Terminale */
+  EXTRA.push({
+    id: 'term', art: 'ma', short: 'Ter', name: 'Terminale', color: '#404889', age: '17-18 ans',
+    blurb: 'Limites, dérivation, logarithme et exponentielle, intégrales, dénombrement, loi binomiale et géométrie dans l’espace.',
+    domains: [
+      { name: 'Analyse', cats: [
+        { name: 'Suites et limites', skills: [['Limite d’une suite géométrique', 'limit', { kinds: ['geo'] }], ['Limite d’un polynôme', 'limit', { kinds: ['poly'] }], ['Limite d’un quotient de polynômes', 'limit', { kinds: ['rat'] }], ['Suite géométrique : un terme', 'seqSpec', { kinds: ['geo'] }], ['Somme de termes d’une suite arithmétique', 'seqSpec', { kinds: ['sum'] }]] },
+        { name: 'Dérivation', skills: [['Dériver un polynôme', 'deriv', { kinds: ['poly'] }], ['Dériver (ax + b) puissance n', 'deriv2', { kinds: ['pow'] }], ['Dériver une exponentielle', 'deriv2', { kinds: ['exp'] }], ['Dériver un logarithme', 'deriv2', { kinds: ['ln'] }], ['Équation d’une tangente', 'deriv', { kinds: ['tan'] }]] },
+        { name: 'Logarithme et exponentielle', skills: [['Règles du logarithme', 'lnRule', { kinds: ['sum', 'diff', 'pow'] }], ['Logarithme d’une exponentielle', 'lnRule', { kinds: ['exp'] }], ['Équation avec exp', 'expEq', { kinds: ['exp'] }], ['Équation avec ln', 'expEq', { kinds: ['ln'] }], ['Règles de calcul avec exp', 'expPow', { kinds: ['prod', 'quot', 'pow'] }]] },
+        { name: 'Primitives et intégrales', skills: [['Trouver une primitive', 'primit', {}], ['Calculer une intégrale', 'primit', { integral: true }]] },
+      ] },
+      { name: 'Probabilités et dénombrement', cats: [
+        { name: 'Dénombrement', skills: [['Rangements et factorielle', 'comb', { kinds: ['fact'] }], ['Choix ordonnés', 'comb', { kinds: ['arr'] }], ['Choix sans ordre', 'comb', { kinds: ['binom'] }], ['Listes avec répétition', 'comb', { kinds: ['list'] }]] },
+        { name: 'Probabilités', skills: [['Loi binomiale : une probabilité', 'binomLaw', { kinds: ['p'] }], ['Loi binomiale : l’espérance', 'binomLaw', { kinds: ['e'] }], ['Probabilité conditionnelle', 'condProba', { kinds: ['cond'] }], ['Probabilités totales', 'condProba', { kinds: ['total'] }], ['Espérance d’une variable aléatoire', 'expect', {}]] },
+      ] },
+      { name: 'Géométrie dans l’espace', cats: [
+        { name: 'Vecteurs de l’espace', skills: [['Produit scalaire dans l’espace', 'space', { kinds: ['dot'] }], ['Norme d’un vecteur de l’espace', 'space', { kinds: ['norm'] }]] },
+      ] },
+    ],
+  });
+
   root.CATALOG_EXTRA = EXTRA;
 }(typeof window !== 'undefined' ? window : globalThis));
