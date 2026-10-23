@@ -130,23 +130,18 @@
   const exCycle = (lv) => (lv.id === '6e' ? 'moyen' : 'primaire');
   function pageHome() {
     document.title = T('Tadriss-Maths — exercices de maths de la GS à la 6e');
-    show(`<div class="wrap"><section class="hero"><h1>${T('Des exercices de maths pour réussir de la GS à la 6ᵉ')}</h1><p>${T('Choisis ton niveau, entraîne-toi sur une compétence et vois ton score grimper. Les questions sont tirées au hasard : tu ne manqueras jamais d’exercices.')}</p></section>
+    show(`<div class="wrap"><section class="hero"><h1>${T('Exercices et cours pour réussir de la GS à la Terminale')}</h1><p>${T('Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.')}</p></section>
     <div class="pills" style="margin:14px 0">${COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === homeCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-hcy="${cy.id}" aria-pressed="${cy.id === homeCycle}">${cy.icon} ${T(cy.label)}</button>`).join('')}</div>
-    <section class="levels">${LEVELS.filter((lv) => exCycle(lv) === homeCycle).map((lv) => {
-      const n = implemented(lv).length, d = doneCount(lv);
-      return `<a class="lv" href="#/niveau/${lv.id}"><span class="lv-badge" style="background:${lv.color}">${sh(lv)}</span><img class="lv-photo" src="/img/niveau-${lv.id}.jpg" alt="" loading="lazy" width="150" height="170">
-        <span class="lv-body"><h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p>
-        <p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p>
-        <span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${lv.color}"></i></span></span>
-        <span class="lv-go"><span class="btn" style="background:${lv.color}">${T('Voir les {n} compétences ›', { n: lv.skillList.length })}</span></span></a>`;
-    }).join('')}${COURSE_LEVELS.filter((l) => l.cycle === homeCycle && l.ready && !LEVELS.some((x) => x.id === l.id)).map((l) => {
-      const n = COURSES.filter((c) => c.level === l.id).length;
-      return `<a class="lv" href="#/cours" data-cgo="${l.id}"><span class="lv-badge" style="background:#3b3a8f"><bdi>${l.label}</bdi></span>
-        <span class="lv-body"><h2>${T('Cours illustrés de {short}', { short: l.label })}</h2><p>${T('{n} cours en maths, physique et chimie, avec schémas animés et quiz.', { n })}</p></span>
-        <span class="lv-go"><span class="btn" style="background:#3b3a8f">${T('Voir les cours ›')}</span></span></a>`;
+    <section class="levels">${COURSE_LEVELS.filter((l) => l.cycle === homeCycle).map((l) => {
+      const lv = LEVELS.find((x) => x.id === l.id.toLowerCase()), nc = COURSES.filter((c) => c.level === l.id).length;
+      const color = lv ? lv.color : '#3b3a8f', n = lv ? implemented(lv).length : 0, d = lv ? doneCount(lv) : 0;
+      const exBtn = lv ? `<a class="btn" style="background:${color}" href="#/niveau/${lv.id}">📝 ${T('Exercices de maths ({n})', { n: lv.skillList.length })}</a>` : `<span class="pill off">📝 ${T('Exercices')} <small>${T('bientôt')}</small></span>`;
+      const coBtn = nc ? `<a class="btn" style="background:#3b3a8f" href="#/cours/niv-${l.id}">🎬 ${T('Cours illustrés ({n})', { n: nc })}</a>` : `<span class="pill off">🎬 ${T('Cours')} <small>${T('bientôt')}</small></span>`;
+      const body = lv ? `<h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p><p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p><span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${color}"></i></span>` : `<h2>${T('Réussir en {short}', { short: l.label })}</h2><p>${T('Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.')}</p>`;
+      return `<div class="lv"><span class="lv-badge" style="background:${color}"><bdi>${lv ? sh(lv) : l.label}</bdi></span>${lv ? `<img class="lv-photo" src="/img/niveau-${lv.id}.jpg" alt="" loading="lazy" width="150" height="170">` : ''}
+        <span class="lv-body">${body}</span><span class="lv-go" style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">${exBtn}${coBtn}</span></div>`;
     }).join('')}</section></div>`, 'maths');
     document.querySelectorAll('[data-hcy]').forEach((b) => b.addEventListener('click', () => { homeCycle = b.dataset.hcy; pageHome(); }));
-    document.querySelectorAll('[data-cgo]').forEach((a) => a.addEventListener('click', () => { courseLevel = a.dataset.cgo; courseCycle = cycleOf(courseLevel); }));
   }
 
   function dot(id, color) {
@@ -577,18 +572,15 @@
   function pageCourses() {
     stopSpeak();
     document.title = T('Cours — Tadriss-Maths');
-    const tabs = COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === courseCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-ccy="${cy.id}" aria-pressed="${cy.id === courseCycle}">${cy.icon} ${T(cy.label)}</button>`).join('');
-    const chips = COURSE_LEVELS.filter((l) => l.cycle === courseCycle).map((l) => l.ready ? `<button class="pill ${l.id === courseLevel ? 'on' : ''}" style="background:#3b3a8f;font-family:inherit;cursor:pointer" data-clv="${l.id}" aria-pressed="${l.id === courseLevel}">${l.label}</button>` : `<span class="pill off">${l.label} <small>${T('bientôt')}</small></span>`).join('');
+    const chips = COURSE_LEVELS.filter((l) => l.cycle === courseCycle && l.ready).map((l) => l.ready ? `<button class="pill ${l.id === courseLevel ? 'on' : ''}" style="background:#3b3a8f;font-family:inherit;cursor:pointer" data-clv="${l.id}" aria-pressed="${l.id === courseLevel}">${l.label}</button>` : `<span class="pill off">${l.label} <small>${T('bientôt')}</small></span>`).join('');
     const secs = COURSE_SUBJECTS.filter((s) => COURSES.some((c) => c.subj === s.id && c.level === courseLevel)).map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id && c.level === courseLevel).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span>${courseOpen(c) ? (!auth.config.open && !auth.offline && !valid('fam') ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') : `${auth.user && coursePicksLeft() > 0 ? `<span class="pick" data-cpick="${c.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-2.jpg" alt="" width="44" height="44">${T('Cours illustrés')}</h1><p>${T('Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.')}</p></div>
-      <div class="pills" style="margin:10px 0">${tabs}</div>
+      <p style="margin:6px 0"><a href="#/">${T('‹ Tous les niveaux')}</a></p>
       <div class="pills" style="margin:10px 0">${chips}</div>
-      ${COURSE_LEVELS.some((l) => l.cycle === courseCycle && l.ready) ? '' : `<div class="note">${`${T('Les cours de ce cycle arrivent bientôt.')} <a href="#/">${T('Les exercices de maths du primaire sont déjà disponibles ›')}</a>`}</div>`}
       ${lang === 'ar' && COURSES.some((c) => !hasAr(c)) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
       ${auth.user && !auth.offline && !auth.config.open && !valid('fam') ? `<div class="note">${coursePicksLeft() > 0 ? T('Ton essai : choisis {left} cours gratuit(s) de ton choix. Touche « ☆ Choisir » à côté d’un cours verrouillé 🔒.', { left: coursePicksLeft() }) : T('Tu as choisi tes {n} cours gratuits. Les autres demandent un abonnement.', { n: auth.config.courseMax || 3 })}</div>` : !auth.user && !auth.offline && !auth.config.open ? `<div class="note">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')} <a href="#/inscription">${T('Créer un compte')}</a></div>` : ''}
       ${canSpeak() ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
-      ${secs}</div>`, 'cours');
-    document.querySelectorAll('[data-ccy]').forEach((b) => b.addEventListener('click', () => { courseCycle = b.dataset.ccy; const first = COURSE_LEVELS.find((l) => l.cycle === courseCycle && l.ready) || COURSE_LEVELS.find((l) => l.cycle === courseCycle); courseLevel = first.id; pageCourses(); }));
+      ${secs}</div>`, 'maths');
     document.querySelectorAll('[data-clv]').forEach((b) => b.addEventListener('click', () => { courseLevel = b.dataset.clv; pageCourses(); }));
     document.querySelectorAll('[data-cpick]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); pickCourse(b.dataset.cpick); }));
   }
@@ -609,7 +601,7 @@
         <p><b>${c.icon} ${c.title}</b></p><p>${c.intro}</p>
         ${auth.user && coursePicksLeft() > 0 ? `<p class="hint">${T('Ton essai : tu peux choisir {n} cours gratuits parmi tous les cours du site. Il t’en reste {left}.', { n: auth.config.courseMax || 3, left: coursePicksLeft() })}</p>
         <div class="row"><button class="btn big" id="pickcourse">${T('Choisir ce cours pour mon essai')}</button></div><p class="hint" id="cpickerr"></p>` : auth.user ? `<p class="hint">${T('Tu as déjà choisi tes {n} cours gratuits.', { n: auth.config.courseMax || 3 })}</p>` : `<p class="hint">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')}</p><div class="row"><a class="btn big" href="#/inscription">${T('Créer un compte')}</a></div>`}
-        <div class="row"><a class="btn big ${auth.user ? '' : 'ghost'}" href="#/tarifs">${T('Voir les tarifs')}</a><a class="btn ghost big" href="#/cours">${T('Tous les cours')}</a></div></div></div>`, 'cours');
+        <div class="row"><a class="btn big ${auth.user ? '' : 'ghost'}" href="#/tarifs">${T('Voir les tarifs')}</a><a class="btn ghost big" href="#/cours">${T('Tous les cours')}</a></div></div></div>`, 'maths');
       const pb = $('#pickcourse'); if (pb) pb.onclick = () => pickCourse(raw.id);
       return;
     }
@@ -624,7 +616,7 @@
       ${steps}
       <section class="cstep recap"><div class="chd"><span class="n">★</span><h3>${T('À retenir')}</h3></div><div class="cbd"><ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul></div></section>
       <section class="panel"><h2>${T('Petit quiz')}</h2>${quiz}</section>
-      <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'cours');
+      <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'maths');
     const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
       { text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
     // lecteur animé : introduction, une étape à la fois, puis « à retenir »
@@ -667,7 +659,7 @@
   function route() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true; if (page !== 'cours') stopSpeak();
-    if (page === 'cours') { arg ? pageCourse(arg) : pageCourses(); return; }
+    if (page === 'cours') { if (arg && arg.startsWith('niv-')) { courseLevel = arg.slice(4); courseCycle = cycleOf(courseLevel); pageCourses(); } else if (arg) pageCourse(arg); else pageCourses(); return; }
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
     else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
