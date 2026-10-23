@@ -212,6 +212,21 @@ def create_app(database_url=None):
             session["uid"], session["pid"] = uid, pid
             return jsonify(me_payload(conn))
 
+    @app.post("/api/forgot")
+    def forgot():
+        """Mot de passe oublié : pas d'envoi d'e-mail ; la demande est notée et l'administrateur
+        donne un mot de passe temporaire. La réponse est la même que le compte existe ou non."""
+        if too_many(f"forgot:{request.remote_addr}", 5, 3600):
+            return err("Trop d'essais, réessaie dans quelques minutes.", 429)
+        email = str((request.get_json(silent=True) or {}).get("email", "")).strip().lower()
+        if not EMAIL_RE.match(email):
+            return err("Adresse e-mail invalide.")
+        with engine.begin() as conn:
+            if conn.execute(select(db.users.c.id).where(db.users.c.email == email)).first() and not conn.execute(
+                    select(db.pw_requests.c.id).where(db.pw_requests.c.email == email)).first():
+                conn.execute(db.pw_requests.insert().values(email=email, created_at=db.now()))
+        return jsonify(ok=True)
+
     @app.post("/api/login")
     def login():
         d = request.get_json(silent=True) or {}
@@ -551,6 +566,14 @@ def create_app(database_url=None):
                 stmt = stmt.where(db.users.c.email.like(like, escape="\\"))
             return jsonify(users=[user_row(conn, u) for u in conn.execute(stmt).mappings()])
 
+    @app.get("/api/admin/requests")
+    def admin_requests():
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            rows = conn.execute(select(db.pw_requests).order_by(db.pw_requests.c.id.desc()).limit(50)).mappings()
+            return jsonify(requests=[{"email": r["email"], "date": iso(r["created_at"])} for r in rows])
+
     @app.get("/api/admin/users/<int:uid>")
     def admin_user_detail(uid):
         with engine.begin() as conn:
@@ -576,6 +599,8 @@ def create_app(database_url=None):
                 return err("Client introuvable.", 404)
             pw = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(10))
             conn.execute(db.users.update().where(db.users.c.id == uid).values(pw_hash=generate_password_hash(pw)))
+            conn.execute(db.pw_requests.delete().where(db.pw_requests.c.email == select(db.users.c.email).where(
+                db.users.c.id == uid).scalar_subquery()))
             return jsonify(password=pw)
 
     @app.post("/api/admin/users/<int:uid>/picks")

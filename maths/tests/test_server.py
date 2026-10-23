@@ -395,6 +395,24 @@ class AdminResetTests(Base):
         self.assertEqual(ko.status_code, 401)
 
 
+class ForgotTests(Base):
+    def test_forgot_request_reaches_admin(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "boss@b.dz"}):
+            self.register("boss@b.dz")
+            cl = self.app.test_client()
+            self.register("kid@b.dz", cl)
+            anon = self.app.test_client()
+            self.assertEqual(anon.post("/api/forgot", json={"email": "kid@b.dz"}, headers=H).status_code, 200)
+            self.assertEqual(anon.post("/api/forgot", json={"email": "inconnu@b.dz"}, headers=H).status_code, 200)
+            self.assertEqual(anon.post("/api/forgot", json={"email": "pas-un-mail"}, headers=H).status_code, 400)
+            self.assertEqual(cl.get("/api/admin/requests").status_code, 403)
+            reqs = self.c.get("/api/admin/requests").get_json()["requests"]
+            self.assertEqual([r["email"] for r in reqs], ["kid@b.dz"])
+            uid = self.c.get("/api/admin/users?q=kid").get_json()["users"][0]["id"]
+            self.post(f"/api/admin/users/{uid}/password")
+            self.assertEqual(self.c.get("/api/admin/requests").get_json()["requests"], [])
+
+
 class AdminCreateTests(Base):
     def test_reset_creates_missing_admin_account(self):
         with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "Boss@B.dz", "ADMIN_RESET_PASSWORD": "nouveau-mdp-1"}):

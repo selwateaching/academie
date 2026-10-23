@@ -396,8 +396,14 @@
       ${field('email', T('Adresse e-mail'), 'email', 'autocomplete="email"')}${field('password', T('Mot de passe'), 'password', 'autocomplete="current-password"')}
       <p class="errtxt" id="err" role="alert"></p><button class="btn big" type="submit">${T('Me connecter')}</button>
       <p class="hint">${T('Pas encore de compte ? <a href="#/inscription">Créer un compte</a>')}</p>
-      <p class="hint"><a href="#" id="forgot">${T('Mot de passe oublié ?')}</a></p><p class="hint" id="forgotmsg" hidden>${T('Écris-nous depuis l’adresse e-mail de ton compte : nous te donnerons un mot de passe temporaire à changer ensuite.')}</p></form></div>`, 'compte');
-    $('#forgot').addEventListener('click', (e) => { e.preventDefault(); $('#forgotmsg').hidden = false; });
+      <p class="hint"><a href="#" id="forgot">${T('Mot de passe oublié ?')}</a></p>
+      <div id="forgotbox" hidden><p class="hint">${T('Indique l’adresse e-mail de ton compte : nous notons ta demande et nous te donnerons un mot de passe temporaire à changer ensuite.')}</p>
+        <div class="inl"><input id="femail" type="email" dir="ltr" autocomplete="email" aria-label="${T('Adresse e-mail')}"><button class="btn" type="button" id="fsend">${T('Envoyer la demande')}</button></div><p class="hint" id="forgotmsg" hidden></p></div></form></div>`, 'compte');
+    $('#forgot').addEventListener('click', (e) => { e.preventDefault(); $('#forgotbox').hidden = false; const f = $('#femail'); f.value = $('#email').value; f.focus(); });
+    $('#fsend').addEventListener('click', async () => {
+      const o = $('#forgotmsg'); o.hidden = false;
+      try { await api('/api/forgot', 'POST', { email: $('#femail').value }); o.textContent = T('Demande enregistrée. Tu recevras un mot de passe temporaire de notre part.'); } catch (e) { o.textContent = e.message; }
+    });
     $('#fLogin').addEventListener('submit', async (e) => {
       e.preventDefault();
       try { await afterAuth(await api('/api/login', 'POST', { email: $('#email').value, password: $('#password').value })); }
@@ -479,6 +485,7 @@
     if (!auth.user.admin) { show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Administration')}</h1></div><div class="note">${T('Ce compte n’a pas accès à l’administration.')}</div><p><a class="btn ghost" href="#/compte">${T('Mon compte')}</a></p></div>`, 'compte'); return; }
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tableau de bord')}</h1></div>
       <div class="kpis" id="kpis"></div>
+      <div class="panel" id="reqbox" hidden><h2>${T('Demandes de mot de passe')}</h2><div id="reqlist"></div></div>
       <div class="panel"><h2>${T('Clients')}</h2>
         <form class="inl" id="fSearch"><input id="aq" type="search" dir="ltr" placeholder="${T('Rechercher par e-mail')}" aria-label="${T('Rechercher par e-mail')}"><button class="btn" type="submit">${T('Chercher')}</button></form>
         <p class="errtxt" id="aerr"></p><div id="alist"></div></div></div>`, 'compte');
@@ -486,6 +493,11 @@
     const loadStats = () => api('/api/admin/stats').then((s) => {
       $('#kpis').innerHTML = [[s.users, T('Comptes')], [s.subscribers, T('Abonnés actifs')], [da(s.revenue_month), T('Revenus du mois')], [da(s.revenue_total), T('Revenus au total')]]
         .map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+    }).catch(fail);
+    const loadReq = () => api('/api/admin/requests').then((d) => {
+      $('#reqbox').hidden = !d.requests.length;
+      $('#reqlist').innerHTML = d.requests.map((r) => `<div class="stat"><span dir="ltr">${esc(r.email)} · ${dateFr(r.date)}</span><button class="btn ghost sm" data-req="${esc(r.email)}">${T('Voir le client')}</button></div>`).join('');
+      document.querySelectorAll('[data-req]').forEach((b) => b.addEventListener('click', () => { $('#aq').value = b.dataset.req; loadList(); window.scrollTo(0, document.body.scrollHeight); }));
     }).catch(fail);
     const subsText = (u) => { const k = Object.keys(u.subscriptions); return k.length ? k.map((p) => `${planLabel(p)} (${T('jusqu’au {date}', { date: dateFr(u.subscriptions[p]) })})`).join(' · ') : T('Aucun abonnement actif.'); };
     const loadList = () => api('/api/admin/users?q=' + encodeURIComponent($('#aq').value.trim())).then((d) => {
@@ -507,18 +519,18 @@
           <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length || (d.coursePicks || []).length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
           <div class="stat"><span>${T('Cours gratuits choisis : {list}', { list: (d.coursePicks || []).length ? d.coursePicks.join(', ') : '—' })}</span></div>
           <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
-        const refresh = () => { loadStats(); loadList(); };
+        const refresh = () => { loadStats(); loadList(); loadReq(); };
         $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: f.querySelector('select').value, days: i[0].value, amount: i[1].value }); refresh(); } catch (er) { fail(er); } });
         $('[data-resetpw]', det).addEventListener('click', async () => { if (!confirm(T('Réinitialiser le mot de passe de ce client ?'))) return;
-          try { const r = await api(`/api/admin/users/${box.dataset.u}/password`, 'POST', {}); const o = $('#pwres', det); o.hidden = false; o.innerHTML = `${T('Mot de passe temporaire (à transmettre au client, affiché une seule fois) :')} <b dir="ltr">${r.password}</b>`; } catch (er) { fail(er); } });
+          try { const r = await api(`/api/admin/users/${box.dataset.u}/password`, 'POST', {}); const o = $('#pwres', det); o.hidden = false; o.innerHTML = `${T('Mot de passe temporaire (à transmettre au client, affiché une seule fois) :')} <b dir="ltr">${r.password}</b>`; loadReq(); } catch (er) { fail(er); } });
         const rp = $('[data-resetpicks]', det); if (rp) rp.addEventListener('click', async () => { try { await api(`/api/admin/users/${box.dataset.u}/picks`, 'POST', { reset: true }); det.hidden = true; openClient(box); } catch (er) { fail(er); } });
         det.querySelectorAll('[data-rm]').forEach((b) => b.addEventListener('click', async () => { if (!confirm(T('Retirer cet abonnement ?'))) return;
           try { await api(`/api/admin/users/${box.dataset.u}/subscription`, 'POST', { plan: b.dataset.rm, remove: true }); refresh(); } catch (er) { fail(er); } }));
       } catch (e) { fail(e); }
     }
     $('#fSearch').addEventListener('submit', (e) => { e.preventDefault(); loadList(); });
-    loadStats(); loadList();
+    loadStats(); loadList(); loadReq();
   }
 
 
