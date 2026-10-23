@@ -126,17 +126,27 @@
   function show(html, nav) { app.innerHTML = html; setNav(nav); window.scrollTo(0, 0); }
 
   /* ---------- pages ---------- */
+  let homeCycle = 'primaire';
+  const exCycle = (lv) => (lv.id === '6e' ? 'moyen' : 'primaire');
   function pageHome() {
     document.title = T('Tadriss-Maths — exercices de maths de la GS à la 6e');
     show(`<div class="wrap"><section class="hero"><h1>${T('Des exercices de maths pour réussir de la GS à la 6ᵉ')}</h1><p>${T('Choisis ton niveau, entraîne-toi sur une compétence et vois ton score grimper. Les questions sont tirées au hasard : tu ne manqueras jamais d’exercices.')}</p></section>
-    <section class="levels">${LEVELS.map((lv) => {
+    <div class="pills" style="margin:14px 0">${COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === homeCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-hcy="${cy.id}" aria-pressed="${cy.id === homeCycle}">${cy.icon} ${T(cy.label)}</button>`).join('')}</div>
+    <section class="levels">${LEVELS.filter((lv) => exCycle(lv) === homeCycle).map((lv) => {
       const n = implemented(lv).length, d = doneCount(lv);
       return `<a class="lv" href="#/niveau/${lv.id}"><span class="lv-badge" style="background:${lv.color}">${sh(lv)}</span><img class="lv-photo" src="/img/niveau-${lv.id}.jpg" alt="" loading="lazy" width="150" height="170">
         <span class="lv-body"><h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p>
         <p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p>
         <span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${lv.color}"></i></span></span>
         <span class="lv-go"><span class="btn" style="background:${lv.color}">${T('Voir les {n} compétences ›', { n: lv.skillList.length })}</span></span></a>`;
+    }).join('')}${COURSE_LEVELS.filter((l) => l.cycle === homeCycle && l.ready && !LEVELS.some((x) => x.id === l.id)).map((l) => {
+      const n = COURSES.filter((c) => c.level === l.id).length;
+      return `<a class="lv" href="#/cours" data-cgo="${l.id}"><span class="lv-badge" style="background:#3b3a8f"><bdi>${l.label}</bdi></span>
+        <span class="lv-body"><h2>${T('Cours illustrés de {short}', { short: l.label })}</h2><p>${T('{n} cours en maths, physique et chimie, avec schémas animés et quiz.', { n })}</p></span>
+        <span class="lv-go"><span class="btn" style="background:#3b3a8f">${T('Voir les cours ›')}</span></span></a>`;
     }).join('')}</section></div>`, 'maths');
+    document.querySelectorAll('[data-hcy]').forEach((b) => b.addEventListener('click', () => { homeCycle = b.dataset.hcy; pageHome(); }));
+    document.querySelectorAll('[data-cgo]').forEach((a) => a.addEventListener('click', () => { courseLevel = a.dataset.cgo; courseCycle = cycleOf(courseLevel); }));
   }
 
   function dot(id, color) {
@@ -573,7 +583,7 @@
     show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-2.jpg" alt="" width="44" height="44">${T('Cours illustrés')}</h1><p>${T('Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.')}</p></div>
       <div class="pills" style="margin:10px 0">${tabs}</div>
       <div class="pills" style="margin:10px 0">${chips}</div>
-      ${COURSE_LEVELS.some((l) => l.cycle === courseCycle && l.ready) ? '' : `<div class="note">${T('Les cours de ce cycle arrivent bientôt. Les exercices du primaire sont déjà disponibles.')}</div>`}
+      ${COURSE_LEVELS.some((l) => l.cycle === courseCycle && l.ready) ? '' : `<div class="note">${`${T('Les cours de ce cycle arrivent bientôt.')} <a href="#/">${T('Les exercices de maths du primaire sont déjà disponibles ›')}</a>`}</div>`}
       ${lang === 'ar' && COURSES.some((c) => !hasAr(c)) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
       ${auth.user && !auth.offline && !auth.config.open && !valid('fam') ? `<div class="note">${coursePicksLeft() > 0 ? T('Ton essai : choisis {left} cours gratuit(s) de ton choix. Touche « ☆ Choisir » à côté d’un cours verrouillé 🔒.', { left: coursePicksLeft() }) : T('Tu as choisi tes {n} cours gratuits. Les autres demandent un abonnement.', { n: auth.config.courseMax || 3 })}</div>` : !auth.user && !auth.offline && !auth.config.open ? `<div class="note">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')} <a href="#/inscription">${T('Créer un compte')}</a></div>` : ''}
       ${canSpeak() ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
