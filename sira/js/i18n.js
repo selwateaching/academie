@@ -1,23 +1,25 @@
-/* Langue du site (français par défaut, anglais au choix). Chargé en premier.
-   En anglais, charge les fichiers de js/en/ avant les données ; js/i18n-apply.js les applique ensuite. */
+/* Langue du site : français (par défaut), anglais ou arabe. Chargé en premier.
+   En anglais ou en arabe, charge les fichiers de js/en/ ou js/ar/ avant les données ; js/i18n-apply.js les applique ensuite. */
 (function () {
   "use strict";
-  var KEY = "sira-fr:lang", lang = "fr";
+  var KEY = "sira-fr:lang", lang = "fr", OK = /^(en|fr|ar)$/;
   try {
-    var m = /[?&]lang=(en|fr)\b/.exec(location.search);
+    var m = /[?&]lang=(en|fr|ar)\b/.exec(location.search);
     if (m) localStorage.setItem(KEY, m[1]);
     var s = localStorage.getItem(KEY);
-    if (s === "en" || s === "fr") lang = s;
+    if (OK.test(s)) lang = s;
   } catch (e) {
-    var mm = /[?&]lang=(en|fr)\b/.exec(location.search);
+    var mm = /[?&]lang=(en|fr|ar)\b/.exec(location.search);
     if (mm) lang = mm[1];
   }
   window.LANG = lang;
-  window.EN = {};
+  window.EN = {}; window.AR = {};
   window.T = function (s) {
-    var d = window.EN_UI;
-    return lang === "en" && d && Object.prototype.hasOwnProperty.call(d, s) ? d[s] : s;
+    var d = lang === "en" ? window.EN_UI : lang === "ar" ? window.AR_UI : null;
+    return d && Object.prototype.hasOwnProperty.call(d, s) ? d[s] : s;
   };
+  /* Choix d'un texte selon la langue : L3(français, anglais, arabe) ; sans arabe, on retombe sur l'anglais */
+  window.L3 = function (fr, en, ar) { return lang === "en" ? en : lang === "ar" ? (ar == null ? en : ar) : fr; };
   window.SiraI18n = {
     lang: lang,
     set: function (l) {
@@ -27,9 +29,15 @@
     }
   };
   document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   if (lang === "en") {
     ["ui", "content-1", "content-2", "content-3", "content-4", "quiz-1", "quiz-2", "quiz-3", "quiz-4", "lex", "audio-manifest"].forEach(function (f) {
       document.write('<script src="js/en/' + f + '.js"><\/script>');
+    });
+  }
+  if (lang === "ar") {
+    ["ui", "content", "lex", "say"].forEach(function (f) {
+      document.write('<script src="js/ar/' + f + '.js"><\/script>');
     });
   }
 })();

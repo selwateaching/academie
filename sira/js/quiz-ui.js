@@ -19,10 +19,12 @@
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   function scoreLine(n, total) {
+    if (window.LANG === "ar") return n === 1 ? "إجابة صحيحة واحدة من " + total : n === 2 ? "إجابتان صحيحتان من " + total : n + (n <= 10 ? " إجابات صحيحة من " : " إجابة صحيحة من ") + total;
     if (window.LANG === "en") return n + " correct answer" + (n > 1 ? "s" : "") + " out of " + total;
     return n + " bonne" + (n > 1 ? "s" : "") + " réponse" + (n > 1 ? "s" : "") + " sur " + total;
   }
   function nextLevelText(n, name) {
+    if (window.LANG === "ar") return "يلزمك " + n + " نقطة لتصبح «" + name + "»";
     if (window.LANG === "en") return n + " more points to become “" + name + "”";
     return "Encore " + n + " points pour devenir « " + name + " »";
   }
@@ -67,7 +69,7 @@
       locked = false; left = SECONDS;
       var q = order[i], opts = shuffle(q.slice(1));
       var pct = Math.round((i / order.length) * 100);
-      app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>Question <b>' + (i + 1) + T("</b> sur ") + order.length + "</span><span class=\"q-pts\">" + pts + " pts</span></div>" +
+      app().innerHTML = '<div class="quiz wrap"><div class="q-top"><span>' + L3("Question", "Question", "السؤال") + ' <b>' + (i + 1) + T("</b> sur ") + order.length + "</span><span class=\"q-pts\">" + pts + L3(" pts", " pts", " نقطة") + "</span></div>" +
         '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="q-time"><span><b id="qt">' + SECONDS + T('</b> s</span><span class="muted">⚡ Plus vite = plus de points</span></div><div class="bar thin"><i id="tb" style="width:100%"></i></div>') +
         '<div class="q-card"><div class="q-head"><span class="q-num">' + (i + 1) + '</span><div><small>' + esc((kind(id) === "th" || kind(id) === "ri" ? T("Fiche") : kind(id) === "co" ? T("Compagnon") : T("Chapitre ") + ch.id) + " · " + ch.title) + "</small><h2>" + esc(q[0]) + "</h2></div></div>" +
@@ -132,7 +134,7 @@
   function rewardsHtml(compact) {
     var xp = totalXp(), lv = levelInfo(xp), s = load(), done = Object.keys(s).filter(function (k) { return s[k].stars >= 1; }).length;
     var stars = Object.keys(s).reduce(function (a, k) { return a + (s[k].stars || 0); }, 0);
-    var h = '<div class="rw"><div class="rw-lv"><span class="rw-icon">' + SiraMedals.level(lv.index) + T('</span><div><small>Niveau ') + (lv.index + 1) + '</small><b>' + esc(lv.name) + '</b></div><div class="rw-xp"><b>' + xp + "</b> pts</div></div>" +
+    var h = '<div class="rw"><div class="rw-lv"><span class="rw-icon">' + SiraMedals.level(lv.index) + T('</span><div><small>Niveau ') + (lv.index + 1) + '</small><b>' + esc(lv.name) + '</b></div><div class="rw-xp"><b>' + xp + "</b>" + L3(" pts", " pts", " نقطة") + "</div></div>" +
       '<div class="bar"><i style="width:' + lv.pct + '%"></i></div><p class="muted small">' + (lv.next ? nextLevelText(lv.next.min - xp, esc(lv.next.name)) : T("Niveau maximum atteint !")) + "</p>" +
       '<div class="rw-stats"><span>⭐ ' + stars + " / " + allItems().length * 3 + T(" étoiles</span><span>✓ ") + done + " / " + allItems().length + T(" quiz réussis</span></div>");
     if (!compact) h += T('<h3>Badges</h3><div class="badges">') + badges().map(function (b) {
@@ -146,7 +148,7 @@
     app().innerHTML = T('<section class="block wrap"><h2>Mes récompenses</h2><p class="lead">Répondez aux quiz pour gagner des points, des étoiles et des badges.</p>') + rewardsHtml(false) +
       T("<h3>Étoiles par chapitre</h3><div class=\"grid\">") + ch.map(function (c) {
         var r = s[c.id];
-        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + iconOf(c.id) + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + " pts" : T("Pas encore joué")) + T("</span><span>Jouer →</span></div></a>");
+        return '<a class="card" href="#/quiz/' + c.id + '"><span class="num">' + iconOf(c.id) + "</span><h3>" + esc(c.title) + '</h3><div class="stars">' + starStr(r ? r.stars : 0) + '</div><div class="meta"><span>' + (r ? r.pts + L3(" pts", " pts", " نقطة") + "" : T("Pas encore joué")) + T("</span><span>Jouer →</span></div></a>");
       }).join("") + "</div></section>";
   }
   function updateTrophy() {

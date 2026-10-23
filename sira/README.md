@@ -67,3 +67,12 @@ La page « Horaires » (`js/horaires.js`) calcule sur l'appareil les cinq horair
 ## Calendrier hégirien
 
 `js/calendrier.js` : grille mensuelle (calendrier Umm al-Qura via `Intl`, repli arithmétique), date grégorienne en dessous, fêtes et dates marquantes (Nouvel an, Achoura, Mawlid, Isra et Mi'raj, Ramadan, Nuit du Destin, Aïd al-Fitr, Arafat, Aïd al-Adha), jours blancs et jeûne du lundi et du jeudi, liste des prochaines fêtes. Les événements sont dans le tableau `EV`.
+
+## Version arabe
+
+Troisième langue : le sélecteur **FR | EN | ع** (ou `?lang=ar`) passe le site en arabe, écrit de droite à gauche (`<html dir="rtl">`).
+
+- `js/ar/ui.js` : interface (clé = texte français) ; `js/ar/content.js` : 85 pages et 425 questions de quiz ; `js/ar/lex.js` : lexique, lieux, périodes ; `js/ar/say.js` : paroles du Prophète ﷺ (avec la mention « بالمعنى » quand le texte n'est qu'un sens).
+- `js/i18n.js` définit `T()` et `L3(fr, en, ar)` ; `js/i18n-apply.js` applique la langue sur les données.
+- Pas de voix enregistrée en arabe (le modèle Kokoro n'a pas de voix arabe) : la lecture utilise les voix arabes de l'appareil, quand elles existent.
+- Les textes arabes sont une traduction à relire par un arabophone avant diffusion large ; les citations de hadiths sont données de mémoire.

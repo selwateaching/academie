@@ -45,7 +45,7 @@
     return '<a class="card pic' + (isRead(c.id) ? " done" : "") + '" href="' + hrefOf(c.id) + '">' +
       '<div class="thumb">' + SiraArt.thumb(c) + '<span class="num">' + (KIND[kindOf(c.id)].icon || String(c.id).padStart(2, "0")) + "</span></div>" +
       "<h3>" + esc(c.title) + "</h3><p>" + esc(c.sub) + "</p>" +
-      '<div class="meta"><span>' + esc(c.date) + "</span><span>" + (SiraQuiz.stars(c.id) !== null ? '<span class="stars sm">' + SiraQuiz.starStr(SiraQuiz.stars(c.id)) + "</span> · " : "") + minutes(c) + " min</span></div></a>";
+      '<div class="meta"><span>' + esc(c.date) + "</span><span>" + (SiraQuiz.stars(c.id) !== null ? '<span class="stars sm">' + SiraQuiz.starStr(SiraQuiz.stars(c.id)) + "</span> · " : "") + minutes(c) + L3(" min", " min", " د") + "</span></div></a>";
   }
 
   /* ---------- Audio : voir js/speech.js ---------- */
@@ -108,7 +108,7 @@
     var colist = qn && !period ? CO.concat(TH, RI).filter(function (c) { return norm(c.title + " " + c.sub + " " + c.paras.join(" ")).indexOf(qn) !== -1; }) : [];
     list = list.concat(colist);
     app.innerHTML = '<section class="block wrap"><h2>' + (qn ? T("Résultats pour « ") + esc(query) + T(" »") : T("Tous les chapitres")) + "</h2>" +
-      '<p class="lead">' + list.length + (qn ? T(" résultat") : T(" chapitre")) + (list.length > 1 ? "s" : "") + "</p>" +
+      '<p class="lead">' + (window.LANG === "ar" ? (list.length === 0 ? "لا نتائج" : list.length === 1 ? (qn ? "نتيجة واحدة" : "فصل واحد") : list.length + (list.length <= 10 ? (qn ? " نتائج" : " فصول") : (qn ? " نتيجة" : " فصلاً"))) : list.length + (qn ? T(" résultat") : T(" chapitre")) + (list.length > 1 ? "s" : "")) + "</p>" +
       (qn && SiraLexique.search(query, 6).length ? T('<div class="lx-hit"><b>Dans le lexique :</b> ') + SiraLexique.search(query, 6).map(function (e) { return '<a class="chip" href="#/lexique/' + e.k + '">' + esc(e.t) + "</a>"; }).join(" ") + "</div>" : "") +
       '<div class="chips">' + chips + "</div>" +
       (list.length ? '<div class="grid">' + list.map(card).join("") + "</div>" : T('<p class="empty">Aucun chapitre ne correspond. Essayez un autre mot.</p>')) + "</section>";
@@ -167,7 +167,7 @@
       SiraAvis.cta() + '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? T("✓ Marqué comme lu") : T("Marquer comme lu")) + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
       (prev ? '<a class="btn ghost" href="' + hrefOf(prev.id) + T('">← <span><small>Précédent</small>') + esc(prev.title) + "</span></a>" : "<span></span>") +
-      (next ? '<a class="btn gold" href="' + hrefOf(next.id) + T('"><span><small>Suivant</small>') + esc(next.title) + "</span> →</a>" : '<a class="btn gold" href="' + K.back + '">' + K.end + "</a>") +
+      (next ? '<a class="btn gold" href="' + hrefOf(next.id) + T('"><span><small>Suivant</small>') + esc(next.title) + "</span> " + (window.LANG === "ar" ? "←" : "→") + "</a>" : '<a class="btn gold" href="' + K.back + '">' + K.end + "</a>") +
       "</nav></article>";
 
     var prose = document.getElementById("prose");

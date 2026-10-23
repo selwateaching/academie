@@ -2,7 +2,7 @@
    Le français d'origine est conservé dans it.fr pour les illustrations (mots-clés français). */
 (function () {
   "use strict";
-  var en = window.LANG === "en" && window.EN;
+  var en = window.LANG === "en" ? window.EN : window.LANG === "ar" ? window.AR : null;
 
   function staticText() {
     Array.prototype.forEach.call(document.querySelectorAll("[data-t]"), function (el) {
@@ -16,11 +16,12 @@
     });
     var btn = document.getElementById("langbtn");
     if (btn) {
-      var en = window.LANG === "en";
-      btn.innerHTML = '<span class="lg-o' + (en ? "" : " on") + '">FR</span><span class="lg-o' + (en ? " on" : "") + '">EN</span>';
-      btn.setAttribute("aria-label", en ? "Language: English. Switch to French" : "Langue : français. Passer en anglais");
-      btn.setAttribute("title", en ? "English → Français" : "Français → English");
-      btn.onclick = function () { window.SiraI18n.set(window.LANG === "en" ? "fr" : "en"); };
+      var cur = window.LANG, L = [["fr", "FR", "Français"], ["en", "EN", "English"], ["ar", "ع", "العربية"]];
+      btn.innerHTML = L.map(function (x) { return '<span class="lg-o' + (x[0] === cur ? " on" : "") + '" data-l="' + x[0] + '" lang="' + x[0] + '" title="' + x[2] + '" role="button" tabindex="0">' + x[1] + "</span>"; }).join("");
+      btn.setAttribute("aria-label", "Langue / Language / اللغة");
+      btn.removeAttribute("title");
+      btn.onclick = function (e) { var t = e.target.closest && e.target.closest("[data-l]"); if (t && t.getAttribute("data-l") !== window.LANG) window.SiraI18n.set(t.getAttribute("data-l")); };
+      btn.onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") { var t = e.target.closest && e.target.closest("[data-l]"); if (t) { e.preventDefault(); t.click(); } } };
     }
   }
 

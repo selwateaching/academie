@@ -2,7 +2,7 @@
    Seuls des hadiths des recueils de Bukhari et de Muslim (ou jugés authentiques) sont retenus. Traductions libres, à visée pédagogique. */
 (function () {
   "use strict";
-  var EN = window.LANG === "en";
+  var EN = window.LANG === "en", AR = window.LANG === "ar", SAY = (AR && window.AR && window.AR.say) || null;
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   var THEMES = [
@@ -74,24 +74,28 @@
     ["vie", "Applique-toi à ce qui t'est utile, demande l'aide de Dieu et ne te décourage pas.", "Strive for what benefits you, seek God's help and do not lose heart.", "Muslim 2664"],
     ["vie", "Le meilleur jour sur lequel le soleil se soit levé est le vendredi.", "The best day on which the sun has risen is Friday.", "Muslim 854"]
   ];
-  S = S.map(function (x, i) { return { n: i + 1, th: x[0], t: EN ? x[2] : x[1], src: x[3] }; });
+  S = S.map(function (x, i) {
+    var a = SAY && SAY.items && SAY.items["s" + (i + 1)];
+    return { n: i + 1, th: x[0], t: a ? a.ar : EN ? x[2] : x[1], src: a ? a.src_ar : x[3], approx: !!(a && a.exact === false) };
+  });
+  function tname(t) { return AR && SAY && SAY.themes ? SAY.themes[t.id] : EN ? t.en : t.fr; }
 
   function view(sel) {
     var app = document.getElementById("app");
     var th = THEMES.filter(function (t) { return t.id === sel; })[0];
-    var chips = '<div class="chips"><a class="chip' + (th ? "" : " on") + '" href="#/paroles">' + (EN ? "All" : "Toutes") + " (" + S.length + ")</a>" +
-      THEMES.map(function (t) { return '<a class="chip' + (th && th.id === t.id ? " on" : "") + '" href="#/paroles/' + t.id + '">' + t.icon + " " + esc(EN ? t.en : t.fr) + "</a>"; }).join("") + "</div>";
+    var chips = '<div class="chips"><a class="chip' + (th ? "" : " on") + '" href="#/paroles">' + L3("Toutes", "All", "الكل") + " (" + S.length + ")</a>" +
+      THEMES.map(function (t) { return '<a class="chip' + (th && th.id === t.id ? " on" : "") + '" href="#/paroles/' + t.id + '">' + t.icon + " " + esc(tname(t)) + "</a>"; }).join("") + "</div>";
     var groups = (th ? [th] : THEMES).map(function (t) {
       var list = S.filter(function (s) { return s.th === t.id; });
-      return '<h3 class="sy-h">' + t.icon + " " + esc(EN ? t.en : t.fr) + "</h3>" + list.map(function (s) {
-        return '<figure class="saying"><blockquote>' + esc(s.t) + "</blockquote><figcaption>" + (EN ? "Source: " : "Source : ") + esc(s.src) + "</figcaption></figure>";
+      return '<h3 class="sy-h">' + t.icon + " " + esc(tname(t)) + "</h3>" + list.map(function (s) {
+        return '<figure class="saying"><blockquote>' + esc(s.t) + "</blockquote><figcaption>" + (AR ? "المصدر: " : EN ? "Source: " : "Source : ") + esc(s.src) + (s.approx ? (AR ? " — بالمعنى" : "") : "") + "</figcaption></figure>";
       }).join("");
     }).join("");
-    app.innerHTML = '<section class="block wrap"><h2>' + (EN ? "Sayings of the Prophet ﷺ" : "Paroles du Prophète ﷺ") + "</h2>" +
-      '<p class="lead">' + (EN ? S.length + " well-known sayings (hadiths) by theme (category), taken from the collections of Bukhari, Muslim and Tirmidhi. Free translations for learning; the Arabic text and the full chain of narrators are in the collections cited."
+    app.innerHTML = '<section class="block wrap"><h2>' + L3("Paroles du Prophète ﷺ", "Sayings of the Prophet ﷺ", "أحاديث النبي ﷺ") + "</h2>" +
+      '<p class="lead">' + (AR ? S.length + " حديثاً مشهوراً مرتباً حسب الموضوع، من كتب البخاري ومسلم والترمذي. النصوص مأخوذة بحسب ما حفظه المؤلف ويُرجَع إلى كتب الحديث للتحقق من اللفظ والسند؛ وما كُتب «بالمعنى» فهو بمعنى الحديث لا بلفظه." : EN ? S.length + " well-known sayings (hadiths) by theme (category), taken from the collections of Bukhari, Muslim and Tirmidhi. Free translations for learning; the Arabic text and the full chain of narrators are in the collections cited."
         : S.length + " paroles célèbres (hadiths) classées par thème (catégorie), tirées des recueils de Bukhari, de Muslim et de Tirmidhi. Traductions libres à visée pédagogique ; le texte arabe et la chaîne de transmission complète se trouvent dans les recueils cités.") + "</p>" +
-      '<p class="sy-cat">' + (EN ? "Choose a category:" : "Choisissez une catégorie :") + "</p>" + chips + groups + "</section>";
-    document.title = (EN ? "Sayings of the Prophet ﷺ" : "Paroles du Prophète ﷺ") + " — " + (EN ? "The World of the Sirah" : "Le Monde de la Sirah");
+      '<p class="sy-cat">' + L3("Choisissez une catégorie :", "Choose a category:", "اختر موضوعاً:") + "</p>" + chips + groups + "</section>";
+    document.title = L3("Paroles du Prophète ﷺ", "Sayings of the Prophet ﷺ", "أحاديث النبي ﷺ") + " — " + L3("Le Monde de la Sirah", "The World of the Sirah", "عالم السيرة");
     window.scrollTo(0, 0);
   }
   window.SiraParoles = { view: view, list: S, themes: THEMES };

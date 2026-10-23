@@ -25,23 +25,24 @@
     "Kulthum": "Koultoum", "Amin": "Amine", "Anas": "Anass", "Affan": "Affane", "Ahl": "Ahle", "Thabit": "Tabit", "Thawr": "Taour", "Thaqif": "Taqif", "Yathrib": "Yatrib", "Harith": "Haritte", "Haritha": "Harita", "Hind": "Hinnde", "Ifk": "Ifque", "Ramadan": "Ramadane", "calife": "kalif", "califes": "kalifes", "califat": "kalifat", "dos": "dau", "moud": "mou", "rythme": "ritme",
     "'umra": "oumra", "hadiths": "hadites", "hadith": "hadite", "zakat": "zakate", "adhan": "adhane", "suhur": "souhour", "ihram": "ihrame", "muezzin": "mouézine", "mubahala": "moubahala", "i'tikaf": "itikaf"
   };
-  var ENG = window.LANG === "en";
+  var ENG = window.LANG === "en", ARB = window.LANG === "ar";
   if (ENG) LEX = (window.EN && window.EN.speechLex) || {};
+  if (ARB) LEX = {};
   Object.keys(LEX).forEach(function (k) { /* variantes avec majuscule (début de phrase) */
     var c = k.charAt(0); if (c !== c.toUpperCase() && /[a-zà-ÿ]/.test(c)) { var K = c.toUpperCase() + k.slice(1), v = LEX[k]; if (!LEX[K]) LEX[K] = v.charAt(0).toUpperCase() + v.slice(1); }
   });
   var keys = Object.keys(LEX).sort(function (a, b) { return b.length - a.length; });
   var LEXRE = new RegExp("(^|[^\\p{L}])(" + keys.map(function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")(?![\\p{L}])", "gu");
   var ELISION = { l: 1, d: 1, j: 1, m: 1, n: 1, s: 1, t: 1, c: 1, qu: 1, jusqu: 1, lorsqu: 1, puisqu: 1, quoiqu: 1, quelqu: 1, aujourd: 1 };
-  var PRAYER = ENG ? "peace and blessings of God be upon him" : "que la paix et les bénédictions de Dieu soient sur lui";
+  var PRAYER = ARB ? "صلى الله عليه وسلم" : ENG ? "peace and blessings of God be upon him" : "que la paix et les bénédictions de Dieu soient sur lui";
   var AB = ENG ? "audio/en/" : "audio/";
-  function MAN() { return (ENG ? window.SIRA_AUDIO_EN : window.SIRA_AUDIO) || null; }
+  function MAN() { return ARB ? null : (ENG ? window.SIRA_AUDIO_EN : window.SIRA_AUDIO) || null; }
 
   /* Retourne le texte à dire à voix haute (l'affichage, lui, n'est pas modifié). */
   function prepare(t) {
     t = t.replace(/ ?ﷺ/g, ", " + PRAYER + ",");
     t = t.replace(/,\s*([,.;:!?])/g, "$1").replace(/,,+/g, ",");
-    t = t.replace(LEXRE, function (m, p, w) { return p + LEX[w]; });
+    if (keys.length) t = t.replace(LEXRE, function (m, p, w) { return p + LEX[w]; });
     // apostrophe interne d'un nom arabe (hors élisions françaises) : on la supprime, sinon la voix épelle les lettres
     if (ENG) {
       // anglais : on garde les contractions et possessifs (Prophet's, don't), on retire l'apostrophe des noms arabes restants
@@ -58,10 +59,10 @@
   /* Découpe en phrases courtes (plus naturelles, et évite les coupures des voix longues). */
   function sentences(t) {
     var out = [];
-    t.replace(/([.!?…])\s+(?=[«"“A-ZÀ-Ý])/g, "$1\u0001").split("\u0001").forEach(function (s) {
+    t.replace(/([.!?…؟])\s+(?=[«"“A-ZÀ-Ý\u0600-\u06FF])/g, "$1\u0001").split("\u0001").forEach(function (s) {
       s = s.trim(); if (!s) return;
       while (s.length > 200) {
-        var cut = s.lastIndexOf(", ", 190); if (cut < 60) cut = s.lastIndexOf(" ", 190); if (cut < 60) break;
+        var cut = Math.max(s.lastIndexOf(", ", 190), s.lastIndexOf("، ", 190)); if (cut < 60) cut = s.lastIndexOf(" ", 190); if (cut < 60) break;
         out.push(s.slice(0, cut + 1).trim()); s = s.slice(cut + 1).trim();
       }
       if (s) out.push(s);
@@ -83,7 +84,7 @@
   }
   function frVoices() {
     var all = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
-    var l = all.filter(function (x) { return (ENG ? /^en/i : /^fr/i).test(String(x.lang).replace("_", "-")) || (ENG ? /english|anglais/i : /fran[cç]ais|french/i).test(x.name); });
+    var l = all.filter(function (x) { return (ARB ? /^ar/i : ENG ? /^en/i : /^fr/i).test(String(x.lang).replace("_", "-")) || (ARB ? /arab|عرب/i : ENG ? /english|anglais/i : /fran[cç]ais|french/i).test(x.name); });
     return l.sort(function (a, b) { return score(b) - score(a); });
   }
 
@@ -170,7 +171,7 @@
         var it = items[n];
         if (it.first) highlight(it.i);
         var u = new SpeechSynthesisUtterance(it.s);
-        u.lang = voice ? voice.lang : (ENG ? "en-US" : "fr-FR"); if (voice) u.voice = voice;
+        u.lang = voice ? voice.lang : (ARB ? "ar-SA" : ENG ? "en-US" : "fr-FR"); if (voice) u.voice = voice;
         u.rate = parseFloat(rate.value) || 1; u.pitch = 1;
         var nextItem = items[n + 1];
         u.onend = function () { if (nextItem && nextItem.first) setTimeout(function () { step(n + 1); }, 350); else step(n + 1); };
@@ -198,7 +199,7 @@
       if (!window.speechSynthesis) return;
       var u = new SpeechSynthesisUtterance(prepare(text)), voices = frVoices(), saved = get(KEY_V);
       var v = voices.filter(function (x) { return x.name === saved; })[0] || voices[0];
-      u.lang = v ? v.lang : (ENG ? "en-US" : "fr-FR"); if (v) u.voice = v; u.rate = 0.9;
+      u.lang = v ? v.lang : (ARB ? "ar-SA" : ENG ? "en-US" : "fr-FR"); if (v) u.voice = v; u.rate = 0.9;
       window.speechSynthesis.speak(u);
     }
     if (terms && terms.indexOf(key) !== -1) {

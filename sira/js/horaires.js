@@ -2,7 +2,7 @@
    aucune clé) : la position reste sur l'appareil. Les horaires sont indicatifs : se référer à sa mosquée en cas de doute. */
 (function () {
   "use strict";
-  var EN = window.LANG === "en", KEY = "sira-fr:pt";
+  var LG = window.LANG, EN = LG === "en", AR = LG === "ar", KEY = "sira-fr:pt";
   var R = Math.PI / 180;
   function mod(a, n) { return ((a % n) + n) % n; }
   function sin(d) { return Math.sin(d * R); } function cos(d) { return Math.cos(d * R); }
@@ -25,6 +25,10 @@
     ["Médine", 24.4686, 39.6142, "Asia/Riyadh"], ["Istanbul", 41.0082, 28.9784, "Europe/Istanbul"], ["Londres", 51.5072, -0.1276, "Europe/London"],
     ["Montréal", 45.5017, -73.5673, "America/Toronto"], ["New York", 40.7128, -74.006, "America/New_York"]
   ];
+  var CITY_AR = { "Paris": "باريس", "Marseille": "مرسيليا", "Bruxelles": "بروكسل", "Alger": "الجزائر", "Casablanca": "الدار البيضاء", "Tunis": "تونس", "Le Caire": "القاهرة", "Dakar": "داكار", "La Mecque": "مكة المكرمة", "Médine": "المدينة المنورة", "Istanbul": "إسطنبول", "Londres": "لندن", "Montréal": "مونتريال", "New York": "نيويورك" };
+  var METH_AR = { mwl: "رابطة العالم الإسلامي", uoif: "اتحاد المنظمات الإسلامية بفرنسا", egypt: "الهيئة المصرية العامة للمساحة", makkah: "أم القرى (مكة المكرمة)", isna: "أمريكا الشمالية", morocco: "المغرب" };
+  function cityName(n) { return AR ? CITY_AR[n] || n : EN ? CITY_EN[n] || n : n; }
+  function methName(k) { return AR ? METH_AR[k] : EN ? METHODS[k].en : METHODS[k].n; }
   var CITY_EN = { "Bruxelles": "Brussels", "Alger": "Algiers", "Le Caire": "Cairo", "La Mecque": "Mecca", "Médine": "Medina", "Londres": "London", "Montréal": "Montreal" };
 
   function tzOffset(tz, date) { /* décalage horaire (en heures) du fuseau tz à cette date */
@@ -71,14 +75,20 @@
     var kl = 21.4225, kg = 39.8262, dl = kg - lng;
     return mod(atan2(sin(dl), cos(lat) * tan(kl) - sin(lat) * cos(dl)), 360);
   }
-  function dirName(b) { var n = EN ? ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] : ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]; return n[Math.round(b / 45) % 8]; }
+  function dirName(b) { var n = AR ? ["شمال", "شمال شرق", "شرق", "جنوب شرق", "جنوب", "جنوب غرب", "غرب", "شمال غرب"] : EN ? ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] : ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]; return n[Math.round(b / 45) % 8]; }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
   function save(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
 
-  var NAMES = EN ? [["fajr", "Fajr", "Dawn"], ["sunrise", "Sunrise", ""], ["dhuhr", "Dhuhr", "Midday"], ["asr", "Asr", "Afternoon"], ["maghrib", "Maghrib", "Sunset"], ["isha", "Isha", "Night"]]
+  var NAMES = AR ? [["fajr", "الفجر", ""], ["sunrise", "الشروق", ""], ["dhuhr", "الظهر", ""], ["asr", "العصر", ""], ["maghrib", "المغرب", ""], ["isha", "العشاء", ""]] : EN ? [["fajr", "Fajr", "Dawn"], ["sunrise", "Sunrise", ""], ["dhuhr", "Dhuhr", "Midday"], ["asr", "Asr", "Afternoon"], ["maghrib", "Maghrib", "Sunset"], ["isha", "Isha", "Night"]]
     : [["fajr", "Fajr", "Aube"], ["sunrise", "Lever du soleil", ""], ["dhuhr", "Dhuhr", "Milieu du jour"], ["asr", "Asr", "Après-midi"], ["maghrib", "Maghrib", "Coucher du soleil"], ["isha", "Isha", "Nuit"]];
-  var X = EN ? {
+  var X = AR ? {
+    h: "مواقيت الصلاة والقبلة", lead: "أوقات الصلوات الخمس واتجاه الكعبة، تُحسب على جهازك انطلاقاً من موقعك. لا يُرسَل أي شيء إلى أي مكان.",
+    loc: "📍 استخدام موقعي", city: "أو اختر مدينة", pos: "الموقع", method: "طريقة الحساب", asr: "العصر على المذهب الحنفي (يتأخر قليلاً)", next: "الصلاة القادمة", in: "بعد",
+    qh: "اتجاه القبلة", qd: "من الشمال مع اتجاه عقارب الساعة", wait: "جارٍ تحديد الموقع…", fail: "تعذّر تحديد الموقع. اختر مدينة بدلاً من ذلك.", date: "اليوم",
+    auto: "🔔 تشغيل الأذان عند دخول وقت الصلاة", autoNote: "أبقِ هذه الصفحة مفتوحة والجهاز مضاءً. لا يسمح المتصفح بالصوت إلا بعد تفعيل هذا الخيار.", autoOn: "تم تفعيل الأذان: بانتظار الصلاة القادمة.", autoNoFile: "لا يوجد تسجيل للأذان.", notif: "حان وقت الصلاة: ",
+    note: "المواقيت تقريبية وقد تختلف ببضع دقائق عن مسجدك. عند الشك، اتبع تقويم مسجدك.", listen: "🔊 استمع إلى الأذان", pick: "— اختر —"
+  } : EN ? {
     h: "Prayer times and qibla", lead: "Times of the five prayers and the direction of the Kaaba, calculated on your device from your position. Nothing is sent anywhere.",
     loc: "📍 Use my position", city: "Or choose a city", pos: "Position", method: "Calculation method", asr: "Asr: Hanafi school (later)", next: "Next prayer", in: "in",
     qh: "Direction of the qibla", qd: "from north, clockwise", wait: "Locating…", fail: "Position unavailable. Choose a city instead.", date: "Today",
@@ -100,19 +110,19 @@
     app.innerHTML = '<section class="block wrap pt"><h2>' + X.h + '</h2><p class="lead">' + X.lead + "</p>" +
       '<div class="pt-clock" aria-live="off"><div class="pt-time" id="ptTime">--:--:--</div><div class="pt-date" id="ptDate"></div><div class="pt-hijri" id="ptHijri"></div></div>' +
       '<div class="pt-ctl"><button class="btn gold" id="ptLoc" type="button">' + X.loc + "</button>" +
-      '<label class="rate">' + X.city + ' <select id="ptCity"><option value="">' + X.pick + "</option>" + CITIES.map(function (c, i) { return '<option value="' + i + '">' + esc(EN && CITY_EN[c[0]] || c[0]) + "</option>"; }).join("") + "</select></label>" +
-      '<label class="rate">' + X.method + ' <select id="ptMethod">' + Object.keys(METHODS).map(function (k) { return '<option value="' + k + '"' + (k === st.method ? " selected" : "") + ">" + esc(EN ? METHODS[k].en : METHODS[k].n) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="rate">' + X.city + ' <select id="ptCity"><option value="">' + X.pick + "</option>" + CITIES.map(function (c, i) { return '<option value="' + i + '">' + esc(cityName(c[0])) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="rate">' + X.method + ' <select id="ptMethod">' + Object.keys(METHODS).map(function (k) { return '<option value="' + k + '"' + (k === st.method ? " selected" : "") + ">" + esc(methName(k)) + "</option>"; }).join("") + "</select></label>" +
       '<label class="rate"><input type="checkbox" id="ptAuto"> ' + X.auto + "</label>" +
       '<label class="rate"><input type="checkbox" id="ptHanafi"' + (st.hanafi ? " checked" : "") + "> " + X.asr + "</label></div>" +
       '<p class="muted small" id="ptAutoMsg"></p><div id="ptOut" class="pt-out"></div><p class="muted small">' + X.note + "</p></section>";
     var out = document.getElementById("ptOut");
-    var loc = EN ? "en-GB" : "fr-FR";
+    var loc = AR ? "ar-u-nu-latn" : EN ? "en-GB" : "fr-FR";
     function clock() {
       var tEl = document.getElementById("ptTime"); if (!tEl) { clearInterval(clk); return; }
       var tz = st.tz || undefined, n = new Date();
       tEl.textContent = new Intl.DateTimeFormat(loc, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: tz }).format(n);
       document.getElementById("ptDate").textContent = new Intl.DateTimeFormat(loc, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: tz }).format(n) + (st.name ? " · " + st.name : "");
-      var hj = ""; try { hj = new Intl.DateTimeFormat((EN ? "en" : "fr") + "-u-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric", timeZone: tz }).format(n); } catch (e) {}
+      var hj = ""; try { hj = new Intl.DateTimeFormat((AR ? "ar" : EN ? "en" : "fr") + "-u-ca-islamic-umalqura-nu-latn", { day: "numeric", month: "long", year: "numeric", timeZone: tz }).format(n); } catch (e) {}
       document.getElementById("ptHijri").textContent = hj ? "🌙 " + hj : "";
     }
     clearInterval(window._siraClk); var clk = window._siraClk = setInterval(clock, 1000); clock();
@@ -125,7 +135,7 @@
       var order = ["fajr", "dhuhr", "asr", "maghrib", "isha"], nextK = null;
       for (var i = 0; i < order.length; i++) { if (T[order[i]] > nowH) { nextK = order[i]; break; } }
       var rows = NAMES.map(function (n) { return '<div class="pt-row' + (n[0] === nextK ? " next" : "") + '" data-k="' + n[0] + '"><span class="pt-n"><b>' + n[1] + "</b>" + (n[2] ? "<small>" + n[2] + "</small>" : "") + '</span><span class="pt-t">' + fmt(T[n[0]]) + "</span></div>"; }).join("");
-      out.innerHTML = '<p class="pt-pos muted">' + X.pos + " : " + (st.name ? esc(st.name) + " · " : "") + Math.abs(st.lat).toFixed(2) + "°" + (st.lat >= 0 ? "N" : "S") + ", " + Math.abs(st.lng).toFixed(2) + "°" + (st.lng >= 0 ? "E" : "W") + "</p>" +
+      out.innerHTML = '<p class="pt-pos muted">' + X.pos + " : " + (st.name ? esc(st.name) + " · " : "") + '<bdi dir="ltr">' + Math.abs(st.lat).toFixed(2) + "°" + (st.lat >= 0 ? "N" : "S") + ", " + Math.abs(st.lng).toFixed(2) + "°" + (st.lng >= 0 ? "E" : "W") + "</bdi>" + "</p>" +
         '<div class="pt-next" id="ptNext"></div><div class="pt-grid">' + rows + "</div>" +
         '<div class="pt-q"><svg viewBox="-60 -60 120 120" class="pt-compass" role="img" aria-label="' + X.qh + '"><circle r="54" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="2"/><text y="-40" text-anchor="middle" fill="currentColor" font-size="12">N</text>' +
         '<g transform="rotate(' + q.toFixed(1) + ')"><path d="M0-46L8 4H-8Z" fill="#f0b72e"/><circle r="4" fill="#fff"/><text y="-50" text-anchor="middle" font-size="12">🕋</text></g></svg>' +
@@ -137,7 +147,7 @@
         for (var j = 0; j < order.length; j++) { if (T[order[j]] > h) { k = order[j]; tgt = T[order[j]]; break; } }
         if (!k) { k = "fajr"; tgt = T.fajr + 24; }
         var diff = Math.max(0, tgt - h), hh = Math.floor(diff), mm = Math.floor((diff - hh) * 60), ss = Math.floor(((diff - hh) * 60 - mm) * 60), nm = NAMES.filter(function (x) { return x[0] === k; })[0][1];
-        el.innerHTML = X.next + " : <b>" + nm + "</b> " + fmt(T[k]) + " — " + X.in + " " + (hh ? hh + " h " : "") + mm + " min " + ss + " s";
+        el.innerHTML = X.next + " : <b>" + nm + "</b> " + fmt(T[k]) + " — " + X.in + " " + (hh ? hh + L3(" h ", " h ", " س ") : "") + mm + L3(" min ", " min ", " د ") + ss + L3(" s", " s", " ث");
       }
       tick(); timer = setInterval(tick, 1000);
     }
@@ -147,7 +157,7 @@
       navigator.geolocation.getCurrentPosition(function (p) { st.lat = p.coords.latitude; st.lng = p.coords.longitude; st.tz = null; st.name = ""; save(st); show(); },
         function () { out.innerHTML = '<p class="muted">' + X.fail + "</p>"; }, { timeout: 12000, maximumAge: 3600000 });
     };
-    document.getElementById("ptCity").onchange = function (e) { var c = CITIES[e.target.value]; if (!c) return; st.lat = c[1]; st.lng = c[2]; st.tz = c[3]; st.name = EN && CITY_EN[c[0]] || c[0]; save(st); show(); };
+    document.getElementById("ptCity").onchange = function (e) { var c = CITIES[e.target.value]; if (!c) return; st.lat = c[1]; st.lng = c[2]; st.tz = c[3]; st.name = cityName(c[0]); save(st); show(); };
     document.getElementById("ptMethod").onchange = function (e) { st.method = e.target.value; save(st); show(); };
     document.getElementById("ptHanafi").onchange = function (e) { st.hanafi = e.target.checked; save(st); show(); };
     show();
@@ -185,7 +195,7 @@
     }
     document.getElementById("ptAuto").onchange = function (e) { setAuto(e.target.checked); };
     clearInterval(window._siraAuto); window._siraAuto = setInterval(autoTick, 1000);
-    document.title = X.h + " — " + (EN ? "The World of the Sirah" : "Le Monde de la Sirah");
+    document.title = X.h + " — " + L3("Le Monde de la Sirah", "The World of the Sirah", "عالم السيرة");
   }
   window.SiraHoraires = { view: view, compute: compute, qibla: qibla };
 })();
