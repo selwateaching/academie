@@ -68,6 +68,12 @@ demo_picks = Table(
     Column("skill_id", String(16), nullable=False),
     UniqueConstraint("user_id", "skill_id", name="uq_pick_user_skill"),
 )
+pw_requests = Table(  # demandes « mot de passe oublié » : l'administrateur donne un mot de passe temporaire
+    "pw_requests", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("email", String(254), nullable=False),
+    Column("created_at", DateTime, nullable=False),
+)
 DEMO_MAX = 3
 COURSE_MAX = 3  # cours animés gratuits au choix (stockés dans demo_picks sous la forme « c:<id> »)
 payments = Table(
