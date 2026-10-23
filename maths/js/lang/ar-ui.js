@@ -9,7 +9,7 @@
     'Menu': 'القائمة', 'Navigation principale': 'التنقّل الرئيسي',
     'Forfait Famille': 'باقة العائلة',
     'Choisir le forfait Famille': 'اختر باقة العائلة',
-    'Tous les niveaux, de la grande section à la sixième, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.': 'جميع المستويات، من التحضيري إلى السنة الأولى متوسط، لكل التلاميذ في الحساب (حتى 5 ملفات)، بدفعة واحدة.',
+    'Tous les niveaux, de la grande section à la Terminale, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.': 'جميع المستويات، من التحضيري إلى الثالثة ثانوي، لكل تلاميذ الحساب (حتى 5 ملفات)، بدفعة واحدة.',
     'Tableau de bord administrateur': 'لوحة تحكم المسؤول',
     'Administration — Tadriss-Maths': 'الإدارة — تدريس رياضيات',
     'Administration': 'الإدارة',
@@ -45,7 +45,7 @@
     '{h} h {m} min': '{h} سا و{m} د', '{m} min': '{m} د', '{s} s': '{s} ثا',
 
     /* accueil et niveaux */
-    'Tadriss-Maths — exercices de maths de la GS à la 6e': 'تدريس رياضيات — تمارين الرياضيات من التحضيري إلى السنة الأولى متوسط',
+    'Tadriss-Maths — exercices et cours de maths de la GS à la Terminale': 'تدريس رياضيات — تمارين ودروس الرياضيات من التحضيري إلى الثالثة ثانوي',
     'Exercices et cours pour réussir de la GS à la Terminale': 'تمارين ودروس للنجاح من التحضيري إلى السنة الثالثة ثانوي',
     'Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.': 'اختر طورك ثم مستواك : تمارين رياضيات مع تصحيح فوري، ودروس مصوّرة في الرياضيات والفيزياء والكيمياء.',
     'Des exercices de maths pour réussir de la GS à la 6ᵉ': 'تمارين رياضيات للنجاح من التحضيري إلى السنة الأولى متوسط',
@@ -99,14 +99,14 @@
 
     /* présentation */
     'Tadriss-Maths donne envie de faire des maths': 'تدريس رياضيات يجعلك تحبّ الرياضيات',
-    'Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.': 'تمارين تفاعلية تُصحَّح فورًا وتتكيّف مع إيقاعك. من أول عدّ في التحضيري إلى الكسور والمساحات في السنة الأولى متوسط.',
+    'Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme, et des cours illustrés. Du premier comptage de la grande section aux dérivées et aux intégrales de la Terminale.': 'تمارين تفاعلية تُصحَّح فورًا وتتكيّف مع وتيرتك، ودروس مصوّرة. من أول عدّ في التحضيري إلى المشتقات والتكاملات في الثالثة ثانوي.',
     'Choisir mon niveau': 'اختيار مستواي', 'Une façon d’apprendre pensée pour l’enfant': 'طريقة في التعلّم مصمَّمة للطفل',
     'Des exercices sans fin': 'تمارين لا تنتهي', 'Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.': 'كل سؤال يُختار عشوائيًا: يمكن التدرّب بقدر ما نشاء.',
     'Des schémas pour comprendre': 'رسوم توضيحية للفهم', 'Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.': 'أشرطة وأقراص ومستقيمات مدرّجة وساعات ومجسّمات: نرى المفهوم قبل أن نحسب.',
     'Une explication après chaque erreur': 'شرح بعد كل خطأ', 'La bonne réponse s’affiche avec une courte explication, pour comprendre et pas seulement corriger.': 'تظهر الإجابة الصحيحة مع شرح قصير، لنفهم وليس لنصحّح فقط.',
     'Des récompenses à débloquer': 'مكافآت لفتحها', 'Un plateau par niveau, avec des carrés cachés à dévoiler en acquérant des compétences.': 'لوحة لكل مستوى فيها مربّعات مخفية تنكشف باكتساب المهارات.',
     'Le programme, niveau par niveau': 'المنهاج مستوًى بعد مستوى', 'Où en est le site ?': 'أين وصل الموقع؟',
-    '{total} compétences sont listées de la GS à la 6ᵉ, et {impl} ont déjà leurs exercices. Les autres sont marquées « bientôt » et seront ajoutées niveau par niveau. L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.': 'هناك {total} مهارة مدرجة من التحضيري إلى السنة الأولى متوسط، و{impl} منها لها تمارينها الآن. أما الباقي فمكتوب عليه «قريبًا» وسيُضاف مستوًى بعد مستوى. الواجهة متوفرة بالفرنسية والعربية (من اليمين إلى اليسار): زر FR / عربي في أعلى الصفحة.',
+    '{total} compétences de la GS à la Terminale, avec des exercices corrigés tout de suite et des explications ({impl} au total). L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.': 'هناك {total} مهارة من التحضيري إلى الثالثة ثانوي، بتمارين تُصحَّح فورًا مع شروح ({impl} في المجموع). الواجهة متوفرة بالفرنسية والعربية (من اليمين إلى اليسار): زر FR / عربي في أعلى الصفحة.',
 
     /* recherche */
     'Recherche — Tadriss-Maths': 'بحث — تدريس رياضيات', 'Recherche': 'بحث', '{n} compétence(s) pour « {q} ».': 'عدد النتائج: {n} للبحث «{q}».',
@@ -185,7 +185,7 @@
     /* conditions */
     'Conditions et confidentialité — Tadriss-Maths': 'الشروط والخصوصية — تدريس رياضيات', 'Conditions et confidentialité': 'الشروط والخصوصية',
     'Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.': 'نصّ مؤقّت ينبغي مراجعته واستكماله (اسم الناشر والعنوان وبيانات الاتصال) قبل الإطلاق للعموم.',
-    'Le service': 'الخدمة', 'Tadriss-Maths propose des exercices de mathématiques en ligne, de la grande section à la sixième. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.': 'يقدّم تدريس رياضيات تمارين رياضيات عبر الإنترنت من التحضيري إلى السنة الأولى متوسط. ثلاث مهارات في كل مستوى مجانية، وباقي المستوى متاح بالاشتراك.',
+    'Le service': 'الخدمة', 'Tadriss-Maths propose des exercices de mathématiques et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.': 'يقدّم تدريس رياضيات تمارين رياضيات عبر الإنترنت ودروس مصوّرة من التحضيري إلى الثالثة ثانوي. ثلاث مهارات في كل مستوى مجانية، وباقي المستوى متاح بالاشتراك.',
     'Abonnements et paiement': 'الاشتراكات والدفع', 'Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.': 'يخصّ الاشتراك مستوًى واحدًا ويدوم {days} يومًا ابتداءً من الدفع، ولا يُجدَّد تلقائيًا. يتمّ الدفع بالدينار الجزائري ببطاقة CIB أو الذهبية عبر مزوّد الخدمة Chargily Pay. لا يتلقّى تدريس رياضيات أرقام البطاقات ولا يحتفظ بها.',
     'Données personnelles': 'البيانات الشخصية', 'Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.': 'نحتفظ بالبريد الإلكتروني للوليّ وأسماء ملفات التلاميذ وتقدّمهم في التمارين وسجلّ المدفوعات. تُستعمل هذه البيانات فقط لتشغيل الخدمة. لا إعلانات ولا بيع للبيانات.',
     'Supprimer son compte': 'حذف الحساب', 'Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).': 'يمكن حذف ملف من صفحة «حسابي». ولحذف الحساب كلّه، تُرسَل رسالة إلى عنوان الاتصال (يُستكمل لاحقًا).',
