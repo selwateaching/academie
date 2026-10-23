@@ -62,5 +62,14 @@
     'Trigonométrie et géométrie': 'حساب المثلثات والهندسة', 'Radians': 'الراديان', 'Degrés vers radians': 'من الدرجات إلى الراديان', 'Radians vers degrés': 'من الراديان إلى الدرجات', 'Cosinus d’un angle remarquable': 'جيب تمام زاوية خاصة', 'Sinus d’un angle remarquable': 'جيب زاوية خاصة',
     'Produit scalaire': 'الجداء السلمي', 'Calculer un produit scalaire': 'حساب جداء سلمي', 'Vecteurs orthogonaux': 'الأشعة المتعامدة',
     'Probabilité conditionnelle': 'الاحتمال الشرطي', 'Probabilités totales': 'الاحتمالات الكلية', 'Espérance d’une variable aléatoire': 'الأمل الرياضي لمتغير عشوائي',
+    /* Terminale */
+    'Limites, dérivation, logarithme et exponentielle, intégrales, dénombrement, loi binomiale et géométrie dans l’espace.': 'النهايات، الاشتقاقية، اللوغاريتم والأسية، التكاملات، العدّ، القانون الثنائي والهندسة في الفضاء.',
+    'Analyse': 'التحليل', 'Suites et limites': 'المتتاليات والنهايات', 'Limite d’une suite géométrique': 'نهاية متتالية هندسية', 'Limite d’un polynôme': 'نهاية كثير حدود', 'Limite d’un quotient de polynômes': 'نهاية حاصل قسمة كثيرتي حدود',
+    'Dériver (ax + b) puissance n': 'اشتقاق (ax + b) أُسّ n', 'Dériver une exponentielle': 'اشتقاق دالة أسية', 'Dériver un logarithme': 'اشتقاق دالة لوغاريتمية',
+    'Logarithme et exponentielle': 'اللوغاريتم والدالة الأسية', 'Règles du logarithme': 'قواعد اللوغاريتم', 'Logarithme d’une exponentielle': 'لوغاريتم دالة أسية', 'Équation avec exp': 'معادلة أسية', 'Équation avec ln': 'معادلة لوغاريتمية',
+    'Primitives et intégrales': 'الدوال الأصلية والتكاملات', 'Trouver une primitive': 'إيجاد دالة أصلية', 'Calculer une intégrale': 'حساب تكامل',
+    'Probabilités et dénombrement': 'الاحتمالات والعدّ', 'Dénombrement': 'العدّ', 'Rangements et factorielle': 'الترتيبات والعاملي', 'Choix ordonnés': 'الاختيارات المرتّبة', 'Choix sans ordre': 'الاختيارات دون ترتيب', 'Listes avec répétition': 'القوائم مع التكرار',
+    'Loi binomiale : une probabilité': 'القانون الثنائي : احتمال', 'Loi binomiale : l’espérance': 'القانون الثنائي : الأمل الرياضي',
+    'Géométrie dans l’espace': 'الهندسة في الفضاء', 'Vecteurs de l’espace': 'أشعة الفضاء', 'Produit scalaire dans l’espace': 'الجداء السلمي في الفضاء', 'Norme d’un vecteur de l’espace': 'طويلة شعاع في الفضاء',
   });
 }(typeof window !== 'undefined' ? window : globalThis));
