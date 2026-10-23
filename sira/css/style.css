@@ -338,3 +338,13 @@ body.splash-on{overflow:hidden}
 .basmala{text-align:center;padding:.55rem 1rem .25rem;background:linear-gradient(180deg,rgba(240,183,46,.07),transparent)}
 .basmala span{font:700 clamp(1.4rem,4.2vw,2.1rem)/1.6 Amiri,"Noto Naskh Arabic",serif;color:#ffe9a8;text-shadow:0 0 14px rgba(240,183,46,.35)}
 @media print{.basmala{color:#000}}
+
+/* Page d'accueil : basmala en bande qui défile en continu (la bande fixe est masquée sur cette page) */
+body.is-home .basmala{display:none}
+.marquee{overflow:hidden;background:linear-gradient(180deg,rgba(240,183,46,.14),rgba(240,183,46,.04));border-block:1px solid rgba(240,183,46,.35);padding:.35rem 0;direction:ltr}
+.mq-track{display:flex;width:max-content;animation:mq 38s linear infinite;will-change:transform}
+.marquee:hover .mq-track{animation-play-state:paused}
+.mq-item{font:700 clamp(1.5rem,4vw,2.3rem)/1.7 Amiri,"Noto Naskh Arabic",serif;color:#ffe9a8;text-shadow:0 0 14px rgba(240,183,46,.35);white-space:nowrap;direction:rtl;unicode-bidi:isolate}
+.mq-dot{color:var(--gold);align-self:center;margin:0 1.6rem;font-size:1rem}
+@keyframes mq{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.mq-track{animation:none;width:auto;justify-content:center;flex-wrap:wrap}.mq-item~.mq-item,.mq-dot~.mq-dot{display:none}.mq-item:nth-child(n+3),.mq-dot:nth-child(n+2){display:none}}

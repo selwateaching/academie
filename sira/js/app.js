@@ -58,7 +58,9 @@
     var next = CH.filter(function (c) { return !isRead(c.id); })[0] || CH[0];
     var label = done === 0 ? T("Commencer la lecture") : done >= CH.length ? T("Relire depuis le début") : T("Reprendre : chapitre ") + next.id;
     var target = done >= CH.length ? CH[0] : next;
-    app.innerHTML =
+    var unit = '<span class="mq-item">﴿ بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ ﴾</span><span class="mq-dot" aria-hidden="true">✦</span>';
+    var band = '<div class="marquee" lang="ar" dir="ltr" role="img" aria-label="Bismillah ir-Rahman ir-Rahim"><div class="mq-track" aria-hidden="true">' + new Array(9).join(unit) + "</div></div>";
+    app.innerHTML = band +
       '<section class="hero"><div class="wrap hero-inner"><div>' +
       T('<span class="badge">Récit complet en 25 chapitres</span>') +
       T("<h1>Découvrez la vie du Prophète <em>ﷺ</em> d'une manière différente</h1>") +
@@ -205,6 +207,7 @@
     window.removeEventListener("scroll", window._siraScroll || function () {});
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
+    document.body.classList.toggle("is-home", page === "");
     var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
