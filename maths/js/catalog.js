@@ -220,6 +220,8 @@
     },
   ];
 
+  (root.CATALOG_EXTRA || []).forEach((l) => LEVELS.push(l));
+
   /* Codes A.1, B.2… : lettre = catégorie (dans tout le niveau), numéro = compétence. */
   const letter = (i) => { let s = ''; i += 1; while (i > 0) { const r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; };
   LEVELS.forEach((lv) => {

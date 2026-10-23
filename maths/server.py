@@ -32,7 +32,7 @@ import store as db
 ROOT = os.path.dirname(os.path.abspath(__file__))
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,}$")
 COURSE_RE = re.compile(r"^[a-z0-9]{1,8}(-[a-z0-9]{1,24}){1,4}$")
-SKILL_RE = re.compile(r"^(gs|cp|ce1|ce2|cm1|cm2|6e)-([A-Z]{1,2}\d{1,2})$")
+SKILL_RE = re.compile(r"^(gs|cp|ce1|ce2|cm1|cm2|6e|5e|4e|3e|2nde|1re|term)-([A-Z]{1,2}\d{1,2})$")
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_PROFILES = 5
 
