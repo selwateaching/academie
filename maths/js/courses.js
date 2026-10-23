@@ -332,6 +332,53 @@
       ${[[100, 40], [100, 120], [170, 40], [170, 120], [240, 40], [240, 120], [50, 80], [290, 80]].map(([x, y]) => `<circle class="pop" cx="${x}" cy="${y}" r="9" fill="${C.bleu}" fill-opacity=".4" stroke="${C.bleu}" stroke-width="2"/>${T(x, y + 4, 'H', 'font-size="10"')}`).join('')}
       ${L(100, 66, 100, 49, C.bleu, 2)}${L(100, 94, 100, 111, C.bleu, 2)}${L(170, 66, 170, 49, C.bleu, 2)}${L(170, 94, 170, 111, C.bleu, 2)}${L(240, 66, 240, 49, C.bleu, 2)}${L(240, 94, 240, 111, C.bleu, 2)}${L(59, 80, 86, 80, C.bleu, 2)}${L(254, 80, 281, 80, C.bleu, 2)}
       ${T(180, 156, 'propane C₃H₈ : CₙH₂ₙ₊₂, chaîne carbonée', 'font-size="12"')}`),
+    asymptote: () => svg(360, 190, `${ARROW('a1', 'currentColor')}<path d="M40 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#a1)"/><path d="M25 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#a1)"/>
+      <path d="M40 60H340" stroke="${C.rouge}" stroke-width="2.5" stroke-dasharray="6 5"/><path class="draw" pathLength="100" d="M60 160C90 100 130 75 180 66S280 61 335 60" stroke="${C.brand}" stroke-width="4"/>
+      ${T(300, 48, 'y = ℓ (asymptote)', `fill="${C.rouge}" font-size="12"`)}${T(180, 186, 'lim f(x) = ℓ quand x → +∞', 'font-size="12"')}`),
+    expo: () => svg(360, 190, `${ARROW('x1', 'currentColor')}<path d="M180 180V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#x1)"/><path d="M15 150H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#x1)"/>
+      <path class="draw" pathLength="100" d="M30 146C100 144 150 138 190 120S270 60 320 14" stroke="${C.rouge}" stroke-width="4"/><circle class="pop" cx="180" cy="124" r="5" fill="${C.or}"/>
+      ${T(215, 140, '(0 ; 1)', 'font-size="11"')}${T(290, 30, 'y = eˣ', `fill="${C.rouge}" font-size="14"`)}${T(90, 130, 'toujours &gt; 0', 'font-size="11"')}${T(180, 176, '(eˣ)′ = eˣ : croissante sur ℝ', 'font-size="11"')}`),
+    lncourbe: () => svg(360, 190, `${ARROW('y1', 'currentColor')}<path d="M80 180V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#y1)"/><path d="M15 100H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#y1)"/>
+      <path class="draw" pathLength="100" d="M84 175C96 130 130 100 160 80S250 45 330 30" stroke="${C.brand}" stroke-width="4"/><circle class="pop" cx="130" cy="100" r="5" fill="${C.or}"/>
+      ${T(150, 118, '(1 ; 0)', 'font-size="11"')}${T(290, 24, 'y = ln x', `fill="${C.brand}" font-size="14"`)}${T(230, 176, 'définie pour x &gt; 0 · ln(ab) = ln a + ln b', 'font-size="11"')}`),
+    aire: () => svg(360, 180, `${ARROW('z1', 'currentColor')}<path d="M30 160H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#z1)"/><path d="M30 160V10" stroke="currentColor" stroke-width="2.5"/>
+      <path class="pulse" d="M90 160V100C130 60 190 50 250 90V160Z" fill="${C.bleu}" fill-opacity=".35" stroke="none"/><path d="M60 120C100 50 190 40 300 90" stroke="${C.brand}" stroke-width="4"/>
+      <path d="M90 160V100M250 160V90" stroke="${C.gris}" stroke-width="2" stroke-dasharray="4 4"/>${T(90, 176, 'a', 'font-size="13"')}${T(250, 176, 'b', 'font-size="13"')}${T(170, 125, '∫ f(x) dx', 'font-size="14"')}${T(300, 80, 'f', `fill="${C.brand}" font-size="14"`)}`),
+    binom: () => svg(360, 180, `${[0.04, 0.12, 0.21, 0.25, 0.19, 0.11, 0.05, 0.02].map((p, i) => `<rect class="pop" style="animation-delay:${i * 0.1}s" x="${34 + i * 38}" y="${150 - p * 450}" width="30" height="${p * 450}" fill="${C.bleu}" fill-opacity=".6" stroke="${C.bleu}" stroke-width="2"/>${T(49 + i * 38, 168, i, 'font-size="11"')}`).join('')}
+      ${T(180, 14, 'loi binomiale B(n ; p) : nombre de succès k', 'font-size="12"')}${T(180, 178, 'P(X = k) = C(n,k) pᵏ (1 − p)ⁿ⁻ᵏ', 'font-size="11"')}`),
+    espace: () => svg(360, 190, `${ARROW('b1', 'currentColor')}<path d="M180 120V12" stroke="currentColor" stroke-width="2.5" marker-end="url(#b1)"/><path d="M180 120L330 120" stroke="currentColor" stroke-width="2.5" marker-end="url(#b1)"/><path d="M180 120L70 175" stroke="currentColor" stroke-width="2.5" marker-end="url(#b1)"/>
+      <path d="M180 120L250 60M250 60L250 120M250 120L220 135M220 135L220 87M220 87L250 60" stroke="${C.gris}" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <circle class="pop" cx="220" cy="87" r="6" fill="${C.rouge}"/>${T(194, 14, 'z', 'font-size="13"')}${T(330, 138, 'x', 'font-size="13"')}${T(66, 190, 'y', 'font-size="13"')}${T(262, 80, 'M(x ; y ; z)', `fill="${C.rouge}" font-size="12"`)}${T(250, 160, 'AB(xB − xA ;', 'font-size="11"')}${T(250, 176, 'yB − yA ; zB − zA)', 'font-size="11"')}`),
+    projectile: () => svg(360, 180, `${ARROW('j1', C.rouge)}<path d="M20 160H340" stroke="currentColor" stroke-width="3"/><path class="dash" d="M40 160C100 40 200 40 320 160" stroke="${C.brand}" stroke-width="3"/>
+      <circle class="pulse" cx="180" cy="55" r="9" fill="${C.or}"/><path d="M180 64V110" stroke="${C.rouge}" stroke-width="3.5" marker-end="url(#j1)"/>${T(205, 100, 'P', `fill="${C.rouge}" font-size="13"`)}
+      ${T(70, 120, 'v₀', 'font-size="13"')}${T(180, 22, 'trajectoire parabolique : x(t) = v₀ cos α · t', 'font-size="11"')}${T(180, 176, 'y(t) = −½ g t² + v₀ sin α · t', 'font-size="11"')}`),
+    kepler: () => svg(360, 180, `<ellipse cx="180" cy="90" rx="140" ry="65" stroke="${C.brand}" stroke-width="3"/><circle cx="125" cy="90" r="14" fill="${C.or}" fill-opacity=".8" stroke="${C.or}" stroke-width="2"/>
+      <circle cx="320" cy="90" r="7" fill="${C.bleu}"/><circle class="pulse" cx="150" cy="156" r="7" fill="${C.bleu}"/>
+      <path d="M125 90L150 156M125 90L180 155" stroke="${C.vert}" stroke-width="1.5"/>${T(125, 70, 'Soleil', 'font-size="11"')}${T(300, 118, 'planète', 'font-size="11"')}${T(180, 14, '3 lois de Kepler : orbite elliptique, aires égales, T² ∝ a³', 'font-size="11"')}`),
+    rc: () => svg(360, 190, `${ARROW('c1', 'currentColor')}<path d="M40 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#c1)"/><path d="M25 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#c1)"/>
+      <path d="M40 40H340" stroke="${C.rouge}" stroke-width="2" stroke-dasharray="6 5"/><path class="draw" pathLength="100" d="M40 165C80 80 130 52 200 44S300 40 335 40" stroke="${C.brand}" stroke-width="4"/>
+      ${T(300, 30, 'E', `fill="${C.rouge}" font-size="13"`)}${T(240, 100, 'charge du condensateur', 'font-size="11"')}${T(240, 118, 'uC(t) = E (1 − e^(−t/τ))', 'font-size="11"')}${T(180, 186, 'τ = R × C : constante de temps', 'font-size="11"')}`),
+    decroissance: () => svg(360, 190, `${ARROW('d1', 'currentColor')}<path d="M40 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#d1)"/><path d="M25 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#d1)"/>
+      <path class="draw" pathLength="100" d="M40 30C90 90 130 125 190 142S290 160 335 163" stroke="${C.rouge}" stroke-width="4"/>
+      <path d="M40 98H105M105 98V165M40 132H170M170 132V165" stroke="${C.gris}" stroke-width="1.5" stroke-dasharray="4 4"/>
+      ${T(26, 30, 'N₀', 'font-size="11"')}${T(24, 100, 'N₀/2', 'font-size="10"')}${T(105, 180, 't½', 'font-size="12"')}${T(170, 180, '2 t½', 'font-size="12"')}${T(260, 70, 'N(t) = N₀ e^(−λt)', 'font-size="12"')}`),
+    cinetique: () => svg(360, 190, `${ARROW('k1', 'currentColor')}<path d="M40 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#k1)"/><path d="M25 165H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#k1)"/>
+      <path class="draw" pathLength="100" d="M40 30C90 90 130 125 190 142S290 160 335 163" stroke="${C.brand}" stroke-width="4"/><path class="dash" d="M50 55L150 140" stroke="${C.rouge}" stroke-width="3"/>
+      ${T(26, 20, '[A]', 'font-size="12"')}${T(300, 154, 't', 'font-size="12"')}${T(250, 70, 'v = −d[A]/dt', 'font-size="12"')}${T(250, 90, 'pente de la tangente', `fill="${C.rouge}" font-size="11"`)}${T(250, 108, 'la vitesse diminue', 'font-size="11"')}`),
+    equilibre: () => svg(360, 160, `${ARROW('q2', C.bleu)}<rect x="30" y="50" width="100" height="50" rx="10" fill="${C.bleu}" fill-opacity=".2" stroke="${C.bleu}" stroke-width="3"/><rect x="230" y="50" width="100" height="50" rx="10" fill="${C.or}" fill-opacity=".2" stroke="${C.or}" stroke-width="3"/>
+      <path class="flow" d="M140 65H220" stroke="${C.bleu}" stroke-width="3" marker-end="url(#q2)" pathLength="100"/><path class="flow" d="M220 90H140" stroke="${C.or}" stroke-width="3" marker-end="url(#q2)" pathLength="100"/>
+      ${T(80, 80, 'réactifs', 'font-size="13"')}${T(280, 80, 'produits', 'font-size="13"')}${T(180, 128, 'équilibre : vitesses égales dans les deux sens', 'font-size="11"')}${T(180, 148, 'Qr = K à l’équilibre', 'font-size="12"')}`),
+    pka: () => svg(360, 150, `<rect x="20" y="50" width="150" height="26" fill="${C.rouge}" fill-opacity=".35"/><rect x="170" y="50" width="170" height="26" fill="${C.bleu}" fill-opacity=".35"/><path d="M170 40V86" stroke="currentColor" stroke-width="3"/>
+      <circle class="pulse" cx="170" cy="63" r="7" fill="${C.or}"/>${T(95, 68, 'AH domine', 'font-size="13"')}${T(255, 68, 'A⁻ domine', 'font-size="13"')}${T(170, 28, 'pH = pKa', 'font-size="13"')}${T(95, 110, 'pH &lt; pKa', 'font-size="12"')}${T(255, 110, 'pH &gt; pKa', 'font-size="12"')}${T(180, 140, 'pH = pKa + log([A⁻] ÷ [AH])', 'font-size="12"')}`),
+    ester: () => svg(360, 160, `${ARROW('s1', C.rouge)}${T(60, 60, 'acide', `fill="${C.rouge}" font-size="13"`)}${T(60, 78, 'carboxylique', 'font-size="11"')}${T(60, 108, '+ alcool', `fill="${C.bleu}" font-size="13"`)}
+      <path class="flow" d="M115 85H215" stroke="currentColor" stroke-width="3" marker-end="url(#s1)" pathLength="100"/><path d="M215 100H115" stroke="currentColor" stroke-width="3"/>
+      ${T(290, 66, 'ester', `fill="${C.vert}" font-size="13"`)}${T(290, 108, '+ eau', `fill="${C.bleu}" font-size="13"`)}${T(180, 148, 'estérification : réaction lente, limitée, réversible', 'font-size="11"')}`),
+    ir: () => svg(360, 180, `${ARROW('f1', 'currentColor')}<path d="M30 160H340" stroke="currentColor" stroke-width="2.5"/><path class="draw" pathLength="100" d="M30 30H100L112 130L124 30H200L212 100L224 30H340" stroke="${C.brand}" stroke-width="3"/>
+      ${T(112, 148, 'C=O', `fill="${C.rouge}" font-size="12"`)}${T(212, 148, 'O–H', `fill="${C.bleu}" font-size="12"`)}${T(180, 176, 'nombre d’onde σ (cm⁻¹)  ← 4000 … 1500', 'font-size="11"')}${T(180, 14, 'spectre IR : chaque liaison absorbe à son nombre d’onde', 'font-size="11"')}`),
+    electrolyse: () => svg(360, 180, `<path d="M100 30V130A20 20 0 0 0 120 150H240A20 20 0 0 0 260 130V30" stroke="currentColor" stroke-width="3.5"/><rect x="100" y="80" width="160" height="68" fill="${C.bleu}" fill-opacity=".25" stroke="none"/>
+      <path d="M150 10V120M210 10V120" stroke="${C.gris}" stroke-width="8"/>${T(150, 144, '−', `fill="${C.bleu}" font-size="18"`)}${T(210, 144, '+', `fill="${C.rouge}" font-size="18"`)}
+      <circle class="pl" cx="144" cy="95" r="5" fill="${C.or}"/><circle class="pl" style="animation-delay:.5s" cx="214" cy="100" r="5" fill="${C.vert}"/>
+      ${T(60, 70, 'cathode (−)', 'font-size="11"')}${T(60, 86, 'réduction', 'font-size="11"')}${T(300, 70, 'anode (+)', 'font-size="11"')}${T(300, 86, 'oxydation', 'font-size="11"')}${T(180, 172, 'électrolyse : réaction forcée par un générateur', 'font-size="11"')}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -1650,6 +1697,228 @@
       ],
       recap: ['Casser des liaisons coûte, en former libère.', 'Exothermique : libère de l’énergie.', 'E = n × énergie molaire.'],
       quiz: [Q('Une combustion est une réaction :', ['exothermique', 'endothermique'], 0), Q('0,5 mol de méthane (890 kJ/mol) libère :', ['445 kJ', '890 kJ', '1 780 kJ'], 0)] },
+    /* ================================================================ Terminale : MATHS */
+    { id: 'mt-limites', subj: 'maths', level: 'term', icon: '♾️', title: 'Limites de fonctions et asymptotes',
+      intro: 'La limite décrit ce que devient f(x) quand x devient très grand, ou s’approche d’une valeur.',
+      steps: [
+        S('Limite en l’infini', 'On écrit <b>lim f(x) = ℓ</b> quand x → +∞ si f(x) se rapproche de ℓ. La droite <b>y = ℓ</b> est alors une asymptote horizontale de la courbe.', 'asymptote'),
+        S('Limite infinie', 'Si f(x) devient aussi grand qu’on veut, lim f(x) = +∞. Exemples : lim x² = +∞ ; lim 1/x = 0 quand x → +∞ ; lim 1/x = +∞ quand x → 0 avec x &gt; 0 (asymptote verticale x = 0).'),
+        S('Opérations sur les limites', 'On additionne, multiplie ou divise les limites quand cela a un sens. Les <b>formes indéterminées</b> (∞ − ∞, 0 × ∞, ∞/∞, 0/0) demandent un calcul : factoriser par le terme dominant.'),
+        S('Exemple', 'f(x) = (3x² + 1) ÷ (x² + 5) : on factorise par x² en haut et en bas, ce qui donne (3 + 1/x²) ÷ (1 + 5/x²) qui tend vers <b>3</b>. La droite y = 3 est asymptote horizontale.'),
+      ],
+      recap: ['lim f(x) = ℓ : asymptote horizontale y = ℓ.', 'Formes indéterminées : factoriser.', 'lim 1/x = 0 en +∞.'],
+      quiz: [Q('lim 1/x quand x → +∞ vaut :', ['0', '+∞', '1'], 0), Q('f(x) = (3x² + 1) ÷ (x² + 5) tend vers :', ['3', '0', '+∞'], 0), Q('∞ − ∞ est :', ['une forme indéterminée', 'toujours 0'], 0)] },
+
+    { id: 'mt-continuite', subj: 'maths', level: 'term', icon: '🧵', title: 'Continuité et théorème des valeurs intermédiaires',
+      intro: 'Une fonction continue se trace sans lever le crayon. Cela permet de prouver qu’une équation a une solution.',
+      steps: [
+        S('Fonction continue', 'Une fonction est <b>continue</b> sur un intervalle si on peut tracer sa courbe sans lever le crayon. Les fonctions usuelles (polynômes, exp, ln, racine) sont continues sur leur domaine. Une fonction dérivable est continue.'),
+        S('Le théorème des valeurs intermédiaires', 'Si f est continue sur [a ; b], alors pour tout nombre k compris entre f(a) et f(b), l’équation <b>f(x) = k</b> a au moins une solution dans [a ; b].'),
+        S('Cas strictement monotone', 'Si f est de plus <b>strictement monotone</b> sur [a ; b], la solution est <b>unique</b>. On parle du corollaire du TVI (théorème de la bijection).'),
+        S('Exemple', 'f(x) = x³ + x − 1 est continue et strictement croissante. f(0) = −1 &lt; 0 et f(1) = 1 &gt; 0, donc l’équation f(x) = 0 a une <b>unique solution</b> entre 0 et 1 (environ 0,68).'),
+      ],
+      recap: ['Continue : sans lever le crayon.', 'TVI : f(x) = k a une solution.', 'Strictement monotone : solution unique.'],
+      quiz: [Q('Pour avoir une solution unique avec le TVI, il faut f :', ['continue et strictement monotone', 'seulement positive'], 0), Q('f(0) = −1 et f(1) = 1, f continue : f(x) = 0 a :', ['au moins une solution', 'aucune solution'], 0)] },
+
+    { id: 'mt-exponentielle', subj: 'maths', level: 'term', icon: '📈', title: 'La fonction exponentielle',
+      intro: 'L’exponentielle est la fonction qui est égale à sa propre dérivée. Elle décrit les croissances très rapides.',
+      steps: [
+        S('Définition', 'La fonction <b>exponentielle</b> est l’unique fonction dérivable sur ℝ telle que <b>f ′ = f</b> et f(0) = 1. On la note f(x) = eˣ, avec e ≈ 2,718.', 'expo'),
+        S('Propriétés', 'eˣ &gt; 0 pour tout x · e⁰ = 1 · <b>eᵃ⁺ᵇ = eᵃ × eᵇ</b> · e⁻ᵃ = 1/eᵃ · (eᵃ)ⁿ = eⁿᵃ. La fonction est strictement croissante sur ℝ.'),
+        S('Limites', 'lim eˣ = +∞ quand x → +∞ ; lim eˣ = 0 quand x → −∞. Aussi lim eˣ ÷ x = +∞ : l’exponentielle l’emporte sur toute puissance de x (croissances comparées).'),
+        S('Dérivée composée', 'Si u est dérivable, <b>(e^u)′ = u′ × e^u</b>. Exemple : (e^(2x))′ = 2e^(2x). Cela sert à étudier des fonctions comme f(x) = x·eˣ ou e^(−x²).'),
+      ],
+      recap: ['(eˣ)′ = eˣ, e⁰ = 1.', 'eᵃ⁺ᵇ = eᵃ × eᵇ.', '(e^u)′ = u′ e^u.'],
+      quiz: [Q('La dérivée de eˣ est :', ['eˣ', 'x·eˣ⁻¹', '1'], 0), Q('La dérivée de e^(2x) est :', ['2e^(2x)', 'e^(2x)', '2x·e^(2x)'], 0), Q('eˣ est toujours :', ['strictement positive', 'négative pour x < 0'], 0)] },
+
+    { id: 'mt-logarithme', subj: 'maths', level: 'term', icon: '🔄', title: 'Le logarithme népérien',
+      intro: 'Le logarithme est la fonction réciproque de l’exponentielle : il répond à la question « eᵡ vaut combien ? ».',
+      steps: [
+        S('Définition', 'Pour tout x &gt; 0, <b>ln x</b> est l’unique solution y de l’équation eʸ = x. Ainsi e^(ln x) = x et ln(eˣ) = x. Domaine : ]0 ; +∞[.', 'lncourbe'),
+        S('Propriétés', '<b>ln(ab) = ln a + ln b</b> · ln(a/b) = ln a − ln b · ln(aⁿ) = n ln a · ln 1 = 0 · ln e = 1. Le logarithme transforme les produits en sommes.'),
+        S('Variations et dérivée', 'La dérivée de ln x est <b>1/x</b>, positive : ln est strictement croissante sur ]0 ; +∞[. lim ln x = +∞ en +∞ et lim ln x = −∞ en 0⁺.'),
+        S('Résoudre des équations', 'eˣ = 5 ⇔ x = ln 5. ln x = 2 ⇔ x = e². Pour comparer : ln a &lt; ln b ⇔ a &lt; b (a, b &gt; 0). Exemple : 2ˣ = 10 donne x = ln 10 ÷ ln 2 ≈ 3,32.'),
+      ],
+      recap: ['ln x : réciproque de eˣ.', 'ln(ab) = ln a + ln b.', '(ln x)′ = 1/x.'],
+      quiz: [Q('ln(e) vaut :', ['1', '0', 'e'], 0), Q('eˣ = 5 équivaut à :', ['x = ln 5', 'x = 5e'], 0), Q('ln(ab) =', ['ln a + ln b', 'ln a × ln b'], 0)] },
+
+    { id: 'mt-suites-limites', subj: 'maths', level: 'term', icon: '🔁', title: 'Suites : récurrence et limites',
+      intro: 'Pour démontrer une propriété vraie pour tous les entiers, on utilise le raisonnement par récurrence.',
+      steps: [
+        S('La récurrence', 'Pour montrer qu’une propriété P(n) est vraie pour tout n ≥ n₀ : <b>initialisation</b> (P(n₀) est vraie), <b>hérédité</b> (si P(n) est vraie, alors P(n+1) l’est), et on conclut. C’est l’effet domino.'),
+        S('Limite d’une suite', 'Une suite <b>converge</b> vers ℓ si uₙ se rapproche de ℓ quand n grandit. Si uₙ devient aussi grand qu’on veut, elle diverge vers +∞. Une suite géométrique de raison q : qⁿ tend vers 0 si −1 &lt; q &lt; 1 et vers +∞ si q &gt; 1.'),
+        S('Théorème de convergence', 'Toute suite <b>croissante et majorée</b> converge. Toute suite décroissante et minorée converge. On ne connaît pas toujours la limite, mais on sait qu’elle existe.'),
+        S('Théorème des gendarmes', 'Si uₙ ≤ vₙ ≤ wₙ et que uₙ et wₙ tendent vers la même limite ℓ, alors vₙ tend aussi vers ℓ. Exemple : (−1)ⁿ ÷ n est encadré par −1/n et 1/n, donc tend vers 0.'),
+      ],
+      recap: ['Récurrence : initialisation + hérédité.', 'Croissante et majorée : converge.', 'qⁿ → 0 si −1 < q < 1.'],
+      quiz: [Q('Une suite croissante et majorée :', ['converge', 'diverge'], 0), Q('(0,5)ⁿ tend vers :', ['0', '+∞', '1'], 0)] },
+
+    { id: 'mt-integrales', subj: 'maths', level: 'term', icon: '∫', title: 'Primitives et intégrales',
+      intro: 'L’intégrale mesure une aire sous une courbe. Le calcul passe par les primitives.',
+      steps: [
+        S('Primitive', 'F est une <b>primitive</b> de f si F ′ = f. Elle est définie à une constante près. Exemples : une primitive de x est x²/2 ; de eˣ est eˣ ; de 1/x est ln x (sur ]0 ; +∞[) ; de xⁿ est xⁿ⁺¹/(n+1).'),
+        S('L’intégrale', 'Si f est continue sur [a ; b] et F une primitive : <b>∫ₐᵇ f(x) dx = F(b) − F(a)</b>. Si f ≥ 0, c’est l’<b>aire</b> sous la courbe entre a et b, en unités d’aire.', 'aire'),
+        S('Propriétés', 'Linéarité : ∫(f + g) = ∫f + ∫g et ∫(k·f) = k·∫f · Relation de Chasles : ∫ₐᶜ = ∫ₐᵇ + ∫ᵦᶜ · Si f ≤ g, alors ∫f ≤ ∫g.'),
+        S('Exemple et valeur moyenne', '∫₀² x dx = [x²/2]₀² = 2 − 0 = 2. La <b>valeur moyenne</b> de f sur [a ; b] est (1 ÷ (b − a)) × ∫ₐᵇ f(x) dx : ici 2 ÷ 2 = 1.'),
+      ],
+      recap: ['F′ = f : F primitive.', '∫ₐᵇ f = F(b) − F(a).', 'Si f ≥ 0 : aire sous la courbe.'],
+      quiz: [Q('∫₀² x dx vaut :', ['2', '4', '1'], 0), Q('Une primitive de eˣ est :', ['eˣ', 'x·eˣ'], 0), Q('Si f ≥ 0, l’intégrale représente :', ['une aire', 'une pente'], 0)] },
+
+    { id: 'mt-binomiale', subj: 'maths', level: 'term', icon: '🎲', title: 'La loi binomiale',
+      intro: 'On répète une expérience à deux issues, et on compte les succès : c’est la loi binomiale.',
+      steps: [
+        S('Épreuve de Bernoulli', 'Une <b>épreuve de Bernoulli</b> a deux issues : succès (probabilité p) ou échec (probabilité 1 − p). Exemples : pile ou face, un tir réussi ou non.', 'binom'),
+        S('Schéma de Bernoulli', 'On répète n fois l’épreuve de façon <b>indépendante</b>. X = nombre de succès suit la <b>loi binomiale B(n ; p)</b> : P(X = k) = C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ, où C(n, k) est le nombre de chemins avec k succès.'),
+        S('Espérance et écart-type', '<b>E(X) = n × p</b> et V(X) = n × p × (1 − p). Exemple : 10 lancers d’une pièce équilibrée : E(X) = 5 faces en moyenne.'),
+        S('Exemple', '3 lancers de pièce, P(X = 2) = C(3,2) × 0,5² × 0,5¹ = 3 × 0,125 = <b>0,375</b>. La calculatrice donne ces probabilités avec « binomFdp » et « binomFrép ».'),
+      ],
+      recap: ['B(n ; p) : nombre de succès sur n épreuves.', 'P(X = k) = C(n,k) pᵏ (1 − p)ⁿ⁻ᵏ.', 'E(X) = n p.'],
+      quiz: [Q('Pour B(10 ; 0,5), l’espérance vaut :', ['5', '10', '0,5'], 0), Q('3 lancers, P(2 faces) =', ['0,375', '0,25', '0,5'], 0)] },
+
+    { id: 'mt-espace', subj: 'maths', level: 'term', icon: '🧊', title: 'Géométrie dans l’espace',
+      intro: 'Dans l’espace, un point a trois coordonnées. Les vecteurs et les équations servent à décrire droites et plans.',
+      steps: [
+        S('Repère de l’espace', 'Un point M a pour coordonnées <b>(x ; y ; z)</b> dans un repère orthonormé. Le vecteur AB a pour coordonnées (xB − xA ; yB − yA ; zB − zA).', 'espace'),
+        S('Longueur et produit scalaire', 'La norme est <b>‖u‖ = √(x² + y² + z²)</b>. Le produit scalaire de u(x ; y ; z) et v(x′ ; y′ ; z′) vaut <b>x·x′ + y·y′ + z·z′</b>. Deux vecteurs sont orthogonaux si leur produit scalaire est nul.'),
+        S('Droites', 'La droite passant par A de vecteur directeur u a pour représentation paramétrique : x = xA + t·a, y = yA + t·b, z = zA + t·c, où t décrit ℝ.'),
+        S('Plans', 'Un plan de vecteur normal n(a ; b ; c) a une équation <b>ax + by + cz + d = 0</b>. Exemple : le plan x + y + z = 3 est perpendiculaire à n(1 ; 1 ; 1) et contient le point (1 ; 1 ; 1).'),
+      ],
+      recap: ['Point : (x ; y ; z).', 'Norme : √(x² + y² + z²).', 'Plan : ax + by + cz + d = 0.'],
+      quiz: [Q('La norme de u(1 ; 2 ; 2) est :', ['3', '5', '9'], 0), Q('Le vecteur normal à un plan est :', ['orthogonal au plan', 'contenu dans le plan'], 0)] },
+
+    /* ================================================================ Terminale : PHYSIQUE */
+    { id: 'pt-projectile', subj: 'physique', level: 'term', icon: '🏀', title: 'Mouvement d’un projectile',
+      intro: 'Un objet lancé et soumis seulement à son poids décrit une parabole.',
+      steps: [
+        S('Le système', 'On étudie un projectile de masse m lancé avec une vitesse initiale v₀ faisant l’angle α avec l’horizontale. On néglige les frottements : seule force, le <b>poids P = m g</b>.', 'projectile'),
+        S('Accélération', 'D’après la deuxième loi de Newton, m a = m g donc <b>a = g</b> : accélération verticale vers le bas, de valeur g = 9,8 m/s², et nulle horizontalement. La masse n’intervient pas.'),
+        S('Équations horaires', 'Horizontalement le mouvement est uniforme : <b>x(t) = v₀ cos α × t</b>. Verticalement, il est uniformément accéléré : <b>y(t) = −½ g t² + v₀ sin α × t</b>. En éliminant t, on obtient une parabole.'),
+        S('Portée et flèche', 'Au sommet, la vitesse verticale s’annule : t = v₀ sin α ÷ g. La portée (retour au sol) est maximale pour un angle α de <b>45°</b> sur sol plat.'),
+      ],
+      recap: ['Seul le poids : a = g.', 'x(t) = v₀ cos α t ; y(t) = −½ g t² + v₀ sin α t.', 'Trajectoire parabolique.'],
+      quiz: [Q('Dans la chute libre, l’accélération vaut :', ['g', '0', 'm g'], 0), Q('La portée est maximale pour un angle de :', ['45°', '90°', '30°'], 0)] },
+
+    { id: 'pt-kepler', subj: 'physique', level: 'term', icon: '🛰️', title: 'Satellites et lois de Kepler',
+      intro: 'Planètes et satellites tournent autour d’un astre selon trois lois découvertes par Kepler.',
+      steps: [
+        S('Les lois de Kepler', '<b>1ʳᵉ loi</b> : l’orbite est une ellipse dont le Soleil est un foyer. <b>2ᵉ loi</b> : le segment Soleil-planète balaie des aires égales pendant des durées égales. <b>3ᵉ loi</b> : T² ÷ a³ est la même pour toutes les planètes.', 'kepler'),
+        S('Mouvement circulaire', 'Pour un satellite de masse m à la distance r du centre d’un astre de masse M, la gravitation F = G M m ÷ r² est la seule force. Le mouvement est <b>circulaire et uniforme</b> avec la vitesse <b>v = √(G M ÷ r)</b>.'),
+        S('Période', 'La période est T = 2π r ÷ v, donc <b>T² ÷ r³ = 4π² ÷ (G M)</b> : troisième loi de Kepler. Plus l’orbite est haute, plus le satellite est lent et plus sa période est longue.'),
+        S('Satellite géostationnaire', 'Un satellite <b>géostationnaire</b> reste au-dessus du même point de l’équateur : sa période est 24 h (précisément 23 h 56 min), son altitude environ <b>36 000 km</b>. Il sert aux télécommunications.'),
+      ],
+      recap: ['Orbite elliptique, aires égales, T² ∝ a³.', 'v = √(G M ÷ r).', 'Géostationnaire : T = 24 h, ≈ 36 000 km.'],
+      quiz: [Q('Plus un satellite est loin, plus sa vitesse est :', ['faible', 'grande'], 0), Q('La période d’un satellite géostationnaire est environ :', ['24 h', '90 min', '1 an'], 0)] },
+
+    { id: 'pt-condensateur', subj: 'physique', level: 'term', icon: '🔌', title: 'Le circuit RC',
+      intro: 'Un condensateur stocke des charges. Sa charge dans un circuit avec résistance suit une loi exponentielle.',
+      steps: [
+        S('Le condensateur', 'Un <b>condensateur</b> est formé de deux armatures séparées par un isolant. Il emmagasine la charge q = C × u, où C est sa <b>capacité</b> en farads (F) et u la tension.'),
+        S('La charge', 'Branché sur un générateur de tension E à travers une résistance R, il se charge : <b>uC(t) = E (1 − e^(−t/τ))</b>. La tension monte de 0 à E sans jamais dépasser E.', 'rc'),
+        S('La constante de temps', '<b>τ = R × C</b> (en secondes). À t = τ, uC atteint 63 % de E ; à t = 5τ, le condensateur est chargé à plus de 99 %. Plus R ou C est grand, plus la charge est lente.'),
+        S('La décharge', 'Fermé sur la résistance, il se décharge : <b>uC(t) = E × e^(−t/τ)</b>. L’énergie stockée est ½ C u² : elle est libérée dans la résistance sous forme de chaleur.'),
+      ],
+      recap: ['q = C u.', 'Charge : uC = E (1 − e^(−t/τ)).', 'τ = R C, chargé à 99 % à 5τ.'],
+      quiz: [Q('La constante de temps du circuit RC est :', ['R × C', 'R ÷ C', 'R + C'], 0), Q('À t = 5τ le condensateur est chargé à :', ['plus de 99 %', '63 %'], 0)] },
+
+    { id: 'pt-thermo', subj: 'physique', level: 'term', icon: '🌡️', title: 'Transferts thermiques',
+      intro: 'La chaleur passe toujours du corps chaud vers le corps froid, de trois façons.',
+      steps: [
+        S('Température et énergie interne', 'L’<b>énergie interne</b> U d’un système est liée à l’agitation de ses particules. Quand on le chauffe, son énergie interne augmente et sa température s’élève. La variation vaut <b>ΔU = m × c × ΔT</b> pour une phase liquide ou solide (c : capacité thermique massique).'),
+        S('Trois modes de transfert', 'La <b>conduction</b> (de proche en proche dans un solide), la <b>convection</b> (déplacement de matière dans un fluide), le <b>rayonnement</b> (ondes électromagnétiques, même dans le vide : le Soleil).'),
+        S('Flux thermique', 'Le <b>flux thermique</b> Φ = Q ÷ Δt est l’énergie transférée par seconde, en watts. À travers une paroi, Φ = ΔT ÷ R_th : plus la <b>résistance thermique</b> est grande, meilleure est l’isolation.'),
+        S('Un exemple', 'Chauffer 1 kg d’eau (c = 4 180 J/kg/°C) de 20 °C à 30 °C demande Q = 1 × 4 180 × 10 = <b>41 800 J</b>. L’eau stocke beaucoup d’énergie : c’est pourquoi elle sert aux radiateurs.'),
+      ],
+      recap: ['ΔU = m c ΔT.', 'Conduction, convection, rayonnement.', 'Flux Φ = ΔT ÷ R_th en watts.'],
+      quiz: [Q('Le Soleil chauffe la Terre par :', ['rayonnement', 'conduction'], 0), Q('Chauffer 1 kg d’eau de 10 °C demande :', ['41 800 J', '4 180 J'], 0)] },
+
+    { id: 'pt-radioactivite', subj: 'physique', level: 'term', icon: '☢️', title: 'La radioactivité',
+      intro: 'Certains noyaux sont instables : ils se transforment spontanément en émettant un rayonnement.',
+      steps: [
+        S('Noyau et isotopes', 'Un noyau est noté ᴬ_Z X : A nucléons (protons + neutrons), Z protons. Les <b>isotopes</b> ont le même Z mais des A différents. Certains noyaux sont instables : ils sont <b>radioactifs</b>.'),
+        S('Les désintégrations', 'La désintégration <b>α</b> émet un noyau d’hélium (A − 4, Z − 2). La <b>β⁻</b> transforme un neutron en proton et émet un électron (Z + 1). La <b>β⁺</b> émet un positon (Z − 1). Dans chaque cas, A et Z se conservent au total.'),
+        S('La décroissance', 'Le nombre de noyaux radioactifs diminue : <b>N(t) = N₀ e^(−λt)</b>. La <b>demi-vie t½</b> est la durée au bout de laquelle la moitié des noyaux a disparu : t½ = ln 2 ÷ λ.', 'decroissance'),
+        S('Exemple', 'Le carbone 14 a une demi-vie de 5 730 ans : après 11 460 ans (deux demi-vies), il reste 1/4 des noyaux. On l’utilise pour <b>dater</b> des objets anciens. L’activité (en becquerels) est le nombre de désintégrations par seconde.'),
+      ],
+      recap: ['A et Z se conservent.', 'N(t) = N₀ e^(−λt).', 'Après n demi-vies : N₀ ÷ 2ⁿ.'],
+      quiz: [Q('Après 2 demi-vies, il reste :', ['1/4 des noyaux', '1/2 des noyaux', '0'], 0), Q('L’activité se mesure en :', ['becquerels', 'grays'], 0)] },
+
+    { id: 'pt-doppler', subj: 'physique', level: 'term', icon: '🚑', title: 'L’effet Doppler',
+      intro: 'Quand une source de son bouge, la hauteur du son change : c’est la sirène d’ambulance qui passe.',
+      steps: [
+        S('Le phénomène', 'Quand une source d’onde et un récepteur se <b>rapprochent</b>, la fréquence reçue est <b>plus grande</b> que celle émise (son plus aigu). Quand ils s’<b>éloignent</b>, elle est plus faible (son plus grave).'),
+        S('Une formule simple', 'Pour une source mobile se rapprochant d’un récepteur fixe : <b>f_reçue = f_émise × v ÷ (v − v_s)</b> (v : vitesse du son, v_s : vitesse de la source). En s’éloignant : f = f_émise × v ÷ (v + v_s).'),
+        S('Un exemple', 'Une sirène à 700 Hz roule à 20 m/s (v = 340 m/s) : en s’approchant, f = 700 × 340 ÷ 320 ≈ <b>744 Hz</b> ; en s’éloignant, f = 700 × 340 ÷ 360 ≈ <b>661 Hz</b>.'),
+        S('Applications', 'Le <b>radar</b> mesure la vitesse des voitures, l’<b>échographie Doppler</b> la vitesse du sang. En astronomie, le décalage vers le rouge de la lumière des galaxies lointaines montre qu’elles s’éloignent de nous.'),
+      ],
+      recap: ['Rapprochement : fréquence plus haute.', 'Éloignement : fréquence plus basse.', 'Radar, échographie, décalage vers le rouge.'],
+      quiz: [Q('Une ambulance qui s’approche paraît :', ['plus aiguë', 'plus grave'], 0), Q('Le décalage vers le rouge indique que la galaxie :', ['s’éloigne', 'se rapproche'], 0)] },
+
+    /* ================================================================ Terminale : CHIMIE */
+    { id: 'ct-vitesse', subj: 'chimie', level: 'term', icon: '⏱️', title: 'Évolution temporelle d’une réaction',
+      intro: 'Une transformation chimique peut être lente ou rapide. On sait mesurer et accélérer la vitesse.',
+      steps: [
+        S('Lent ou rapide', 'Une réaction est <b>rapide</b> si elle semble instantanée (précipité, acide + base) et <b>lente</b> si elle dure des secondes, des heures, des années (rouille). On suit son évolution par la couleur, la pression, la conductivité ou le pH.'),
+        S('La vitesse volumique', 'La vitesse de disparition d’un réactif A est <b>v = −d[A]/dt</b> : c’est l’opposé de la pente de la tangente à la courbe [A](t). Elle diminue au cours du temps car les réactifs se consomment.', 'cinetique'),
+        S('Facteurs cinétiques', 'On accélère une réaction en augmentant la <b>température</b> ou la <b>concentration</b> des réactifs. Un <b>catalyseur</b> accélère sans être consommé (les enzymes sont des catalyseurs biologiques).'),
+        S('Temps de demi-réaction', 'Le <b>temps de demi-réaction t½</b> est la durée au bout de laquelle l’avancement atteint la moitié de sa valeur finale. C’est un bon repère pour comparer des vitesses.'),
+      ],
+      recap: ['v = −d[A]/dt : pente de la tangente.', 'Température, concentration, catalyseur.', 'Temps de demi-réaction t½.'],
+      quiz: [Q('Un catalyseur :', ['accélère sans être consommé', 'est consommé'], 0), Q('Quand la température monte, la réaction va :', ['plus vite', 'plus lentement'], 0)] },
+
+    { id: 'ct-equilibre', subj: 'chimie', level: 'term', icon: '⚖️', title: 'États d’équilibre chimique',
+      intro: 'Certaines réactions ne sont pas totales : réactifs et produits coexistent dans un équilibre dynamique.',
+      steps: [
+        S('Réaction limitée', 'Une réaction limitée s’arrête avant la disparition d’un réactif. Elle s’écrit avec une double flèche <b>⇌</b> : la réaction se fait dans les deux sens.', 'equilibre'),
+        S('Quotient de réaction', 'Pour aA + bB ⇌ cC + dD, le <b>quotient de réaction</b> est Qr = [C]ᶜ[D]ᵈ ÷ ([A]ᵃ[B]ᵇ) (les solides et le solvant n’y figurent pas). Il évolue au cours du temps.'),
+        S('Constante d’équilibre', 'À l’équilibre, Qr prend une valeur fixe, la <b>constante d’équilibre K</b>, qui ne dépend que de la température. Si Qr &lt; K, la réaction évolue dans le sens direct ; si Qr &gt; K, dans le sens inverse.'),
+        S('Taux d’avancement', 'Le <b>taux d’avancement final</b> τ = x_f ÷ x_max vaut 1 pour une réaction totale et moins de 1 pour une réaction limitée. Un équilibre est <b>dynamique</b> : les deux réactions continuent à la même vitesse.'),
+      ],
+      recap: ['⇌ : réaction limitée.', 'À l’équilibre : Qr = K.', 'Qr < K : sens direct.'],
+      quiz: [Q('À l’équilibre, le quotient de réaction vaut :', ['K', '0', '1'], 0), Q('Si Qr < K, la réaction évolue :', ['dans le sens direct', 'dans le sens inverse'], 0)] },
+
+    { id: 'ct-acide-base', subj: 'chimie', level: 'term', icon: '🍋', title: 'Acides, bases et pKa',
+      intro: 'Chaque couple acide-base a une constante qui dit quelle forme domine selon le pH.',
+      steps: [
+        S('Le couple acide-base', 'Un <b>acide</b> cède un proton H⁺, une <b>base</b> en capte un : AH = A⁻ + H⁺. Exemples : CH₃COOH/CH₃COO⁻, NH₄⁺/NH₃, H₃O⁺/H₂O. L’eau est à la fois acide et base (ampholyte).'),
+        S('La constante pKa', 'La constante d’acidité Ka donne <b>pKa = −log Ka</b>. Plus le pKa est petit, plus l’acide est fort. On relie le pH au pKa : <b>pH = pKa + log([A⁻] ÷ [AH])</b>.'),
+        S('Diagramme de prédominance', 'Si pH &lt; pKa, l’acide AH <b>prédomine</b> ; si pH &gt; pKa, la base A⁻ prédomine ; si pH = pKa, les deux concentrations sont égales.', 'pka'),
+        S('Acide fort, acide faible', 'Un <b>acide fort</b> réagit totalement avec l’eau : pH = −log C. Un <b>acide faible</b> réagit partiellement : son pH est plus élevé que −log C. Exemple : le vinaigre (acide éthanoïque, pKa 4,8) est un acide faible.'),
+      ],
+      recap: ['Acide cède H⁺, base capte H⁺.', 'pH = pKa + log([A⁻]/[AH]).', 'pH < pKa : acide prédomine.'],
+      quiz: [Q('Si pH < pKa, l’espèce qui prédomine est :', ['l’acide AH', 'la base A⁻'], 0), Q('Un acide fort :', ['réagit totalement avec l’eau', 'réagit partiellement'], 0)] },
+
+    { id: 'ct-esterification', subj: 'chimie', level: 'term', icon: '🍌', title: 'Synthèse organique et estérification',
+      intro: 'Les chimistes fabriquent des molécules : arômes, médicaments, plastiques. L’ester en est un bel exemple.',
+      steps: [
+        S('Les familles de molécules', 'On reconnaît les molécules par leur <b>groupe caractéristique</b> : alcool –OH, aldéhyde –CHO, cétone C=O, acide carboxylique –COOH, ester –COO–. La chaîne carbonée donne le nom.'),
+        S('L’estérification', 'Un acide carboxylique et un alcool donnent un <b>ester</b> et de l’eau : acide + alcool ⇌ ester + eau. La réaction est <b>lente, limitée et réversible</b> (rendement d’environ 67 % avec des quantités égales).', 'ester'),
+        S('Améliorer la synthèse', 'On accélère avec un <b>catalyseur</b> (acide sulfurique) et en chauffant à reflux. On améliore le rendement en ajoutant un réactif en excès ou en éliminant un produit (l’eau).'),
+        S('Étapes d’une synthèse', 'Les étapes classiques : <b>transformation</b> (montage à reflux), <b>séparation</b> (extraction, décantation), <b>purification</b> (lavage, distillation), <b>identification</b> (température de fusion, chromatographie, spectres).'),
+      ],
+      recap: ['Acide + alcool ⇌ ester + eau.', 'Lente, limitée, catalysée par un acide.', 'Transformer, séparer, purifier, identifier.'],
+      quiz: [Q('L’estérification est :', ['lente et limitée', 'rapide et totale'], 0), Q('Le montage à reflux sert à :', ['chauffer sans perdre de matière', 'refroidir un liquide'], 0)] },
+
+    { id: 'ct-spectroscopie', subj: 'chimie', level: 'term', icon: '📉', title: 'Spectroscopie infrarouge',
+      intro: 'Les liaisons d’une molécule vibrent comme des ressorts. Le spectre infrarouge révèle lesquelles sont présentes.',
+      steps: [
+        S('Le principe', 'Une molécule absorbe certaines radiations infrarouges qui font vibrer ses liaisons. Le <b>spectre IR</b> trace la transmittance en fonction du <b>nombre d’onde σ</b> (en cm⁻¹, σ = 1 ÷ λ).', 'ir'),
+        S('Les bandes caractéristiques', 'La liaison <b>O–H</b> d’un alcool absorbe vers 3 200 à 3 600 cm⁻¹ (bande large) ; celle d’un acide carboxylique est encore plus large. La liaison <b>C=O</b> absorbe vers 1 700 cm⁻¹ (bande fine et intense). C–H absorbe vers 2 900 cm⁻¹.'),
+        S('Lire un spectre', 'On repère les bandes, on lit leur nombre d’onde dans une table, et on en déduit les groupes caractéristiques présents. Un spectre avec une bande vers 1 700 mais sans bande large O–H évoque une cétone ou un aldéhyde.'),
+        S('Autres techniques', 'La <b>RMN du proton</b> renseigne sur l’environnement des atomes d’hydrogène (nombre de signaux, déplacement, multiplicité). La spectroscopie <b>UV-visible</b> mesure l’absorbance et permet de doser une espèce colorée (loi de Beer-Lambert).'),
+      ],
+      recap: ['IR : transmittance selon σ (cm⁻¹).', 'C=O vers 1 700 cm⁻¹ ; O–H vers 3 300.', 'RMN : environnement des H.'],
+      quiz: [Q('La liaison C=O absorbe vers :', ['1 700 cm⁻¹', '3 300 cm⁻¹'], 0), Q('Le spectre IR permet de repérer :', ['des groupes caractéristiques', 'la masse de la molécule'], 0)] },
+
+    { id: 'ct-electrolyse', subj: 'chimie', level: 'term', icon: '⚡', title: 'Piles, électrolyse et accumulateurs',
+      intro: 'On peut produire de l’électricité avec une réaction chimique, ou forcer une réaction avec de l’électricité.',
+      steps: [
+        S('La pile', 'Dans une <b>pile</b>, une réaction d’oxydoréduction spontanée produit un courant. À l’<b>anode</b> (pôle −) a lieu l’oxydation, à la <b>cathode</b> (pôle +) la réduction. Les électrons circulent de l’anode vers la cathode dans le fil.'),
+        S('La quantité d’électricité', 'Une pile qui débite un courant I pendant une durée Δt a fourni la charge <b>Q = I × Δt</b>. Si n électrons sont échangés : Q = n × F, avec la constante de Faraday F = 96 500 C/mol.'),
+        S('L’électrolyse', 'En <b>électrolyse</b>, un générateur impose un courant qui <b>force une réaction non spontanée</b> : l’électrode reliée au pôle + est l’anode (oxydation), l’autre est la cathode (réduction). On produit ainsi du dihydrogène, du chlore, ou on recouvre un objet de métal (galvanoplastie).', 'electrolyse'),
+        S('Accumulateurs', 'Un <b>accumulateur</b> (batterie rechargeable : lithium-ion, plomb) fonctionne comme une pile en décharge et comme un électrolyseur en charge : la réaction est réversible. Le recyclage des batteries est un enjeu environnemental.'),
+      ],
+      recap: ['Pile : réaction spontanée → courant.', 'Électrolyse : courant → réaction forcée.', 'Q = I × Δt = n × F.'],
+      quiz: [Q('Dans une pile, l’oxydation a lieu à :', ['l’anode', 'la cathode'], 0), Q('L’électrolyse est une transformation :', ['forcée', 'spontanée'], 0)] },
   ];
 
   const SUBJECTS = [
@@ -1659,7 +1928,7 @@
   ];
   const LEVELS_COURS = [
     { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ', ready: true },
-    { id: '2nde', label: '2nde', ready: true }, { id: '1re', label: '1ʳᵉ', ready: true }, { id: 'term', label: 'Terminale' },
+    { id: '2nde', label: '2nde', ready: true }, { id: '1re', label: '1ʳᵉ', ready: true }, { id: 'term', label: 'Terminale', ready: true },
   ];
 
   window.COURSES = COURSES; window.COURSE_SUBJECTS = SUBJECTS; window.COURSE_LEVELS = LEVELS_COURS;
