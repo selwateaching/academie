@@ -80,7 +80,7 @@
   const picksLeft = () => (auth.config.demoMax || 3) - (auth.config.picks || []).length;
   async function pickDemo(id) { try { applyMe(await api('/api/demo-pick', 'POST', { skill: id })); route(); } catch (e) { const n = $('#pickerr'); if (n) n.textContent = e.message; } }
   const coursePicksLeft = () => (auth.config.courseMax || 3) - (auth.config.coursePicks || []).length;
-  const courseOpen = (c) => auth.offline || auth.config.open || valid('fam') || (auth.config.coursePicks || []).includes(c.id);
+  const courseOpen = (c) => auth.offline || auth.config.open || valid('fam') || valid(c.level) || (auth.config.coursePicks || []).includes(c.id);
   async function pickCourse(id) { try { applyMe(await api('/api/course-pick', 'POST', { course: id })); route(); } catch (e) { const n = $('#cpickerr'); if (n) n.textContent = e.message; } }
   const valid = (k) => !!auth.subscriptions[k] && new Date(auth.subscriptions[k]) > new Date();
   const subscribed = (lv) => valid(lv) || valid('fam');
@@ -98,6 +98,7 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const fmtTime = (s) => (s >= 3600 ? T('{h} h {m} min', { h: Math.floor(s / 3600), m: String(Math.floor((s % 3600) / 60)).padStart(2, '0') }) : s >= 60 ? T('{m} min', { m: Math.floor(s / 60) }) : T('{s} s', { s }));
   const lvOf = (id) => LEVELS.find((l) => l.id === id);
+  const planName = (id) => (id === 'fam' ? T('Forfait Famille') : lvOf(id) ? sh(lvOf(id)) : `<bdi>${esc(((window.COURSE_LEVELS || []).find((l) => l.id === id) || { full: id }).full || ((window.COURSE_LEVELS || []).find((l) => l.id === id) || { label: id }).label)}</bdi>`);
   const sh = (lv) => esc(T(lv.short)); // nom court du niveau (GS, CP… ou en arabe)
   const ti = (x) => esc(T(x)); // texte du catalogue traduit et échappé
   const menuBtn = $('#menuBtn'), topBar = document.querySelector('.top');
@@ -370,6 +371,11 @@
         <p>${T('{n} compétences avec exercices, correction immédiate, suivi et récompenses.', { n: implemented(lv).length })}</p>
         ${valid(lv.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[lv.id]) })}</p>` : ''}
         <button class="btn" style="background:${lv.color}" data-buy="${lv.id}">${valid(lv.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
+      <h2 style="margin:22px 0 8px">${T('Lycée : 2nde, 1re, Terminale')}</h2>
+      <div class="prices">${COURSE_LEVELS.filter((l) => l.cycle === 'secondaire' && l.ready).map((l) => `<div class="pcard" style="--c:${l.color}"><div class="pbadge" style="background:${l.color}"><bdi>${l.label}</bdi></div><div class="pamount"><b>${price(l.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
+        <p>${T('{n} cours illustrés en maths, physique et chimie, avec schémas animés, voix et quiz.', { n: COURSES.filter((c) => c.level === l.id).length })}</p>
+        ${valid(l.id) ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</p>` : ''}
+        <button class="btn" style="background:${l.color}" data-buy="${l.id}">${valid(l.id) ? T('Prolonger d’un mois') : T('S’abonner')}</button></div>`).join('')}</div>
       <div class="panel"><h2>${T('Ce qui est inclus')}</h2><p>${T('Tous les exercices du niveau choisi, sans limite de questions, avec explications après chaque erreur, score, récompenses et suivi des progrès sauvegardés sur ton compte. Trois compétences par niveau restent gratuites.')}</p>
       <p class="hint" style="margin-top:10px"><label>${T('Moyen de paiement')} <select id="method"><option value="">${T('Je choisis sur la page de paiement')}</option><option value="cib">${T('Carte CIB')}</option><option value="edahabia">${T('Carte Edahabia')}</option></select></label></p><p id="buyErr" class="errtxt"></p></div></div>`, 'tarifs');
     document.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', async () => {
@@ -432,7 +438,7 @@
         ${auth.profiles.length > 1 ? `<button class="btn ghost sm" data-del="${p.id}" aria-label="${T('Supprimer')} ${esc(p.name)}">${T('Supprimer')}</button>` : ''}</div>`).join('')}</div>
         ${auth.profiles.length < 5 ? `<form class="inl" id="fProf"><input id="pname" placeholder="${T('Prénom')}" maxlength="40" required aria-label="${T('Prénom du nouvel élève')}"><select id="plevel" aria-label="${T('Niveau')}">${LEVELS.map((l) => `<option value="${l.id}">${sh(l)}</option>`).join('')}</select><button class="btn" type="submit">${T('Ajouter un profil')}</button></form>` : ''}<p class="errtxt" id="err"></p></div>
       <div class="panel"><h2>${T('Abonnements')}</h2>${(subs.length || valid('fam')) ? (valid('fam') ? `<div class="stat"><span>${T('Forfait Famille')}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</b></div>` : '') + subs.map((l) => `<div class="stat"><span>${sh(l)}</span><b>${T('jusqu’au {date}', { date: dateFr(auth.subscriptions[l.id]) })}</b></div>`).join('') : `<p class="hint">${T('Aucun abonnement actif. Les compétences gratuites restent accessibles.')}</p>`}<p style="margin-top:12px"><a class="btn" href="#/tarifs">${T('Voir les tarifs')}</a></p></div>
-      <div class="panel"><h2>${T('Derniers paiements')}</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${x.level === 'fam' ? T('Forfait Famille') : sh(lvOf(x.level))} · ${x.amount} ${T('DA')} · ${dateFr(x.date)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}</div>
+      <div class="panel"><h2>${T('Derniers paiements')}</h2>${auth.payments.length ? auth.payments.map((x) => `<div class="stat"><span>${planName(x.level)} · ${x.amount} ${T('DA')} · ${dateFr(x.date)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}</div>
       ${auth.user.admin ? `<p><a class="btn" href="#/admin">${T('Tableau de bord administrateur')}</a></p>` : ''}
       <p style="margin-bottom:30px"><button class="btn ghost" id="logout">${T('Me déconnecter')}</button></p></div>`, 'compte');
     const swap = async (fn) => { try { applyMe(await fn()); await loadProgress(); pageAccount(); } catch (e) { $('#err').textContent = e.message; } };
@@ -464,7 +470,7 @@
   }
 
   /* ---------- administration : clients, abonnements, paiements ---------- */
-  const PLANS = () => [...LEVELS.map((l) => ({ id: l.id, label: sh(l) })), { id: 'fam', label: T('Forfait Famille') }];
+  const PLANS = () => [...LEVELS.map((l) => ({ id: l.id, label: sh(l) })), ...COURSE_LEVELS.filter((l) => l.cycle === 'secondaire').map((l) => ({ id: l.id, label: planName(l.id) })), { id: 'fam', label: T('Forfait Famille') }];
   const planLabel = (id) => (PLANS().find((p) => p.id === id) || { label: id }).label;
   const da = (n) => `<span style="white-space:nowrap">${Number(n).toLocaleString('fr-FR')} ${T('DA')}</span>`;
   function pageAdmin() {
