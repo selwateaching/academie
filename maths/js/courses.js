@@ -182,6 +182,55 @@
     feu: () => svg(360, 180, `<path d="M180 20L320 150H40Z" stroke="${C.rouge}" stroke-width="4" fill="${C.rouge}" fill-opacity=".08"/>
       <path class="pulse" d="M180 70C160 100 156 126 180 136C204 126 200 100 180 70Z" fill="${C.or}" stroke="${C.rouge}" stroke-width="3"/>
       ${T(180, 14, 'chaleur', 'font-size="12"')}${T(70, 170, 'combustible', `fill="${C.vert}" font-size="12"`)}${T(290, 170, 'comburant (O₂)', `fill="${C.bleu}" font-size="12"`)}`),
+    pgcd: () => svg(360, 180, `<rect x="60" y="30" width="240" height="96" stroke="${C.brand}" stroke-width="3.5" fill="${C.brand}" fill-opacity=".05"/>
+      ${[1, 2, 3, 4].map((i) => `<path d="M${60 + i * 48} 30V126" stroke="${C.gris}" stroke-width="1.4"/>`).join('')}<path d="M60 78H300" stroke="${C.gris}" stroke-width="1.4"/>
+      <rect class="pulse" x="60" y="30" width="48" height="48" fill="${C.or}" fill-opacity=".3" stroke="${C.or}" stroke-width="3"/>
+      ${T(180, 148, '240 = 5 × 48  et  96 = 2 × 48', 'font-size="12"')}${T(180, 166, 'carrés de côté 48 : PGCD(96 ; 240) = 48', 'font-size="12"')}`),
+    racine: () => svg(360, 170, `<rect class="pulse" x="40" y="30" width="90" height="90" fill="${C.bleu}" fill-opacity=".25" stroke="${C.bleu}" stroke-width="3.5"/>${T(85, 80, 'aire 25', 'font-size="14"')}${T(85, 140, 'côté = √25 = 5', `fill="${C.bleu}" font-size="13"`)}
+      <rect x="190" y="30" width="90" height="90" fill="${C.or}" fill-opacity=".25" stroke="${C.or}" stroke-width="3.5"/>${T(235, 80, 'aire 2', 'font-size="14"')}${T(235, 140, 'côté = √2 ≈ 1,414', `fill="${C.or}" font-size="13"`)}${T(180, 164, 'la racine carrée donne le côté du carré', 'font-size="12"')}`),
+    carre: () => svg(360, 180, `<rect x="40" y="15" width="100" height="100" fill="${C.bleu}" fill-opacity=".25" stroke="${C.bleu}" stroke-width="3"/><rect x="140" y="15" width="60" height="100" fill="${C.or}" fill-opacity=".3" stroke="${C.or}" stroke-width="3"/>
+      <rect x="40" y="115" width="100" height="60" fill="${C.or}" fill-opacity=".3" stroke="${C.or}" stroke-width="3"/><rect x="140" y="115" width="60" height="60" fill="${C.rouge}" fill-opacity=".3" stroke="${C.rouge}" stroke-width="3"/>
+      ${T(90, 70, 'a²', 'font-size="18"')}${T(170, 70, 'ab', 'font-size="16"')}${T(90, 150, 'ab', 'font-size="16"')}${T(170, 150, 'b²', 'font-size="18"')}${T(285, 70, '(a + b)²', 'font-size="15"')}${T(285, 92, '= a² + 2ab + b²', 'font-size="13"')}`),
+    thales: () => svg(360, 190, `<path d="M180 20L50 160H310Z" stroke="${C.brand}" stroke-width="3.5" fill="${C.brand}" fill-opacity=".05"/><path class="pulse" d="M130 90H230" stroke="${C.rouge}" stroke-width="4"/>
+      ${T(180, 14, 'A')}${T(40, 168, 'B')}${T(322, 168, 'C')}${T(118, 94, 'M', `fill="${C.rouge}"`)}${T(242, 94, 'N', `fill="${C.rouge}"`)}
+      ${T(180, 184, '(MN) ∥ (BC) : AM/AB = AN/AC = MN/BC', 'font-size="12"')}`),
+    trigo: () => svg(360, 190, `<path d="M50 140H270V50Z" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".07"/><path d="M258 140V128H270" stroke="${C.rouge}" stroke-width="2.5"/>
+      <path class="pop" d="M94 140A44 44 0 0 0 87 120" stroke="${C.or}" stroke-width="3"/>${T(112, 134, 'α', `fill="${C.or}" font-size="15"`)}
+      ${T(160, 160, 'adjacent', `fill="${C.vert}" font-size="12"`)}${T(284, 96, 'opposé', `fill="${C.bleu}" font-size="12"`)}${T(130, 84, 'hypoténuse', `fill="${C.rouge}" font-size="12"`)}
+      ${T(180, 180, 'cos = A/H   sin = O/H   tan = O/A', 'font-size="13"')}`),
+    graphe: () => svg(360, 190, `${ARROW('g1', 'currentColor')}<path d="M180 170V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#g1)"/><path d="M20 120H340" stroke="currentColor" stroke-width="2.5" marker-end="url(#g1)"/>
+      <path class="draw" pathLength="100" d="M40 160L320 40" stroke="${C.rouge}" stroke-width="4"/><circle cx="180" cy="100" r="5" fill="${C.or}"/>${T(100, 56, 'b = ordonnée à l’origine', `fill="${C.or}" font-size="11"`)}
+      ${T(300, 36, 'f(x) = ax + b', `fill="${C.rouge}" font-size="13"`)}${T(260, 160, 'a = coefficient directeur', 'font-size="11"')}${T(344, 134, 'x', 'font-size="12"')}${T(194, 14, 'y', 'font-size="12"')}`),
+    sphere: () => svg(360, 180, `<circle cx="150" cy="90" r="60" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".08"/><ellipse class="pulse" cx="150" cy="90" rx="60" ry="18" stroke="${C.gris}" stroke-width="2" stroke-dasharray="5 4"/>
+      <path d="M150 90H210" stroke="${C.rouge}" stroke-width="3"/><circle cx="150" cy="90" r="4" fill="${C.rouge}"/>${T(184, 82, 'r', `fill="${C.rouge}" font-size="15"`)}
+      ${T(290, 70, 'aire = 4πr²', 'font-size="14"')}${T(290, 96, 'volume = 4/3 πr³', 'font-size="14"')}${T(180, 172, 'sphère (surface) et boule (volume)', 'font-size="12"')}`),
+    ohm: () => svg(360, 180, `<path d="M50 40H310V130H50V40" stroke="currentColor" stroke-width="3"/><rect x="40" y="62" width="20" height="26" fill="var(--card,#fff)" stroke="none"/>${pile(50, 75)}
+      <rect x="250" y="20" width="60" height="40" fill="var(--card,#fff)" stroke="none"/><rect class="pulse" x="262" y="28" width="46" height="22" rx="3" stroke="${C.or}" stroke-width="3" fill="${C.or}" fill-opacity=".2"/>${T(230, 80, 'résistance R', 'font-size="11"')}
+      ${T(140, 90, 'U = R × I', `fill="${C.rouge}" font-size="20"`)}${T(140, 112, 'U en V, R en Ω, I en A', 'font-size="12"')}${T(180, 168, 'plus R est grande, plus I est petite', 'font-size="12"')}`),
+    puissance: () => svg(360, 170, `${lamp(60, 70, C.or)}${T(60, 110, '60 W', 'font-size="14"')}${lamp(180, 70, C.or)}${T(180, 110, '100 W', 'font-size="14"')}${lamp(300, 70, C.or)}${T(300, 110, '20 W', 'font-size="14"')}
+      ${T(180, 142, 'P = U × I', `fill="${C.rouge}" font-size="18"`)}${T(180, 162, 'E = P × t (énergie consommée)', 'font-size="12"')}`),
+    lentille: () => svg(360, 180, `${ARROW('l1', C.or)}<path d="M180 20C200 70 200 110 180 160C160 110 160 70 180 20Z" stroke="${C.bleu}" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".15"/><path d="M20 90H340" stroke="${C.gris}" stroke-width="1.5" stroke-dasharray="5 5"/>
+      <path class="dash" d="M30 50H180L290 90M30 90H340M30 130H180L290 90" stroke="${C.or}" stroke-width="2.5"/><circle cx="290" cy="90" r="5" fill="${C.rouge}"/>${T(290, 78, 'foyer F’', `fill="${C.rouge}" font-size="11"`)}${T(180, 14, 'lentille convergente', 'font-size="12"')}${T(180, 176, 'les rayons parallèles convergent au foyer', 'font-size="12"')}`),
+    gravit: () => svg(360, 170, `${ARROW('g2', C.rouge)}<circle cx="70" cy="85" r="40" fill="${C.bleu}" fill-opacity=".3" stroke="${C.bleu}" stroke-width="3"/>${T(70, 90, 'Terre', 'font-size="14"')}
+      <circle cx="290" cy="85" r="16" fill="${C.gris}" fill-opacity=".5" stroke="${C.gris}" stroke-width="3"/>${T(290, 120, 'Lune', 'font-size="12"')}
+      <path class="pulse" d="M180 70H125" stroke="${C.rouge}" stroke-width="4" marker-end="url(#g2)"/><path class="pulse" d="M180 100H245" stroke="${C.rouge}" stroke-width="4" marker-end="url(#g2)"/>
+      ${T(180, 150, 'attraction mutuelle : plus de masse, plus de force', 'font-size="12"')}${T(180, 166, 'moins elle est loin, plus elle est forte', 'font-size="11"')}`),
+    inertie: () => svg(360, 170, `${ARROW('i1', C.rouge)}<path d="M20 120H340" stroke="currentColor" stroke-width="3"/><circle cx="80" cy="100" r="18" fill="${C.bleu}" fill-opacity=".3" stroke="${C.bleu}" stroke-width="3"/>
+      <path class="dash" d="M110 100H290" stroke="${C.rouge}" stroke-width="3.5" marker-end="url(#i1)"/>${T(200, 84, 'v constante', `fill="${C.rouge}" font-size="13"`)}${T(180, 150, 'aucune force (ou forces qui se compensent) :', 'font-size="12"')}${T(180, 166, 'mouvement rectiligne uniforme ou repos', 'font-size="12"')}`),
+    cinetique: () => svg(360, 170, `${ARROW('k1', C.rouge)}<circle cx="70" cy="90" r="18" fill="${C.rouge}" fill-opacity=".3" stroke="${C.rouge}" stroke-width="3"/><path d="M96 90H160" stroke="${C.rouge}" stroke-width="3" marker-end="url(#k1)"/>${T(70, 124, 'v', 'font-size="15"')}
+      <circle cx="260" cy="40" r="14" fill="${C.bleu}" fill-opacity=".3" stroke="${C.bleu}" stroke-width="3"/><path d="M260 70V120" stroke="${C.bleu}" stroke-width="2.5" stroke-dasharray="4 4"/><path d="M230 126H290" stroke="currentColor" stroke-width="3"/>${T(310, 80, 'h', 'font-size="15"')}
+      ${T(100, 150, 'Ec = ½ × m × v²', `fill="${C.rouge}" font-size="13"`)}${T(260, 150, 'Ep = m × g × h', `fill="${C.bleu}" font-size="13"`)}${T(180, 14, 'énergie de mouvement et de position', 'font-size="12"')}`),
+    ion: () => svg(360, 170, `<circle cx="90" cy="80" r="34" fill="${C.rouge}" fill-opacity=".25" stroke="${C.rouge}" stroke-width="3.5"/>${T(90, 86, 'Na⁺', `fill="${C.rouge}" font-size="20"`)}${T(90, 130, 'cation : a perdu 1 électron', 'font-size="10"')}
+      <circle cx="270" cy="80" r="40" fill="${C.bleu}" fill-opacity=".25" stroke="${C.bleu}" stroke-width="3.5"/>${T(270, 86, 'Cl⁻', `fill="${C.bleu}" font-size="20"`)}${T(270, 134, 'anion : a gagné 1 électron', 'font-size="10"')}
+      <path class="pulse" d="M130 80H226" stroke="${C.gris}" stroke-width="3" stroke-dasharray="6 5"/>${T(180, 70, 's’attirent', 'font-size="11"')}${T(180, 160, 'un ion est un atome qui a gagné ou perdu des électrons', 'font-size="11"')}`),
+    ph: () => svg(360, 160, `${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map((i) => `<rect x="${12 + i * 22.6}" y="40" width="22" height="38" fill="${['#ef4444', '#f87171', '#fb923c', '#fbbf24', '#facc15', '#a3e635', '#4ade80', '#16a34a', '#2dd4bf', '#38bdf8', '#3b82f6', '#6366f1', '#7c3aed', '#6d28d9', '#4c1d95'][i]}" stroke="#fff"/>${T(23 + i * 22.6, 98, i, 'font-size="10"')}`).join('')}
+      ${T(60, 26, 'acide', 'font-size="12"')}${T(184, 26, 'neutre', 'font-size="12"')}${T(300, 26, 'basique', 'font-size="12"')}${T(184, 124, 'pH = 7 : eau pure', 'font-size="12"')}${T(184, 144, 'pH &lt; 7 : acide ; pH &gt; 7 : basique', 'font-size="11"')}`),
+    solution: () => svg(360, 170, `<path d="M90 30L100 140H250L260 30" stroke="currentColor" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".1"/>
+      ${[[130, 100, '+', C.rouge], [180, 80, '−', C.bleu], [215, 112, '+', C.rouge], [150, 125, '−', C.bleu], [200, 130, '−', C.bleu], [235, 90, '+', C.rouge]].map(([x, y, t, c], i) => `<circle class="ps" style="animation-delay:-${i * 0.2}s" cx="${x}" cy="${y}" r="10" fill="${c}" fill-opacity=".35" stroke="${c}" stroke-width="2.5"/>${T(x, y + 5, t, `fill="${c}" font-size="14"`)}`).join('')}
+      ${T(314, 70, 'ions mobiles', 'font-size="11"')}${T(180, 164, 'les ions rendent la solution conductrice', 'font-size="12"')}`),
+    bulles: () => svg(360, 170, `<path d="M110 30V120A22 22 0 0 0 132 142H228A22 22 0 0 0 250 120V30" stroke="currentColor" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".08"/><rect x="150" y="100" width="60" height="26" rx="4" fill="${C.gris}" fill-opacity=".6"/>
+      ${[[160, 90], [180, 78], [200, 92], [190, 58], [170, 50]].map(([x, y], i) => `<circle class="pl" style="animation-delay:-${i * 0.5}s" cx="${x}" cy="${y}" r="6" stroke="${C.bleu}" stroke-width="2.5" fill="#fff"/>`).join('')}
+      ${T(290, 100, 'fer', 'font-size="12"')}${T(312, 70, 'bulles de H₂', `fill="${C.bleu}" font-size="11"`)}${T(180, 164, 'fer + acide → ions fer + dihydrogène', 'font-size="12"')}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -845,6 +894,239 @@
       ],
       recap: ['O₂ : rallume une allumette incandescente.', 'CO₂ : trouble l’eau de chaux.', 'H₂ : « pop » à la flamme.', 'H₂O : sulfate de cuivre bleu.'],
       quiz: [Q('Quel gaz trouble l’eau de chaux ?', ['le dioxyde de carbone', 'le dihydrogène'], 0), Q('Le test du dihydrogène donne :', ['une petite détonation', 'un trouble blanc'], 0)] },
+    /* ================================================================ 3e : MATHS */
+    { id: 'm3-pgcd', subj: 'maths', level: '3e', icon: '🧩', title: 'Diviseurs, PGCD et nombres premiers',
+      intro: 'Pour partager 96 bonbons et 240 gâteaux en parts identiques, on cherche le plus grand diviseur commun.',
+      steps: [
+        S('Diviseurs et multiples', 'Un nombre a est un <b>diviseur</b> de b si la division de b par a tombe juste. Les diviseurs de 12 sont 1, 2, 3, 4, 6 et 12. 12 est alors un <b>multiple</b> de chacun d’eux.'),
+        S('Nombres premiers', 'Un nombre est <b>premier</b> s’il a exactement deux diviseurs : 1 et lui-même. Les premiers nombres premiers sont 2, 3, 5, 7, 11, 13, 17, 19… Le nombre 1 n’est pas premier.'),
+        S('Le PGCD', 'Le <b>PGCD</b> de deux nombres est leur plus grand diviseur commun. Diviseurs de 96 et de 240 : le plus grand en commun est 48, donc PGCD(96 ; 240) = 48.', 'pgcd'),
+        S('L’algorithme d’Euclide', 'On divise le plus grand par le plus petit, puis le diviseur par le reste, et on recommence. Le <b>dernier reste non nul</b> est le PGCD. 240 = 2 × 96 + 48, puis 96 = 2 × 48 + 0 : PGCD = 48. Une fraction est irréductible si PGCD(numérateur ; dénominateur) = 1.'),
+      ],
+      recap: ['Un nombre premier a exactement deux diviseurs.', 'PGCD : plus grand diviseur commun.', 'Euclide : le dernier reste non nul est le PGCD.'],
+      quiz: [Q('Quel nombre est premier ?', ['21', '23', '25'], 1), Q('PGCD(12 ; 18) = ?', ['3', '6', '36'], 1)] },
+
+    { id: 'm3-racines', subj: 'maths', level: '3e', icon: '√', title: 'Les racines carrées',
+      intro: 'Si un carré a pour aire 25 cm², combien mesure son côté ? La racine carrée répond à cette question.',
+      steps: [
+        S('Définition', 'La <b>racine carrée</b> d’un nombre positif a, notée <b>√a</b>, est le nombre positif dont le carré vaut a. √25 = 5 car 5² = 25. Et √0 = 0.', 'racine'),
+        S('Carrés parfaits', 'Les carrés parfaits à connaître : 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144. Leur racine est un entier. Par exemple, √144 = 12.'),
+        S('Règles de calcul', 'Pour a et b positifs : <b>√(a × b) = √a × √b</b>. Exemple : √50 = √(25 × 2) = 5√2. Attention : √(a + b) n’est pas égal à √a + √b.'),
+        S('Valeurs approchées', '√2 n’est pas un nombre décimal : √2 ≈ 1,414. On le calcule avec la touche √ de la calculatrice. On ne peut pas prendre la racine d’un nombre négatif.'),
+      ],
+      recap: ['√a est le nombre positif de carré a.', '√(a × b) = √a × √b.', 'Pas de racine carrée d’un nombre négatif.'],
+      quiz: [Q('√81 = ?', ['9', '8,1', '40,5'], 0), Q('√(9 + 16) = ?', ['7', '5', '25'], 1)] },
+
+    { id: 'm3-identites', subj: 'maths', level: '3e', icon: '🧮', title: 'Identités remarquables et factorisation',
+      intro: 'Trois égalités vraies pour tous les nombres permettent de calculer et de factoriser vite.',
+      steps: [
+        S('Le carré d’une somme', '<b>(a + b)² = a² + 2ab + b²</b>. Exemple : (x + 3)² = x² + 6x + 9. L’aire du grand carré se compose du carré de a, de deux rectangles ab et du carré de b.', 'carre'),
+        S('Les deux autres', '<b>(a − b)² = a² − 2ab + b²</b>, et <b>(a + b)(a − b) = a² − b²</b>. Exemple : 101 × 99 = (100 + 1)(100 − 1) = 10 000 − 1 = 9 999.'),
+        S('Factoriser', 'Factoriser, c’est transformer une somme en produit. Avec un facteur commun : 6x + 9 = 3 × (2x + 3). Avec une identité : x² − 25 = (x + 5)(x − 5).'),
+        S('Pourquoi ?', 'Factoriser sert à résoudre des équations : un produit est nul si l’un de ses facteurs est nul. (x + 5)(x − 5) = 0 donne x = −5 ou x = 5.'),
+      ],
+      recap: ['(a + b)² = a² + 2ab + b².', '(a − b)² = a² − 2ab + b².', '(a + b)(a − b) = a² − b².', 'Factoriser : transformer en produit.'],
+      quiz: [Q('(x + 4)² = ?', ['x² + 16', 'x² + 8x + 16', 'x² + 4x + 16'], 1), Q('x² − 9 = ?', ['(x − 3)(x + 3)', '(x − 9)²', '(x − 3)²'], 0)] },
+
+    { id: 'm3-equations', subj: 'maths', level: '3e', icon: '⚖️', title: 'Équations produit et systèmes',
+      intro: 'Deux inconnues, deux équations : on les résout ensemble. Et un produit nul est facile à résoudre.',
+      steps: [
+        S('Équation produit nul', 'Un produit de facteurs est nul si et seulement si <b>l’un des facteurs est nul</b>. (x − 2)(x + 5) = 0 donne x − 2 = 0 ou x + 5 = 0, donc x = 2 ou x = −5.', 'balance'),
+        S('Système de deux équations', 'On cherche x et y qui vérifient en même temps deux équations. Par exemple : x + y = 10 et x − y = 2.'),
+        S('Méthode par addition', 'On additionne les deux équations pour éliminer y : 2x = 12, donc x = 6. Puis y = 10 − 6 = 4. On vérifie : 6 − 4 = 2.'),
+        S('Méthode par substitution', 'On exprime une inconnue : y = 10 − x. On la remplace dans l’autre équation : x − (10 − x) = 2, donc 2x − 10 = 2 et x = 6.'),
+      ],
+      recap: ['Produit nul : un facteur nul.', 'Système : on élimine ou on remplace une inconnue.', 'On vérifie avec les deux équations.'],
+      quiz: [Q('(x − 3)(x + 1) = 0 a pour solutions :', ['3 et −1', '−3 et 1', '3 et 1'], 0), Q('x + y = 7 et x − y = 1. Alors x = ?', ['3', '4', '6'], 1)] },
+
+    { id: 'm3-fonctions', subj: 'maths', level: '3e', icon: '📈', title: 'Fonctions linéaires et affines',
+      intro: 'Un prix qui dépend du poids, une facture qui dépend de la consommation : on décrit cela avec une fonction.',
+      steps: [
+        S('Une fonction', 'Une <b>fonction</b> associe à chaque nombre x un unique nombre f(x), appelé son <b>image</b>. Si f(x) = 3x + 1, alors f(2) = 7 et 2 est un antécédent de 7.'),
+        S('La fonction linéaire', 'Une fonction <b>linéaire</b> s’écrit f(x) = ax. Sa représentation graphique est une <b>droite passant par l’origine</b>. Elle représente une situation de proportionnalité, de coefficient a.'),
+        S('La fonction affine', 'Une fonction <b>affine</b> s’écrit f(x) = ax + b. Sa courbe est une droite. Le nombre a est le <b>coefficient directeur</b> (la pente) et b est l’<b>ordonnée à l’origine</b>.', 'graphe'),
+        S('Trouver a et b', 'La droite passe par les points (0 ; 1) et (2 ; 7). Le coefficient directeur est a = (7 − 1) ÷ (2 − 0) = 3, et b = 1. Donc f(x) = 3x + 1.'),
+      ],
+      recap: ['Linéaire : f(x) = ax, droite par l’origine.', 'Affine : f(x) = ax + b, droite.', 'a = coefficient directeur, b = ordonnée à l’origine.'],
+      quiz: [Q('f(x) = 2x + 5. f(3) = ?', ['6', '11', '10'], 1), Q('La courbe d’une fonction linéaire passe par :', ['l’origine', 'le point (0 ; 1)'], 0)] },
+
+    { id: 'm3-thales', subj: 'maths', level: '3e', icon: '📐', title: 'Le théorème de Thalès',
+      intro: 'Quand deux droites parallèles coupent les côtés d’un triangle, les longueurs sont proportionnelles.',
+      steps: [
+        S('L’énoncé', 'Dans le triangle ABC, M est sur (AB) et N sur (AC). Si les droites <b>(MN) et (BC) sont parallèles</b>, alors <b>AM/AB = AN/AC = MN/BC</b>.', 'thales'),
+        S('Calculer une longueur', 'AM = 3, AB = 6, AN = 4, donc AC = ? On a 3/6 = 4/AC, soit AC = 4 × 6 ÷ 3 = 8.'),
+        S('Agrandissement et réduction', 'Le petit triangle AMN est une <b>réduction</b> du grand triangle ABC. Le rapport est k = AM/AB. Les longueurs sont multipliées par k, les aires par k².'),
+        S('La réciproque', 'Si les rapports AM/AB et AN/AC sont égaux, <b>et que les points sont alignés dans le même ordre</b>, alors (MN) est parallèle à (BC). C’est ainsi qu’on prouve un parallélisme.'),
+      ],
+      recap: ['(MN) ∥ (BC) : AM/AB = AN/AC = MN/BC.', 'Longueurs × k, aires × k².', 'La réciproque prouve le parallélisme.'],
+      quiz: [Q('AM = 2, AB = 5, AN = 3. AC = ?', ['7,5', '6', '10'], 0), Q('Avec un rapport de réduction k = 1/2, les aires sont multipliées par :', ['1/2', '1/4', '2'], 1)] },
+
+    { id: 'm3-trigo', subj: 'maths', level: '3e', icon: '🧭', title: 'La trigonométrie : cosinus, sinus, tangente',
+      intro: 'Dans un triangle rectangle, trois rapports de longueurs relient un angle aux côtés.',
+      steps: [
+        S('Trois rapports', 'Pour un angle aigu α d’un triangle rectangle : <b>cos α = adjacent ÷ hypoténuse</b>, <b>sin α = opposé ÷ hypoténuse</b>, <b>tan α = opposé ÷ adjacent</b>.', 'trigo'),
+        S('Un moyen mnémotechnique', 'On retient « CAH SOH TOA » : Cosinus = Adjacent / Hypoténuse, Sinus = Opposé / Hypoténuse, Tangente = Opposé / Adjacent.'),
+        S('Calculer une longueur', 'Hypoténuse 10 cm, angle de 30° : le côté opposé vaut 10 × sin 30° = 10 × 0,5 = 5 cm.'),
+        S('Calculer un angle', 'Opposé 3 cm et adjacent 3 cm : tan α = 1, donc α = 45°. On utilise les touches « sin⁻¹ », « cos⁻¹ » ou « tan⁻¹ » de la calculatrice. Aussi : cos² α + sin² α = 1.'),
+      ],
+      recap: ['cos = A/H, sin = O/H, tan = O/A.', 'On calcule un angle avec sin⁻¹, cos⁻¹, tan⁻¹.', 'cos² α + sin² α = 1.'],
+      quiz: [Q('Opposé 4 cm, hypoténuse 8 cm : sin α = ?', ['0,5', '2', '4'], 0), Q('tan α = ?', ['opposé ÷ adjacent', 'adjacent ÷ hypoténuse'], 0)] },
+
+    { id: 'm3-probas', subj: 'maths', level: '3e', icon: '🎲', title: 'Probabilités',
+      intro: 'On sait calculer la chance d’un événement, et même celle de deux événements qui s’enchaînent.',
+      steps: [
+        S('Probabilité d’un événement', 'Si les issues sont équiprobables : <b>P = nombre de cas favorables ÷ nombre de cas possibles</b>. Pour une urne de 4 boules rouges et 3 bleues : P(rouge) = 4/7.', 'urne'),
+        S('L’événement contraire', 'La probabilité qu’un événement ne se réalise pas vaut <b>1 − P</b>. Si P(gagner) = 0,2, alors P(perdre) = 0,8.'),
+        S('Deux épreuves', 'On peut dessiner un <b>arbre</b> ou un tableau. Pour deux lancers d’une pièce, il y a 4 issues : PP, PF, FP, FF. P(deux fois pile) = 1/4.'),
+        S('Épreuves indépendantes', 'Si deux épreuves sont indépendantes, on <b>multiplie</b> les probabilités le long d’une branche : P(rouge puis rouge, avec remise) = 4/7 × 4/7 = 16/49.'),
+      ],
+      recap: ['P = cas favorables ÷ cas possibles.', 'P(contraire) = 1 − P.', 'Le long d’une branche, on multiplie.'],
+      quiz: [Q('Un dé : P(obtenir 1 ou 2) = ?', ['1/6', '1/3', '1/2'], 1), Q('On lance deux pièces. P(deux fois pile) = ?', ['1/4', '1/2', '1/3'], 0)] },
+
+    { id: 'm3-spheres', subj: 'maths', level: '3e', icon: '🌍', title: 'Sphères, boules et volumes',
+      intro: 'Un ballon, une orange, la Terre : on calcule leur surface et leur volume avec le rayon.',
+      steps: [
+        S('Sphère et boule', 'La <b>sphère</b> de centre O et de rayon r est l’ensemble des points à la distance r de O (la surface). La <b>boule</b> est la sphère avec tout son intérieur.', 'sphere'),
+        S('Aire et volume', '<b>Aire de la sphère = 4 × π × r²</b> et <b>volume de la boule = 4/3 × π × r³</b>. Pour r = 3 cm : aire = 4 × π × 9 ≈ 113,1 cm² et volume = 4/3 × π × 27 ≈ 113,1 cm³.'),
+        S('Sections', 'La section d’une sphère par un plan est un <b>cercle</b>. Si le plan passe par le centre, c’est un grand cercle, de même rayon que la sphère. La Terre a des grands cercles : l’équateur et les méridiens.'),
+        S('Agrandir et réduire', 'Quand on multiplie les longueurs par k, les aires sont multipliées par k² et les volumes par k³. Doubler le rayon multiplie le volume par 8.'),
+      ],
+      recap: ['Aire de la sphère : 4πr².', 'Volume de la boule : 4/3 πr³.', 'Longueurs × k, aires × k², volumes × k³.'],
+      quiz: [Q('Si on double le rayon d’une boule, son volume est multiplié par :', ['2', '4', '8'], 2), Q('La section d’une sphère par un plan est :', ['un cercle', 'un carré'], 0)] },
+
+    /* ================================================================ 3e : PHYSIQUE */
+    { id: 'p3-ohm', subj: 'physique', level: '3e', icon: '🔌', title: 'La loi d’Ohm',
+      intro: 'Un dipôle qui freine le courant s’appelle une résistance. La loi d’Ohm relie tension, résistance et intensité.',
+      steps: [
+        S('La résistance', 'Un <b>conducteur ohmique</b> (ou résistor) s’oppose au passage du courant. Sa <b>résistance</b> R se mesure en <b>ohms</b> (Ω). On la mesure à l’ohmmètre.'),
+        S('La loi d’Ohm', 'Aux bornes d’un conducteur ohmique : <b>U = R × I</b>, avec U en volts, R en ohms et I en ampères. Pour R = 100 Ω et I = 0,05 A : U = 100 × 0,05 = 5 V.', 'ohm'),
+        S('Trouver R ou I', 'On en déduit R = U ÷ I et I = U ÷ R. Si U = 6 V et I = 0,02 A, alors R = 6 ÷ 0,02 = 300 Ω.'),
+        S('La caractéristique', 'Si on trace U en fonction de I pour un conducteur ohmique, on obtient une <b>droite passant par l’origine</b> : U est proportionnel à I, et le coefficient de proportionnalité est R.'),
+      ],
+      recap: ['R se mesure en ohms (Ω).', 'U = R × I.', 'La caractéristique d’un conducteur ohmique est une droite par l’origine.'],
+      quiz: [Q('U = 12 V et R = 4 Ω. I = ?', ['3 A', '48 A', '0,33 A'], 0), Q('Un conducteur ohmique a une résistance R = 50 Ω et I = 0,2 A. U = ?', ['10 V', '250 V', '0,004 V'], 0)] },
+
+    { id: 'p3-puissance', subj: 'physique', level: '3e', icon: '💡', title: 'Puissance et énergie électriques',
+      intro: 'Une lampe de 100 W éclaire plus et consomme plus qu’une lampe de 20 W. La puissance mesure cette différence.',
+      steps: [
+        S('La puissance', 'La <b>puissance</b> électrique d’un appareil indique l’énergie qu’il consomme chaque seconde. Elle se mesure en <b>watts</b> (W). 1 kW = 1 000 W.', 'puissance'),
+        S('La relation', 'Pour un appareil, <b>P = U × I</b>. Une lampe sous 230 V qui consomme 0,26 A a une puissance de 230 × 0,26 ≈ 60 W.'),
+        S('L’énergie consommée', '<b>E = P × t</b>. En joules : P en watts et t en secondes. En pratique, on compte en <b>kilowattheures</b> (kWh) : P en kW et t en heures. Un radiateur de 2 kW qui fonctionne 3 h consomme 6 kWh.'),
+        S('La facture', 'Le prix à payer est l’énergie consommée multipliée par le prix du kWh. Pour économiser : éteindre les appareils inutiles, choisir des lampes basse consommation.'),
+      ],
+      recap: ['P en watts (W).', 'P = U × I.', 'E = P × t, en kWh pour la facture.'],
+      quiz: [Q('Un appareil de 2 kW fonctionne 4 h. Il consomme :', ['2 kWh', '8 kWh', '0,5 kWh'], 1), Q('U = 230 V et I = 2 A. P = ?', ['115 W', '460 W', '232 W'], 1)] },
+
+    { id: 'p3-lentilles', subj: 'physique', level: '3e', icon: '🔍', title: 'Les lentilles convergentes',
+      intro: 'Loupe, appareil photo, lunettes : les lentilles convergentes forment des images.',
+      steps: [
+        S('Une lentille convergente', 'Une <b>lentille convergente</b> est plus épaisse au centre qu’aux bords. Elle fait converger les rayons de lumière qui arrivent parallèlement à son axe.', 'lentille'),
+        S('Le foyer', 'Les rayons parallèles à l’axe optique se croisent au <b>foyer image</b> F’. La distance entre la lentille et F’ est la <b>distance focale</b> f, en mètres. Elle caractérise la lentille.'),
+        S('Rayons particuliers', 'Un rayon qui passe par le <b>centre optique</b> n’est pas dévié. Un rayon parallèle à l’axe ressort en passant par F’. En traçant ces deux rayons, on trouve où se forme l’image.'),
+        S('Images', 'Selon la position de l’objet, l’image est <b>réelle</b> (on peut la recueillir sur un écran) ou <b>virtuelle</b> (loupe). Si l’objet est entre la lentille et le foyer, l’image est virtuelle, droite et agrandie.'),
+      ],
+      recap: ['Lentille convergente : bords minces, centre épais.', 'Rayons parallèles : ils passent par F’.', 'Centre optique : rayon non dévié.'],
+      quiz: [Q('Un rayon qui passe par le centre optique est :', ['non dévié', 'dévié vers F’'], 0), Q('Une loupe forme une image :', ['réelle', 'virtuelle'], 1)] },
+
+    { id: 'p3-gravitation', subj: 'physique', level: '3e', icon: '🌍', title: 'La gravitation universelle',
+      intro: 'Pourquoi la Lune tourne-t-elle autour de la Terre ? À cause d’une force qui agit entre tous les objets.',
+      steps: [
+        S('Une attraction mutuelle', 'Tous les objets qui ont une masse s’attirent : c’est l’<b>interaction gravitationnelle</b>. La Terre attire la Lune et la Lune attire la Terre avec des forces de même valeur.', 'gravit'),
+        S('De quoi dépend-elle ?', 'La force est d’autant plus grande que les <b>masses</b> sont grandes et que la <b>distance</b> est petite. Elle diminue quand les objets s’éloignent.'),
+        S('Le poids', 'Le <b>poids</b> d’un objet est la force gravitationnelle de la Terre sur lui : P = m × g. Sur une planète plus petite, comme la Lune, g est plus faible : g ≈ 1,6 N/kg.'),
+        S('Le système solaire', 'Le Soleil attire les planètes, qui tournent autour de lui. La Terre tourne autour du Soleil en un an. Les satellites artificiels tournent autour de la Terre grâce à la gravitation.'),
+      ],
+      recap: ['Deux masses s’attirent.', 'Plus de masse, plus de force ; plus de distance, moins de force.', 'Le poids est l’attraction de la Terre.'],
+      quiz: [Q('Si la distance entre deux astres augmente, la force gravitationnelle :', ['diminue', 'augmente'], 0), Q('La force exercée par la Terre sur la Lune est :', ['plus grande que celle de la Lune sur la Terre', 'égale à celle de la Lune sur la Terre'], 1)] },
+
+    { id: 'p3-inertie', subj: 'physique', level: '3e', icon: '🚗', title: 'Mouvement et forces : le principe d’inertie',
+      intro: 'Dans une voiture qui freine brusquement, on est projeté vers l’avant : c’est l’inertie.',
+      steps: [
+        S('Un mouvement dépend du référentiel', 'Le mouvement d’un objet se décrit par rapport à un <b>référentiel</b>. Un passager est immobile par rapport au train, mais il se déplace par rapport au quai.'),
+        S('Types de mouvements', 'La trajectoire peut être <b>rectiligne</b> ou <b>circulaire</b>. La vitesse peut être <b>constante</b> (mouvement uniforme), qui augmente (accéléré) ou qui diminue (ralenti).'),
+        S('Le principe d’inertie', 'Si un objet n’est soumis à <b>aucune force</b>, ou à des forces qui <b>se compensent</b>, il reste au repos ou garde un mouvement <b>rectiligne uniforme</b>.', 'inertie'),
+        S('L’inverse aussi', 'Si un objet change de vitesse ou de direction, c’est que les forces qui s’exercent sur lui ne se compensent pas. Dans une voiture qui freine, un freinage change la vitesse : une force est à l’œuvre.'),
+      ],
+      recap: ['Le mouvement dépend du référentiel.', 'Forces compensées : repos ou mouvement rectiligne uniforme.', 'Une vitesse qui change montre que les forces ne se compensent pas.'],
+      quiz: [Q('Un objet à vitesse constante en ligne droite est soumis à des forces :', ['qui se compensent', 'qui augmentent sa vitesse'], 0), Q('Le mouvement d’un objet dépend :', ['du référentiel', 'de personne'], 0)] },
+
+    { id: 'p3-energie', subj: 'physique', level: '3e', icon: '⚡', title: 'Énergie cinétique et énergie de position',
+      intro: 'Un vélo qui roule vite ou un objet en hauteur possèdent de l’énergie, qui peut se transformer.',
+      steps: [
+        S('Énergie cinétique', 'Un objet de masse m qui se déplace à la vitesse v possède une <b>énergie cinétique</b> : <b>Ec = ½ × m × v²</b>. m en kg, v en m/s, Ec en joules. À 10 m/s, un objet de 2 kg a Ec = 100 J.', 'cinetique'),
+        S('Plus vite, beaucoup plus d’énergie', 'Comme v est au carré, si la vitesse double, l’énergie cinétique est multipliée par <b>4</b>. C’est pourquoi la vitesse est dangereuse sur la route.'),
+        S('Énergie de position', 'Un objet en hauteur possède une énergie de position : <b>Ep = m × g × h</b>. Plus il est haut, plus elle est grande. Une pierre de 1 kg à 5 m : Ep = 1 × 10 × 5 = 50 J.'),
+        S('Conversion', 'Quand un objet tombe, son énergie de position diminue et son énergie cinétique augmente : l’énergie se convertit. On parle d’énergie mécanique, la somme des deux. L’énergie totale se conserve.'),
+      ],
+      recap: ['Ec = ½ m v².', 'Ep = m g h.', 'Vitesse × 2 : énergie cinétique × 4.'],
+      quiz: [Q('Si la vitesse double, l’énergie cinétique est multipliée par :', ['2', '4', '8'], 1), Q('Ec d’un objet de 2 kg à 3 m/s : ', ['9 J', '3 J', '18 J'], 0)] },
+
+    /* ================================================================ 3e : CHIMIE */
+    { id: 'c3-ions', subj: 'chimie', level: '3e', icon: '⚡', title: 'Les ions',
+      intro: 'Un atome neutre peut gagner ou perdre des électrons : il devient un ion.',
+      steps: [
+        S('Atome et ion', 'Un atome est neutre. S’il <b>perd</b> des électrons, il devient un ion <b>positif</b> (cation). S’il en <b>gagne</b>, il devient un ion <b>négatif</b> (anion).', 'ion'),
+        S('Les symboles', 'On écrit la charge en haut à droite : Na⁺ (1 électron perdu), Cl⁻ (1 électron gagné), Cu²⁺ (2 électrons perdus), O²⁻ (2 électrons gagnés).'),
+        S('Des ions positifs et négatifs', 'Les ions de charges opposées s’attirent. Dans le sel de cuisine, les ions Na⁺ et Cl⁻ forment un cristal. Le solide est neutre : il y a autant de charges + que de charges −.'),
+        S('Ions polyatomiques', 'Certains ions contiennent plusieurs atomes : l’ion sulfate SO₄²⁻, l’ion nitrate NO₃⁻, l’ion hydroxyde HO⁻, l’ion hydrogène H⁺ (qui rend l’eau acide).'),
+      ],
+      recap: ['Cation : charge +. Anion : charge −.', 'Un atome neutre qui perd un électron devient un cation.', 'Les solides ioniques sont neutres.'],
+      quiz: [Q('Un atome qui gagne un électron devient :', ['un cation', 'un anion'], 1), Q('L’ion Cu²⁺ a … électrons de moins que l’atome.', ['1', '2'], 1)] },
+
+    { id: 'c3-solutions-ioniques', subj: 'chimie', level: '3e', icon: '🧂', title: 'Les solutions ioniques',
+      intro: 'L’eau pure ne conduit presque pas le courant, mais l’eau salée oui. Pourquoi ?',
+      steps: [
+        S('Dissolution d’un solide ionique', 'Quand on dissout du sel dans l’eau, le cristal se dissocie : les ions Na⁺ et Cl⁻ se séparent et se dispersent dans l’eau. La solution reste <b>neutre</b>.', 'solution'),
+        S('Conduction électrique', 'Les ions sont des <b>porteurs de charge</b> mobiles. Une solution qui contient des ions conduit le courant : c’est une <b>solution ionique</b>. L’eau pure, sans ions, est très peu conductrice.'),
+        S('Le sens du déplacement', 'Dans une solution, les cations (+) se déplacent vers la borne négative du générateur, les anions (−) vers la borne positive.'),
+        S('Concentration', 'La <b>concentration</b> d’une solution est la masse de soluté par litre : C = m ÷ V, en g/L. Si 20 g de sel sont dissous dans 0,5 L : C = 20 ÷ 0,5 = 40 g/L.'),
+      ],
+      recap: ['Dissolution : le cristal se dissocie en ions.', 'Les ions rendent la solution conductrice.', 'C = m ÷ V (g/L).'],
+      quiz: [Q('Une solution d’eau salée conduit le courant car elle contient :', ['des ions', 'des atomes neutres'], 0), Q('10 g de sel dans 0,5 L : C = ?', ['20 g/L', '5 g/L', '10 g/L'], 0)] },
+
+    { id: 'c3-ph', subj: 'chimie', level: '3e', icon: '🧪', title: 'Acides, bases et pH',
+      intro: 'Le citron est acide, la lessive est basique. Le pH mesure cette différence.',
+      steps: [
+        S('L’échelle du pH', 'Le <b>pH</b> mesure l’acidité d’une solution. L’échelle va de 0 à 14. Une solution à pH = 7 est <b>neutre</b> (eau pure). En dessous de 7 : <b>acide</b>. Au-dessus de 7 : <b>basique</b>.', 'ph'),
+        S('Mesurer le pH', 'On utilise du <b>papier pH</b> (qui change de couleur) ou un <b>pH-mètre</b> plus précis. Le jus de citron a un pH d’environ 2, le lait environ 6,5, l’eau de javel environ 12.'),
+        S('Les ions responsables', 'Une solution acide contient un excès d’ions <b>H⁺</b>. Une solution basique contient un excès d’ions <b>HO⁻</b> (hydroxyde). Dans l’eau pure, il y en a autant : elle est neutre.'),
+        S('Diluer', 'Quand on dilue une solution acide, son pH <b>augmente</b> et se rapproche de 7. Pour diluer un acide, on verse toujours l’acide dans l’eau, jamais l’inverse.'),
+      ],
+      recap: ['pH &lt; 7 acide, pH = 7 neutre, pH &gt; 7 basique.', 'Acide : excès de H⁺. Basique : excès de HO⁻.', 'Diluer un acide fait monter le pH vers 7.'],
+      quiz: [Q('Une solution de pH = 3 est :', ['acide', 'basique'], 0), Q('On dilue une solution acide. Son pH :', ['augmente', 'diminue'], 0)] },
+
+    { id: 'c3-acide-metal', subj: 'chimie', level: '3e', icon: '🔩', title: 'Acides et métaux',
+      intro: 'Un clou de fer plongé dans de l’acide chlorhydrique fait des bulles : c’est une transformation chimique.',
+      steps: [
+        S('Une réaction avec des bulles', 'Quand on met du fer dans de l’acide chlorhydrique, on observe un dégagement de gaz et le fer diminue. Le métal est attaqué.', 'bulles'),
+        S('Les produits', 'Le gaz dégagé est du <b>dihydrogène</b> H₂ : il fait une petite détonation à la flamme. Dans la solution, des <b>ions fer</b> Fe²⁺ sont apparus (solution verdâtre).'),
+        S('Équation de réaction', 'Fe + 2 H⁺ → Fe²⁺ + H₂. On vérifie la conservation des atomes (1 Fe, 2 H) et de la charge (+2 des deux côtés).'),
+        S('Les précautions', 'L’acide est corrosif : on porte des lunettes, des gants et une blouse. L’acide ne se jette pas à l’évier sans l’avoir dilué et le dihydrogène est inflammable : pas de flamme à proximité.'),
+      ],
+      recap: ['Fer + acide : dihydrogène et ions fer.', 'Fe + 2 H⁺ → Fe²⁺ + H₂.', 'Lunettes, gants, blouse.'],
+      quiz: [Q('Quel gaz se dégage quand le fer réagit avec un acide ?', ['le dioxygène', 'le dihydrogène'], 1), Q('Dans Fe + 2 H⁺ → Fe²⁺ + H₂, la charge totale est :', ['conservée', 'perdue'], 0)] },
+
+    { id: 'c3-tests-ions', subj: 'chimie', level: '3e', icon: '🔬', title: 'Reconnaître des ions',
+      intro: 'Comment savoir quels ions contient une solution ? Grâce à des tests précis avec des réactifs.',
+      steps: [
+        S('Le principe', 'On ajoute à la solution un réactif qui donne avec un ion donné un <b>précipité</b> (solide) de couleur caractéristique. La couleur du précipité révèle l’ion.'),
+        S('Les ions métalliques', 'Avec de la <b>soude</b> (solution d’hydroxyde de sodium) : Cu²⁺ donne un précipité <b>bleu</b>, Fe²⁺ un précipité <b>vert</b>, Fe³⁺ un précipité <b>rouille</b>, Zn²⁺ un précipité <b>blanc</b>.'),
+        S('Les ions chlorure', 'Avec du <b>nitrate d’argent</b>, l’ion chlorure Cl⁻ donne un précipité <b>blanc</b> qui noircit à la lumière.'),
+        S('Les ions sulfate', 'Avec du chlorure de baryum, l’ion sulfate SO₄²⁻ donne un précipité <b>blanc</b>. Ces tests servent à analyser l’eau potable, les eaux minérales ou les eaux usées.'),
+      ],
+      recap: ['Soude : précipité bleu (Cu²⁺), vert (Fe²⁺), rouille (Fe³⁺).', 'Nitrate d’argent : précipité blanc (Cl⁻).', 'Chlorure de baryum : précipité blanc (SO₄²⁻).'],
+      quiz: [Q('Avec la soude, l’ion Cu²⁺ donne un précipité :', ['bleu', 'vert'], 0), Q('Quel réactif sert à reconnaître l’ion chlorure ?', ['le nitrate d’argent', 'la soude'], 0)] },
+
+    { id: 'c3-securite', subj: 'chimie', level: '3e', icon: '🥽', title: 'Produits chimiques et sécurité',
+      intro: 'Beaucoup de produits de la maison sont des produits chimiques. Savoir les lire évite les accidents.',
+      steps: [
+        S('Les pictogrammes', 'Les étiquettes portent des <b>pictogrammes</b> en losange : inflammable, corrosif, toxique, nocif ou irritant, dangereux pour l’environnement, comburant, explosif.'),
+        S('Corrosif et toxique', 'Un produit <b>corrosif</b> attaque la peau, les yeux et les métaux (acides forts, soude, déboucheurs). Un produit <b>toxique</b> est dangereux par ingestion, inhalation ou contact.'),
+        S('Ne jamais mélanger', 'Mélanger de l’eau de javel et un produit acide (détartrant) libère du <b>dichlore</b>, un gaz toxique. On ne mélange jamais deux produits ménagers sans connaître les risques.'),
+        S('Les bons gestes', 'Lire l’étiquette, porter lunettes et gants, aérer la pièce, ne pas manger ni boire sur place, garder les produits dans leur emballage d’origine, hors de portée des enfants. En cas de contact, rincer à l’eau abondamment.'),
+      ],
+      recap: ['Les pictogrammes indiquent le danger.', 'Ne jamais mélanger javel et acide.', 'Lunettes, gants, aération.'],
+      quiz: [Q('Que ne faut-il jamais mélanger ?', ['eau de javel et détartrant', 'eau et savon'], 0), Q('En cas de projection sur la peau, on :', ['rince à l’eau abondamment', 'frotte avec un chiffon sec'], 0)] },
   ];
 
   const SUBJECTS = [
@@ -853,7 +1135,7 @@
     { id: 'chimie', label: 'Chimie', icon: '🧪', color: '#0d9488' },
   ];
   const LEVELS_COURS = [
-    { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ' },
+    { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ', ready: true },
     { id: '2nde', label: '2nde' }, { id: '1re', label: '1ʳᵉ' }, { id: 'term', label: 'Terminale' },
   ];
 
