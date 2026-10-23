@@ -82,11 +82,13 @@
     h: "Prayer times and qibla", lead: "Times of the five prayers and the direction of the Kaaba, calculated on your device from your position. Nothing is sent anywhere.",
     loc: "📍 Use my position", city: "Or choose a city", pos: "Position", method: "Calculation method", asr: "Asr: Hanafi school (later)", next: "Next prayer", in: "in",
     qh: "Direction of the qibla", qd: "from north, clockwise", wait: "Locating…", fail: "Position unavailable. Choose a city instead.", date: "Today",
+    auto: "🔔 Play the adhan at prayer time", autoNote: "Keep this page open and your device awake. Your browser only allows sound after you have enabled this option.", autoOn: "Adhan enabled — waiting for the next prayer.", autoNoFile: "No adhan recording available.", notif: "It is time for the prayer: ",
     note: "Times are indicative and may differ by a few minutes from your local mosque. In case of doubt, follow your mosque's timetable.", listen: "🔊 Listen to the adhan", pick: "— choose —"
   } : {
     h: "Horaires de prière et qibla", lead: "Les heures des cinq prières et la direction de la Kaaba, calculées sur votre appareil à partir de votre position. Rien n'est envoyé nulle part.",
     loc: "📍 Utiliser ma position", city: "Ou choisissez une ville", pos: "Position", method: "Méthode de calcul", asr: "Asr : école hanafite (plus tardif)", next: "Prochaine prière", in: "dans",
     qh: "Direction de la qibla", qd: "depuis le nord, dans le sens des aiguilles d'une montre", wait: "Localisation…", fail: "Position indisponible. Choisissez plutôt une ville.", date: "Aujourd'hui",
+    auto: "🔔 Jouer l'adhan à l'heure de la prière", autoNote: "Gardez cette page ouverte et l'appareil allumé. Le navigateur n'autorise le son qu'après l'activation de cette option.", autoOn: "Adhan activé : en attente de la prochaine prière.", autoNoFile: "Aucun enregistrement d'adhan disponible.", notif: "C'est l'heure de la prière : ",
     note: "Les horaires sont indicatifs et peuvent différer de quelques minutes de ceux de votre mosquée. En cas de doute, suivez le calendrier de votre mosquée.", listen: "🔊 Écouter l'adhan", pick: "— choisir —"
   };
   var timer = null;
@@ -100,8 +102,9 @@
       '<div class="pt-ctl"><button class="btn gold" id="ptLoc" type="button">' + X.loc + "</button>" +
       '<label class="rate">' + X.city + ' <select id="ptCity"><option value="">' + X.pick + "</option>" + CITIES.map(function (c, i) { return '<option value="' + i + '">' + esc(EN && CITY_EN[c[0]] || c[0]) + "</option>"; }).join("") + "</select></label>" +
       '<label class="rate">' + X.method + ' <select id="ptMethod">' + Object.keys(METHODS).map(function (k) { return '<option value="' + k + '"' + (k === st.method ? " selected" : "") + ">" + esc(EN ? METHODS[k].en : METHODS[k].n) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="rate"><input type="checkbox" id="ptAuto"> ' + X.auto + "</label>" +
       '<label class="rate"><input type="checkbox" id="ptHanafi"' + (st.hanafi ? " checked" : "") + "> " + X.asr + "</label></div>" +
-      '<div id="ptOut" class="pt-out"></div><p class="muted small">' + X.note + "</p></section>";
+      '<p class="muted small" id="ptAutoMsg"></p><div id="ptOut" class="pt-out"></div><p class="muted small">' + X.note + "</p></section>";
     var out = document.getElementById("ptOut");
     var loc = EN ? "en-GB" : "fr-FR";
     function clock() {
@@ -117,7 +120,7 @@
       clearInterval(timer);
       if (st.lat == null) { out.innerHTML = ""; return; }
       var now = new Date(), tz = st.tz || Intl.DateTimeFormat().resolvedOptions().timeZone;
-      var T = compute(now, st.lat, st.lng, tz, st.method, st.hanafi), q = qibla(st.lat, st.lng);
+      var T = compute(now, st.lat, st.lng, tz, st.method, st.hanafi), q = qibla(st.lat, st.lng); window._siraPT = T;
       var offNow = tzOffset(tz, now), nowH = mod(now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600 + offNow, 24);
       var order = ["fajr", "dhuhr", "asr", "maghrib", "isha"], nextK = null;
       for (var i = 0; i < order.length; i++) { if (T[order[i]] > nowH) { nextK = order[i]; break; } }
@@ -148,6 +151,40 @@
     document.getElementById("ptMethod").onchange = function (e) { st.method = e.target.value; save(st); show(); };
     document.getElementById("ptHanafi").onchange = function (e) { st.hanafi = e.target.checked; save(st); show(); };
     show();
+    /* Adhan automatique : tant que la page est ouverte, il est joué à chaque heure de prière (hors lever du soleil) */
+    var ad = null, wake = null;
+    function playAdhan(name) {
+      try { if (ad) { ad.currentTime = 0; ad.muted = false; var pr = ad.play(); if (pr && pr.catch) pr.catch(function () {}); } } catch (e) {}
+      try { if (window.Notification && Notification.permission === "granted") new Notification(X.notif + name); } catch (e) {}
+    }
+    function autoTick() {
+      var box = document.getElementById("ptAuto"); if (!box) { clearInterval(window._siraAuto); return; }
+      if (!box.checked || st.lat == null || !window._siraPT) return;
+      var tz = st.tz || Intl.DateTimeFormat().resolvedOptions().timeZone, n = new Date();
+      if (window._siraDay && window._siraDay !== n.toDateString()) { show(); }
+      window._siraDay = n.toDateString();
+      var h = mod(n.getUTCHours() + n.getUTCMinutes() / 60 + n.getUTCSeconds() / 3600 + tzOffset(tz, n), 24), T = window._siraPT;
+      ["fajr", "dhuhr", "asr", "maghrib", "isha"].forEach(function (k) {
+        var dt = (h - T[k]) * 3600, key = n.toDateString() + k;
+        if (dt >= 0 && dt < 90 && window._siraLast !== key && !(window._siraDone || {})[key]) {
+          (window._siraDone = window._siraDone || {})[key] = 1; window._siraLast = key;
+          playAdhan(NAMES.filter(function (x) { return x[0] === k; })[0][1]);
+        }
+      });
+    }
+    function setAuto(on) {
+      var msg = document.getElementById("ptAutoMsg"), file = window.SIRA_ADHAN && window.SIRA_ADHAN.file;
+      st.auto = on; save(st);
+      if (!on) { msg.textContent = ""; if (ad) { ad.pause(); } if (wake) { try { wake.release(); } catch (e) {} wake = null; } return; }
+      if (!file) { msg.textContent = X.autoNoFile; return; }
+      if (!ad) ad = new Audio(file);
+      ad.muted = true; var pr = ad.play(); if (pr && pr.then) pr.then(function () { ad.pause(); ad.currentTime = 0; ad.muted = false; }).catch(function () {}); /* déverrouille le son grâce au clic */
+      try { if (window.Notification && Notification.permission === "default") Notification.requestPermission(); } catch (e) {}
+      try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(function (w) { wake = w; }).catch(function () {}); } catch (e) {}
+      msg.textContent = X.autoOn + " " + X.autoNote;
+    }
+    document.getElementById("ptAuto").onchange = function (e) { setAuto(e.target.checked); };
+    clearInterval(window._siraAuto); window._siraAuto = setInterval(autoTick, 1000);
     document.title = X.h + " — " + (EN ? "The World of the Sirah" : "Le Monde de la Sirah");
   }
   window.SiraHoraires = { view: view, compute: compute, qibla: qibla };
