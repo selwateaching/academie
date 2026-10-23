@@ -56,6 +56,7 @@
     'Voir les tarifs': 'عرض الأسعار',
     'Maths {lv} — Tadriss-Maths': 'رياضيات {lv} — تدريس رياضيات',
     'Gratuit': 'مجاني', 'Réservé aux abonnés': 'خاص بالمشتركين', 'bientôt': 'قريبًا',
+    'Primaire': 'الابتدائي', 'Moyen': 'المتوسط', 'Secondaire': 'الثانوي', 'Les cours de ce cycle arrivent bientôt. Les exercices du primaire sont déjà disponibles.': 'دروس هذا الطور قادمة قريبًا. تمارين الابتدائي متوفرة من الآن.',
     'Clique sur une compétence pour t’entraîner : ton score est enregistré et la difficulté s’adapte à mesure que tu progresses.': 'اضغط على مهارة لتتدرّب: تُحفظ نتيجتك وتتكيّف الصعوبة مع تقدّمك.',
     'Choisir un niveau': 'اختر مستوى',
     'pas commencée': 'لم تبدأ', 'en cours': 'قيد التقدّم', 'acquise (80 et plus)': 'مكتسبة (80 فأكثر)', 'maîtrisée (100)': 'متقَنة (100)',
