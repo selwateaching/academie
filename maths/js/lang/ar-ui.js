@@ -38,7 +38,7 @@
     'Accès réservé aux administrateurs.': 'الدخول مخصص للمسؤولين.',
     'Client introuvable.': 'الزبون غير موجود.',
     'Nombre de jours ou montant invalide.': 'عدد الأيام أو المبلغ غير صالح.',
-    'Maths': 'الرياضيات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
+    'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
     'Rechercher une compétence': 'ابحث عن مهارة',
     'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
     'Tadriss-Maths · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس رياضيات · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',
@@ -46,6 +46,8 @@
 
     /* accueil et niveaux */
     'Tadriss-Maths — exercices de maths de la GS à la 6e': 'تدريس رياضيات — تمارين الرياضيات من التحضيري إلى السنة الأولى متوسط',
+    'Exercices et cours pour réussir de la GS à la Terminale': 'تمارين ودروس للنجاح من التحضيري إلى السنة الثالثة ثانوي',
+    'Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.': 'اختر طورك ثم مستواك : تمارين رياضيات مع تصحيح فوري، ودروس مصوّرة في الرياضيات والفيزياء والكيمياء.',
     'Des exercices de maths pour réussir de la GS à la 6ᵉ': 'تمارين رياضيات للنجاح من التحضيري إلى السنة الأولى متوسط',
     'Choisis ton niveau, entraîne-toi sur une compétence et vois ton score grimper. Les questions sont tirées au hasard : tu ne manqueras jamais d’exercices.': 'اختر مستواك وتدرّب على مهارة وشاهد نتيجتك ترتفع. الأسئلة تُختار عشوائيًا، فلن تنفد منك التمارين أبدًا.',
     'Réussir {art} {short}': 'النجاح في {short}',
