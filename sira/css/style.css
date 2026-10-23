@@ -348,3 +348,11 @@ body.is-home .basmala{display:none}
 .mq-dot{color:var(--gold);align-self:center;margin:0 1.6rem;font-size:1rem}
 @keyframes mq{to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.mq-track{animation:none;width:auto;justify-content:center;flex-wrap:wrap}.mq-item~.mq-item,.mq-dot~.mq-dot{display:none}.mq-item:nth-child(n+3),.mq-dot:nth-child(n+2){display:none}}
+
+/* Basmala plus discrète */
+.marquee{background:rgba(240,183,46,.05);border-block:0;border-bottom:1px solid rgba(240,183,46,.18);padding:0}
+.mq-item{font-size:1.05rem;line-height:1.9;color:rgba(255,233,168,.78);text-shadow:none}
+.mq-dot{margin:0 1.2rem;font-size:.6rem;opacity:.6}
+.mq-track{animation-duration:60s}
+.basmala{padding:.1rem 1rem;background:none}
+.basmala span{font-size:1.05rem;line-height:1.9;color:rgba(255,233,168,.78);text-shadow:none}
