@@ -67,6 +67,7 @@ demo_picks = Table(
     UniqueConstraint("user_id", "skill_id", name="uq_pick_user_skill"),
 )
 DEMO_MAX = 3
+COURSE_MAX = 3  # cours animés gratuits au choix (stockés dans demo_picks sous la forme « c:<id> »)
 payments = Table(
     "payments", metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),

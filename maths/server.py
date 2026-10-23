@@ -31,6 +31,7 @@ import store as db
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[^@\s]{2,}$")
+COURSE_RE = re.compile(r"^[a-z0-9]{1,8}(-[a-z0-9]{1,24}){1,4}$")
 SKILL_RE = re.compile(r"^(gs|cp|ce1|ce2|cm1|cm2|6e)-([A-Z]{1,2}\d{1,2})$")
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MAX_PROFILES = 5
@@ -147,13 +148,19 @@ def create_app(database_url=None):
         """Tout est ouvert si les abonnements sont coupés, ou pour un administrateur connecté."""
         return not paywall_on() or is_admin(u)
 
-    def picks_of(conn, uid):
+    def all_picks(conn, uid):
         return [r[0] for r in conn.execute(select(db.demo_picks.c.skill_id).where(
             db.demo_picks.c.user_id == uid).order_by(db.demo_picks.c.id))]
 
+    def picks_of(conn, uid):
+        return [x for x in all_picks(conn, uid) if not x.startswith("c:")]
+
+    def course_picks_of(conn, uid):
+        return [x[2:] for x in all_picks(conn, uid) if x.startswith("c:")]
+
     def me_payload(conn):
         u = current_user(conn)
-        cfg = {"prices": db.PRICES, "free": list(db.FREE_CODES), "demoMax": db.DEMO_MAX, "days": db.PLAN_DAYS,
+        cfg = {"prices": db.PRICES, "free": list(db.FREE_CODES), "demoMax": db.DEMO_MAX, "courseMax": db.COURSE_MAX, "days": db.PLAN_DAYS,
                "currency": "DA", "payment": payment_mode(), "levels": db.LEVELS,
                "open": open_for(u)}
         if not u:
@@ -165,6 +172,7 @@ def create_app(database_url=None):
                                       .order_by(db.payments.c.id.desc()).limit(10)).mappings()]
         ap = active_profile(conn, u["id"])
         cfg["picks"] = picks_of(conn, u["id"])
+        cfg["coursePicks"] = course_picks_of(conn, u["id"])
         return {"user": {"email": u["email"], "admin": is_admin(u)}, "profiles": user_profiles(conn, u["id"]),
                 "activeProfile": ap["id"] if ap else None, "subscriptions": subs, "payments": pays, "config": cfg}
 
@@ -310,6 +318,24 @@ def create_app(database_url=None):
             if len(picks) >= db.DEMO_MAX:
                 return err("Tu as déjà choisi tes %d leçons gratuites." % db.DEMO_MAX, 409)
             conn.execute(db.demo_picks.insert().values(user_id=u["id"], skill_id=sid))
+            return jsonify(me_payload(conn))
+
+    @app.post("/api/course-pick")
+    def course_pick():
+        d = request.get_json(silent=True) or {}
+        cid = str(d.get("course", ""))
+        if not COURSE_RE.match(cid):
+            return err("Cours inconnu.")
+        with engine.begin() as conn:
+            u = current_user(conn)
+            if not u:
+                return err("Connexion nécessaire.", 401)
+            picks = course_picks_of(conn, u["id"])
+            if cid in picks:
+                return jsonify(me_payload(conn))
+            if len(picks) >= db.COURSE_MAX:
+                return err("Tu as déjà choisi tes %d cours gratuits." % db.COURSE_MAX, 409)
+            conn.execute(db.demo_picks.insert().values(user_id=u["id"], skill_id="c:" + cid))
             return jsonify(me_payload(conn))
 
     @app.post("/api/progress")
@@ -530,7 +556,7 @@ def create_app(database_url=None):
                     for r in conn.execute(select(db.payments).where(db.payments.c.user_id == uid)
                                           .order_by(db.payments.c.id.desc()).limit(30)).mappings()]
             return jsonify(user=user_row(conn, u), payments=pays, profiles=user_profiles(conn, uid),
-                           picks=picks_of(conn, uid))
+                           picks=picks_of(conn, uid), coursePicks=course_picks_of(conn, uid))
 
     @app.post("/api/admin/users/<int:uid>/password")
     def admin_password(uid):
@@ -546,12 +572,12 @@ def create_app(database_url=None):
 
     @app.post("/api/admin/users/<int:uid>/picks")
     def admin_picks(uid):
-        """Remet à zéro les leçons gratuites choisies par un client ({"reset": true})."""
+        """Remet à zéro les leçons et cours gratuits choisis par un client ({"reset": true})."""
         with engine.begin() as conn:
             if not admin_user(conn):
                 return err("Accès réservé aux administrateurs.", 403)
             conn.execute(db.demo_picks.delete().where(db.demo_picks.c.user_id == uid))
-            return jsonify(ok=True, picks=[])
+            return jsonify(ok=True, picks=[], coursePicks=[])
 
     @app.post("/api/admin/users/<int:uid>/subscription")
     def admin_subscription(uid):
