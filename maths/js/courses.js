@@ -134,6 +134,54 @@
       ${T(75, 132, 'glaçon 50 g', 'font-size="11"')}${T(310, 132, 'eau 50 g', 'font-size="11"')}${T(180, 32, 'la masse se conserve quand l’état change', 'font-size="13"')}${T(180, 166, 'le volume, lui, peut changer', 'font-size="11"')}`),
     goutte: () => svg(360, 170, `<path class="pop" d="M180 24C180 24 130 84 130 112A50 50 0 0 0 230 112C230 84 180 24 180 24Z" stroke="${C.bleu}" stroke-width="4" fill="${C.bleu}" fill-opacity=".25"/>
       ${T(180, 118, 'H₂O', `fill="${C.bleu}" font-size="18"`)}${T(300, 70, 'sulfate de', 'font-size="11"')}${T(300, 84, 'cuivre blanc', 'font-size="11"')}${T(300, 100, '→ bleu', `fill="${C.bleu}" font-size="12"`)}${T(60, 80, 'eau potable', 'font-size="12"')}${T(60, 98, '≠ eau pure', 'font-size="12"')}`),
+    pythagore: () => svg(360, 190, `<path d="M70 150H250V50Z" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".08"/><path d="M238 150V138H250" stroke="${C.rouge}" stroke-width="2.5"/>
+      ${T(160, 168, 'AB', 'font-size="14"')}${T(268, 104, 'BC', 'font-size="14"')}${T(112, 84, 'AC (hypoténuse)', `fill="${C.rouge}" font-size="12"`)}
+      ${T(60, 156, 'A')}${T(262, 158, 'B')}${T(260, 46, 'C')}${T(180, 188, 'AC² = AB² + BC²', 'font-size="14"')}`),
+    cosinus: () => svg(360, 190, `<path d="M60 150H260V70Z" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".08"/><path d="M248 150V138H260" stroke="${C.rouge}" stroke-width="2.5"/>
+      <path class="pop" d="M100 150A40 40 0 0 0 96 134" stroke="${C.or}" stroke-width="3"/>${T(116, 142, 'α', `fill="${C.or}" font-size="15"`)}
+      ${T(160, 170, 'côté adjacent', `fill="${C.vert}" font-size="12"`)}${T(160, 98, 'hypoténuse', `fill="${C.rouge}" font-size="12"`)}${T(300, 112, 'opposé', `fill="${C.bleu}" font-size="12"`)}${T(180, 188, 'cos α = adjacent ÷ hypoténuse', 'font-size="13"')}`),
+    translation: () => svg(360, 180, `${ARROW('b1', C.rouge)}<path d="M60 130L120 60L150 130Z" stroke="${C.bleu}" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".14"/>
+      <path d="M210 100L270 30L300 100Z" stroke="${C.vert}" stroke-width="3.5" fill="${C.vert}" fill-opacity=".14"/>
+      <path class="dash" d="M60 130L210 100M120 60L270 30M150 130L300 100" stroke="${C.gris}" stroke-width="1.8"/>
+      <path class="pulse" d="M150 160L300 130" stroke="${C.rouge}" stroke-width="4" marker-end="url(#b1)"/>${T(220, 176, 'vecteur de translation', `fill="${C.rouge}" font-size="12"`)}`),
+    pyramide: () => svg(360, 190, `<path d="M70 150L170 170L290 140L180 40Z M70 150L180 40M170 170L180 40M290 140L180 40" stroke="${C.brand}" stroke-width="3.5" fill="${C.brand}" fill-opacity=".06"/>
+      <path d="M70 150L290 140" stroke="${C.gris}" stroke-width="1.6" stroke-dasharray="5 5"/><path class="dash" d="M180 40V152" stroke="${C.rouge}" stroke-width="2.5"/>
+      ${T(194, 100, 'h', `fill="${C.rouge}" font-size="15"`)}${T(180, 20, 'V = ⅓ × aire de la base × h', 'font-size="13"')}${T(170, 186, 'base', 'font-size="12"')}`),
+    puissances: () => svg(360, 170, `${[1, 2, 4, 8, 16].map((v, i) => `<rect class="pulse" style="animation-delay:${i * 0.25}s" x="${22 + i * 66}" y="${120 - 10 - i * 18}" width="52" height="${10 + i * 18}" rx="6" fill="${C.brand}" fill-opacity="${0.2 + i * 0.16}" stroke="${C.brand}" stroke-width="2.5"/>${T(48 + i * 66, 143, '2' + '⁰¹²³⁴'[i], 'font-size="13"')}${T(48 + i * 66, 104 - i * 18, v, 'font-size="12"')}`).join('')}${T(180, 164, 'chaque fois on multiplie par 2', 'font-size="12"')}`),
+    mediane: () => svg(360, 190, `<path d="M60 150L300 150L170 30Z" stroke="${C.brand}" stroke-width="4" fill="${C.brand}" fill-opacity=".07"/>
+      <path class="dash" d="M60 150L235 90M300 150L115 90M170 30V150" stroke="${C.rouge}" stroke-width="2.5"/><circle class="pop" cx="177" cy="110" r="6" fill="${C.or}"/>
+      ${T(60, 168, 'A')}${T(300, 168, 'B')}${T(170, 22, 'C')}${T(206, 112, 'G', `fill="${C.or}" font-size="15"`)}${T(180, 186, 'les médianes se coupent au centre de gravité G', 'font-size="11"')}`),
+    ampere: () => svg(360, 170, `<path d="M50 40H310V130H50V40" stroke="currentColor" stroke-width="3"/><path class="flow" d="M50 78V40H310V130H50V100"/>
+      <rect x="40" y="78" width="20" height="26" fill="var(--card,#fff)" stroke="none"/>${pile(50, 90)}
+      <rect x="130" y="22" width="40" height="36" fill="var(--card,#fff)" stroke="none"/><circle cx="150" cy="40" r="17" stroke="${C.vert}" stroke-width="3.5" fill="#fff"/>${T(150, 46, 'A', `fill="${C.vert}" font-size="16"`)}
+      <rect x="250" y="112" width="40" height="36" fill="var(--card,#fff)" stroke="none"/>${lamp(270, 130)}
+      ${T(180, 84, 'ampèremètre en série', 'font-size="12"')}${T(180, 102, 'I en ampères (A)', 'font-size="12"')}${T(180, 164, 'le courant le traverse', 'font-size="11"')}`),
+    volt: () => svg(360, 196, `<path d="M50 40H310V130H50V40" stroke="currentColor" stroke-width="3"/>
+      <rect x="40" y="62" width="20" height="26" fill="var(--card,#fff)" stroke="none"/>${pile(50, 75)}
+      <rect x="250" y="112" width="40" height="36" fill="var(--card,#fff)" stroke="none"/>${lamp(270, 130)}
+      <path d="M232 130V166H308V130" stroke="${C.rouge}" stroke-width="2.5" stroke-dasharray="5 4"/><circle cx="270" cy="166" r="14" stroke="${C.rouge}" stroke-width="3.5" fill="#fff"/>${T(270, 172, 'V', `fill="${C.rouge}" font-size="15"`)}
+      ${T(150, 86, 'voltmètre en dérivation', 'font-size="12"')}${T(150, 104, 'U en volts (V)', 'font-size="12"')}`),
+    spectre: () => svg(360, 170, `<path class="dash" d="M20 85L120 85" stroke="${C.gris}" stroke-width="4"/><path d="M120 50L160 120H90Z" stroke="currentColor" stroke-width="3" fill="${C.bleu}" fill-opacity=".12"/>
+      ${['#ef4444', '#f59e0b', '#eab308', '#16a34a', '#0ea5e9', '#4f46e5', '#7c3aed'].map((c, i) => `<path class="pulse" style="animation-delay:${i * 0.15}s" d="M148 92L330 ${34 + i * 15}" stroke="${c}" stroke-width="4"/>`).join('')}
+      ${T(55, 70, 'lumière blanche', 'font-size="11"')}${T(130, 140, 'prisme', 'font-size="12"')}${T(300, 20, 'rouge', 'fill="#ef4444" font-size="11"')}${T(300, 156, 'violet', 'fill="#7c3aed" font-size="11"')}`),
+    reflexion: () => svg(360, 170, `${ARROW('b2', C.or)}<path d="M20 130H340" stroke="currentColor" stroke-width="4"/><path d="M180 130V30" stroke="${C.gris}" stroke-width="2" stroke-dasharray="5 5"/>
+      <path class="dash" d="M60 30L180 130" stroke="${C.or}" stroke-width="3.5"/><path class="dash" d="M180 130L300 30" stroke="${C.or}" stroke-width="3.5" marker-end="url(#b2)"/>
+      <path d="M150 50A36 36 0 0 1 180 46" stroke="${C.rouge}" stroke-width="2.5"/><path d="M180 46A36 36 0 0 1 208 60" stroke="${C.rouge}" stroke-width="2.5"/>
+      ${T(138, 78, 'i', `fill="${C.rouge}" font-size="15"`)}${T(222, 78, 'r', `fill="${C.rouge}" font-size="15"`)}${T(180, 152, 'miroir', 'font-size="12"')}${T(180, 166, 'angle d’incidence i = angle de réflexion r', 'font-size="11"')}`),
+    atome: () => svg(360, 170, `<circle cx="180" cy="85" r="14" fill="${C.rouge}"/><circle cx="174" cy="82" r="5" fill="${C.bleu}"/>
+      <ellipse cx="180" cy="85" rx="70" ry="30" stroke="${C.gris}" stroke-width="1.5"/><ellipse cx="180" cy="85" rx="70" ry="30" stroke="${C.gris}" stroke-width="1.5" transform="rotate(60 180 85)"/><ellipse cx="180" cy="85" rx="70" ry="30" stroke="${C.gris}" stroke-width="1.5" transform="rotate(120 180 85)"/>
+      <circle class="pop" cx="250" cy="85" r="6" fill="${C.bleu}"/><circle class="pop" style="animation-delay:.4s" cx="145" cy="55" r="6" fill="${C.bleu}"/><circle class="pop" style="animation-delay:.8s" cx="145" cy="115" r="6" fill="${C.bleu}"/>
+      ${T(300, 80, 'électrons −', `fill="${C.bleu}" font-size="11"`)}${T(60, 80, 'noyau +', `fill="${C.rouge}" font-size="11"`)}${T(180, 166, 'l’atome est neutre : autant de + que de −', 'font-size="12"')}`),
+    molecule: () => svg(360, 170, `<circle cx="70" cy="70" r="22" fill="${C.rouge}" fill-opacity=".6"/>${T(70, 76, 'O', 'font-size="15" fill="#fff"')}<circle cx="38" cy="102" r="13" fill="${C.bleu}"/>${T(38, 107, 'H', 'font-size="11" fill="#fff"')}<circle cx="102" cy="102" r="13" fill="${C.bleu}"/>${T(102, 107, 'H', 'font-size="11" fill="#fff"')}${T(70, 142, 'eau H₂O', 'font-size="10"')}
+      <circle cx="180" cy="80" r="20" fill="${C.gris}" fill-opacity=".7"/>${T(180, 86, 'C', 'font-size="14" fill="#fff"')}<circle cx="146" cy="80" r="16" fill="${C.rouge}" fill-opacity=".6"/>${T(146, 86, 'O', 'font-size="12" fill="#fff"')}<circle cx="214" cy="80" r="16" fill="${C.rouge}" fill-opacity=".6"/>${T(214, 86, 'O', 'font-size="12" fill="#fff"')}${T(180, 142, 'dioxyde de carbone CO₂', 'font-size="10"')}
+      <circle cx="290" cy="70" r="16" fill="${C.rouge}" fill-opacity=".6"/><circle cx="318" cy="70" r="16" fill="${C.rouge}" fill-opacity=".6"/>${T(304, 142, 'dioxygène O₂', 'font-size="10"')}`),
+    reaction: () => svg(360, 170, `${ARROW('b3', C.rouge)}<rect x="14" y="50" width="130" height="60" rx="12" fill="${C.bleu}" fill-opacity=".18" stroke="${C.bleu}" stroke-width="3"/>${T(79, 76, 'réactifs', 'font-size="14"')}${T(79, 96, 'ce qui disparaît', 'font-size="10"')}
+      <path class="pulse" d="M150 80H206" stroke="${C.rouge}" stroke-width="4" marker-end="url(#b3)"/>${T(178, 68, 'réaction', `fill="${C.rouge}" font-size="11"`)}
+      <rect x="216" y="50" width="130" height="60" rx="12" fill="${C.vert}" fill-opacity=".18" stroke="${C.vert}" stroke-width="3"/>${T(281, 76, 'produits', 'font-size="14"')}${T(281, 96, 'ce qui apparaît', 'font-size="10"')}
+      ${T(180, 150, 'les atomes se réarrangent, ils ne disparaissent pas', 'font-size="12"')}`),
+    feu: () => svg(360, 180, `<path d="M180 20L320 150H40Z" stroke="${C.rouge}" stroke-width="4" fill="${C.rouge}" fill-opacity=".08"/>
+      <path class="pulse" d="M180 70C160 100 156 126 180 136C204 126 200 100 180 70Z" fill="${C.or}" stroke="${C.rouge}" stroke-width="3"/>
+      ${T(180, 14, 'chaleur', 'font-size="12"')}${T(70, 170, 'combustible', `fill="${C.vert}" font-size="12"`)}${T(290, 170, 'comburant (O₂)', `fill="${C.bleu}" font-size="12"`)}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -553,6 +601,250 @@
       ],
       recap: ['Eau pure = seulement H₂O.', 'Eau potable = mélange sans danger.', 'Le sulfate de cuivre blanc bleuit au contact de l’eau.'],
       quiz: [Q('Le sulfate de cuivre anhydre devient … en présence d’eau.', ['rouge', 'bleu'], 1), Q('L’eau du robinet est :', ['de l’eau pure', 'un mélange'], 1)] },
+    /* ================================================================ 4e : MATHS */
+    { id: 'm4-relatifs', subj: 'maths', level: '4e', icon: '✖️', title: 'Multiplier et diviser des relatifs',
+      intro: 'En 5e on a appris à additionner les nombres relatifs. Voici comment les multiplier et les diviser.',
+      steps: [
+        S('La règle des signes', 'Le produit de deux nombres de <b>même signe</b> est <b>positif</b>. Le produit de deux nombres de <b>signes différents</b> est <b>négatif</b>. (−3) × (−4) = +12 et (−3) × (+4) = −12.'),
+        S('Plusieurs facteurs', 'Pour un produit de plusieurs facteurs, on compte les facteurs négatifs. Un <b>nombre pair</b> de facteurs négatifs donne un résultat positif, un nombre impair donne un résultat négatif. (−2) × (−5) × (−1) = −10.'),
+        S('La division', 'La division suit la même règle des signes : (−12) ÷ (−4) = +3 et (−12) ÷ (+4) = −3. On ne peut jamais diviser par <b>0</b>.'),
+        S('Soustraire', 'Soustraire un nombre, c’est <b>ajouter son opposé</b> : 5 − (−3) = 5 + 3 = 8 et (−2) − (+6) = (−2) + (−6) = −8.', 'droite'),
+      ],
+      recap: ['Même signe : produit positif.', 'Signes différents : produit négatif.', 'Soustraire = ajouter l’opposé.', 'On ne divise jamais par 0.'],
+      quiz: [Q('(−7) × (−2) = ?', ['−14', '+14', '−9'], 1), Q('4 − (−5) = ?', ['−1', '9', '−9'], 1)] },
+
+    { id: 'm4-fractions', subj: 'maths', level: '4e', icon: '🍰', title: 'Multiplier et diviser des fractions',
+      intro: 'Prendre la moitié d’un tiers de gâteau, c’est multiplier des fractions.',
+      steps: [
+        S('Le produit', 'Pour multiplier deux fractions, on multiplie les numérateurs entre eux et les dénominateurs entre eux : ' + F(2, 3) + ' × ' + F(4, 5) + ' = ' + F(8, 15) + '.'),
+        S('Simplifier d’abord', 'On peut simplifier avant de multiplier : ' + F(3, 4) + ' × ' + F(8, 9) + ' = ' + F(24, 36) + ' = ' + F(2, 3) + '. On a divisé par 12.'),
+        S('L’inverse', 'Deux nombres sont <b>inverses</b> si leur produit vaut 1. L’inverse de ' + F(2, 5) + ' est ' + F(5, 2) + '. Le nombre 0 n’a pas d’inverse.'),
+        S('La division', 'Diviser par une fraction, c’est <b>multiplier par son inverse</b> : ' + F(3, 4) + ' ÷ ' + F(2, 5) + ' = ' + F(3, 4) + ' × ' + F(5, 2) + ' = ' + F(15, 8) + '.'),
+      ],
+      recap: ['Produit : numérateur × numérateur, dénominateur × dénominateur.', 'On simplifie pour calculer plus facilement.', 'Diviser = multiplier par l’inverse.'],
+      quiz: [Q('1/2 × 1/3 = ?', ['1/5', '1/6', '2/3'], 1), Q('L’inverse de 3/7 est :', ['7/3', '−3/7', '3/7'], 0)] },
+
+    { id: 'm4-puissances', subj: 'maths', level: '4e', icon: '🔢', title: 'Les puissances',
+      intro: 'Écrire 2 × 2 × 2 × 2 × 2 devient 2⁵. Les puissances raccourcissent les calculs avec de très grands ou de très petits nombres.',
+      steps: [
+        S('Définition', 'Pour un nombre a et un entier positif n, <b>aⁿ = a × a × … × a</b> (n facteurs). Ainsi 2⁵ = 2 × 2 × 2 × 2 × 2 = 32 et 10³ = 1 000. Exposant 0 : a⁰ = 1.', 'puissances'),
+        S('Les puissances de 10', '10² = 100, 10⁶ = 1 000 000. Pour un exposant négatif : 10⁻² = 0,01 et 10⁻³ = 0,001. L’exposant indique le nombre de zéros, ou de décimales.'),
+        S('Produit et quotient', 'Pour un même nombre : <b>aᵐ × aⁿ = aᵐ⁺ⁿ</b> et <b>aᵐ ÷ aⁿ = aᵐ⁻ⁿ</b>. Exemple : 10³ × 10⁴ = 10⁷ et 10⁵ ÷ 10² = 10³.'),
+        S('Notation scientifique', 'Un nombre est en <b>notation scientifique</b> s’il s’écrit a × 10ⁿ avec 1 ≤ a &lt; 10. La distance Terre-Soleil, 150 000 000 km, s’écrit 1,5 × 10⁸ km.'),
+      ],
+      recap: ['aⁿ = n facteurs égaux à a.', 'a⁰ = 1.', '10ⁿ ajoute n zéros.', 'Notation scientifique : a × 10ⁿ avec 1 ≤ a &lt; 10.'],
+      quiz: [Q('2⁴ = ?', ['8', '16', '6'], 1), Q('10³ × 10² = ?', ['10⁵', '10⁶', '100⁵'], 0)] },
+
+    { id: 'm4-equations', subj: 'maths', level: '4e', icon: '⚖️', title: 'Développer et résoudre une équation',
+      intro: 'Une équation est une égalité avec une inconnue. Résoudre, c’est trouver la valeur qui la rend vraie.',
+      steps: [
+        S('Développer', 'Développer, c’est transformer un produit en somme : <b>k × (a + b) = k × a + k × b</b>. Exemple : 3 × (x − 2) = 3x − 6.'),
+        S('L’équation ax + b = c', 'On isole x en défaisant les opérations : pour 2x + 3 = 11, on soustrait 3 : 2x = 8, puis on divise par 2 : <b>x = 4</b>. On a fait la même chose des deux côtés.', 'balance'),
+        S('Vérifier', 'On remplace x par la valeur trouvée : 2 × 4 + 3 = 11, c’est juste. Une solution se vérifie toujours.'),
+        S('Mettre en équation', 'Un problème : « J’ai pensé à un nombre, je le double et j’ajoute 5. Je trouve 17. » On pose 2x + 5 = 17, donc 2x = 12 et <b>x = 6</b>.'),
+      ],
+      recap: ['k(a + b) = ka + kb.', 'Même opération des deux côtés.', 'On vérifie la solution.'],
+      quiz: [Q('Solution de 3x − 6 = 9 :', ['x = 1', 'x = 5', 'x = 15'], 1), Q('3 × (x + 2) = ?', ['3x + 2', '3x + 6', 'x + 6'], 1)] },
+
+    { id: 'm4-pythagore', subj: 'maths', level: '4e', icon: '📏', title: 'Le théorème de Pythagore',
+      intro: 'Dans un triangle rectangle, une relation relie les trois côtés. Elle permet de calculer une longueur sans la mesurer.',
+      steps: [
+        S('L’énoncé', 'Dans un triangle rectangle, le carré de l’<b>hypoténuse</b> (le côté opposé à l’angle droit) est égal à la <b>somme des carrés</b> des deux autres côtés. Pour ABC rectangle en B : <b>AC² = AB² + BC²</b>.', 'pythagore'),
+        S('Calculer l’hypoténuse', 'Si AB = 3 cm et BC = 4 cm : AC² = 9 + 16 = 25, donc AC = 5 cm, car 5 × 5 = 25.'),
+        S('Calculer un côté', 'Si AC = 13 cm et AB = 5 cm : BC² = AC² − AB² = 169 − 25 = 144, donc BC = 12 cm.'),
+        S('La réciproque', 'Si dans un triangle, le carré du plus grand côté est égal à la somme des carrés des deux autres, alors ce triangle est <b>rectangle</b>. Un triangle 6, 8 et 10 : 36 + 64 = 100, il est rectangle.'),
+      ],
+      recap: ['AC² = AB² + BC², AC étant l’hypoténuse.', 'L’hypoténuse est le plus grand côté.', 'La réciproque permet de prouver un angle droit.'],
+      quiz: [Q('Triangle rectangle de côtés 6 et 8 : l’hypoténuse mesure', ['10', '14', '12'], 0), Q('Un triangle de côtés 5, 12 et 13 est-il rectangle ?', ['Oui', 'Non'], 0)] },
+
+    { id: 'm4-cosinus', subj: 'maths', level: '4e', icon: '📐', title: 'Le cosinus d’un angle',
+      intro: 'Avec un angle et un côté d’un triangle rectangle, le cosinus donne les autres longueurs.',
+      steps: [
+        S('Définition', 'Dans un triangle rectangle, pour un angle aigu α : <b>cos α = côté adjacent ÷ hypoténuse</b>. Le côté adjacent est celui qui touche l’angle α sans être l’hypoténuse.', 'cosinus'),
+        S('Valeurs', 'Le cosinus d’un angle aigu est un nombre entre 0 et 1, car l’hypoténuse est le plus grand côté. Par exemple, cos 60° = 0,5 et cos 0° = 1.'),
+        S('Calculer une longueur', 'Avec un angle de 60° et une hypoténuse de 10 cm : adjacent = 10 × cos 60° = 10 × 0,5 = 5 cm.'),
+        S('Calculer un angle', 'Avec adjacent 4 cm et hypoténuse 8 cm : cos α = 4 ÷ 8 = 0,5, donc α = 60°. On trouve l’angle avec la touche « cos⁻¹ » de la calculatrice.'),
+      ],
+      recap: ['cos α = adjacent ÷ hypoténuse.', 'Le cosinus est entre 0 et 1.', 'Calculatrice : cos et cos⁻¹.'],
+      quiz: [Q('cos α = 0,5 : l’adjacent vaut … fois l’hypoténuse.', ['la moitié', 'le double'], 0), Q('Adjacent 3 cm et hypoténuse 6 cm. cos α = ?', ['2', '0,5', '3'], 1)] },
+
+    { id: 'm4-translation', subj: 'maths', level: '4e', icon: '➡️', title: 'La translation',
+      intro: 'Faire glisser une figure sans la tourner : c’est une translation.',
+      steps: [
+        S('Définition', 'Une <b>translation</b> fait glisser une figure : tous les points se déplacent dans la <b>même direction</b>, dans le <b>même sens</b> et de la <b>même longueur</b>.', 'translation'),
+        S('Construire l’image', 'Pour un point A, on se donne le déplacement (une flèche). Son image A’ est obtenue en reportant cette flèche à partir de A. Si B’ est l’image de B, alors ABB’A’ est un parallélogramme.'),
+        S('Ce qui est conservé', 'La translation conserve les <b>longueurs</b>, les <b>angles</b>, les <b>aires</b> et le <b>parallélisme</b>. L’image d’une droite est une droite parallèle.'),
+        S('Dans la vie', 'Un ascenseur, un tiroir, une porte coulissante : tous ces mouvements sont des translations.'),
+      ],
+      recap: ['Même direction, même sens, même longueur.', 'Longueurs, angles, aires conservés.', 'La droite et son image sont parallèles.'],
+      quiz: [Q('L’image d’une droite par une translation est :', ['une droite parallèle', 'une droite perpendiculaire'], 0), Q('Une translation conserve :', ['les longueurs', 'seulement les angles'], 0)] },
+
+    { id: 'm4-pyramide-cone', subj: 'maths', level: '4e', icon: '🔺', title: 'Pyramides et cônes',
+      intro: 'Une pyramide, un cône : des solides qui se terminent en pointe. Comment calculer leur volume ?',
+      steps: [
+        S('La pyramide', 'Une <b>pyramide</b> a une base (un polygone) et des faces latérales triangulaires qui se rejoignent en un sommet. La <b>hauteur</b> est la distance du sommet à la base.', 'pyramide'),
+        S('Le volume d’une pyramide', '<b>V = ⅓ × aire de la base × hauteur</b>. Base carrée de 6 cm de côté et hauteur 5 cm : V = 36 × 5 ÷ 3 = 60 cm³.'),
+        S('Le cône', 'Un <b>cône de révolution</b> a pour base un disque et se termine en pointe. Son volume est aussi <b>⅓ × aire de la base × hauteur</b>.'),
+        S('Comparer', 'Une pyramide a le tiers du volume du prisme de même base et de même hauteur. Il faut trois pyramides pour remplir un prisme.'),
+      ],
+      recap: ['Pyramide et cône : V = ⅓ × aire de la base × h.', 'Un tiers du volume du prisme de même base et même hauteur.'],
+      quiz: [Q('Pyramide : base de 12 cm², hauteur 5 cm. V = ?', ['20 cm³', '60 cm³', '30 cm³'], 0), Q('La base d’un cône est :', ['un disque', 'un carré'], 0)] },
+
+    { id: 'm4-droites', subj: 'maths', level: '4e', icon: '🔻', title: 'Les droites remarquables du triangle',
+      intro: 'Dans un triangle, certaines droites ont des propriétés particulières : médianes, hauteurs, médiatrices, bissectrices.',
+      steps: [
+        S('Les médianes', 'Une <b>médiane</b> relie un sommet au milieu du côté opposé. Les trois médianes se coupent en un point, le <b>centre de gravité</b> G.', 'mediane'),
+        S('Les hauteurs', 'Une <b>hauteur</b> passe par un sommet et est perpendiculaire au côté opposé. Les trois hauteurs se coupent au point appelé <b>orthocentre</b>.'),
+        S('Les médiatrices', 'La <b>médiatrice</b> d’un segment est la droite perpendiculaire au segment, en son milieu. Ses points sont à égale distance des extrémités. Les trois médiatrices se coupent au centre du <b>cercle circonscrit</b>.'),
+        S('Les bissectrices', 'La <b>bissectrice</b> d’un angle le partage en deux angles égaux. Les trois bissectrices se coupent au centre du <b>cercle inscrit</b>.'),
+      ],
+      recap: ['Médiane : sommet vers milieu.', 'Hauteur : perpendiculaire au côté.', 'Médiatrice : perpendiculaire en son milieu.', 'Bissectrice : partage l’angle en deux.'],
+      quiz: [Q('Les trois médiatrices se coupent au centre :', ['du cercle circonscrit', 'du cercle inscrit'], 0), Q('Une médiane passe par :', ['le milieu du côté opposé', 'le pied de la hauteur'], 0)] },
+
+    /* ================================================================ 4e : PHYSIQUE */
+    { id: 'p4-intensite', subj: 'physique', level: '4e', icon: '🔌', title: 'L’intensité du courant',
+      intro: 'Plus ou moins de courant dans un fil : cette quantité se mesure, avec un ampèremètre.',
+      steps: [
+        S('Le courant électrique', 'Dans un métal, le courant électrique est un déplacement d’<b>électrons</b> libres. Ils circulent de la borne − vers la borne + de la pile. Le sens conventionnel du courant va de + vers −.'),
+        S('L’intensité', 'L’<b>intensité</b> du courant (notée I) mesure la quantité d’électricité qui passe chaque seconde. Son unité est l’<b>ampère</b> (A). Un milliampère : 1 mA = 0,001 A.'),
+        S('Mesurer avec l’ampèremètre', 'L’<b>ampèremètre</b> se branche <b>en série</b> dans le circuit : le courant le traverse. On choisit d’abord le plus grand calibre, puis on le diminue.', 'ampere'),
+        S('Intensité et lampe', 'Plus l’intensité est grande, plus la lampe brille, jusqu’à ce qu’elle grille si elle dépasse sa valeur maximale.'),
+      ],
+      recap: ['I se mesure en ampères (A).', 'L’ampèremètre se branche en série.', '1 mA = 0,001 A.'],
+      quiz: [Q('L’ampèremètre se branche :', ['en série', 'en dérivation'], 0), Q('250 mA = … A', ['2,5', '0,25', '25'], 1)] },
+
+    { id: 'p4-tension', subj: 'physique', level: '4e', icon: '🔋', title: 'La tension électrique',
+      intro: 'Une pile pousse le courant dans le circuit. Cette « poussée » s’appelle la tension.',
+      steps: [
+        S('Définition', 'La <b>tension</b> électrique (notée U) existe entre deux points d’un circuit. Son unité est le <b>volt</b> (V). Une pile plate indique 4,5 V, une pile de téléphone environ 3,7 V.'),
+        S('Mesurer avec le voltmètre', 'Le <b>voltmètre</b> se branche <b>en dérivation</b>, c’est-à-dire aux bornes du dipôle dont on mesure la tension.', 'volt'),
+        S('Tensions usuelles', 'Pile ronde : 1,5 V. Batterie de voiture : 12 V. Prise de la maison : 230 V, ce qui est dangereux.'),
+        S('Tension nominale', 'Une lampe porte une indication, par exemple « 6 V ». Elle brille normalement avec cette tension. Au-dessus, elle risque de griller.'),
+      ],
+      recap: ['U se mesure en volts (V).', 'Le voltmètre se branche en dérivation.', 'Prise de la maison : 230 V, danger.'],
+      quiz: [Q('Le voltmètre se branche :', ['en série', 'en dérivation'], 1), Q('La tension du secteur est de :', ['230 V', '1,5 V'], 0)] },
+
+    { id: 'p4-lois', subj: 'physique', level: '4e', icon: '➕', title: 'Les lois des circuits',
+      intro: 'Dans un circuit, les intensités et les tensions suivent des règles simples.',
+      steps: [
+        S('Circuit en série : l’intensité', 'Dans un circuit en <b>série</b>, l’intensité est la <b>même</b> partout : le courant n’a qu’un seul chemin. Si l’ampèremètre indique 0,3 A avant la lampe, il indique 0,3 A après.', 'serie'),
+        S('Circuit en série : la tension', 'La tension aux bornes du générateur est égale à la <b>somme</b> des tensions aux bornes des récepteurs : U = U₁ + U₂. Pile de 6 V et deux lampes identiques : 3 V chacune.'),
+        S('Circuit en dérivation : l’intensité', 'Au nœud, l’intensité qui arrive est égale à la <b>somme</b> des intensités qui repartent : I = I₁ + I₂. Si I₁ = 0,2 A et I₂ = 0,3 A, alors I = 0,5 A.', 'derivation'),
+        S('Circuit en dérivation : la tension', 'Dans un circuit en dérivation, la tension est la <b>même</b> aux bornes de chaque branche et du générateur.'),
+      ],
+      recap: ['Série : I identique, U s’additionne.', 'Dérivation : U identique, I s’additionne.'],
+      quiz: [Q('En série, I₁ = 0,4 A. L’intensité ailleurs dans le circuit est :', ['0,4 A', '0,8 A', '0,2 A'], 0), Q('En dérivation, I₁ = 0,2 A et I₂ = 0,3 A. L’intensité principale est :', ['0,1 A', '0,5 A', '0,3 A'], 1)] },
+
+    { id: 'p4-securite', subj: 'physique', level: '4e', icon: '⚠️', title: 'L’électricité à la maison et la sécurité',
+      intro: 'Le courant de la maison est puissant. Quelques règles évitent les accidents.',
+      steps: [
+        S('Le courant du secteur', 'Dans les maisons, le courant est <b>alternatif</b> : il change de sens 100 fois par seconde. Sa fréquence est de 50 hertz (Hz) et sa tension de 230 V. Une pile fournit du courant <b>continu</b>.'),
+        S('Le danger', 'Le corps humain conduit l’électricité. Un courant de quelques dizaines de milliampères peut être mortel : c’est l’<b>électrocution</b>. L’eau et l’humidité augmentent le danger.'),
+        S('Les protections', 'Le <b>fusible</b> et le <b>disjoncteur</b> coupent le courant en cas de surintensité. La prise de terre et le disjoncteur différentiel protègent les personnes.'),
+        S('Les bons gestes', 'Ne jamais toucher un appareil avec les mains mouillées, ne pas brancher trop d’appareils sur une prise, ne pas mettre ses doigts ou des objets dans une prise, couper le courant avant de réparer.'),
+      ],
+      recap: ['Secteur : alternatif, 230 V, 50 Hz.', 'Fusible et disjoncteur protègent.', 'Eau et électricité ne font pas bon ménage.'],
+      quiz: [Q('La tension du secteur en France est de :', ['12 V', '230 V'], 1), Q('Le fusible sert à :', ['couper le courant en cas de surintensité', 'augmenter la tension'], 0)] },
+
+    { id: 'p4-couleurs', subj: 'physique', level: '4e', icon: '🌈', title: 'La lumière blanche et les couleurs',
+      intro: 'L’arc-en-ciel montre que la lumière blanche cache toutes les couleurs.',
+      steps: [
+        S('Décomposer la lumière', 'Un <b>prisme</b> décompose la lumière blanche en une suite de couleurs : le <b>spectre</b>. De haut en bas : rouge, orange, jaune, vert, bleu, indigo, violet.', 'spectre'),
+        S('L’arc-en-ciel', 'Un arc-en-ciel apparaît quand la lumière du Soleil traverse des gouttes d’eau, qui jouent le rôle de petits prismes.'),
+        S('Les sources colorées', 'Une lumière <b>monochromatique</b> ne contient qu’une seule couleur, comme un laser. Une lumière <b>polychromatique</b> en contient plusieurs, comme la lumière blanche.'),
+        S('La couleur d’un objet', 'Un objet éclairé en lumière blanche paraît rouge s’il renvoie surtout le rouge et absorbe les autres couleurs. Un objet noir absorbe tout, un objet blanc renvoie tout.'),
+      ],
+      recap: ['Le prisme décompose la lumière blanche.', 'Le spectre va du rouge au violet.', 'Un objet a la couleur de la lumière qu’il renvoie.'],
+      quiz: [Q('Un prisme éclairé en lumière blanche donne :', ['le spectre', 'une seule couleur'], 0), Q('Un objet noir :', ['absorbe toute la lumière', 'renvoie toute la lumière'], 0)] },
+
+    { id: 'p4-reflexion', subj: 'physique', level: '4e', icon: '🪞', title: 'La réflexion de la lumière',
+      intro: 'Dans un miroir, la lumière rebondit. Cette règle permet de prévoir où elle va.',
+      steps: [
+        S('Réflexion et miroir', 'Quand la lumière rencontre une surface polie, comme un miroir, elle <b>rebondit</b> : c’est la <b>réflexion</b>. La surface plane et polie s’appelle un <b>miroir plan</b>.', 'reflexion'),
+        S('Le rayon incident et réfléchi', 'Le rayon qui arrive est le rayon <b>incident</b>, celui qui repart est le rayon <b>réfléchi</b>. On mesure les angles par rapport à la <b>normale</b>, la perpendiculaire au miroir au point d’incidence.'),
+        S('La loi de la réflexion', 'L’angle d’incidence <b>i</b> est égal à l’angle de réflexion <b>r</b> : <b>i = r</b>. Les deux rayons et la normale sont dans le même plan.'),
+        S('L’image dans un miroir', 'L’image d’un objet dans un miroir plan est <b>symétrique</b> de l’objet par rapport au miroir. Elle se forme « derrière » le miroir, à la même distance.'),
+      ],
+      recap: ['Réflexion : la lumière rebondit sur un miroir.', 'i = r, mesurés par rapport à la normale.', 'L’image est symétrique de l’objet.'],
+      quiz: [Q('Un rayon arrive avec un angle d’incidence de 30°. Il est réfléchi avec un angle de :', ['30°', '60°', '15°'], 0), Q('La normale est :', ['perpendiculaire au miroir', 'parallèle au miroir'], 0)] },
+
+    { id: 'p4-poids-masse', subj: 'physique', level: '4e', icon: '⚖️', title: 'Poids et masse',
+      intro: 'Sur la Lune, on se sent plus léger : le poids change, mais la masse reste la même.',
+      steps: [
+        S('Masse et poids', 'La <b>masse</b> m mesure la quantité de matière d’un objet. Elle se mesure en <b>kilogrammes</b> avec une balance. Le <b>poids</b> P est la force d’attraction de la Terre sur l’objet. Il se mesure en <b>newtons</b> avec un dynamomètre.'),
+        S('La relation', '<b>P = m × g</b>. Sur Terre, g ≈ 10 N/kg (environ 9,8). Un objet de 2 kg a un poids d’environ 20 N.'),
+        S('La Lune', 'Sur la Lune, g vaut environ 1,6 N/kg. Le même objet de 2 kg y a un poids d’environ 3,2 N : il y est six fois plus faible. Sa masse n’a pas changé.', 'force'),
+        S('L’attraction', 'Le poids vient de l’<b>attraction gravitationnelle</b> : tous les objets s’attirent, et l’attraction est d’autant plus forte que les masses sont grandes et que les distances sont petites.'),
+      ],
+      recap: ['La masse se mesure en kg, le poids en N.', 'P = m × g.', 'La masse ne change pas selon le lieu, le poids change.'],
+      quiz: [Q('Sur Terre (g = 10 N/kg), 3 kg ont un poids de :', ['3 N', '30 N', '13 N'], 1), Q('Sur la Lune, la masse d’un objet est :', ['plus faible', 'la même'], 1)] },
+
+    /* ================================================================ 4e : CHIMIE */
+    { id: 'c4-atomes', subj: 'chimie', level: '4e', icon: '⚛️', title: 'Les atomes',
+      intro: 'Toute la matière est faite de minuscules particules : les atomes.',
+      steps: [
+        S('Un atome', 'Un <b>atome</b> est la plus petite particule d’un élément chimique. Il est si petit qu’on aligne 10 millions d’atomes sur un millimètre.', 'atome'),
+        S('Un noyau et des électrons', 'Un atome a un <b>noyau</b> chargé positivement et des <b>électrons</b> chargés négativement qui tournent autour. L’atome est <b>neutre</b> : il y a autant de charges + que de charges −.'),
+        S('Les éléments', 'Chaque atome correspond à un élément, noté par un <b>symbole</b> : H pour l’hydrogène, C pour le carbone, O pour l’oxygène, N pour l’azote, Fe pour le fer.'),
+        S('Un atome est surtout du vide', 'Le noyau est des dizaines de milliers de fois plus petit que l’atome. Presque toute la masse est dans le noyau, et entre le noyau et les électrons, il n’y a rien.'),
+      ],
+      recap: ['Atome = noyau + électrons.', 'L’atome est neutre.', 'Symboles : H, C, O, N, Fe.'],
+      quiz: [Q('Les électrons sont chargés :', ['positivement', 'négativement'], 1), Q('Le symbole de l’oxygène est :', ['O', 'Ox'], 0)] },
+
+    { id: 'c4-molecules', subj: 'chimie', level: '4e', icon: '💧', title: 'Les molécules',
+      intro: 'Des atomes qui s’assemblent forment une molécule : l’eau, le dioxygène, le dioxyde de carbone.',
+      steps: [
+        S('Une molécule', 'Une <b>molécule</b> est un assemblage d’atomes. Les atomes d’une molécule sont liés entre eux.', 'molecule'),
+        S('La formule', 'La <b>formule chimique</b> indique le nombre d’atomes de chaque sorte. L’eau H₂O : 2 atomes d’hydrogène et 1 atome d’oxygène. Le dioxyde de carbone CO₂ : 1 carbone et 2 oxygènes.'),
+        S('Quelques formules', 'Dioxygène O₂, dihydrogène H₂, diazote N₂, méthane CH₄, dioxyde de carbone CO₂, eau H₂O.'),
+        S('Corps purs et mélanges', 'Un corps pur est formé d’une seule sorte de molécules. Un mélange contient plusieurs sortes de molécules, comme l’air.'),
+      ],
+      recap: ['Molécule = atomes liés.', 'H₂O : 2 H + 1 O.', 'Un corps pur : une seule sorte de molécules.'],
+      quiz: [Q('Combien d’atomes d’oxygène dans CO₂ ?', ['1', '2', '3'], 1), Q('La formule du dioxygène est :', ['O', 'O₂'], 1)] },
+
+    { id: 'c4-transformation', subj: 'chimie', level: '4e', icon: '🧪', title: 'La transformation chimique',
+      intro: 'Une bougie brûle, du fer rouille, un œuf cuit : des substances nouvelles apparaissent.',
+      steps: [
+        S('Physique ou chimique ?', 'Dans une transformation <b>physique</b> (fusion, dissolution), les molécules ne changent pas. Dans une transformation <b>chimique</b>, de nouvelles substances apparaissent.'),
+        S('Réactifs et produits', 'Les substances qui disparaissent sont les <b>réactifs</b>. Celles qui apparaissent sont les <b>produits</b>. On écrit : réactifs → produits.', 'reaction'),
+        S('Reconnaître une réaction', 'On peut le voir par un dégagement gazeux, un changement de couleur, un dépôt solide, de la chaleur ou de la lumière.'),
+        S('Un exemple', 'Le fer rouille : fer + dioxygène (de l’air) → oxyde de fer. Le fer et le dioxygène sont les réactifs, l’oxyde de fer est le produit.'),
+      ],
+      recap: ['Chimique : de nouvelles substances apparaissent.', 'Réactifs → produits.', 'Indices : gaz, couleur, dépôt, chaleur.'],
+      quiz: [Q('La glace qui fond est une transformation :', ['chimique', 'physique'], 1), Q('Dans une transformation chimique, les réactifs :', ['disparaissent', 'ne changent pas'], 0)] },
+
+    { id: 'c4-combustion', subj: 'chimie', level: '4e', icon: '🔥', title: 'Les combustions',
+      intro: 'Brûler du bois, du gaz ou du charbon : toutes les combustions suivent la même règle.',
+      steps: [
+        S('Le triangle du feu', 'Pour qu’il y ait combustion, il faut trois choses : un <b>combustible</b> (bois, gaz, essence), un <b>comburant</b> (le dioxygène de l’air) et de la <b>chaleur</b> pour démarrer. Sans l’un des trois, le feu s’éteint.', 'feu'),
+        S('Les produits', 'La combustion complète d’un combustible contenant du carbone produit du <b>dioxyde de carbone</b> et de l’<b>eau</b>. Exemple : méthane + dioxygène → dioxyde de carbone + eau.'),
+        S('Combustion incomplète', 'Quand il manque de dioxygène, la combustion produit du <b>monoxyde de carbone</b> CO, un gaz toxique, inodore et invisible. Il faut aérer les pièces chauffées au gaz ou au charbon.'),
+        S('Éteindre un feu', 'On supprime un des trois éléments : de l’eau pour refroidir, un couvercle ou une couverture pour priver de dioxygène, couper l’arrivée de gaz.'),
+      ],
+      recap: ['Combustible + comburant + chaleur.', 'Produits : CO₂ et eau (combustion complète).', 'Le monoxyde de carbone est toxique.'],
+      quiz: [Q('Quel est le comburant ?', ['le bois', 'le dioxygène'], 1), Q('Pour éteindre un feu, on peut :', ['priver le feu de dioxygène', 'ajouter du combustible'], 0)] },
+
+    { id: 'c4-bilan', subj: 'chimie', level: '4e', icon: '⚖️', title: 'Conservation des atomes et équation de réaction',
+      intro: 'Dans une réaction chimique, rien ne se perd, rien ne se crée : les atomes se réarrangent.',
+      steps: [
+        S('Les atomes se conservent', 'Pendant une réaction, les atomes <b>ne disparaissent pas</b> et il n’en apparaît pas de nouveaux. Ils se séparent puis se regroupent autrement : les molécules des produits sont différentes de celles des réactifs.', 'reaction'),
+        S('La masse se conserve', 'Comme les atomes se conservent, la <b>masse totale</b> des réactifs est égale à la masse totale des produits. Si 12 g de carbone réagissent avec 32 g de dioxygène, on obtient 44 g de dioxyde de carbone.'),
+        S('L’équation de réaction', 'On écrit l’équation avec les formules : <b>C + O₂ → CO₂</b>. Il doit y avoir le même nombre d’atomes de chaque sorte de chaque côté : ici 1 C et 2 O des deux côtés.'),
+        S('Équilibrer', 'Pour 2 H₂ + O₂ → 2 H₂O : à gauche, 4 H et 2 O. À droite, 2 × 2 = 4 H et 2 × 1 = 2 O. C’est équilibré. On ajoute des nombres devant les formules, jamais dans les formules.'),
+      ],
+      recap: ['Atomes conservés, masse conservée.', 'Équation : même nombre d’atomes de chaque côté.', 'On équilibre avec des nombres devant les formules.'],
+      quiz: [Q('12 g de carbone et 32 g de dioxygène donnent :', ['20 g de CO₂', '44 g de CO₂', '32 g de CO₂'], 1), Q('Dans une réaction chimique, les atomes :', ['se conservent', 'disparaissent'], 0)] },
+
+    { id: 'c4-tests', subj: 'chimie', level: '4e', icon: '🔬', title: 'Reconnaître quelques gaz',
+      intro: 'On ne voit pas les gaz. Pourtant, quelques tests simples permettent de les reconnaître.',
+      steps: [
+        S('Le dioxygène', 'Une <b>allumette incandescente</b> (qui brille sans flamme) se rallume dans du dioxygène. C’est le test du dioxygène.'),
+        S('Le dioxyde de carbone', 'Le dioxyde de carbone <b>trouble l’eau de chaux</b> : elle devient laiteuse. On l’obtient en soufflant dans l’eau de chaux avec une paille.'),
+        S('Le dihydrogène', 'Le <b>dihydrogène</b> brûle avec une petite détonation, un « pop » aigu, à l’approche d’une flamme. Attention, ce gaz est inflammable.'),
+        S('La vapeur d’eau', 'L’eau se reconnaît avec le <b>sulfate de cuivre anhydre</b> : il passe du blanc au bleu. On l’utilise pour vérifier qu’il se forme de l’eau.', 'goutte'),
+      ],
+      recap: ['O₂ : rallume une allumette incandescente.', 'CO₂ : trouble l’eau de chaux.', 'H₂ : « pop » à la flamme.', 'H₂O : sulfate de cuivre bleu.'],
+      quiz: [Q('Quel gaz trouble l’eau de chaux ?', ['le dioxyde de carbone', 'le dihydrogène'], 0), Q('Le test du dihydrogène donne :', ['une petite détonation', 'un trouble blanc'], 0)] },
   ];
 
   const SUBJECTS = [
@@ -561,7 +853,7 @@
     { id: 'chimie', label: 'Chimie', icon: '🧪', color: '#0d9488' },
   ];
   const LEVELS_COURS = [
-    { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ' }, { id: '3e', label: '3ᵉ' },
+    { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ' },
     { id: '2nde', label: '2nde' }, { id: '1re', label: '1ʳᵉ' }, { id: 'term', label: 'Terminale' },
   ];
 

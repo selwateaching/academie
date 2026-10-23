@@ -28,4 +28,17 @@ window.AR_FIGS = {
   'glaçon 50 g': 'قطعة جليد 50 g', 'eau 50 g': 'ماء 50 g', 'la masse se conserve quand l’état change': 'الكتلة تُحفظ عند تغيّر الحالة', 'le volume, lui, peut changer': 'أما الحجم فقد يتغيّر',
   'sulfate de': 'كبريتات', 'cuivre blanc': 'النحاس البيضاء', '→ bleu': '← أزرق', 'eau potable': 'ماء صالح للشرب', '≠ eau pure': '≠ ماء نقي',
   'α + β + γ = 180°': 'α + β + γ = 180°', 'A = b × h ÷ 2': 'A = b × h ÷ 2',
+  // 4e
+  'chaque fois on multiplie par 2': 'في كل مرة نضرب في 2', 'AC (hypoténuse)': 'AC (الوتر)', 'côté adjacent': 'الضلع المجاور', 'hypoténuse': 'الوتر', 'opposé': 'المقابل',
+  'cos α = adjacent ÷ hypoténuse': 'cos α = المجاور ÷ الوتر', 'vecteur de translation': 'شعاع الانسحاب', 'V = ⅓ × aire de la base × h': 'V = ⅓ × مساحة القاعدة × h',
+  'les médianes se coupent au centre de gravité G': 'المتوسطات تتقاطع في مركز الثقل G',
+  'ampèremètre en série': 'أمبيرمتر على التسلسل', 'I en ampères (A)': 'I بالأمبير (A)', 'le courant le traverse': 'التيار يمرّ عبره',
+  'voltmètre en dérivation': 'فولطمتر على التفرّع', 'U en volts (V)': 'U بالفولط (V)',
+  'lumière blanche': 'ضوء أبيض', 'prisme': 'منشور', 'rouge': 'أحمر', 'violet': 'بنفسجي', 'miroir': 'مرآة',
+  'angle d’incidence i = angle de réflexion r': 'زاوية الورود i = زاوية الانعكاس r',
+  'électrons −': 'إلكترونات −', 'noyau +': 'نواة +', 'l’atome est neutre : autant de + que de −': 'الذرة معتدلة: عدد الشحنات + يساوي عدد الشحنات −',
+  'eau H₂O': 'ماء H₂O', 'dioxyde de carbone CO₂': 'ثنائي أكسيد الكربون CO₂', 'dioxygène O₂': 'ثنائي الأكسجين O₂',
+  'réactifs': 'المتفاعلات', 'ce qui disparaît': 'ما يختفي', 'réaction': 'تفاعل', 'produits': 'النواتج', 'ce qui apparaît': 'ما يظهر',
+  'les atomes se réarrangent, ils ne disparaissent pas': 'الذرات تُعيد ترتيب نفسها ولا تختفي',
+  'chaleur': 'حرارة', 'combustible': 'وقود', 'comburant (O₂)': 'مؤكسِد (O₂)',
 };
