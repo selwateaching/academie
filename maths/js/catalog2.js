@@ -103,5 +103,26 @@
     ],
   });
 
+  /* ------------------------------------------------------------ 1re */
+  EXTRA.push({
+    id: '1re', art: 'ma', short: '1ʳᵉ', name: 'Première', color: '#c4451c', age: '16-17 ans',
+    blurb: 'Second degré, dérivation, suites, trigonométrie, produit scalaire, probabilités conditionnelles et exponentielle.',
+    domains: [
+      { name: 'Algèbre et analyse', cats: [
+        { name: 'Second degré', skills: [['Calculer le discriminant', 'quad', { kinds: ['disc'] }], ['Résoudre une équation du second degré', 'quad', { kinds: ['roots'] }], ['Sommet d’une parabole', 'quad', { kinds: ['vertex'] }], ['Développer avec une identité remarquable', 'idRem', { kinds: ['sq+', 'sq-', 'prod'] }]] },
+        { name: 'Dérivation', skills: [['Dériver un polynôme', 'deriv', { kinds: ['poly'] }], ['Nombre dérivé', 'deriv', { kinds: ['at'] }], ['Équation d’une tangente', 'deriv', { kinds: ['tan'] }], ['Quand la dérivée s’annule', 'derivZero', {}], ['Variations d’une fonction', 'derivZero', { sens: true }]] },
+        { name: 'Suites', skills: [['Suite arithmétique : un terme', 'seqSpec', { kinds: ['arith'] }], ['Suite arithmétique : la raison', 'seqSpec', { kinds: ['raison'] }], ['Somme de termes d’une suite arithmétique', 'seqSpec', { kinds: ['sum'] }], ['Suite géométrique : un terme', 'seqSpec', { kinds: ['geo'] }], ['Terme d’une suite (récurrence)', 'seqTerm', { kinds: ['rec'] }]] },
+        { name: 'Exponentielle', skills: [['Règles de calcul avec exp', 'expPow', { kinds: ['prod', 'quot', 'pow'] }]] },
+      ] },
+      { name: 'Trigonométrie et géométrie', cats: [
+        { name: 'Radians', skills: [['Degrés vers radians', 'radDeg', { kinds: ['toRad'] }], ['Radians vers degrés', 'radDeg', { kinds: ['toDeg'] }], ['Cosinus d’un angle remarquable', 'trigVal', { kinds: ['cos'] }], ['Sinus d’un angle remarquable', 'trigVal', { kinds: ['sin'] }]] },
+        { name: 'Produit scalaire', skills: [['Calculer un produit scalaire', 'dot', { kinds: ['prod'] }], ['Vecteurs orthogonaux', 'dot', { kinds: ['ortho'] }], ['Norme d’un vecteur', 'vecNorm', {}]] },
+      ] },
+      { name: 'Probabilités', cats: [
+        { name: 'Probabilités', skills: [['Probabilité conditionnelle', 'condProba', { kinds: ['cond'] }], ['Probabilités totales', 'condProba', { kinds: ['total'] }], ['Espérance d’une variable aléatoire', 'expect', {}], ['Probabilité d’une réunion', 'probaUnion', {}]] },
+      ] },
+    ],
+  });
+
   root.CATALOG_EXTRA = EXTRA;
 }(typeof window !== 'undefined' ? window : globalThis));

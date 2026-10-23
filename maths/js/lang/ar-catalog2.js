@@ -53,5 +53,14 @@
     'Géométrie dans le repère': 'الهندسة في المعلم', 'Points et distances': 'النقاط والمسافات', 'Abscisse d’un milieu': 'فاصلة منتصف', 'Ordonnée d’un milieu': 'ترتيبة منتصف', 'Distance entre deux points': 'المسافة بين نقطتين', 'Symétrique par rapport à un axe': 'النظيرة بالنسبة إلى محور',
     'Vecteurs': 'الأشعة', 'Coordonnées d’un vecteur': 'إحداثيا شعاع', 'Norme d’un vecteur': 'طويلة شعاع', 'Vecteurs colinéaires': 'الأشعة المرتبطة خطيًا', 'Parallélogramme et quatrième sommet': 'متوازي الأضلاع والرأس الرابع',
     'Statistiques': 'الإحصاء', 'Probabilités': 'الاحتمالات', 'Probabilité d’une réunion': 'احتمال اتحاد حدثين',
+    /* 1re */
+    'Second degré, dérivation, suites, trigonométrie, produit scalaire, probabilités conditionnelles et exponentielle.': 'الدرجة الثانية، الاشتقاقية، المتتاليات، حساب المثلثات، الجداء السلمي، الاحتمالات الشرطية والدالة الأسية.',
+    'Algèbre et analyse': 'الجبر والتحليل', 'Second degré': 'الدرجة الثانية', 'Calculer le discriminant': 'حساب المميّز', 'Résoudre une équation du second degré': 'حلّ معادلة من الدرجة الثانية', 'Sommet d’une parabole': 'رأس قطع مكافئ',
+    'Dérivation': 'الاشتقاقية', 'Dériver un polynôme': 'اشتقاق كثير حدود', 'Nombre dérivé': 'العدد المشتق', 'Équation d’une tangente': 'معادلة مماس', 'Quand la dérivée s’annule': 'متى تنعدم المشتقة', 'Variations d’une fonction': 'تغيّرات دالة',
+    'Suites': 'المتتاليات', 'Suite arithmétique : un terme': 'متتالية حسابية : حدّ', 'Suite arithmétique : la raison': 'متتالية حسابية : الأساس', 'Somme de termes d’une suite arithmétique': 'مجموع حدود متتالية حسابية', 'Suite géométrique : un terme': 'متتالية هندسية : حدّ',
+    'Exponentielle': 'الدالة الأسية', 'Règles de calcul avec exp': 'قواعد الحساب مع الدالة الأسية',
+    'Trigonométrie et géométrie': 'حساب المثلثات والهندسة', 'Radians': 'الراديان', 'Degrés vers radians': 'من الدرجات إلى الراديان', 'Radians vers degrés': 'من الراديان إلى الدرجات', 'Cosinus d’un angle remarquable': 'جيب تمام زاوية خاصة', 'Sinus d’un angle remarquable': 'جيب زاوية خاصة',
+    'Produit scalaire': 'الجداء السلمي', 'Calculer un produit scalaire': 'حساب جداء سلمي', 'Vecteurs orthogonaux': 'الأشعة المتعامدة',
+    'Probabilité conditionnelle': 'الاحتمال الشرطي', 'Probabilités totales': 'الاحتمالات الكلية', 'Espérance d’une variable aléatoire': 'الأمل الرياضي لمتغير عشوائي',
   });
 }(typeof window !== 'undefined' ? window : globalThis));

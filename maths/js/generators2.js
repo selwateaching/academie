@@ -488,5 +488,94 @@
     return num(t('x.union.q', { a: m(fmt(pa)), b: m(fmt(pb)), i: m(fmt(pi)) }), '', r, t('x.union.exp', { a: m(fmt(pa)), b: m(fmt(pb)), i: m(fmt(pi)), r: m(fmt(r)) }));
   };
 
+  /* ===================================================================== 1re */
+  GEN.quad = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'disc') {
+      const a = nz(-4, 4), b = nz(-8, 8), c = nz(-6, 6), D = b * b - 4 * a * c;
+      return num(t('x.disc.q'), m(`${P([a, b, c])} = 0`), D, t('x.disc.exp', { sub: m(`${sgn(b)}² − 4 × ${sgn(a)} × ${sgn(c)}`), r: m(fmt(D)) }));
+    }
+    if (k === 'roots') {
+      let p1, q1; do { p1 = R(-6, 6); q1 = R(-6, 6); } while (p1 === q1);
+      const a = pick([1, 1, 2, -1, 3]), b = -a * (p1 + q1), c = a * p1 * q1, D = b * b - 4 * a * c, lo = Math.min(p1, q1), hi = Math.max(p1, q1);
+      return num(t('x.qr.q'), m(`${P([a, b, c])} = 0`), lo, t('x.qr.exp', { D: m(fmt(D)), s: m(Math.sqrt(D)), x1: m(fmt(lo)), x2: m(fmt(hi)), r: m(fmt(lo)) }));
+    }
+    const a = nz(-3, 3), x0 = nz(-4, 4), b = -2 * a * x0, c = nz(-6, 6);
+    return num(t('x.qv.q'), m(`f(x) = ${P([a, b, c])}`), x0, t('x.qv.exp', { b: m(sgn(b)), a: m(sgn(a)), r: m(fmt(x0)) }));
+  };
+  const polyF = () => { const a = nz(-3, 3), b = nz(-5, 5), c = nz(-6, 6), d = nz(-6, 6); return [a, b, c, d]; };
+  GEN.deriv = (p) => {
+    const k = pick(p.kinds), [a, b, c, d] = polyF(), f = P([a, b, c, d]);
+    if (k === 'poly') {
+      const ans = P([3 * a, 2 * b, c]);
+      return { q: t('x.deriv.q'), expr: m(`f(x) = ${f}`), kind: 'choice', ans, choices: mc(ans, [P([3 * a, b, c]), P([a, b, c]), P([3 * a, 2 * b, c + d]), P([3 * a, 2 * b, c, d]), P([3 * a, 2 * b, 0])], (x) => m(x)), exp: t('x.deriv.exp', { r: m(ans) }) };
+    }
+    if (k === 'at') {
+      const x = nz(-3, 3), r = 3 * a * x * x + 2 * b * x + c;
+      return num(t('x.dat.q', { x: m(fmt(x)) }), m(`f(x) = ${f}`), r, t('x.dat.exp', { d: m(P([3 * a, 2 * b, c])), x: m(fmt(x)), sub: m(`${fmt(3 * a)} × ${sgn(x)}² ${plus(2 * b)} × ${sgn(x)} ${plus(c)}`), r: m(fmt(r)) }));
+    }
+    // tangente en x = k de f(x) = ax² + bx + c
+    const a2 = nz(-3, 3), b2 = nz(-5, 5), c2 = nz(-6, 6), x = nz(-3, 3), mm = 2 * a2 * x + b2, y0 = a2 * x * x + b2 * x + c2, pp = y0 - mm * x, L = (u, v) => `y = ${P([u, v])}`, ans = L(mm, pp);
+    const wr = [L(mm, y0), L(-mm, pp), L(mm, -pp), L(y0, mm), L(mm, pp + mm), L(mm + 1, pp), L(mm, pp + 1), L(mm - 1, pp - 1)].filter((z) => z !== ans);
+    return { q: t('x.tan.q', { x: m(fmt(x)) }), expr: m(`f(x) = ${P([a2, b2, c2])}`), kind: 'choice', ans, choices: mc(ans, wr, (z) => m(z)), exp: t('x.tan.exp', { y0: m(fmt(y0)), m: m(fmt(mm)), x: m(fmt(x)), r: m(ans) }) };
+  };
+  GEN.derivZero = (p) => {
+    const a = nz(-3, 3), x0 = nz(-4, 4), b = -2 * a * x0, c = nz(-6, 6);
+    if (p && p.sens) {
+      const right = pick([true, false]), lo = right ? x0 + R(1, 2) : x0 - R(3, 4), hi = lo + R(1, 2), pos = right ? a > 0 : a < 0;
+      return { q: t('x.dsens.q', { lo: m(fmt(lo)), hi: m(fmt(hi)) }), expr: m(`f(x) = ${P([a, b, c])}`), kind: 'choice', ans: pos ? 'inc' : 'dec', choices: [{ v: 'inc', label: t('x.inc') }, { v: 'dec', label: t('x.dec') }], exp: t(pos ? 'x.dsens.pos' : 'x.dsens.neg', { d: m(P([2 * a, b])), x0: m(fmt(x0)), lo: m(fmt(lo)), hi: m(fmt(hi)) }) };
+    }
+    return num(t('x.dz.q'), m(`f(x) = ${P([a, b, c])}`), x0, t('x.dz.exp', { d: m(P([2 * a, b])), b: m(sgn(b)), a: m(fmt(2 * a)), r: m(fmt(x0)) }));
+  };
+  GEN.seqSpec = (p) => {
+    const k = pick(p.kinds), U = (n) => `u<sub>${n}</sub>`;
+    if (k === 'arith') { const u0 = nz(-8, 10), r = nz(-5, 7), n = R(5, 15), v = u0 + n * r; return num(t('x.sq.arith', { u0: m(fmt(u0)), r: m(fmt(r)), U: m(U(n)) }), '', v, t('x.sq.arith.exp', { n: m(n), sub: m(`${fmt(u0)} + ${n} × ${sgn(r)}`), r: m(fmt(v)) })); }
+    if (k === 'geo') { const u0 = nz(-4, 5), q = pick([2, 3, -2, 5, -3]), n = R(2, 5), v = u0 * Math.pow(q, n); return num(t('x.sq.geo', { u0: m(fmt(u0)), q: m(fmt(q)), U: m(U(n)) }), '', v, t('x.sq.geo.exp', { n: m(n), sub: m(`${fmt(u0)} × ${sgn(q)}<sup>${n}</sup>`), r: m(fmt(v)) })); }
+    if (k === 'raison') { const r = nz(-6, 8), i = R(2, 6), x = nz(-10, 20), j = i + 2; return num(t('x.sq.raison', { Ui: m(U(i)), x: m(fmt(x)), Uj: m(U(j)), y: m(fmt(x + 2 * r)) }), '', r, t('x.sq.raison.exp', { Ui: m(U(i)), Uj: m(U(j)), y: m(fmt(x + 2 * r)), x: m(sgn(x)), r: m(fmt(r)) })); }
+    const u0 = nz(-5, 8), r = nz(-4, 6), n = R(3, 12), tot = ((n + 1) * (2 * u0 + n * r)) / 2, un = u0 + n * r;
+    return num(t('x.sq.sum', { u0: m(fmt(u0)), r: m(fmt(r)), U: m(U(n)) }), '', tot, t('x.sq.sum.exp', { n1: m(n + 1), un: m(fmt(un)), u0: m(fmt(u0)), r: m(fmt(tot)) }));
+  };
+  const ANG = [[0, 0], [1, 6], [1, 4], [1, 3], [1, 2]]; // k·π/d
+  const angLab = (nn, d) => (nn === 0 ? '0' : d === 1 ? (nn === 1 ? 'π' : `${nn}π`) : frac(nn === 1 ? 'π' : `${nn}π`, d));
+  GEN.radDeg = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'toRad') {
+      const degs = [30, 45, 60, 90, 120, 135, 150, 180, 210, 225, 240, 270, 300, 315, 330], deg = pick(degs), lab = (dg) => { const g = gcd(dg, 180); return angLab(dg / g, 180 / g); };
+      return { q: t('x.rad.q1', { d: m(deg) }), kind: 'choice', ans: deg, choices: mc(deg, shuf(degs).filter((z) => z !== deg).slice(0, 5), lab), exp: t('x.rad.exp1', { d: m(deg), r: lab(deg) }) };
+    }
+    const dens = [[1, 6, 30], [1, 4, 45], [1, 3, 60], [1, 2, 90], [2, 3, 120], [3, 4, 135], [5, 6, 150], [1, 1, 180], [3, 2, 270]], [nn, d, deg] = pick(dens);
+    return num(t('x.rad.q2', { a: angLab(nn, d) }), '', deg, t('x.rad.exp2', { a: angLab(nn, d), r: m(deg) }));
+  };
+  GEN.trigVal = (p) => {
+    const k = pick(p.kinds), i = R(0, 4), VAL = { cos: [['1'], ['√3', 2], ['√2', 2], ['1', 2], ['0']], sin: [['0'], ['1', 2], ['√2', 2], ['√3', 2], ['1']] };
+    const lab = (v) => (v.length === 1 ? m(v[0]) : frac(v[0], v[1])), key = (v) => v.join('/'), ans = key(VAL[k][i]);
+    const pool = [['0'], ['1'], ['1', 2], ['√2', 2], ['√3', 2]];
+    return { q: t('x.tv.q.' + k, { a: angLab(...ANG[i]) }), kind: 'choice', ans, choices: mc(ans, pool.map(key).filter((z) => z !== ans), (z) => lab(z.split('/').map((x, j) => (j ? Number(x) : x)))), exp: t('x.tv.exp', { f: k, a: angLab(...ANG[i]), r: lab(VAL[k][i]) }) };
+  };
+  GEN.condProba = (p) => {
+    const k = pick(p.kinds);
+    if (k === 'cond') { const pa = R(2, 8) / 10, c = R(1, 9) / 10, pi = round(pa * c, 2); return num(t('x.cond.q', { a: m(fmt(pa)), i: m(fmt(pi)) }), '', c, t('x.cond.exp', { i: m(fmt(pi)), a: m(fmt(pa)), r: m(fmt(c)) })); }
+    const pa = R(2, 8) / 10, b1 = R(1, 9) / 10, b2 = R(1, 9) / 10, r = round(pa * b1 + (1 - pa) * b2, 2);
+    return num(t('x.total.q', { a: m(fmt(pa)), b1: m(fmt(b1)), b2: m(fmt(b2)) }), '', r, t('x.total.exp', { a: m(fmt(pa)), na: m(fmt(round(1 - pa, 2))), b1: m(fmt(b1)), b2: m(fmt(b2)), r: m(fmt(r)) }));
+  };
+  GEN.expect = () => {
+    const vals = shuf([-4, -2, 0, 1, 2, 3, 5, 8, 10]).slice(0, 3).sort((a, b) => a - b), p1 = R(1, 6), p2 = R(1, 8 - p1), pr = [p1, p2, 10 - p1 - p2].map((z) => z / 10);
+    const E = round(vals.reduce((a, v, i) => a + v * pr[i], 0), 3), cell = 'style="border:1px solid #cbd5e1;padding:4px 12px"', row = (a) => `<tr>${a.map((c, i) => `<td ${cell}>${i === 0 ? '<b>' + c + '</b>' : c}</td>`).join('')}</tr>`;
+    const vis = `<table style="border-collapse:collapse;margin:6px 0">${row([t('x.expect.x'), ...vals.map(fmt)])}${row([t('x.expect.p'), ...pr.map(fmt)])}</table>`;
+    return { q: t('x.expect.q'), vis, kind: 'num', ans: E, exp: t('x.expect.exp', { s: m(vals.map((v, i) => `${sgn(v)} × ${fmt(pr[i])}`).join(' + ')), r: m(fmt(E)) }) };
+  };
+  GEN.dot = (p) => {
+    const k = pick(p.kinds), a = nz(-5, 5), b = nz(-5, 5);
+    if (k === 'prod') { const c = nz(-5, 5), d = nz(-5, 5), r = a * c + b * d; return num(t('x.dot.q', { u: m(`u${pair(a, b)}`), v: m(`v${pair(c, d)}`) }), '', r, t('x.dot.exp', { sub: m(`${fmt(a)} × ${sgn(c)} + ${sgn(b)} × ${sgn(d)}`), r: m(fmt(r)) })); }
+    const kk = pick([-2, -1, 1, 2, 3]), good = pick([true, false]), c = b * kk, d = good ? -a * kk : -a * kk + pick([-2, -1, 1, 2]), r = a * c + b * d;
+    return { q: t('x.ortho.q', { u: m(`u${pair(a, b)}`), v: m(`v${pair(c, d)}`) }), kind: 'choice', ans: r === 0 ? 'y' : 'n', choices: yesNo(), exp: t(r === 0 ? 'x.ortho.y' : 'x.ortho.n', { sub: m(`${fmt(a)} × ${sgn(c)} + ${sgn(b)} × ${sgn(d)}`), r: m(fmt(r)) }) };
+  };
+  GEN.expPow = (p) => {
+    const k = pick(p.kinds), a = R(-5, 7), b = R(2, 6), e = (x) => sup('e', fmt(x));
+    if (k === 'prod') return num(t('x.pow.rule'), m(`${e(a)} × ${e(b)} = ${sup('e', box)}`), a + b, t('x.expo.prod', { a: m(fmt(a)), b: m(fmt(b)), r: m(fmt(a + b)) }));
+    if (k === 'quot') return num(t('x.pow.rule'), m(`${e(a)} ÷ ${e(b)} = ${sup('e', box)}`), a - b, t('x.expo.quot', { a: m(fmt(a)), b: m(fmt(b)), r: m(fmt(a - b)) }));
+    const a2 = R(2, 5), b2 = R(2, 4); return num(t('x.pow.rule'), m(`(${e(a2)})<sup>${b2}</sup> = ${sup('e', box)}`), a2 * b2, t('x.expo.pow', { a: m(a2), b: m(b2), r: m(a2 * b2) }));
+  };
+
   root.MathsGen2 = { t };
 }(typeof window !== 'undefined' ? window : globalThis));
