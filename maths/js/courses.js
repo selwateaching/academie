@@ -231,6 +231,59 @@
     bulles: () => svg(360, 170, `<path d="M110 30V120A22 22 0 0 0 132 142H228A22 22 0 0 0 250 120V30" stroke="currentColor" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".08"/><rect x="150" y="100" width="60" height="26" rx="4" fill="${C.gris}" fill-opacity=".6"/>
       ${[[160, 90], [180, 78], [200, 92], [190, 58], [170, 50]].map(([x, y], i) => `<circle class="pl" style="animation-delay:-${i * 0.5}s" cx="${x}" cy="${y}" r="6" stroke="${C.bleu}" stroke-width="2.5" fill="#fff"/>`).join('')}
       ${T(290, 100, 'fer', 'font-size="12"')}${T(312, 70, 'bulles de H₂', `fill="${C.bleu}" font-size="11"`)}${T(180, 164, 'fer + acide → ions fer + dihydrogène', 'font-size="12"')}`),
+    intervalle: () => svg(360, 150, `${ARROW('n1', 'currentColor')}<path d="M14 70H346" stroke="currentColor" stroke-width="3" marker-end="url(#n1)"/>
+      ${[-2, -1, 0, 1, 2, 3, 4, 5].map((i) => `${L(70 + (i + 2) * 38, 63, 70 + (i + 2) * 38, 77, 'currentColor', 2)}${T(70 + (i + 2) * 38, 96, i, 'font-size="12"')}`).join('')}
+      <path class="pulse" d="M146 70H260" stroke="${C.rouge}" stroke-width="8"/><path d="M146 56V84" stroke="${C.rouge}" stroke-width="3"/><circle cx="260" cy="70" r="7" fill="#fff" stroke="${C.rouge}" stroke-width="3"/>
+      ${T(200, 40, '[0 ; 3[', `fill="${C.rouge}" font-size="15"`)}${T(180, 128, 'crochet fermé : 0 est inclus ; crochet ouvert : 3 est exclu', 'font-size="11"')}`),
+    parabole: () => svg(360, 190, `${ARROW('p1', 'currentColor')}<path d="M180 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#p1)"/><path d="M15 140H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#p1)"/>
+      <path class="draw" pathLength="100" d="M70 20C100 120 150 140 180 140C210 140 260 120 290 20" stroke="${C.rouge}" stroke-width="4"/><circle cx="180" cy="140" r="5" fill="${C.or}"/>
+      ${T(300, 36, 'f(x) = x²', `fill="${C.rouge}" font-size="14"`)}${T(255, 164, 'minimum 0 en x = 0', 'font-size="11"')}${T(52, 100, 'décroissante', 'font-size="11"')}${T(308, 100, 'croissante', 'font-size="11"')}`),
+    hyperbole: () => svg(360, 190, `${ARROW('h1', 'currentColor')}<path d="M180 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#h1)"/><path d="M15 95H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#h1)"/>
+      <path class="draw" pathLength="100" d="M200 15C210 70 230 85 340 90" stroke="${C.rouge}" stroke-width="4"/><path class="draw" pathLength="100" d="M160 175C150 120 130 105 20 100" stroke="${C.rouge}" stroke-width="4"/>
+      ${T(300, 40, 'f(x) = 1/x', `fill="${C.rouge}" font-size="14"`)}${T(180, 188, 'définie pour x ≠ 0', 'font-size="11"')}`),
+    vecteur: () => svg(360, 190, `${ARROW('v1', C.rouge)}<path d="M20 160H340M40 20V175" stroke="${C.gris}" stroke-width="1.6"/>
+      <circle cx="90" cy="130" r="5" fill="${C.bleu}"/><circle cx="250" cy="50" r="5" fill="${C.vert}"/>${T(80, 150, 'A(1 ; 2)', 'font-size="12"')}${T(274, 42, 'B(5 ; 4)', 'font-size="12"')}
+      <path class="pulse" d="M92 128L246 52" stroke="${C.rouge}" stroke-width="4" marker-end="url(#v1)"/>${T(190, 108, 'AB (4 ; 2)', `fill="${C.rouge}" font-size="14"`)}${T(180, 184, 'AB = (xB − xA ; yB − yA)', 'font-size="12"')}`),
+    droiteeq: () => svg(360, 190, `${ARROW('d1', 'currentColor')}<path d="M180 175V10" stroke="currentColor" stroke-width="2.5" marker-end="url(#d1)"/><path d="M15 120H345" stroke="currentColor" stroke-width="2.5" marker-end="url(#d1)"/>
+      <path class="draw" pathLength="100" d="M50 170L320 30" stroke="${C.rouge}" stroke-width="4"/><path d="M180 120V100M180 100H250" stroke="${C.gris}" stroke-width="1.5" stroke-dasharray="4 4"/>
+      ${T(280, 36, 'y = mx + p', `fill="${C.rouge}" font-size="14"`)}${T(98, 28, 'x = c : droite verticale', 'font-size="11"')}${T(200, 186, 'm : coefficient directeur · p : ordonnée à l’origine', 'font-size="11"')}`),
+    milieu: () => svg(360, 180, `<circle cx="70" cy="140" r="6" fill="${C.bleu}"/><circle cx="290" cy="50" r="6" fill="${C.vert}"/><circle class="pop" cx="180" cy="95" r="6" fill="${C.or}"/>
+      <path d="M70 140L290 50" stroke="${C.brand}" stroke-width="3.5"/><path class="dash" d="M70 140H290V50" stroke="${C.gris}" stroke-width="1.6"/>
+      ${T(60, 160, 'A', 'font-size="14"')}${T(300, 44, 'B', 'font-size="14"')}${T(190, 82, 'I', `fill="${C.or}" font-size="14"`)}
+      ${T(180, 160, 'AB = √((xB − xA)² + (yB − yA)²)', 'font-size="11"')}${T(180, 176, 'I = ((xA + xB)/2 ; (yA + yB)/2)', 'font-size="11"')}`),
+    boite: () => svg(360, 160, `<path d="M30 80H330" stroke="${C.gris}" stroke-width="1.5"/>
+      <path d="M60 60V100M120 50V110M170 50V110M240 50V110M300 60V100M120 80H240M120 50H240M120 110H240M60 80H120M240 80H300" stroke="${C.brand}" stroke-width="3"/><rect class="pulse" x="120" y="50" width="120" height="60" fill="${C.brand}" fill-opacity=".12" stroke="none"/>
+      ${T(60, 130, 'min', 'font-size="11"')}${T(120, 130, 'Q1', 'font-size="12"')}${T(170, 130, 'médiane', `fill="${C.rouge}" font-size="12"`)}${T(240, 130, 'Q3', 'font-size="12"')}${T(300, 130, 'max', 'font-size="11"')}${T(180, 28, '50 % des valeurs entre Q1 et Q3', 'font-size="12"')}`),
+    vitesse2: () => svg(360, 180, `${ARROW('w1', C.rouge)}<path d="M30 130C100 130 150 60 200 60S290 100 320 130" stroke="${C.gris}" stroke-width="2" stroke-dasharray="5 5"/>
+      ${[[60, 130], [130, 100], [200, 60], [270, 82]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="${C.bleu}"/>`).join('')}
+      <path class="pulse" d="M200 60L250 56" stroke="${C.rouge}" stroke-width="4" marker-end="url(#w1)"/>${T(230, 44, 'vecteur vitesse', `fill="${C.rouge}" font-size="12"`)}
+      ${T(180, 156, 'v = d ÷ Δt', 'font-size="12"')}${T(180, 174, 'tangent à la trajectoire, dans le sens du mouvement', 'font-size="10"')}`),
+    forces2: () => svg(360, 190, `${ARROW('f1', C.rouge)}${ARROW('f2', C.bleu)}<rect x="140" y="70" width="80" height="50" rx="6" fill="${C.gris}" fill-opacity=".3" stroke="${C.gris}" stroke-width="3"/><path d="M20 120H340" stroke="currentColor" stroke-width="3"/>
+      <path d="M180 120V60" stroke="${C.vert}" stroke-width="4" marker-end="url(#f1)"/><path d="M180 95V160" stroke="${C.bleu}" stroke-width="4" marker-end="url(#f2)"/>${T(220, 56, 'réaction du support R', `fill="${C.vert}" font-size="11"`)}${T(240, 160, 'poids P', `fill="${C.bleu}" font-size="12"`)}
+      ${T(180, 184, 'objet immobile : P + R = 0 (forces qui se compensent)', 'font-size="11"')}`),
+    signal: () => svg(360, 170, `${ARROW('s1', 'currentColor')}<path d="M20 85H340" stroke="currentColor" stroke-width="2" marker-end="url(#s1)"/>
+      <path class="draw" pathLength="100" d="M20 85C45 20 75 20 100 85S155 150 180 85S235 20 260 85S315 150 340 85" stroke="${C.rouge}" stroke-width="4"/>
+      <path d="M100 150H260" stroke="${C.bleu}" stroke-width="2.5"/>${T(180, 166, 'période T', `fill="${C.bleu}" font-size="12"`)}${T(60, 30, 'signal périodique', 'font-size="11"')}${T(290, 30, 'f = 1/T (Hz)', `fill="${C.rouge}" font-size="12"`)}`),
+    snell: () => svg(360, 190, `${ARROW('r1', C.or)}<rect x="20" y="95" width="320" height="85" fill="${C.bleu}" fill-opacity=".12"/><path d="M20 95H340" stroke="currentColor" stroke-width="3"/><path d="M180 20V180" stroke="${C.gris}" stroke-width="1.8" stroke-dasharray="5 5"/>
+      <path class="dash" d="M90 25L180 95" stroke="${C.or}" stroke-width="3.5"/><path class="dash" d="M180 95L240 170" stroke="${C.or}" stroke-width="3.5" marker-end="url(#r1)"/>
+      ${T(130, 70, 'i₁', `fill="${C.rouge}" font-size="14"`)}${T(214, 140, 'i₂', `fill="${C.rouge}" font-size="14"`)}${T(300, 40, 'air n₁ ≈ 1', 'font-size="12"')}${T(300, 120, 'verre n₂ > 1', 'font-size="12"')}${T(180, 14, 'n₁ sin i₁ = n₂ sin i₂', 'font-size="13"')}`),
+    raies: () => svg(360, 150, `<rect x="30" y="30" width="300" height="40" fill="#111827"/>${[[70, '#a855f7'], [110, '#3b82f6'], [140, '#22c55e'], [190, '#eab308'], [260, '#ef4444'], [290, '#dc2626']].map(([x, c]) => `<path class="pulse" d="M${x} 30V70" stroke="${c}" stroke-width="5"/>`).join('')}
+      ${T(180, 22, 'spectre de raies d’émission (gaz)', 'font-size="11"')}${T(180, 146, 'chaque élément a ses raies : une « empreinte »', 'font-size="11"')}`),
+    mailles: () => svg(360, 190, `<path d="M40 30H320V160H40V30M180 30V160" stroke="currentColor" stroke-width="3"/><rect x="30" y="80" width="20" height="26" fill="var(--card,#fff)" stroke="none"/>${pile(40, 93)}
+      <rect x="150" y="80" width="60" height="26" fill="var(--card,#fff)" stroke="none"/><rect x="160" y="82" width="40" height="22" rx="3" stroke="${C.or}" stroke-width="3" fill="${C.or}" fill-opacity=".2"/><rect x="290" y="80" width="60" height="26" fill="var(--card,#fff)" stroke="none"/><rect x="290" y="82" width="40" height="22" rx="3" stroke="${C.or}" stroke-width="3" fill="${C.or}" fill-opacity=".2" transform="translate(-0 0)"/>
+      ${T(105, 16, 'loi des nœuds : I = I₁ + I₂', 'font-size="11"')}${T(180, 184, 'loi des mailles : E = U₁ + U₂', 'font-size="11"')}`),
+    moleF: () => svg(360, 180, `<path d="M180 150V60M120 150H240" stroke="currentColor" stroke-width="4"/><path d="M60 60H300" stroke="${C.brand}" stroke-width="4"/><path d="M60 60L42 108H98Z M300 60L282 108H338Z" stroke="currentColor" stroke-width="2.5" fill="${C.brand}" fill-opacity=".08"/>
+      ${T(70, 130, '18 g d’eau', 'font-size="11"')}${T(310, 130, '1 mol', 'font-size="12"')}${T(180, 28, 'n = m ÷ M', `fill="${C.rouge}" font-size="20"`)}${T(180, 168, 'n en mol, m en g, M en g/mol  (1 mol = 6,02 × 10²³ entités)', 'font-size="10"')}`),
+    verre: () => svg(360, 180, `<path d="M70 30L82 150H168L180 30" stroke="currentColor" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".25"/><path d="M200 30L212 150H298L310 30" stroke="currentColor" stroke-width="3.5" fill="${C.bleu}" fill-opacity=".1"/>
+      ${T(125, 100, 'C = n/V', `fill="${C.rouge}" font-size="14"`)}${T(255, 100, 'C’ = C/2', `fill="${C.rouge}" font-size="14"`)}${T(125, 168, 'solution mère', 'font-size="11"')}${T(255, 168, 'solution diluée', 'font-size="11"')}${T(180, 18, 'C₁ × V₁ = C₂ × V₂ (dilution)', 'font-size="12"')}`),
+    periodique: () => svg(360, 170, `${[['H', 1, 0, 0], ['He', 2, 6, 0], ['Li', 3, 0, 1], ['C', 6, 4, 1], ['N', 7, 5, 1], ['O', 8, 6, 1], ['Ne', 10, 7, 1], ['Na', 11, 0, 2], ['Cl', 17, 6, 2]].map(([s, z, c, r], i) => `<rect x="${40 + c * 38}" y="${8 + r * 38}" width="34" height="34" rx="4" fill="${C.brand}" fill-opacity="${0.1 + (i % 3) * 0.08}" stroke="${C.brand}" stroke-width="2"/>${T(57 + c * 38, 22 + r * 38, z, 'font-size="9"')}${T(57 + c * 38, 37 + r * 38, s, 'font-size="13"')}`).join('')}
+      ${T(180, 142, 'colonnes : même nombre d’électrons de valence', 'font-size="11"')}${T(180, 162, 'lignes : remplissage des couches (K, L, M)', 'font-size="11"')}`),
+    stoechio: () => svg(360, 170, `${ARROW('t1', C.rouge)}${T(80, 70, '2 H₂ + O₂', 'font-size="18"')}<path class="pulse" d="M150 66H210" stroke="${C.rouge}" stroke-width="4" marker-end="url(#t1)"/>${T(280, 70, '2 H₂O', 'font-size="18"')}
+      ${T(80, 100, 'x = 0 : état initial', 'font-size="10"')}${T(280, 100, 'x = xmax : état final', 'font-size="10"')}${T(180, 140, 'réactif limitant : consommé en entier', 'font-size="12"')}${T(180, 158, 'les quantités suivent les nombres stœchiométriques', 'font-size="11"')}`),
+    chromato: () => svg(360, 180, `<rect x="120" y="20" width="120" height="140" fill="#fff" stroke="currentColor" stroke-width="3"/><path d="M130 140H230" stroke="${C.gris}" stroke-width="2" stroke-dasharray="4 4"/>
+      <circle cx="150" cy="140" r="5" fill="${C.rouge}"/><circle cx="180" cy="140" r="5" fill="${C.bleu}"/><circle cx="210" cy="140" r="5" fill="${C.vert}"/>
+      <ellipse class="pulse" cx="150" cy="80" rx="8" ry="12" fill="${C.rouge}" fill-opacity=".55"/><ellipse class="pulse" cx="180" cy="50" rx="8" ry="12" fill="${C.bleu}" fill-opacity=".55"/><ellipse class="pulse" cx="210" cy="100" rx="8" ry="12" fill="${C.vert}" fill-opacity=".55"/>
+      ${T(60, 100, 'éluant', 'font-size="12"')}${T(300, 60, 'espèces séparées', 'font-size="12"')}${T(300, 80, 'rapport frontal', 'font-size="11"')}${T(180, 176, 'même hauteur : même espèce', 'font-size="11"')}`),
   };
 
   const S = (h, p, fig) => ({ h, p, fig });
@@ -1127,6 +1180,228 @@
       ],
       recap: ['Les pictogrammes indiquent le danger.', 'Ne jamais mélanger javel et acide.', 'Lunettes, gants, aération.'],
       quiz: [Q('Que ne faut-il jamais mélanger ?', ['eau de javel et détartrant', 'eau et savon'], 0), Q('En cas de projection sur la peau, on :', ['rince à l’eau abondamment', 'frotte avec un chiffon sec'], 0)] },
+    /* ================================================================ 2nde : MATHS */
+    { id: 'm2-intervalles', subj: 'maths', level: '2nde', icon: '↔️', title: 'Ensembles de nombres et intervalles',
+      intro: 'Pour décrire « tous les nombres compris entre 0 et 3 », les mathématiques ont un langage précis.',
+      steps: [
+        S('Les ensembles de nombres', 'ℕ : les entiers naturels (0, 1, 2…). ℤ : les entiers relatifs. ℚ : les nombres rationnels (fractions). ℝ : tous les nombres de la droite numérique. On a ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ. Par exemple √2 est dans ℝ mais pas dans ℚ.'),
+        S('Les intervalles', 'Un <b>intervalle</b> est l’ensemble des réels compris entre deux bornes. [0 ; 3[ contient 0, mais pas 3 : le crochet est <b>fermé</b> côté 0 (la borne est incluse) et <b>ouvert</b> côté 3 (la borne est exclue).', 'intervalle'),
+        S('Intersection et réunion', 'L’<b>intersection</b> A ∩ B contient les nombres qui sont dans A <b>et</b> dans B. La <b>réunion</b> A ∪ B contient ceux qui sont dans A <b>ou</b> dans B. [1 ; 5] ∩ [3 ; 8] = [3 ; 5].'),
+        S('La valeur absolue', 'La valeur absolue |x| est la distance de x à 0 : |−3| = 3 et |3| = 3. L’inégalité |x − 2| &lt; 1 signifie que x est à une distance de 2 inférieure à 1, soit x dans ]1 ; 3[.'),
+      ],
+      recap: ['ℕ ⊂ ℤ ⊂ ℚ ⊂ ℝ.', 'Crochet fermé : borne incluse ; ouvert : borne exclue.', 'Intersection = et ; réunion = ou.', '|x| est la distance à 0.'],
+      quiz: [Q('3 appartient à [0 ; 3[ ?', ['Oui', 'Non'], 1), Q('[1 ; 5] ∩ [3 ; 8] = ?', ['[3 ; 5]', '[1 ; 8]', ']3 ; 5['], 0)] },
+
+    { id: 'm2-inequations', subj: 'maths', level: '2nde', icon: '⚖️', title: 'Inéquations et calcul algébrique',
+      intro: 'Une inéquation compare deux expressions. On la résout presque comme une équation, avec une règle à connaître.',
+      steps: [
+        S('Résoudre une inéquation', 'On résout 2x + 1 &lt; 7 comme une équation : 2x &lt; 6, donc x &lt; 3. Les solutions sont tous les réels de l’intervalle ]−∞ ; 3[.'),
+        S('La règle qui change tout', 'Quand on <b>multiplie ou divise par un nombre négatif</b>, on <b>change le sens</b> de l’inégalité. −2x &lt; 6 donne x &gt; −3.'),
+        S('Tableau de signes', 'Pour étudier le signe d’un produit comme (x − 1)(x + 2), on étudie le signe de chaque facteur dans un tableau, puis on applique la règle des signes du produit.'),
+        S('Développer, factoriser, fractions', 'Pour développer : (a + b)² = a² + 2ab + b². Pour factoriser : a² − b² = (a − b)(a + b). On additionne des fractions algébriques en les mettant au même dénominateur, sans oublier les valeurs interdites (dénominateur nul).'),
+      ],
+      recap: ['Comme une équation, mais : × ou ÷ par un négatif change le sens.', 'Tableau de signes pour un produit ou un quotient.', 'Dénominateur jamais nul.'],
+      quiz: [Q('−3x &gt; 6 équivaut à :', ['x &gt; −2', 'x &lt; −2', 'x &lt; 2'], 1), Q('Solutions de x + 4 &gt; 7 :', ['x &gt; 3', 'x &lt; 3', 'x &gt; 11'], 0)] },
+
+    { id: 'm2-fonctions', subj: 'maths', level: '2nde', icon: '📈', title: 'Généralités sur les fonctions',
+      intro: 'Une fonction décrit comment une quantité dépend d’une autre. On la lit sur un tableau, une formule ou une courbe.',
+      steps: [
+        S('Image et antécédent', 'Une fonction f associe à tout x de son <b>ensemble de définition</b> un seul nombre f(x), son <b>image</b>. Si f(2) = 5, alors 5 est l’image de 2 et 2 est un <b>antécédent</b> de 5. Un nombre peut avoir plusieurs antécédents.'),
+        S('La courbe représentative', 'La courbe est l’ensemble des points (x ; f(x)). Pour trouver l’image de a, on lit l’ordonnée du point d’abscisse a. Pour les antécédents de b, on cherche les points d’ordonnée b.', 'parabole'),
+        S('Sens de variation', 'f est <b>croissante</b> sur un intervalle si, quand x augmente, f(x) augmente. Elle est <b>décroissante</b> si f(x) diminue. Un <b>tableau de variations</b> résume ce comportement, avec les maximums et les minimums.'),
+        S('Résoudre graphiquement', 'Les solutions de f(x) = k sont les abscisses des points de la courbe à la hauteur k. Celles de f(x) &gt; k sont les abscisses où la courbe est au-dessus de la droite y = k.'),
+      ],
+      recap: ['f(x) est l’image de x.', 'Courbe : points (x ; f(x)).', 'Croissante : f(x) augmente avec x.', 'f(x) = k : on lit l’abscisse à la hauteur k.'],
+      quiz: [Q('f(3) = 7 : 7 est … de 3.', ['l’antécédent', 'l’image'], 1), Q('Une fonction décroissante : quand x augmente,', ['f(x) augmente', 'f(x) diminue'], 1)] },
+
+    { id: 'm2-reference', subj: 'maths', level: '2nde', icon: '〰️', title: 'Fonctions carré et inverse',
+      intro: 'Deux fonctions de référence à connaître : celle qui élève au carré et celle qui prend l’inverse.',
+      steps: [
+        S('La fonction carré', 'f(x) = x². Sa courbe est une <b>parabole</b> symétrique par rapport à l’axe des ordonnées. Elle est décroissante sur ]−∞ ; 0] et croissante sur [0 ; +∞[. Son minimum est 0.', 'parabole'),
+        S('Parité', 'f(−x) = f(x) : la fonction carré est <b>paire</b>, donc sa courbe est symétrique par rapport à l’axe des ordonnées. Deux opposés ont le même carré : 3² = (−3)² = 9.'),
+        S('La fonction inverse', 'f(x) = 1/x, définie pour x ≠ 0. Sa courbe est une <b>hyperbole</b>. Elle est décroissante sur ]−∞ ; 0[ et sur ]0 ; +∞[. Elle est <b>impaire</b> : f(−x) = −f(x).', 'hyperbole'),
+        S('Comparer', 'Sur [0 ; +∞[, la fonction carré est croissante : si 0 ≤ a &lt; b, alors a² &lt; b². La fonction inverse est décroissante sur ]0 ; +∞[ : si 0 &lt; a &lt; b, alors 1/a &gt; 1/b.'),
+      ],
+      recap: ['Carré : parabole, minimum 0, paire.', 'Inverse : hyperbole, définie pour x ≠ 0, impaire.', 'Sur ]0 ; +∞[ : le carré croît, l’inverse décroît.'],
+      quiz: [Q('Quelle valeur n’a pas d’image par la fonction inverse ?', ['0', '1', '−1'], 0), Q('f(x) = x². f(−4) = ?', ['−16', '16', '8'], 1)] },
+
+    { id: 'm2-vecteurs', subj: 'maths', level: '2nde', icon: '🏹', title: 'Les vecteurs',
+      intro: 'Un vecteur indique un déplacement : une direction, un sens et une longueur.',
+      steps: [
+        S('Définition', 'Le vecteur AB représente le déplacement qui amène A en B. Il est caractérisé par sa <b>direction</b>, son <b>sens</b> et sa <b>norme</b> (la longueur AB). Deux vecteurs égaux ont les mêmes caractéristiques.'),
+        S('Coordonnées', 'Si A(xA ; yA) et B(xB ; yB), alors le vecteur AB a pour coordonnées <b>(xB − xA ; yB − yA)</b>. Pour A(1 ; 2) et B(5 ; 4) : AB (4 ; 2).', 'vecteur'),
+        S('Opérations', 'Somme : (a ; b) + (c ; d) = (a + c ; b + d). Produit par un réel k : k(a ; b) = (ka ; kb). Relation de Chasles : AB + BC = AC.'),
+        S('Colinéarité', 'Deux vecteurs (a ; b) et (c ; d) sont <b>colinéaires</b> si ad − bc = 0. Alors les droites sont parallèles. Si AB et AC sont colinéaires, les points A, B et C sont alignés. ABCD est un parallélogramme si AB = DC.'),
+      ],
+      recap: ['AB = (xB − xA ; yB − yA).', 'Chasles : AB + BC = AC.', 'Colinéaires : ad − bc = 0.', 'ABCD parallélogramme : AB = DC.'],
+      quiz: [Q('A(1 ; 2) et B(4 ; 6). Le vecteur AB a pour coordonnées :', ['(3 ; 4)', '(5 ; 8)', '(−3 ; −4)'], 0), Q('Les vecteurs (2 ; 3) et (4 ; 6) sont :', ['colinéaires', 'non colinéaires'], 0)] },
+
+    { id: 'm2-droites', subj: 'maths', level: '2nde', icon: '📏', title: 'Équations de droites',
+      intro: 'Une droite se décrit par une équation. Comment passer de deux points à l’équation ?',
+      steps: [
+        S('Équation réduite', 'Toute droite non verticale a une équation <b>y = mx + p</b>. m est le <b>coefficient directeur</b> (la pente) et p l’<b>ordonnée à l’origine</b>. Une droite verticale a une équation x = c.', 'droiteeq'),
+        S('Trouver l’équation', 'La droite passe par A(1 ; 3) et B(3 ; 7). m = (7 − 3) ÷ (3 − 1) = 2. Puis p : 3 = 2 × 1 + p, donc p = 1. L’équation est y = 2x + 1.'),
+        S('Droites parallèles', 'Deux droites non verticales sont <b>parallèles</b> si elles ont le <b>même coefficient directeur</b>. Elles sont sécantes sinon.'),
+        S('Intersection', 'Pour trouver le point d’intersection de y = 2x + 1 et y = −x + 7, on résout 2x + 1 = −x + 7, donc 3x = 6, x = 2 et y = 5. Le point est (2 ; 5).'),
+      ],
+      recap: ['y = mx + p.', 'm = (yB − yA) ÷ (xB − xA).', 'Parallèles : même m.', 'Intersection : on résout un système.'],
+      quiz: [Q('Droite par (0 ; 1) et (2 ; 5) : m = ?', ['2', '4', '1/2'], 0), Q('y = 3x + 1 et y = 3x − 2 sont :', ['parallèles', 'sécantes'], 0)] },
+
+    { id: 'm2-geometrie-reperee', subj: 'maths', level: '2nde', icon: '📍', title: 'Géométrie dans un repère',
+      intro: 'Avec les coordonnées, on calcule des distances et des milieux sans règle.',
+      steps: [
+        S('La distance', 'Dans un repère orthonormé, <b>AB = √((xB − xA)² + (yB − yA)²)</b>. Pour A(1 ; 2) et B(4 ; 6) : AB = √(9 + 16) = √25 = 5.', 'milieu'),
+        S('Le milieu', 'Le milieu I de [AB] a pour coordonnées <b>((xA + xB) ÷ 2 ; (yA + yB) ÷ 2)</b>. Pour A(1 ; 2) et B(5 ; 4) : I(3 ; 3).'),
+        S('Nature d’un triangle', 'On calcule les trois longueurs. Si deux sont égales, le triangle est isocèle. Si AB² + AC² = BC², le triangle est rectangle en A (réciproque de Pythagore).'),
+        S('Parallélogramme', 'ABCD est un parallélogramme si ses diagonales ont le même milieu, ou si le vecteur AB est égal au vecteur DC. Les coordonnées permettent de le vérifier.'),
+      ],
+      recap: ['AB = √((xB − xA)² + (yB − yA)²).', 'Milieu : moyenne des coordonnées.', 'Réciproque de Pythagore pour un angle droit.'],
+      quiz: [Q('Milieu de [AB] avec A(0 ; 0) et B(4 ; 6) :', ['(2 ; 3)', '(4 ; 6)', '(1 ; 1,5)'], 0), Q('Distance de A(0 ; 0) à B(3 ; 4) :', ['5', '7', '25'], 0)] },
+
+    { id: 'm2-stats-probas', subj: 'maths', level: '2nde', icon: '📊', title: 'Statistiques et probabilités',
+      intro: 'Résumer une série de données et calculer la chance d’événements combinés.',
+      steps: [
+        S('Médiane et quartiles', 'La <b>médiane</b> partage la série en deux moitiés. Le <b>premier quartile Q1</b> est tel qu’au moins 25 % des valeurs sont inférieures ou égales à Q1. Le <b>troisième quartile Q3</b> correspond à 75 %. L’<b>écart interquartile</b> est Q3 − Q1.', 'boite'),
+        S('Moyenne et écart-type', 'La moyenne est la somme des valeurs divisée par l’effectif. L’<b>écart-type</b> σ mesure la dispersion des valeurs autour de la moyenne : plus il est grand, plus les valeurs sont dispersées.'),
+        S('Probabilités : union et intersection', 'Pour deux événements A et B : <b>P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</b>. Si A et B sont incompatibles (P(A ∩ B) = 0), on additionne simplement.'),
+        S('Fluctuation d’échantillonnage', 'Sur un petit nombre d’essais, la fréquence observée peut s’éloigner de la probabilité. Plus on répète l’expérience, plus la fréquence se stabilise autour de la probabilité.'),
+      ],
+      recap: ['Médiane et quartiles Q1, Q3.', 'Écart-type : dispersion.', 'P(A ∪ B) = P(A) + P(B) − P(A ∩ B).'],
+      quiz: [Q('P(A) = 0,4, P(B) = 0,3 et P(A ∩ B) = 0,1. P(A ∪ B) = ?', ['0,6', '0,7', '0,12'], 0), Q('La médiane partage la série en :', ['deux groupes de même effectif', 'trois parties'], 0)] },
+
+    /* ================================================================ 2nde : PHYSIQUE */
+    { id: 'p2-vitesse', subj: 'physique', level: '2nde', icon: '🚀', title: 'Le mouvement et le vecteur vitesse',
+      intro: 'Décrire un mouvement, c’est choisir un référentiel, une trajectoire et une vitesse.',
+      steps: [
+        S('Référentiel et trajectoire', 'Un mouvement se décrit par rapport à un <b>référentiel</b> (un objet de référence). La <b>trajectoire</b> est l’ensemble des positions occupées par un point de l’objet au cours du temps. Elle dépend du référentiel.'),
+        S('Vitesse moyenne', 'La vitesse moyenne est <b>v = d ÷ Δt</b>. Pour d = 100 m en Δt = 10 s : v = 10 m/s. Pour passer de m/s à km/h, on multiplie par 3,6 : 10 m/s = 36 km/h.'),
+        S('Le vecteur vitesse', 'Le <b>vecteur vitesse</b> d’un point est tangent à la trajectoire, dans le sens du mouvement. Sa longueur représente la valeur de la vitesse, à une échelle choisie.', 'vitesse2'),
+        S('Types de mouvements', 'Le mouvement est <b>rectiligne uniforme</b> si la trajectoire est une droite et la vitesse constante. Il est <b>accéléré</b> si la valeur de la vitesse augmente, <b>ralenti</b> si elle diminue.'),
+      ],
+      recap: ['Le mouvement dépend du référentiel.', 'v = d ÷ Δt.', 'Le vecteur vitesse est tangent à la trajectoire.', '× 3,6 pour passer de m/s à km/h.'],
+      quiz: [Q('d = 150 m et Δt = 5 s. v = ?', ['30 m/s', '750 m/s', '3 m/s'], 0), Q('20 m/s correspondent à :', ['72 km/h', '5,6 km/h'], 0)] },
+
+    { id: 'p2-forces', subj: 'physique', level: '2nde', icon: '🏋️', title: 'Les forces et le principe d’inertie',
+      intro: 'Une force est une action qui peut modifier le mouvement d’un objet. On la représente par un vecteur.',
+      steps: [
+        S('Modéliser une action', 'Une <b>force</b> modélise une action mécanique exercée par un objet sur un autre. Elle est représentée par un <b>vecteur force</b> : point d’application, direction, sens et valeur en newtons (N).'),
+        S('Quelques forces', 'Le <b>poids</b> P = m × g est vertical, vers le bas. La <b>réaction du support</b> est perpendiculaire au support. La <b>tension d’un fil</b> est dirigée le long du fil. Les <b>frottements</b> s’opposent au mouvement.', 'forces2'),
+        S('Le principe d’inertie', 'Si les forces qui s’exercent sur un objet <b>se compensent</b> (leur somme vectorielle est nulle), l’objet est au repos ou en mouvement rectiligne uniforme. Un objet immobile sur une table : poids et réaction se compensent.'),
+        S('La réciproque', 'Si la vitesse d’un objet change (en valeur ou en direction), les forces ne se compensent pas. La somme des forces est alors non nulle : elle est dirigée dans le sens de la variation de vitesse.'),
+      ],
+      recap: ['Force : un vecteur, en newtons.', 'Poids : P = m × g.', 'Forces compensées : repos ou mouvement rectiligne uniforme.'],
+      quiz: [Q('Un objet immobile sur une table : les forces :', ['se compensent', 'ne se compensent pas'], 0), Q('Le poids d’un objet de 2 kg (g = 10 N/kg) est :', ['2 N', '20 N', '0,2 N'], 1)] },
+
+    { id: 'p2-son', subj: 'physique', level: '2nde', icon: '🔊', title: 'Les signaux sonores : période et fréquence',
+      intro: 'Une note de musique, c’est un signal qui se répète régulièrement : un signal périodique.',
+      steps: [
+        S('Un signal périodique', 'Un signal est <b>périodique</b> s’il se reproduit identique à lui-même à intervalles de temps réguliers. La plus petite durée de répétition est la <b>période T</b>, en secondes.', 'signal'),
+        S('La fréquence', 'La <b>fréquence</b> f est le nombre de périodes par seconde : <b>f = 1 ÷ T</b>. Elle se mesure en hertz (Hz). Si T = 0,002 s, alors f = 500 Hz.'),
+        S('Hauteur et intensité', 'Plus la fréquence est grande, plus le son est <b>aigu</b>. Plus l’amplitude est grande, plus le son est <b>fort</b>. L’oreille humaine perçoit les sons de 20 Hz à 20 000 Hz. Au-delà : ultrasons.'),
+        S('Vitesse du son', 'Dans l’air, le son se propage à environ 340 m/s. On l’utilise pour mesurer des distances : un écho met 2 s à revenir, donc l’obstacle est à 340 × 1 = 340 m (aller-retour).'),
+      ],
+      recap: ['f = 1 ÷ T (Hz).', 'Haute fréquence : son aigu.', 'Forte amplitude : son fort.', 'Vitesse du son dans l’air : environ 340 m/s.'],
+      quiz: [Q('T = 0,01 s. f = ?', ['100 Hz', '0,01 Hz', '10 Hz'], 0), Q('Une fréquence plus grande donne un son plus :', ['grave', 'aigu'], 1)] },
+
+    { id: 'p2-refraction', subj: 'physique', level: '2nde', icon: '🔍', title: 'Réfraction de la lumière',
+      intro: 'Une paille semble cassée dans l’eau : la lumière change de direction en changeant de milieu.',
+      steps: [
+        S('Indice de réfraction', 'La lumière va plus vite dans l’air que dans l’eau ou le verre. L’<b>indice de réfraction</b> n d’un milieu vaut <b>n = c ÷ v</b>, où c = 3,00 × 10⁸ m/s est la vitesse dans le vide. Pour l’air, n ≈ 1 ; pour l’eau, n ≈ 1,33 ; pour le verre, n ≈ 1,5.'),
+        S('La réfraction', 'Quand un rayon passe d’un milieu transparent à un autre, il est <b>dévié</b> : c’est la <b>réfraction</b>. Les angles se mesurent par rapport à la <b>normale</b> à la surface.', 'snell'),
+        S('Lois de Snell-Descartes', 'Le rayon réfracté reste dans le plan d’incidence et <b>n₁ sin i₁ = n₂ sin i₂</b>. En passant de l’air vers le verre, le rayon se rapproche de la normale. Pour la réflexion, i = i’.'),
+        S('Réflexion totale', 'En passant d’un milieu très réfringent vers un milieu moins réfringent, au-delà d’un angle limite, il n’y a plus de réfraction : toute la lumière est réfléchie. C’est le principe de la <b>fibre optique</b>.'),
+      ],
+      recap: ['n = c ÷ v.', 'n₁ sin i₁ = n₂ sin i₂.', 'Air → verre : le rayon se rapproche de la normale.', 'Réflexion totale : fibre optique.'],
+      quiz: [Q('Indice de réfraction de l’air :', ['environ 1', 'environ 1,5'], 0), Q('De l’air vers l’eau, le rayon :', ['s’éloigne de la normale', 'se rapproche de la normale'], 1)] },
+
+    { id: 'p2-spectres', subj: 'physique', level: '2nde', icon: '🌈', title: 'Spectres lumineux et longueurs d’onde',
+      intro: 'La lumière d’une étoile ou d’une lampe contient des informations : on les lit dans son spectre.',
+      steps: [
+        S('Longueur d’onde', 'Une lumière se caractérise par sa <b>longueur d’onde λ</b>, en nanomètres (nm). Le visible va de 400 nm (violet) à 800 nm (rouge). En dessous : ultraviolets. Au-dessus : infrarouges.'),
+        S('Spectre continu', 'Une lampe à incandescence ou un corps très chaud émet un <b>spectre continu</b> : toutes les couleurs. Plus l’objet est chaud, plus sa lumière tire vers le bleu.'),
+        S('Spectre de raies', 'Un gaz chaud sous faible pression émet un <b>spectre de raies d’émission</b> : quelques raies colorées sur fond noir. Chaque élément chimique a ses raies propres, comme une empreinte.', 'raies'),
+        S('Spectre d’absorption', 'Un gaz traversé par de la lumière blanche <b>absorbe</b> certaines longueurs d’onde, laissant des raies noires. Les astronomes en déduisent la composition des étoiles : par exemple, le Soleil contient de l’hydrogène et de l’hélium.'),
+      ],
+      recap: ['Visible : 400 nm à 800 nm.', 'Corps chaud : spectre continu.', 'Gaz : spectre de raies, empreinte de l’élément.'],
+      quiz: [Q('La longueur d’onde se mesure en :', ['nanomètres', 'newtons'], 0), Q('Un gaz chaud sous faible pression émet un spectre :', ['continu', 'de raies'], 1)] },
+
+    { id: 'p2-circuit', subj: 'physique', level: '2nde', icon: '🔌', title: 'Les circuits : lois des nœuds et des mailles',
+      intro: 'Deux lois suffisent pour analyser un circuit : l’une sur les courants, l’autre sur les tensions.',
+      steps: [
+        S('Loi des nœuds', 'Dans un circuit, la somme des intensités qui arrivent à un nœud est égale à la somme des intensités qui en repartent : <b>I = I₁ + I₂</b>. Si I = 0,5 A et I₁ = 0,2 A, alors I₂ = 0,3 A.', 'mailles'),
+        S('Loi des mailles', 'Dans une maille (une boucle fermée), la tension du générateur est égale à la somme des tensions aux bornes des dipôles : <b>E = U₁ + U₂</b>. Pour E = 9 V et U₁ = 5 V, on trouve U₂ = 4 V.'),
+        S('Loi d’Ohm', 'Pour un conducteur ohmique : <b>U = R × I</b>, avec R en ohms (Ω). Pour 12 V aux bornes d’une résistance de 60 Ω : I = 12 ÷ 60 = 0,2 A.'),
+        S('Associations de résistances', 'En <b>série</b> : R = R₁ + R₂. En <b>dérivation</b> : 1/R = 1/R₁ + 1/R₂. Deux résistances de 100 Ω en dérivation valent 50 Ω.'),
+      ],
+      recap: ['Nœuds : I = I₁ + I₂.', 'Mailles : E = U₁ + U₂.', 'U = R × I.', 'Série : R₁ + R₂.'],
+      quiz: [Q('E = 6 V, U₁ = 2 V. U₂ = ?', ['4 V', '8 V', '3 V'], 0), Q('Deux résistances de 10 Ω en série valent :', ['5 Ω', '20 Ω', '10 Ω'], 1)] },
+
+    /* ================================================================ 2nde : CHIMIE */
+    { id: 'c2-mole', subj: 'chimie', level: '2nde', icon: '⚗️', title: 'La quantité de matière et la mole',
+      intro: 'Compter des atomes un par un est impossible. On les compte par paquets : les moles.',
+      steps: [
+        S('La mole', 'Une <b>mole</b> contient 6,02 × 10²³ entités (atomes, molécules, ions). Ce nombre est la <b>constante d’Avogadro</b> Nₐ. La <b>quantité de matière</b> n se mesure en mol.', 'moleF'),
+        S('Masse molaire', 'La <b>masse molaire</b> M est la masse d’une mole : en g/mol. M(H) = 1 g/mol, M(C) = 12 g/mol, M(O) = 16 g/mol. Pour l’eau H₂O : M = 2 × 1 + 16 = 18 g/mol.'),
+        S('La relation', '<b>n = m ÷ M</b>. Pour 36 g d’eau : n = 36 ÷ 18 = 2 mol. Et m = n × M : 0,5 mol de CO₂ (M = 44 g/mol) pèse 22 g.'),
+        S('Nombre d’entités', 'Le nombre d’entités est <b>N = n × Nₐ</b>. Dans 2 mol d’eau, il y a 2 × 6,02 × 10²³ = 1,20 × 10²⁴ molécules.'),
+      ],
+      recap: ['1 mol = 6,02 × 10²³ entités.', 'n = m ÷ M.', 'N = n × Nₐ.'],
+      quiz: [Q('M(H₂O) = 18 g/mol. 54 g d’eau valent :', ['3 mol', '0,33 mol', '72 mol'], 0), Q('Une mole de molécules contient :', ['6,02 × 10²³ molécules', '6,02 × 10²³ grammes'], 0)] },
+
+    { id: 'c2-concentration', subj: 'chimie', level: '2nde', icon: '🥛', title: 'Concentration, dissolution et dilution',
+      intro: 'Un sirop trop sucré se dilue avec de l’eau. La chimie calcule exactement de combien.',
+      steps: [
+        S('Concentration molaire', 'La <b>concentration</b> d’une solution est <b>C = n ÷ V</b>, avec n en mol, V en litres et C en mol/L. 0,2 mol dissoutes dans 0,5 L donnent C = 0,4 mol/L.', 'verre'),
+        S('Concentration massique', 'La <b>concentration massique</b> est <b>Cm = m ÷ V</b> en g/L. Elle est reliée à C par Cm = C × M. Pour du sel (M = 58,5 g/mol) à 0,5 mol/L : Cm ≈ 29 g/L.'),
+        S('Dissoudre', 'Pour préparer 100 mL de solution à 0,10 mol/L de soluté de masse molaire M = 40 g/mol : n = C × V = 0,01 mol, donc m = 0,01 × 40 = 0,40 g. On dissout dans une fiole jaugée, puis on complète jusqu’au trait de jauge.'),
+        S('Diluer', 'Lors d’une dilution, la quantité de matière de soluté ne change pas : <b>C₁ × V₁ = C₂ × V₂</b>. Pour obtenir 100 mL à 0,1 mol/L à partir d’une solution à 1 mol/L, il faut V₁ = 0,1 × 100 ÷ 1 = 10 mL.'),
+      ],
+      recap: ['C = n ÷ V (mol/L).', 'Cm = C × M.', 'Dilution : C₁V₁ = C₂V₂.'],
+      quiz: [Q('0,5 mol dans 2 L : C = ?', ['0,25 mol/L', '4 mol/L', '1 mol/L'], 0), Q('On dilue 10 fois. La concentration est :', ['multipliée par 10', 'divisée par 10'], 1)] },
+
+    { id: 'c2-periodique', subj: 'chimie', level: '2nde', icon: '🧬', title: 'Structure de l’atome et classification périodique',
+      intro: 'Les éléments chimiques sont rangés dans un tableau. La place d’un élément dit comment il se comporte.',
+      steps: [
+        S('Noyau et nombre de charges', 'Un atome est formé d’un noyau (protons et neutrons) et d’électrons. Le nombre de protons est le <b>numéro atomique Z</b>. L’atome est neutre : il a Z électrons. Z définit l’élément : C (Z = 6), O (Z = 8).', 'periodique'),
+        S('Les couches électroniques', 'Les électrons se répartissent en <b>couches</b> : K (2 électrons au maximum), L (8), M (8 pour les éléments des trois premières périodes). Carbone : (K)² (L)⁴. Oxygène : (K)² (L)⁶.'),
+        S('Électrons de valence', 'Les électrons de la <b>dernière couche</b> sont les électrons de <b>valence</b>. Ils déterminent les propriétés chimiques. Les éléments d’une même colonne ont le même nombre d’électrons de valence.'),
+        S('Gaz nobles et ions', 'Les gaz nobles (He, Ne, Ar) ont une couche externe saturée : ils sont très stables. Un atome tend à gagner ou perdre des électrons pour leur ressembler : Na devient Na⁺ (comme Ne) et Cl devient Cl⁻ (comme Ar).'),
+      ],
+      recap: ['Z = nombre de protons = nombre d’électrons.', 'Couches : K (2), L (8), M (8).', 'Même colonne : même nombre d’électrons de valence.'],
+      quiz: [Q('Le carbone (Z = 6) a combien d’électrons de valence ?', ['2', '4', '6'], 1), Q('Na devient Na⁺ en :', ['perdant un électron', 'gagnant un électron'], 0)] },
+
+    { id: 'c2-molecule-liaison', subj: 'chimie', level: '2nde', icon: '🔗', title: 'Molécules, liaisons et formules',
+      intro: 'Les atomes se lient en partageant des électrons : cela forme les molécules.',
+      steps: [
+        S('La liaison covalente', 'Une <b>liaison covalente</b> est un doublet d’électrons partagé entre deux atomes. Chaque atome cherche à avoir une couche externe saturée : 2 électrons pour H, 8 pour C, N, O (règles du duet et de l’octet).'),
+        S('Nombre de liaisons', 'H forme 1 liaison, O en forme 2, N en forme 3, C en forme 4. Dans l’eau H₂O, O est lié à deux H. Dans le méthane CH₄, C est lié à quatre H.'),
+        S('Formule de Lewis', 'On représente la molécule en dessinant les <b>liaisons</b> (traits) et les <b>doublets non liants</b> (paires d’électrons sur un atome). Dans H₂O, O porte deux doublets non liants.'),
+        S('Géométrie', 'La forme d’une molécule dépend du nombre de liaisons et de doublets autour de l’atome central : CO₂ est linéaire, H₂O est coudée, CH₄ est un tétraèdre.'),
+      ],
+      recap: ['Liaison covalente : doublet partagé.', 'H : 1 liaison, O : 2, N : 3, C : 4.', 'Règles du duet et de l’octet.'],
+      quiz: [Q('Combien de liaisons forme l’atome de carbone ?', ['2', '4', '1'], 1), Q('H₂O est une molécule :', ['linéaire', 'coudée'], 1)] },
+
+    { id: 'c2-transformation', subj: 'chimie', level: '2nde', icon: '🧪', title: 'Équation de réaction et réactif limitant',
+      intro: 'Pour prévoir ce qu’une réaction produit, on suit les quantités de matière avec un tableau d’avancement.',
+      steps: [
+        S('Équation de réaction', 'Une transformation chimique est modélisée par une <b>équation</b> où les atomes et les charges sont conservés : <b>2 H₂ + O₂ → 2 H₂O</b>. Les nombres devant les formules sont les <b>nombres stœchiométriques</b>.', 'stoechio'),
+        S('Quantités de réactifs', 'Les réactifs sont consommés dans les proportions de l’équation : 2 mol de H₂ réagissent avec 1 mol de O₂. Si on a 4 mol de H₂ et 1 mol de O₂, c’est O₂ qui manque.'),
+        S('Le réactif limitant', 'Le <b>réactif limitant</b> est celui qui est entièrement consommé en premier : il détermine l’<b>avancement maximal</b> xmax. Ici, 1 mol de O₂ est consommée, donc xmax = 1 mol.'),
+        S('Le tableau d’avancement', 'On écrit les quantités à l’état initial, en cours (avec x) et final (avec xmax). État final : H₂ : 4 − 2 × 1 = 2 mol restantes ; O₂ : 0 ; H₂O : 2 × 1 = 2 mol formées.'),
+      ],
+      recap: ['L’équation conserve atomes et charges.', 'Réactif limitant : consommé en premier.', 'État final avec xmax.'],
+      quiz: [Q('Dans 2 H₂ + O₂ → 2 H₂O, 3 mol de O₂ réagissent avec :', ['3 mol de H₂', '6 mol de H₂', '1,5 mol de H₂'], 1), Q('Le réactif limitant est :', ['celui qui est en plus grande quantité', 'celui qui disparaît en premier'], 1)] },
+
+    { id: 'c2-identification', subj: 'chimie', level: '2nde', icon: '🔬', title: 'Identifier des espèces chimiques',
+      intro: 'Comment savoir si un colorant, un médicament ou une eau contient telle espèce ? Avec des analyses.',
+      steps: [
+        S('Les propriétés physiques', 'On identifie une espèce par des <b>grandeurs physiques</b> : température de fusion, d’ébullition, masse volumique, solubilité, indice de réfraction. Elles sont propres à chaque espèce pure.'),
+        S('La chromatographie', 'La <b>chromatographie sur couche mince</b> sépare les espèces d’un mélange : un éluant monte le long de la plaque et entraîne les espèces à des vitesses différentes. Deux taches à la même hauteur correspondent à la même espèce.', 'chromato'),
+        S('Le rapport frontal', 'Le <b>rapport frontal</b> est Rf = (distance parcourue par l’espèce) ÷ (distance parcourue par l’éluant). Il est propre à chaque espèce dans des conditions données.'),
+        S('Spectrophotométrie', 'Une solution colorée absorbe la lumière. L’<b>absorbance A</b> d’une solution est proportionnelle à sa concentration : <b>A = k × C</b> (loi de Beer-Lambert). On mesure A, puis on en déduit C avec une courbe d’étalonnage.'),
+      ],
+      recap: ['Température de fusion, masse volumique : propres à une espèce.', 'Chromatographie : même hauteur, même espèce.', 'A = k × C.'],
+      quiz: [Q('En chromatographie, deux taches à la même hauteur indiquent :', ['la même espèce', 'deux espèces différentes'], 0), Q('L’absorbance est proportionnelle à la :', ['concentration', 'température'], 0)] },
   ];
 
   const SUBJECTS = [
@@ -1136,7 +1411,7 @@
   ];
   const LEVELS_COURS = [
     { id: '5e', label: '5ᵉ', ready: true }, { id: '4e', label: '4ᵉ', ready: true }, { id: '3e', label: '3ᵉ', ready: true },
-    { id: '2nde', label: '2nde' }, { id: '1re', label: '1ʳᵉ' }, { id: 'term', label: 'Terminale' },
+    { id: '2nde', label: '2nde', ready: true }, { id: '1re', label: '1ʳᵉ' }, { id: 'term', label: 'Terminale' },
   ];
 
   window.COURSES = COURSES; window.COURSE_SUBJECTS = SUBJECTS; window.COURSE_LEVELS = LEVELS_COURS;
