@@ -472,3 +472,13 @@ html[dir="rtl"] .cover{transform:rotate(2deg)}
 html[dir="rtl"] .mq-track{direction:ltr}
 html[dir="rtl"] audio{direction:ltr}
 html[dir="rtl"] .lang{direction:ltr}
+
+/* Avis publiés */
+.avis-pub:empty{display:none}
+.avis-h{margin:1.6rem 0 .6rem;font:700 1.4rem "Cormorant Garamond",serif;color:var(--gold)}
+html[lang="ar"] .avis-h{font-family:Amiri,serif}
+.avis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.9rem}
+.avis-card{margin:0;padding:1rem 1.1rem;background:var(--card);border:1px solid var(--line);border-radius:var(--radius)}
+.avis-st{color:#e0a526;letter-spacing:.1em;font-size:1.05rem}
+.avis-card blockquote{margin:.4rem 0;font-style:italic;line-height:1.55}
+.avis-card figcaption{font-size:.8rem;color:var(--muted)}
