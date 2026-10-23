@@ -130,7 +130,7 @@
   let homeCycle = 'primaire';
   const exCycle = (lv) => (lv.id === '6e' ? 'moyen' : 'primaire');
   function pageHome() {
-    document.title = T('Tadriss-Maths — exercices de maths de la GS à la 6e');
+    document.title = T('Tadriss-Maths — exercices et cours de maths de la GS à la Terminale');
     show(`<div class="wrap"><section class="hero"><h1>${T('Exercices et cours pour réussir de la GS à la Terminale')}</h1><p>${T('Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.')}</p></section>
     <div class="pills" style="margin:14px 0">${COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === homeCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-hcy="${cy.id}" aria-pressed="${cy.id === homeCycle}">${cy.icon} ${T(cy.label)}</button>`).join('')}</div>
     <section class="levels">${COURSE_LEVELS.filter((l) => l.cycle === homeCycle).map((l) => {
@@ -326,7 +326,7 @@
   function pageAbout() {
     document.title = T('Pourquoi Tadriss-Maths');
     const total = LEVELS.reduce((a, l) => a + l.skillList.length, 0), impl = LEVELS.reduce((a, l) => a + implemented(l).length, 0);
-    show(`<div class="wrap"><section class="promo"><h1>${T('Tadriss-Maths donne envie de faire des maths')}</h1><p>${T('Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme. Du premier comptage de la grande section aux fractions et aux aires de la sixième.')}</p><a class="btn big" href="#/">${T('Choisir mon niveau')}</a></section>
+    show(`<div class="wrap"><section class="promo"><h1>${T('Tadriss-Maths donne envie de faire des maths')}</h1><p>${T('Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme, et des cours illustrés. Du premier comptage de la grande section aux dérivées et aux intégrales de la Terminale.')}</p><a class="btn big" href="#/">${T('Choisir mon niveau')}</a></section>
       <h2 class="section-t">${T('Une façon d’apprendre pensée pour l’enfant')}</h2>
       <div class="feats"><div class="feat"><img class="ic" src="/img/ico-0.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des exercices sans fin')}</h3><p>${T('Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.')}</p></div>
       <div class="feat"><img class="ic" src="/img/ico-1.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des schémas pour comprendre')}</h3><p>${T('Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.')}</p></div>
@@ -334,7 +334,7 @@
       <div class="feat"><img class="ic" src="/img/ico-3.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des récompenses à débloquer')}</h3><p>${T('Un plateau par niveau, avec des carrés cachés à dévoiler en acquérant des compétences.')}</p></div></div>
       <h2 class="section-t">${T('Le programme, niveau par niveau')}</h2>
       <div class="feats">${LEVELS.map((lv) => `<a class="feat" href="#/niveau/${lv.id}" style="text-decoration:none;border-top:6px solid ${lv.color}"><h3 style="color:${lv.color};font-size:1.4rem">${sh(lv)}</h3><p>${ti(lv.blurb)}</p></a>`).join('')}</div>
-      <div class="note"><b>${T('Où en est le site ?')}</b> ${T('{total} compétences sont listées de la GS à la 6ᵉ, et {impl} ont déjà leurs exercices. Les autres sont marquées « bientôt » et seront ajoutées niveau par niveau. L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.', { total, impl })}</div></div>`, 'avantages');
+      <div class="note"><b>${T('Où en est le site ?')}</b> ${T('{total} compétences de la GS à la Terminale, avec des exercices corrigés tout de suite et des explications ({impl} au total). L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.', { total, impl })}</div></div>`, 'avantages');
   }
 
   function pageSearch(q) {
@@ -364,7 +364,7 @@
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tarifs')}</h1><p>${T('Un abonnement par niveau, valable {days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.', { days: auth.config.days })}</p></div>
       ${demo ? `<div class="note">${T('Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.')}</div>` : ''}
       ${auth.config.prices.fam ? `<div class="pcard fam"><div><h2>${T('Forfait Famille')}</h2><div class="pamount"><b>${price('fam')}</b> ${T('DA')} <span>${T('/ mois')}</span></div></div>
-        <p>${T('Tous les niveaux, de la grande section à la sixième, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.')}</p>
+        <p>${T('Tous les niveaux, de la grande section à la Terminale, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.')}</p>
         ${valid('fam') ? `<p class="hint">${T('Actif jusqu’au {date}', { date: dateFr(auth.subscriptions.fam) })}</p>` : ''}
         <button class="btn" data-buy="fam">${valid('fam') ? T('Prolonger d’un mois') : T('Choisir le forfait Famille')}</button></div>` : ''}
       <div class="prices">${LEVELS.map((lv) => `<div class="pcard" style="--c:${lv.color}"><div class="pbadge" style="background:${lv.color}">${sh(lv)}</div><div class="pamount"><b>${price(lv.id)}</b> ${T('DA')} <span>${T('/ mois')}</span></div>
@@ -469,7 +469,7 @@
   function pageLegal() {
     document.title = T('Conditions et confidentialité — Tadriss-Maths');
     show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Conditions et confidentialité')}</h1></div><div class="note">${T('Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.')}</div>
-      <div class="panel legal"><h2>${T('Le service')}</h2><p>${T('Tadriss-Maths propose des exercices de mathématiques en ligne, de la grande section à la sixième. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.')}</p>
+      <div class="panel legal"><h2>${T('Le service')}</h2><p>${T('Tadriss-Maths propose des exercices de mathématiques et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.')}</p>
       <h2>${T('Abonnements et paiement')}</h2><p>${T('Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.', { days: auth.config.days })}</p>
       <h2>${T('Données personnelles')}</h2><p>${T('Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.')}</p>
       <h2>${T('Supprimer son compte')}</h2><p>${T('Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).')}</p></div></div>`, 'compte');

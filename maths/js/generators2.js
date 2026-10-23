@@ -649,5 +649,71 @@
     return num(t('x.norm.q', { u: m(`u(${u.map(fmt).join(' ; ')})`) }), '', nn, t('x.norm3.exp', { s: m(x * x + y * y + z * z), r: m(nn) }));
   };
 
+  /* ===================================================================== GS et CP : les compétences qui n'avaient pas d'exercice */
+  const EMO = ['🍎', '⭐', '🐟', '🚗', '🌸', '🎈', '🐥', '⚽', '🍓', '🦋'];
+  function numChoices(correct, spread = 3, lo = -Infinity) {
+    const set = new Set([correct]); let guard = 0;
+    while (set.size < 4 && guard++ < 300) { const c = round(correct + R(-spread, spread)); if (c >= lo) set.add(c); }
+    return shuf([...set]).map((v) => ({ v, label: m(fmt(v)) }));
+  }
+  GEN.boxFill = () => {
+    const n = R(1, 9), e = pick(EMO), slots = Array.from({ length: 10 }, (_, i) => (i < n ? e : '⬜')).join(' ');
+    return { q: t('x.box.q'), vis: `<div class="emojis">${slots}</div>`, kind: 'choice', ans: 10 - n, choices: numChoices(10 - n, 2, 0), exp: t('x.box.exp', { n: m(n), r: m(10 - n) }) };
+  };
+  GEN.lenCompare = (p) => {
+    let a = R(2, 14), b = R(2, 14); while (a === b) b = R(2, 14);
+    const first = a > b ? 1 : 2, choices = [{ v: 1, label: t('x.first') }, { v: 2, label: t('x.second') }];
+    if (p && p.mode === 'num') return { q: t('x.len.num', { a: m(a), b: m(b) }), kind: 'choice', ans: first, choices, exp: t('x.len.num.exp', { M: m(Math.max(a, b)), s: m(Math.min(a, b)) }) };
+    const bar = (y, w, col) => `<rect x="10" y="${y}" width="${w * 20}" height="22" rx="5" fill="${col}" stroke="#1e293b" stroke-width="2"/>`;
+    return { q: t('x.len.q'), vis: svg(320, 80, bar(8, a, '#93c5fd') + bar(46, b, '#fca5a5')), kind: 'choice', ans: first, choices, exp: t('x.len.exp') };
+  };
+  GEN.daysAfter = () => {
+    const D = t('x.days'), i = R(0, 6), after = pick([true, false]), j = (i + (after ? 1 : 6)) % 7;
+    return { q: t(after ? 'x.day.after' : 'x.day.before', { d: D[i] }), kind: 'choice', ans: D[j], choices: mc(D[j], D.filter((_, k) => k !== j && k !== i), (x) => x), exp: t(after ? 'x.day.after.exp' : 'x.day.before.exp', { d: D[i], r: D[j] }) };
+  };
+  GEN.place = () => {
+    const k = pick(['above', 'below', 'front', 'behind']);
+    const box = '<rect x="70" y="60" width="90" height="60" fill="#fde68a" stroke="#92400e" stroke-width="3"/>';
+    const ball = (cx, cy) => `<circle cx="${cx}" cy="${cy}" r="22" fill="#f87171" stroke="#991b1b" stroke-width="3"/>`;
+    const inner = { above: box + ball(115, 36), below: box + ball(115, 144), front: box + ball(115, 90), behind: ball(115, 90) + box }[k];
+    return { q: t('x.place.q'), vis: svg(230, 170, inner), kind: 'choice', ans: k, choices: ['above', 'below', 'front', 'behind'].map((v) => ({ v, label: t('x.place.' + v) })), exp: t('x.place.exp.' + k) };
+  };
+  GEN.estimate = (p) => {
+    const kind = pick(p.kinds), a = kind === 'add' ? R(11, 79) : R(31, 79), b = kind === 'add' ? R(11, 79) : R(11, a - 10), r10 = (x) => Math.round(x / 10) * 10;
+    const op = kind === 'add' ? '+' : '−', ans = kind === 'add' ? r10(a) + r10(b) : r10(a) - r10(b);
+    const ch = shuf([ans, ans + 10, ans - 10, ans + 20].filter((x) => x >= 0)).map((v) => ({ v, label: m(v) }));
+    return { q: t('x.est.q'), expr: m(`${a} ${op} ${b}`), kind: 'choice', ans, choices: ch, exp: t('x.est.exp', { a: m(a), a10: m(r10(a)), b: m(b), b10: m(r10(b)), op: m(op), r: m(ans) }) };
+  };
+  GEN.repeatAdd = () => {
+    const n = R(2, 5), k = R(2, 6), e = Array(n).fill(k).join(' + ');
+    return num(t('x.rep.q'), m(`${e} = ${box}`), n * k, t('x.rep.exp', { n: m(n), k: m(k), r: m(n * k) }));
+  };
+  GEN.groupsMul = () => {
+    const n = R(2, 5), k = R(2, 5), em = pick(EMO), vis = Array.from({ length: n }, () => `<span class="grp" style="display:inline-block;margin:4px 10px;padding:4px 8px;border:2px dashed #94a3b8;border-radius:12px">${Array(k).fill(em).join(' ')}</span>`).join('');
+    return { q: t('x.mulq.q', { n: m(n), k: m(k) }), vis: `<div class="emojis">${vis}</div>`, kind: 'num', ans: n * k, exp: t('x.mulq.exp', { n: m(n), k: m(k), e: m(Array(n).fill(k).join(' + ')), r: m(n * k) }) };
+  };
+  GEN.timeUnits = () => {
+    const P2 = [['h', 'min', 60], ['min', 's', 60], ['day', 'h', 24], ['week', 'day', 7], ['year', 'month', 12]], [big, small, n] = pick(P2);
+    const ch = mc(n, [n + 10, n - 10, n * 2, 10, 100, 30, 12].filter((x) => x !== n && x > 0), (x) => m(x));
+    return { q: t('x.tu.q', { big: t('x.u.' + big + '.one'), small: t('x.u.' + small + '.many') }), kind: 'choice', ans: n, choices: ch, exp: t('x.tu.exp', { big: t('x.u.' + big + '.one'), small: t('x.u.' + small + '.many'), n: m(n) }) };
+  };
+  GEN.spaceRow = () => {
+    const es = shuf(EMO).slice(0, 3), k = pick(['left', 'right', 'between']), vis = `<div class="emojis" style="font-size:2.4rem">${es.join(' ')}</div>`;
+    const target = k === 'left' ? es[1] : k === 'right' ? es[1] : es[0], ans = k === 'left' ? es[0] : k === 'right' ? es[2] : es[1];
+    if (k === 'between') return { q: t('x.row.between', { a: es[0], c: es[2] }), vis, kind: 'choice', ans, choices: shuf(es).map((e) => ({ v: e, label: `<span class="emo">${e}</span>` })), exp: t('x.row.between.exp', { r: ans }) };
+    return { q: t('x.row.' + k, { t: target }), vis, kind: 'choice', ans, choices: shuf(es).map((e) => ({ v: e, label: `<span class="emo">${e}</span>` })), exp: t('x.row.' + k + '.exp', { t: target, r: ans }) };
+  };
+  GEN.objSolid = () => {
+    const O = [['⚽', 'sphere'], ['🎲', 'cube'], ['🥫', 'cylinder'], ['📦', 'pave'], ['🍦', 'cone'], ['⛺', 'pyramid']], [em, id] = pick(O), ch = shuf(O.map((o) => o[1])).slice(0, 4);
+    if (!ch.includes(id)) ch[0] = id;
+    return { q: t('x.obj.q'), vis: `<div class="emojis" style="font-size:3rem">${em}</div>`, kind: 'choice', ans: id, choices: shuf(ch).map((v) => ({ v, label: t('solidName.' + v) })), exp: t('x.obj.exp', { name: t('solid.' + id) }) };
+  };
+  GEN.axisYN = () => {
+    const C = '#1e3a8a', f = (shape, line) => svg(160, 130, `${shape}<line x1="${line[0]}" y1="${line[1]}" x2="${line[2]}" y2="${line[3]}" stroke="#dc2626" stroke-width="3" stroke-dasharray="7 5"/>`);
+    const rect = `<rect x="30" y="30" width="100" height="70" fill="#bfdbfe" stroke="${C}" stroke-width="3"/>`, tri = `<polygon points="80,15 135,110 25,110" fill="#fecaca" stroke="#991b1b" stroke-width="3"/>`;
+    const O = [[rect, [80, 15, 80, 115], true], [rect, [20, 65, 140, 65], true], [rect, [30, 30, 130, 100], false], [tri, [80, 10, 80, 118], true], [tri, [60, 10, 60, 118], false], [tri, [20, 110, 140, 110], false]], [shape, line, ok] = pick(O);
+    return { q: t('x.axis.q'), vis: f(shape, line), kind: 'choice', ans: ok ? 'y' : 'n', choices: yesNo(), exp: t(ok ? 'x.axis.y' : 'x.axis.n') };
+  };
+
   root.MathsGen2 = { t };
 }(typeof window !== 'undefined' ? window : globalThis));
