@@ -430,3 +430,9 @@ body.is-home .basmala{display:none}
 
 .trophy b{color:var(--gold)}
 .trophy{color:var(--text)}
+
+/* Sélecteur de langue : FR | EN, la langue active est en surbrillance */
+.lang{display:inline-flex;align-items:center;gap:0;padding:2px;min-width:0;height:2.4rem;border-radius:999px;background:rgba(var(--ov),.08);color:var(--text);font:700 .82rem Inter,sans-serif;letter-spacing:.04em}
+.lang:hover{background:rgba(var(--ov),.12);color:var(--text)}
+.lg-o{display:inline-flex;align-items:center;justify-content:center;min-width:2.2rem;height:100%;padding:0 .6rem;border-radius:999px;color:var(--muted)}
+.lg-o.on{background:var(--btn);color:var(--ink);box-shadow:0 1px 4px rgba(60,35,15,.3)}

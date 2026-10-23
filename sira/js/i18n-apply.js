@@ -16,9 +16,10 @@
     });
     var btn = document.getElementById("langbtn");
     if (btn) {
-      btn.textContent = window.LANG === "en" ? "🌐 Français" : "🌐 English";
-      btn.setAttribute("aria-label", window.LANG === "en" ? "Passer en français" : "Switch to English");
-      btn.setAttribute("title", window.LANG === "en" ? "Français" : "English");
+      var en = window.LANG === "en";
+      btn.innerHTML = '<span class="lg-o' + (en ? "" : " on") + '">FR</span><span class="lg-o' + (en ? " on" : "") + '">EN</span>';
+      btn.setAttribute("aria-label", en ? "Language: English. Switch to French" : "Langue : français. Passer en anglais");
+      btn.setAttribute("title", en ? "English → Français" : "Français → English");
       btn.onclick = function () { window.SiraI18n.set(window.LANG === "en" ? "fr" : "en"); };
     }
   }
