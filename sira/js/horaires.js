@@ -96,12 +96,23 @@
     var def = (Intl.DateTimeFormat().resolvedOptions().timeZone || "") === "Europe/Paris" ? "uoif" : "mwl";
     st.method = st.method || def; st.hanafi = !!st.hanafi;
     app.innerHTML = '<section class="block wrap pt"><h2>' + X.h + '</h2><p class="lead">' + X.lead + "</p>" +
+      '<div class="pt-clock" aria-live="off"><div class="pt-time" id="ptTime">--:--:--</div><div class="pt-date" id="ptDate"></div><div class="pt-hijri" id="ptHijri"></div></div>' +
       '<div class="pt-ctl"><button class="btn gold" id="ptLoc" type="button">' + X.loc + "</button>" +
       '<label class="rate">' + X.city + ' <select id="ptCity"><option value="">' + X.pick + "</option>" + CITIES.map(function (c, i) { return '<option value="' + i + '">' + esc(EN && CITY_EN[c[0]] || c[0]) + "</option>"; }).join("") + "</select></label>" +
       '<label class="rate">' + X.method + ' <select id="ptMethod">' + Object.keys(METHODS).map(function (k) { return '<option value="' + k + '"' + (k === st.method ? " selected" : "") + ">" + esc(EN ? METHODS[k].en : METHODS[k].n) + "</option>"; }).join("") + "</select></label>" +
       '<label class="rate"><input type="checkbox" id="ptHanafi"' + (st.hanafi ? " checked" : "") + "> " + X.asr + "</label></div>" +
       '<div id="ptOut" class="pt-out"></div><p class="muted small">' + X.note + "</p></section>";
     var out = document.getElementById("ptOut");
+    var loc = EN ? "en-GB" : "fr-FR";
+    function clock() {
+      var tEl = document.getElementById("ptTime"); if (!tEl) { clearInterval(clk); return; }
+      var tz = st.tz || undefined, n = new Date();
+      tEl.textContent = new Intl.DateTimeFormat(loc, { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: tz }).format(n);
+      document.getElementById("ptDate").textContent = new Intl.DateTimeFormat(loc, { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: tz }).format(n) + (st.name ? " · " + st.name : "");
+      var hj = ""; try { hj = new Intl.DateTimeFormat((EN ? "en" : "fr") + "-u-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric", timeZone: tz }).format(n); } catch (e) {}
+      document.getElementById("ptHijri").textContent = hj ? "🌙 " + hj : "";
+    }
+    clearInterval(window._siraClk); var clk = window._siraClk = setInterval(clock, 1000); clock();
     function show() {
       clearInterval(timer);
       if (st.lat == null) { out.innerHTML = ""; return; }
@@ -122,10 +133,10 @@
         var n = new Date(), h = mod(n.getUTCHours() + n.getUTCMinutes() / 60 + n.getUTCSeconds() / 3600 + tzOffset(tz, n), 24), k = null, tgt = null;
         for (var j = 0; j < order.length; j++) { if (T[order[j]] > h) { k = order[j]; tgt = T[order[j]]; break; } }
         if (!k) { k = "fajr"; tgt = T.fajr + 24; }
-        var diff = Math.max(0, tgt - h), hh = Math.floor(diff), mm = Math.floor((diff - hh) * 60), nm = NAMES.filter(function (x) { return x[0] === k; })[0][1];
-        el.innerHTML = X.next + " : <b>" + nm + "</b> " + fmt(T[k]) + " — " + X.in + " " + (hh ? hh + " h " : "") + mm + " min";
+        var diff = Math.max(0, tgt - h), hh = Math.floor(diff), mm = Math.floor((diff - hh) * 60), ss = Math.floor(((diff - hh) * 60 - mm) * 60), nm = NAMES.filter(function (x) { return x[0] === k; })[0][1];
+        el.innerHTML = X.next + " : <b>" + nm + "</b> " + fmt(T[k]) + " — " + X.in + " " + (hh ? hh + " h " : "") + mm + " min " + ss + " s";
       }
-      tick(); timer = setInterval(tick, 20000);
+      tick(); timer = setInterval(tick, 1000);
     }
     document.getElementById("ptLoc").onclick = function () {
       if (!navigator.geolocation) { out.innerHTML = '<p class="muted">' + X.fail + "</p>"; return; }

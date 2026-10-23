@@ -383,3 +383,7 @@ body.is-home .basmala{display:none}
 .pt-t{font:700 1.8rem/1.1 "Cormorant Garamond",serif;color:var(--gold2)}
 .pt-q{display:flex;align-items:center;gap:1rem;margin:1.4rem 0}
 .pt-compass{width:110px;height:110px;color:var(--text)}
+.pt-clock{margin:1rem 0 .4rem;padding:1rem 1.2rem;text-align:center;border:1px solid var(--line);border-radius:var(--radius);background:radial-gradient(ellipse at 50% 0,rgba(240,183,46,.12),transparent 70%)}
+.pt-time{font:700 clamp(2.6rem,9vw,4.4rem)/1.1 "Cormorant Garamond",serif;color:var(--gold2);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.pt-date{font-size:1.05rem;text-transform:capitalize}
+.pt-hijri{margin-top:.2rem;color:var(--muted)}
