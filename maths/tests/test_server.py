@@ -149,6 +149,22 @@ class ProgressAndAccessTests(Base):
         r = self.post("/api/progress", {"skills": {"cp-B2": {"score": 5}, "cm1-D2": {"score": 5}}}).get_json()
         self.assertEqual((r["saved"], r["refused"]), (1, ["cm1-D2"]))
 
+    def test_course_picks(self):
+        self.assertEqual(self.post("/api/course-pick", {"course": "m5-relatifs"}).status_code, 401)
+        self.register()
+        cfg = self.c.get("/api/me").get_json()["config"]
+        self.assertEqual((cfg["coursePicks"], cfg["courseMax"]), ([], 3))
+        for cid in ("m5-relatifs", "p5-circuit", "c5-etats"):
+            self.assertEqual(self.post("/api/course-pick", {"course": cid}).status_code, 200)
+        self.assertEqual(self.post("/api/course-pick", {"course": "m5-relatifs"}).status_code, 200)
+        self.assertEqual(self.post("/api/course-pick", {"course": "m5-fractions"}).status_code, 409)
+        self.assertEqual(self.post("/api/course-pick", {"course": "pas un id"}).status_code, 400)
+        cfg = self.c.get("/api/me").get_json()["config"]
+        self.assertEqual(cfg["coursePicks"], ["m5-relatifs", "p5-circuit", "c5-etats"])
+        self.assertEqual(cfg["picks"], [])  # les cours n'utilisent pas les 3 leçons gratuites
+        self.assertEqual(self.post("/api/demo-pick", {"skill": "cm1-A1"}).status_code, 200)
+        self.assertEqual(self.c.get("/api/me").get_json()["config"]["picks"], ["cm1-A1"])
+
     def test_profiles_have_separate_progress(self):
         self.register()
         self.post("/api/demo-pick", {"skill": "cm1-A1"})
@@ -310,6 +326,17 @@ class AdminTests(Base):
         for url in ("/api/admin/stats", "/api/admin/users", "/api/admin/users/1"):
             self.assertEqual(self.c.get(url).status_code, 403)
         self.assertEqual(self.post("/api/admin/users/1/subscription", {"plan": "cm1"}).status_code, 403)
+
+    def test_admin_resets_course_picks(self):
+        other = self.app.test_client()
+        self.register("client@b.dz", other)
+        self.post("/api/course-pick", {"course": "m5-relatifs"}, other)
+        with self.app.engine.begin() as conn:
+            uid = conn.execute(select(db.users.c.id).where(db.users.c.email == "client@b.dz")).scalar()
+        self.admin()
+        self.assertEqual(self.c.get(f"/api/admin/users/{uid}").get_json()["coursePicks"], ["m5-relatifs"])
+        self.assertEqual(self.post(f"/api/admin/users/{uid}/picks", {"reset": True}).status_code, 200)
+        self.assertEqual(self.c.get(f"/api/admin/users/{uid}").get_json()["coursePicks"], [])
 
     def test_no_admin_when_env_empty(self):
         with mock.patch.dict(os.environ, {"ADMIN_EMAILS": ""}):

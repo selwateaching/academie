@@ -79,6 +79,9 @@
   const isFree = (sk) => auth.user ? (auth.config.picks || []).includes(sk.id) : auth.config.free.includes(sk.code.replace('.', ''));
   const picksLeft = () => (auth.config.demoMax || 3) - (auth.config.picks || []).length;
   async function pickDemo(id) { try { applyMe(await api('/api/demo-pick', 'POST', { skill: id })); route(); } catch (e) { const n = $('#pickerr'); if (n) n.textContent = e.message; } }
+  const coursePicksLeft = () => (auth.config.courseMax || 3) - (auth.config.coursePicks || []).length;
+  const courseOpen = (c) => auth.offline || auth.config.open || valid('fam') || (auth.config.coursePicks || []).includes(c.id);
+  async function pickCourse(id) { try { applyMe(await api('/api/course-pick', 'POST', { course: id })); route(); } catch (e) { const n = $('#cpickerr'); if (n) n.textContent = e.message; } }
   const valid = (k) => !!auth.subscriptions[k] && new Date(auth.subscriptions[k]) > new Date();
   const subscribed = (lv) => valid(lv) || valid('fam');
   const expiry = (lv) => auth.subscriptions[valid(lv) ? lv : 'fam'];
@@ -490,7 +493,8 @@
           <p class="hint">${T('Si le client a payé en espèces, indique le montant : il sera compté dans les revenus.')}</p>
           ${act.map((p) => `<div class="stat"><span>${planLabel(p)} · ${T('jusqu’au {date}', { date: dateFr(d.user.subscriptions[p]) })}</span><button class="btn ghost sm" data-rm="${p}">${T('Retirer')}</button></div>`).join('')}
           <div class="stat"><span>${T('Mot de passe oublié ?')}</span><button class="btn ghost sm" data-resetpw>${T('Réinitialiser le mot de passe')}</button></div><p class="hint" id="pwres" hidden></p>
-          <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
+          <div class="stat"><span>${T('Leçons gratuites choisies : {list}', { list: d.picks.length ? d.picks.map((x) => x.split('-')[0].toUpperCase() + ' ' + x.split('-')[1]).join(', ') : '—' })}</span>${d.picks.length || (d.coursePicks || []).length ? `<button class="btn ghost sm" data-resetpicks>${T('Remettre à zéro')}</button>` : ''}</div>
+          <div class="stat"><span>${T('Cours gratuits choisis : {list}', { list: (d.coursePicks || []).length ? d.coursePicks.join(', ') : '—' })}</span></div>
           <h3>${T('Historique des paiements')}</h3>${d.payments.length ? d.payments.map((x) => `<div class="stat"><span>${planLabel(x.level)} · ${da(x.amount)} · ${dateFr(x.date)} · ${x.provider === 'manuel' ? T('espèces') : esc(x.provider)}</span><b>${{ paid: T('payé'), pending: T('en attente'), failed: T('échoué') }[x.status] || x.status}</b></div>`).join('') : `<p class="hint">${T('Aucun paiement pour l’instant.')}</p>`}`;
         const refresh = () => { loadStats(); loadList(); };
         $('[data-grant]', det).addEventListener('submit', async (e) => { e.preventDefault(); const f = e.target, i = f.querySelectorAll('input');
@@ -561,12 +565,14 @@
     stopSpeak();
     document.title = T('Cours — Tadriss-Maths');
     const chips = COURSE_LEVELS.map((l) => `<span class="pill ${l.ready ? 'on' : 'off'}" style="${l.ready ? 'background:#3b3a8f' : ''}">${l.label}${l.ready ? '' : ` <small>${T('bientôt')}</small>`}</span>`).join('');
-    const secs = COURSE_SUBJECTS.map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span></a>`).join('')}</div></section>`).join('');
+    const secs = COURSE_SUBJECTS.map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span>${courseOpen(c) ? (!auth.config.open && !auth.offline && !valid('fam') ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') : `${auth.user && coursePicksLeft() > 0 ? `<span class="pick" data-cpick="${c.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-2.jpg" alt="" width="44" height="44">${T('Cours illustrés')}</h1><p>${T('Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.')}</p></div>
       <div class="pills" style="margin:10px 0">${chips}</div>
       ${lang === 'ar' && COURSES.some((c) => !hasAr(c)) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
+      ${auth.user && !auth.offline && !auth.config.open && !valid('fam') ? `<div class="note">${coursePicksLeft() > 0 ? T('Ton essai : choisis {left} cours gratuit(s) de ton choix. Touche « ☆ Choisir » à côté d’un cours verrouillé 🔒.', { left: coursePicksLeft() }) : T('Tu as choisi tes {n} cours gratuits. Les autres demandent un abonnement.', { n: auth.config.courseMax || 3 })}</div>` : !auth.user && !auth.offline && !auth.config.open ? `<div class="note">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')} <a href="#/inscription">${T('Créer un compte')}</a></div>` : ''}
       ${canSpeak() ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
       ${secs}</div>`, 'cours');
+    document.querySelectorAll('[data-cpick]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); pickCourse(b.dataset.cpick); }));
   }
 
   function pageCourse(id) {
@@ -577,6 +583,17 @@
     const idx = COURSES.filter((x) => x.subj === c.subj), pos = idx.indexOf(raw);
     const prev = idx[pos - 1] && cl(idx[pos - 1]), nextC = idx[pos + 1] && cl(idx[pos + 1]);
     document.title = `${c.title} — Tadriss-Maths`;
+    if (!courseOpen(raw)) {
+      const sjl = COURSE_SUBJECTS.find((x) => x.id === raw.subj);
+      show(`<div class="wrap narrow"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sjl.icon} ${T(sjl.label)} › <bdi>${c.level}</bdi></div>
+        <div class="qcard center"><div class="bigico">🔒</div><h1>${T('Cours réservé aux abonnés')}</h1>
+        <p><b>${c.icon} ${c.title}</b></p><p>${c.intro}</p>
+        ${auth.user && coursePicksLeft() > 0 ? `<p class="hint">${T('Ton essai : tu peux choisir {n} cours gratuits parmi tous les cours du site. Il t’en reste {left}.', { n: auth.config.courseMax || 3, left: coursePicksLeft() })}</p>
+        <div class="row"><button class="btn big" id="pickcourse">${T('Choisir ce cours pour mon essai')}</button></div><p class="hint" id="cpickerr"></p>` : auth.user ? `<p class="hint">${T('Tu as déjà choisi tes {n} cours gratuits.', { n: auth.config.courseMax || 3 })}</p>` : `<p class="hint">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')}</p><div class="row"><a class="btn big" href="#/inscription">${T('Créer un compte')}</a></div>`}
+        <div class="row"><a class="btn big ${auth.user ? '' : 'ghost'}" href="#/tarifs">${T('Voir les tarifs')}</a><a class="btn ghost big" href="#/cours">${T('Tous les cours')}</a></div></div></div>`, 'cours');
+      const pb = $('#pickcourse'); if (pb) pb.onclick = () => pickCourse(raw.id);
+      return;
+    }
     const steps = c.steps.map((s, i) => `<section class="cstep" data-i="${i}"><div class="chd"><span class="n">${i + 1}</span><h3>${s.h}</h3>${canSpeak() ? `<button class="btn ghost sm" data-say="${i}" aria-label="${T('Écouter cette étape')}">🔊</button>` : ''}</div><div class="cbd"><p>${s.p}</p>${s.fig ? figT(courseFig(s.fig)) : ''}</div></section>`).join('');
     const quiz = c.quiz.map((q, qi) => `<div class="cq" data-q="${qi}"><p><b>${qi + 1}.</b> ${q.q}</p><div class="cch">${q.choices.map((ch, ci) => `<button class="btn ghost" data-a="${ci}">${ch}</button>`).join('')}</div><p class="cres" aria-live="polite"></p></div>`).join('');
     show(`<div class="wrap narrow cours" style="--c:${sj.color}"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sj.icon} ${T(sj.label)} › <bdi>${c.level}</bdi></div>

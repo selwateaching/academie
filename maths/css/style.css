@@ -337,3 +337,5 @@ main{flex:1;outline:none}
 .sbig{font-size:5rem;text-align:center;margin:10px 0;animation:bob 2.4s ease-in-out infinite}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .sctl{flex-wrap:nowrap}.sctl .btn.big{flex:1 1 auto;min-width:0;padding:12px 12px;font-size:1rem}.sctl .btn.ghost{flex:none}
+.ccard>.pick,.ccard>.soon-tag,.ccard>.lock{flex:none;margin-inline-start:auto}
+.ccard>.pick+.lock{margin-inline-start:8px}
