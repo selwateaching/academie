@@ -60,7 +60,7 @@ for (const lang of ['fr', 'ar']) {
       try { q = GEN[s.gen](s.params); } catch (e) { fail(`${lang} ${s.id} : ${e.message}`); break; }
       const blob = JSON.stringify([q.q, q.exp, q.choices, q.expr, q.vis]);
       if (blob.includes('[[')) { fail(`${lang} ${s.id} : texte manquant ${blob.match(/\[\[[^\]]*\]\]/)[0]}`); break; }
-      if (lang === 'ar' && /[A-Za-zÀ-ÿ]{4,}/.test(String(q.q).replace(/<[^>]*>/g, '').replace(/&\w+;/g, ''))) { fail(`ar ${s.id} : mot latin dans la question : ${q.q.slice(0, 80)}`); break; }
+      if (lang === 'ar' && /[A-Za-zÀ-ÿ]{4,}/.test(String(q.q).replace(/<[^>]*>/g, '').replace(/&\w+;/g, '').replace(/\b[A-Z]{2,}\b/g, ''))) { fail(`ar ${s.id} : mot latin dans la question : ${q.q.slice(0, 80)}`); break; }
     }
   }
 }

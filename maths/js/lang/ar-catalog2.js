@@ -44,5 +44,14 @@
     'Pythagore et Thalès': 'فيثاغورس وطالس', 'Calculer un côté avec Pythagore': 'حساب ضلع بنظرية فيثاغورس',
     'Trigonométrie': 'حساب المثلثات', 'Cosinus, sinus et tangente': 'جيب التمام والجيب والظل', 'Calculer un côté avec la trigonométrie': 'حساب ضلع بحساب المثلثات', 'Calculer un angle': 'حساب زاوية',
     'Polygones réguliers': 'المضلعات المنتظمة', 'Angle au centre': 'الزاوية المركزية', 'Angle d’un polygone régulier': 'زاوية مضلع منتظم',
+    /* 2nde */
+    'Intervalles, valeur absolue, suites, fonctions affines, repère, vecteurs et probabilités.': 'المجالات، القيمة المطلقة، المتتاليات، الدوال التآلفية، المعلم، الأشعة والاحتمالات.',
+    'Intervalles et valeur absolue': 'المجالات والقيمة المطلقة', 'Écrire un intervalle': 'كتابة مجال', 'Appartenance à un intervalle': 'الانتماء إلى مجال', 'Valeur absolue': 'القيمة المطلقة', 'Équation avec valeur absolue': 'معادلة بقيمة مطلقة',
+    'Calcul algébrique': 'الحساب الجبري', 'Résoudre x² = a': 'حلّ المعادلة x² = a',
+    'Pourcentages et suites': 'النسب المئوية والمتتاليات', 'Évolutions successives': 'التغيّرات المتتالية', 'Terme d’une suite (formule)': 'حدّ متتالية (بالصيغة)', 'Terme d’une suite (récurrence)': 'حدّ متتالية (بالتراجع)',
+    'Fonctions affines': 'الدوال التآلفية', 'Sens de variation': 'اتجاه التغيّر', 'Équation réduite d’une droite': 'المعادلة المختصرة لمستقيم',
+    'Géométrie dans le repère': 'الهندسة في المعلم', 'Points et distances': 'النقاط والمسافات', 'Abscisse d’un milieu': 'فاصلة منتصف', 'Ordonnée d’un milieu': 'ترتيبة منتصف', 'Distance entre deux points': 'المسافة بين نقطتين', 'Symétrique par rapport à un axe': 'النظيرة بالنسبة إلى محور',
+    'Vecteurs': 'الأشعة', 'Coordonnées d’un vecteur': 'إحداثيا شعاع', 'Norme d’un vecteur': 'طويلة شعاع', 'Vecteurs colinéaires': 'الأشعة المرتبطة خطيًا', 'Parallélogramme et quatrième sommet': 'متوازي الأضلاع والرأس الرابع',
+    'Statistiques': 'الإحصاء', 'Probabilités': 'الاحتمالات', 'Probabilité d’une réunion': 'احتمال اتحاد حدثين',
   });
 }(typeof window !== 'undefined' ? window : globalThis));
