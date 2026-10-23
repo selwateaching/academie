@@ -500,3 +500,12 @@ html[lang="ar"] .avis-h{font-family:Amiri,serif}
 .lg-o{color:#5a4330;font-weight:700}
 .lg-o.on{color:var(--ink)}
 .lang{background:rgba(255,255,255,.55);border:1px solid rgba(80,50,30,.4)}
+
+/* Mot de la créatrice */
+.mot{margin:1.2rem 0;padding:1.1rem 1.3rem;background:linear-gradient(135deg,rgba(209,154,58,.2),rgba(255,255,255,.55));border:1px solid var(--gold);border-inline-start:6px solid var(--gold);border-radius:var(--radius);box-shadow:0 4px 14px rgba(80,50,30,.12)}
+.mot h3{margin:0 0 .4rem;font:700 1.35rem "Cormorant Garamond",serif;color:var(--gold)}
+html[lang="ar"] .mot h3,html[lang="ar"] .mot p{font-family:Amiri,serif}
+html[lang="ar"] .mot p{font-size:1.2rem;line-height:2}
+.mot p{margin:.3rem 0;line-height:1.65}
+.mot-sig{font-style:italic;color:var(--muted)}
+.mot-foot{margin:0 0 .8rem;font-weight:600;color:#f0c878}

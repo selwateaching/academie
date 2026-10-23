@@ -62,6 +62,22 @@
     });
   }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  /* Mot de la créatrice : sadaqa jariya pour sa mère (décédée) */
+  var MOT = {
+    fr: ["Ce site est une <b>sadaqa jariya</b> que j'offre à ma mère, <b>Ummi</b>, qu'Allah lui fasse miséricorde. Si ces enseignements vous font du bien, faites une <b>douaa pour elle</b> : « Qu'Allah lui pardonne et lui fasse miséricorde. » Qu'Allah vous récompense.", "La créatrice", "Mot de la créatrice", "Sadaqa jariya pour ma mère, Ummi. Une douaa pour elle, s'il vous plaît : qu'Allah lui pardonne et lui fasse miséricorde."],
+    en: ["This site is a <b>sadaqa jariya</b> that I offer to my mother, <b>Ummi</b>, may God have mercy on her. If these teachings benefit you, please make <b>dua for her</b>: “May God forgive her and have mercy on her.” May God reward you.", "The creator", "A word from the creator", "Sadaqa jariya for my mother, Ummi. Please make dua for her: may God forgive her and have mercy on her."],
+    ar: ["هذا الموقع <b>صدقة جارية</b> أهديها إلى أمي <b>رحمها الله</b>. إن نفعتك هذه الدروس فادعُ لها: «اللهم اغفر لها وارحمها». جزاك الله خيرًا.", "صاحبة الموقع", "كلمة من صاحبة الموقع", "صدقة جارية عن أمي. ادعُ لها من فضلك: اللهم اغفر لها وارحمها."]
+  }[window.LANG] || null;
+  function mot() {
+    if (!MOT) return "";
+    return '<aside class="mot"><h3>🤲 ' + MOT[2] + "</h3><p>" + MOT[0] + '</p><p class="mot-sig">— ' + MOT[1] + "</p></aside>";
+  }
+  function footer() {
+    var f = document.querySelector(".footer"); if (!f || !MOT || document.getElementById("motFoot")) return;
+    var p = document.createElement("p"); p.id = "motFoot"; p.className = "mot-foot"; p.textContent = "🤲 " + MOT[3]; f.insertBefore(p, f.firstChild);
+  }
+  footer();
   function link(cls) { return '<a class="btn gold ' + (cls || "") + '" href="' + URL + '" target="_blank" rel="noopener">' + L.btn + "</a>"; }
   function view() {
     document.getElementById("app").innerHTML = '<section class="block wrap avis"><h2>' + L.h + '</h2><p class="lead">' + L.lead + "</p><ul class=\"avis-li\">" +
@@ -69,5 +85,5 @@
     document.title = L.h + " — " + L3("Le Monde de la Sirah", "The World of the Sirah", "عالم السيرة");
   }
   function cta() { return '<div class="quiz-cta avis-cta"><div><b>💛 ' + L.ctaT + "</b><small>" + L.ctaS + "</small></div>" + link() + "</div>"; }
-  window.SiraAvis = { view: view, cta: cta, mount: mount, url: URL };
+  window.SiraAvis = { view: view, cta: cta, mount: mount, mot: mot, url: URL };
 })();
