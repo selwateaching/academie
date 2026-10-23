@@ -356,3 +356,8 @@ body.is-home .basmala{display:none}
 .mq-track{animation-duration:60s}
 .basmala{padding:.1rem 1rem;background:none}
 .basmala span{font-size:1.05rem;line-height:1.9;color:rgba(255,233,168,.78);text-shadow:none}
+
+/* Basmala discrète dans le bandeau du haut (remplace le défilement et la bande) */
+.ticker{justify-content:center;padding:.15rem 3rem .15rem 3rem}
+.tk-ar{font:700 1.1rem/1.8 Amiri,"Noto Naskh Arabic",serif;color:rgba(255,233,168,.85);direction:rtl}
+.marquee,.basmala{display:none!important}
