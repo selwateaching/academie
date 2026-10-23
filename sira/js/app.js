@@ -35,7 +35,7 @@
     return Math.max(1, Math.round(w / 200));
   }
   function norm(s) {
-    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ﷺ/g, "").replace(/mouhammed/g, "muhammad");
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ﷺ/g, "").replace(/mouhammed/g, "muhammad").replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه");
   }
   function periodLabel(id) {
     return PER.filter(function (p) { return p.id === id; })[0].label;

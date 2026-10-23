@@ -4,7 +4,7 @@
   var D = window.LEXIQUE, L = D.list, CAT = D.cat, BYK = {}, MAP = {}, forms = [];
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function rx(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
-  function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ﷺ/g, ""); }
+  function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/ﷺ/g, "").replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "").replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه"); }
   function spoken(e) { return e.s || e.t.replace(/\s*\([^)]*\)/g, ""); }
 
   L.forEach(function (e) {

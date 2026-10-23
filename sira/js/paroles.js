@@ -21,10 +21,10 @@
     ["foi", "Les actes ne valent que par les intentions, et chacun n'obtient que ce qu'il a eu l'intention de faire.", "Actions are judged only by intentions, and each person gets only what they intended.", "Bukhari 1, Muslim 1907"],
     ["foi", "L'islam est bâti sur cinq piliers : l'attestation qu'il n'y a de dieu que Dieu et que Mouhammed ﷺ est son Messager, la prière, la zakat, le pèlerinage et le jeûne du Ramadan.", "Islam is built on five pillars: the testimony that there is no god but God and that Muhammad ﷺ is His Messenger, the prayer, the zakat, the pilgrimage and the fast of Ramadan.", "Bukhari 8, Muslim 16"],
     ["foi", "Aucun de vous ne croit vraiment tant qu'il n'aime pas pour son frère ce qu'il aime pour lui-même.", "None of you truly believes until he loves for his brother what he loves for himself.", "Bukhari 13, Muslim 45"],
-    ["foi", "La foi comporte plus de soixante-dix branches, et la pudeur est l'une d'elles.", "Faith has more than seventy branches, and modesty is one of them.", "Bukhari 9, Muslim 35"],
+    ["foi", "La foi comporte plus de soixante branches, et la pudeur est l'une d'elles.", "Faith has more than sixty branches, and modesty is one of them.", "Bukhari 9, Muslim 35"],
     ["foi", "Les actes que Dieu préfère sont les plus réguliers, même s'ils sont petits.", "The deeds most loved by God are the most regular, even if they are small.", "Bukhari 6464, Muslim 783"],
     ["foi", "Sois dans ce monde comme un étranger ou comme un voyageur.", "Be in this world as a stranger or a traveller.", "Bukhari 6416"],
-    ["foi", "Dieu ne regarde ni vos corps ni vos apparences, mais il regarde vos cœurs et vos actes.", "God does not look at your bodies or your appearances, but He looks at your hearts and your deeds.", "Muslim 2564"],
+    ["foi", "Dieu ne regarde ni vos apparences ni vos biens, mais il regarde vos cœurs et vos actes.", "God does not look at your appearances or your wealth, but He looks at your hearts and your deeds.", "Muslim 2564"],
     /* Bon caractère */
     ["car", "Les meilleurs d'entre vous sont ceux qui ont le meilleur caractère.", "The best of you are those with the best character.", "Bukhari 3559, Muslim 2321"],
     ["car", "Le fort n'est pas celui qui terrasse les autres, mais celui qui se maîtrise lorsqu'il est en colère.", "The strong one is not the one who overpowers others, but the one who controls himself when angry.", "Bukhari 6114, Muslim 2609"],

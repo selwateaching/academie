@@ -123,7 +123,7 @@
         (lvA.index > lvB.index ? '<p class="reward"><span class="rw-m">' + SiraMedals.level(lvA.index) + T("</span><span>Nouveau niveau : <b>") + esc(lvA.name) + "</b></span></p>" : "") +
         newB.map(function (b) { return '<p class="reward"><span class="rw-m">' + SiraMedals.badge(b.art, true) + T("</span><span>Badge débloqué : <b>") + esc(b.name) + "</b></span></p>"; }).join("") +
         T('<div class="cta c"><button class="btn gold" id="again">↻ Rejouer</button>') +
-        (next ? '<a class="btn ghost" href="' + hrefOf(next.id) + '">' + (kind(id) === "ch" ? T("Chapitre suivant") : kind(id) === "co" ? T("Portrait suivant") : T("Fiche suivante")) + " →</a>" : "") + '<a class="btn ghost" href="' + hrefOf(id) + T('">Relire</a>') +
+        (next ? '<a class="btn ghost" href="' + hrefOf(next.id) + '">' + (kind(id) === "ch" ? T("Chapitre suivant") : kind(id) === "co" ? T("Portrait suivant") : T("Fiche suivante")) + " " + (window.LANG === "ar" ? "←" : "→") + "</a>" : "") + '<a class="btn ghost" href="' + hrefOf(id) + T('">Relire</a>') +
         T('<a class="btn ghost" href="#/recompenses">🏆 Mes récompenses</a></div></div></div>');
       document.getElementById("again").onclick = function () { view(id); };
       updateTrophy();
