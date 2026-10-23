@@ -63,3 +63,7 @@ Le lecteur est prêt (fiches « L'appel à la prière » et « Les cinq prières
 ## Horaires de prière et qibla
 
 La page « Horaires » (`js/horaires.js`) calcule sur l'appareil les cinq horaires et la direction de la qibla à partir de la position (géolocalisation du navigateur) ou d'une ville de la liste. Aucun service externe, aucune clé ; la position n'est pas envoyée. Méthodes : Ligue islamique mondiale, UOIF, Égypte, Umm al-Qura, ISNA, Maroc ; option Asr hanafite. Horaires indicatifs.
+
+## Calendrier hégirien
+
+`js/calendrier.js` : grille mensuelle (calendrier Umm al-Qura via `Intl`, repli arithmétique), date grégorienne en dessous, fêtes et dates marquantes (Nouvel an, Achoura, Mawlid, Isra et Mi'raj, Ramadan, Nuit du Destin, Aïd al-Fitr, Arafat, Aïd al-Adha), jours blancs et jeûne du lundi et du jeudi, liste des prochaines fêtes. Les événements sont dans le tableau `EV`.

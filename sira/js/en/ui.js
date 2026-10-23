@@ -169,5 +169,6 @@ window.EN_UI = {
  "Au nom de Dieu, le Tout Miséricordieux, le Très Miséricordieux": "In the name of God, the Most Merciful, the Most Compassionate",
  "Touchez pour entrer": "Tap to enter",
  "Avis": "Feedback",
- "Horaires": "Prayer times"
+ "Horaires": "Prayer times",
+ "Calendrier": "Calendar"
 };

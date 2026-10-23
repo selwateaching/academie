@@ -207,7 +207,7 @@
     var h = location.hash.replace(/\?audio=1/, "").replace(/^#\/?/, "").split("/");
     var page = h[0] || "";
     document.body.classList.toggle("is-home", page === "");
-    var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "avis" ? "av" : page === "horaires" ? "ho" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
+    var nav = page === "lexique" ? "lx" : page === "paroles" ? "pa" : page === "avis" ? "av" : page === "horaires" ? "ho" : page === "calendrier" ? "ca" : page === "lieux" ? "pl" : page === "rites" || page === "rite" ? "ri" : page === "compagnons" || page === "compagnon" ? "co" : page === "themes" || page === "theme" ? "th" : page === "chapitres" ? "list" : page === "chronologie" ? "timeline" : page === "" ? "home" : "";
     Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-nav") === nav);
     });
@@ -223,6 +223,7 @@
     else if (page === "paroles") SiraParoles.view(h[1] || "");
     else if (page === "avis") SiraAvis.view();
     else if (page === "horaires") SiraHoraires.view();
+    else if (page === "calendrier") SiraCalendrier.view();
     else if (page === "quiz") SiraQuiz.view(parseInt(h[1], 10));
     else if (page === "recompenses") SiraQuiz.rewardsView();
     else if (page === "chapitres") viewList(h[1] || "", "");

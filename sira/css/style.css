@@ -387,3 +387,30 @@ body.is-home .basmala{display:none}
 .pt-time{font:700 clamp(2.6rem,9vw,4.4rem)/1.1 "Cormorant Garamond",serif;color:var(--gold2);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .pt-date{font-size:1.05rem;text-transform:capitalize}
 .pt-hijri{margin-top:.2rem;color:var(--muted)}
+
+/* Calendrier hégirien */
+.cal-head{display:flex;align-items:center;gap:.6rem;margin:1rem 0}
+.cal-head .btn{padding:.4rem .9rem;font-size:1.1rem}
+.cal-title{flex:1;text-align:center;display:flex;flex-direction:column}
+.cal-title b{font:700 1.5rem "Cormorant Garamond",serif;color:var(--gold2)}
+.cal-title small{color:var(--muted)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.hw{text-align:center;font-size:.8rem;color:var(--muted);padding:.2rem 0}
+.hw.fri{color:var(--gold)}
+.hc{position:relative;min-height:74px;padding:.3rem .4rem;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;display:flex;flex-direction:column;overflow:hidden}
+.hc.empty{background:none;border:0}
+.hc b{font:700 1.15rem/1 "Cormorant Garamond",serif}
+.hc small{color:var(--muted);font-size:.7rem}
+.hc.fri{background:rgba(240,183,46,.07)}
+.hc.today{outline:2px solid var(--gold);background:rgba(240,183,46,.14)}
+.hc.fest{background:linear-gradient(135deg,rgba(60,170,110,.35),rgba(60,170,110,.12));border-color:#3caa6e}
+.hc.mark{background:linear-gradient(135deg,rgba(240,183,46,.3),rgba(240,183,46,.1));border-color:var(--gold)}
+.he{margin-top:auto;font-size:.62rem;line-height:1.15;color:#fff}
+.hd{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%}
+.hd.w{background:#8ad0ff}.hd.mt{background:#b9a4ff;right:18px}
+.hd.w+.hd.mt{right:18px}
+.cal-leg{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center;margin:.8rem 0}
+.lg{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:.3rem;vertical-align:-1px}
+.lg.fest{background:#3caa6e}.lg.mark{background:var(--gold)}.lg.dw{background:#8ad0ff;border-radius:50%}.lg.dm{background:#b9a4ff;border-radius:50%}
+.cal-list{padding-inline-start:1.1rem;line-height:1.8}
+@media(max-width:560px){.hc{min-height:58px;padding:.2rem}.he{display:none}.cal-head .btn{padding:.35rem .7rem}}
