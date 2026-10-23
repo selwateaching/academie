@@ -333,3 +333,8 @@ body.splash-on{overflow:hidden}
 @keyframes sp-fade{to{opacity:1}}
 @keyframes sp-pulse{50%{opacity:.4}}
 @media(prefers-reduced-motion:reduce){.splash-ar span,.splash-orn,.splash-tr,.splash-skip{animation:none;opacity:1;filter:none;transform:none}}
+
+/* Basmala affichée en haut de chaque page */
+.basmala{text-align:center;padding:.55rem 1rem .25rem;background:linear-gradient(180deg,rgba(240,183,46,.07),transparent)}
+.basmala span{font:700 clamp(1.4rem,4.2vw,2.1rem)/1.6 Amiri,"Noto Naskh Arabic",serif;color:#ffe9a8;text-shadow:0 0 14px rgba(240,183,46,.35)}
+@media print{.basmala{color:#000}}
