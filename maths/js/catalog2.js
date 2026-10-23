@@ -78,5 +78,30 @@
     ],
   });
 
+  /* ------------------------------------------------------------ 2nde */
+  EXTRA.push({
+    id: '2nde', art: 'ma', short: '2nde', name: 'Seconde', color: '#5e2050', age: '15-16 ans',
+    blurb: 'Intervalles, valeur absolue, suites, fonctions affines, repère, vecteurs et probabilités.',
+    domains: [
+      { name: 'Nombres et calculs', cats: [
+        { name: 'Intervalles et valeur absolue', skills: [['Écrire un intervalle', 'interval', { kinds: ['write'] }], ['Appartenance à un intervalle', 'interval', { kinds: ['in'] }], ['Valeur absolue', 'absVal', { kinds: ['val'] }], ['Équation avec valeur absolue', 'absVal', { kinds: ['eq'] }]] },
+        { name: 'Calcul algébrique', skills: [['Développer avec une identité remarquable', 'idRem', { kinds: ['sq+', 'sq-', 'prod'] }], ['Factoriser avec une identité remarquable', 'idRem', { kinds: ['fsq', 'fdiff'] }], ['Factoriser avec un facteur commun', 'litFact', {}], ['Développer (x + a)(x + b)', 'litDev', { kinds: ['double'] }]] },
+        { name: 'Équations et inéquations', skills: [['Résoudre ax + b = cx + d', 'eq1', { kinds: ['both'] }], ['Résoudre une inéquation', 'ineq', {}], ['Équation produit nul', 'prodNul', {}], ['Résoudre x² = a', 'sqEq', {}], ['Résoudre un système', 'sys2', {}]] },
+        { name: 'Pourcentages et suites', skills: [['Évolutions successives', 'pcSucc', {}], ['Terme d’une suite (formule)', 'seqTerm', { kinds: ['explicit'] }], ['Terme d’une suite (récurrence)', 'seqTerm', { kinds: ['rec'] }]] },
+      ] },
+      { name: 'Fonctions', cats: [
+        { name: 'Fonctions affines', skills: [['Calculer une image', 'fnImage', { kinds: ['image', 'quad'] }], ['Trouver un antécédent', 'fnImage', { kinds: ['antecedent'] }], ['Sens de variation', 'affSens', {}], ['Coefficient directeur d’une droite', 'fnAff', { kinds: ['slope'] }], ['Ordonnée à l’origine', 'fnAff', { kinds: ['interc'] }], ['Équation réduite d’une droite', 'lineEq', {}]] },
+      ] },
+      { name: 'Géométrie dans le repère', cats: [
+        { name: 'Points et distances', skills: [['Abscisse d’un milieu', 'midpoint', { kinds: ['x'] }], ['Ordonnée d’un milieu', 'midpoint', { kinds: ['y'] }], ['Distance entre deux points', 'dist', {}], ['Symétrique par rapport à un axe', 'symPt', { kinds: ['x', 'y'] }]] },
+        { name: 'Vecteurs', skills: [['Coordonnées d’un vecteur', 'vecCoord', {}], ['Norme d’un vecteur', 'vecNorm', {}], ['Vecteurs colinéaires', 'collinear', {}], ['Parallélogramme et quatrième sommet', 'parallelogram', {}]] },
+      ] },
+      { name: 'Statistiques et probabilités', cats: [
+        { name: 'Statistiques', skills: [['Moyenne pondérée', 'wmean', {}], ['Quartiles', 'quart', { kinds: ['q1', 'q3'] }]] },
+        { name: 'Probabilités', skills: [['Événement contraire', 'probaCompl', {}], ['Probabilité d’une réunion', 'probaUnion', {}], ['Deux tirages avec remise', 'probaTwo', {}]] },
+      ] },
+    ],
+  });
+
   root.CATALOG_EXTRA = EXTRA;
 }(typeof window !== 'undefined' ? window : globalThis));
