@@ -59,3 +59,7 @@ The whole site is bilingual (French by default). The **EN / FR** button in the h
 ## Appel à la prière enregistré (adhan)
 
 Le lecteur est prêt (fiches « L'appel à la prière » et « Les cinq prières »), mais aucun enregistrement n'est inclus : il faut un fichier libre de droits ou autorisé. Pour l'ajouter : déposer le fichier dans `audio/adhan/adhan.mp3`, puis renseigner `js/adhan-manifest.js` (`file`, `credit`, `credit_en`). Sans fichier, rien ne s'affiche.
+
+## Horaires de prière et qibla
+
+La page « Horaires » (`js/horaires.js`) calcule sur l'appareil les cinq horaires et la direction de la qibla à partir de la position (géolocalisation du navigateur) ou d'une ville de la liste. Aucun service externe, aucune clé ; la position n'est pas envoyée. Méthodes : Ligue islamique mondiale, UOIF, Égypte, Umm al-Qura, ISNA, Maroc ; option Asr hanafite. Horaires indicatifs.

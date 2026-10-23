@@ -370,3 +370,16 @@ body.is-home .basmala{display:none}
 /* Appel à la prière enregistré */
 .adhan{margin:1.2rem 0;padding:1rem 1.2rem;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;gap:.5rem}
 .adhan audio{width:100%}
+
+/* Horaires de prière */
+.pt-ctl{display:flex;flex-wrap:wrap;gap:.8rem 1rem;align-items:center;margin:1rem 0}
+.pt-ctl select{background:var(--bg2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:.35rem .5rem}
+.pt-pos{margin:.5rem 0}
+.pt-next{margin:.6rem 0 1rem;padding:.8rem 1rem;border:1px solid var(--gold);border-radius:var(--radius);background:rgba(240,183,46,.08);font-size:1.05rem}
+.pt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem}
+.pt-row{display:flex;flex-direction:column;gap:.2rem;padding:.8rem 1rem;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius)}
+.pt-row.next{border-color:var(--gold);background:rgba(240,183,46,.12)}
+.pt-n small{display:block;color:var(--muted);font-size:.78rem}
+.pt-t{font:700 1.8rem/1.1 "Cormorant Garamond",serif;color:var(--gold2)}
+.pt-q{display:flex;align-items:center;gap:1rem;margin:1.4rem 0}
+.pt-compass{width:110px;height:110px;color:var(--text)}
