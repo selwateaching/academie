@@ -366,3 +366,7 @@ body.is-home .basmala{display:none}
 .avis-li{margin:1rem 0 1.4rem;padding-inline-start:1.2rem;line-height:1.9}
 .avis-dua{margin-top:1.5rem;font-style:italic;color:var(--gold)}
 .avis-cta{margin-top:1.2rem}
+
+/* Appel à la prière enregistré */
+.adhan{margin:1.2rem 0;padding:1rem 1.2rem;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column;gap:.5rem}
+.adhan audio{width:100%}

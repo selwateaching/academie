@@ -162,7 +162,7 @@
         T('<label class="rate"><input type="checkbox" id="auto"> Enchaîner</label></div>') +
         '<p class="audio-note" id="audioNote"></p>' : T('<p class="audio-note">La lecture audio n\'est pas disponible sur ce navigateur.</p>')) +
       '<div class="prose" id="prose" style="--fs:' + fs + 'rem">' + c.paras.map(function (p, i) { return '<figure class="panel">' + SiraArt.panel(c, i) + "</figure><p>" + SiraLexique.annotate(p, lctx) + "</p>"; }).join("") + "</div>" +
-      T('<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/') + id + T('">Passer le quiz</a></div>') +
+      SiraAdhan.block(id) + T('<div class="quiz-cta"><div><b>🎯 Testez vos connaissances</b><small>5 questions · points, étoiles et badges à gagner</small></div><a class="btn gold" href="#/quiz/') + id + T('">Passer le quiz</a></div>') +
       SiraAvis.cta() + '<button class="btn ghost mark-read" id="mark">' + (isRead(id) ? T("✓ Marqué comme lu") : T("Marquer comme lu")) + "</button>" +
       '<nav class="pager" aria-label="Chapitres">' +
       (prev ? '<a class="btn ghost" href="' + hrefOf(prev.id) + T('">← <span><small>Précédent</small>') + esc(prev.title) + "</span></a>" : "<span></span>") +

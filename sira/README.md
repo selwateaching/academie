@@ -55,3 +55,7 @@ The whole site is bilingual (French by default). The **EN / FR** button in the h
       node tools/prepare_texts.js en > texts.json
       VOICE=af_heart LANG_CODE=en-us python tools/generate_audio.py 0 4 audio/en   # shards 0..3
       node tools/make_audio_manifest.js en
+
+## Appel à la prière enregistré (adhan)
+
+Le lecteur est prêt (fiches « L'appel à la prière » et « Les cinq prières »), mais aucun enregistrement n'est inclus : il faut un fichier libre de droits ou autorisé. Pour l'ajouter : déposer le fichier dans `audio/adhan/adhan.mp3`, puis renseigner `js/adhan-manifest.js` (`file`, `credit`, `credit_en`). Sans fichier, rien ne s'affiche.
