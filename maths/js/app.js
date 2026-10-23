@@ -573,6 +573,7 @@
   }
 
   let courseLevel = '5e';
+  const lvName = (id) => { const l = COURSE_LEVELS.find((x) => x.id === id); return l ? T(l.full || l.label) : id; };
   const cycleOf = (lv) => (COURSE_LEVELS.find((l) => l.id === lv) || {}).cycle || 'moyen';
   let courseCycle = 'moyen';
   function pageCourses() {
@@ -602,18 +603,19 @@
     document.title = `${c.title} — Tadriss-Maths`;
     if (!courseOpen(raw)) {
       const sjl = COURSE_SUBJECTS.find((x) => x.id === raw.subj);
-      show(`<div class="wrap narrow"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sjl.icon} ${T(sjl.label)} › <bdi>${c.level}</bdi></div>
+      show(`<div class="wrap narrow"><div class="crumb"><a href="#/cours/niv-${c.level}">${T('Cours')}</a> › ${sjl.icon} ${T(sjl.label)} › <bdi>${lvName(c.level)}</bdi></div>
         <div class="qcard center"><div class="bigico">🔒</div><h1>${T('Cours réservé aux abonnés')}</h1>
         <p><b>${c.icon} ${c.title}</b></p><p>${c.intro}</p>
         ${auth.user && coursePicksLeft() > 0 ? `<p class="hint">${T('Ton essai : tu peux choisir {n} cours gratuits parmi tous les cours du site. Il t’en reste {left}.', { n: auth.config.courseMax || 3, left: coursePicksLeft() })}</p>
         <div class="row"><button class="btn big" id="pickcourse">${T('Choisir ce cours pour mon essai')}</button></div><p class="hint" id="cpickerr"></p>` : auth.user ? `<p class="hint">${T('Tu as déjà choisi tes {n} cours gratuits.', { n: auth.config.courseMax || 3 })}</p>` : `<p class="hint">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')}</p><div class="row"><a class="btn big" href="#/inscription">${T('Créer un compte')}</a></div>`}
+        ${auth.config.prices[raw.level] ? `<p>${T('Abonnement {lv} : <b>{price} DA par mois</b>, tous les cours du niveau débloqués.', { lv: lvName(raw.level), price: auth.config.prices[raw.level] })}</p>` : ''}
         <div class="row"><a class="btn big ${auth.user ? '' : 'ghost'}" href="#/tarifs">${T('Voir les tarifs')}</a><a class="btn ghost big" href="#/cours">${T('Tous les cours')}</a></div></div></div>`, 'maths');
       const pb = $('#pickcourse'); if (pb) pb.onclick = () => pickCourse(raw.id);
       return;
     }
     const steps = c.steps.map((s, i) => `<section class="cstep" data-i="${i}"><div class="chd"><span class="n">${i + 1}</span><h3>${s.h}</h3>${canSpeak() ? `<button class="btn ghost sm" data-say="${i}" aria-label="${T('Écouter cette étape')}">🔊</button>` : ''}</div><div class="cbd"><p>${s.p}</p>${s.fig ? figT(courseFig(s.fig)) : ''}</div></section>`).join('');
     const quiz = c.quiz.map((q, qi) => `<div class="cq" data-q="${qi}"><p><b>${qi + 1}.</b> ${q.q}</p><div class="cch">${q.choices.map((ch, ci) => `<button class="btn ghost" data-a="${ci}">${ch}</button>`).join('')}</div><p class="cres" aria-live="polite"></p></div>`).join('');
-    show(`<div class="wrap narrow cours" style="--c:${sj.color}"><div class="crumb"><a href="#/cours">${T('Cours')}</a> › ${sj.icon} ${T(sj.label)} › <bdi>${c.level}</bdi></div>
+    show(`<div class="wrap narrow cours" style="--c:${sj.color}"><div class="crumb"><a href="#/cours/niv-${c.level}">${T('Cours')}</a> › ${sj.icon} ${T(sj.label)} › <bdi>${lvName(c.level)}</bdi></div>
       <div class="chead"><span class="cic big">${c.icon}</span><div><h1>${c.title}</h1><p>${c.intro}</p></div></div>
       ${lang === 'ar' && !hasAr(raw) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
       <section class="stage" id="stage" aria-live="polite"><div class="sdots" id="sDots"></div><div class="sbody" id="sBody"></div>
