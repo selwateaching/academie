@@ -642,12 +642,6 @@
       ${steps}
       <section class="cstep recap"><div class="chd"><span class="n">★</span><h3>${T('À retenir')}</h3></div><div class="cbd"><ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul></div></section>
       <section class="panel"><h2>${T('Petit quiz')}</h2>${quiz}</section>
-      ${!auth.offline && (auth.config.chat || (auth.user && auth.user.admin)) ? `<button class="tbubble" id="tBubble" aria-label="${T('Aide')} : ${T('Je n’ai pas compris')}" aria-expanded="false"><svg class="mascot" viewBox="0 0 64 64" width="52" height="52" aria-hidden="true"><ellipse cx="32" cy="58" rx="16" ry="4" fill="rgba(0,0,0,.18)"/><path d="M14 52c0-9 8-14 18-14s18 5 18 14z" fill="#f59e0b"/><circle cx="32" cy="26" r="17" fill="#ffd9a8"/><path d="M13 22 32 10l19 12-19 7z" fill="#3b3a8f"/><path d="M22 27v6c0 3 5 5 10 5s10-2 10-5v-6l-10 5z" fill="#3b3a8f"/><path d="M51 22v10" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><circle cx="51" cy="34" r="2.6" fill="#f59e0b"/><circle cx="26" cy="31" r="2.4" fill="#27264f"/><circle cx="38" cy="31" r="2.4" fill="#27264f"/><circle cx="22.5" cy="36" r="2.6" fill="#ff9aa2" opacity=".7"/><circle cx="41.5" cy="36" r="2.6" fill="#ff9aa2" opacity=".7"/><path d="M27 37c1.5 3 8.5 3 10 0" fill="none" stroke="#27264f" stroke-width="2" stroke-linecap="round"/></svg><b>${T('Aide')}</b></button>
-        <section class="tpanel" id="tutor" hidden><div class="thead"><b>${T('Aide')} · ${T('Je n’ai pas compris')}</b><button class="btn ghost sm" id="tClose" aria-label="${T('Fermer')}">✕</button></div>
-        <p class="hint">${!auth.config.chat ? T('Le tuteur n\'est pas encore activé sur ce site.') + ' (ANTHROPIC_API_KEY)' : auth.user ? T('Pose ta question au tuteur : il t’explique cette leçon autrement.') : T('Connecte-toi pour poser une question au tuteur.')}</p>
-        ${auth.config.chat && auth.user ? `<div class="tlog" id="tLog" aria-live="polite"></div>
-        <form class="trow" id="tForm"><input id="tIn" maxlength="500" autocomplete="off" placeholder="${T('Écris ta question…')}" aria-label="${T('Ta question')}"><button class="btn" id="tGo">${T('Envoyer')}</button></form>
-        <p class="hint" id="tErr"></p>` : !auth.user ? `<a class="btn" href="#/connexion">${T('Connexion')}</a>` : ''}</section>` : ''}
       <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'maths');
     const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
       { text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
@@ -679,25 +673,7 @@
     dots.onclick = (e) => { const d = e.target.closest('[data-d]'); if (d) goto(Number(d.dataset.d)); };
     draw(0);
     document.querySelectorAll('[data-say]').forEach((b) => b.addEventListener('click', () => { const p = parts()[Number(b.dataset.say) + 1]; playParts([p]); }));
-    const tb = $('#tBubble');
-    if (tb) { const tp = $('#tutor'); const tog = (on) => { tp.hidden = !on; tb.hidden = on; tb.setAttribute('aria-expanded', String(on)); if (on && $('#tIn')) $('#tIn').focus(); }; tb.onclick = () => tog(true); $('#tClose').onclick = () => tog(false); }
-    const tForm = $('#tForm');
-    if (tForm) { // tuteur IA : la leçon est envoyée avec la question, le serveur vérifie l'abonnement et la limite du jour
-      const lesson = [c.title, plain(c.intro), ...c.steps.map((x) => `${plain(x.h)} : ${plain(x.p)}`), c.recap.map(plain).join(' ; ')].join('\n');
-      const log = $('#tLog'), inp = $('#tIn'), go = $('#tGo'), er = $('#tErr'), hist = [];
-      const bubble = (role, text) => { const d = document.createElement('div'); d.className = 'tmsg ' + role; d.textContent = text; log.appendChild(d); d.scrollIntoView({ block: 'nearest' }); return d; };
-      tForm.onsubmit = async (e) => {
-        e.preventDefault(); const q = inp.value.trim(); if (!q) return;
-        inp.value = ''; er.textContent = ''; go.disabled = true; hist.push({ role: 'user', content: q }); bubble('user', q);
-        const wait = bubble('bot', '…');
-        try {
-          const r = await api('/api/chat', 'POST', { course: raw.id, lang, lesson, messages: hist });
-          hist.push({ role: 'assistant', content: r.reply }); wait.textContent = r.reply;
-          if (r.left !== null && r.left <= 3) er.textContent = T('Questions restantes aujourd’hui : {n}', { n: r.left });
-        } catch (x) { hist.pop(); wait.remove(); er.textContent = x.message; }
-        go.disabled = false; inp.focus();
-      };
-    }
+    tutorCtx = { course: raw.id, lesson: [c.title, plain(c.intro), ...c.steps.map((x) => `${plain(x.h)} : ${plain(x.p)}`), c.recap.map(plain).join(' ; ')].join('\n') };
     document.querySelectorAll('.cq').forEach((box) => box.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => {
       const q = c.quiz[Number(box.dataset.q)], ok = Number(b.dataset.a) === q.a;
       box.querySelectorAll('[data-a]').forEach((x) => { x.disabled = true; if (Number(x.dataset.a) === q.a) x.classList.add('good'); });
@@ -706,8 +682,51 @@
     })));
   }
 
+  /* ---------- tuteur IA : petit bonhomme « Aide » présent sur toutes les pages ----------
+   * Sur la page d'un cours, la leçon entière est envoyée avec la question ; ailleurs, le texte de la page.
+   * Le serveur vérifie l'abonnement et la limite de questions du jour. */
+  let tutorCtx = null, tutorKey = null, tutorHist = [];
+  const tutorEl = (() => {
+    const w = document.createElement('div'); w.id = 'tutorRoot'; document.body.appendChild(w); return w;
+  })();
+  function refreshTutor() {
+    const showIt = !auth.offline; // sans clé API, la bulle s'affiche quand même et explique que le tuteur n'est pas activé
+    const key = tutorCtx ? tutorCtx.course : '';
+    if (!showIt) { tutorEl.innerHTML = ''; return; }
+    const wasOpen = !!tutorEl.querySelector('#tutor:not([hidden])');
+    if (key !== tutorKey) { tutorKey = key; tutorHist = []; }
+    tutorEl.innerHTML = `<button class="tbubble" id="tBubble" aria-label="${T('Aide')} : ${T('Je n’ai pas compris')}" aria-expanded="false"><svg class="mascot" viewBox="0 0 64 64" width="52" height="52" aria-hidden="true"><ellipse cx="32" cy="58" rx="16" ry="4" fill="rgba(0,0,0,.18)"/><path d="M14 52c0-9 8-14 18-14s18 5 18 14z" fill="#f59e0b"/><circle cx="32" cy="26" r="17" fill="#ffd9a8"/><path d="M13 22 32 10l19 12-19 7z" fill="#3b3a8f"/><path d="M22 27v6c0 3 5 5 10 5s10-2 10-5v-6l-10 5z" fill="#3b3a8f"/><path d="M51 22v10" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/><circle cx="51" cy="34" r="2.6" fill="#f59e0b"/><circle cx="26" cy="31" r="2.4" fill="#27264f"/><circle cx="38" cy="31" r="2.4" fill="#27264f"/><circle cx="22.5" cy="36" r="2.6" fill="#ff9aa2" opacity=".7"/><circle cx="41.5" cy="36" r="2.6" fill="#ff9aa2" opacity=".7"/><path d="M27 37c1.5 3 8.5 3 10 0" fill="none" stroke="#27264f" stroke-width="2" stroke-linecap="round"/></svg><b>${T('Aide')}</b></button>
+      <section class="tpanel" id="tutor" hidden><div class="thead"><b>${T('Aide')} · ${T('Je n’ai pas compris')}</b><button class="btn ghost sm" id="tClose" aria-label="${T('Fermer')}">✕</button></div>
+      <p class="hint">${!auth.config.chat ? T('Le tuteur n\'est pas encore activé sur ce site.') + (auth.user && auth.user.admin ? ' Clé ANTHROPIC_API_KEY absente du serveur (Render → Environment), puis redéployer.' : '') : auth.user ? T('Pose ta question au tuteur : il t’explique cette leçon autrement.') : T('Connecte-toi pour poser une question au tuteur.')}</p>
+      ${auth.config.chat && auth.user ? `<div class="tlog" id="tLog" aria-live="polite"></div>
+      <form class="trow" id="tForm"><input id="tIn" maxlength="500" autocomplete="off" placeholder="${T('Écris ta question…')}" aria-label="${T('Ta question')}"><button class="btn" id="tGo">${T('Envoyer')}</button></form>
+      <p class="hint" id="tErr"></p>` : !auth.user ? `<a class="btn" href="#/connexion">${T('Connexion')}</a>` : ''}</section>`;
+    const tb = $('#tBubble'), tp = $('#tutor');
+    const tog = (on) => { tp.hidden = !on; tb.hidden = on; tb.setAttribute('aria-expanded', String(on)); if (on && $('#tIn')) $('#tIn').focus(); };
+    tb.onclick = () => tog(true); $('#tClose').onclick = () => tog(false);
+    const log = $('#tLog');
+    if (!log) return;
+    const bubble = (role, text) => { const d = document.createElement('div'); d.className = 'tmsg ' + role; d.textContent = text; log.appendChild(d); d.scrollIntoView({ block: 'nearest' }); return d; };
+    tutorHist.forEach((m) => bubble(m.role === 'user' ? 'user' : 'bot', m.content));
+    if (wasOpen) tog(true);
+    const inp = $('#tIn'), go = $('#tGo'), er = $('#tErr');
+    $('#tForm').onsubmit = async (e) => {
+      e.preventDefault(); const q = inp.value.trim(); if (!q) return;
+      inp.value = ''; er.textContent = ''; go.disabled = true; tutorHist.push({ role: 'user', content: q }); bubble('user', q);
+      const wait = bubble('bot', '…');
+      const lesson = tutorCtx ? tutorCtx.lesson : `${document.title}\n${(app.innerText || '').slice(0, 2500)}`;
+      try {
+        const r = await api('/api/chat', 'POST', { course: tutorCtx ? tutorCtx.course : '', lang, lesson, messages: tutorHist });
+        tutorHist.push({ role: 'assistant', content: r.reply }); wait.textContent = r.reply;
+        if (r.left !== null && r.left <= 3) er.textContent = T('Questions restantes aujourd’hui : {n}', { n: r.left });
+      } catch (x) { tutorHist.pop(); wait.remove(); er.textContent = x.message; }
+      go.disabled = false; inp.focus();
+    };
+  }
+
   /* ---------- routeur ---------- */
-  function route() {
+  function route() { tutorCtx = null; routePage(); refreshTutor(); }
+  function routePage() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true; if (page !== 'cours') stopSpeak();
     if (page === 'cours') { if (arg && arg.startsWith('niv-')) { courseLevel = arg.slice(4); courseCycle = cycleOf(courseLevel); courseSubj = 'all'; pageCourses(); } else if (arg) pageCourse(arg); else pageCourses(); return; }
