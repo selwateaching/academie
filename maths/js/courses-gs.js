@@ -298,7 +298,7 @@
       quiz: [Q('Le chat est sous la table. Où est-il ?', ['dessus', 'dessous', 'derrière'], 1), Q('Dans la file, la personne avant moi est …', ['derrière moi', 'devant moi', 'sous moi'], 1), Q('Le ballon est sur la table. Il est …', ['dessous', 'à gauche', 'dessus'], 2)] },
 
     { id: 'gs-ajouter-enlever', subj: 'maths', level: 'gs', icon: '➕', title: 'J’ajoute et j’enlève',
-      intro: 'Si je reçois des billes, j’en ai plus. Si je mange des gâteaux, il en reste moins. Je calcule jusqu’à 10 !',
+      intro: 'Quand je reçois des billes, j’en ai davantage qu’avant : j’ajoute. Quand j’en donne ou que j’en perds, il m’en reste moins : j’enlève. Je calcule jusqu’à 10 !',
       steps: [
         S('Ajouter', 'J’ai <b>3</b> billes bleues. On me donne <b>2</b> billes orange. Je les mets ensemble : 3 + 2 = <b>5</b> billes.', 'gs_ajouter'),
         S('Enlever', 'Il y a <b>5</b> gâteaux. J’en mange <b>2</b>. Il en reste : 5 − 2 = <b>3</b> gâteaux.', 'gs_enlever'),
@@ -306,7 +306,7 @@
         S('Les amis du 10', 'Certains nombres font <b>10</b> ensemble : 6 + 4 = <b>10</b>. Il y a 6 jetons rouges et 4 jetons bleus.', 'gs_dix_amis'),
         S('Un petit problème', 'Léa a 4 billes. Elle gagne 3 billes. Combien en a-t-elle ? Je calcule : 4 + 3 = <b>7</b>. Elle a 7 billes.'),
       ],
-      recap: ['Ajouter, c’est en avoir plus : on avance sur la file.', 'Enlever, c’est en avoir moins : on recule sur la file.', '6 + 4 = 10.'],
+      recap: ['Ajouter (je reçois, on m’en donne) : j’en ai davantage, on avance sur la file.', 'Enlever (je donne, je perds, je mange) : il m’en reste moins, on recule sur la file.', '6 + 4 = 10.'],
       quiz: [Q('4 + 3 = ?', ['6', '7', '8'], 1), Q('8 − 2 = ?', ['6', '10', '5'], 0), Q('Il y a 10 billes. J’en perds 3. Combien en reste-t-il ?', ['6', '13', '7'], 2)] }
   );
 })();
