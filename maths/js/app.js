@@ -720,6 +720,19 @@
   const tutorEl = (() => {
     const w = document.createElement('div'); w.id = 'tutorRoot'; document.body.appendChild(w); return w;
   })();
+  // Grand écran : Rizmi se place dans la marge, juste à côté de la colonne de contenu ; téléphone : coin de l'écran.
+  function placeTutor() {
+    const tb = $('#tBubble'), tp = $('#tutor'); if (!tb) return;
+    tb.style.insetInlineEnd = ''; if (tp) tp.style.insetInlineEnd = '';
+    const col = app.querySelector('.wrap'); if (!col || innerWidth < 800) return;
+    const r = col.getBoundingClientRect(), rtl = document.documentElement.dir === 'rtl';
+    const gutter = rtl ? r.left : innerWidth - r.right; // marge libre côté Rizmi
+    const bw = tb.offsetWidth || 90, off = gutter - bw - 14;
+    if (off < 16) return; // colonne large : on garde le coin
+    tb.style.insetInlineEnd = off + 'px';
+    if (tp) tp.style.insetInlineEnd = Math.max(16, Math.min(off, innerWidth - 400)) + 'px';
+  }
+  window.addEventListener('resize', placeTutor);
   function refreshTutor() {
     const showIt = !auth.offline; // sans clé API, la bulle s'affiche quand même et explique que le tuteur n'est pas activé
     const key = tutorCtx ? tutorCtx.course : '';
@@ -735,6 +748,7 @@
     const tb = $('#tBubble'), tp = $('#tutor');
     const tog = (on) => { tp.hidden = !on; tb.hidden = on; tb.setAttribute('aria-expanded', String(on)); if (on && $('#tIn')) $('#tIn').focus(); };
     tb.onclick = () => tog(true); $('#tClose').onclick = () => tog(false);
+    placeTutor();
     const log = $('#tLog');
     if (!log) return;
     const bubble = (role, text) => { const d = document.createElement('div'); d.className = 'tmsg ' + role; d.textContent = text; log.appendChild(d); d.scrollIntoView({ block: 'nearest' }); return d; };
