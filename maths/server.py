@@ -672,11 +672,11 @@ def create_app(database_url=None):
         for m in (d.get("messages") or [])[-10:]:
             if isinstance(m, dict) and m.get("role") in ("user", "assistant") and isinstance(m.get("content"), str) and m["content"].strip():
                 msgs.append({"role": m["role"], "content": m["content"][:600]})
-        if not COURSE_RE.match(cid) or len(lesson) < 20 or not msgs or msgs[-1]["role"] != "user":
+        # cid vide = question posée hors d'une page de cours : le texte de la page sert de contexte
+        if (cid and not COURSE_RE.match(cid)) or len(lesson) < 20 or not msgs or msgs[-1]["role"] != "user":
             return err("Question invalide.")
         while msgs and msgs[0]["role"] != "user":
             msgs.pop(0)
-        level = cid.split("-")[0]
         limit = int(os.environ.get("CHAT_DAILY_LIMIT", "20") or 20)
         today = datetime.utcnow().strftime("%Y-%m-%d")
         with engine.begin() as conn:
@@ -686,7 +686,14 @@ def create_app(database_url=None):
             if not key:
                 return err("Le tuteur n'est pas encore activé sur ce site.", 503)
             subs = db.active_subscriptions(conn, u["id"])
-            if not (open_for(u) or db.FAMILY in subs or level in subs or cid in course_picks_of(conn, u["id"])):
+            if cid:
+                level = cid.split("-")[0]
+                allowed = level in subs or cid in course_picks_of(conn, u["id"])
+            else:  # page générale : il suffit d'avoir un abonnement ou un cours gratuit choisi
+                ap = active_profile(conn, u["id"])
+                level = ap["level"] if ap else ""
+                allowed = bool(subs) or bool(all_picks(conn, u["id"]))
+            if not (open_for(u) or db.FAMILY in subs or allowed):
                 return err("Le tuteur est réservé aux abonnés.", 403)
             row = conn.execute(select(db.chat_usage.c.n).where(
                 (db.chat_usage.c.user_id == u["id"]) & (db.chat_usage.c.day == today))).first()

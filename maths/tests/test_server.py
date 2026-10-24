@@ -341,6 +341,16 @@ class TutorTests(Base):
             with self.fake():
                 self.assertEqual(self.post("/api/chat", self.BODY).status_code, 200)
 
+    def test_general_page_question(self):
+        body = dict(self.BODY, course="")
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k"}):
+            self.register()
+            self.assertEqual(self.post("/api/chat", body).status_code, 403)  # ni abonnement ni cours choisi
+            with self.app.engine.begin() as conn:
+                db.grant(conn, 1, "cm1", 30)
+            with self.fake():
+                self.assertEqual(self.post("/api/chat", body).status_code, 200)
+
     def test_rejects_bad_input(self):
         with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k", "ABONNEMENTS_ACTIFS": "0"}):
             self.register()
