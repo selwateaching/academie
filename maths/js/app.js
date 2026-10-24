@@ -137,7 +137,8 @@
       const lv = LEVELS.find((x) => x.id === l.id.toLowerCase()), nc = COURSES.filter((c) => c.level === l.id).length;
       const color = lv ? lv.color : (l.color || '#3b3a8f'), n = lv ? implemented(lv).length : 0, d = lv ? doneCount(lv) : 0;
       const exBtn = lv ? `<a class="btn" style="background:${color}" href="#/niveau/${lv.id}">📝 ${T('Exercices de maths ({n})', { n: lv.skillList.length })}</a>` : `<span class="meta" style="margin:0;opacity:.75">📝 ${T('Exercices')} · ${T('bientôt')}</span>`;
-      const coBtn = nc ? `<a class="btn" style="background:${color}" href="#/cours/niv-${l.id}">🎬 ${T('Cours illustrés ({n})', { n: nc })}</a>` : `<span class="pill off">🎬 ${T('Cours')} <small>${T('bientôt')}</small></span>`;
+      const cs = (sj) => COURSES.filter((c) => c.level === l.id && c.subj === sj).length, extra = cs('physique') + cs('chimie') ? `<small class="meta" style="margin:0">📐 ${cs('maths')} · ⚡ ${T('Physique')} ${cs('physique')} · 🧪 ${T('Chimie')} ${cs('chimie')}</small>` : '';
+      const coBtn = nc ? `<a class="btn" style="background:${color}" href="#/cours/niv-${l.id}">🎬 ${T('Cours illustrés ({n})', { n: nc })}</a>${extra}` : `<span class="pill off">🎬 ${T('Cours')} <small>${T('bientôt')}</small></span>`;
       const body = lv ? `<h2>${T('Réussir {art} {short}', { art: lv.art, short: sh(lv) })}</h2><p>${ti(lv.blurb)}</p><p class="meta">${T('{age} · {cats} catégories · {d} / {n} compétences acquises', { age: ti(lv.age), cats: lv.catList.length, d, n })}</p><span class="bar"><i style="width:${n ? Math.round((d / n) * 100) : 0}%;background:${color}"></i></span>` : `<h2>${T('Réussir en {short}', { short: l.full || l.label })}</h2><p>${T('Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.')}</p>`;
       return `<div class="lv"><span class="lv-badge" style="background:${color}"><bdi>${lv ? sh(lv) : l.label}</bdi></span><img class="lv-photo" src="/img/niveau-${l.id.toLowerCase()}.jpg" alt="" loading="lazy" width="150" height="170">
         <span class="lv-body">${body}</span><span class="lv-go" style="display:flex;flex-direction:column;gap:8px;align-items:flex-start">${lv ? exBtn + coBtn : coBtn + exBtn}</span></div>`;
@@ -587,20 +588,25 @@
   let courseLevel = '5e';
   const lvName = (id) => { const l = COURSE_LEVELS.find((x) => x.id === id); return l ? T(l.full || l.label) : id; };
   const cycleOf = (lv) => (COURSE_LEVELS.find((l) => l.id === lv) || {}).cycle || 'moyen';
-  let courseCycle = 'moyen';
+  let courseCycle = 'moyen', courseSubj = 'all';
   function pageCourses() {
     stopSpeak();
     document.title = T('Cours — Tadriss-Maths');
     const chips = COURSE_LEVELS.filter((l) => l.cycle === courseCycle && l.ready).map((l) => l.ready ? `<button class="pill ${l.id === courseLevel ? 'on' : ''}" style="background:#3b3a8f;font-family:inherit;cursor:pointer" data-clv="${l.id}" aria-pressed="${l.id === courseLevel}">${l.label}</button>` : `<span class="pill off">${l.label} <small>${T('bientôt')}</small></span>`).join('');
-    const secs = COURSE_SUBJECTS.filter((s) => COURSES.some((c) => c.subj === s.id && c.level === courseLevel)).map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id && c.level === courseLevel).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span>${courseOpen(c) ? (!auth.config.open && !auth.offline && !valid('fam') ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') : `${auth.user && coursePicksLeft() > 0 ? `<span class="pick" data-cpick="${c.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`).join('')}</div></section>`).join('');
+    const subjs = COURSE_SUBJECTS.filter((s) => COURSES.some((c) => c.subj === s.id && c.level === courseLevel));
+    if (courseSubj !== 'all' && !subjs.some((s) => s.id === courseSubj)) courseSubj = 'all';
+    const spills = subjs.length > 1 ? `<div class="pills" style="margin:10px 0">${[{ id: 'all', icon: '📚', label: 'Tout' }, ...subjs].map((s) => `<button class="pill ${s.id === courseSubj ? 'on' : ''}" style="background:${s.color || '#0d9488'};font-family:inherit;cursor:pointer" data-csub="${s.id}" aria-pressed="${s.id === courseSubj}">${s.icon} ${T(s.label)} (${s.id === 'all' ? COURSES.filter((c) => c.level === courseLevel).length : COURSES.filter((c) => c.level === courseLevel && c.subj === s.id).length})</button>`).join('')}</div>` : '';
+    const secs = subjs.filter((s) => courseSubj === 'all' || s.id === courseSubj).map((s) => `<section class="csub" style="--c:${s.color}"><h2>${s.icon} ${T(s.label)}</h2><div class="cgrid">${COURSES.filter((c) => c.subj === s.id && c.level === courseLevel).map((c) => `<a class="ccard" href="#/cours/${c.id}"><span class="cic">${c.icon}</span><span><b>${cl(c).title}</b><small><bdi>${c.level}</bdi> · ${c.steps.length} ${T('étapes')} · ${T('audio')}</small></span>${courseOpen(c) ? (!auth.config.open && !auth.offline && !valid('fam') ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') : `${auth.user && coursePicksLeft() > 0 ? `<span class="pick" data-cpick="${c.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`).join('')}</div></section>`).join('');
     show(`<div class="wrap"><div class="lvhead"><h1><img class="ttl-ic" src="/img/ico-2.jpg" alt="" width="44" height="44">${T('Cours illustrés')}</h1><p>${T('Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.')}</p></div>
       <p style="margin:6px 0"><a href="#/">${T('‹ Tous les niveaux')}</a></p>
       <div class="pills" style="margin:10px 0">${chips}</div>
+      ${spills}
       ${lang === 'ar' && COURSES.some((c) => !hasAr(c)) ? `<div class="note">${T('Les cours sont pour le moment en français.')}</div>` : ''}
       ${auth.user && !auth.offline && !auth.config.open && !valid('fam') ? `<div class="note">${coursePicksLeft() > 0 ? T('Ton essai : choisis {left} cours gratuit(s) de ton choix. Touche « ☆ Choisir » à côté d’un cours verrouillé 🔒.', { left: coursePicksLeft() }) : T('Tu as choisi tes {n} cours gratuits. Les autres demandent un abonnement.', { n: auth.config.courseMax || 3 })}</div>` : !auth.user && !auth.offline && !auth.config.open ? `<div class="note">${T('Crée un compte gratuit pour choisir 3 cours de ton choix pour l’essai.')} <a href="#/inscription">${T('Créer un compte')}</a></div>` : ''}
       ${canSpeak() ? '' : `<div class="note">${T('La lecture à voix haute n’est pas disponible sur ce navigateur.')}</div>`}
-      ${secs}</div>`, 'maths');
-    document.querySelectorAll('[data-clv]').forEach((b) => b.addEventListener('click', () => { courseLevel = b.dataset.clv; pageCourses(); }));
+      ${secs}</div>`, 'cours');
+    document.querySelectorAll('[data-clv]').forEach((b) => b.addEventListener('click', () => { courseLevel = b.dataset.clv; courseSubj = 'all'; pageCourses(); }));
+    document.querySelectorAll('[data-csub]').forEach((b) => b.addEventListener('click', () => { courseSubj = b.dataset.csub; pageCourses(); }));
     document.querySelectorAll('[data-cpick]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); pickCourse(b.dataset.cpick); }));
   }
 
@@ -679,7 +685,7 @@
   function route() {
     const [, page, arg] = (location.hash || '#/').split('/');
     $('#modal').hidden = true; if (page !== 'cours') stopSpeak();
-    if (page === 'cours') { if (arg && arg.startsWith('niv-')) { courseLevel = arg.slice(4); courseCycle = cycleOf(courseLevel); pageCourses(); } else if (arg) pageCourse(arg); else pageCourses(); return; }
+    if (page === 'cours') { if (arg && arg.startsWith('niv-')) { courseLevel = arg.slice(4); courseCycle = cycleOf(courseLevel); courseSubj = 'all'; pageCourses(); } else if (arg) pageCourse(arg); else pageCourses(); return; }
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
     else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
