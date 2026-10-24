@@ -642,10 +642,12 @@
       ${steps}
       <section class="cstep recap"><div class="chd"><span class="n">★</span><h3>${T('À retenir')}</h3></div><div class="cbd"><ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul></div></section>
       <section class="panel"><h2>${T('Petit quiz')}</h2>${quiz}</section>
-      ${auth.config.chat && auth.user && !auth.offline ? `<section class="panel tutor" id="tutor"><h2>🤖 ${T('Je n’ai pas compris')}</h2><p class="hint">${T('Pose ta question au tuteur : il t’explique cette leçon autrement.')}</p>
-        <div class="tlog" id="tLog" aria-live="polite"></div>
+      ${!auth.offline && (auth.config.chat || (auth.user && auth.user.admin)) ? `<button class="tbubble" id="tBubble" aria-label="${T('Je n’ai pas compris')}" aria-expanded="false"><span aria-hidden="true">🤖</span><b>${T('Je n’ai pas compris')}</b></button>
+        <section class="tpanel" id="tutor" hidden><div class="thead"><b>🤖 ${T('Je n’ai pas compris')}</b><button class="btn ghost sm" id="tClose" aria-label="${T('Fermer')}">✕</button></div>
+        <p class="hint">${!auth.config.chat ? T('Le tuteur n\'est pas encore activé sur ce site.') + ' (ANTHROPIC_API_KEY)' : auth.user ? T('Pose ta question au tuteur : il t’explique cette leçon autrement.') : T('Connecte-toi pour poser une question au tuteur.')}</p>
+        ${auth.config.chat && auth.user ? `<div class="tlog" id="tLog" aria-live="polite"></div>
         <form class="trow" id="tForm"><input id="tIn" maxlength="500" autocomplete="off" placeholder="${T('Écris ta question…')}" aria-label="${T('Ta question')}"><button class="btn" id="tGo">${T('Envoyer')}</button></form>
-        <p class="hint" id="tErr"></p></section>` : ''}
+        <p class="hint" id="tErr"></p>` : !auth.user ? `<a class="btn" href="#/connexion">${T('Connexion')}</a>` : ''}</section>` : ''}
       <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'maths');
     const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
       { text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
@@ -677,6 +679,8 @@
     dots.onclick = (e) => { const d = e.target.closest('[data-d]'); if (d) goto(Number(d.dataset.d)); };
     draw(0);
     document.querySelectorAll('[data-say]').forEach((b) => b.addEventListener('click', () => { const p = parts()[Number(b.dataset.say) + 1]; playParts([p]); }));
+    const tb = $('#tBubble');
+    if (tb) { const tp = $('#tutor'); const tog = (on) => { tp.hidden = !on; tb.hidden = on; tb.setAttribute('aria-expanded', String(on)); if (on && $('#tIn')) $('#tIn').focus(); }; tb.onclick = () => tog(true); $('#tClose').onclick = () => tog(false); }
     const tForm = $('#tForm');
     if (tForm) { // tuteur IA : la leçon est envoyée avec la question, le serveur vérifie l'abonnement et la limite du jour
       const lesson = [c.title, plain(c.intro), ...c.steps.map((x) => `${plain(x.h)} : ${plain(x.p)}`), c.recap.map(plain).join(' ; ')].join('\n');
