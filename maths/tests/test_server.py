@@ -184,8 +184,7 @@ class PaymentTests(Base):
 
     def test_prices(self):
         cfg = self.c.get("/api/me").get_json()["config"]
-        self.assertEqual(cfg["prices"]["6e"], 400)
-        for lv in ("gs", "cp", "ce1", "ce2", "cm1", "cm2"):
+        for lv in ("gs", "cp", "ce1", "ce2", "cm1", "cm2", "6e", "5e", "4e", "3e", "2nde", "1re", "term"):
             self.assertEqual(cfg["prices"][lv], 200)
 
     def test_demo_payment_unlocks_level_only(self):
@@ -199,7 +198,7 @@ class PaymentTests(Base):
     def test_lycee_plans(self):
         self.register()
         prices = self.c.get("/api/me").get_json()["config"]["prices"]
-        self.assertEqual([prices[k] for k in ("2nde", "1re", "term")], [500, 500, 500])
+        self.assertEqual([prices[k] for k in ("2nde", "1re", "term")], [200, 200, 200])
         self.pay_demo("term")
         self.assertEqual(list(self.c.get("/api/me").get_json()["subscriptions"]), ["term"])
 
@@ -265,7 +264,7 @@ class ChargilyTests(Base):
         self.assertEqual(r.get_json()["url"], "https://pay.example/ch_1")
         args, kwargs = post.call_args
         self.assertEqual(args[0], "https://pay.chargily.net/test/api/v2/checkouts")
-        self.assertEqual(kwargs["json"]["amount"], 400)
+        self.assertEqual(kwargs["json"]["amount"], 200)
         self.assertEqual(kwargs["json"]["currency"], "dzd")
         self.assertEqual(kwargs["json"]["payment_method"], "edahabia")
 

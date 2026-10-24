@@ -2,7 +2,7 @@
 
 Site d'exercices de maths interactifs (GS → 6e), avec comptes, abonnements mensuels et suivi des progrès.
 
-- Tarifs : **200 DA / mois pour chaque niveau de la GS au CM2**, **400 DA / mois pour la 6e**. Abonnement de 30 jours par niveau, sans reconduction automatique.
+- Tarifs : **200 DA / mois par niveau, de la GS à la Terminale** (un compte), **600 DA / mois pour le forfait Famille** (tous les niveaux, jusqu’à 5 profils). Abonnement de 30 jours par niveau, sans reconduction automatique.
 - 3 compétences gratuites par niveau (codes A.1, B.1, C.1).
 - Compte parent, jusqu'à 5 profils d'élèves, progression enregistrée côté serveur.
 - Paiement CIB / Edahabia via Chargily Pay (mode test par défaut).
