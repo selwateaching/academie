@@ -5,6 +5,7 @@
 (function (root) {
   root.AR_UI = {
     /* contact */
+    'Ton prénom et ton nom': 'اسمك الكامل', 'Écris ton message ici…': 'اكتب رسالتك هنا…', 'Envoyer le message': 'إرسال الرسالة', 'Message envoyé': 'تم إرسال الرسالة', 'Retour à l’accueil': 'العودة إلى الرئيسية',
     'Contact — Tadriss Sciences': 'اتصل بنا — تدريس العلوم', 'Nous contacter': 'اتصل بنا', 'Une question, un problème, une idée ? Écris-nous, nous répondons par e-mail.': 'سؤال أو مشكلة أو فكرة؟ اكتب إلينا وسنردّ عليك بالبريد الإلكتروني.',
     'Ton nom': 'اسمك', 'Ton adresse e-mail': 'بريدك الإلكتروني', 'Ton message': 'رسالتك', 'Ou écris directement à': 'أو اكتب مباشرة إلى', 'Merci ! Ton message est envoyé, nous te répondons bientôt.': 'شكرًا! تم إرسال رسالتك وسنردّ عليك قريبًا.',
     'Messages de contact': 'رسائل التواصل', 'Écris ton nom, une adresse e-mail valide et ton message.': 'اكتب اسمك وبريدًا إلكترونيًا صالحًا ورسالتك.', 'Trop de messages envoyés. Réessaie plus tard.': 'رسائل كثيرة جدًا. أعد المحاولة لاحقًا.',
