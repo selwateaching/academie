@@ -11,7 +11,7 @@ const ctx = { console, Math, Date };
 ctx.window = ctx; ctx.globalThis = ctx;
 vm.createContext(ctx);
 const load = (f) => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f });
-['js/lang/fr.js', 'js/lang/ar.js', 'js/lang/ar-catalog.js', 'js/lang/ar-ui.js', 'js/generators.js', 'js/lang/fr2.js', 'js/lang/ar2.js', 'js/lang/ar-catalog2.js', 'js/generators2.js', 'js/catalog2.js', 'js/catalog.js'].forEach(load);
+['js/lang/fr.js', 'js/lang/ar.js', 'js/lang/ar-catalog.js', 'js/lang/ar-ui.js', 'js/generators.js', 'js/lang/fr2.js', 'js/lang/ar2.js', 'js/lang/ar-catalog2.js', 'js/generators2.js', 'js/catalog2.js', ...require('fs').readdirSync(require('path').join(__dirname, '..', 'js', 'pc')).filter((f) => /\.js$/.test(f)).sort().map((f) => 'js/pc/' + f), 'js/catalog.js'].forEach(load);
 
 let bad = 0;
 const fail = (m) => { bad++; console.log('✗', m); };

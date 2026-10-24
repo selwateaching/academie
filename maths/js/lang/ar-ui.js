@@ -38,7 +38,7 @@
     'Accès réservé aux administrateurs.': 'الدخول مخصص للمسؤولين.',
     'Client introuvable.': 'الزبون غير موجود.',
     'Nombre de jours ou montant invalide.': 'عدد الأيام أو المبلغ غير صالح.',
-    'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
+    'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices ({n})': 'تمارين ({n})', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
     'Rechercher une compétence': 'ابحث عن مهارة',
     'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
     'Tadriss-Maths · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس رياضيات · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',

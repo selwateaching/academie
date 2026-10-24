@@ -2,7 +2,7 @@
 const fs = require('fs'); const path = require('path'); const vm = require('vm');
 const root = path.join(__dirname, '..');
 const ctx = { console, Math, Date }; ctx.window = ctx; ctx.globalThis = ctx; vm.createContext(ctx);
-['js/lang/fr.js', 'js/lang/ar.js', 'js/lang/ar-catalog.js', 'js/lang/ar-ui.js', 'js/generators.js', 'js/lang/fr2.js', 'js/lang/ar2.js', 'js/lang/ar-catalog2.js', 'js/generators2.js', 'js/catalog2.js', 'js/catalog.js']
+['js/lang/fr.js', 'js/lang/ar.js', 'js/lang/ar-catalog.js', 'js/lang/ar-ui.js', 'js/generators.js', 'js/lang/fr2.js', 'js/lang/ar2.js', 'js/lang/ar-catalog2.js', 'js/generators2.js', 'js/catalog2.js', ...require('fs').readdirSync(require('path').join(__dirname, '..', 'js', 'pc')).filter((f) => /\.js$/.test(f)).sort().map((f) => 'js/pc/' + f), 'js/catalog.js']
   .forEach((f) => vm.runInContext(fs.readFileSync(path.join(root, f), 'utf8'), ctx, { filename: f }));
 const lang = process.argv[3] || 'fr'; if (lang === 'ar') ctx.STRINGS = Object.assign({}, ctx.STRINGS, ctx.STRINGS_AR);
 const strip = (h) => String(h == null ? '' : h).replace(/<span class="frac"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/g, '($1/$2)').replace(/<svg.*?<\/svg>/g, '[figure]').replace(/<[^>]+>/g, '').replace(/⁦|⁩/g, '');
