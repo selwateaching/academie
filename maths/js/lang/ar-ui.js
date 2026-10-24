@@ -147,7 +147,7 @@
     'Écouter cette étape': 'استمع إلى هذه المرحلة', 'À retenir': 'ما يجب حفظه', 'Petit quiz': 'اختبار صغير', 'Tous les cours': 'كل الدروس',
     'Étape': 'مرحلة', 'Bravo, c’est exact !': 'أحسنت، الإجابة صحيحة!',
     'Pas tout à fait : la bonne réponse est « {r} ».': 'ليس تمامًا: الإجابة الصحيحة هي « {r} ».',
-    'Mathématiques': 'الرياضيات', 'Physique': 'الفيزياء', 'Chimie': 'الكيمياء',
+    'Tout': 'الكل', 'Mathématiques': 'الرياضيات', 'Physique': 'الفيزياء', 'Chimie': 'الكيمياء',
     'Lancer le cours animé': 'تشغيل الدرس المتحرك', 'Revoir le cours animé': 'إعادة الدرس المتحرك', 'Pause': 'إيقاف مؤقت', 'Précédent': 'السابق', 'Suivant': 'التالي', 'Le cours en détail': 'الدرس بالتفصيل',
     'Remettre à zéro': 'إعادة التعيين',
     'Retour au niveau': 'العودة إلى المستوى',
