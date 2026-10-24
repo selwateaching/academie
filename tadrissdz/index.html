@@ -1684,11 +1684,11 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
               <option>1AS</option><option>2AS</option><option>3AS</option>
             </select>
           </div>
-          <div class="fg"><label class="fl">Nb questions</label><select class="fs" id="qzNb"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
+          <div class="fg"><label class="fl" id="qzNbLbl">Nb questions</label><select class="fs" id="qzNb"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div>
         </div>
         <div class="fg" id="qzFiliereRow" style="display:none"><label class="fl">Filière</label><select class="fs" id="qzFiliere"></select></div>
         <div class="fg2">
-          <div class="fg"><label class="fl">Type</label><select class="fs" id="qzT"><option value="qcm">QCM</option><option value="vf">Vrai/Faux</option><option value="ouvert">Questions ouvertes</option><option value="mixte">Mixte</option></select></div>
+          <div class="fg"><label class="fl">Type</label><select class="fs" id="qzT" onchange="onQzTypeChange()"><option value="qcm">QCM</option><option value="vf">Vrai/Faux</option><option value="ouvert">Questions ouvertes</option><option value="mixte">Mixte</option><option value="devoir">📝 Devoir/Examen (exercices structurés)</option></select></div>
           <div class="fg"><label class="fl">Difficulté</label><select class="fs" id="qzD"><option>Facile</option><option selected>Moyen</option><option>Difficile</option></select></div>
         </div>
         <div class="fg"><label class="fl">Langue</label><select class="fs" id="qzLang"><option value="fr">Français</option><option value="ar">Arabe</option><option value="mixed">Bilingue</option></select></div>
@@ -4398,7 +4398,8 @@ function switchLang() {
       var qzS = document.getElementById('qzS'); if (qzS) qzS.placeholder = isAR ? 'مثال: معادلات الدرجة الثانية، التركيب الضوئي...' : 'Ex: Équations du 2ème degré, La photosynthèse...';
       var qzI = document.getElementById('qzI'); if (qzI) qzI.placeholder = isAR ? 'مثال: ركز على الفصلين 3 و4...' : 'Ex: Concentrez-vous sur les chapitres 3 et 4...';
       var qzT = document.getElementById('qzT');
-      if (qzT && qzT.options.length >= 4) { qzT.options[0].text=isAR?'اختيار من متعدد':'QCM'; qzT.options[1].text=isAR?'صح/خطأ':'Vrai/Faux'; qzT.options[2].text=isAR?'أسئلة مفتوحة':'Questions ouvertes'; qzT.options[3].text=isAR?'مختلط':'Mixte'; }
+      if (qzT && qzT.options.length >= 4) { qzT.options[0].text=isAR?'اختيار من متعدد':'QCM'; qzT.options[1].text=isAR?'صح/خطأ':'Vrai/Faux'; qzT.options[2].text=isAR?'أسئلة مفتوحة':'Questions ouvertes'; qzT.options[3].text=isAR?'مختلط':'Mixte'; if (qzT.options[4]) qzT.options[4].text=isAR?'📝 واجب/اختبار (تمارين مُركّبة)':'📝 Devoir/Examen (exercices structurés)'; }
+      if (typeof onQzTypeChange === 'function') onQzTypeChange();
       var qzD = document.getElementById('qzD');
       if (qzD && qzD.options.length >= 3) { qzD.options[0].text=isAR?'سهل':'Facile'; qzD.options[1].text=isAR?'متوسط':'Moyen'; qzD.options[2].text=isAR?'صعب':'Difficile'; }
       var qzLang = document.getElementById('qzLang');
@@ -10788,6 +10789,23 @@ function rQz() {
     if (qzLangRow) qzLangRow.style.display = langueRedactionMatiere(D.s.mat) ? 'none' : 'block';
   }
 }
+function onQzTypeChange() {
+  var tyEl = document.getElementById('qzT'); if (!tyEl) return;
+  var isARqt = (typeof CURRENT_LANG !== 'undefined' && CURRENT_LANG === 'ar');
+  var lbl = document.getElementById('qzNbLbl');
+  var isDevoir = tyEl.value === 'devoir';
+  if (lbl) lbl.textContent = isDevoir ? (isARqt?'عدد التمارين (تقريبي)':"Nombre d'exercices (approx.)") : (isARqt?'عدد الأسئلة':'Nb questions');
+  var nbSel = document.getElementById('qzNb');
+  if (nbSel && nbSel.options.length >= 4) {
+    if (isDevoir) { nbSel.options[0].text='2'; nbSel.options[1].text='3'; nbSel.options[2].text='4'; nbSel.options[3].text='5'; }
+    else { nbSel.options[0].text='5'; nbSel.options[1].text='10'; nbSel.options[2].text='15'; nbSel.options[3].text='20'; }
+  }
+}
+/* Les valeurs sous-jacentes de #qzNb (5/10/15/20) restent inchangées pour "devoir" (seul le
+   LIBELLÉ affiché change, voir onQzTypeChange) — cette table convertit vers un nombre
+   d'exercices réaliste pour un devoir/examen (jamais plus de 5, sinon le corrigé détaillé
+   dépasserait largement le budget de tokens d'une génération). */
+var QZ_NB_VERS_EXERCICES = {'5':2,'10':3,'15':4,'20':5};
 async function genQuiz() {
   var sj=document.getElementById('qzS').value.trim(); if (!sj){N(T('entrez_sujet'),'err');return;}
   var q = { autorise: true };
@@ -10807,8 +10825,32 @@ async function genQuiz() {
      CETTE langue — jamais dans le français/arabe du sélecteur générique (qui ne s'applique qu'aux
      matières non-linguistiques). Voir langueRedactionMatiere(). */
   var langRedactionTxt = langueRedactionMatiere(mat) || (lang==='ar'?'arabe':(lang==='mixed'?'bilingue français-arabe':'français'));
-  var prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+langRedactionTxt+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.'+filiereInstructionTxt(qzFiliereVal);
-  fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
+  var isDevoirType = (ty === 'devoir');
+  var prompt, maxTok;
+  if (isDevoirType) {
+    var nbExercices = QZ_NB_VERS_EXERCICES[nb] || 3;
+    /* Format "devoir/examen" : exercices structurés avec sous-questions à développement complet
+       et corrigé détaillé étape par étape — PAS du QCM. Calqué sur le niveau de rigueur réel des
+       devoirs/examens officiels algériens (calcul algébrique complet, démonstrations rédigées,
+       justifications à chaque étape), demande explicite de l'enseignante car les quiz QCM "trop
+       légers" ne reflètent pas le niveau d'exigence attendu à l'examen. */
+    var rigueurMat = '';
+    var matL = mat.toLowerCase();
+    if (matL.indexOf('math') >= 0) {
+      rigueurMat = ' Varie les types de raisonnement attendus à ce niveau (pas seulement du calcul mécanique) : manipulation de racines/puissances et écriture scientifique, résolution d\'équations/inéquations ou de systèmes, arithmétique (nombres premiers, PGCD/PPCM, divisibilité), démonstration rédigée (ex: par l\'absurde, par récurrence selon le niveau), fractions/simplifications non triviales. Le corrigé doit montrer TOUTES les étapes de calcul, pas juste le résultat final — exactement comme un corrigé officiel MEN algérien.';
+    } else if (matL.indexOf('physi') >= 0 || matL.indexOf('chim') >= 0) {
+      rigueurMat = ' Inclus des questions de restitution de connaissances ET des exercices d\'application chiffrés avec unités, formules et calculs complets dans le corrigé.';
+    } else if (matL.indexOf('francais') >= 0 || matL.indexOf('arabe') >= 0 || matL.indexOf('anglais') >= 0 || matL.indexOf('espagnol') >= 0) {
+      rigueurMat = ' Structure comme une épreuve de langue type Bac/BEM : compréhension de l\'écrit (texte support + questions) suivie de production écrite, avec consignes précises et barème indicatif.';
+    }
+    prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un DEVOIR/EXAMEN complet et rigoureux sur: "'+sj+'", structuré en '+nbExercices+' exercices indépendants (pas un QCM — des questions à développement, comme un vrai devoir surveillé/devoir maison algérien). Difficulté: '+df+'. Langue: '+langRedactionTxt+'.'+rigueurMat+(ins?'\nInstructions supplémentaires: '+ins:'')+
+      '\n\nChaque exercice a un titre (ex: "Exercice 1 (Calcul numérique)"), un énoncé complet (qui peut contenir plusieurs sous-questions numérotées 1/2/3 ou a/b/c directement dans le texte de "enonce", avec retours à la ligne), et un corrigé DÉTAILLÉ qui développe CHAQUE étape du raisonnement/calcul (pas une explication en une phrase).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","duree":"1h" ou "2h" selon la longueur,"exercices":[{"titre":"Exercice 1 : ...","enonce":"énoncé complet avec sous-questions, utilise \\n pour les retours à la ligne","corrige":"corrigé complet étape par étape avec \\n pour les retours à la ligne"}]}\nJSON uniquement, aligné sur le programme MEN algérien.'+filiereInstructionTxt(qzFiliereVal);
+    maxTok = 8000;
+  } else {
+    prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un quiz de '+nb+' questions sur: "'+sj+'". Difficulté: '+df+'. Type: '+ty+'. Langue: '+langRedactionTxt+'.'+(ins?'\nInstructions: '+ins:'')+' Reste très concis : "expl" en une courte phrase (10-15 mots max).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","questions":[{"num":1,"q":"...","type":"qcm","choix":["A...","B...","C...","D..."],"rep":"A","expl":"..."}]}\nJSON uniquement, aligné sur le programme MEN algérien.'+filiereInstructionTxt(qzFiliereVal);
+    maxTok = 3200;
+  }
+  fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:maxTok,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
     btn.innerHTML=T('gen_quiz'); btn.disabled=false;
     if (data.error) { N((CURRENT_LANG==='ar'?'خطأ في الواجهة البرمجية : ':'Erreur API : ')+(data.error.message||data.error.type||'inconnue'),'err'); document.getElementById('qzDis').innerHTML='<div style="padding:1.5rem;background:var(--rp);border-radius:8px;font-size:.82rem;color:var(--r)"><strong>Erreur Anthropic :</strong> '+(data.error.message||data.error.type||'Réessaie dans quelques instants ; contacte l\'administrateur si ça persiste.')+'</div>'; return; }
     var text=extractClaudeText(data);
@@ -10827,6 +10869,19 @@ function closeQzResult(){
   document.getElementById('btnSQ').style.display='none';
 }
 function dispQz(qz) {
+  var isARdq = CURRENT_LANG==='ar';
+  if (qz.exercices && qz.exercices.length) {
+    var hd='<div style="margin-bottom:1.2rem;padding:1rem;background:var(--tp);border-radius:9px"><div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:700">'+tiaEsc(qz.titre)+'</div><div style="font-size:.75rem;color:var(--t);margin-top:3px">'+tiaEsc(qz.niveau)+' — '+qz.exercices.length+(isARdq?' تمارين':' exercices')+(qz.duree?' — '+tiaEsc(qz.duree):'')+'</div></div>';
+    qz.exercices.forEach(function(ex,i){
+      hd+='<div style="border:1.5px solid var(--br);border-radius:9px;padding:1rem;margin-bottom:.85rem">'+
+        '<div style="font-family:Syne,sans-serif;font-size:.92rem;font-weight:700;color:var(--t);margin-bottom:.6rem">'+tiaEsc(ex.titre||((isARdq?'التمرين ':'Exercice ')+(i+1)))+'</div>'+
+        '<div style="font-size:.84rem;line-height:1.7;white-space:pre-line;margin-bottom:.7rem">'+tiaEsc(ex.enonce||'')+'</div>'+
+        (ex.corrige ? '<details style="background:var(--bg);border-radius:8px;padding:.6rem .8rem"><summary style="cursor:pointer;font-size:.78rem;font-weight:700;color:var(--t)">'+(isARdq?'📘 إظهار الحل المفصّل':'📘 Afficher le corrigé détaillé')+'</summary><div style="margin-top:.6rem;font-size:.82rem;line-height:1.75;white-space:pre-line">'+tiaEsc(ex.corrige)+'</div></details>' : '')+
+        '</div>';
+    });
+    document.getElementById('qzDis').innerHTML=hd; document.getElementById('qzDisT').textContent=qz.titre||(isARdq?'واجب':'Devoir');
+    return;
+  }
   var h='<div style="margin-bottom:1.2rem;padding:1rem;background:var(--tp);border-radius:9px"><div style="font-family:Syne,sans-serif;font-size:1rem;font-weight:700">'+qz.titre+'</div><div style="font-size:.75rem;color:var(--t);margin-top:3px">'+qz.niveau+' — '+(qz.questions?qz.questions.length:0)+' questions</div></div>';
   if (qz.questions) qz.questions.forEach(function(q,i){
     var col=q.type==='vf'?'var(--a)':q.type==='ouvert'?'var(--b)':'var(--t)';
@@ -10847,7 +10902,7 @@ function corriger() {
   var copie=document.getElementById('corrC').value.trim(); if (!copie){N(CURRENT_LANG==='ar'?'الصق الإجابات':'Collez les réponses','err');return;}
   var eid=parseInt(document.getElementById('corrEl').value), eleve=D.el.find(function(e){return e.id===eid;});
   var btn=document.getElementById('btnCorr'); btn.textContent=CURRENT_LANG==='ar'?'جارٍ التصحيح...':'Correction en cours...'; btn.disabled=true;
-  var bk=String.fromCharCode(96), qj=JSON.stringify(curQz.questions||[]);
+  var bk=String.fromCharCode(96), qj=JSON.stringify(curQz.questions||(curQz.exercices?curQz.exercices.map(function(ex){return {titre:ex.titre,enonce:ex.enonce,corrige:ex.corrige};}):[]));
   var prompt='Tu es correcteur. Quiz:\n'+qj+'\n\nRéponses élève:\n'+copie+'\n\nCorrige et réponds en JSON. Reste très concis : "commentaire" en une courte phrase (10-15 mots max):\n{"note":15,"sur":20,"appreciation":"Bien...","corrections":[{"num":1,"correct":true,"commentaire":"..."}]}\nJSON uniquement.';
   fetch('/.netlify/functions/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt,max_tokens:3200,model:'claude-sonnet-5'})}).then(function(r){ if (!r.ok) throw new Error('SERVEUR_INDISPONIBLE'); return r.json(); }).then(function(data){
     btn.textContent=CURRENT_LANG==='ar'?'تصحيح بالذكاء الاصطناعي':'Corriger avec l\'IA'; btn.disabled=false;
