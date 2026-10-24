@@ -80,6 +80,14 @@ chat_usage = Table(  # nombre de questions posées au tuteur IA, par compte et p
     Column("day", String(10), primary_key=True),
     Column("n", Integer, nullable=False, default=0),
 )
+contact_messages = Table(  # messages du formulaire de contact (lus par l'administrateur, et envoyés par e-mail si SMTP est configuré)
+    "contact_messages", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("name", String(80), nullable=False),
+    Column("email", String(254), nullable=False),
+    Column("message", String(3000), nullable=False),
+    Column("created_at", DateTime, nullable=False),
+)
 DEMO_MAX = 3
 COURSE_MAX = 3  # cours animés gratuits au choix (stockés dans demo_picks sous la forme « c:<id> »)
 payments = Table(

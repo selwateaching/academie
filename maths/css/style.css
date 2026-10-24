@@ -353,3 +353,4 @@ main{flex:1;outline:none}
 .tbubble .mascot{display:block;animation:bob 2.6s ease-in-out infinite}.tbubble b{font-size:.95rem;margin-top:-2px}
 .tbubble:hover{filter:brightness(1.08)}@media(prefers-reduced-motion:reduce){.tbubble .mascot{animation:none}}
 .tbubble{background:#fff;color:var(--brand2);border:3px solid var(--brand)}
+.form textarea{border:2px solid #d9d7f3;border-radius:12px;padding:10px 12px;font:inherit;resize:vertical}

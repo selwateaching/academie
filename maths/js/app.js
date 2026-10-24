@@ -112,7 +112,7 @@
     document.querySelectorAll('[data-t]').forEach((e) => { e.textContent = T(e.dataset.t); });
     document.querySelectorAll('[data-t-aria]').forEach((e) => e.setAttribute('aria-label', T(e.dataset.tAria)));
     document.querySelectorAll('[data-t-ph]').forEach((e) => e.setAttribute('placeholder', T(e.dataset.tPh)));
-    $('#foot').innerHTML = T('Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>');
+    $('#foot').innerHTML = T('Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a> · <a href="#/contact">Contact</a>');
     document.querySelectorAll('[data-lang]').forEach((b) => { const on = b.dataset.lang === lang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
   }
   function setLang(l) {
@@ -476,6 +476,27 @@
       <h2>${T('Supprimer son compte')}</h2><p>${T('Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).')}</p></div></div>`, 'compte');
   }
 
+  /* ---------- contact : formulaire simple, les messages arrivent dans l'administration (et par e-mail si SMTP est configuré) ---------- */
+  const CONTACT_MAIL = 'contact@veloraia.fr';
+  function pageContact() {
+    document.title = T('Contact — Tadriss Sciences');
+    show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Nous contacter')}</h1></div><div class="panel">
+      <p>${T('Une question, un problème, une idée ? Écris-nous, nous répondons par e-mail.')}</p>
+      <form class="form" id="cForm"><label>${T('Ton nom')}<input id="cName" maxlength="80" required autocomplete="name"></label>
+        <label>${T('Ton adresse e-mail')}<input id="cMail" type="email" dir="ltr" maxlength="254" required autocomplete="email" value="${auth.user ? esc(auth.user.email) : ''}"></label>
+        <label>${T('Ton message')}<textarea id="cMsg" rows="6" maxlength="3000" required></textarea></label>
+        <input id="cWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <div class="row"><button class="btn big" id="cGo" type="submit">${T('Envoyer')}</button></div><p class="errtxt" id="cErr" aria-live="polite"></p></form>
+      <p class="hint">${T('Ou écris directement à')} <a href="mailto:${CONTACT_MAIL}" dir="ltr">${CONTACT_MAIL}</a></p></div></div>`, 'compte');
+    $('#cForm').onsubmit = async (e) => {
+      e.preventDefault(); const er = $('#cErr'); er.textContent = ''; $('#cGo').disabled = true;
+      try {
+        await api('/api/contact', 'POST', { name: $('#cName').value, email: $('#cMail').value, message: $('#cMsg').value, website: $('#cWeb').value });
+        $('#cForm').innerHTML = `<div class="note ok">${T('Merci ! Ton message est envoyé, nous te répondons bientôt.')}</div>`;
+      } catch (x) { er.textContent = x.message; $('#cGo').disabled = false; }
+    };
+  }
+
   /* ---------- administration : clients, abonnements, paiements ---------- */
   const PLANS = () => [...LEVELS.map((l) => ({ id: l.id, label: sh(l) })), ...COURSE_LEVELS.filter((l) => l.cycle === 'secondaire').map((l) => ({ id: l.id, label: planName(l.id) })), { id: 'fam', label: T('Forfait Famille') }];
   const planLabel = (id) => (PLANS().find((p) => p.id === id) || { label: id }).label;
@@ -486,6 +507,7 @@
     if (!auth.user.admin) { show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Administration')}</h1></div><div class="note">${T('Ce compte n’a pas accès à l’administration.')}</div><p><a class="btn ghost" href="#/compte">${T('Mon compte')}</a></p></div>`, 'compte'); return; }
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tableau de bord')}</h1></div>
       <div class="kpis" id="kpis"></div>
+      <div class="panel" id="msgbox" hidden><h2>${T('Messages de contact')}</h2><div id="msglist"></div></div>
       <div class="panel" id="reqbox" hidden><h2>${T('Demandes de mot de passe')}</h2><div id="reqlist"></div></div>
       <div class="panel"><h2>${T('Clients')}</h2>
         <form class="inl" id="fSearch"><input id="aq" type="search" dir="ltr" placeholder="${T('Rechercher par e-mail')}" aria-label="${T('Rechercher par e-mail')}"><button class="btn" type="submit">${T('Chercher')}</button></form>
@@ -494,6 +516,10 @@
     const loadStats = () => api('/api/admin/stats').then((s) => {
       $('#kpis').innerHTML = [[s.users, T('Comptes')], [s.subscribers, T('Abonnés actifs')], [da(s.revenue_month), T('Revenus du mois')], [da(s.revenue_total), T('Revenus au total')]]
         .map(([v, l]) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`).join('');
+    }).catch(fail);
+    const loadMsgs = () => api('/api/admin/messages').then((d) => {
+      $('#msgbox').hidden = !d.messages.length;
+      $('#msglist').innerHTML = d.messages.map((m) => `<div class="stat" style="display:block"><b>${esc(m.name)}</b> · <a href="mailto:${esc(m.email)}" dir="ltr">${esc(m.email)}</a> · ${dateFr(m.date)}<p style="white-space:pre-wrap;margin:4px 0 10px">${esc(m.message)}</p></div>`).join('');
     }).catch(fail);
     const loadReq = () => api('/api/admin/requests').then((d) => {
       $('#reqbox').hidden = !d.requests.length;
@@ -531,7 +557,7 @@
       } catch (e) { fail(e); }
     }
     $('#fSearch').addEventListener('submit', (e) => { e.preventDefault(); loadList(); });
-    loadStats(); loadList(); loadReq();
+    loadStats(); loadList(); loadReq(); loadMsgs();
   }
 
 
@@ -732,7 +758,7 @@
     if (page === 'cours') { if (arg && arg.startsWith('niv-')) { courseLevel = arg.slice(4); courseCycle = cycleOf(courseLevel); courseSubj = 'all'; pageCourses(); } else if (arg) pageCourse(arg); else pageCourses(); return; }
     if (page === 'niveau') pageLevel(arg); else if (page === 'exercice') pagePractice(arg);
     else if (page === 'recompenses') pageRewards(arg); else if (page === 'suivi') pageProgress();
-    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'recherche') pageSearch(arg); else pageHome();
+    else if (page === 'avantages') pageAbout(); else if (page === 'tarifs') pagePricing(); else if (page === 'connexion') pageLogin(); else if (page === 'inscription') pageRegister(); else if (page === 'compte') pageAccount(); else if (page === 'paiement') pagePaid(arg === 'succes'); else if (page === 'admin') pageAdmin(); else if (page === 'legal') pageLegal(); else if (page === 'contact') pageContact(); else if (page === 'recherche') pageSearch(arg); else pageHome();
   }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && P && $('#go') && $('#modal').hidden && !(e.target.tagName === 'BUTTON')) { e.preventDefault(); submit(); }

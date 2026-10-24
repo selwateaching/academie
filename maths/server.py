@@ -14,13 +14,20 @@ Variables d'environnement :
   ANTHROPIC_API_KEY     clé API Anthropic : active le tuteur IA (bouton « Je n'ai pas compris » sur chaque cours)
   CHAT_MODEL            modèle du tuteur (par défaut claude-haiku-5-5, le moins cher)
   CHAT_DAILY_LIMIT      questions par jour et par compte (par défaut 20 ; les administrateurs sont illimités)
+  CONTACT_EMAIL         adresse qui reçoit les messages du formulaire de contact (par défaut contact@veloraia.fr)
+  SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD
+                        (facultatif) envoi des messages de contact par e-mail ; sans cela ils sont seulement
+                        enregistrés et visibles dans le tableau de bord administrateur
   ABONNEMENTS_ACTIFS    0 pour tout ouvrir à tout le monde ; absent ou autre = seule la démo est gratuite
                         (3 compétences par niveau), le reste demande un abonnement ; les administrateurs ont toujours tout
 """
 import os
 import re
 import secrets
+import smtplib
+import threading
 import time
+from email.message import EmailMessage
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 
@@ -649,6 +656,53 @@ def create_app(database_url=None):
                 app.logger.info("admin %s accorde %s jours de %s à %s", admin["email"], days, plan, uid)
             u = conn.execute(select(db.users).where(db.users.c.id == uid)).mappings().first()
             return jsonify(user=user_row(conn, u))
+
+    # ---------- contact ----------
+    def contact_address():
+        return os.environ.get("CONTACT_EMAIL", "contact@veloraia.fr")
+
+    def mail_contact(name, email, text):
+        """Envoie le message par SMTP si le serveur est configuré ; sinon il reste dans la base (tableau de bord)."""
+        host = os.environ.get("SMTP_HOST")
+        if not host:
+            return
+        try:
+            m = EmailMessage()
+            m["Subject"] = "Tadriss Sciences : message de %s" % name
+            m["From"] = os.environ.get("SMTP_USER") or contact_address()
+            m["To"] = contact_address()
+            m["Reply-To"] = email
+            m.set_content("De : %s <%s>\n\n%s" % (name, email, text))
+            with smtplib.SMTP(host, int(os.environ.get("SMTP_PORT", "587")), timeout=20) as s:
+                s.starttls()
+                if os.environ.get("SMTP_USER"):
+                    s.login(os.environ["SMTP_USER"], os.environ.get("SMTP_PASSWORD", ""))
+                s.send_message(m)
+        except Exception as e:  # le message est déjà enregistré
+            app.logger.warning("e-mail de contact non envoyé : %s", e)
+
+    @app.post("/api/contact")
+    def contact():
+        d = request.get_json(silent=True) or {}
+        name, email, text = str(d.get("name", "")).strip()[:80], str(d.get("email", "")).strip().lower()[:254], str(d.get("message", "")).strip()[:3000]
+        if d.get("website"):  # champ piège pour les robots : on fait semblant que tout va bien
+            return jsonify(ok=True)
+        if not name or not EMAIL_RE.match(email) or len(text) < 5:
+            return err("Écris ton nom, une adresse e-mail valide et ton message.")
+        if too_many("contact:" + (request.remote_addr or ""), limit=5, window=3600):
+            return err("Trop de messages envoyés. Réessaie plus tard.", 429)
+        with engine.begin() as conn:
+            conn.execute(db.contact_messages.insert().values(name=name, email=email, message=text, created_at=db.now()))
+        threading.Thread(target=mail_contact, args=(name, email, text), daemon=True).start()
+        return jsonify(ok=True)
+
+    @app.get("/api/admin/messages")
+    def admin_messages():
+        with engine.begin() as conn:
+            if not admin_user(conn):
+                return err("Accès réservé aux administrateurs.", 403)
+            rows = conn.execute(select(db.contact_messages).order_by(db.contact_messages.c.id.desc()).limit(50)).mappings()
+            return jsonify(messages=[{"name": r["name"], "email": r["email"], "message": r["message"], "date": iso(r["created_at"])} for r in rows])
 
     # ---------- tuteur IA ----------
     CHAT_SYSTEM = (

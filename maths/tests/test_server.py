@@ -358,6 +358,26 @@ class TutorTests(Base):
             self.assertEqual(self.post("/api/chat", bad).status_code, 400)
 
 
+class ContactTests(Base):
+    BODY = {"name": "Sara", "email": "sara@b.dz", "message": "Bonjour, une question sur les tarifs."}
+
+    def test_message_is_stored_and_shown_to_admin_only(self):
+        with mock.patch.dict(os.environ, {"ADMIN_EMAILS": "patron@b.dz"}):
+            self.assertEqual(self.post("/api/contact", self.BODY).status_code, 200)
+            self.register("patron@b.dz")
+            msgs = self.c.get("/api/admin/messages").get_json()["messages"]
+            self.assertEqual((msgs[0]["name"], msgs[0]["email"]), ("Sara", "sara@b.dz"))
+            other = self.app.test_client()
+            self.register("client@b.dz", other)
+            self.assertEqual(other.get("/api/admin/messages").status_code, 403)
+
+    def test_rejects_bad_input_and_robots_and_flood(self):
+        self.assertEqual(self.post("/api/contact", dict(self.BODY, email="nope")).status_code, 400)
+        self.assertEqual(self.post("/api/contact", dict(self.BODY, website="x")).status_code, 200)  # robot : ignoré
+        codes = [self.post("/api/contact", self.BODY).status_code for _ in range(6)]
+        self.assertEqual(codes[-1], 429)
+
+
 if __name__ == "__main__":
     unittest.main()
 
