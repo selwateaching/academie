@@ -1328,6 +1328,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
       <button class="btn bo bsm" id="trombinoToggleBtn" onclick="toggleTrombino()">🖼 Trombinoscope</button>
       <button class="btn bo bsm" id="trombinoPrintBtn" style="display:none" onclick="printCleanPage('Trombinoscope', document.getElementById('trombinoBox').innerHTML)">🖨 Imprimer</button>
       <button class="btn bo bsm" onclick="OM('mGroupes')">👥 Groupes</button>
+      <button class="btn bo bsm" id="pyramideAgesBtn" onclick="printPyramideAges()">📊 Pyramide des âges</button>
       <button class="btn bt" onclick="OM('mEleve')">+ Ajouter</button>
     </div>
   </div>
@@ -2160,7 +2161,14 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
         <div class="fg"><label class="fl">N° table</label><input type="number" class="fi" id="eTb" placeholder="1"></div>
         <div class="fg"><label class="fl">Date naiss.</label><input type="date" class="fi" id="eDb"></div>
       </div>
-      <div class="fg2">
+      <div class="fg3">
+        <div class="fg"><label class="fl">Sexe</label>
+          <select class="fs" id="eSexe">
+            <option value="">—</option>
+            <option value="M">Garçon</option>
+            <option value="F">Fille</option>
+          </select>
+        </div>
         <div class="fg"><label class="fl">Wilaya</label>
           <select class="fs" id="eWil">
             <option>Alger</option><option>Oran</option><option>Constantine</option><option>Annaba</option>
@@ -4089,6 +4097,8 @@ function switchLang() {
     var ajBtn = pgEl.querySelector('.btn.bt:last-child'); if (ajBtn) ajBtn.textContent = isAR ? '+ إضافة' : '+ Ajouter';
     var trombToggle = document.getElementById('trombinoToggleBtn');
     if (trombToggle) trombToggle.textContent = (typeof TROMBINO_MODE!=='undefined' && TROMBINO_MODE) ? (isAR?'📋 القائمة':'📋 Liste') : (isAR?'🖼 دفتر الصور':'🖼 Trombinoscope');
+    var pyramideBtn = document.getElementById('pyramideAgesBtn');
+    if (pyramideBtn) pyramideBtn.textContent = isAR ? '📊 هرم الأعمار' : '📊 Pyramide des âges';
     var trombPrint = document.getElementById('trombinoPrintBtn'); if (trombPrint) trombPrint.textContent = isAR ? '🖨 طباعة' : '🖨 Imprimer';
   }
   if (typeof rTrombino === 'function' && typeof TROMBINO_MODE!=='undefined' && TROMBINO_MODE) rTrombino();
@@ -4704,7 +4714,7 @@ function switchLang() {
   var mElTDef = document.getElementById('mElT');
   if (mElTDef && mElTDef.textContent.match(/^(Fiche élève|بطاقة التلميذ)$/)) mElTDef.textContent = isAR ? 'بطاقة التلميذ' : 'Fiche élève';
   var mElLbls = document.querySelectorAll('#mEleve .fl');
-  var mElLblPairs = [['Prénom','الاسم'],['Nom','اللقب'],['Classe','القسم'],['N° table','رقم الطاولة'],['Date naiss.','تاريخ الميلاد'],['Wilaya','الولاية'],['Commune','البلدية'],['Nom complet','الاسم الكامل'],['Lien','الصلة'],['Email','البريد الإلكتروني'],['Téléphone','الهاتف'],['Nom complet','الاسم الكامل'],['Lien','الصلة'],['Email','البريد الإلكتروني'],['Téléphone','الهاتف'],['Observations (PAP, PAI, santé, besoins spéciaux...)','ملاحظات (PAP، PAI، صحة، احتياجات خاصة...)']];
+  var mElLblPairs = [['Prénom','الاسم'],['Nom','اللقب'],['Classe','القسم'],['N° table','رقم الطاولة'],['Date naiss.','تاريخ الميلاد'],['Sexe','الجنس'],['Wilaya','الولاية'],['Commune','البلدية'],['Nom complet','الاسم الكامل'],['Lien','الصلة'],['Email','البريد الإلكتروني'],['Téléphone','الهاتف'],['Nom complet','الاسم الكامل'],['Lien','الصلة'],['Email','البريد الإلكتروني'],['Téléphone','الهاتف'],['Observations (PAP, PAI, santé, besoins spéciaux...)','ملاحظات (PAP، PAI، صحة، احتياجات خاصة...)']];
   mElLbls.forEach(function(lb,i){ if(mElLblPairs[i]) lb.textContent = isAR?mElLblPairs[i][1]:mElLblPairs[i][0]; });
   document.querySelectorAll('#mEleve .fi').forEach(function(inp) {
     var ph = inp.placeholder;
@@ -4728,6 +4738,11 @@ function switchLang() {
       sel.options[2].text=isAR?'الوصي القانوني':'Tuteur légal'; sel.options[3].text=isAR?'الجد/الجدة':'Grand-parent'; sel.options[4].text=isAR?'آخر':'Autre';
     }
   });
+  var eSexeSel = document.getElementById('eSexe');
+  if (eSexeSel && eSexeSel.options.length >= 3) {
+    eSexeSel.options[1].text = isAR?'ذكر':'Garçon';
+    eSexeSel.options[2].text = isAR?'أنثى':'Fille';
+  }
   var mElBtns = document.querySelectorAll('#mEleve .mf button');
   if (mElBtns[0]) mElBtns[0].textContent = isAR?'إلغاء':'Annuler';
   if (mElBtns[1]) mElBtns[1].textContent = isAR?'حفظ':'Enregistrer';
@@ -4939,7 +4954,7 @@ function OM(id) {
        vierge ici ; fillEl(id), appelé juste après pour une vraie modification, re-remplit tout
        correctement dans la foulée. */
     D._eId = null;
-    ['ePr','eNo','eTb','eDb','eVi','r1N','r1M','r1T','r2N','r2M','r2T','eOb'].forEach(function(fid) {
+    ['ePr','eNo','eTb','eDb','eSexe','eVi','r1N','r1M','r1T','r2N','r2M','r2T','eOb'].forEach(function(fid) {
       var el = document.getElementById(fid); if (el) el.value = '';
     });
     var r1LEl = document.getElementById('r1L'); if (r1LEl) r1LEl.selectedIndex = 0;
@@ -6706,6 +6721,7 @@ function fillEl(id) {
   document.getElementById('ePr').value = e.pr; document.getElementById('eNo').value = e.no;
   document.getElementById('eCls').value = e.cid;
   document.getElementById('eTb').value = e.tb; document.getElementById('eDb').value = e.db;
+  document.getElementById('eSexe').value = e.sx||'';
   document.getElementById('eVi').value = e.vi||'';
   document.getElementById('r1N').value = e.r1n||''; document.getElementById('r1M').value = e.r1m||''; document.getElementById('r1T').value = e.r1t||'';
   document.getElementById('r2N').value = e.r2n||''; document.getElementById('r2M').value = e.r2m||''; document.getElementById('r2T').value = e.r2t||'';
@@ -6725,13 +6741,13 @@ function saveEl() {
   if (D._eId) {
     var idx = D.el.findIndex(function(x) { return x.id===D._eId; });
     if (idx>=0) {
-      D.el[idx] = Object.assign(D.el[idx],{pr:pr,no:no,cid:cid,tb:parseInt(document.getElementById('eTb').value)||1,db:document.getElementById('eDb').value,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1l:document.getElementById('r1L').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2l:document.getElementById('r2L').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value});
+      D.el[idx] = Object.assign(D.el[idx],{pr:pr,no:no,cid:cid,tb:parseInt(document.getElementById('eTb').value)||1,db:document.getElementById('eDb').value,sx:document.getElementById('eSexe').value,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1l:document.getElementById('r1L').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2l:document.getElementById('r2L').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value});
       if (_pendingElPhoto !== undefined) D.el[idx].photo = _pendingElPhoto;
     }
     D._eId = null;
   } else {
     var id = D.el.length ? Math.max.apply(null,D.el.map(function(x){return x.id;}))+1 : 1;
-    D.el.push({id:id,cid:cid,pr:pr,no:no,db:document.getElementById('eDb').value,tb:parseInt(document.getElementById('eTb').value)||1,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1l:document.getElementById('r1L').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2l:document.getElementById('r2L').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value,c:cs[id%cs.length],photo:_pendingElPhoto||null});
+    D.el.push({id:id,cid:cid,pr:pr,no:no,db:document.getElementById('eDb').value,tb:parseInt(document.getElementById('eTb').value)||1,sx:document.getElementById('eSexe').value,vi:document.getElementById('eVi').value,r1n:document.getElementById('r1N').value,r1l:document.getElementById('r1L').value,r1m:document.getElementById('r1M').value,r1t:document.getElementById('r1T').value,r2n:document.getElementById('r2N').value,r2l:document.getElementById('r2L').value,r2m:document.getElementById('r2M').value,r2t:document.getElementById('r2T').value,ob:document.getElementById('eOb').value,c:cs[id%cs.length],photo:_pendingElPhoto||null});
   }
   sv(); CM('mEleve'); rEl();
   N(pr+' '+no+' enregistré !','ok');
@@ -8717,6 +8733,77 @@ function saveAp() {
   D.apDetails[k]=JSON.parse(JSON.stringify(apJust));
   sv();
   N(CURRENT_LANG==='ar'?'تم التحقق من الغياب وحفظه !':'Appel validé et sauvegardé !','ok');
+}
+/* ===== PYRAMIDE DES ÂGES ===== */
+function ageAujourdhui(dateNaissStr, refDate) {
+  if (!dateNaissStr) return null;
+  var d = new Date(dateNaissStr);
+  if (isNaN(d.getTime())) return null;
+  var age = refDate.getFullYear() - d.getFullYear();
+  var m = refDate.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && refDate.getDate() < d.getDate())) age--;
+  return age;
+}
+function printPyramideAges() {
+  var isARpy = CURRENT_LANG === 'ar';
+  var eleves = D.el || [];
+  if (!eleves.length) { N(isARpy?'لا يوجد أي تلميذ مسجل بعد.':'Aucun élève enregistré pour l\'instant.', 'err'); return; }
+  var ref = new Date();
+  var byAge = {}, minAge = Infinity, maxAge = -Infinity, nbSansSexe = 0, nbSansDate = 0;
+  eleves.forEach(function(e) {
+    var age = ageAujourdhui(e.db, ref);
+    if (age === null || age < 0 || age > 90) { nbSansDate++; return; }
+    if (!byAge[age]) byAge[age] = {M:0, F:0};
+    var sx = (e.sx === 'M' || e.sx === 'F') ? e.sx : null;
+    if (sx) { byAge[age][sx]++; } else { nbSansSexe++; }
+    if (age < minAge) minAge = age;
+    if (age > maxAge) maxAge = age;
+  });
+  if (minAge === Infinity) { N(isARpy?'لا توجد تواريخ ميلاد صالحة لإنشاء الرسم.':'Aucune date de naissance valide pour construire le graphique.', 'err'); return; }
+  var maxCount = 1;
+  Object.keys(byAge).forEach(function(a) { maxCount = Math.max(maxCount, byAge[a].M, byAge[a].F); });
+  var BAR_MAX = 170;
+  var rowsHtml = '';
+  for (var a = maxAge; a >= minAge; a--) {
+    var row = byAge[a] || {M:0,F:0};
+    var wM = Math.round((row.M / maxCount) * BAR_MAX), wF = Math.round((row.F / maxCount) * BAR_MAX);
+    rowsHtml += '<div class="pyr-row">' +
+      '<div class="pyr-left">'+(row.M?'<span class="pyr-count">'+row.M+'</span>':'')+'<span class="pyr-bar pyr-bar-m" style="width:'+wM+'px"></span></div>' +
+      '<div class="pyr-age">'+a+' '+(isARpy?'سنة':'ans')+'</div>' +
+      '<div class="pyr-right"><span class="pyr-bar pyr-bar-f" style="width:'+wF+'px"></span>'+(row.F?'<span class="pyr-count">'+row.F+'</span>':'')+'</div>' +
+      '</div>';
+  }
+  var totalM = eleves.filter(function(e){return e.sx==='M';}).length;
+  var totalF = eleves.filter(function(e){return e.sx==='F';}).length;
+  var manSvg = '<svg viewBox="0 0 40 60" width="26" height="39"><circle cx="20" cy="9" r="8" fill="#3B82F6"/><path d="M9 58 L9 28 Q9 20 20 20 Q31 20 31 28 L31 58 Z" fill="#3B82F6"/></svg>';
+  var womanSvg = '<svg viewBox="0 0 40 60" width="26" height="39"><circle cx="20" cy="9" r="8" fill="#E85C8A"/><path d="M20 19 L7 58 L16 58 L20 42 L24 58 L33 58 Z" fill="#E85C8A"/></svg>';
+  var header = '<div class="pp-banner"><div class="pp-banner-top">📊 '+(isARpy?'هرم الأعمار':'Pyramide des âges')+'</div>' +
+    '<div class="pp-banner-theme">'+(isARpy?'تلاميذ Tadriss':'Élèves Tadriss')+'</div></div>' +
+    '<div class="pp-meta"><div><b>'+(isARpy?'التاريخ':'Date')+' :</b> '+ref.toLocaleDateString(isARpy?'ar-DZ':'fr-FR')+'</div>' +
+    '<div><b>'+(isARpy?'المجموع':'Total')+' :</b> '+eleves.length+' '+(isARpy?'تلميذ(ة)':'élèves')+'</div></div>';
+  var legend = '<div class="pyr-legend"><div class="pyr-legend-item">'+manSvg+'<b>'+(isARpy?'ذكور':'Garçons')+' : '+totalM+'</b></div>' +
+    '<div class="pyr-legend-item">'+womanSvg+'<b>'+(isARpy?'إناث':'Filles')+' : '+totalF+'</b></div></div>';
+  var warn = '';
+  if (nbSansSexe > 0 || nbSansDate > 0) {
+    warn = '<div class="tc-box tc-warn"><div class="tc-box-title">⚠️ '+(isARpy?'بيانات ناقصة':'Données incomplètes')+'</div>' +
+      (nbSansSexe>0 ? '<p>'+nbSansSexe+' '+(isARpy?'تلميذ(ة) بدون تحديد الجنس في بطاقتهم (غير محتسب في الرسم). عدّل بطاقة التلميذ لإضافة الجنس.':'élève(s) sans sexe renseigné dans leur fiche (non comptabilisé dans le graphique). Modifie la fiche élève pour l\'ajouter.')+'</p>' : '') +
+      (nbSansDate>0 ? '<p>'+nbSansDate+' '+(isARpy?'تلميذ(ة) بدون تاريخ ميلاد صالح.':'élève(s) sans date de naissance valide.')+'</p>' : '') +
+      '</div>';
+  }
+  var chartCss = '<style>' +
+    '.pyr-legend{display:flex;gap:24px;justify-content:center;margin:10px 0 18px;}' +
+    '.pyr-legend-item{display:flex;align-items:center;gap:8px;font-size:13px;}' +
+    '.pyr-row{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:0;margin:2px 0;page-break-inside:avoid;}' +
+    '.pyr-left{display:flex;justify-content:flex-end;align-items:center;gap:6px;}' +
+    '.pyr-right{display:flex;justify-content:flex-start;align-items:center;gap:6px;}' +
+    '.pyr-age{text-align:center;font-size:11px;font-weight:700;color:var(--ink2);}' +
+    '.pyr-bar{height:13px;border-radius:3px;display:inline-block;}' +
+    '.pyr-bar-m{background:#3B82F6;}' +
+    '.pyr-bar-f{background:#E85C8A;}' +
+    '.pyr-count{font-size:10px;color:var(--ink3);min-width:16px;text-align:center;}' +
+    '</style>';
+  var content = chartCss + header + legend + '<div class="pyr-chart">' + rowsHtml + '</div>' + warn;
+  printCleanPage(isARpy?'هرم الأعمار':'Pyramide des âges', content);
 }
 function printAppel() {
   var now = new Date();
