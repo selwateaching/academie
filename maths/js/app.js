@@ -485,7 +485,7 @@
       <form class="form" id="cForm"><label>${T('Ton nom')}<input id="cName" maxlength="80" required autocomplete="name"></label>
         <label>${T('Ton adresse e-mail')}<input id="cMail" type="email" dir="ltr" maxlength="254" required autocomplete="email" value="${auth.user ? esc(auth.user.email) : ''}"></label>
         <label>${T('Ton message')}<textarea id="cMsg" rows="6" maxlength="3000" required></textarea></label>
-        <input id="cWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+        <input id="cWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
         <div class="row"><button class="btn big" id="cGo" type="submit">${T('Envoyer')}</button></div><p class="errtxt" id="cErr" aria-live="polite"></p></form>
       <p class="hint">${T('Ou écris directement à')} <a href="mailto:${CONTACT_MAIL}" dir="ltr">${CONTACT_MAIL}</a></p></div></div>`, 'compte');
     $('#cForm').onsubmit = async (e) => {
