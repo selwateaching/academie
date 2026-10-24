@@ -74,6 +74,12 @@ pw_requests = Table(  # demandes « mot de passe oublié » : l'administrateur d
     Column("email", String(254), nullable=False),
     Column("created_at", DateTime, nullable=False),
 )
+chat_usage = Table(  # nombre de questions posées au tuteur IA, par compte et par jour (limite quotidienne = coût maîtrisé)
+    "chat_usage", metadata,
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("day", String(10), primary_key=True),
+    Column("n", Integer, nullable=False, default=0),
+)
 DEMO_MAX = 3
 COURSE_MAX = 3  # cours animés gratuits au choix (stockés dans demo_picks sous la forme « c:<id> »)
 payments = Table(

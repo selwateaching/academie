@@ -4,6 +4,11 @@
  * français (voir tests/check_ar.js). */
 (function (root) {
   root.AR_UI = {
+    /* tuteur IA */
+    'Je n’ai pas compris': 'لم أفهم', 'Pose ta question au tuteur : il t’explique cette leçon autrement.': 'اطرح سؤالك على المعلّم الذكي: سيشرح لك هذا الدرس بطريقة أخرى.',
+    'Écris ta question…': 'اكتب سؤالك…', 'Ta question': 'سؤالك', 'Envoyer': 'إرسال', 'Questions restantes aujourd’hui : {n}': 'الأسئلة المتبقية اليوم: {n}',
+    'Question invalide.': 'سؤال غير صالح.', 'Le tuteur est réservé aux abonnés.': 'المعلّم الذكي مخصّص للمشتركين.', 'Le tuteur n\'est pas encore activé sur ce site.': 'المعلّم الذكي غير مفعّل بعد في هذا الموقع.',
+    'Le tuteur ne répond pas pour le moment. Réessaie dans un instant.': 'المعلّم الذكي لا يردّ حاليًا. أعد المحاولة بعد قليل.', 'Doucement, une question à la fois.': 'على مهلك، سؤال واحد في كل مرة.',
     /* en-tête et pied de page */
     'Tadriss Sciences': 'تدريس العلوم',
     'Menu': 'القائمة', 'Navigation principale': 'التنقّل الرئيسي',

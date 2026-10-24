@@ -305,6 +305,49 @@ class StaticTests(Base):
         self.assertEqual(self.c.get("/js/../server.py").status_code, 404)
 
 
+class TutorTests(Base):
+    BODY = {"course": "6e-fractions", "lang": "ar", "lesson": "Les fractions : une fraction partage un tout en parts égales.",
+            "messages": [{"role": "user", "content": "Je ne comprends pas"}]}
+
+    def fake(self, text="Voici une explication."):
+        resp = mock.Mock()
+        resp.json.return_value = {"content": [{"type": "text", "text": text}]}
+        return mock.patch.object(server.requests, "post", return_value=resp)
+
+    def test_needs_login_key_and_subscription(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k"}):
+            self.assertEqual(self.post("/api/chat", self.BODY).status_code, 401)
+            self.register()
+            self.assertEqual(self.post("/api/chat", self.BODY).status_code, 403)  # pas abonné
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": ""}):
+            self.assertEqual(self.post("/api/chat", self.BODY).status_code, 503)
+
+    def test_answers_and_daily_limit(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k", "ABONNEMENTS_ACTIFS": "0", "CHAT_DAILY_LIMIT": "2"}):
+            self.register()
+            with self.fake() as p:
+                r = self.post("/api/chat", self.BODY)
+                self.assertEqual((r.status_code, r.get_json()["reply"], r.get_json()["left"]), (200, "Voici une explication.", 1))
+                self.assertIn("arabe", p.call_args.kwargs["json"]["system"])
+                self.assertEqual(self.post("/api/chat", self.BODY).status_code, 200)
+                self.assertEqual(self.post("/api/chat", self.BODY).status_code, 429)
+                self.assertEqual(p.call_count, 2)
+
+    def test_subscriber_of_the_level_is_allowed(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k"}):
+            self.register()
+            with self.app.engine.begin() as conn:
+                db.grant(conn, 1, "6e", 30)
+            with self.fake():
+                self.assertEqual(self.post("/api/chat", self.BODY).status_code, 200)
+
+    def test_rejects_bad_input(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "k", "ABONNEMENTS_ACTIFS": "0"}):
+            self.register()
+            bad = dict(self.BODY, messages=[{"role": "assistant", "content": "x"}])
+            self.assertEqual(self.post("/api/chat", bad).status_code, 400)
+
+
 if __name__ == "__main__":
     unittest.main()
 

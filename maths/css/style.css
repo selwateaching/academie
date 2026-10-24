@@ -339,3 +339,10 @@ main{flex:1;outline:none}
 .sctl{flex-wrap:nowrap}.sctl .btn.big{flex:1 1 auto;min-width:0;padding:12px 12px;font-size:1rem}.sctl .btn.ghost{flex:none}
 .ccard>.pick,.ccard>.soon-tag,.ccard>.lock{flex:none;margin-inline-start:auto}
 .ccard>.pick+.lock{margin-inline-start:8px}
+
+.tutor .tlog{display:flex;flex-direction:column;gap:8px;margin:10px 0;max-height:360px;overflow-y:auto}
+.tmsg{padding:10px 14px;border-radius:14px;max-width:90%;white-space:pre-wrap;line-height:1.5}
+.tmsg.user{align-self:flex-end;background:var(--brand);color:#fff}
+.tmsg.bot{align-self:flex-start;background:#ecebfb}
+.trow{display:flex;gap:8px}.trow input{flex:1;min-width:0;border:2px solid #d9d7f3;border-radius:12px;padding:10px 12px;font:inherit}
+.tutor .hint{margin:4px 0}
