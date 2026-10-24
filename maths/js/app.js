@@ -642,6 +642,10 @@
       ${steps}
       <section class="cstep recap"><div class="chd"><span class="n">★</span><h3>${T('À retenir')}</h3></div><div class="cbd"><ul>${c.recap.map((r) => `<li>${r}</li>`).join('')}</ul></div></section>
       <section class="panel"><h2>${T('Petit quiz')}</h2>${quiz}</section>
+      ${auth.config.chat && auth.user && !auth.offline ? `<section class="panel tutor" id="tutor"><h2>🤖 ${T('Je n’ai pas compris')}</h2><p class="hint">${T('Pose ta question au tuteur : il t’explique cette leçon autrement.')}</p>
+        <div class="tlog" id="tLog" aria-live="polite"></div>
+        <form class="trow" id="tForm"><input id="tIn" maxlength="500" autocomplete="off" placeholder="${T('Écris ta question…')}" aria-label="${T('Ta question')}"><button class="btn" id="tGo">${T('Envoyer')}</button></form>
+        <p class="hint" id="tErr"></p></section>` : ''}
       <div class="row cnav">${prev ? `<a class="btn ghost" href="#/cours/${prev.id}">‹ ${prev.title}</a>` : '<span></span>'}${nextC ? `<a class="btn" href="#/cours/${nextC.id}">${nextC.title} ›</a>` : `<a class="btn" href="#/cours">${T('Tous les cours')}</a>`}</div></div>`, 'maths');
     const parts = () => [{ text: `${c.title}. ${plain(c.intro)}`, node: null }, ...c.steps.map((s, i) => ({ text: `${lang === 'ar' ? 'الخطوة' : 'Étape'} ${i + 1}. ${plain(s.h)}. ${plain(s.p)}`, node: document.querySelector(`.cstep[data-i="${i}"]`) })),
       { text: `${T('À retenir')}. ${c.recap.map(plain).join('. ')}`, node: document.querySelector('.cstep.recap') }];
@@ -673,6 +677,23 @@
     dots.onclick = (e) => { const d = e.target.closest('[data-d]'); if (d) goto(Number(d.dataset.d)); };
     draw(0);
     document.querySelectorAll('[data-say]').forEach((b) => b.addEventListener('click', () => { const p = parts()[Number(b.dataset.say) + 1]; playParts([p]); }));
+    const tForm = $('#tForm');
+    if (tForm) { // tuteur IA : la leçon est envoyée avec la question, le serveur vérifie l'abonnement et la limite du jour
+      const lesson = [c.title, plain(c.intro), ...c.steps.map((x) => `${plain(x.h)} : ${plain(x.p)}`), c.recap.map(plain).join(' ; ')].join('\n');
+      const log = $('#tLog'), inp = $('#tIn'), go = $('#tGo'), er = $('#tErr'), hist = [];
+      const bubble = (role, text) => { const d = document.createElement('div'); d.className = 'tmsg ' + role; d.textContent = text; log.appendChild(d); d.scrollIntoView({ block: 'nearest' }); return d; };
+      tForm.onsubmit = async (e) => {
+        e.preventDefault(); const q = inp.value.trim(); if (!q) return;
+        inp.value = ''; er.textContent = ''; go.disabled = true; hist.push({ role: 'user', content: q }); bubble('user', q);
+        const wait = bubble('bot', '…');
+        try {
+          const r = await api('/api/chat', 'POST', { course: raw.id, lang, lesson, messages: hist });
+          hist.push({ role: 'assistant', content: r.reply }); wait.textContent = r.reply;
+          if (r.left !== null && r.left <= 3) er.textContent = T('Questions restantes aujourd’hui : {n}', { n: r.left });
+        } catch (x) { hist.pop(); wait.remove(); er.textContent = x.message; }
+        go.disabled = false; inp.focus();
+      };
+    }
     document.querySelectorAll('.cq').forEach((box) => box.querySelectorAll('[data-a]').forEach((b) => b.addEventListener('click', () => {
       const q = c.quiz[Number(box.dataset.q)], ok = Number(b.dataset.a) === q.a;
       box.querySelectorAll('[data-a]').forEach((x) => { x.disabled = true; if (Number(x.dataset.a) === q.a) x.classList.add('good'); });

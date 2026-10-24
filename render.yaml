@@ -34,6 +34,12 @@ services:
           property: connectionString
       - key: BASE_URL
         sync: false
+      # Tuteur IA (bouton « Je n'ai pas compris » sur chaque cours) : clé API Anthropic, à coller dans Render
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Questions par jour et par compte (20 par défaut) ; modèle par défaut : claude-haiku-5-5 (le moins cher)
+      - key: CHAT_DAILY_LIMIT
+        value: "20"
       # E-mail(s) des administrateurs (séparés par des virgules) : accès à /#/admin
       - key: ADMIN_EMAILS
         sync: false
