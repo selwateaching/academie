@@ -4,6 +4,10 @@
  * français (voir tests/check_ar.js). */
 (function (root) {
   root.AR_UI = {
+    /* contact */
+    'Contact — Tadriss Sciences': 'اتصل بنا — تدريس العلوم', 'Nous contacter': 'اتصل بنا', 'Une question, un problème, une idée ? Écris-nous, nous répondons par e-mail.': 'سؤال أو مشكلة أو فكرة؟ اكتب إلينا وسنردّ عليك بالبريد الإلكتروني.',
+    'Ton nom': 'اسمك', 'Ton adresse e-mail': 'بريدك الإلكتروني', 'Ton message': 'رسالتك', 'Ou écris directement à': 'أو اكتب مباشرة إلى', 'Merci ! Ton message est envoyé, nous te répondons bientôt.': 'شكرًا! تم إرسال رسالتك وسنردّ عليك قريبًا.',
+    'Messages de contact': 'رسائل التواصل', 'Écris ton nom, une adresse e-mail valide et ton message.': 'اكتب اسمك وبريدًا إلكترونيًا صالحًا ورسالتك.', 'Trop de messages envoyés. Réessaie plus tard.': 'رسائل كثيرة جدًا. أعد المحاولة لاحقًا.',
     /* tuteur IA */
     'Aide': 'مساعدة', 'Rizmi': 'رزمي',
     'Salut, je suis Rizmi ! Pose-moi ta question, je t’explique autrement.': 'مرحبًا، أنا رزمي! اطرح عليّ سؤالك وسأشرحه لك بطريقة أخرى.',
@@ -50,7 +54,7 @@
     'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices ({n})': 'تمارين ({n})', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss Sciences': 'لماذا تدريس العلوم', 'Tarifs': 'الأسعار',
     'Rechercher une compétence': 'ابحث عن مهارة',
     'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
-    'Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس العلوم · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',
+    'Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a> · <a href="#/contact">Contact</a>': 'تدريس العلوم · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a> · <a href="#/contact">اتصل بنا</a>',
     '{h} h {m} min': '{h} سا و{m} د', '{m} min': '{m} د', '{s} s': '{s} ثا',
 
     /* accueil et niveaux */
