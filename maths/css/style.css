@@ -353,7 +353,21 @@ main{flex:1;outline:none}
 .tbubble .mascot{display:block;animation:bob 2.6s ease-in-out infinite}.tbubble b{font-size:.95rem;margin-top:-2px}
 .tbubble:hover{filter:brightness(1.08)}@media(prefers-reduced-motion:reduce){.tbubble .mascot{animation:none}}
 .tbubble{background:#fff;color:var(--brand2);border:3px solid var(--brand)}
-.form textarea{border:2px solid #d9d7f3;border-radius:12px;padding:10px 12px;font:inherit;resize:vertical}
 html,body{max-width:100%;overflow-x:clip}
 .tbubble{inset-block-end:max(16px,env(safe-area-inset-bottom));inset-inline-end:max(16px,env(safe-area-inset-right))}
 @media(min-width:900px){.tbubble{inset-block-end:28px;inset-inline-end:40px}.tpanel{inset-block-end:28px;inset-inline-end:40px}}
+/* page contact */
+.cbox{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:28px 26px;margin:6px 0 24px}
+.cbox .chd{display:flex;gap:16px;align-items:center;margin-bottom:22px}
+.cbox .cmail{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:16px;background:#ecebfb;font-size:1.7rem}
+.cbox h1{font-size:1.6rem;line-height:1.2;color:var(--brand2);margin-bottom:4px}.cbox .chd p{color:var(--ink2);font-size:.98rem}
+.cform{display:flex;flex-direction:column;gap:18px}.cf{display:flex;flex-direction:column;gap:6px}
+.cf label{font-weight:800;font-size:.95rem;color:var(--brand2)}
+.cf input,.cf textarea{width:100%;font:inherit;color:var(--ink);background:#fbfbff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .15s,box-shadow .15s}
+.cf textarea{min-height:170px;resize:vertical;line-height:1.5}
+.cf input::placeholder,.cf textarea::placeholder{color:var(--ink3)}
+.cf input:focus,.cf textarea:focus{outline:0;background:#fff;border-color:var(--brand);box-shadow:0 0 0 4px #dcdbf7}
+.cgo{width:100%;font-size:1.05rem;padding:14px 20px}.cgo:disabled{opacity:.6}
+.cdirect{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);text-align:center;color:var(--ink2);font-size:.95rem}
+.csent{text-align:center;padding:26px 8px}.csent span{font-size:3rem;display:block;margin-bottom:6px}.csent h2{color:var(--ok);margin-bottom:6px}.csent p{color:var(--ink2);margin-bottom:18px}
+@media(max-width:480px){.cbox{padding:20px 16px}.cbox .chd{gap:12px}.cbox h1{font-size:1.35rem}}

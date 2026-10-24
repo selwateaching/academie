@@ -480,19 +480,24 @@
   const CONTACT_MAIL = 'contact@veloraia.fr';
   function pageContact() {
     document.title = T('Contact — Tadriss Sciences');
-    show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Nous contacter')}</h1></div><div class="panel">
-      <p>${T('Une question, un problème, une idée ? Écris-nous, nous répondons par e-mail.')}</p>
-      <form class="form" id="cForm"><label>${T('Ton nom')}<input id="cName" maxlength="80" required autocomplete="name"></label>
-        <label>${T('Ton adresse e-mail')}<input id="cMail" type="email" dir="ltr" maxlength="254" required autocomplete="email" value="${auth.user ? esc(auth.user.email) : ''}"></label>
-        <label>${T('Ton message')}<textarea id="cMsg" rows="6" maxlength="3000" required></textarea></label>
+    show(`<div class="wrap narrow"><div class="cbox">
+      <div class="chd"><span class="cmail" aria-hidden="true">✉️</span><div><h1>${T('Nous contacter')}</h1><p>${T('Une question, un problème, une idée ? Écris-nous, nous répondons par e-mail.')}</p></div></div>
+      <form class="cform" id="cForm" novalidate>
+        <div class="cf"><label for="cName">${T('Ton nom')}</label><input id="cName" maxlength="80" required autocomplete="name" placeholder="${T('Ton prénom et ton nom')}"></div>
+        <div class="cf"><label for="cMail">${T('Ton adresse e-mail')}</label><input id="cMail" type="email" dir="ltr" maxlength="254" required autocomplete="email" placeholder="nom@exemple.com" value="${auth.user ? esc(auth.user.email) : ''}"></div>
+        <div class="cf"><label for="cMsg">${T('Ton message')}</label><textarea id="cMsg" rows="7" maxlength="3000" required placeholder="${T('Écris ton message ici…')}"></textarea></div>
         <input id="cWeb" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">
-        <div class="row"><button class="btn big" id="cGo" type="submit">${T('Envoyer')}</button></div><p class="errtxt" id="cErr" aria-live="polite"></p></form>
-      <p class="hint">${T('Ou écris directement à')} <a href="mailto:${CONTACT_MAIL}" dir="ltr">${CONTACT_MAIL}</a></p></div></div>`, 'compte');
+        <p class="errtxt" id="cErr" aria-live="polite"></p>
+        <button class="btn big cgo" id="cGo" type="submit">${T('Envoyer le message')}</button>
+      </form>
+      <p class="cdirect">${T('Ou écris directement à')} <a href="mailto:${CONTACT_MAIL}" dir="ltr">${CONTACT_MAIL}</a></p></div></div>`, 'compte');
     $('#cForm').onsubmit = async (e) => {
-      e.preventDefault(); const er = $('#cErr'); er.textContent = ''; $('#cGo').disabled = true;
+      e.preventDefault(); const er = $('#cErr'); er.textContent = '';
+      if (!$('#cName').value.trim() || !$('#cMail').checkValidity() || !$('#cMail').value || $('#cMsg').value.trim().length < 5) { er.textContent = T('Écris ton nom, une adresse e-mail valide et ton message.'); return; }
+      $('#cGo').disabled = true;
       try {
         await api('/api/contact', 'POST', { name: $('#cName').value, email: $('#cMail').value, message: $('#cMsg').value, website: $('#cWeb').value });
-        $('#cForm').innerHTML = `<div class="note ok">${T('Merci ! Ton message est envoyé, nous te répondons bientôt.')}</div>`;
+        $('#cForm').outerHTML = `<div class="csent" role="status"><span aria-hidden="true">✅</span><h2>${T('Message envoyé')}</h2><p>${T('Merci ! Ton message est envoyé, nous te répondons bientôt.')}</p><a class="btn ghost" href="#/">${T('Retour à l’accueil')}</a></div>`;
       } catch (x) { er.textContent = x.message; $('#cGo').disabled = false; }
     };
   }
