@@ -10,8 +10,8 @@ from sqlalchemy import (Column, DateTime, ForeignKey, Integer, MetaData, String,
 
 LEVELS = ["gs", "cp", "ce1", "ce2", "cm1", "cm2", "6e", "5e", "4e", "3e", "2nde", "1re", "term"]
 # Prix mensuels en dinars algériens (DA), par niveau.
-PRICES = {"gs": 200, "cp": 200, "ce1": 200, "ce2": 200, "cm1": 200, "cm2": 200, "6e": 400, "5e": 400, "4e": 400, "3e": 400,  # collège : même prix que la 6e
-          "2nde": 500, "1re": 500, "term": 500,  # lycée : même prix pour les trois niveaux (cours illustrés)
+PRICES = {"gs": 200, "cp": 200, "ce1": 200, "ce2": 200, "cm1": 200, "cm2": 200, "6e": 200, "5e": 200, "4e": 200, "3e": 200,  # un compte, un niveau : 200 DA par mois
+          "2nde": 200, "1re": 200, "term": 200,
           "fam": 600}  # fam = forfait Famille : tous les niveaux, tous les profils du compte
 FAMILY = "fam"
 PLAN_NAMES = {"fam": "Famille", "5e": "5e", "4e": "4e", "3e": "3e", "2nde": "2nde", "1re": "1re", "term": "Terminale"}
