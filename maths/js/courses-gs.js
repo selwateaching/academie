@@ -290,7 +290,7 @@
       steps: [
         S('Dessus et dessous', 'La balle rouge est <b>sur</b> la table : elle est <b>dessus</b>. La balle bleue est <b>sous</b> la table : elle est <b>dessous</b>.', 'gs_dessus'),
         S('Devant et derrière', 'La balle est <b>devant</b> le mur : je la vois bien. Cette autre balle est <b>derrière</b> le mur : elle se cache.', 'gs_devant'),
-        S('À gauche et à droite', 'Le carré bleu est <b>à gauche</b> du bonhomme. Le triangle orange est <b>à droite</b>.', 'gs_gauchedroite'),
+        S('À gauche et à droite', 'Je regarde l’image : le carré bleu est <b>à gauche</b> du bonhomme, de mon côté gauche. Le triangle orange est <b>à droite</b>, de mon côté droit.', 'gs_gauchedroite'),
         S('Le sens de la lecture', 'Pour lire, je vais de la <b>gauche</b> vers la <b>droite</b>. Je commence au 1, puis le 2, le 3 et le 4.', 'gs_sens'),
         S('Jacques a dit', 'Jouons ! « Mets la main <b>sur</b> ta tête. Mets le pied <b>devant</b>. Lève la main <b>droite</b>. » Je réfléchis bien avant de bouger.'),
       ],

@@ -360,9 +360,9 @@
       intro: 'Dans ta classe de 20 élèves, quel est le sport préféré ? Pour le savoir, on compte, puis on dessine.',
       steps: [
         S('Compter : les effectifs', 'On interroge les 20 élèves de la classe. L’<b>effectif</b> d’une réponse est le nombre d’élèves qui l’ont choisie : foot 8, basket 5, natation 4, danse 3. L’<b>effectif total</b> est 8 + 5 + 4 + 3 = 20. On peut aussi les ranger dans un tableau.', 'stat_tableau'),
-        S('Le diagramme en barres', 'Chaque réponse a sa barre. Plus l’effectif est grand, plus la barre est <b>haute</b>. On lit tout de suite que le foot est le sport préféré, et que la danse est le moins choisi.', 'stat_barres'),
+        S('Le diagramme en barres', 'Chaque réponse a sa barre. Plus l’effectif est grand, plus la barre est <b>haute</b>. On lit tout de suite que le foot est le sport préféré, et que la danse est le sport le moins choisi.', 'stat_barres'),
         S('Le diagramme circulaire', `Le disque entier représente les 20 élèves. Chaque part est proportionnelle à l’effectif. Le foot occupe ${F(8, 20)} du disque, soit 40 %. Pratique pour comparer des parts : 40 % + 25 % + 20 % + 15 % = 100 %.`, 'stat_circulaire'),
-        S('La courbe', 'Pour suivre une grandeur qui change avec le temps, comme la température, on relie les points par une <b>courbe</b>. Ici, la température monte de 13 °C le mercredi à 17 °C le jeudi : c’est le plus grand écart de la semaine.', 'stat_courbe'),
+        S('La courbe', 'Pour suivre une grandeur qui change avec le temps, comme la température, on relie les points par une <b>courbe</b>. Ici, la température monte de 13 °C le mercredi à 17 °C le jeudi : c’est la plus forte hausse de la semaine.', 'stat_courbe'),
         S('Calculer des pourcentages', `Pour passer d’un effectif à un pourcentage, on divise par l’effectif total : ${F(5, 20)} = 0,25 = 25 %. Le basket a donc été choisi par 25 % de la classe. Attention : il faut toujours préciser le total pour interpréter un graphique.`),
       ],
       recap: ['Effectif : nombre d’éléments de chaque réponse.', 'Barres : hauteur proportionnelle à l’effectif.', 'Disque : chaque part est proportionnelle à l’effectif.', 'Pourcentage = effectif ÷ effectif total.'],
@@ -451,13 +451,13 @@
         S('Quatre saisons', 'Les saisons ne viennent pas de la distance au Soleil, mais de l’inclinaison de l’axe. Vers le 21 juin, c’est le jour le plus long ; vers le 21 décembre, le plus court. Vers le 21 mars et le 22 septembre, le jour et la nuit durent environ 12 heures chacun.'),
       ],
       recap: ['La Terre tourne sur elle-même en 24 heures : jour et nuit.', 'Le Soleil se lève à l’est et se couche à l’ouest.', 'La Terre fait le tour du Soleil en environ 365 jours.', 'Les saisons viennent de l’inclinaison de l’axe de la Terre.'],
-      quiz: [Q('La Terre fait un tour sur elle-même en :', ['24 heures', '1 an', '1 mois'], 0), Q('Les saisons existent parce que l’axe de la Terre est :', ['droit', 'incliné', 'absent'], 1), Q('En été dans l’hémisphère Nord, les jours sont :', ['plus courts', 'plus longs'], 1)] },
+      quiz: [Q('La Terre fait un tour sur elle-même en :', ['24 heures', '1 an', '1 mois'], 0), Q('Les saisons existent parce que l’axe de la Terre est :', ['droit', 'incliné', 'absent'], 1), Q('Dans l’hémisphère Nord, les jours d’été sont, par rapport aux jours d’hiver :', ['plus courts', 'plus longs'], 1)] },
 
     { id: 'p6-signaux', subj: 'physique', level: '6e', icon: '📡', title: 'Transmettre une information',
       intro: 'Un feu rouge, une sonnerie, un message sur un téléphone : tous transmettent une information grâce à un signal.',
       steps: [
         S('Émetteur, signal, récepteur', 'Pour transmettre une information, il faut un <b>émetteur</b> qui produit un <b>signal</b>, et un <b>récepteur</b> qui le reçoit. Une lampe (émetteur) envoie de la lumière (signal) qui entre dans l’œil (récepteur).', 'sig_chaine'),
-        S('Signaux lumineux et sonores', 'Un signal peut être de la lumière (feu tricolore, phare) ou un son (sirène, cloche). La lumière va à 300 000 km/s, le son à environ 340 m/s dans l’air. C’est pourquoi on voit l’éclair avant d’entendre le tonnerre : 3 secondes d’écart, c’est environ 1 km.'),
+        S('Signaux lumineux et sonores', 'Un signal peut être de la lumière (feu tricolore, phare) ou un son (sirène, cloche). La lumière va à 300 000 km/s, le son à environ 340 m/s dans l’air. C’est pourquoi on voit l’éclair avant d’entendre le tonnerre. Si le tonnerre arrive 3 secondes après l’éclair, l’orage est à environ 1 km.'),
         S('Un code pour se comprendre', 'Pour que l’information soit comprise, l’émetteur et le récepteur doivent utiliser le même <b>code</b>. Le code Morse utilise des signaux courts (points) et longs (traits). Trois points, trois traits, trois points : SOS, un appel au secours.', 'sig_morse'),
         S('Le langage des ordinateurs', 'Un ordinateur n’utilise que deux signes : <b>0</b> et <b>1</b>. Chaque lettre est codée par une suite de 8 chiffres. La lettre A s’écrit 01000001. Les photos, les sons et les vidéos sont aussi codés avec des 0 et des 1.', 'sig_binaire'),
         S('Voyager très loin', 'Les messages d’Internet voyagent dans des câbles, comme la <b>fibre optique</b> où circule de la lumière, ou par ondes radio, comme le Wi-Fi et le téléphone. Ces signaux vont très vite et traversent le monde en une fraction de seconde.'),

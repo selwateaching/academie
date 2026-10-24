@@ -307,7 +307,7 @@
       intro: 'Dans une boîte, il y a 6 billes. Combien de billes dans 24 boîtes ? Plutôt que d’additionner 24 fois, on multiplie !',
       steps: [
         S('Une addition répétée', '3 rangées de 4 billes : 4 + 4 + 4 = 12, donc 3 × 4 = 12. Multiplier, c’est additionner plusieurs fois le même nombre. Il faut bien connaître les <b>tables de multiplication</b>.', 'cm1_billes'),
-        S('× 10, × 100, × 1 000', 'Pour multiplier par <b>10</b>, chaque chiffre avance d’un rang : on écrit un zéro à droite. 35 × 10 = 350. Par <b>100</b>, deux zéros : 35 × 100 = 3 500. Par <b>1 000</b>, trois zéros : 35 × 1 000 = 35 000.', 'cm1_x10'),
+        S('× 10, × 100, × 1 000', 'Pour multiplier un nombre entier par <b>10</b>, chaque chiffre avance d’un rang : on écrit un zéro à droite. 35 × 10 = 350. Par <b>100</b>, deux zéros : 35 × 100 = 3 500. Par <b>1 000</b>, trois zéros : 35 × 1 000 = 35 000.', 'cm1_x10'),
         S('Par un nombre à un chiffre', 'On pose 275 × 4 et on commence par les unités. 4 × 5 = 20 : j’écris 0 et je retiens 2. 4 × 7 = 28, plus 2 retenu = 30 : j’écris 0 et je retiens 3. 4 × 2 = 8, plus 3 = 11. Résultat : 1 100.', 'cm1_posee1'),
         S('Par un nombre à deux chiffres', 'Pour 36 × 24, on fait deux multiplications. D’abord 36 × 4 = 144. Ensuite 36 × 20 : on écrit un <b>0</b> sous les unités, puis 36 × 2 = 72, ce qui donne 720. On additionne : 144 + 720 = 864.', 'cm1_posee2'),
         S('Vérifier avec un ordre de grandeur', 'Pour voir si le résultat est possible, on arrondit : 36 × 24 est proche de 40 × 20 = 800. Le résultat 864 est proche de 800 : c’est cohérent !'),
@@ -366,7 +366,7 @@
     D({ id: 'cm1-proportionnalite', subj: 'maths', level: 'cm1', icon: '⚖️', title: 'La proportionnalité',
       intro: 'Si un gâteau coûte 2 €, deux gâteaux coûtent 4 €, trois gâteaux 6 €… Le prix augmente régulièrement : c’est de la proportionnalité.',
       steps: [
-        S('Un tableau de proportionnalité', 'Deux grandeurs sont <b>proportionnelles</b> quand, si l’une est multipliée par 2, 3, 4…, l’autre l’est aussi. Dans le tableau, on passe de la ligne du haut à la ligne du bas en multipliant toujours par le même nombre : ici × 2.', 'cm1_tableau'),
+        S('Un tableau de proportionnalité', 'Deux grandeurs sont <b>proportionnelles</b> quand, si l’une est multipliée par 2, 3, 4…, l’autre est multipliée par le même nombre. Dans le tableau, on passe de la ligne du haut à la ligne du bas en multipliant toujours par le même nombre : ici × 2.', 'cm1_tableau'),
         S('Passer d’une colonne à l’autre', 'On peut aussi comparer deux colonnes. Si on multiplie le nombre de crayons par 3 (de 2 à 6), on multiplie aussi le prix par 3 (de 4 à 12).', 'cm1_coef'),
         S('Le retour à l’unité', 'Pour trouver le prix d’un seul objet, on divise. 4 cahiers coûtent 12 €, donc 1 cahier coûte 12 ÷ 4 = 3 €. Puis 7 cahiers coûtent 7 × 3 = 21 €.', 'cm1_unite'),
         S('Doubles, moitiés et sommes', 'On peut aussi utiliser les doubles, les moitiés ou additionner des colonnes. Si 2 gâteaux coûtent 4 € et 3 gâteaux coûtent 6 €, alors 5 gâteaux coûtent 4 + 6 = 10 €. La moitié de 8 € est 4 € : 2 gâteaux coûtent la moitié du prix de 4 gâteaux.'),

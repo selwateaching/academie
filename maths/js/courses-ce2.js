@@ -363,7 +363,7 @@
       steps: [
         S('Des paquets de 10', 'Avec <b>10 unités</b>, on fait <b>1 dizaine</b>. Avec 10 dizaines, on fait <b>1 centaine</b> (100). Avec 10 centaines, on fait <b>1 millier</b> (1 000). Et 10 milliers font <b>10 000</b>.', 'ce2_echanges'),
         S('Le tableau des positions', 'Chaque chiffre a une place. Dans <b>3 452</b>, le 3 est le chiffre des <b>milliers</b>, le 4 celui des <b>centaines</b>, le 5 celui des <b>dizaines</b> et le 2 celui des <b>unités</b>.', 'ce2_posval'),
-        S('Lire et écrire', '3 452 se lit « trois mille quatre cent cinquante-deux ». On écrit 1 000 « mille » (pas « un mille »). Le plus grand nombre à 4 chiffres est 9 999, et <b>9 999 + 1 = 10 000</b> (dix mille).'),
+        S('Lire et écrire', '3 452 se lit « trois mille quatre cent cinquante-deux ». On lit 1 000 « mille » (pas « un mille »). Le plus grand nombre à 4 chiffres est 9 999, et <b>9 999 + 1 = 10 000</b> (dix mille).'),
         S('Décomposer', 'On peut découper un nombre selon ses positions : <b>4 527 = 4 000 + 500 + 20 + 7</b>. C’est comme payer avec des billets de 1 000, de 100, de 10 et des pièces de 1.', 'ce2_decomp'),
         S('Comparer', 'On compare les chiffres <b>de gauche à droite</b>. On s’arrête au premier chiffre différent : 3 465 &gt; 3 452 car 6 dizaines &gt; 5 dizaines. Le symbole &lt; veut dire « plus petit que ».', 'ce2_compare'),
         S('Ranger sur une droite', 'Sur la droite graduée de 100 en 100, plus on va vers la droite, plus le nombre est grand. 650 est entre 600 et 700, juste au milieu.', 'ce2_droite10'),
@@ -388,13 +388,13 @@
     { id: 'ce2-division', subj: 'maths', level: 'ce2', icon: '➗', title: 'La division',
       intro: 'À la récréation, 12 billes à partager entre 3 amis : combien chacun en reçoit-il ? C’est une division.',
       steps: [
-        S('Partager en parts égales', 'Je distribue les billes une à une, pour que chacun ait <b>autant</b>. 12 billes pour 3 enfants : chacun en reçoit 4. On écrit <b>12 ÷ 3 = 4</b>.', 'ce2_partage'),
+        S('Partager en parts égales', 'Je distribue les billes une à une, pour que chacun en ait <b>autant</b> que les autres. 12 billes pour 3 enfants : chacun en reçoit 4. On écrit <b>12 ÷ 3 = 4</b>.', 'ce2_partage'),
         S('Faire des groupes', 'Autre question : avec 12 billes, combien de groupes de 4 puis-je faire ? J’en fais 3. On écrit <b>12 ÷ 4 = 3</b>. Le signe ÷ se lit « divisé par ».', 'ce2_groupes'),
         S('La division et la multiplication', 'Diviser, c’est chercher le nombre qui manque dans une multiplication. Comme 3 × 4 = 12, on sait que 12 ÷ 3 = 4 et 12 ÷ 4 = 3. Les tables de multiplication aident à diviser !', 'ce2_famille'),
         S('Quand il reste des objets', 'Avec 14 billes en groupes de 4, je fais 3 groupes et il <b>reste 2</b> billes. On écrit <b>14 ÷ 4 = 3 reste 2</b>. Pour vérifier : 4 × 3 + 2 = 14.', 'ce2_reste'),
         S('Le reste est toujours petit', 'Le <b>reste</b> doit être plus petit que le nombre qui divise. Avec des groupes de 4, le reste ne peut être que 0, 1, 2 ou 3. S’il y avait 4 billes en trop, je pourrais faire un groupe de plus !'),
       ],
-      recap: ['Diviser, c’est partager en parts égales ou faire des groupes.', 'Une division se vérifie avec une multiplication.', 'Le reste est plus petit que le diviseur.'],
+      recap: ['Diviser, c’est partager en parts égales ou faire des groupes.', 'Une division se vérifie avec une multiplication.', 'Le reste est plus petit que le nombre qui divise.'],
       quiz: [Q('20 ÷ 5 = ?', ['15', '4', '25'], 1), Q('17 ÷ 5 = ?', ['3 reste 2', '2 reste 3', '3 reste 5'], 0), Q('Je range 24 œufs par boîtes de 6. Combien de boîtes ?', ['3', '5', '4'], 2)] },
 
     /* ------------------------------------------------------------ 4. TABLES */
@@ -443,7 +443,7 @@
         S('L’axe de symétrie', 'Une figure est <b>symétrique</b> quand une ligne la partage en deux moitiés qui se superposent exactement. Cette ligne s’appelle l’<b>axe de symétrie</b>. Le papillon a un axe vertical.', 'ce2_papillon'),
         S('Le test du pliage', 'Pour vérifier, on <b>plie</b> la feuille sur l’axe. Si les deux côtés se recouvrent parfaitement, l’axe est bon. On peut aussi découper : un cœur en papier se plie en deux.', 'ce2_pliage'),
         S('Le symétrique d’un point', 'Le point A’ est le symétrique de A si A et A’ sont <b>à la même distance de l’axe</b>, de chaque côté, sur une ligne droite qui coupe l’axe à angle droit. Sur un quadrillage, on compte les carreaux.', 'ce2_points'),
-        S('Combien d’axes ?', 'Un <b>carré</b> a 4 axes de symétrie. Un <b>rectangle</b> (qui n’est pas un carré) en a 2. Un triangle avec deux côtés égaux en a 1. Certaines figures n’en ont aucun.', 'ce2_axes'),
+        S('Combien d’axes ?', 'Un <b>carré</b> a 4 axes de symétrie. Un <b>rectangle</b> (qui n’est pas un carré) en a 2. Un triangle qui a seulement deux côtés égaux en a 1. Certaines figures n’en ont aucun.', 'ce2_axes'),
         S('Les lettres', 'Certaines lettres ont un axe de symétrie : A, H, M. D’autres n’en ont pas : F, R. Pour le savoir, imagine un miroir posé au milieu de la lettre.', 'ce2_lettres'),
       ],
       recap: ['L’axe de symétrie partage une figure en deux moitiés identiques.', 'On vérifie par pliage.', 'Un point et son symétrique sont à la même distance de l’axe.', 'Carré : 4 axes. Rectangle : 2 axes.'],

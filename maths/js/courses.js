@@ -439,7 +439,7 @@
         S('Triangles particuliers', '<b>Isocèle</b> : deux côtés égaux, donc deux angles égaux à la base.<br><b>Équilatéral</b> : trois côtés égaux et trois angles de 60°.<br><b>Rectangle</b> : un angle droit (90°).'),
         S('Construire au compas', 'Pour construire un triangle dont on connaît les trois côtés, on trace un côté, puis on place le troisième sommet à l’intersection de deux arcs de cercle.'),
       ],
-      recap: ['Angles : 180° au total.', 'Un côté ≤ somme des deux autres.', 'Équilatéral : 3 angles de 60°.'],
+      recap: ['Angles : 180° au total.', 'Un côté &lt; somme des deux autres.', 'Équilatéral : 3 angles de 60°.'],
       quiz: [Q('Deux angles mesurent 40° et 75°. Le troisième mesure :', ['55°', '65°', '75°'], 1), Q('Peut-on construire un triangle de côtés 2 cm, 3 cm et 6 cm ?', ['Oui', 'Non'], 1)] },
 
     { id: 'm5-parallelogrammes', subj: 'maths', level: '5e', icon: '▱', title: 'Les parallélogrammes',
@@ -538,7 +538,7 @@
         S('Formation d’une ombre', 'Un objet opaque éclairé arrête la lumière. Derrière lui, la zone qui ne reçoit pas de lumière est l’<b>ombre portée</b>. L’ombre a la forme de l’objet.', 'rayon'),
         S('Taille de l’ombre', 'Plus l’objet est proche de la source, plus l’ombre est grande. Le soir, les ombres sont longues car le Soleil est bas.'),
         S('Voir un objet', 'On voit un objet quand la lumière qu’il envoie (ou qu’il diffuse) <b>entre dans notre œil</b>. Dans le noir complet, on ne voit rien.'),
-        S('Les phases de la Lune', 'La Lune ne produit pas de lumière : elle diffuse celle du Soleil. Moitié de sa surface est toujours éclairée, mais depuis la Terre, on n’en voit qu’une partie qui change : ce sont les <b>phases</b>, sur environ 29 jours.'),
+        S('Les phases de la Lune', 'La Lune ne produit pas de lumière : elle diffuse celle du Soleil. La moitié de sa surface est toujours éclairée, mais depuis la Terre, on n’en voit qu’une partie qui change : ce sont les <b>phases</b>, sur environ 29 jours.'),
       ],
       recap: ['Ombre = zone sans lumière derrière un objet opaque.', 'On voit si la lumière entre dans l’œil.', 'La Lune est éclairée par le Soleil.'],
       quiz: [Q('Une ombre se forme derrière un objet :', ['transparent', 'opaque'], 1), Q('La Lune brille parce qu’elle :', ['produit sa lumière', 'diffuse la lumière du Soleil'], 1)] },
@@ -627,7 +627,7 @@
       steps: [
         S('Solvant, soluté, solution', 'Dans l’eau salée, l’eau est le <b>solvant</b> (le liquide qui dissout), le sel est le <b>soluté</b> (ce qui est dissous) et le mélange obtenu est une <b>solution</b>.'),
         S('Le soluté ne disparaît pas', 'Quand on dissout du sucre dans l’eau, il ne disparaît pas : la <b>masse totale se conserve</b>. 200 g d’eau + 10 g de sucre donnent 210 g de solution.'),
-        S('La saturation', 'On ne peut pas dissoudre une quantité illimitée de soluté. Quand il n’y en a plus qu’un dépôt au fond, la solution est <b>saturée</b>.'),
+        S('La saturation', 'On ne peut pas dissoudre une quantité illimitée de soluté. Quand une partie du soluté reste en dépôt au fond sans se dissoudre, la solution est <b>saturée</b>.'),
         S('Les facteurs', 'Remuer et chauffer aident à dissoudre plus vite. Chauffer permet souvent d’en dissoudre davantage.'),
       ],
       recap: ['Solvant + soluté = solution.', 'Masse conservée.', 'Saturée : le soluté ne se dissout plus.'],
@@ -769,7 +769,7 @@
     { id: 'c5-air', subj: 'chimie', level: '5e', icon: '🌬️', title: 'L’air qui nous entoure',
       intro: 'On ne le voit pas, mais l’air est de la matière. Il a une masse et il est un mélange de gaz.',
       steps: [
-        S('L’air est de la matière', 'L’air a une <b>masse</b> : un litre d’air pèse environ 1,3 g. Il occupe un volume, il se comprime dans une seringue fermée et il s’échappe d’un ballon qui se dégonfle.'),
+        S('L’air est de la matière', 'L’air a une <b>masse</b> : un litre d’air a une masse d’environ 1,3 g. Il occupe un volume, il se comprime dans une seringue fermée et il s’échappe d’un ballon qui se dégonfle.'),
         S('Sa composition', 'L’air est un <b>mélange</b> d’environ <b>78 % de diazote</b>, <b>21 % de dioxygène</b>, et d’un peu d’autres gaz, dont la vapeur d’eau et le dioxyde de carbone.', 'air'),
         S('Le dioxygène', 'Le <b>dioxygène</b> est nécessaire à la respiration et à la <b>combustion</b>. Une bougie couverte d’un verre s’éteint quand le dioxygène est consommé.'),
         S('Tester le dioxyde de carbone', 'Le <b>dioxyde de carbone</b> trouble l’<b>eau de chaux</b>. Il se forme lors d’une combustion et de la respiration : en soufflant dans l’eau de chaux avec une paille, elle devient laiteuse.'),
@@ -793,7 +793,7 @@
       steps: [
         S('Eau pure et eau potable', 'L’<b>eau pure</b> ne contient que des molécules d’eau (H₂O). L’<b>eau potable</b> peut être bue sans danger : elle contient des sels minéraux en petite quantité, c’est donc un mélange.', 'goutte'),
         S('Le trajet de l’eau', 'Pour rendre l’eau potable, on la <b>filtre</b>, on la fait décanter, puis on la <b>désinfecte</b> (souvent au chlore) avant de la distribuer.'),
-        S('Reconnaître l’eau', 'Le <b>sulfate de cuivre anhydre</b>, blanc, devient <b>bleu</b> en présence d’eau. L’eau pure bout à 100 °C et gèle à 0 °C. Ce sont des tests sûrs.'),
+        S('Reconnaître l’eau', 'Le <b>sulfate de cuivre anhydre</b>, blanc, devient <b>bleu</b> en présence d’eau. L’eau pure bout à 100 °C et gèle à 0 °C. Le sulfate de cuivre prouve qu’il y a de l’eau, mais pas qu’elle est pure : seules ces deux températures le montrent.'),
         S('Préserver l’eau', 'L’eau douce est une ressource limitée. On la préserve en évitant le gaspillage et en ne polluant pas les rivières.'),
       ],
       recap: ['Eau pure = seulement H₂O.', 'Eau potable = mélange sans danger.', 'Le sulfate de cuivre blanc bleuit au contact de l’eau.'],
@@ -814,7 +814,7 @@
       intro: 'Prendre la moitié d’un tiers de gâteau, c’est multiplier des fractions.',
       steps: [
         S('Le produit', 'Pour multiplier deux fractions, on multiplie les numérateurs entre eux et les dénominateurs entre eux : ' + F(2, 3) + ' × ' + F(4, 5) + ' = ' + F(8, 15) + '.'),
-        S('Simplifier d’abord', 'On peut simplifier avant de multiplier : ' + F(3, 4) + ' × ' + F(8, 9) + ' = ' + F(24, 36) + ' = ' + F(2, 3) + '. On a divisé par 12.'),
+        S('Simplifier le résultat', 'On peut simplifier le résultat : ' + F(3, 4) + ' × ' + F(8, 9) + ' = ' + F(24, 36) + ' = ' + F(2, 3) + '. On a divisé le numérateur et le dénominateur par 12.'),
         S('L’inverse', 'Deux nombres sont <b>inverses</b> si leur produit vaut 1. L’inverse de ' + F(2, 5) + ' est ' + F(5, 2) + '. Le nombre 0 n’a pas d’inverse.'),
         S('La division', 'Diviser par une fraction, c’est <b>multiplier par son inverse</b> : ' + F(3, 4) + ' ÷ ' + F(2, 5) + ' = ' + F(3, 4) + ' × ' + F(5, 2) + ' = ' + F(15, 8) + '.'),
       ],
@@ -824,7 +824,7 @@
     { id: 'm4-puissances', subj: 'maths', level: '4e', icon: '🔢', title: 'Les puissances',
       intro: 'Écrire 2 × 2 × 2 × 2 × 2 devient 2⁵. Les puissances raccourcissent les calculs avec de très grands ou de très petits nombres.',
       steps: [
-        S('Définition', 'Pour un nombre a et un entier positif n, <b>aⁿ = a × a × … × a</b> (n facteurs). Ainsi 2⁵ = 2 × 2 × 2 × 2 × 2 = 32 et 10³ = 1 000. Exposant 0 : a⁰ = 1.', 'puissances'),
+        S('Définition', 'Pour un nombre a et un entier positif n, <b>aⁿ = a × a × … × a</b> (n facteurs). Ainsi 2⁵ = 2 × 2 × 2 × 2 × 2 = 32 et 10³ = 1 000. Exposant 0 : a⁰ = 1 (si a ≠ 0).', 'puissances'),
         S('Les puissances de 10', '10² = 100, 10⁶ = 1 000 000. Pour un exposant négatif : 10⁻² = 0,01 et 10⁻³ = 0,001. L’exposant indique le nombre de zéros, ou de décimales.'),
         S('Produit et quotient', 'Pour un même nombre : <b>aᵐ × aⁿ = aᵐ⁺ⁿ</b> et <b>aᵐ ÷ aⁿ = aᵐ⁻ⁿ</b>. Exemple : 10³ × 10⁴ = 10⁷ et 10⁵ ÷ 10² = 10³.'),
         S('Notation scientifique', 'Un nombre est en <b>notation scientifique</b> s’il s’écrit a × 10ⁿ avec 1 ≤ a &lt; 10. La distance Terre-Soleil, 150 000 000 km, s’écrit 1,5 × 10⁸ km.'),
@@ -852,7 +852,7 @@
         S('La réciproque', 'Si dans un triangle, le carré du plus grand côté est égal à la somme des carrés des deux autres, alors ce triangle est <b>rectangle</b>. Un triangle 6, 8 et 10 : 36 + 64 = 100, il est rectangle.'),
       ],
       recap: ['AC² = AB² + BC², AC étant l’hypoténuse.', 'L’hypoténuse est le plus grand côté.', 'La réciproque permet de prouver un angle droit.'],
-      quiz: [Q('Triangle rectangle de côtés 6 et 8 : l’hypoténuse mesure', ['10', '14', '12'], 0), Q('Un triangle de côtés 5, 12 et 13 est-il rectangle ?', ['Oui', 'Non'], 0)] },
+      quiz: [Q('Dans un triangle rectangle, les côtés de l’angle droit mesurent 6 et 8. L’hypoténuse mesure', ['10', '14', '12'], 0), Q('Un triangle de côtés 5, 12 et 13 est-il rectangle ?', ['Oui', 'Non'], 0)] },
 
     { id: 'm4-cosinus', subj: 'maths', level: '4e', icon: '📐', title: 'Le cosinus d’un angle',
       intro: 'Avec un angle et un côté d’un triangle rectangle, le cosinus donne les autres longueurs.',
@@ -863,7 +863,7 @@
         S('Calculer un angle', 'Avec adjacent 4 cm et hypoténuse 8 cm : cos α = 4 ÷ 8 = 0,5, donc α = 60°. On trouve l’angle avec la touche « cos⁻¹ » de la calculatrice.'),
       ],
       recap: ['cos α = adjacent ÷ hypoténuse.', 'Le cosinus est entre 0 et 1.', 'Calculatrice : cos et cos⁻¹.'],
-      quiz: [Q('cos α = 0,5 : l’adjacent vaut … fois l’hypoténuse.', ['la moitié', 'le double'], 0), Q('Adjacent 3 cm et hypoténuse 6 cm. cos α = ?', ['2', '0,5', '3'], 1)] },
+      quiz: [Q('cos α = 0,5. Par rapport à l’hypoténuse, le côté adjacent mesure :', ['la moitié', 'le double'], 0), Q('Adjacent 3 cm et hypoténuse 6 cm. cos α = ?', ['2', '0,5', '3'], 1)] },
 
     { id: 'm4-translation', subj: 'maths', level: '4e', icon: '➡️', title: 'La translation',
       intro: 'Faire glisser une figure sans la tourner : c’est une translation.',
@@ -970,7 +970,7 @@
       steps: [
         S('Masse et poids', 'La <b>masse</b> m mesure la quantité de matière d’un objet. Elle se mesure en <b>kilogrammes</b> avec une balance. Le <b>poids</b> P est la force d’attraction de la Terre sur l’objet. Il se mesure en <b>newtons</b> avec un dynamomètre.'),
         S('La relation', '<b>P = m × g</b>. Sur Terre, g ≈ 10 N/kg (environ 9,8). Un objet de 2 kg a un poids d’environ 20 N.'),
-        S('La Lune', 'Sur la Lune, g vaut environ 1,6 N/kg. Le même objet de 2 kg y a un poids d’environ 3,2 N : il y est six fois plus faible. Sa masse n’a pas changé.', 'force'),
+        S('La Lune', 'Sur la Lune, g vaut environ 1,6 N/kg. Le même objet de 2 kg y a un poids d’environ 3,2 N : ce poids est six fois plus faible que sur Terre. Sa masse n’a pas changé.', 'force'),
         S('L’attraction', 'Le poids vient de l’<b>attraction gravitationnelle</b> : tous les objets s’attirent, et l’attraction est d’autant plus forte que les masses sont grandes et que les distances sont petites.'),
       ],
       recap: ['La masse se mesure en kg, le poids en N.', 'P = m × g.', 'La masse ne change pas selon le lieu, le poids change.'],
@@ -1014,7 +1014,7 @@
       intro: 'Brûler du bois, du gaz ou du charbon : toutes les combustions suivent la même règle.',
       steps: [
         S('Le triangle du feu', 'Pour qu’il y ait combustion, il faut trois choses : un <b>combustible</b> (bois, gaz, essence), un <b>comburant</b> (le dioxygène de l’air) et de la <b>chaleur</b> pour démarrer. Sans l’un des trois, le feu s’éteint.', 'feu'),
-        S('Les produits', 'La combustion complète d’un combustible contenant du carbone produit du <b>dioxyde de carbone</b> et de l’<b>eau</b>. Exemple : méthane + dioxygène → dioxyde de carbone + eau.'),
+        S('Les produits', 'La combustion complète d’un combustible contenant du carbone et de l’hydrogène (comme le méthane) produit du <b>dioxyde de carbone</b> et de l’<b>eau</b>. Exemple : méthane + dioxygène → dioxyde de carbone + eau.'),
         S('Combustion incomplète', 'Quand il manque de dioxygène, la combustion produit du <b>monoxyde de carbone</b> CO, un gaz toxique, inodore et invisible. Il faut aérer les pièces chauffées au gaz ou au charbon.'),
         S('Éteindre un feu', 'On supprime un des trois éléments : de l’eau pour refroidir, un couvercle ou une couverture pour priver de dioxygène, couper l’arrivée de gaz.'),
       ],
@@ -1181,7 +1181,7 @@
       steps: [
         S('Une attraction mutuelle', 'Tous les objets qui ont une masse s’attirent : c’est l’<b>interaction gravitationnelle</b>. La Terre attire la Lune et la Lune attire la Terre avec des forces de même valeur.', 'gravit'),
         S('De quoi dépend-elle ?', 'La force est d’autant plus grande que les <b>masses</b> sont grandes et que la <b>distance</b> est petite. Elle diminue quand les objets s’éloignent.'),
-        S('Le poids', 'Le <b>poids</b> d’un objet est la force gravitationnelle de la Terre sur lui : P = m × g. Sur une planète plus petite, comme la Lune, g est plus faible : g ≈ 1,6 N/kg.'),
+        S('Le poids', 'Le <b>poids</b> d’un objet est la force gravitationnelle de la Terre sur lui : P = m × g. Sur la Lune, qui est moins massive que la Terre, g est plus faible : g ≈ 1,6 N/kg.'),
         S('Le système solaire', 'Le Soleil attire les planètes, qui tournent autour de lui. La Terre tourne autour du Soleil en un an. Les satellites artificiels tournent autour de la Terre grâce à la gravitation.'),
       ],
       recap: ['Deux masses s’attirent.', 'Plus de masse, plus de force ; plus de distance, moins de force.', 'Le poids est l’attraction de la Terre.'],
@@ -1191,20 +1191,20 @@
       intro: 'Dans une voiture qui freine brusquement, on est projeté vers l’avant : c’est l’inertie.',
       steps: [
         S('Un mouvement dépend du référentiel', 'Le mouvement d’un objet se décrit par rapport à un <b>référentiel</b>. Un passager est immobile par rapport au train, mais il se déplace par rapport au quai.'),
-        S('Types de mouvements', 'La trajectoire peut être <b>rectiligne</b> ou <b>circulaire</b>. La vitesse peut être <b>constante</b> (mouvement uniforme), qui augmente (accéléré) ou qui diminue (ralenti).'),
+        S('Types de mouvements', 'La trajectoire peut être <b>rectiligne</b> ou <b>circulaire</b>. La vitesse peut être <b>constante</b> (mouvement uniforme), augmenter (mouvement accéléré) ou diminuer (mouvement ralenti).'),
         S('Le principe d’inertie', 'Si un objet n’est soumis à <b>aucune force</b>, ou à des forces qui <b>se compensent</b>, il reste au repos ou garde un mouvement <b>rectiligne uniforme</b>.', 'inertie'),
-        S('L’inverse aussi', 'Si un objet change de vitesse ou de direction, c’est que les forces qui s’exercent sur lui ne se compensent pas. Dans une voiture qui freine, un freinage change la vitesse : une force est à l’œuvre.'),
+        S('L’inverse aussi', 'Si un objet change de vitesse ou de direction, c’est que les forces qui s’exercent sur lui ne se compensent pas. Dans une voiture qui freine, la vitesse diminue : une force est à l’œuvre.'),
       ],
       recap: ['Le mouvement dépend du référentiel.', 'Forces compensées : repos ou mouvement rectiligne uniforme.', 'Une vitesse qui change montre que les forces ne se compensent pas.'],
-      quiz: [Q('Un objet à vitesse constante en ligne droite est soumis à des forces :', ['qui se compensent', 'qui augmentent sa vitesse'], 0), Q('Le mouvement d’un objet dépend :', ['du référentiel', 'de personne'], 0)] },
+      quiz: [Q('Un objet à vitesse constante en ligne droite est soumis à des forces :', ['qui se compensent', 'qui augmentent sa vitesse'], 0), Q('Le mouvement d’un objet dépend :', ['du référentiel', 'de la couleur de l’objet'], 0)] },
 
     { id: 'p3-energie', subj: 'physique', level: '3e', icon: '⚡', title: 'Énergie cinétique et énergie de position',
       intro: 'Un vélo qui roule vite ou un objet en hauteur possèdent de l’énergie, qui peut se transformer.',
       steps: [
         S('Énergie cinétique', 'Un objet de masse m qui se déplace à la vitesse v possède une <b>énergie cinétique</b> : <b>Ec = ½ × m × v²</b>. m en kg, v en m/s, Ec en joules. À 10 m/s, un objet de 2 kg a Ec = 100 J.', 'cinetique'),
         S('Plus vite, beaucoup plus d’énergie', 'Comme v est au carré, si la vitesse double, l’énergie cinétique est multipliée par <b>4</b>. C’est pourquoi la vitesse est dangereuse sur la route.'),
-        S('Énergie de position', 'Un objet en hauteur possède une énergie de position : <b>Ep = m × g × h</b>. Plus il est haut, plus elle est grande. Une pierre de 1 kg à 5 m : Ep = 1 × 10 × 5 = 50 J.'),
-        S('Conversion', 'Quand un objet tombe, son énergie de position diminue et son énergie cinétique augmente : l’énergie se convertit. On parle d’énergie mécanique, la somme des deux. L’énergie totale se conserve.'),
+        S('Énergie de position', 'Un objet en hauteur possède une énergie de position : <b>Ep = m × g × h</b>. Plus il est haut, plus elle est grande. Une pierre de 1 kg à 5 m (avec g = 10 N/kg) : Ep = 1 × 10 × 5 = 50 J.'),
+        S('Conversion', 'Quand un objet tombe, son énergie de position diminue et son énergie cinétique augmente : l’énergie se convertit. On parle d’énergie mécanique, la somme des deux. Sans frottements, l’énergie mécanique se conserve.'),
       ],
       recap: ['Ec = ½ m v².', 'Ep = m g h.', 'Vitesse × 2 : énergie cinétique × 4.'],
       quiz: [Q('Si la vitesse double, l’énergie cinétique est multipliée par :', ['2', '4', '8'], 1), Q('Ec d’un objet de 2 kg à 3 m/s : ', ['9 J', '3 J', '18 J'], 0)] },
@@ -1246,7 +1246,7 @@
     { id: 'c3-acide-metal', subj: 'chimie', level: '3e', icon: '🔩', title: 'Acides et métaux',
       intro: 'Un clou de fer plongé dans de l’acide chlorhydrique fait des bulles : c’est une transformation chimique.',
       steps: [
-        S('Une réaction avec des bulles', 'Quand on met du fer dans de l’acide chlorhydrique, on observe un dégagement de gaz et le fer diminue. Le métal est attaqué.', 'bulles'),
+        S('Une réaction avec des bulles', 'Quand on met du fer dans de l’acide chlorhydrique, on observe un dégagement de gaz et la quantité de fer diminue. Le métal est attaqué.', 'bulles'),
         S('Les produits', 'Le gaz dégagé est du <b>dihydrogène</b> H₂ : il fait une petite détonation à la flamme. Dans la solution, des <b>ions fer</b> Fe²⁺ sont apparus (solution verdâtre).'),
         S('Équation de réaction', 'Fe + 2 H⁺ → Fe²⁺ + H₂. On vérifie la conservation des atomes (1 Fe, 2 H) et de la charge (+2 des deux côtés).'),
         S('Les précautions', 'L’acide est corrosif : on porte des lunettes, des gants et une blouse. L’acide ne se jette pas à l’évier sans l’avoir dilué et le dihydrogène est inflammable : pas de flamme à proximité.'),
@@ -1303,7 +1303,7 @@
       steps: [
         S('Image et antécédent', 'Une fonction f associe à tout x de son <b>ensemble de définition</b> un seul nombre f(x), son <b>image</b>. Si f(2) = 5, alors 5 est l’image de 2 et 2 est un <b>antécédent</b> de 5. Un nombre peut avoir plusieurs antécédents.'),
         S('La courbe représentative', 'La courbe est l’ensemble des points (x ; f(x)). Pour trouver l’image de a, on lit l’ordonnée du point d’abscisse a. Pour les antécédents de b, on cherche les points d’ordonnée b.', 'parabole'),
-        S('Sens de variation', 'f est <b>croissante</b> sur un intervalle si, quand x augmente, f(x) augmente. Elle est <b>décroissante</b> si f(x) diminue. Un <b>tableau de variations</b> résume ce comportement, avec les maximums et les minimums.'),
+        S('Sens de variation', 'f est <b>croissante</b> sur un intervalle si, quand x augmente, f(x) augmente. Elle est <b>décroissante</b> si, quand x augmente, f(x) diminue. Un <b>tableau de variations</b> résume ce comportement, avec les maximums et les minimums.'),
         S('Résoudre graphiquement', 'Les solutions de f(x) = k sont les abscisses des points de la courbe à la hauteur k. Celles de f(x) &gt; k sont les abscisses où la courbe est au-dessus de la droite y = k.'),
       ],
       recap: ['f(x) est l’image de x.', 'Courbe : points (x ; f(x)).', 'Croissante : f(x) augmente avec x.', 'f(x) = k : on lit l’abscisse à la hauteur k.'],
@@ -1326,7 +1326,7 @@
         S('Définition', 'Le vecteur AB représente le déplacement qui amène A en B. Il est caractérisé par sa <b>direction</b>, son <b>sens</b> et sa <b>norme</b> (la longueur AB). Deux vecteurs égaux ont les mêmes caractéristiques.'),
         S('Coordonnées', 'Si A(xA ; yA) et B(xB ; yB), alors le vecteur AB a pour coordonnées <b>(xB − xA ; yB − yA)</b>. Pour A(1 ; 2) et B(5 ; 4) : AB (4 ; 2).', 'vecteur'),
         S('Opérations', 'Somme : (a ; b) + (c ; d) = (a + c ; b + d). Produit par un réel k : k(a ; b) = (ka ; kb). Relation de Chasles : AB + BC = AC.'),
-        S('Colinéarité', 'Deux vecteurs (a ; b) et (c ; d) sont <b>colinéaires</b> si ad − bc = 0. Alors les droites sont parallèles. Si AB et AC sont colinéaires, les points A, B et C sont alignés. ABCD est un parallélogramme si AB = DC.'),
+        S('Colinéarité', 'Deux vecteurs (a ; b) et (c ; d) sont <b>colinéaires</b> si ad − bc = 0. Alors leurs directions sont les mêmes : les droites qui les portent sont parallèles (ou confondues). Si AB et AC sont colinéaires, les points A, B et C sont alignés. ABCD est un parallélogramme si AB = DC.'),
       ],
       recap: ['AB = (xB − xA ; yB − yA).', 'Chasles : AB + BC = AC.', 'Colinéaires : ad − bc = 0.', 'ABCD parallélogramme : AB = DC.'],
       quiz: [Q('A(1 ; 2) et B(4 ; 6). Le vecteur AB a pour coordonnées :', ['(3 ; 4)', '(5 ; 8)', '(−3 ; −4)'], 0), Q('Les vecteurs (2 ; 3) et (4 ; 6) sont :', ['colinéaires', 'non colinéaires'], 0)] },
@@ -1393,7 +1393,7 @@
         S('Un signal périodique', 'Un signal est <b>périodique</b> s’il se reproduit identique à lui-même à intervalles de temps réguliers. La plus petite durée de répétition est la <b>période T</b>, en secondes.', 'signal'),
         S('La fréquence', 'La <b>fréquence</b> f est le nombre de périodes par seconde : <b>f = 1 ÷ T</b>. Elle se mesure en hertz (Hz). Si T = 0,002 s, alors f = 500 Hz.'),
         S('Hauteur et intensité', 'Plus la fréquence est grande, plus le son est <b>aigu</b>. Plus l’amplitude est grande, plus le son est <b>fort</b>. L’oreille humaine perçoit les sons de 20 Hz à 20 000 Hz. Au-delà : ultrasons.'),
-        S('Vitesse du son', 'Dans l’air, le son se propage à environ 340 m/s. On l’utilise pour mesurer des distances : un écho met 2 s à revenir, donc l’obstacle est à 340 × 1 = 340 m (aller-retour).'),
+        S('Vitesse du son', 'Dans l’air, le son se propage à environ 340 m/s. On l’utilise pour mesurer des distances : un écho met 2 s à revenir, donc le son a parcouru 340 × 2 = 680 m (aller-retour) : l’obstacle est à 680 ÷ 2 = 340 m.'),
       ],
       recap: ['f = 1 ÷ T (Hz).', 'Haute fréquence : son aigu.', 'Forte amplitude : son fort.', 'Vitesse du son dans l’air : environ 340 m/s.'],
       quiz: [Q('T = 0,01 s. f = ?', ['100 Hz', '0,01 Hz', '10 Hz'], 0), Q('Une fréquence plus grande donne un son plus :', ['grave', 'aigu'], 1)] },
@@ -1491,9 +1491,9 @@
       intro: 'Comment savoir si un colorant, un médicament ou une eau contient telle espèce ? Avec des analyses.',
       steps: [
         S('Les propriétés physiques', 'On identifie une espèce par des <b>grandeurs physiques</b> : température de fusion, d’ébullition, masse volumique, solubilité, indice de réfraction. Elles sont propres à chaque espèce pure.'),
-        S('La chromatographie', 'La <b>chromatographie sur couche mince</b> sépare les espèces d’un mélange : un éluant monte le long de la plaque et entraîne les espèces à des vitesses différentes. Deux taches à la même hauteur correspondent à la même espèce.', 'chromato'),
+        S('La chromatographie', 'La <b>chromatographie sur couche mince</b> sépare les espèces d’un mélange : un éluant monte le long de la plaque et entraîne les espèces à des vitesses différentes. Dans les mêmes conditions, deux taches à la même hauteur correspondent à la même espèce.', 'chromato'),
         S('Le rapport frontal', 'Le <b>rapport frontal</b> est Rf = (distance parcourue par l’espèce) ÷ (distance parcourue par l’éluant). Il est propre à chaque espèce dans des conditions données.'),
-        S('Spectrophotométrie', 'Une solution colorée absorbe la lumière. L’<b>absorbance A</b> d’une solution est proportionnelle à sa concentration : <b>A = k × C</b> (loi de Beer-Lambert). On mesure A, puis on en déduit C avec une courbe d’étalonnage.'),
+        S('Spectrophotométrie', 'Une solution colorée absorbe la lumière. L’<b>absorbance A</b> d’une solution est proportionnelle à sa concentration (si elle est assez diluée) : <b>A = k × C</b> (loi de Beer-Lambert). On mesure A, puis on en déduit C avec une courbe d’étalonnage.'),
       ],
       recap: ['Température de fusion, masse volumique : propres à une espèce.', 'Chromatographie : même hauteur, même espèce.', 'A = k × C.'],
       quiz: [Q('En chromatographie, deux taches à la même hauteur indiquent :', ['la même espèce', 'deux espèces différentes'], 0), Q('L’absorbance est proportionnelle à la :', ['concentration', 'température'], 0)] },
@@ -1503,18 +1503,18 @@
       steps: [
         S('La forme générale', 'Un trinôme du second degré s’écrit <b>ax² + bx + c</b> avec a ≠ 0. Sa courbe est une <b>parabole</b> : tournée vers le haut si a &gt; 0, vers le bas si a &lt; 0.', 'parabole'),
         S('Le discriminant', 'On calcule <b>Δ = b² − 4ac</b>. Si Δ &gt; 0 : deux racines x₁ et x₂ ; si Δ = 0 : une racine double ; si Δ &lt; 0 : aucune racine réelle.', 'discri'),
-        S('Les racines', 'Si Δ &gt; 0, les racines sont <b>x = (−b ± √Δ) ÷ 2a</b>. Exemple : x² − 5x + 6, Δ = 25 − 24 = 1, donc x = (5 ± 1) ÷ 2 : les racines sont 2 et 3.'),
-        S('Signe et forme factorisée', 'Le trinôme est du signe de <b>a</b> à l’extérieur des racines et du signe contraire entre elles. Avec les racines : ax² + bx + c = <b>a(x − x₁)(x − x₂)</b>. Le sommet de la parabole est en x = −b ÷ 2a.'),
+        S('Les racines', 'Si Δ &gt; 0, les racines sont <b>x = (−b ± √Δ) ÷ (2a)</b>. Exemple : x² − 5x + 6, Δ = 25 − 24 = 1, donc x = (5 ± 1) ÷ 2 : les racines sont 2 et 3.'),
+        S('Signe et forme factorisée', 'Le trinôme est du signe de <b>a</b> à l’extérieur des racines et du signe contraire entre elles. Avec les racines : ax² + bx + c = <b>a(x − x₁)(x − x₂)</b>. Le sommet de la parabole est en x = −b ÷ (2a).'),
       ],
-      recap: ['Δ = b² − 4ac.', 'Δ > 0 : deux racines (−b ± √Δ) ÷ 2a.', 'Signe de a à l’extérieur des racines.'],
-      quiz: [Q('Pour x² − 5x + 6, les racines sont :', ['2 et 3', '1 et 6', '−2 et −3'], 0), Q('Si Δ < 0, le trinôme a :', ['aucune racine réelle', 'deux racines', 'une racine double'], 0), Q('Le sommet est en x =', ['−b ÷ 2a', 'b ÷ a', 'c ÷ a'], 0)] },
+      recap: ['Δ = b² − 4ac.', 'Δ > 0 : deux racines (−b ± √Δ) ÷ (2a).', 'Signe de a à l’extérieur des racines.'],
+      quiz: [Q('Pour x² − 5x + 6, les racines sont :', ['2 et 3', '1 et 6', '−2 et −3'], 0), Q('Si Δ < 0, le trinôme a :', ['aucune racine réelle', 'deux racines', 'une racine double'], 0), Q('Le sommet est en x =', ['−b ÷ (2a)', 'b ÷ a', 'c ÷ a'], 0)] },
 
     { id: 'm1-derivation', subj: 'maths', level: '1re', icon: '📉', title: 'Dérivation',
       intro: 'La dérivée mesure la pente de la courbe en un point : la vitesse à laquelle la fonction varie.',
       steps: [
         S('Le nombre dérivé', 'Le <b>nombre dérivé</b> f ′(a) est la pente de la <b>tangente</b> à la courbe au point d’abscisse a. C’est la limite du taux de variation (f(a+h) − f(a)) ÷ h quand h tend vers 0.', 'tangente'),
-        S('Les dérivées usuelles', 'Constante : 0 · x : 1 · x² : 2x · xⁿ : n·xⁿ⁻¹ · 1/x : −1/x² · √x : 1 ÷ (2√x).'),
-        S('Les règles de calcul', '(u + v)′ = u′ + v′ · (k·u)′ = k·u′ · <b>(u·v)′ = u′v + uv′</b> · (u/v)′ = (u′v − uv′) ÷ v².'),
+        S('Les dérivées usuelles', 'Constante : 0 ; x : 1 ; x² : 2x ; xⁿ : n·xⁿ⁻¹ ; 1/x : −1/x² ; √x : 1 ÷ (2√x).'),
+        S('Les règles de calcul', '(u + v)′ = u′ + v′ ; (k·u)′ = k·u′ ; <b>(u·v)′ = u′v + uv′</b> ; (u/v)′ = (u′v − uv′) ÷ v².'),
         S('Équation de la tangente', 'La tangente en a a pour équation <b>y = f ′(a)(x − a) + f(a)</b>. Exemple : f(x) = x² en a = 2 : f ′(2) = 4, f(2) = 4, donc y = 4(x − 2) + 4 = 4x − 4.'),
       ],
       recap: ['f ′(a) = pente de la tangente.', '(xⁿ)′ = n·xⁿ⁻¹.', 'Tangente : y = f ′(a)(x − a) + f(a).'],
@@ -1547,7 +1547,7 @@
       steps: [
         S('Le cercle trigonométrique', 'C’est le cercle de <b>rayon 1</b>. Pour un angle x, le point M du cercle a pour abscisse <b>cos x</b> et pour ordonnée <b>sin x</b>.', 'cercleTrigo'),
         S('Les radians', 'On mesure aussi les angles en <b>radians</b> : un tour complet vaut 2π rad, donc 180° = π rad. Ainsi 90° = π/2, 60° = π/3, 45° = π/4, 30° = π/6.'),
-        S('Valeurs à connaître', 'cos 0 = 1, sin 0 = 0 · cos π/6 = √3/2, sin π/6 = 1/2 · cos π/4 = sin π/4 = √2/2 · cos π/3 = 1/2, sin π/3 = √3/2 · cos π/2 = 0, sin π/2 = 1.'),
+        S('Valeurs à connaître', 'cos 0 = 1, sin 0 = 0 ; cos π/6 = √3/2, sin π/6 = 1/2 ; cos π/4 = sin π/4 = √2/2 ; cos π/3 = 1/2, sin π/3 = √3/2 ; cos π/2 = 0, sin π/2 = 1.'),
         S('Relations', '<b>cos² x + sin² x = 1</b> (théorème de Pythagore dans le cercle). Aussi cos(−x) = cos x, sin(−x) = −sin x, et cos(π − x) = −cos x, sin(π − x) = sin x.'),
       ],
       recap: ['M(cos x ; sin x) sur le cercle de rayon 1.', '180° = π rad.', 'cos² x + sin² x = 1.'],
@@ -1615,7 +1615,7 @@
         S('Une onde transporte de l’énergie', 'Une <b>onde</b> est la propagation d’une perturbation sans transport de matière. Elle est caractérisée par sa période T, sa fréquence f = 1/T et sa <b>longueur d’onde λ = v × T</b>.'),
         S('La diffraction', 'Quand une onde rencontre une ouverture ou un obstacle de taille <b>comparable à sa longueur d’onde</b>, elle s’étale et change de direction : c’est la <b>diffraction</b>.', 'diffraction'),
         S('Les interférences', 'Deux ondes de même fréquence qui se rencontrent s’additionnent : <b>interférences constructives</b> (ondes en phase, amplitude plus grande) ou <b>destructives</b> (ondes en opposition, amplitude nulle).'),
-        S('Le son et la lumière', 'La diffraction et les interférences de la lumière (franges alternées claires et sombres) montrent que la lumière a un comportement ondulatoire. Le son se diffracte aussi : on entend derrière un mur.'),
+        S('Le son et la lumière', 'La diffraction et les interférences de la lumière (franges alternées claires et sombres) montrent que la lumière a un comportement ondulatoire. Le son se diffracte aussi : on entend derrière l’angle d’un mur.'),
       ],
       recap: ['λ = v × T.', 'Diffraction : l’onde s’étale par une ouverture de taille proche de λ.', 'Interférences : constructives ou destructives.'],
       quiz: [Q('La diffraction est marquée quand l’ouverture est :', ['de taille proche de λ', 'beaucoup plus grande que λ'], 0), Q('Des interférences destructives donnent :', ['une amplitude nulle', 'une amplitude double'], 0)] },
@@ -1625,7 +1625,7 @@
       steps: [
         S('Le photon', 'Un <b>photon</b> est un grain de lumière d’énergie <b>E = h × ν = h × c ÷ λ</b>, avec h = 6,63 × 10⁻³⁴ J·s, c = 3,00 × 10⁸ m/s. Plus la longueur d’onde est courte, plus l’énergie est grande.'),
         S('Niveaux d’énergie', 'L’énergie d’un atome est <b>quantifiée</b> : il n’existe que des niveaux E₁, E₂, E₃… bien précis.', 'niveaux'),
-        S('Émission et absorption', 'En passant d’un niveau élevé à un niveau plus bas, l’atome <b>émet</b> un photon d’énergie ΔE = E₃ − E₁. Il peut aussi <b>absorber</b> un photon d’énergie exactement égale à l’écart entre deux niveaux.'),
+        S('Émission et absorption', 'En passant d’un niveau élevé à un niveau plus bas, l’atome <b>émet</b> un photon d’énergie ΔE égale à l’écart entre les deux niveaux (par exemple E₃ − E₁). Il peut aussi <b>absorber</b> un photon d’énergie exactement égale à l’écart entre deux niveaux.'),
         S('Les spectres', 'Chaque élément a ses propres niveaux, donc ses propres raies : le spectre de raies est son empreinte. L’électronvolt (1 eV = 1,6 × 10⁻¹⁹ J) est l’unité pratique de ces énergies.', 'raies'),
       ],
       recap: ['E = h × c ÷ λ.', 'Niveaux d’énergie quantifiés.', 'ΔE = énergie du photon émis ou absorbé.'],
@@ -1637,7 +1637,7 @@
         S('Un champ, c’est quoi ?', 'Un <b>champ</b> associe à chaque point de l’espace une grandeur : le champ de pesanteur g, le champ électrique E, le champ magnétique B. On le représente par des lignes de champ.'),
         S('La force de gravitation', 'Deux masses m₁ et m₂ à distance d s’attirent avec la force <b>F = G × m₁ × m₂ ÷ d²</b>, avec G = 6,67 × 10⁻¹¹ N·m²/kg². Doubler la distance divise la force par 4.'),
         S('La force électrique', 'Deux charges q₁ et q₂ exercent la force <b>F = k × |q₁ × q₂| ÷ d²</b> (loi de Coulomb), attractive si les charges sont de signes contraires, répulsive sinon. Dans un champ E, une charge q subit F = q × E.'),
-        S('Champ de pesanteur', 'Près de la Terre, g ≈ 9,8 N/kg : le poids est P = m × g. Sur la Lune, g ≈ 1,6 N/kg : le même objet y pèse 6 fois moins, sa masse ne change pas.'),
+        S('Champ de pesanteur', 'Près de la Terre, g ≈ 9,8 N/kg : le poids est P = m × g. Sur la Lune, g ≈ 1,6 N/kg : le même objet y a un poids 6 fois plus petit, mais sa masse ne change pas.'),
       ],
       recap: ['Gravitation : F = G m₁ m₂ ÷ d².', 'Coulomb : F = k |q₁q₂| ÷ d².', 'Charges de même signe : répulsion.'],
       quiz: [Q('Si on double la distance, la force de gravitation est :', ['divisée par 4', 'divisée par 2', 'doublée'], 0), Q('Deux charges de même signe :', ['se repoussent', 's’attirent'], 0)] },
@@ -1663,7 +1663,7 @@
         S('Si les coefficients diffèrent', 'Il faut utiliser le tableau d’avancement : à l’équivalence, n(réactif titré) ÷ a = n(titrant) ÷ b, où a et b sont les coefficients stœchiométriques.'),
       ],
       recap: ['Titrant de concentration connue.', 'Équivalence : réactifs tous deux consommés.', 'Réaction 1 : 1 : C × V = C_t × V_éq.'],
-      quiz: [Q('À l’équivalence :', ['les deux réactifs sont entièrement consommés', 'il ne reste que le titrant'], 0), Q('10,0 mL dosés par 0,10 mol/L avec V_éq = 12,0 mL (1 : 1) donnent C =', ['0,12 mol/L', '0,083 mol/L', '1,2 mol/L'], 0)] },
+      quiz: [Q('À l’équivalence :', ['les deux réactifs sont entièrement consommés', 'il ne reste que le titrant'], 0), Q('10,0 mL de solution dosés par un titrant à 0,10 mol/L, avec V_éq = 12,0 mL (1 : 1) : C =', ['0,12 mol/L', '0,083 mol/L', '1,2 mol/L'], 0)] },
 
     { id: 'c1-organique', subj: 'chimie', level: '1re', icon: '⛓️', title: 'Chimie organique : alcanes et alcools',
       intro: 'La chimie organique étudie les molécules construites sur des chaînes d’atomes de carbone.',
@@ -1732,10 +1732,10 @@
       quiz: [Q('La dérivée de eˣ est :', ['eˣ', 'x·eˣ⁻¹', '1'], 0), Q('La dérivée de e^(2x) est :', ['2e^(2x)', 'e^(2x)', '2x·e^(2x)'], 0), Q('eˣ est toujours :', ['strictement positive', 'négative pour x < 0'], 0)] },
 
     { id: 'mt-logarithme', subj: 'maths', level: 'term', icon: '🔄', title: 'Le logarithme népérien',
-      intro: 'Le logarithme est la fonction réciproque de l’exponentielle : il répond à la question « eᵡ vaut combien ? ».',
+      intro: 'Le logarithme est la fonction réciproque de l’exponentielle : il répond à la question « à quelle puissance faut-il élever e pour obtenir x ? ».',
       steps: [
         S('Définition', 'Pour tout x &gt; 0, <b>ln x</b> est l’unique solution y de l’équation eʸ = x. Ainsi e^(ln x) = x et ln(eˣ) = x. Domaine : ]0 ; +∞[.', 'lncourbe'),
-        S('Propriétés', '<b>ln(ab) = ln a + ln b</b> · ln(a/b) = ln a − ln b · ln(aⁿ) = n ln a · ln 1 = 0 · ln e = 1. Le logarithme transforme les produits en sommes.'),
+        S('Propriétés', 'Pour a et b strictement positifs : <b>ln(ab) = ln a + ln b</b> ; ln(a/b) = ln a − ln b ; ln(aⁿ) = n ln a ; ln 1 = 0 ; ln e = 1. Le logarithme transforme les produits en sommes.'),
         S('Variations et dérivée', 'La dérivée de ln x est <b>1/x</b>, positive : ln est strictement croissante sur ]0 ; +∞[. lim ln x = +∞ en +∞ et lim ln x = −∞ en 0⁺.'),
         S('Résoudre des équations', 'eˣ = 5 ⇔ x = ln 5. ln x = 2 ⇔ x = e². Pour comparer : ln a &lt; ln b ⇔ a &lt; b (a, b &gt; 0). Exemple : 2ˣ = 10 donne x = ln 10 ÷ ln 2 ≈ 3,32.'),
       ],
@@ -1756,9 +1756,9 @@
     { id: 'mt-integrales', subj: 'maths', level: 'term', icon: '∫', title: 'Primitives et intégrales',
       intro: 'L’intégrale mesure une aire sous une courbe. Le calcul passe par les primitives.',
       steps: [
-        S('Primitive', 'F est une <b>primitive</b> de f si F ′ = f. Elle est définie à une constante près. Exemples : une primitive de x est x²/2 ; de eˣ est eˣ ; de 1/x est ln x (sur ]0 ; +∞[) ; de xⁿ est xⁿ⁺¹/(n+1).'),
+        S('Primitive', 'F est une <b>primitive</b> de f si F ′ = f. Elle est définie à une constante près. Exemples : une primitive de x est x²/2 ; de eˣ est eˣ ; de 1/x est ln x (sur ]0 ; +∞[) ; de xⁿ est xⁿ⁺¹/(n+1) (si n ≠ −1).'),
         S('L’intégrale', 'Si f est continue sur [a ; b] et F une primitive : <b>∫ₐᵇ f(x) dx = F(b) − F(a)</b>. Si f ≥ 0, c’est l’<b>aire</b> sous la courbe entre a et b, en unités d’aire.', 'aire'),
-        S('Propriétés', 'Linéarité : ∫(f + g) = ∫f + ∫g et ∫(k·f) = k·∫f · Relation de Chasles : ∫ₐᶜ = ∫ₐᵇ + ∫ᵦᶜ · Si f ≤ g, alors ∫f ≤ ∫g.'),
+        S('Propriétés', 'Linéarité : ∫(f + g) = ∫f + ∫g et ∫(k·f) = k·∫f ; relation de Chasles : ∫ₐᶜ = ∫ₐᵇ + ∫ᵦᶜ ; si f ≤ g, alors ∫f ≤ ∫g.'),
         S('Exemple et valeur moyenne', '∫₀² x dx = [x²/2]₀² = 2 − 0 = 2. La <b>valeur moyenne</b> de f sur [a ; b] est (1 ÷ (b − a)) × ∫ₐᵇ f(x) dx : ici 2 ÷ 2 = 1.'),
       ],
       recap: ['F′ = f : F primitive.', '∫ₐᵇ f = F(b) − F(a).', 'Si f ≥ 0 : aire sous la courbe.'],
@@ -1769,7 +1769,7 @@
       steps: [
         S('Épreuve de Bernoulli', 'Une <b>épreuve de Bernoulli</b> a deux issues : succès (probabilité p) ou échec (probabilité 1 − p). Exemples : pile ou face, un tir réussi ou non.', 'binom'),
         S('Schéma de Bernoulli', 'On répète n fois l’épreuve de façon <b>indépendante</b>. X = nombre de succès suit la <b>loi binomiale B(n ; p)</b> : P(X = k) = C(n, k) × pᵏ × (1 − p)ⁿ⁻ᵏ, où C(n, k) est le nombre de chemins avec k succès.'),
-        S('Espérance et écart-type', '<b>E(X) = n × p</b> et V(X) = n × p × (1 − p). Exemple : 10 lancers d’une pièce équilibrée : E(X) = 5 faces en moyenne.'),
+        S('Espérance et variance', '<b>E(X) = n × p</b> et V(X) = n × p × (1 − p). Exemple : 10 lancers d’une pièce équilibrée : E(X) = 5 faces en moyenne.'),
         S('Exemple', '3 lancers de pièce, P(X = 2) = C(3,2) × 0,5² × 0,5¹ = 3 × 0,125 = <b>0,375</b>. La calculatrice donne ces probabilités avec « binomFdp » et « binomFrép ».'),
       ],
       recap: ['B(n ; p) : nombre de succès sur n épreuves.', 'P(X = k) = C(n,k) pᵏ (1 − p)ⁿ⁻ᵏ.', 'E(X) = n p.'],
@@ -1801,7 +1801,7 @@
     { id: 'pt-kepler', subj: 'physique', level: 'term', icon: '🛰️', title: 'Satellites et lois de Kepler',
       intro: 'Planètes et satellites tournent autour d’un astre selon trois lois découvertes par Kepler.',
       steps: [
-        S('Les lois de Kepler', '<b>1ʳᵉ loi</b> : l’orbite est une ellipse dont le Soleil est un foyer. <b>2ᵉ loi</b> : le segment Soleil-planète balaie des aires égales pendant des durées égales. <b>3ᵉ loi</b> : T² ÷ a³ est la même pour toutes les planètes.', 'kepler'),
+        S('Les lois de Kepler', '<b>1ʳᵉ loi</b> : l’orbite est une ellipse dont le Soleil est un foyer. <b>2ᵉ loi</b> : le segment Soleil-planète balaie des aires égales pendant des durées égales. <b>3ᵉ loi</b> : T² ÷ a³ est la même pour toutes les planètes qui tournent autour du même astre.', 'kepler'),
         S('Mouvement circulaire', 'Pour un satellite de masse m à la distance r du centre d’un astre de masse M, la gravitation F = G M m ÷ r² est la seule force. Le mouvement est <b>circulaire et uniforme</b> avec la vitesse <b>v = √(G M ÷ r)</b>.'),
         S('Période', 'La période est T = 2π r ÷ v, donc <b>T² ÷ r³ = 4π² ÷ (G M)</b> : troisième loi de Kepler. Plus l’orbite est haute, plus le satellite est lent et plus sa période est longue.'),
         S('Satellite géostationnaire', 'Un satellite <b>géostationnaire</b> reste au-dessus du même point de l’équateur : sa période est 24 h (précisément 23 h 56 min), son altitude environ <b>36 000 km</b>. Il sert aux télécommunications.'),
@@ -1829,7 +1829,7 @@
         S('Un exemple', 'Chauffer 1 kg d’eau (c = 4 180 J/kg/°C) de 20 °C à 30 °C demande Q = 1 × 4 180 × 10 = <b>41 800 J</b>. L’eau stocke beaucoup d’énergie : c’est pourquoi elle sert aux radiateurs.'),
       ],
       recap: ['ΔU = m c ΔT.', 'Conduction, convection, rayonnement.', 'Flux Φ = ΔT ÷ R_th en watts.'],
-      quiz: [Q('Le Soleil chauffe la Terre par :', ['rayonnement', 'conduction'], 0), Q('Chauffer 1 kg d’eau de 10 °C demande :', ['41 800 J', '4 180 J'], 0)] },
+      quiz: [Q('Le Soleil chauffe la Terre par :', ['rayonnement', 'conduction'], 0), Q('Pour élever de 10 °C la température de 1 kg d’eau, il faut :', ['41 800 J', '4 180 J'], 0)] },
 
     { id: 'pt-radioactivite', subj: 'physique', level: 'term', icon: '☢️', title: 'La radioactivité',
       intro: 'Certains noyaux sont instables : ils se transforment spontanément en émettant un rayonnement.',
@@ -1855,7 +1855,7 @@
 
     /* ================================================================ Terminale : CHIMIE */
     { id: 'ct-vitesse', subj: 'chimie', level: 'term', icon: '⏱️', title: 'Évolution temporelle d’une réaction',
-      intro: 'Une transformation chimique peut être lente ou rapide. On sait mesurer et accélérer la vitesse.',
+      intro: 'Une transformation chimique peut être lente ou rapide. On sait mesurer la vitesse d’une réaction et l’augmenter.',
       steps: [
         S('Lent ou rapide', 'Une réaction est <b>rapide</b> si elle semble instantanée (précipité, acide + base) et <b>lente</b> si elle dure des secondes, des heures, des années (rouille). On suit son évolution par la couleur, la pression, la conductivité ou le pH.'),
         S('La vitesse volumique', 'La vitesse de disparition d’un réactif A est <b>v = −d[A]/dt</b> : c’est l’opposé de la pente de la tangente à la courbe [A](t). Elle diminue au cours du temps car les réactifs se consomment.', 'cinetique'),
@@ -1903,7 +1903,7 @@
       steps: [
         S('Le principe', 'Une molécule absorbe certaines radiations infrarouges qui font vibrer ses liaisons. Le <b>spectre IR</b> trace la transmittance en fonction du <b>nombre d’onde σ</b> (en cm⁻¹, σ = 1 ÷ λ).', 'ir'),
         S('Les bandes caractéristiques', 'La liaison <b>O–H</b> d’un alcool absorbe vers 3 200 à 3 600 cm⁻¹ (bande large) ; celle d’un acide carboxylique est encore plus large. La liaison <b>C=O</b> absorbe vers 1 700 cm⁻¹ (bande fine et intense). C–H absorbe vers 2 900 cm⁻¹.'),
-        S('Lire un spectre', 'On repère les bandes, on lit leur nombre d’onde dans une table, et on en déduit les groupes caractéristiques présents. Un spectre avec une bande vers 1 700 mais sans bande large O–H évoque une cétone ou un aldéhyde.'),
+        S('Lire un spectre', 'On repère les bandes, on lit leur nombre d’onde dans une table, et on en déduit les groupes caractéristiques présents. Un spectre avec une bande vers 1 700 mais sans bande large O–H évoque une cétone, un aldéhyde ou un ester.'),
         S('Autres techniques', 'La <b>RMN du proton</b> renseigne sur l’environnement des atomes d’hydrogène (nombre de signaux, déplacement, multiplicité). La spectroscopie <b>UV-visible</b> mesure l’absorbance et permet de doser une espèce colorée (loi de Beer-Lambert).'),
       ],
       recap: ['IR : transmittance selon σ (cm⁻¹).', 'C=O vers 1 700 cm⁻¹ ; O–H vers 3 300.', 'RMN : environnement des H.'],
@@ -1913,7 +1913,7 @@
       intro: 'On peut produire de l’électricité avec une réaction chimique, ou forcer une réaction avec de l’électricité.',
       steps: [
         S('La pile', 'Dans une <b>pile</b>, une réaction d’oxydoréduction spontanée produit un courant. À l’<b>anode</b> (pôle −) a lieu l’oxydation, à la <b>cathode</b> (pôle +) la réduction. Les électrons circulent de l’anode vers la cathode dans le fil.'),
-        S('La quantité d’électricité', 'Une pile qui débite un courant I pendant une durée Δt a fourni la charge <b>Q = I × Δt</b>. Si n électrons sont échangés : Q = n × F, avec la constante de Faraday F = 96 500 C/mol.'),
+        S('La quantité d’électricité', 'Une pile qui débite un courant I pendant une durée Δt a fourni la charge <b>Q = I × Δt</b>. Si n mol d’électrons sont échangés : Q = n × F, avec la constante de Faraday F = 96 500 C/mol.'),
         S('L’électrolyse', 'En <b>électrolyse</b>, un générateur impose un courant qui <b>force une réaction non spontanée</b> : l’électrode reliée au pôle + est l’anode (oxydation), l’autre est la cathode (réduction). On produit ainsi du dihydrogène, du chlore, ou on recouvre un objet de métal (galvanoplastie).', 'electrolyse'),
         S('Accumulateurs', 'Un <b>accumulateur</b> (batterie rechargeable : lithium-ion, plomb) fonctionne comme une pile en décharge et comme un électrolyseur en charge : la réaction est réversible. Le recyclage des batteries est un enjeu environnemental.'),
       ],
