@@ -5,13 +5,13 @@
 (function (root) {
   root.AR_UI = {
     /* en-tête et pied de page */
-    'Tadriss-Maths': 'تدريس رياضيات',
+    'Tadriss Sciences': 'تدريس العلوم',
     'Menu': 'القائمة', 'Navigation principale': 'التنقّل الرئيسي',
     'Forfait Famille': 'باقة العائلة',
     'Choisir le forfait Famille': 'اختر باقة العائلة',
     'Tous les niveaux, de la grande section à la Terminale, pour tous les élèves du compte (jusqu’à 5 profils), avec un seul paiement.': 'جميع المستويات، من التحضيري إلى الثالثة ثانوي، لكل تلاميذ الحساب (حتى 5 ملفات)، بدفعة واحدة.',
     'Tableau de bord administrateur': 'لوحة تحكم المسؤول',
-    'Administration — Tadriss-Maths': 'الإدارة — تدريس رياضيات',
+    'Administration — Tadriss Sciences': 'الإدارة — تدريس العلوم',
     'Administration': 'الإدارة',
     'Ce compte n’a pas accès à l’administration.': 'هذا الحساب ليس له صلاحية الدخول إلى الإدارة.',
     'Tableau de bord': 'لوحة التحكم',
@@ -38,14 +38,14 @@
     'Accès réservé aux administrateurs.': 'الدخول مخصص للمسؤولين.',
     'Client introuvable.': 'الزبون غير موجود.',
     'Nombre de jours ou montant invalide.': 'عدد الأيام أو المبلغ غير صالح.',
-    'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices ({n})': 'تمارين ({n})', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss-Maths': 'لماذا تدريس رياضيات', 'Tarifs': 'الأسعار',
+    'Maths': 'الرياضيات', 'Niveaux': 'المستويات', 'Exercices ({n})': 'تمارين ({n})', 'Exercices de maths ({n})': 'تمارين الرياضيات ({n})', 'Cours illustrés ({n})': 'دروس مصوّرة ({n})', 'Exercices': 'تمارين', 'Réussir en {short}': 'النجاح في {short}', 'Maths, physique et chimie : des cours courts, illustrés et lus à voix haute.': 'رياضيات وفيزياء وكيمياء : دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ.', '‹ Tous les niveaux': '‹ كل المستويات', 'Récompenses': 'المكافآت', 'Suivi des progrès': 'متابعة التقدّم', 'Pourquoi Tadriss Sciences': 'لماذا تدريس العلوم', 'Tarifs': 'الأسعار',
     'Rechercher une compétence': 'ابحث عن مهارة',
     'Connexion': 'تسجيل الدخول', 'Mon compte': 'حسابي',
-    'Tadriss-Maths · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس رياضيات · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',
+    'Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>': 'تدريس العلوم · تمارين أصلية تُولَّد عشوائيًا · <a href="#/legal">الشروط والإشعارات القانونية</a>',
     '{h} h {m} min': '{h} سا و{m} د', '{m} min': '{m} د', '{s} s': '{s} ثا',
 
     /* accueil et niveaux */
-    'Tadriss-Maths — exercices et cours de maths de la GS à la Terminale': 'تدريس رياضيات — تمارين ودروس الرياضيات من التحضيري إلى الثالثة ثانوي',
+    'Tadriss Sciences — exercices et cours de maths, physique et chimie de la GS à la Terminale': 'تدريس العلوم — تمارين ودروس الرياضيات والفيزياء والكيمياء من التحضيري إلى الثالثة ثانوي',
     'Exercices et cours pour réussir de la GS à la Terminale': 'تمارين ودروس للنجاح من التحضيري إلى السنة الثالثة ثانوي',
     'Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.': 'اختر طورك ثم مستواك : تمارين رياضيات مع تصحيح فوري، ودروس مصوّرة في الرياضيات والفيزياء والكيمياء.',
     'Des exercices de maths pour réussir de la GS à la 6ᵉ': 'تمارين رياضيات للنجاح من التحضيري إلى السنة الأولى متوسط',
@@ -56,7 +56,7 @@
     'Abonnement {lv} actif jusqu’au {date}. Tout le niveau est débloqué.': 'اشتراك {lv} فعّال حتى {date}. المستوى كلّه مفتوح.',
     'Tu peux essayer gratuitement 3 compétences du {lv}. Pour débloquer tout le niveau : <b>{price} DA par mois</b>.': 'يمكنك تجربة 3 مهارات مجانًا في {lv}. لفتح المستوى كلّه: <b>{price} دج في الشهر</b>.',
     'Voir les tarifs': 'عرض الأسعار',
-    'Maths {lv} — Tadriss-Maths': 'رياضيات {lv} — تدريس رياضيات',
+    'Maths {lv} — Tadriss Sciences': 'رياضيات {lv} — تدريس العلوم',
     'Les {c} cours illustrés du niveau sont inclus.': 'الدروس المصوّرة للمستوى ({c}) مشمولة أيضًا.',
     'Indique l’adresse e-mail de ton compte : nous notons ta demande et nous te donnerons un mot de passe temporaire à changer ensuite.': 'اكتب البريد الإلكتروني لحسابك : نسجّل طلبك ونعطيك كلمة مرور مؤقتة لتغييرها بعد ذلك.',
     'Envoyer la demande': 'إرسال الطلب', 'Demande enregistrée. Tu recevras un mot de passe temporaire de notre part.': 'تم تسجيل الطلب. سنعطيك كلمة مرور مؤقتة.',
@@ -76,7 +76,7 @@
     'Compétence maîtrisée !': 'مهارة متقَنة!', 'Retour à la liste': 'العودة إلى القائمة', 'Continuer': 'متابعة',
 
     /* récompenses */
-    'Récompenses — Tadriss-Maths': 'المكافآت — تدريس رياضيات',
+    'Récompenses — Tadriss Sciences': 'المكافآت — تدريس العلوم',
     'Chaque niveau a son plateau de jeu. Un carré se dévoile quand tu acquiers (80 et plus) deux compétences d’une même catégorie. Touche un carré pour voir ce qu’il te reste à faire.': 'لكل مستوى لوحة لعب. يظهر مربّع عندما تكتسب (80 فأكثر) مهارتين من الفئة نفسها. المس مربّعًا لترى ما بقي عليك.',
     'Plateau {lv}': 'لوحة {lv}', 'Carrés dévoilés': 'المربّعات المكشوفة', 'Compétences acquises': 'المهارات المكتسبة', 'Récompenses (tous niveaux)': 'المكافآت (كل المستويات)',
     'Récompense gagnée !': 'ربحت مكافأة!', 'Tu as acquis {n} compétence(s) dans la catégorie « {cat} ».': 'اكتسبت {n} من المهارات في الفئة «{cat}».',
@@ -86,7 +86,7 @@
     'S’entraîner encore': 'تدرّب أكثر', 'Plus d’exercices': 'المزيد من التمارين', 'Fermer': 'إغلاق',
 
     /* suivi des progrès */
-    'Suivi des progrès — Tadriss-Maths': 'متابعة التقدّم — تدريس رياضيات',
+    'Suivi des progrès — Tadriss Sciences': 'متابعة التقدّم — تدريس العلوم',
     'Un coup d’œil sur ce qui a été travaillé sur cet appareil : combien de questions, avec quelle réussite, et quelles compétences méritent un coup de pouce.': 'نظرة سريعة على ما جرى العمل عليه في هذا الجهاز: عدد الأسئلة ونسبة النجاح والمهارات التي تحتاج إلى دعم.',
     'questions répondues': 'سؤالًا أُجيب عنه', 'de réussite': 'نسبة النجاح', 'de travail': 'من العمل',
     'compétences acquises (dont {n} maîtrisées)': 'مهارة مكتسبة (منها {n} متقَنة)',
@@ -98,7 +98,7 @@
     'Effacer ma progression': 'مسح تقدّمي', 'Effacer toute la progression enregistrée sur cet appareil ?': 'هل تريد مسح كل التقدّم المسجّل على هذا الجهاز؟',
 
     /* présentation */
-    'Tadriss-Maths donne envie de faire des maths': 'تدريس رياضيات يجعلك تحبّ الرياضيات',
+    'Tadriss Sciences donne envie d’apprendre les sciences': 'تدريس العلوم يجعلك تحبّ العلوم',
     'Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme, et des cours illustrés. Du premier comptage de la grande section aux dérivées et aux intégrales de la Terminale.': 'تمارين تفاعلية تُصحَّح فورًا وتتكيّف مع وتيرتك، ودروس مصوّرة. من أول عدّ في التحضيري إلى المشتقات والتكاملات في الثالثة ثانوي.',
     'Choisir mon niveau': 'اختيار مستواي', 'Une façon d’apprendre pensée pour l’enfant': 'طريقة في التعلّم مصمَّمة للطفل',
     'Des exercices sans fin': 'تمارين لا تنتهي', 'Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.': 'كل سؤال يُختار عشوائيًا: يمكن التدرّب بقدر ما نشاء.',
@@ -109,7 +109,7 @@
     '{total} compétences de la GS à la Terminale, avec des exercices corrigés tout de suite et des explications ({impl} au total). L’interface existe en français et en arabe (de droite à gauche) : le bouton FR / عربي est en haut de la page.': 'هناك {total} مهارة من التحضيري إلى الثالثة ثانوي، بتمارين تُصحَّح فورًا مع شروح ({impl} في المجموع). الواجهة متوفرة بالفرنسية والعربية (من اليمين إلى اليسار): زر FR / عربي في أعلى الصفحة.',
 
     /* recherche */
-    'Recherche — Tadriss-Maths': 'بحث — تدريس رياضيات', 'Recherche': 'بحث', '{n} compétence(s) pour « {q} ».': 'عدد النتائج: {n} للبحث «{q}».',
+    'Recherche — Tadriss Sciences': 'بحث — تدريس العلوم', 'Recherche': 'بحث', '{n} compétence(s) pour « {q} ».': 'عدد النتائج: {n} للبحث «{q}».',
 
     /* accès réservé et tarifs */
     'Compétence réservée aux abonnés': 'مهارة خاصة بالمشتركين',
@@ -139,7 +139,7 @@
     'Réinitialiser le mot de passe': 'إعادة تعيين كلمة المرور',
     'Réinitialiser le mot de passe de ce client ?': 'هل تريد إعادة تعيين كلمة مرور هذا العميل؟',
     'Mot de passe temporaire (à transmettre au client, affiché une seule fois) :': 'كلمة مرور مؤقتة (تُسلَّم للعميل، تظهر مرة واحدة فقط):',
-    'Écouter le cours': 'استمع إلى الدرس', 'Arrêter': 'إيقاف', 'Cours — Tadriss-Maths': 'الدروس — تدريس رياضيات',
+    'Écouter le cours': 'استمع إلى الدرس', 'Arrêter': 'إيقاف', 'Cours — Tadriss Sciences': 'الدروس — تدريس العلوم',
     'étapes': 'مراحل', 'audio': 'صوت', 'Cours illustrés': 'دروس مصوّرة', 'Cours': 'الدروس',
     'Des cours courts, illustrés et lus à voix haute, en maths, physique et chimie. Pour chaque cours : les étapes, ce qu’il faut retenir et un petit quiz.': 'دروس قصيرة ومصوّرة ومقروءة بصوت عالٍ في الرياضيات والفيزياء والكيمياء. في كل درس: المراحل وما يجب حفظه واختبار صغير.',
     'Les cours sont pour le moment en français.': 'الدروس متوفرة حاليًا باللغة الفرنسية.',
@@ -151,7 +151,7 @@
     'Lancer le cours animé': 'تشغيل الدرس المتحرك', 'Revoir le cours animé': 'إعادة الدرس المتحرك', 'Pause': 'إيقاف مؤقت', 'Précédent': 'السابق', 'Suivant': 'التالي', 'Le cours en détail': 'الدرس بالتفصيل',
     'Remettre à zéro': 'إعادة التعيين',
     'Retour au niveau': 'العودة إلى المستوى',
-    'Tarifs — Tadriss-Maths': 'الأسعار — تدريس رياضيات',
+    'Tarifs — Tadriss Sciences': 'الأسعار — تدريس العلوم',
     'Un abonnement par niveau, valable {days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.': 'اشتراك واحد لكل مستوى، صالح {days} يومًا، دون تجديد تلقائي: تدفع عندما تريد المتابعة. الدفع بالدينار ببطاقة CIB أو الذهبية.',
     'Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.': 'وضع التجربة: لا يتمّ أي دفع حقيقي، الدفع محاكى.',
     'DA': 'دج', '/ mois': '/ شهر',
@@ -163,30 +163,30 @@
     'Les abonnements ne sont pas disponibles dans cet aperçu.': 'الاشتراكات غير متاحة في هذه المعاينة.',
 
     /* compte */
-    'Connexion — Tadriss-Maths': 'تسجيل الدخول — تدريس رياضيات', 'Adresse e-mail': 'البريد الإلكتروني', 'Mot de passe': 'كلمة المرور', 'Me connecter': 'دخول',
+    'Connexion — Tadriss Sciences': 'تسجيل الدخول — تدريس العلوم', 'Adresse e-mail': 'البريد الإلكتروني', 'Mot de passe': 'كلمة المرور', 'Me connecter': 'دخول',
     'Pas encore de compte ? <a href="#/inscription">Créer un compte</a>': 'ليس لديك حساب؟ <a href="#/inscription">أنشئ حسابًا</a>',
-    'Créer un compte — Tadriss-Maths': 'إنشاء حساب — تدريس رياضيات', 'Créer un compte': 'إنشاء حساب',
+    'Créer un compte — Tadriss Sciences': 'إنشاء حساب — تدريس العلوم', 'Créer un compte': 'إنشاء حساب',
     'Le compte est celui du parent. Il peut contenir jusqu’à 5 profils d’élèves, chacun avec sa propre progression.': 'الحساب هو حساب الوليّ. يمكن أن يضمّ حتى 5 ملفات للتلاميذ، لكل منها تقدّمه الخاص.',
     'Adresse e-mail du parent': 'البريد الإلكتروني للوليّ', 'Mot de passe (8 caractères minimum)': 'كلمة المرور (8 أحرف على الأقل)', 'Prénom de l’élève': 'اسم التلميذ', 'Niveau de l’élève': 'مستوى التلميذ',
     'J’accepte les <a href="#/legal">conditions d’utilisation</a>.': 'أوافق على <a href="#/legal">شروط الاستعمال</a>.', 'Créer mon compte': 'إنشاء حسابي',
     'Déjà un compte ? <a href="#/connexion">Se connecter</a>': 'لديك حساب؟ <a href="#/connexion">سجّل الدخول</a>',
-    'Mon compte — Tadriss-Maths': 'حسابي — تدريس رياضيات', 'Profils des élèves': 'ملفات التلاميذ', 'profil actif': 'الملف النشط', 'Choisir': 'اختيار', 'Supprimer': 'حذف',
+    'Mon compte — Tadriss Sciences': 'حسابي — تدريس العلوم', 'Profils des élèves': 'ملفات التلاميذ', 'profil actif': 'الملف النشط', 'Choisir': 'اختيار', 'Supprimer': 'حذف',
     'Prénom': 'الاسم', 'Prénom du nouvel élève': 'اسم التلميذ الجديد', 'Niveau': 'المستوى', 'Ajouter un profil': 'إضافة ملف',
     'Abonnements': 'الاشتراكات', 'jusqu’au {date}': 'حتى {date}', 'Aucun abonnement actif. Les compétences gratuites restent accessibles.': 'لا يوجد اشتراك فعّال. تبقى المهارات المجانية متاحة.',
     'Derniers paiements': 'آخر المدفوعات', 'payé': 'مدفوع', 'en attente': 'قيد الانتظار', 'échoué': 'فشل', 'Aucun paiement pour l’instant.': 'لا توجد مدفوعات حتى الآن.',
     'Me déconnecter': 'تسجيل الخروج', 'Supprimer ce profil et sa progression ?': 'هل تريد حذف هذا الملف وتقدّمه؟',
 
     /* paiement */
-    'Paiement — Tadriss-Maths': 'الدفع — تدريس رياضيات', 'Vérification du paiement…': 'جارٍ التحقّق من الدفع…', 'Paiement non terminé': 'لم يكتمل الدفع',
+    'Paiement — Tadriss Sciences': 'الدفع — تدريس العلوم', 'Vérification du paiement…': 'جارٍ التحقّق من الدفع…', 'Paiement non terminé': 'لم يكتمل الدفع',
     'Le paiement a été annulé ou a échoué. Aucun abonnement n’a été activé.': 'أُلغي الدفع أو فشل. لم يُفعَّل أي اشتراك.', 'Retour aux tarifs': 'العودة إلى الأسعار',
     'Paiement reçu, merci !': 'تمّ استلام الدفع، شكرًا!', 'Paiement en cours de confirmation': 'الدفع قيد التأكيد',
     'Ton abonnement est actif. Bon entraînement !': 'اشتراكك فعّال. تدريبًا موفّقًا!', 'La banque n’a pas encore confirmé. Recharge cette page dans une minute.': 'لم يؤكّد البنك بعد. أعد تحميل هذه الصفحة بعد دقيقة.',
 
     /* conditions */
-    'Conditions et confidentialité — Tadriss-Maths': 'الشروط والخصوصية — تدريس رياضيات', 'Conditions et confidentialité': 'الشروط والخصوصية',
+    'Conditions et confidentialité — Tadriss Sciences': 'الشروط والخصوصية — تدريس العلوم', 'Conditions et confidentialité': 'الشروط والخصوصية',
     'Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.': 'نصّ مؤقّت ينبغي مراجعته واستكماله (اسم الناشر والعنوان وبيانات الاتصال) قبل الإطلاق للعموم.',
-    'Le service': 'الخدمة', 'Tadriss-Maths propose des exercices de mathématiques et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.': 'يقدّم تدريس رياضيات تمارين رياضيات عبر الإنترنت ودروس مصوّرة من التحضيري إلى الثالثة ثانوي. ثلاث مهارات في كل مستوى مجانية، وباقي المستوى متاح بالاشتراك.',
-    'Abonnements et paiement': 'الاشتراكات والدفع', 'Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.': 'يخصّ الاشتراك مستوًى واحدًا ويدوم {days} يومًا ابتداءً من الدفع، ولا يُجدَّد تلقائيًا. يتمّ الدفع بالدينار الجزائري ببطاقة CIB أو الذهبية عبر مزوّد الخدمة Chargily Pay. لا يتلقّى تدريس رياضيات أرقام البطاقات ولا يحتفظ بها.',
+    'Le service': 'الخدمة', 'Tadriss Sciences propose des exercices de mathématiques, de physique et de chimie et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.': 'يقدّم تدريس العلوم تمارين الرياضيات والفيزياء والكيمياء عبر الإنترنت ودروس مصوّرة من التحضيري إلى الثالثة ثانوي. ثلاث مهارات في كل مستوى مجانية، وباقي المستوى متاح بالاشتراك.',
+    'Abonnements et paiement': 'الاشتراكات والدفع', 'Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss Sciences ne reçoit ni ne conserve les numéros de carte.': 'يخصّ الاشتراك مستوًى واحدًا ويدوم {days} يومًا ابتداءً من الدفع، ولا يُجدَّد تلقائيًا. يتمّ الدفع بالدينار الجزائري ببطاقة CIB أو الذهبية عبر مزوّد الخدمة Chargily Pay. لا يتلقّى تدريس العلوم أرقام البطاقات ولا يحتفظ بها.',
     'Données personnelles': 'البيانات الشخصية', 'Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.': 'نحتفظ بالبريد الإلكتروني للوليّ وأسماء ملفات التلاميذ وتقدّمهم في التمارين وسجلّ المدفوعات. تُستعمل هذه البيانات فقط لتشغيل الخدمة. لا إعلانات ولا بيع للبيانات.',
     'Supprimer son compte': 'حذف الحساب', 'Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).': 'يمكن حذف ملف من صفحة «حسابي». ولحذف الحساب كلّه، تُرسَل رسالة إلى عنوان الاتصال (يُستكمل لاحقًا).',
 

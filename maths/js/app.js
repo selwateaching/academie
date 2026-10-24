@@ -112,7 +112,7 @@
     document.querySelectorAll('[data-t]').forEach((e) => { e.textContent = T(e.dataset.t); });
     document.querySelectorAll('[data-t-aria]').forEach((e) => e.setAttribute('aria-label', T(e.dataset.tAria)));
     document.querySelectorAll('[data-t-ph]').forEach((e) => e.setAttribute('placeholder', T(e.dataset.tPh)));
-    $('#foot').innerHTML = T('Tadriss-Maths · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>');
+    $('#foot').innerHTML = T('Tadriss Sciences · exercices originaux, générés au hasard · <a href="#/legal">Conditions et mentions légales</a>');
     document.querySelectorAll('[data-lang]').forEach((b) => { const on = b.dataset.lang === lang; b.classList.toggle('on', on); b.setAttribute('aria-pressed', String(on)); });
   }
   function setLang(l) {
@@ -130,7 +130,7 @@
   let homeCycle = 'primaire';
   const exCycle = (lv) => (lv.id === '6e' ? 'moyen' : 'primaire');
   function pageHome() {
-    document.title = T('Tadriss-Maths — exercices et cours de maths de la GS à la Terminale');
+    document.title = T('Tadriss Sciences — exercices et cours de maths, physique et chimie de la GS à la Terminale');
     show(`<div class="wrap"><section class="hero"><h1>${T('Exercices et cours pour réussir de la GS à la Terminale')}</h1><p>${T('Choisis ton cycle puis ton niveau : des exercices de maths avec correction immédiate, et des cours illustrés en maths, physique et chimie.')}</p></section>
     <div class="pills" style="margin:14px 0">${COURSE_CYCLES.map((cy) => `<button class="pill ${cy.id === homeCycle ? 'on' : ''}" style="background:#0d9488;font-family:inherit;cursor:pointer;font-size:1.05em" data-hcy="${cy.id}" aria-pressed="${cy.id === homeCycle}">${cy.icon} ${T(cy.label)}</button>`).join('')}</div>
     <section class="levels">${COURSE_LEVELS.filter((l) => l.cycle === homeCycle).map((l) => {
@@ -162,7 +162,7 @@
 
   function pageLevel(id) {
     const lv = lvOf(id); if (!lv) return pageHome();
-    document.title = T('Maths {lv} — Tadriss-Maths', { lv: T(lv.short) });
+    document.title = T('Maths {lv} — Tadriss Sciences', { lv: T(lv.short) });
     const pills = LEVELS.map((l) => `<a class="pill ${l.id === id ? 'on' : ''}" style="background:${l.color};--c:${l.color}" href="#/niveau/${l.id}">${sh(l)}</a>`).join('');
     const doms = lv.domains.map((d, di) => `<section class="domain" id="d${di}" style="--c:${lv.color};--c2:${lv.color}"><h2>${ti(d.name)}</h2><div class="cats">${d.cats.map((c) => `<div class="cat"><h3>${ti(c.name)}</h3>${c.skills.map((s) => s.gen
       ? `<a class="sk" style="--c:${lv.color}" href="#/exercice/${s.id}"><span class="code">${s.code}</span><span class="t">${ti(s.title)}</span>${canPlay(s) ? (isFree(s) && !auth.offline && !auth.config.open && !subscribed(lv.id) ? `<span class="soon-tag free">${T('Gratuit')}</span>` : '') + dot(s.id, lv.color) : `${auth.user && picksLeft() > 0 ? `<span class="pick" data-pick="${s.id}">☆ ${T('Choisir')}</span>` : ''}<span class="lock" title="${T('Réservé aux abonnés')}">🔒</span>`}</a>`
@@ -199,7 +199,7 @@
     const lv = lvOf(sk.level), pr = prog(id);
     let lastSecs = 0;
     P = { skill: sk, lv, score: pr.score, answered: 0, correct: 0, secs: 0, flushed: 0, q: null, sel: null, done: false, celebrated: pr.score >= 100, daySecs() { const d = this.secs - lastSecs; lastSecs = this.secs; return d; } };
-    document.title = `${sk.code} ${T(sk.title)} — ${T('Tadriss-Maths')}`;
+    document.title = `${sk.code} ${T(sk.title)} — ${T('Tadriss Sciences')}`;
     show(`<div class="wrap"><div class="crumb"><a href="#/niveau/${lv.id}">${sh(lv)}</a> › ${ti(sk.cat.name)}</div>
       <div class="prac"><section class="qcard" id="qcard" aria-live="polite"></section>
       <aside class="side"><h3>${sk.code} · ${ti(sk.title)}</h3><svg class="ring" viewBox="0 0 120 120" id="ring"></svg><p class="levelmsg" id="lmsg"></p>
@@ -275,7 +275,7 @@
 
   function pageRewards(id) {
     const lv = lvOf(id) || LEVELS[4];
-    document.title = T('Récompenses — Tadriss-Maths');
+    document.title = T('Récompenses — Tadriss Sciences');
     let won = 0;
     const sq = lv.catList.map((c, i) => {
       const got = catDone(c) >= need(c); if (got) won++;
@@ -302,7 +302,7 @@
 
   /* ---------- suivi des progrès ---------- */
   function pageProgress() {
-    document.title = T('Suivi des progrès — Tadriss-Maths');
+    document.title = T('Suivi des progrès — Tadriss Sciences');
     const rows = Object.entries(store.skills).filter(([, v]) => v.answered);
     const tot = rows.reduce((a, [, v]) => a + v.answered, 0), ok = rows.reduce((a, [, v]) => a + v.correct, 0);
     const secs = Object.values(store.days).reduce((a, d) => a + (d.secs || 0), 0) || rows.reduce((a, [, v]) => a + (v.secs || 0), 0);
@@ -325,9 +325,9 @@
 
   /* ---------- page de présentation ---------- */
   function pageAbout() {
-    document.title = T('Pourquoi Tadriss-Maths');
+    document.title = T('Pourquoi Tadriss Sciences');
     const total = LEVELS.reduce((a, l) => a + l.skillList.length, 0), impl = LEVELS.reduce((a, l) => a + implemented(l).length, 0);
-    show(`<div class="wrap"><section class="promo"><h1>${T('Tadriss-Maths donne envie de faire des maths')}</h1><p>${T('Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme, et des cours illustrés. Du premier comptage de la grande section aux dérivées et aux intégrales de la Terminale.')}</p><a class="btn big" href="#/">${T('Choisir mon niveau')}</a></section>
+    show(`<div class="wrap"><section class="promo"><h1>${T('Tadriss Sciences donne envie d’apprendre les sciences')}</h1><p>${T('Des exercices interactifs, corrigés tout de suite, qui s’adaptent à ton rythme, et des cours illustrés. Du premier comptage de la grande section aux dérivées et aux intégrales de la Terminale.')}</p><a class="btn big" href="#/">${T('Choisir mon niveau')}</a></section>
       <h2 class="section-t">${T('Une façon d’apprendre pensée pour l’enfant')}</h2>
       <div class="feats"><div class="feat"><img class="ic" src="/img/ico-0.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des exercices sans fin')}</h3><p>${T('Chaque question est tirée au hasard : on peut s’entraîner autant qu’on veut.')}</p></div>
       <div class="feat"><img class="ic" src="/img/ico-1.jpg" alt="" loading="lazy" width="96" height="96"><h3>${T('Des schémas pour comprendre')}</h3><p>${T('Bandes, disques, droites graduées, horloges, solides : on voit la notion avant de calculer.')}</p></div>
@@ -340,7 +340,7 @@
 
   function pageSearch(q) {
     q = decodeURIComponent(q || '').trim().toLowerCase();
-    document.title = T('Recherche — Tadriss-Maths');
+    document.title = T('Recherche — Tadriss Sciences');
     const hay = (s) => `${s.title} ${s.cat.name} ${T(s.title)} ${T(s.cat.name)}`.toLowerCase();
     const hits = Object.values(byId).filter((s) => q && hay(s).includes(q));
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Recherche')}</h1><p>${T('{n} compétence(s) pour « {q} ».', { n: hits.length, q: esc(q) })}</p></div><div class="panel results">${hits.slice(0, 80).map((s) => `<a href="${s.gen ? '#/exercice/' + s.id : '#/niveau/' + s.level}"><span class="lvtag" style="color:${lvOf(s.level).color}">${sh(lvOf(s.level))}</span><span><b>${s.code}</b> ${ti(s.title)} ${s.gen ? '' : `<span class="soon-tag">${T('bientôt')}</span>`}</span></a>`).join('')}</div></div>`, 'maths');
@@ -349,7 +349,7 @@
   /* ---------- pages : accès réservé, tarifs, connexion, compte ---------- */
   function pageLocked(sk) {
     const lv = lvOf(sk.level);
-    document.title = `${sk.code} — ${T('Tadriss-Maths')}`;
+    document.title = `${sk.code} — ${T('Tadriss Sciences')}`;
     show(`<div class="wrap narrow"><div class="crumb"><a href="#/niveau/${lv.id}">${sh(lv)}</a> › ${ti(sk.cat.name)}</div>
       <div class="qcard center"><div class="bigico">🔒</div><h1>${T('Compétence réservée aux abonnés')}</h1>
       <p>${T('<b>{skill}</b> fait partie de l’abonnement {lv} : <b>{price} DA par mois</b>, tout le niveau débloqué.', { skill: `${sk.code} · ${ti(sk.title)}`, lv: sh(lv), price: price(lv.id) })}</p>
@@ -360,7 +360,7 @@
   }
 
   function pagePricing() {
-    document.title = T('Tarifs — Tadriss-Maths');
+    document.title = T('Tarifs — Tadriss Sciences');
     const demo = auth.config.payment === 'demo';
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tarifs')}</h1><p>${T('Un abonnement par niveau, valable {days} jours, sans reconduction automatique : tu paies quand tu veux continuer. Paiement en dinars par carte CIB ou Edahabia.', { days: auth.config.days })}</p></div>
       ${demo ? `<div class="note">${T('Mode test : aucun vrai paiement n’est effectué, le paiement est simulé.')}</div>` : ''}
@@ -392,7 +392,7 @@
   function afterAuth(d) { applyMe(d); return loadProgress().then(() => { const t = returnTo; returnTo = '#/'; location.hash = t; route(); }); }
 
   function pageLogin() {
-    document.title = T('Connexion — Tadriss-Maths');
+    document.title = T('Connexion — Tadriss Sciences');
     show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Connexion')}</h1></div><form class="form panel" id="fLogin">
       ${field('email', T('Adresse e-mail'), 'email', 'autocomplete="email"')}${field('password', T('Mot de passe'), 'password', 'autocomplete="current-password"')}
       <p class="errtxt" id="err" role="alert"></p><button class="btn big" type="submit">${T('Me connecter')}</button>
@@ -413,7 +413,7 @@
   }
 
   function pageRegister() {
-    document.title = T('Créer un compte — Tadriss-Maths');
+    document.title = T('Créer un compte — Tadriss Sciences');
     show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Créer un compte')}</h1><p>${T('Le compte est celui du parent. Il peut contenir jusqu’à 5 profils d’élèves, chacun avec sa propre progression.')}</p></div><form class="form panel" id="fReg">
       ${field('email', T('Adresse e-mail du parent'), 'email', 'autocomplete="email"')}${field('password', T('Mot de passe (8 caractères minimum)'), 'password', 'autocomplete="new-password" minlength="8"')}
       ${field('name', T('Prénom de l’élève'), 'text', 'maxlength="40"')}
@@ -437,7 +437,7 @@
 
   function pageAccount() {
     if (!auth.user) { returnTo = '#/compte'; return pageLogin(); }
-    document.title = T('Mon compte — Tadriss-Maths');
+    document.title = T('Mon compte — Tadriss Sciences');
     const subs = LEVELS.filter((l) => valid(l.id));
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Mon compte')}</h1><p dir="ltr" style="text-align:start">${esc(auth.user.email)}</p></div>
       <div class="panel"><h2>${T('Profils des élèves')}</h2><div class="profs">${auth.profiles.map((p) => `<div class="prof ${p.id === auth.active ? 'on' : ''}"><b>${esc(p.name)}</b><span>${sh(lvOf(p.level))}</span>
@@ -456,7 +456,7 @@
   }
 
   async function pagePaid(ok) {
-    document.title = T('Paiement — Tadriss-Maths');
+    document.title = T('Paiement — Tadriss Sciences');
     show(`<div class="wrap narrow"><div class="qcard center"><div class="bigico">${ok ? '⏳' : '⚠️'}</div><h1>${ok ? T('Vérification du paiement…') : T('Paiement non terminé')}</h1><p id="pmsg">${ok ? '' : T('Le paiement a été annulé ou a échoué. Aucun abonnement n’a été activé.')}</p><div class="row"><a class="btn big" href="#/tarifs">${T('Retour aux tarifs')}</a></div></div></div>`, 'tarifs');
     if (!ok || !auth.user) return;
     try {
@@ -468,10 +468,10 @@
   }
 
   function pageLegal() {
-    document.title = T('Conditions et confidentialité — Tadriss-Maths');
+    document.title = T('Conditions et confidentialité — Tadriss Sciences');
     show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Conditions et confidentialité')}</h1></div><div class="note">${T('Texte provisoire à faire relire et compléter (nom de l’éditeur, adresse, contact) avant l’ouverture au public.')}</div>
-      <div class="panel legal"><h2>${T('Le service')}</h2><p>${T('Tadriss-Maths propose des exercices de mathématiques et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.')}</p>
-      <h2>${T('Abonnements et paiement')}</h2><p>${T('Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss-Maths ne reçoit ni ne conserve les numéros de carte.', { days: auth.config.days })}</p>
+      <div class="panel legal"><h2>${T('Le service')}</h2><p>${T('Tadriss Sciences propose des exercices de mathématiques, de physique et de chimie et des cours illustrés en ligne, de la grande section à la Terminale. Trois compétences par niveau sont gratuites ; le reste du niveau est accessible avec un abonnement.')}</p>
+      <h2>${T('Abonnements et paiement')}</h2><p>${T('Un abonnement concerne un niveau et dure {days} jours à partir du paiement. Il n’est pas reconduit automatiquement. Le paiement se fait en dinars algériens par carte CIB ou Edahabia, via le prestataire Chargily Pay. Tadriss Sciences ne reçoit ni ne conserve les numéros de carte.', { days: auth.config.days })}</p>
       <h2>${T('Données personnelles')}</h2><p>${T('Nous conservons l’adresse e-mail du parent, les prénoms des profils d’élèves, leur progression dans les exercices et l’historique des paiements. Ces données servent uniquement à faire fonctionner le service. Aucune publicité, aucune revente de données.')}</p>
       <h2>${T('Supprimer son compte')}</h2><p>${T('Un profil peut être supprimé depuis « Mon compte ». Pour supprimer tout le compte, écrire à l’adresse de contact (à compléter).')}</p></div></div>`, 'compte');
   }
@@ -481,7 +481,7 @@
   const planLabel = (id) => (PLANS().find((p) => p.id === id) || { label: id }).label;
   const da = (n) => `<span style="white-space:nowrap">${Number(n).toLocaleString('fr-FR')} ${T('DA')}</span>`;
   function pageAdmin() {
-    document.title = T('Administration — Tadriss-Maths');
+    document.title = T('Administration — Tadriss Sciences');
     if (!auth.user) { returnTo = '#/admin'; return pageLogin(); }
     if (!auth.user.admin) { show(`<div class="wrap narrow"><div class="lvhead"><h1>${T('Administration')}</h1></div><div class="note">${T('Ce compte n’a pas accès à l’administration.')}</div><p><a class="btn ghost" href="#/compte">${T('Mon compte')}</a></p></div>`, 'compte'); return; }
     show(`<div class="wrap"><div class="lvhead"><h1>${T('Tableau de bord')}</h1></div>
@@ -591,7 +591,7 @@
   let courseCycle = 'moyen', courseSubj = 'all';
   function pageCourses() {
     stopSpeak();
-    document.title = T('Cours — Tadriss-Maths');
+    document.title = T('Cours — Tadriss Sciences');
     const chips = COURSE_LEVELS.filter((l) => l.cycle === courseCycle && l.ready).map((l) => l.ready ? `<button class="pill ${l.id === courseLevel ? 'on' : ''}" style="background:#3b3a8f;font-family:inherit;cursor:pointer" data-clv="${l.id}" aria-pressed="${l.id === courseLevel}">${l.label}</button>` : `<span class="pill off">${l.label} <small>${T('bientôt')}</small></span>`).join('');
     const subjs = COURSE_SUBJECTS.filter((s) => COURSES.some((c) => c.subj === s.id && c.level === courseLevel));
     if (courseSubj !== 'all' && !subjs.some((s) => s.id === courseSubj)) courseSubj = 'all';
@@ -618,7 +618,7 @@
     courseLevel = c.level; courseCycle = cycleOf(c.level);
     const idx = COURSES.filter((x) => x.subj === c.subj && x.level === c.level), pos = idx.indexOf(raw);
     const prev = idx[pos - 1] && cl(idx[pos - 1]), nextC = idx[pos + 1] && cl(idx[pos + 1]);
-    document.title = `${c.title} — Tadriss-Maths`;
+    document.title = `${c.title} — Tadriss Sciences`;
     if (!courseOpen(raw)) {
       const sjl = COURSE_SUBJECTS.find((x) => x.id === raw.subj);
       show(`<div class="wrap narrow"><div class="crumb"><a href="#/cours/niv-${c.level}">${T('Cours')}</a> › ${sjl.icon} ${T(sjl.label)} › <bdi>${lvName(c.level)}</bdi></div>

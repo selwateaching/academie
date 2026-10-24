@@ -1,4 +1,4 @@
-"""Serveur de Tadriss-Maths : site statique + comptes, abonnements, paiements, progression.
+"""Serveur de Tadriss Sciences : site statique + comptes, abonnements, paiements, progression.
 
 Local :   python3 server.py          (SQLite, paiements simulés)
 Render :  gunicorn server:app        (PostgreSQL via DATABASE_URL, voir render.yaml)
@@ -429,7 +429,7 @@ def create_app(database_url=None):
                     c = chargily.create_checkout(
                         amount, base_url() + "/#/paiement/succes", base_url() + "/#/paiement/echec",
                         base_url() + "/api/webhook/chargily",
-                        f"Tadriss-Maths {plan_label(level)} - 1 mois", [{"payment_id": pay_id, "level": level}], method)
+                        f"Tadriss Sciences {plan_label(level)} - 1 mois", [{"payment_id": pay_id, "level": level}], method)
                     cid, url = c["id"], c["url"]
                 else:
                     cid = "demo_" + secrets.token_urlsafe(16)
