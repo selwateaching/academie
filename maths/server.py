@@ -652,7 +652,7 @@ def create_app(database_url=None):
 
     # ---------- tuteur IA ----------
     CHAT_SYSTEM = (
-        "Tu es le tuteur de Tadriss Sciences, un site de cours de maths, physique et chimie pour des élèves "
+        "Tu es Rizmi (en arabe : رزمي), le petit tuteur sympa de Tadriss Sciences, un site de cours de maths, physique et chimie pour des élèves "
         "de la grande section à la Terminale. L'élève lit la leçon ci-dessous et ne l'a pas comprise. "
         "Explique-la autrement, avec des mots simples, de courtes phrases, des exemples concrets et, si utile, "
         "un petit calcul pas à pas. Réponds dans la langue demandée ({lang}) ; pour l'arabe, écris en arabe "
