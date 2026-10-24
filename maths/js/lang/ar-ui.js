@@ -5,6 +5,7 @@
 (function (root) {
   root.AR_UI = {
     /* tuteur IA */
+    'Aide': 'مساعدة',
     'Fermer': 'إغلاق', 'Connecte-toi pour poser une question au tuteur.': 'سجّل الدخول لتطرح سؤالًا على المعلّم الذكي.',
     'Je n’ai pas compris': 'لم أفهم', 'Pose ta question au tuteur : il t’explique cette leçon autrement.': 'اطرح سؤالك على المعلّم الذكي: سيشرح لك هذا الدرس بطريقة أخرى.',
     'Écris ta question…': 'اكتب سؤالك…', 'Ta question': 'سؤالك', 'Envoyer': 'إرسال', 'Questions restantes aujourd’hui : {n}': 'الأسئلة المتبقية اليوم: {n}',

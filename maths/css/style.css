@@ -345,8 +345,11 @@ main{flex:1;outline:none}
 .tmsg.user{align-self:flex-end;background:var(--brand);color:#fff}
 .tmsg.bot{align-self:flex-start;background:#ecebfb}
 .trow{display:flex;gap:8px}.trow input{flex:1;min-width:0;border:2px solid #d9d7f3;border-radius:12px;padding:10px 12px;font:inherit}
-.tbubble{position:fixed;inset-block-end:18px;inset-inline-end:18px;z-index:40;display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:12px 18px;background:var(--brand);color:#fff;font:inherit;font-size:1rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.28)}
+.tbubble{position:fixed;flex-direction:column;gap:0;inset-block-end:18px;inset-inline-end:18px;z-index:40;display:flex;align-items:center;gap:8px;border:0;border-radius:22px;padding:6px 14px 8px;background:var(--brand);color:#fff;font:inherit;font-size:1rem;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.28)}
 .tbubble span{font-size:1.5rem;line-height:1}.tbubble[hidden],.tpanel[hidden]{display:none}
 .tpanel{position:fixed;inset-block-end:18px;inset-inline-end:18px;z-index:41;width:min(380px,calc(100vw - 24px));max-height:min(540px,calc(100vh - 36px));overflow-y:auto;background:var(--card);border-radius:18px;padding:14px 16px;box-shadow:0 10px 36px rgba(0,0,0,.35)}
 .tpanel .thead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .tpanel .hint{margin:4px 0 8px}.tpanel .tlog{max-height:260px}
+.tbubble .mascot{display:block;animation:bob 2.6s ease-in-out infinite}.tbubble b{font-size:.95rem;margin-top:-2px}
+.tbubble:hover{filter:brightness(1.08)}@media(prefers-reduced-motion:reduce){.tbubble .mascot{animation:none}}
+.tbubble{background:#fff;color:var(--brand2);border:3px solid var(--brand)}
