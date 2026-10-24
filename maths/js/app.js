@@ -595,10 +595,25 @@
     return Object.assign({}, c, { title: a.title, intro: a.intro, recap: a.recap, steps: c.steps.map((x, i) => Object.assign({}, x, a.steps[i])), quiz: c.quiz.map((q, i) => Object.assign({}, q, a.quiz[i])) });
   };
   const figT = (h) => (lang === 'ar' && window.AR_FIGS ? h.replace(/(<text[^>]*>)([^<]*)(<\/text>)/g, (m, x, t, y) => x + (window.AR_FIGS[t] || t) + y) : h);
+  // Choix de la voix : on prend la plus naturelle disponible sur l'appareil (voix « neural », « online », Google, Microsoft…)
+  let speechLevel = '';
+  const KID_LEVELS = ['gs', 'cp', 'ce1', 'ce2', 'cm1', 'cm2'];
+  const NATURAL = /natural|neural|online|premium|enhanced|wavenet|google|microsoft/i;
+  const FEMALE = /female|femme|denise|eloise|brigitte|julie|amelie|amélie|marie|hortense|audrey|thomas?_?f|zira|hoda|salma|zariyah|amira|laila|maged_f/i;
+  const MALE = /\bmale\b|homme|henri|claude|remy|rémy|paul|thomas|jean|hamed|naayf|shakir|tarik|maged|majed/i;
+  function pickVoice(l, kid) {
+    const all = synth.getVoices().filter((x) => (l === 'ar' ? /^ar/i : /^fr/i).test(x.lang));
+    if (!all.length) return null;
+    const score = (v) => (NATURAL.test(v.name) ? 10 : 0) + (!v.localService ? 2 : 0) + (kid ? (FEMALE.test(v.name) ? 3 : 0) : 0) + (l === 'fr' && /^fr-FR/i.test(v.lang) ? 1 : 0) + (l === 'ar' && /^ar-(SA|EG|AE)/i.test(v.lang) ? 1 : 0);
+    return all.slice().sort((a, b) => score(b) - score(a))[0];
+  }
   function say(text, token, onEnd) {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang === 'ar' ? 'ar-SA' : 'fr-FR'; u.rate = 0.95;
-    const v = synth.getVoices().find((x) => (lang === 'ar' ? /^ar/i : /^fr/i).test(x.lang)); if (v) u.voice = v;
+    const kid = KID_LEVELS.includes(speechLevel);
+    u.lang = lang === 'ar' ? 'ar-SA' : 'fr-FR';
+    // voix d'enfant : voix douce plus aiguë et un peu plus lente ; grands : voix posée, rythme naturel
+    u.rate = kid ? 0.88 : 0.97; u.pitch = kid ? 1.45 : 1.0;
+    const v = pickVoice(lang, kid); if (v) u.voice = v;
     u.onend = () => { if (speech.token === token) onEnd(); };
     u.onerror = () => { if (speech.token === token) onEnd(); };
     synth.speak(u);
@@ -644,6 +659,7 @@
   function pageCourse(id) {
     stopSpeak();
     const raw = COURSES.find((x) => x.id === id); if (!raw) return pageCourses();
+    speechLevel = raw.level;
     const c = cl(raw);
     const sj = COURSE_SUBJECTS.find((s) => s.id === c.subj);
     courseLevel = c.level; courseCycle = cycleOf(c.level);
