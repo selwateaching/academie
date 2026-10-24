@@ -440,4 +440,41 @@
     },
   });
 
+  K.COURSES.push(
+    { id: 'p6-jour-nuit-saisons', subj: 'physique', level: '6e', icon: '🌍', title: 'Jour, nuit et saisons',
+      intro: 'Pourquoi fait-il nuit le soir ? Pourquoi les jours sont-ils longs en été ? La réponse vient des mouvements de la Terre.',
+      steps: [
+        S('La Terre tourne sur elle-même', 'La Terre tourne sur elle-même en <b>24 heures</b>. Le Soleil n’éclaire que la moitié de la Terre : là où il éclaire, c’est le <b>jour</b> ; de l’autre côté, c’est la <b>nuit</b>. En tournant, chaque endroit passe du jour à la nuit, puis de la nuit au jour.', 'jn_terre'),
+        S('Le trajet apparent du Soleil', 'Le Soleil semble se déplacer dans le ciel : il se lève vers l’<b>est</b>, monte jusqu’à sa hauteur maximale à midi, puis se couche vers l’<b>ouest</b>. En réalité, c’est la Terre qui tourne. En été, il monte plus haut et reste plus longtemps dans le ciel qu’en hiver.', 'jn_soleil'),
+        S('La Terre tourne autour du Soleil', 'La Terre fait aussi le tour du Soleil en un peu plus de <b>365 jours</b>, soit une <b>année</b>. Pour compenser les 6 heures en plus, on ajoute un jour au calendrier tous les 4 ans : c’est l’année bissextile, de 366 jours.'),
+        S('L’axe incliné et les saisons', 'L’axe de rotation de la Terre est <b>incliné</b>, et il pointe toujours dans la même direction. Quand l’hémisphère Nord penche vers le Soleil, c’est l’<b>été</b> : les jours sont longs et il fait chaud. Six mois plus tard, il penche à l’opposé : c’est l’<b>hiver</b>.', 'jn_saisons'),
+        S('Quatre saisons', 'Les saisons ne viennent pas de la distance au Soleil, mais de l’inclinaison de l’axe. Vers le 21 juin, c’est le jour le plus long ; vers le 21 décembre, le plus court. Vers le 21 mars et le 22 septembre, le jour et la nuit durent environ 12 heures chacun.'),
+      ],
+      recap: ['La Terre tourne sur elle-même en 24 heures : jour et nuit.', 'Le Soleil se lève à l’est et se couche à l’ouest.', 'La Terre fait le tour du Soleil en environ 365 jours.', 'Les saisons viennent de l’inclinaison de l’axe de la Terre.'],
+      quiz: [Q('La Terre fait un tour sur elle-même en :', ['24 heures', '1 an', '1 mois'], 0), Q('Les saisons existent parce que l’axe de la Terre est :', ['droit', 'incliné', 'absent'], 1), Q('En été dans l’hémisphère Nord, les jours sont :', ['plus courts', 'plus longs'], 1)] },
+
+    { id: 'p6-signaux', subj: 'physique', level: '6e', icon: '📡', title: 'Transmettre une information',
+      intro: 'Un feu rouge, une sonnerie, un message sur un téléphone : tous transmettent une information grâce à un signal.',
+      steps: [
+        S('Émetteur, signal, récepteur', 'Pour transmettre une information, il faut un <b>émetteur</b> qui produit un <b>signal</b>, et un <b>récepteur</b> qui le reçoit. Une lampe (émetteur) envoie de la lumière (signal) qui entre dans l’œil (récepteur).', 'sig_chaine'),
+        S('Signaux lumineux et sonores', 'Un signal peut être de la lumière (feu tricolore, phare) ou un son (sirène, cloche). La lumière va à 300 000 km/s, le son à environ 340 m/s dans l’air. C’est pourquoi on voit l’éclair avant d’entendre le tonnerre : 3 secondes d’écart, c’est environ 1 km.'),
+        S('Un code pour se comprendre', 'Pour que l’information soit comprise, l’émetteur et le récepteur doivent utiliser le même <b>code</b>. Le code Morse utilise des signaux courts (points) et longs (traits). Trois points, trois traits, trois points : SOS, un appel au secours.', 'sig_morse'),
+        S('Le langage des ordinateurs', 'Un ordinateur n’utilise que deux signes : <b>0</b> et <b>1</b>. Chaque lettre est codée par une suite de 8 chiffres. La lettre A s’écrit 01000001. Les photos, les sons et les vidéos sont aussi codés avec des 0 et des 1.', 'sig_binaire'),
+        S('Voyager très loin', 'Les messages d’Internet voyagent dans des câbles, comme la <b>fibre optique</b> où circule de la lumière, ou par ondes radio, comme le Wi-Fi et le téléphone. Ces signaux vont très vite et traversent le monde en une fraction de seconde.'),
+      ],
+      recap: ['Une information passe d’un émetteur à un récepteur par un signal.', 'Le signal peut être lumineux ou sonore.', 'Il faut un code commun : Morse, 0 et 1…', 'La lumière va beaucoup plus vite que le son.'],
+      quiz: [Q('Dans une chaîne d’information, qui reçoit le signal ?', ['l’émetteur', 'le récepteur'], 1), Q('Le code Morse utilise :', ['des chiffres de 0 à 9', 'des points et des traits', 'des lettres'], 1), Q('Un ordinateur code l’information avec :', ['0 et 1', 'A et B'], 0)] },
+
+    { id: 'c6-tri-recyclage', subj: 'chimie', level: '6e', icon: '♻️', title: 'Trier et recycler',
+      intro: 'Chaque jour, on jette des emballages, des papiers, des restes de repas. Bien trier permet de leur donner une seconde vie.',
+      steps: [
+        S('Pourquoi trier ?', 'Les déchets sont faits de matières différentes : verre, papier, plastique, métal, déchets organiques. Si on les trie, on peut <b>récupérer</b> ces matières pour fabriquer de nouveaux objets, au lieu de tout enterrer ou brûler. On économise des matières premières et de l’énergie.'),
+        S('Les bons bacs', 'Le <b>verre</b> va dans le conteneur à verre, le <b>papier</b> et le carton dans le bac à papier, les <b>emballages</b> en plastique et en métal dans le bac des emballages, et les épluchures dans le <b>compost</b>. Un objet mal trié peut empêcher de recycler tout le reste.', 'rec_poubelles'),
+        S('Le circuit du recyclage', 'Un objet usagé est trié, puis envoyé à l’usine. La matière est <b>broyée, fondue</b> ou transformée, puis sert à fabriquer un objet neuf. Le verre peut être fondu et refait sans fin. Des bouteilles en plastique recyclées servent à fabriquer des vêtements.', 'rec_cycle'),
+        S('Séparer avec un aimant', 'Dans un centre de tri, un <b>aimant</b> attire les objets en acier (fer) comme les boîtes de conserve. Il n’attire pas l’aluminium ni le plastique : c’est ainsi qu’on sépare les métaux. On utilise une propriété de la matière pour séparer un mélange.', 'rec_aimant'),
+        S('Réduire, réutiliser, recycler', 'Le meilleur déchet est celui qu’on ne produit pas. On peut <b>réduire</b> (moins d’emballages), <b>réutiliser</b> (gourde, cartable en bon état) et enfin <b>recycler</b>. Le <b>compost</b> transforme les déchets de cuisine et de jardin en terreau pour les plantes.'),
+      ],
+      recap: ['Trier permet de récupérer des matières.', 'Verre, papier, emballages, compost : chacun son bac.', 'Un aimant attire l’acier, pas l’aluminium.', 'Réduire, réutiliser, puis recycler.'],
+      quiz: [Q('Où jette-t-on une bouteille en verre ?', ['dans le conteneur à verre', 'dans le compost', 'dans le bac à papier'], 0), Q('Un aimant attire :', ['l’aluminium', 'l’acier', 'le plastique'], 1), Q('Le compost est fabriqué avec :', ['du verre', 'des piles', 'des épluchures et des feuilles'], 2)] },
+  );
 })();
