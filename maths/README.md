@@ -1,4 +1,4 @@
-# Tadriss-Maths
+# Tadriss Sciences
 
 Site d'exercices de maths interactifs (GS → 6e), avec comptes, abonnements mensuels et suivi des progrès.
 

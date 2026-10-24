@@ -1,4 +1,4 @@
-"""Base de données de Tadriss-Maths (SQLAlchemy Core).
+"""Base de données de Tadriss Sciences (SQLAlchemy Core).
 
 PostgreSQL sur Render (variable DATABASE_URL), SQLite en local si elle est absente.
 """
