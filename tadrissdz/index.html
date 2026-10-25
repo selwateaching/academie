@@ -582,6 +582,14 @@ tr:hover td{background:var(--tp);}
 .tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}
 .tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}
 .tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}
+/* Jeu de tri : une banque de mots mélangés (chips) à ranger à la main dans des cases, en
+   <table> pour les mêmes raisons de fiabilité (écran/impression/Word) que les autres jeux. */
+.tc-tri-banque{background:var(--tp);border-radius:12px;padding:.8rem 1rem;margin:.9rem 0;line-height:2.2;}
+.tc-tri-item{display:inline-block;background:var(--w);border:2px solid var(--t);border-radius:999px;padding:.3rem .9rem;margin:.15rem .3rem;font-size:.85rem;font-weight:700;color:var(--t);}
+.tc-tri-table{width:100%;border-collapse:separate;border-spacing:.7rem;margin:.9rem 0;table-layout:fixed;}
+.tc-tri-case{width:50%;vertical-align:top;background:var(--w);border:2px solid var(--br);border-radius:16px;padding:.9rem 1rem;}
+.tc-tri-titre{font-weight:800;font-size:.9rem;color:var(--t);text-align:center;margin-bottom:.5rem;}
+.tc-tri-lignes{min-height:190px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);border-radius:8px;}
 .tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:none;}
 .tc-remember>.tc-box-title{color:var(--t);font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -1769,7 +1777,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option><option value="bulles">💬 Jeu des bulles (BD à compléter)</option><option value="bmap">🧠 Carte mentale à bulles</option></select></div>
+          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option><option value="bulles">💬 Jeu des bulles (BD à compléter)</option><option value="bmap">🧠 Carte mentale à bulles</option><option value="tri">🗂️ Jeu de tri (classification)</option></select></div>
           <div class="fg" id="crsLangRow"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -4462,8 +4470,8 @@ function switchLang() {
   }
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
-  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية',bulles:'لعبة الفقاعات',bmap:'خريطة ذهنية'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale'};
+  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية',bulles:'لعبة الفقاعات',bmap:'خريطة ذهنية',tri:'لعبة الفرز'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale',tri:'Jeu de tri'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4523,7 +4531,8 @@ function switchLang() {
           comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique',
           vocabsci: isAR ? '📖 المفردات العلمية' : '📖 Vocabulaire scientifique',
           bulles: isAR ? '💬 لعبة الفقاعات (قصة مصورة للإكمال)' : '💬 Jeu des bulles (BD à compléter)',
-          bmap: isAR ? '🧠 خريطة ذهنية بالفقاعات' : '🧠 Carte mentale à bulles'
+          bmap: isAR ? '🧠 خريطة ذهنية بالفقاعات' : '🧠 Carte mentale à bulles',
+          tri: isAR ? '🗂️ لعبة الفرز (التصنيف)' : '🗂️ Jeu de tri (classification)'
         };
         for (var ci = 0; ci < crsType.options.length; ci++) {
           var ctv = crsType.options[ci].value;
@@ -5175,6 +5184,12 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bmap-b4{border-color:#D4AF37;} .tc-bmap-b4 b{color:#8a6d00;}' +
     '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
     '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
+    '.tc-tri-banque{background:#E6F4EE;padding:10pt 14pt;margin:14pt 0;line-height:2.2;}' +
+    '.tc-tri-item{background:#fff;border:1.5pt solid #006B3F;padding:4pt 12pt;margin:2pt 4pt;font-size:12pt;font-weight:bold;color:#006B3F;}' +
+    '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:8pt;margin:14pt 0;}' +
+    '.tc-tri-case{width:50%;vertical-align:top;background:#fff;border:1.5pt solid #E2DDD5;padding:12pt 14pt;}' +
+    '.tc-tri-titre{font-weight:bold;font-size:12pt;color:#006B3F;text-align:center;margin-bottom:6pt;}' +
+    '.tc-tri-lignes{min-height:120pt;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -5265,6 +5280,12 @@ function printCleanPage(title, contentHTML) {
     '.tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}' +
     '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
     '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
+    '.tc-tri-banque{background:var(--tp);border-radius:12px;padding:10px 14px;margin:12px 0;line-height:2.2;}' +
+    '.tc-tri-item{display:inline-block;background:#fff;border:2px solid var(--t);border-radius:999px;padding:4px 12px;margin:2px 4px;font-size:12px;font-weight:800;color:var(--t);}' +
+    '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:9px;margin:12px 0;table-layout:fixed;page-break-inside:avoid;}' +
+    '.tc-tri-case{width:50%;vertical-align:top;background:#fff;border:2px solid var(--br);border-radius:14px;padding:12px 14px;}' +
+    '.tc-tri-titre{font-weight:800;font-size:12px;color:var(--t);text-align:center;margin-bottom:6px;}' +
+    '.tc-tri-lignes{min-height:170px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);border-radius:8px;}' +
     '.tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:var(--t);font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -11593,6 +11614,27 @@ async function genCours(extraInstruction) {
       '- Le contenu de chaque branche reste TRÈS concis : des mots-clés ou très courtes expressions séparés par des virgules, JAMAIS des phrases complètes ni un paragraphe — c\'est une carte mentale, pas un cours\n'+
       '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
       '- Écris directement le HTML, sans aucun texte avant la balise <table>';
+  } else if (ty === 'tri') {
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    /* Jeu de tri : banque de mots mélangés + 2 cases à remplir à la main. <table> pour la case
+       (même raison que les autres jeux : fiabilité Word), corrigé sur page séparée (réutilise
+       tc-bulle-corrige, un simple utilitaire de saut de page, pas spécifique au Jeu des bulles). */
+    function caseTri(n) {
+      return '<td class="tc-tri-case"><div class="tc-tri-titre">[emoji + titre de la case '+n+']</div><div class="tc-tri-lignes"></div></td>';
+    }
+    var skeletonTri =
+      '<p><strong>Consigne :</strong> [1 phrase simple expliquant à l\'élève de ranger chaque mot de la banque dans la bonne case]</p>'+
+      '<div class="tc-tri-banque">[8 à 12 mots-clés liés au sujet, MÉLANGÉS (pas déjà triés), chacun entre balises <span class="tc-tri-item">mot</span>, séparés par un espace]</div>'+
+      '<table class="tc-tri-table"><tbody><tr>'+caseTri(1)+caseTri(2)+'</tr></tbody></table>'+
+      '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé</div>[un sous-titre en gras par case, suivi de la liste des mots qui vont dedans]</div>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée un JEU DE TRI (classification) à imprimer : une banque de mots MÉLANGÉS en lien avec le sujet, que l\'élève doit ranger à la main dans la bonne case parmi 2 catégories — une activité ludique de classification. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
+      '\n\nVoici le squelette HTML EXACT à utiliser. Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) les mots de la banque (tc-tri-item) doivent être présentés dans un ORDRE MÉLANGÉ, JAMAIS déjà regroupés par catégorie (alterne, ne mets pas tous les mots de la catégorie 1 avant ceux de la catégorie 2) ; (2) la <div class="tc-tri-lignes"></div> de chaque case doit rester STRICTEMENT VIDE dans ta réponse — pas de texte, pas de [indication] — c\'est l\'élève qui y écrit à la main. NE CHANGE PAS la structure (tableau à 2 cases), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Consigne" et ne rien contenir avant :\n\n'+skeletonTri+
+      '\n\nExigences :\n'+
+      '- Déduis du sujet "'+titre+'" les 2 catégories de tri les plus naturelles et pertinentes (ex: pour "les animaux sauvages et domestiques" → "🦁 Animaux sauvages" / "🐶 Animaux domestiques" ; adapte à n\'importe quel autre sujet de la même façon : nombres pairs/impairs, noms/verbes, mots au féminin/masculin, voyelles/consonnes, etc.)\n'+
+      '- La banque contient 8 à 12 mots COURTS (un mot ou une très courte expression chacun), tous VRAIMENT liés au sujet et classables sans la moindre ambiguïté dans l\'une des 2 catégories (jamais un mot qui pourrait aller dans les deux)\n'+
+      '- La consigne tient en une seule phrase simple, à hauteur du niveau '+nv+'\n'+
+      '- Vocabulaire adapté au niveau '+nv+'\n'+
+      '- Le corrigé doit lister explicitement tous les mots sous leur bonne catégorie';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -11711,7 +11753,7 @@ async function genCours(extraInstruction) {
          pour contenir le message d'erreur Stability AI en entier) — repère de diagnostic temporaire. */
       imgHTML = '<div style="background:#FBEAEA;border:1px solid #E8A3A3;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#7A2424;word-break:break-word;"><b>🔧 Diagnostic image (temporaire) :</b><br>' + imgErrDetail.replace(/</g,'&lt;') + '</div>';
     }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci' || ty === 'bulles' || ty === 'bmap') ? (enteteHTML + imgHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci' || ty === 'bulles' || ty === 'bmap' || ty === 'tri') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     /* Champs bruts de l'en-tête (Projet/Séquence/Acte de parole/Durée/Activité) conservés à part,
        en plus de leur affichage dans enteteHTML — pour reconstruire une vraie grille d'en-tête
@@ -11770,7 +11812,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale',tri:'Jeu de tri'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
