@@ -569,6 +569,19 @@ tr:hover td{background:var(--tp);}
 .tc-bulle-corrige{page-break-before:always;break-before:page;}
 [dir="rtl"] .tc-bulle-td-l{padding-right:0;padding-left:10%;}
 [dir="rtl"] .tc-bulle-td-r{padding-left:0;padding-right:10%;}
+/* Carte mentale à bulles : thème central + 6 bulles d'idées/vocabulaire autour, en <table>
+   (rowspan au centre) pour la même raison que le Jeu des bulles — fiable à l'écran, à
+   l'impression ET dans l'export Word, contrairement à un vrai agencement radial en <div>. */
+.tc-bmap-table{width:100%;border-collapse:separate;border-spacing:10px;margin:1rem 0;table-layout:fixed;}
+.tc-bmap-centre{background:var(--t);color:#fff;text-align:center;vertical-align:middle;border-radius:20px;padding:1.4rem 1rem;font-weight:800;font-size:1rem;line-height:1.35;}
+.tc-bmap-branche{background:var(--w);border:2px solid var(--br);border-radius:16px;padding:.8rem 1rem;font-size:.82rem;line-height:1.5;vertical-align:top;}
+.tc-bmap-branche b{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;margin-bottom:.2rem;}
+.tc-bmap-b1{border-color:var(--t);} .tc-bmap-b1 b{color:var(--t);}
+.tc-bmap-b2{border-color:var(--b);} .tc-bmap-b2 b{color:var(--b);}
+.tc-bmap-b3{border-color:var(--p);} .tc-bmap-b3 b{color:var(--p);}
+.tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}
+.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}
+.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}
 .tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:none;}
 .tc-remember>.tc-box-title{color:var(--t);font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -1756,7 +1769,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option><option value="bulles">💬 Jeu des bulles (BD à compléter)</option></select></div>
+          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option><option value="bulles">💬 Jeu des bulles (BD à compléter)</option><option value="bmap">🧠 Carte mentale à bulles</option></select></div>
           <div class="fg" id="crsLangRow"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -4449,8 +4462,8 @@ function switchLang() {
   }
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
-  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية',bulles:'لعبة الفقاعات'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles'};
+  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية',bulles:'لعبة الفقاعات',bmap:'خريطة ذهنية'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4509,7 +4522,8 @@ function switchLang() {
           positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement',
           comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique',
           vocabsci: isAR ? '📖 المفردات العلمية' : '📖 Vocabulaire scientifique',
-          bulles: isAR ? '💬 لعبة الفقاعات (قصة مصورة للإكمال)' : '💬 Jeu des bulles (BD à compléter)'
+          bulles: isAR ? '💬 لعبة الفقاعات (قصة مصورة للإكمال)' : '💬 Jeu des bulles (BD à compléter)',
+          bmap: isAR ? '🧠 خريطة ذهنية بالفقاعات' : '🧠 Carte mentale à bulles'
         };
         for (var ci = 0; ci < crsType.options.length; ci++) {
           var ctv = crsType.options[ci].value;
@@ -5151,6 +5165,16 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bulle-vide{min-height:68pt;}' +
     '.tc-bulle-indice{display:block;font-size:9pt;font-style:italic;color:#9090A0;margin-top:3pt;}' +
     '.tc-bulle-corrige{page-break-before:always;mso-break-type:page-break;}' +
+    '.tc-bmap-table{width:100%;border-collapse:separate;border-spacing:6pt;margin:16pt 0;}' +
+    '.tc-bmap-centre{background:#006B3F;color:#fff;text-align:center;vertical-align:middle;padding:16pt 10pt;font-weight:bold;font-size:13pt;}' +
+    '.tc-bmap-branche{background:#fff;border:1.5pt solid #E2DDD5;padding:10pt 12pt;font-size:11pt;vertical-align:top;}' +
+    '.tc-bmap-branche b{display:block;font-size:9pt;text-transform:uppercase;margin-bottom:3pt;}' +
+    '.tc-bmap-b1{border-color:#006B3F;} .tc-bmap-b1 b{color:#006B3F;}' +
+    '.tc-bmap-b2{border-color:#3B82F6;} .tc-bmap-b2 b{color:#3B82F6;}' +
+    '.tc-bmap-b3{border-color:#8B5CF6;} .tc-bmap-b3 b{color:#8B5CF6;}' +
+    '.tc-bmap-b4{border-color:#D4AF37;} .tc-bmap-b4 b{color:#8a6d00;}' +
+    '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
+    '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -5231,6 +5255,16 @@ function printCleanPage(title, contentHTML) {
     '.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
     '.tc-bulle-indice{display:block;font-size:9px;font-style:italic;color:var(--ink3);margin-top:4px;}' +
     '.tc-bulle-corrige{page-break-before:always;}' +
+    '.tc-bmap-table{width:100%;border-collapse:separate;border-spacing:8px;margin:14px 0;table-layout:fixed;page-break-inside:avoid;}' +
+    '.tc-bmap-centre{background:var(--t);color:#fff;text-align:center;vertical-align:middle;border-radius:18px;padding:16px 10px;font-weight:800;font-size:13px;line-height:1.35;}' +
+    '.tc-bmap-branche{background:#fff;border:2px solid var(--br);border-radius:14px;padding:10px 12px;font-size:11px;line-height:1.5;vertical-align:top;page-break-inside:avoid;}' +
+    '.tc-bmap-branche b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;}' +
+    '.tc-bmap-b1{border-color:var(--t);} .tc-bmap-b1 b{color:var(--t);}' +
+    '.tc-bmap-b2{border-color:var(--b);} .tc-bmap-b2 b{color:var(--b);}' +
+    '.tc-bmap-b3{border-color:var(--p);} .tc-bmap-b3 b{color:var(--p);}' +
+    '.tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}' +
+    '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
+    '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
     '.tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:var(--t);font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -11538,6 +11572,27 @@ async function genCours(extraInstruction) {
       '- Ton naturel, proche de ce que diraient vraiment des élèves algériens de cet âge — pas de registre trop soutenu ni trop enfantin\n'+
       '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
       '- Le corrigé indicatif doit être une vraie version complète et cohérente des 4 répliques, pas un résumé';
+  } else if (ty === 'bmap') {
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    /* Carte mentale en <table> (thème central avec rowspan=3, 6 bulles autour) pour la même
+       raison que le Jeu des bulles : fiable dans TOUS les exports, y compris Word. */
+    function brancheBmap(n) {
+      return '<td class="tc-bmap-branche tc-bmap-b'+n+'"><b>[titre court de la branche '+n+']</b>[2 à 4 mots-clés ou très courtes expressions liés à cette branche, séparés par des virgules]</td>';
+    }
+    var skeletonBmap =
+      '<table class="tc-bmap-table"><tbody>'+
+      '<tr>'+brancheBmap(1)+'<td class="tc-bmap-centre" rowspan="3">[Thème central — reformulation courte et claire de "'+titre+'", 2 à 5 mots]</td>'+brancheBmap(2)+'</tr>'+
+      '<tr>'+brancheBmap(3)+brancheBmap(4)+'</tr>'+
+      '<tr>'+brancheBmap(5)+brancheBmap(6)+'</tr>'+
+      '</tbody></table>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée une CARTE MENTALE À BULLES (bubble map) pour réviser le vocabulaire/les idées clés du sujet, ou servir de support de remue-méninges en classe : un thème central entouré de 6 bulles de branches, chacune avec un titre court et quelques mots-clés ou expressions associés. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
+      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, thème central au milieu avec rowspan="3", 6 bulles de branches autour, 3 de chaque côté). Remplace chaque texte entre crochets [ ]. NE CHANGE PAS la structure du tableau (lignes, colonnes, rowspan), ni les classes CSS. Ta réponse doit commencer par "<table" et ne rien contenir avant :\n\n'+skeletonBmap+
+      '\n\nExigences :\n'+
+      '- Choisis 6 branches PERTINENTES et distinctes qui couvrent bien les aspects/sous-thèmes importants du sujet "'+titre+'" pour le niveau '+nv+' (jamais de branches génériques ou redondantes entre elles)\n'+
+      '- Le titre de chaque branche est TRÈS court (1 à 3 mots, ex: "Vocabulaire", "Causes", "Exemples", "Dates clés"...)\n'+
+      '- Le contenu de chaque branche reste TRÈS concis : des mots-clés ou très courtes expressions séparés par des virgules, JAMAIS des phrases complètes ni un paragraphe — c\'est une carte mentale, pas un cours\n'+
+      '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
+      '- Écris directement le HTML, sans aucun texte avant la balise <table>';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -11656,7 +11711,7 @@ async function genCours(extraInstruction) {
          pour contenir le message d'erreur Stability AI en entier) — repère de diagnostic temporaire. */
       imgHTML = '<div style="background:#FBEAEA;border:1px solid #E8A3A3;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#7A2424;word-break:break-word;"><b>🔧 Diagnostic image (temporaire) :</b><br>' + imgErrDetail.replace(/</g,'&lt;') + '</div>';
     }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci' || ty === 'bulles') ? (enteteHTML + imgHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci' || ty === 'bulles' || ty === 'bmap') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     /* Champs bruts de l'en-tête (Projet/Séquence/Acte de parole/Durée/Activité) conservés à part,
        en plus de leur affichage dans enteteHTML — pour reconstruire une vraie grille d'en-tête
@@ -11715,7 +11770,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles',bmap:'Carte mentale'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
