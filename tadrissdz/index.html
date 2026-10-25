@@ -549,6 +549,24 @@ tr:hover td{background:var(--tp);}
 .tc-dialogue b{color:var(--t);}
 [dir="rtl"] .tc-dialogue{font-size:1.05rem;font-family:'Amiri',serif;}
 [dir="rtl"] .tc-dialogue p{line-height:1.9;}
+/* Jeu des bulles : mini bande dessinée imprimable à 2 personnages, bulles alternées gauche/droite,
+   certaines vides (tc-bulle-vide) pour que l'élève écrive dedans à la main une fois imprimée. */
+.tc-bulle-case{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;margin:.9rem 0 .2rem;max-width:80%;}
+.tc-bulle-case.tc-bulle-right{align-items:flex-end;margin-left:auto;}
+.tc-bulle-perso{font-size:.72rem;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;padding:0 .3rem;}
+.tc-bulle{position:relative;background:var(--w);border:2px solid var(--ink);border-radius:18px;padding:.85rem 1.1rem;font-size:.85rem;line-height:1.6;min-width:140px;}
+.tc-bulle::after{content:'';position:absolute;bottom:-13px;left:26px;width:0;height:0;border:11px solid transparent;border-top-color:var(--ink);border-bottom:0;}
+.tc-bulle::before{content:'';position:absolute;bottom:-9px;left:29px;width:0;height:0;border:8px solid transparent;border-top-color:var(--w);border-bottom:0;z-index:1;}
+.tc-bulle-case.tc-bulle-right .tc-bulle::after{left:auto;right:26px;}
+.tc-bulle-case.tc-bulle-right .tc-bulle::before{left:auto;right:29px;}
+.tc-bulle-vide{min-height:52px;background:repeating-linear-gradient(var(--w),var(--w) 21px,var(--br) 22px);}
+.tc-bulle-indice{font-size:.72rem;font-style:italic;color:var(--ink3);margin:.15rem 0 0 .3rem;}
+[dir="rtl"] .tc-bulle-case{align-items:flex-end;}
+[dir="rtl"] .tc-bulle-case.tc-bulle-right{align-items:flex-start;margin-left:0;margin-right:auto;}
+[dir="rtl"] .tc-bulle::after{left:auto;right:26px;}
+[dir="rtl"] .tc-bulle::before{left:auto;right:29px;}
+[dir="rtl"] .tc-bulle-case.tc-bulle-right .tc-bulle::after{right:auto;left:26px;}
+[dir="rtl"] .tc-bulle-case.tc-bulle-right .tc-bulle::before{right:auto;left:29px;}
 .tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:none;}
 .tc-remember>.tc-box-title{color:var(--t);font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -1736,7 +1754,7 @@ pre.mermaid{background:var(--bg);border-radius:8px;padding:.8rem 1rem;font-famil
           <select class="fs" id="crsMatiere" onchange="onCrsTypeChange()"></select>
         </div>
         <div class="fg2">
-          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option></select></div>
+          <div class="fg"><label class="fl" data-fl="type">Type de document</label><select class="fs" id="crsType" onchange="onCrsTypeChange()"><option value="fiche_peda">📋 Fiche pédagogique (canevas officiel)</option><option value="deroulement">📅 Déroulement de séquence (Primaire)</option><option value="cours">Cours complet</option><option value="fiche">Fiche de révision</option><option value="exos">Série d'exercices</option><option value="intro">Introduction au chapitre</option><option value="synthese">Synthèse / Résumé</option><option value="bem">Sujet type BEM</option><option value="bac">Sujet type BAC</option><option value="positionnement">🎯 Test de positionnement</option><option value="comptine">🎵 Comptine pédagogique</option><option value="vocabsci">📖 Vocabulaire scientifique</option><option value="bulles">💬 Jeu des bulles (BD à compléter)</option></select></div>
           <div class="fg" id="crsLangRow"><label class="fl" data-fl="langue">Langue</label><select class="fs" id="crsLang"><option value="fr">Français</option><option value="ar">Arabe</option></select></div>
         </div>
         <div id="crsLangueFields" style="display:none">
@@ -4429,8 +4447,8 @@ function switchLang() {
   }
 
   /* ===== SOUS-MENU "COURS & FICHES IA" (barre latérale) ===== */
-  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية'};
-  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique'};
+  var navSubAR = {fiche_peda:'ورقة تحضير بيداغوجية',cours:'درس كامل',fiche:'ورقة مراجعة',exos:'سلسلة تمارين',bem:'موضوع نمط BEM',bac:'موضوع نمط BAC',intro:'مقدمة الفصل',synthese:'ملخص / خلاصة',positionnement:'اختبار تحديد المستوى',comptine:'أنشودة بيداغوجية',vocabsci:'المفردات العلمية',bulles:'لعبة الفقاعات'};
+  var navSubFR = {fiche_peda:'Fiche pédagogique',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",bem:'Sujet type BEM',bac:'Sujet type BAC',intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles'};
   Object.keys(navSubFR).forEach(function(ty){
     var navSubEl = document.getElementById('navSub_'+ty);
     if (navSubEl) navSubEl.textContent = isAR ? navSubAR[ty] : navSubFR[ty];
@@ -4488,7 +4506,8 @@ function switchLang() {
           bac: isAR ? 'موضوع نمط BAC' : 'Sujet type BAC',
           positionnement: isAR ? '🎯 اختبار تحديد المستوى' : '🎯 Test de positionnement',
           comptine: isAR ? '🎵 أنشودة بيداغوجية' : '🎵 Comptine pédagogique',
-          vocabsci: isAR ? '📖 المفردات العلمية' : '📖 Vocabulaire scientifique'
+          vocabsci: isAR ? '📖 المفردات العلمية' : '📖 Vocabulaire scientifique',
+          bulles: isAR ? '💬 لعبة الفقاعات (قصة مصورة للإكمال)' : '💬 Jeu des bulles (BD à compléter)'
         };
         for (var ci = 0; ci < crsType.options.length; ci++) {
           var ctv = crsType.options[ci].value;
@@ -5118,6 +5137,13 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-info{background:#F0EEE9;border-left:4px solid #9090A0;padding:14pt 16pt;margin:16pt 0;} .tc-info .tc-box-title{color:#9090A0;}' +
     '.tc-passage{background:#fff;border:1px solid #E2DDD5;border-left:4px solid #9090A0;padding:16pt 18pt;margin:18pt 0;line-height:2;} .tc-passage .tc-box-title{color:#4A4A52;font-weight:bold;margin-bottom:8pt;}' +
     '.tc-dialogue{background:#fff;border:1px solid #E2DDD5;border-left:4px solid #9090A0;padding:14pt 16pt;margin:16pt 0;} .tc-dialogue p{margin:0 0 8pt;} .tc-dialogue b{color:#006B3F;}' +
+    /* Word n'affiche pas les pseudo-éléments ::before/::after (pointe de bulle) : repli simple en
+       encadré arrondi, sans la pointe — reste clairement identifiable comme une bulle de dialogue. */
+    '.tc-bulle-case{margin:10pt 0 2pt;width:75%;} .tc-bulle-case.tc-bulle-right{margin-left:25%;}' +
+    '.tc-bulle-perso{font-size:9pt;font-weight:bold;color:#006B3F;text-transform:uppercase;}' +
+    '.tc-bulle{background:#fff;border:2pt solid #1A1A1F;border-radius:14pt;padding:10pt 14pt;font-size:12pt;}' +
+    '.tc-bulle-vide{min-height:36pt;}' +
+    '.tc-bulle-indice{font-size:9pt;font-style:italic;color:#9090A0;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -5187,6 +5213,14 @@ function printCleanPage(title, contentHTML) {
     '.tc-info{background:var(--bg);border-left-color:var(--ink3);} .tc-info>.tc-box-title{color:var(--ink3);}' +
     '.tc-passage{background:#fff;border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:14px 18px;margin:14px 0;line-height:1.9;page-break-inside:avoid;} .tc-passage>.tc-box-title{color:var(--ink2);font-weight:800;margin-bottom:8px;}' +
     '.tc-dialogue{background:#fff;border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:12px 16px;margin:12px 0;font-size:12px;page-break-inside:avoid;} .tc-dialogue p{margin:0 0 8px;line-height:1.5;} .tc-dialogue p:last-child{margin-bottom:0;} .tc-dialogue b{color:var(--t);}' +
+    '.tc-bulle-case{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin:10px 0 2px;max-width:80%;page-break-inside:avoid;} .tc-bulle-case.tc-bulle-right{align-items:flex-end;margin-left:auto;}' +
+    '.tc-bulle-perso{font-size:9px;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;padding:0 3px;}' +
+    '.tc-bulle{position:relative;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:12px;line-height:1.5;min-width:140px;}' +
+    '.tc-bulle::after{content:"";position:absolute;bottom:-13px;left:26px;width:0;height:0;border:11px solid transparent;border-top-color:var(--ink);border-bottom:0;}' +
+    '.tc-bulle::before{content:"";position:absolute;bottom:-9px;left:29px;width:0;height:0;border:8px solid transparent;border-top-color:#fff;border-bottom:0;}' +
+    '.tc-bulle-case.tc-bulle-right .tc-bulle::after{left:auto;right:26px;} .tc-bulle-case.tc-bulle-right .tc-bulle::before{left:auto;right:29px;}' +
+    '.tc-bulle-vide{min-height:50px;background:repeating-linear-gradient(#fff,#fff 20px,var(--br) 21px);}' +
+    '.tc-bulle-indice{font-size:9px;font-style:italic;color:var(--ink3);margin:2px 0 0 3px;}' +
     '.tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:var(--t);font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -11464,6 +11498,26 @@ async function genCours(extraInstruction) {
       '- Les exemples doivent être des phrases complètes et naturelles, pas juste le mot répété.\n'+
       '- N\'écris AUCUN exercice, aucune question, aucun problème à résoudre : uniquement du vocabulaire expliqué.\n'+
       '- Écris directement le HTML, sans phrase d\'introduction générique ni titre avant le premier bloc.';
+  } else if (ty === 'bulles') {
+    enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    var skeletonBulles =
+      '<p><strong>Mise en situation :</strong> [1 à 2 phrases qui plantent le décor : qui sont les deux personnages, où ils sont, pourquoi ils parlent — en lien direct avec le sujet "'+titre+'"]</p>'+
+      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle">[réplique 1 complète, qui lance la conversation sur le sujet]</div></div>'+
+      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
+      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
+      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
+      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
+      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court — dernière réplique qui conclut la scène]</div>'+
+      '<div class="tc-box tc-example"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les 6 répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée un JEU DES BULLES : un mini-dialogue de bande dessinée à imprimer, à 2 personnages, que l\'élève complète À LA MAIN dans les bulles laissées vides — une activité ludique de production '+(isLangueMatiere(mat)?'orale/écrite':'écrite')+'. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
+      '\n\nVoici le squelette HTML EXACT à utiliser, avec exactement 6 bulles (3 répliques par personnage, en alternance stricte). Remplace chaque texte entre crochets [ ]. RÈGLE ABSOLUE : dans chaque <div class="tc-bulle tc-bulle-vide">, ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé. NE CHANGE PAS la structure, l\'ordre, le nombre de bulles ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
+      '\n\nExigences :\n'+
+      '- Choisis 2 PRÉNOMS algériens réalistes, adaptés à des élèves de '+nv+', comme personnages (remplace "[Prénom personnage 1]" et "[Prénom personnage 2]" partout, de façon cohérente dans tout le document)\n'+
+      '- La situation et le dialogue doivent porter PRÉCISÉMENT sur le sujet "'+titre+'" — jamais une scène générique sans rapport\n'+
+      '- Chaque indice (tc-bulle-indice) fait 5 à 10 mots maximum, et aide l\'élève à savoir QUOI écrire dans la bulle juste au-dessus, sans jamais lui donner la réponse toute faite\n'+
+      '- Ton naturel, proche de ce que diraient vraiment des élèves algériens de cet âge — pas de registre trop soutenu ni trop enfantin\n'+
+      '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
+      '- Le corrigé indicatif doit être une vraie version complète et cohérente des 6 répliques, pas un résumé';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
@@ -11582,7 +11636,7 @@ async function genCours(extraInstruction) {
          pour contenir le message d'erreur Stability AI en entier) — repère de diagnostic temporaire. */
       imgHTML = '<div style="background:#FBEAEA;border:1px solid #E8A3A3;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#7A2424;word-break:break-word;"><b>🔧 Diagnostic image (temporaire) :</b><br>' + imgErrDetail.replace(/</g,'&lt;') + '</div>';
     }
-    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci') ? (enteteHTML + imgHTML + text) : text;
+    var contenuFinal = (ty === 'fiche_peda' || ty === 'deroulement' || ty === 'comptine' || ty === 'vocabsci' || ty === 'bulles') ? (enteteHTML + imgHTML + text) : text;
     curCrs={titre:titre,niveau:nv,type:ty,mat:mat,contenu:contenuFinal,savedAt:new Date().toLocaleDateString('fr-FR'),id:Date.now()};
     /* Champs bruts de l'en-tête (Projet/Séquence/Acte de parole/Durée/Activité) conservés à part,
        en plus de leur affichage dans enteteHTML — pour reconstruire une vraie grille d'en-tête
@@ -11641,7 +11695,7 @@ function addFichePedaToJournal(titre, mat, niveau, dur) {
   sv();
   if (CUR === 'cahier') rCahier();
 }
-var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique'};
+var CRS_TYPE_LABELS = {fiche_peda:'Fiche pédagogique',deroulement:'Déroulement de séquence',cours:'Cours complet',fiche:'Fiche de révision',exos:"Série d'exercices",intro:'Introduction au chapitre',synthese:'Synthèse / Résumé',bem:'Sujet type BEM',bac:'Sujet type BAC',positionnement:'Test de positionnement',comptine:'Comptine pédagogique',vocabsci:'Vocabulaire scientifique',bulles:'Jeu des bulles'};
 function closeCrsResult(){
   curCrs=null;
   var isARcc = CURRENT_LANG==='ar';
