@@ -562,9 +562,13 @@ tr:hover td{background:var(--tp);}
 .tc-bulle-td-r{padding-left:10%;}
 .tc-bulle-perso{display:block;font-size:.72rem;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.25rem;}
 .tc-bulle-txt{background:var(--w);border:2px solid var(--ink);border-radius:14px;padding:.75rem 1rem;font-size:.85rem;line-height:1.6;min-height:1.2em;}
-/* Bulle vide à remplir à la main : grande (surtout au primaire, écriture large) — lignes
-   espacées de 28px, assez pour une écriture d'enfant, pas des lignes de cahier serrées. */
-.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);}
+/* Bulle vide à remplir à la main — la taille s'adapte au niveau (tc-sz-xl/md/sm, voir
+   tailleEcritureNiveau() dans genCours) : grande au primaire (grande écriture), plus compacte
+   au secondaire (écriture plus fine). */
+.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);} /* repli xl si jamais généré sans classe de taille */
+.tc-bulle-vide.tc-sz-xl{min-height:95px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);}
+.tc-bulle-vide.tc-sz-md{min-height:65px;background:repeating-linear-gradient(var(--w),var(--w) 23px,var(--br) 24px);}
+.tc-bulle-vide.tc-sz-sm{min-height:42px;background:repeating-linear-gradient(var(--w),var(--w) 19px,var(--br) 20px);}
 .tc-bulle-indice{font-size:.72rem;font-style:italic;color:var(--ink3);margin-top:.25rem;}
 .tc-bulle-corrige{page-break-before:always;break-before:page;}
 [dir="rtl"] .tc-bulle-td-l{padding-right:0;padding-left:10%;}
@@ -589,7 +593,10 @@ tr:hover td{background:var(--tp);}
 .tc-tri-table{width:100%;border-collapse:separate;border-spacing:.7rem;margin:.9rem 0;table-layout:fixed;}
 .tc-tri-case{width:50%;vertical-align:top;background:var(--w);border:2px solid var(--br);border-radius:16px;padding:.9rem 1rem;}
 .tc-tri-titre{font-weight:800;font-size:.9rem;color:var(--t);text-align:center;margin-bottom:.5rem;}
-.tc-tri-lignes{min-height:190px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);border-radius:8px;}
+.tc-tri-lignes{border-radius:8px;min-height:190px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);} /* repli xl si jamais généré sans classe de taille */
+.tc-tri-lignes.tc-sz-xl{min-height:190px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);}
+.tc-tri-lignes.tc-sz-md{min-height:130px;background:repeating-linear-gradient(var(--w),var(--w) 23px,var(--br) 24px);}
+.tc-tri-lignes.tc-sz-sm{min-height:85px;background:repeating-linear-gradient(var(--w),var(--w) 19px,var(--br) 20px);}
 .tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:none;}
 .tc-remember>.tc-box-title{color:var(--t);font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -5134,7 +5141,21 @@ function telechargerPDF(titre, element) {
     pagebreak: { mode: ['css', 'legacy'], avoid: ['.pp-step', '.tc-box', '.tc-remember', 'tr'] }
   }).from(wrap).save();
 }
+/* Plusieurs morceaux de HTML générés dynamiquement (bandeau officiel MEN, corps de Cours IA...)
+   utilisent des styles inline en var(--t), var(--ink)... qui résolvent correctement à l'écran et
+   à l'impression (ces fichiers définissent :root) mais PAS dans Word, qui ne comprend pas du tout
+   les variables CSS — ces styles disparaissaient silencieusement, cassant toute la mise en page
+   (bordures, couleurs, texte) une fois le document ouvert dans Word. On les remplace ici par leur
+   couleur réelle avant de construire le HTML destiné à Word, plutôt que de traquer et réécrire
+   chaque fonction qui génère ces styles inline (bien plus de fonctions que les deux repérées). */
+var WORD_VAR_COLORS = {bg:'#F0EEE9',w:'#FFFFFF',ink:'#1A1A1F',ink2:'#4A4A52',ink3:'#9090A0',t:'#006B3F',t2:'#00A060',tp:'#E6F4EE',r:'#C8102E',rp:'#FDEEF1',a:'#D4AF37',ap:'#FBF6E3',b:'#3B82F6',bp:'#EFF6FF',p:'#8B5CF6',pp:'#F5F3FF',g:'#22C55E',gp:'#F0FDF4',br:'#E2DDD5'};
+function remplaceVarsPourWord(html) {
+  return (html || '').replace(/var\(\s*--([a-z0-9]+)\s*(?:,[^)]*)?\)/gi, function(m, name) {
+    return WORD_VAR_COLORS[name] || '#1A1A1F';
+  });
+}
 function telechargerWord(titre, contenuHTML) {
+  contenuHTML = remplaceVarsPourWord(contenuHTML);
   /* Word (import HTML) interprète les "px" en se basant sur 96dpi, ce qui donne des espacements
      environ 25% plus serrés que ce que montre un navigateur — tout est exprimé ici en "pt" (l'unité
      native de Word) et les marges/paddings sont volontairement généreux pour un rendu réellement aéré
@@ -5169,9 +5190,12 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bulle-td-l{padding-right:10%;} .tc-bulle-td-r{padding-left:10%;}' +
     '.tc-bulle-perso{display:block;font-size:9pt;font-weight:bold;color:#006B3F;text-transform:uppercase;margin-bottom:3pt;}' +
     '.tc-bulle-txt{background:#fff;border:1.5pt solid #1A1A1F;padding:8pt 10pt;font-size:12pt;}' +
-    /* Grande bulle vide (écriture d'enfant du primaire), calibrée pour que les 4 bulles tiennent
-       sur une seule page ; le corrigé est renvoyé sur une page séparée (saut de page Word). */
+    /* Bulle vide : taille adaptée au niveau, calibrée pour que les 4 bulles tiennent sur une
+       seule page ; le corrigé est renvoyé sur une page séparée (saut de page Word). */
     '.tc-bulle-vide{min-height:68pt;}' +
+    '.tc-bulle-vide.tc-sz-xl{min-height:68pt;}' +
+    '.tc-bulle-vide.tc-sz-md{min-height:46pt;}' +
+    '.tc-bulle-vide.tc-sz-sm{min-height:30pt;}' +
     '.tc-bulle-indice{display:block;font-size:9pt;font-style:italic;color:#9090A0;margin-top:3pt;}' +
     '.tc-bulle-corrige{page-break-before:always;mso-break-type:page-break;}' +
     '.tc-bmap-table{width:100%;border-collapse:separate;border-spacing:6pt;margin:16pt 0;}' +
@@ -5190,6 +5214,9 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-tri-case{width:50%;vertical-align:top;background:#fff;border:1.5pt solid #E2DDD5;padding:12pt 14pt;}' +
     '.tc-tri-titre{font-weight:bold;font-size:12pt;color:#006B3F;text-align:center;margin-bottom:6pt;}' +
     '.tc-tri-lignes{min-height:120pt;}' +
+    '.tc-tri-lignes.tc-sz-xl{min-height:120pt;}' +
+    '.tc-tri-lignes.tc-sz-md{min-height:85pt;}' +
+    '.tc-tri-lignes.tc-sz-sm{min-height:55pt;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -5265,9 +5292,12 @@ function printCleanPage(title, contentHTML) {
     '.tc-bulle-td-l{padding-right:10%;} .tc-bulle-td-r{padding-left:10%;}' +
     '.tc-bulle-perso{display:block;font-size:9px;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}' +
     '.tc-bulle-txt{background:#fff;border:2px solid var(--ink);border-radius:14px;padding:12px 16px;font-size:12px;line-height:1.5;}' +
-    /* Bulle vide à remplir à la main : grande (écriture d'enfant du primaire) mais calibrée pour
-       que les 4 bulles + l'entête tiennent sur UNE SEULE page imprimée. */
+    /* Bulle vide : taille adaptée au niveau (tc-sz-xl/md/sm), calibrée pour que les 4 bulles +
+       l'entête tiennent sur UNE SEULE page imprimée même en xl (primaire, grande écriture). */
     '.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
+    '.tc-bulle-vide.tc-sz-xl{min-height:95px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
+    '.tc-bulle-vide.tc-sz-md{min-height:65px;background:repeating-linear-gradient(#fff,#fff 23px,var(--br) 24px);}' +
+    '.tc-bulle-vide.tc-sz-sm{min-height:42px;background:repeating-linear-gradient(#fff,#fff 19px,var(--br) 20px);}' +
     '.tc-bulle-indice{display:block;font-size:9px;font-style:italic;color:var(--ink3);margin-top:4px;}' +
     '.tc-bulle-corrige{page-break-before:always;}' +
     '.tc-bmap-table{width:100%;border-collapse:separate;border-spacing:8px;margin:14px 0;table-layout:fixed;page-break-inside:avoid;}' +
@@ -5285,7 +5315,11 @@ function printCleanPage(title, contentHTML) {
     '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:9px;margin:12px 0;table-layout:fixed;page-break-inside:avoid;}' +
     '.tc-tri-case{width:50%;vertical-align:top;background:#fff;border:2px solid var(--br);border-radius:14px;padding:12px 14px;}' +
     '.tc-tri-titre{font-weight:800;font-size:12px;color:var(--t);text-align:center;margin-bottom:6px;}' +
-    '.tc-tri-lignes{min-height:170px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);border-radius:8px;}' +
+    '.tc-tri-lignes{border-radius:8px;}' +
+    '.tc-tri-lignes{min-height:170px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
+    '.tc-tri-lignes.tc-sz-xl{min-height:170px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
+    '.tc-tri-lignes.tc-sz-md{min-height:120px;background:repeating-linear-gradient(#fff,#fff 23px,var(--br) 24px);}' +
+    '.tc-tri-lignes.tc-sz-sm{min-height:80px;background:repeating-linear-gradient(#fff,#fff 19px,var(--br) 20px);}' +
     '.tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:var(--t);font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -11055,6 +11089,15 @@ function langueRedactionMatiere(mat) {
   if (m.indexOf('arabe') >= 0 || m.indexOf('tamazight') >= 0) return 'arabe';
   return null;
 }
+/* Taille des cases/bulles à remplir à la main (Jeu des bulles, Jeu de tri) selon le niveau :
+   grande écriture au primaire (xl), plus réduite au moyen (md), compacte au secondaire (sm) —
+   voir les classes .tc-sz-xl/md/sm (écran, impression, Word). */
+function tailleEcritureNiveau(nv) {
+  var s = (nv||'').toUpperCase();
+  if (/AP\b/.test(s)) return 'xl';
+  if (/AM\b/.test(s)) return 'md';
+  return 'sm';
+}
 function parseDureeMinutes(durStr) {
   if (!durStr) return 60;
   if (durStr.indexOf('30')>=0) return 30;
@@ -11570,10 +11613,11 @@ async function genCours(extraInstruction) {
        exports (écran, impression, ET Word — qui aplatit souvent les div à bordures en texte brut
        pur). Les bulles à remplir sont volontairement grandes (tc-bulle-vide), pensées pour une
        écriture d'enfant, notamment au primaire. */
+    var tailleBulle = tailleEcritureNiveau(nv);
     function ligneBulle(num, cote) {
       var cls = cote === 'd' ? 'tc-bulle-td-r' : 'tc-bulle-td-l';
       var contenuCell = '<span class="tc-bulle-perso">[Emoji + prénom personnage '+(cote==='d'?2:1)+']</span>'+
-        (num === 1 ? '<div class="tc-bulle-txt">[réplique 1 complète, qui lance la conversation sur le sujet]</div>' : '<div class="tc-bulle-txt tc-bulle-vide"></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>');
+        (num === 1 ? '<div class="tc-bulle-txt">[réplique 1 complète, qui lance la conversation sur le sujet]</div>' : '<div class="tc-bulle-txt tc-bulle-vide tc-sz-'+tailleBulle+'"></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>');
       var tdPleine = '<td class="tc-bulle-td '+cls+'">'+contenuCell+'</td>';
       var tdVide = '<td class="tc-bulle-td tc-bulle-td-empty"></td>';
       return '<tr>' + (cote === 'd' ? tdVide + tdPleine : tdPleine + tdVide) + '</tr>';
@@ -11585,7 +11629,7 @@ async function genCours(extraInstruction) {
       '</tbody></table>'+
       '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les 4 répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée un JEU DES BULLES : un mini-dialogue de bande dessinée à imprimer, à 2 personnages, que l\'élève complète À LA MAIN dans les bulles laissées vides — une activité ludique de production '+(isLangueMatiere(mat)?'orale/écrite':'écrite')+'. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
-      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, à 4 lignes = 4 répliques, 2 par personnage en alternance stricte gauche/droite — volontairement court pour tenir sur UNE SEULE page imprimée avec de grandes bulles). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans chaque <div class="tc-bulle-txt tc-bulle-vide">, ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé, en GRAND car l\'écriture d\'un enfant prend de la place ; (2) le corrigé (classe "tc-bulle-corrige") part automatiquement sur une page séparée à l\'impression, ne l\'écris donc PAS trop long (4 répliques courtes suffisent, pas de paragraphe). NE CHANGE PAS la structure du tableau (lignes, colonnes, cellules vides), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
+      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, à 4 lignes = 4 répliques, 2 par personnage en alternance stricte gauche/droite — volontairement court pour tenir sur UNE SEULE page imprimée avec de grandes bulles). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans chaque <div class="tc-bulle-txt tc-bulle-vide ..."> (bulle à remplir), ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé, en GRAND car l\'écriture d\'un enfant prend de la place ; (2) le corrigé (classe "tc-bulle-corrige") part automatiquement sur une page séparée à l\'impression, ne l\'écris donc PAS trop long (4 répliques courtes suffisent, pas de paragraphe). NE CHANGE PAS la structure du tableau (lignes, colonnes, cellules vides), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
       '\n\nExigences :\n'+
       '- Choisis 2 PRÉNOMS algériens réalistes, adaptés à des élèves de '+nv+', comme personnages (remplace "[Emoji + prénom personnage 1]" par "👦 Prénom" et "[Emoji + prénom personnage 2]" par "👧 Prénom", de façon cohérente dans tout le document)\n'+
       '- La situation et le dialogue doivent porter PRÉCISÉMENT sur le sujet "'+titre+'" — jamais une scène générique sans rapport\n'+
@@ -11619,8 +11663,9 @@ async function genCours(extraInstruction) {
     /* Jeu de tri : banque de mots mélangés + 2 cases à remplir à la main. <table> pour la case
        (même raison que les autres jeux : fiabilité Word), corrigé sur page séparée (réutilise
        tc-bulle-corrige, un simple utilitaire de saut de page, pas spécifique au Jeu des bulles). */
+    var tailleTri = tailleEcritureNiveau(nv);
     function caseTri(n) {
-      return '<td class="tc-tri-case"><div class="tc-tri-titre">[emoji + titre de la case '+n+']</div><div class="tc-tri-lignes"></div></td>';
+      return '<td class="tc-tri-case"><div class="tc-tri-titre">[emoji + titre de la case '+n+']</div><div class="tc-tri-lignes tc-sz-'+tailleTri+'"></div></td>';
     }
     var skeletonTri =
       '<p><strong>Consigne :</strong> [1 phrase simple expliquant à l\'élève de ranger chaque mot de la banque dans la bonne case]</p>'+
