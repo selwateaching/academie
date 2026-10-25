@@ -586,6 +586,8 @@ tr:hover td{background:var(--tp);}
 .tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}
 .tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}
 .tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}
+/* 6e bulle laissée vide : l'élève y écrit sa propre idée à la main. */
+.tc-bmap-vide{min-height:70px;background:repeating-linear-gradient(var(--w),var(--w) 22px,var(--br) 23px);}
 /* Jeu de tri : une banque de mots mélangés (chips) à ranger à la main dans des cases, en
    <table> pour les mêmes raisons de fiabilité (écran/impression/Word) que les autres jeux. */
 .tc-tri-banque{background:var(--tp);border-radius:12px;padding:.8rem 1rem;margin:.9rem 0;line-height:2.2;}
@@ -5208,6 +5210,7 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bmap-b4{border-color:#D4AF37;} .tc-bmap-b4 b{color:#8a6d00;}' +
     '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
     '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
+    '.tc-bmap-vide{min-height:48pt;}' +
     '.tc-tri-banque{background:#E6F4EE;padding:10pt 14pt;margin:14pt 0;line-height:2.2;}' +
     '.tc-tri-item{background:#fff;border:1.5pt solid #006B3F;padding:4pt 12pt;margin:2pt 4pt;font-size:12pt;font-weight:bold;color:#006B3F;}' +
     '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:8pt;margin:14pt 0;}' +
@@ -5310,6 +5313,7 @@ function printCleanPage(title, contentHTML) {
     '.tc-bmap-b4{border-color:var(--a);} .tc-bmap-b4 b{color:#8a6d00;}' +
     '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
     '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
+    '.tc-bmap-vide{min-height:65px;background:repeating-linear-gradient(#fff,#fff 22px,var(--br) 23px);}' +
     '.tc-tri-banque{background:var(--tp);border-radius:12px;padding:10px 14px;margin:12px 0;line-height:2.2;}' +
     '.tc-tri-item{display:inline-block;background:#fff;border:2px solid var(--t);border-radius:999px;padding:4px 12px;margin:2px 4px;font-size:12px;font-weight:800;color:var(--t);}' +
     '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:9px;margin:12px 0;table-layout:fixed;page-break-inside:avoid;}' +
@@ -11640,24 +11644,29 @@ async function genCours(extraInstruction) {
   } else if (ty === 'bmap') {
     enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
     /* Carte mentale en <table> (thème central avec rowspan=3, 6 bulles autour) pour la même
-       raison que le Jeu des bulles : fiable dans TOUS les exports, y compris Word. */
+       raison que le Jeu des bulles : fiable dans TOUS les exports, y compris Word.
+       Rendue ludique (retour enseignante : "je ne vois rien à faire, pas d'intrus") : un intrus
+       caché parmi les mots-clés de chacune des 5 premières branches (à trouver et barrer), et la
+       6e branche laissée vide pour que l'élève invente sa propre idée. */
     function brancheBmap(n) {
-      return '<td class="tc-bmap-branche tc-bmap-b'+n+'"><b>[titre court de la branche '+n+']</b>[2 à 4 mots-clés ou très courtes expressions liés à cette branche, séparés par des virgules]</td>';
+      return '<td class="tc-bmap-branche tc-bmap-b'+n+'"><b>[titre court de la branche '+n+']</b>[3 à 4 mots-clés ou très courtes expressions séparés par des virgules, DONT UN qui est l\'intrus (n\'a rien à voir avec les autres), mélangé parmi les autres sans le signaler]</td>';
     }
     var skeletonBmap =
+      '<p><strong>Consigne :</strong> Dans chaque bulle, un mot ne va pas avec les autres : trouve cet intrus et barre-le. Complète ensuite la dernière bulle avec ta propre idée.</p>'+
       '<table class="tc-bmap-table"><tbody>'+
       '<tr>'+brancheBmap(1)+'<td class="tc-bmap-centre" rowspan="3">[Thème central — reformulation courte et claire de "'+titre+'", 2 à 5 mots]</td>'+brancheBmap(2)+'</tr>'+
       '<tr>'+brancheBmap(3)+brancheBmap(4)+'</tr>'+
-      '<tr>'+brancheBmap(5)+brancheBmap(6)+'</tr>'+
-      '</tbody></table>';
-    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée une CARTE MENTALE À BULLES (bubble map) pour réviser le vocabulaire/les idées clés du sujet, ou servir de support de remue-méninges en classe : un thème central entouré de 6 bulles de branches, chacune avec un titre court et quelques mots-clés ou expressions associés. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
-      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, thème central au milieu avec rowspan="3", 6 bulles de branches autour, 3 de chaque côté). Remplace chaque texte entre crochets [ ]. NE CHANGE PAS la structure du tableau (lignes, colonnes, rowspan), ni les classes CSS. Ta réponse doit commencer par "<table" et ne rien contenir avant :\n\n'+skeletonBmap+
+      '<tr>'+brancheBmap(5)+'<td class="tc-bmap-branche tc-bmap-b6"><b>À toi d\'inventer !</b><div class="tc-bmap-vide"></div></td></tr>'+
+      '</tbody></table>'+
+      '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé (pour le professeur)</div>[pour chacune des 5 premières branches : rappelle son titre et dis quel mot était l\'intrus et pourquoi ; termine par UNE proposition d\'idée possible pour la 6e bulle]</div>';
+    prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée une CARTE MENTALE À BULLES LUDIQUE (bubble map, pas une simple fiche de révision passive) : un thème central entouré de 6 bulles de branches. Dans les 5 premières, un intrus caché est mélangé parmi les mots-clés — l\'élève doit le trouver et le barrer. La 6e bulle reste vide pour que l\'élève y écrive sa propre idée. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
+      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, thème central au milieu avec rowspan="3", 6 bulles de branches autour, 3 de chaque côté). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans les branches 1 à 5, l\'intrus doit être un mot plausible à première vue mais qui n\'appartient clairement PAS à la même catégorie que les autres mots de cette bulle une fois qu\'on y réfléchit — jamais un intrus trop évident (ex: un mot totalement absurde) ni trop ambigu (plusieurs réponses possibles) ; (2) la <div class="tc-bmap-vide"></div> de la 6e bulle doit rester STRICTEMENT VIDE dans ta réponse — c\'est l\'élève qui y écrit à la main. NE CHANGE PAS la structure du tableau (lignes, colonnes, rowspan), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Consigne" et ne rien contenir avant :\n\n'+skeletonBmap+
       '\n\nExigences :\n'+
       '- Choisis 6 branches PERTINENTES et distinctes qui couvrent bien les aspects/sous-thèmes importants du sujet "'+titre+'" pour le niveau '+nv+' (jamais de branches génériques ou redondantes entre elles)\n'+
       '- Le titre de chaque branche est TRÈS court (1 à 3 mots, ex: "Vocabulaire", "Causes", "Exemples", "Dates clés"...)\n'+
-      '- Le contenu de chaque branche reste TRÈS concis : des mots-clés ou très courtes expressions séparés par des virgules, JAMAIS des phrases complètes ni un paragraphe — c\'est une carte mentale, pas un cours\n'+
+      '- Le contenu de chaque branche (hors 6e) reste TRÈS concis : des mots-clés ou très courtes expressions séparés par des virgules, JAMAIS des phrases complètes ni un paragraphe — c\'est une carte mentale, pas un cours\n'+
       '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
-      '- Écris directement le HTML, sans aucun texte avant la balise <table>';
+      '- Le corrigé doit clairement identifier l\'intrus de chaque branche et expliquer pourquoi en une courte phrase';
   } else if (ty === 'tri') {
     enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
     /* Jeu de tri : banque de mots mélangés + 2 cases à remplir à la main. <table> pour la case
