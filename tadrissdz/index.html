@@ -549,24 +549,26 @@ tr:hover td{background:var(--tp);}
 .tc-dialogue b{color:var(--t);}
 [dir="rtl"] .tc-dialogue{font-size:1.05rem;font-family:'Amiri',serif;}
 [dir="rtl"] .tc-dialogue p{line-height:1.9;}
-/* Jeu des bulles : mini bande dessinée imprimable à 2 personnages, bulles alternées gauche/droite,
-   certaines vides (tc-bulle-vide) pour que l'élève écrive dedans à la main une fois imprimée. */
-.tc-bulle-case{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;margin:.9rem 0 .2rem;max-width:80%;}
-.tc-bulle-case.tc-bulle-right{align-items:flex-end;margin-left:auto;}
-.tc-bulle-perso{font-size:.72rem;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;padding:0 .3rem;}
-.tc-bulle{position:relative;background:var(--w);border:2px solid var(--ink);border-radius:18px;padding:.85rem 1.1rem;font-size:.85rem;line-height:1.6;min-width:140px;}
-.tc-bulle::after{content:'';position:absolute;bottom:-13px;left:26px;width:0;height:0;border:11px solid transparent;border-top-color:var(--ink);border-bottom:0;}
-.tc-bulle::before{content:'';position:absolute;bottom:-9px;left:29px;width:0;height:0;border:8px solid transparent;border-top-color:var(--w);border-bottom:0;z-index:1;}
-.tc-bulle-case.tc-bulle-right .tc-bulle::after{left:auto;right:26px;}
-.tc-bulle-case.tc-bulle-right .tc-bulle::before{left:auto;right:29px;}
-.tc-bulle-vide{min-height:52px;background:repeating-linear-gradient(var(--w),var(--w) 21px,var(--br) 22px);}
-.tc-bulle-indice{font-size:.72rem;font-style:italic;color:var(--ink3);margin:.15rem 0 0 .3rem;}
-[dir="rtl"] .tc-bulle-case{align-items:flex-end;}
-[dir="rtl"] .tc-bulle-case.tc-bulle-right{align-items:flex-start;margin-left:0;margin-right:auto;}
-[dir="rtl"] .tc-bulle::after{left:auto;right:26px;}
-[dir="rtl"] .tc-bulle::before{left:auto;right:29px;}
-[dir="rtl"] .tc-bulle-case.tc-bulle-right .tc-bulle::after{right:auto;left:26px;}
-[dir="rtl"] .tc-bulle-case.tc-bulle-right .tc-bulle::before{right:auto;left:29px;}
+/* Jeu des bulles : mini bande dessinée imprimable à 2 personnages, bulles alternées gauche/droite.
+   Construit avec un vrai <table> (2 colonnes, 1 personnage par colonne) plutôt que des <div>
+   imbriquées : un <table> reste fiable partout, y compris dans l'export Word, qui aplatit
+   souvent les div à bordures en texte brut (voir CSS équivalente dans telechargerWord). */
+/* Tient sur UNE page imprimée (4 bulles, pas 6) et ne doit jamais être coupé entre deux pages —
+   voir tc-bulle-corrige plus bas pour le corrigé, volontairement renvoyé sur une page séparée. */
+.tc-bulle-table{width:100%;border-collapse:separate;border-spacing:0 .55rem;margin:.9rem 0;table-layout:fixed;page-break-inside:avoid;}
+.tc-bulle-td{width:50%;vertical-align:top;padding:0;}
+.tc-bulle-td-empty{border:none;}
+.tc-bulle-td-l{padding-right:10%;}
+.tc-bulle-td-r{padding-left:10%;}
+.tc-bulle-perso{display:block;font-size:.72rem;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.25rem;}
+.tc-bulle-txt{background:var(--w);border:2px solid var(--ink);border-radius:14px;padding:.75rem 1rem;font-size:.85rem;line-height:1.6;min-height:1.2em;}
+/* Bulle vide à remplir à la main : grande (surtout au primaire, écriture large) — lignes
+   espacées de 28px, assez pour une écriture d'enfant, pas des lignes de cahier serrées. */
+.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(var(--w),var(--w) 27px,var(--br) 28px);}
+.tc-bulle-indice{font-size:.72rem;font-style:italic;color:var(--ink3);margin-top:.25rem;}
+.tc-bulle-corrige{page-break-before:always;break-before:page;}
+[dir="rtl"] .tc-bulle-td-l{padding-right:0;padding-left:10%;}
+[dir="rtl"] .tc-bulle-td-r{padding-left:0;padding-right:10%;}
 .tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:1.05rem 1.3rem;margin:1.3rem 0;box-shadow:none;}
 .tc-remember>.tc-box-title{color:var(--t);font-size:.92rem;}
 .tc-remember p,.tc-remember li{margin:0;}
@@ -5137,13 +5139,18 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-info{background:#F0EEE9;border-left:4px solid #9090A0;padding:14pt 16pt;margin:16pt 0;} .tc-info .tc-box-title{color:#9090A0;}' +
     '.tc-passage{background:#fff;border:1px solid #E2DDD5;border-left:4px solid #9090A0;padding:16pt 18pt;margin:18pt 0;line-height:2;} .tc-passage .tc-box-title{color:#4A4A52;font-weight:bold;margin-bottom:8pt;}' +
     '.tc-dialogue{background:#fff;border:1px solid #E2DDD5;border-left:4px solid #9090A0;padding:14pt 16pt;margin:16pt 0;} .tc-dialogue p{margin:0 0 8pt;} .tc-dialogue b{color:#006B3F;}' +
-    /* Word n'affiche pas les pseudo-éléments ::before/::after (pointe de bulle) : repli simple en
-       encadré arrondi, sans la pointe — reste clairement identifiable comme une bulle de dialogue. */
-    '.tc-bulle-case{margin:10pt 0 2pt;width:75%;} .tc-bulle-case.tc-bulle-right{margin-left:25%;}' +
-    '.tc-bulle-perso{font-size:9pt;font-weight:bold;color:#006B3F;text-transform:uppercase;}' +
-    '.tc-bulle{background:#fff;border:2pt solid #1A1A1F;border-radius:14pt;padding:10pt 14pt;font-size:12pt;}' +
-    '.tc-bulle-vide{min-height:36pt;}' +
-    '.tc-bulle-indice{font-size:9pt;font-style:italic;color:#9090A0;}' +
+    /* Word aplatit souvent les <div> à bordures imbriquées en texte brut : le "Jeu des bulles"
+       utilise donc un vrai <table> (voir genCours), que le moteur HTML de Word affiche de façon
+       fiable. On stylise seulement les cellules, jamais de div ni de pseudo-élément ici. */
+    '.tc-bulle-table{width:100%;border-collapse:collapse;margin:14pt 0;} .tc-bulle-table td{border:none;padding:0 0 10pt;vertical-align:top;}' +
+    '.tc-bulle-td-l{padding-right:10%;} .tc-bulle-td-r{padding-left:10%;}' +
+    '.tc-bulle-perso{display:block;font-size:9pt;font-weight:bold;color:#006B3F;text-transform:uppercase;margin-bottom:3pt;}' +
+    '.tc-bulle-txt{background:#fff;border:1.5pt solid #1A1A1F;padding:8pt 10pt;font-size:12pt;}' +
+    /* Grande bulle vide (écriture d'enfant du primaire), calibrée pour que les 4 bulles tiennent
+       sur une seule page ; le corrigé est renvoyé sur une page séparée (saut de page Word). */
+    '.tc-bulle-vide{min-height:68pt;}' +
+    '.tc-bulle-indice{display:block;font-size:9pt;font-style:italic;color:#9090A0;margin-top:3pt;}' +
+    '.tc-bulle-corrige{page-break-before:always;mso-break-type:page-break;}' +
     '.tc-flow{margin:16pt 0;} .tc-flow-step{margin:0 0 16pt;}' +
     '.tc-flow-num{display:inline-block;width:24pt;height:24pt;border-radius:12pt;background:#006B3F;color:#fff;text-align:center;font-weight:bold;vertical-align:top;}' +
     '.tc-flow-body{display:inline-block;width:84%;vertical-align:top;margin-left:10pt;}' +
@@ -5213,14 +5220,17 @@ function printCleanPage(title, contentHTML) {
     '.tc-info{background:var(--bg);border-left-color:var(--ink3);} .tc-info>.tc-box-title{color:var(--ink3);}' +
     '.tc-passage{background:#fff;border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:14px 18px;margin:14px 0;line-height:1.9;page-break-inside:avoid;} .tc-passage>.tc-box-title{color:var(--ink2);font-weight:800;margin-bottom:8px;}' +
     '.tc-dialogue{background:#fff;border:1px solid var(--br);border-left:4px solid var(--ink3);border-radius:12px;padding:12px 16px;margin:12px 0;font-size:12px;page-break-inside:avoid;} .tc-dialogue p{margin:0 0 8px;line-height:1.5;} .tc-dialogue p:last-child{margin-bottom:0;} .tc-dialogue b{color:var(--t);}' +
-    '.tc-bulle-case{display:flex;flex-direction:column;align-items:flex-start;gap:3px;margin:10px 0 2px;max-width:80%;page-break-inside:avoid;} .tc-bulle-case.tc-bulle-right{align-items:flex-end;margin-left:auto;}' +
-    '.tc-bulle-perso{font-size:9px;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;padding:0 3px;}' +
-    '.tc-bulle{position:relative;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:12px;line-height:1.5;min-width:140px;}' +
-    '.tc-bulle::after{content:"";position:absolute;bottom:-13px;left:26px;width:0;height:0;border:11px solid transparent;border-top-color:var(--ink);border-bottom:0;}' +
-    '.tc-bulle::before{content:"";position:absolute;bottom:-9px;left:29px;width:0;height:0;border:8px solid transparent;border-top-color:#fff;border-bottom:0;}' +
-    '.tc-bulle-case.tc-bulle-right .tc-bulle::after{left:auto;right:26px;} .tc-bulle-case.tc-bulle-right .tc-bulle::before{left:auto;right:29px;}' +
-    '.tc-bulle-vide{min-height:50px;background:repeating-linear-gradient(#fff,#fff 20px,var(--br) 21px);}' +
-    '.tc-bulle-indice{font-size:9px;font-style:italic;color:var(--ink3);margin:2px 0 0 3px;}' +
+    '.tc-bulle-table{width:100%;border-collapse:separate;border-spacing:0 9px;margin:14px 0;table-layout:fixed;page-break-inside:avoid;}' +
+    '.tc-bulle-td{width:50%;vertical-align:top;padding:0;}' +
+    '.tc-bulle-td-empty{border:none;}' +
+    '.tc-bulle-td-l{padding-right:10%;} .tc-bulle-td-r{padding-left:10%;}' +
+    '.tc-bulle-perso{display:block;font-size:9px;font-weight:800;color:var(--t);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}' +
+    '.tc-bulle-txt{background:#fff;border:2px solid var(--ink);border-radius:14px;padding:12px 16px;font-size:12px;line-height:1.5;}' +
+    /* Bulle vide à remplir à la main : grande (écriture d'enfant du primaire) mais calibrée pour
+       que les 4 bulles + l'entête tiennent sur UNE SEULE page imprimée. */
+    '.tc-bulle-vide{min-height:95px;background:repeating-linear-gradient(#fff,#fff 27px,var(--br) 28px);}' +
+    '.tc-bulle-indice{display:block;font-size:9px;font-style:italic;color:var(--ink3);margin-top:4px;}' +
+    '.tc-bulle-corrige{page-break-before:always;}' +
     '.tc-remember{background:var(--w);color:var(--ink);border:1px solid var(--br);border-left:4px solid var(--t);border-radius:12px;padding:12px 16px;margin:14px 0;page-break-inside:avoid;}' +
     '.tc-remember>.tc-box-title{color:var(--t);font-size:13px;} .tc-remember p,.tc-remember li{margin:0;}' +
     '.tc-flow{display:flex;flex-direction:column;gap:0;margin:12px 0;}' +
@@ -11500,24 +11510,34 @@ async function genCours(extraInstruction) {
       '- Écris directement le HTML, sans phrase d\'introduction générique ni titre avant le premier bloc.';
   } else if (ty === 'bulles') {
     enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
+    /* Construit avec un vrai <table> (2 colonnes, 1 personnage par colonne, l'autre cellule vide
+       à chaque ligne) plutôt que des <div> imbriquées : un tableau reste fiable dans TOUS les
+       exports (écran, impression, ET Word — qui aplatit souvent les div à bordures en texte brut
+       pur). Les bulles à remplir sont volontairement grandes (tc-bulle-vide), pensées pour une
+       écriture d'enfant, notamment au primaire. */
+    function ligneBulle(num, cote) {
+      var cls = cote === 'd' ? 'tc-bulle-td-r' : 'tc-bulle-td-l';
+      var contenuCell = '<span class="tc-bulle-perso">[Emoji + prénom personnage '+(cote==='d'?2:1)+']</span>'+
+        (num === 1 ? '<div class="tc-bulle-txt">[réplique 1 complète, qui lance la conversation sur le sujet]</div>' : '<div class="tc-bulle-txt tc-bulle-vide"></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>');
+      var tdPleine = '<td class="tc-bulle-td '+cls+'">'+contenuCell+'</td>';
+      var tdVide = '<td class="tc-bulle-td tc-bulle-td-empty"></td>';
+      return '<tr>' + (cote === 'd' ? tdVide + tdPleine : tdPleine + tdVide) + '</tr>';
+    }
     var skeletonBulles =
       '<p><strong>Mise en situation :</strong> [1 à 2 phrases qui plantent le décor : qui sont les deux personnages, où ils sont, pourquoi ils parlent — en lien direct avec le sujet "'+titre+'"]</p>'+
-      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle">[réplique 1 complète, qui lance la conversation sur le sujet]</div></div>'+
-      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
-      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
-      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
-      '<div class="tc-bulle-case"><div class="tc-bulle-perso">👦 [Prénom personnage 1]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court, une ligne]</div>'+
-      '<div class="tc-bulle-case tc-bulle-right"><div class="tc-bulle-perso">👧 [Prénom personnage 2]</div><div class="tc-bulle tc-bulle-vide"></div></div><div class="tc-bulle-indice">💡 [indice très court — dernière réplique qui conclut la scène]</div>'+
-      '<div class="tc-box tc-example"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les 6 répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
+      '<table class="tc-bulle-table"><tbody>'+
+      ligneBulle(1,'g') + ligneBulle(2,'d') + ligneBulle(3,'g') + ligneBulle(4,'d') +
+      '</tbody></table>'+
+      '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les 4 répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée un JEU DES BULLES : un mini-dialogue de bande dessinée à imprimer, à 2 personnages, que l\'élève complète À LA MAIN dans les bulles laissées vides — une activité ludique de production '+(isLangueMatiere(mat)?'orale/écrite':'écrite')+'. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
-      '\n\nVoici le squelette HTML EXACT à utiliser, avec exactement 6 bulles (3 répliques par personnage, en alternance stricte). Remplace chaque texte entre crochets [ ]. RÈGLE ABSOLUE : dans chaque <div class="tc-bulle tc-bulle-vide">, ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé. NE CHANGE PAS la structure, l\'ordre, le nombre de bulles ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
+      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, à 4 lignes = 4 répliques, 2 par personnage en alternance stricte gauche/droite — volontairement court pour tenir sur UNE SEULE page imprimée avec de grandes bulles). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans chaque <div class="tc-bulle-txt tc-bulle-vide">, ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé, en GRAND car l\'écriture d\'un enfant prend de la place ; (2) le corrigé (classe "tc-bulle-corrige") part automatiquement sur une page séparée à l\'impression, ne l\'écris donc PAS trop long (4 répliques courtes suffisent, pas de paragraphe). NE CHANGE PAS la structure du tableau (lignes, colonnes, cellules vides), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
       '\n\nExigences :\n'+
-      '- Choisis 2 PRÉNOMS algériens réalistes, adaptés à des élèves de '+nv+', comme personnages (remplace "[Prénom personnage 1]" et "[Prénom personnage 2]" partout, de façon cohérente dans tout le document)\n'+
+      '- Choisis 2 PRÉNOMS algériens réalistes, adaptés à des élèves de '+nv+', comme personnages (remplace "[Emoji + prénom personnage 1]" par "👦 Prénom" et "[Emoji + prénom personnage 2]" par "👧 Prénom", de façon cohérente dans tout le document)\n'+
       '- La situation et le dialogue doivent porter PRÉCISÉMENT sur le sujet "'+titre+'" — jamais une scène générique sans rapport\n'+
       '- Chaque indice (tc-bulle-indice) fait 5 à 10 mots maximum, et aide l\'élève à savoir QUOI écrire dans la bulle juste au-dessus, sans jamais lui donner la réponse toute faite\n'+
       '- Ton naturel, proche de ce que diraient vraiment des élèves algériens de cet âge — pas de registre trop soutenu ni trop enfantin\n'+
       '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
-      '- Le corrigé indicatif doit être une vraie version complète et cohérente des 6 répliques, pas un résumé';
+      '- Le corrigé indicatif doit être une vraie version complète et cohérente des 4 répliques, pas un résumé';
   } else {
     var types={cours:'cours complet structuré (introduction, développement, exemples algériens, exercices, conclusion)',fiche:'fiche de révision concise',exos:'série d\'exercices progressifs avec corrigés',intro:'introduction motivante au chapitre',synthese:'synthèse et résumé des points clés',bem:'sujet d\'examen type BEM avec barème',bac:'sujet d\'examen type BAC avec barème',positionnement:'test de positionnement (évaluation diagnostique de début d\'année) couvrant les prérequis essentiels du niveau précédent, avec un barème simple permettant de situer immédiatement chaque élève (maîtrisé / à consolider / non maîtrisé)'};
     var estExercice = (ty === 'exos' || ty === 'bem' || ty === 'bac' || ty === 'positionnement');
