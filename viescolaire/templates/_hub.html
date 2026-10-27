@@ -1,3 +1,3 @@
-<div class="hub" aria-label="Accès rapide par domaine">{% for sec in menu if sec.slug != 'compte' %}
-<div class="hub-carte" style="--cc:{{ sec.couleur }};--hub-ink:{{ sec.couleur|couleur_texte }}"><h3>{{ sec.titre }}</h3>
-{% for it in sec.pages %}<a href="{{ it.url }}"><span>{{ it.label }}<small>{{ it.desc }}</small></span>{% if it.badge %}<span class="badge {{ it.tone }}">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div>{% endfor %}</div>
+{% from '_icones.html' import ico %}<div class="hub" aria-label="Accès rapide par rubrique">{% for sec in menu if not sec.titre.startswith('6.') and sec.titre != 'Mon compte' %}
+<div class="hub-carte"><h3>{{ sec.titre }}</h3>
+{% for it in sec.pages %}<a href="{{ it.url }}">{{ ico(it.ico) }}<span class="hub-lib">{{ it.label }}<small>{{ it.desc }}</small></span>{% if it.badge %}<span class="badge">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div>{% endfor %}</div>

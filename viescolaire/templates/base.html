@@ -7,16 +7,17 @@
 <style>:root{--brand:{{ cfg.couleur }}}</style>
 {% if cfg.css %}<link rel="stylesheet" href="{{ url_for('client_static', chemin=cfg.css) }}">{% endif %}</head><body>
 {% if g.user %}
+{% from '_icones.html' import ico %}
 {% macro nav(ep, label, extra='') %}<a href="{{ url_for(ep) }}" class="{{ 'on' if request.endpoint == ep }}">{{ label }}{{ extra|safe }}</a>{% endmacro %}
 <div class="layout"><nav class="side">
 <span class="logo">{% if cfg.logo %}<img src="{{ url_for('client_static', chemin=cfg.logo) }}" alt="" style="height:26px;vertical-align:middle"> {% endif %}{{ cfg.produit }}</span>
 {% if g.etabs|length > 1 %}<form method="post" class="etab" action="{{ url_for('changer_etab') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
 <select name="etab" data-autosubmit>{% for e in g.etabs %}<option value="{{ e.id }}" {{ 'selected' if e.id == g.etab_id }}>{{ e.nom }}</option>{% endfor %}</select></form>
 {% else %}<div class="mute" style="margin:0 10px 8px;font-size:13px">{{ g.etab.nom }}</div>{% endif %}
-{{ nav('dashboard', 'Tableau de bord') }}
-{% for sec in menu %}<section class="nav-carte" style="--cc:{{ sec.couleur }}"><h4{% if sec.ouvert %} data-ouvert{% endif %}>{{ sec.titre }}</h4><div class="nav-groupe">{% for it in sec.pages %}<a href="{{ it.url }}" class="{{ 'on' if it.on }}">{{ it.label }}{% if it.badge %}<span class="badge {{ it.tone }}">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div></section>{% endfor %}
-{% if ext_nav %}<h4>Spécifique</h4>{% for e in ext_nav %}<a href="{{ e.url }}">{{ e.libelle }}</a>{% endfor %}{% endif %}
-<div class="mute" style="margin:12px 10px;font-size:12px">{{ g.user.nom }}</div>
+<a href="{{ url_for('dashboard') }}" class="nav-accueil {{ 'on' if request.endpoint == 'dashboard' }}">{{ ico('tableau') }}<span>Tableau de bord</span></a>
+{% for sec in menu %}<section class="nav-carte"><h4{% if sec.ouvert %} data-ouvert{% endif %}>{{ sec.titre }}</h4><div class="nav-groupe">{% for it in sec.pages %}<a href="{{ it.url }}" class="{{ 'on' if it.on }}">{{ ico(it.ico) }}<span class="nav-lib">{{ it.label }}</span>{% if it.badge %}<span class="badge">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div></section>{% endfor %}
+{% if ext_nav %}<section class="nav-carte"><h4>Spécifique</h4><div class="nav-groupe">{% for e in ext_nav %}<a href="{{ e.url }}">{{ ico('dossier') }}<span class="nav-lib">{{ e.libelle }}</span></a>{% endfor %}</div></section>{% endif %}
+<div class="nav-pied"><b>{{ g.user.nom|sans_role }}</b><span>{{ role_libelle }}</span></div>
 </nav><main>
 {% else %}<main>{% endif %}
 {% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endwith %}
