@@ -431,6 +431,24 @@ def chevauche(d1, f1, d2, f2):
     return d1 < f2 and d2 < f1
 
 
+def conflit_remplacant(prof_id, c, date_iso, sauf_rid=0):
+    """Raison pour laquelle le professeur ne peut pas assurer le créneau c à cette date ('' s'il est libre)."""
+    if prof_id == c["prof_id"]:
+        return "c'est le professeur absent"
+    a = indisponible(prof_id, date_iso)
+    if a:
+        return f"absent ce jour-là ({a['motif'] or 'motif non précisé'})"
+    jour = parse_date(date_iso)
+    for x in q("SELECT classe,debut,fin FROM creneaux WHERE prof_id=? AND jour=?", (prof_id, jour.weekday())):
+        if chevauche(c["debut"], c["fin"], x["debut"], x["fin"]):
+            return f"a cours avec la {x['classe']} de {x['debut']} à {x['fin']}"
+    for x in q("SELECT cr.classe,cr.debut,cr.fin FROM remplacements rp JOIN creneaux cr ON cr.id=rp.creneau_id "
+               "WHERE rp.remplacant_id=? AND rp.date=? AND rp.statut<>'annule' AND rp.id<>?", (prof_id, date_iso, sauf_rid)):
+        if chevauche(c["debut"], c["fin"], x["debut"], x["fin"]):
+            return f"remplace déjà la {x['classe']} de {x['debut']} à {x['fin']}"
+    return ""
+
+
 def suggerer_remplacants(r, limite=5):
     """Professeurs libres sur le créneau, classés (même matière d'abord, puis moins sollicités)."""
     c = one("SELECT * FROM creneaux WHERE id=?", (r["creneau_id"],))
@@ -438,14 +456,7 @@ def suggerer_remplacants(r, limite=5):
     depuis = (jour - timedelta(days=30)).isoformat()
     res = []
     for p in q("SELECT * FROM professeurs WHERE etab_id=? AND id<>?", (g.etab_id, c["prof_id"])):
-        if indisponible(p["id"], r["date"]):
-            continue
-        if any(chevauche(c["debut"], c["fin"], x["debut"], x["fin"]) for x in
-               q("SELECT debut,fin FROM creneaux WHERE prof_id=? AND jour=?", (p["id"], jour.weekday()))):
-            continue
-        if any(chevauche(c["debut"], c["fin"], x["debut"], x["fin"]) for x in
-               q("SELECT cr.debut,cr.fin FROM remplacements rp JOIN creneaux cr ON cr.id=rp.creneau_id "
-                 "WHERE rp.remplacant_id=? AND rp.date=? AND rp.statut<>'annule'", (p["id"], r["date"]))):
+        if conflit_remplacant(p["id"], c, r["date"]):
             continue
         charge = one("SELECT COUNT(*) c FROM remplacements WHERE remplacant_id=? AND date>=?", (p["id"], depuis))["c"]
         meme = p["matiere"].strip().lower() == c["matiere"].strip().lower()
@@ -778,6 +789,12 @@ def remplacements():
     for r in q(sql + " ORDER BY r.date, c.debut LIMIT 300", args):
         d = dict(r)
         d["suggestions"] = suggerer_remplacants(r, 4) if r["statut"] == "a_pourvoir" else []
+        d["semaine"] = parse_date(r["date"]).isocalendar()[1]
+        if r["statut"] in ("a_pourvoir", "assigne"):   # tous les professeurs avec leur disponibilité, pour un choix éclairé
+            c = one("SELECT * FROM creneaux WHERE id=?", (r["creneau_id"],))
+            d["autres"] = sorted(((p, conflit_remplacant(p["id"], c, r["date"], r["id"])) for p in
+                                  q("SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=? AND id<>?", (g.etab_id, c["prof_id"]))),
+                                 key=lambda x: (bool(x[1]), x[0]["nom"]))
         rows.append(d)
     nb_attente = sum(1 for r in rows if r["statut"] == "a_pourvoir" and r["date"] >= date.today().isoformat())
     # effectifs par statut sur le même périmètre (sans le filtre de statut), pour les boutons et le message de page vide
@@ -806,7 +823,16 @@ def remplacement_action(rid, action):
         pid = request.form.get("prof_id", type=int)
         if not one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (pid, g.etab_id)):
             abort(400)
+        creneau = one("SELECT * FROM creneaux WHERE id=?", (r["creneau_id"],))
+        conflit = conflit_remplacant(pid, creneau, r["date"], rid)
+        if conflit and not request.form.get("forcer"):
+            nom = one("SELECT prenom,nom FROM professeurs WHERE id=?", (pid,))
+            flash(f"Non assigné : {nom['prenom']} {nom['nom']} {conflit}. Choisissez un professeur libre, ou cochez « malgré le conflit » pour forcer.", "err")
+            return redirect(request.referrer or url_for("remplacements"))
         run("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (pid, rid))
+        p_ = one("SELECT prenom,nom FROM professeurs WHERE id=?", (pid,))
+        flash(f"{p_['prenom']} {p_['nom']} remplacera {d['classe']} le {fr_date(r['date'])}, {d['debut']}–{d['fin']} "
+              f"(semaine {parse_date(r['date']).isocalendar()[1]}){' — en conflit : ' + conflit if conflit else ''}.", "err" if conflit else "ok")
         log("remplacement assigné", f"{r['date']} créneau {r['creneau_id']} → prof {pid}")
         ext.emit("remplacement.assigne", remplacement_id=rid, remplacant_id=pid, date=r["date"])
         nouveau = user_du_prof(pid)
