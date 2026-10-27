@@ -120,11 +120,17 @@ def close_db(_exc):
 
 
 def q(sql, args=()):
-    return db().execute(sql, args).fetchall()
+    try:
+        return db().execute(sql, args).fetchall()
+    except OverflowError:   # entier saisi trop grand pour SQLite : aucun enregistrement ne peut correspondre
+        return []
 
 
 def one(sql, args=()):
-    return db().execute(sql, args).fetchone()
+    try:
+        return db().execute(sql, args).fetchone()
+    except OverflowError:
+        return None
 
 
 def run(sql, args=()):
