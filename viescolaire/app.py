@@ -58,7 +58,7 @@ FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
 
 # Quels endpoints appartiennent à quel module (un module désactivé répond 404).
 MODULE_DES_ENDPOINTS = {
-    "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
+    "professeurs": ["professeurs", "professeurs_reprendre", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
     "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
     "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
     "classes": ["classes", "classe_pp", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
@@ -549,7 +549,48 @@ def professeurs():
     classes_par_prof = {}
     for c in q("SELECT DISTINCT prof_id, classe FROM creneaux WHERE etab_id=? ORDER BY classe", (g.etab_id,)):
         classes_par_prof.setdefault(c["prof_id"], []).append(c["classe"])
-    return render_template("professeurs.html", profs=rows, terme=terme, classes_par_prof=classes_par_prof)
+    autres = autres_etablissements()
+    ailleurs, candidats = {}, []
+    if autres:
+        marques = {(r["email"].lower(), "e") for r in rows if r["email"]} | {((r["nom"] + r["prenom"]).lower(), "n") for r in rows}
+        for a in q("SELECT p.*, e.nom enom FROM professeurs p JOIN etablissements e ON e.id=p.etab_id WHERE p.etab_id IN (%s) ORDER BY p.nom, p.prenom"
+                   % ",".join("?" * len(autres)), [e["id"] for e in autres]):
+            ici = next((r for r in rows if (a["email"] and r["email"].lower() == a["email"].lower()) or (r["nom"] + r["prenom"]).lower() == (a["nom"] + a["prenom"]).lower()), None)
+            if ici:
+                ailleurs.setdefault(ici["id"], []).append(a["enom"])
+            else:
+                candidats.append(a)
+    return render_template("professeurs.html", profs=rows, terme=terme, classes_par_prof=classes_par_prof, ailleurs=ailleurs, candidats=candidats)
+
+
+def autres_etablissements():
+    """Autres établissements auxquels l'utilisateur connecté a accès."""
+    return [e for e in g.etabs if e["id"] != g.etab_id]
+
+
+@app.route("/professeurs/reprendre", methods=["POST"])
+@staff_only
+def professeurs_reprendre():
+    """Reprend dans l'établissement courant des professeurs déjà enregistrés dans un autre établissement auquel on a accès (même compte de connexion)."""
+    ids = [int(x) for x in request.form.getlist("source") if x.isdigit()]
+    acces = {e["id"] for e in autres_etablissements()}
+    n = 0
+    for sid in ids:
+        src = one("SELECT * FROM professeurs WHERE id=?", (sid,))
+        if not src or src["etab_id"] not in acces:
+            continue
+        if one("SELECT 1 FROM professeurs WHERE etab_id=? AND ((email<>'' AND lower(email)=lower(?)) OR lower(nom||prenom)=lower(?))",
+               (g.etab_id, src["email"], src["nom"] + src["prenom"])):
+            continue
+        run("INSERT INTO professeurs(etab_id,user_id,nom,prenom,matiere,email,telephone) VALUES (?,?,?,?,?,?,?)",
+            (g.etab_id, src["user_id"], src["nom"], src["prenom"], src["matiere"], src["email"], src["telephone"]))
+        if src["user_id"]:   # un seul compte de connexion pour les deux établissements
+            run("INSERT OR IGNORE INTO user_etabs VALUES (?,?)", (src["user_id"], g.etab_id))
+        n += 1
+    log("professeurs repris d'un autre établissement", str(n))
+    flash(f"{n} professeur(s) repris dans {g.etab['nom']}. Leurs cours, vœux et absences restent propres à chaque établissement." if n
+          else "Aucun professeur repris (déjà présents ou sélection vide).", "ok" if n else "err")
+    return redirect(url_for("professeurs"))
 
 
 def get_prof(pid):
