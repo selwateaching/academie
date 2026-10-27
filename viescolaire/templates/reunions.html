@@ -6,9 +6,12 @@
 {% else %}{% for v, l in [('oui','Présent'),('non','Absent')] %}<form method="post" action="{{ url_for('reunion_repondre', rid=r.id) }}" class="inline">{{ csrf() }}<input type="hidden" name="reponse" value="{{ v }}"><button class="{{ '' if r.reponse == v else 'sec' }} sm">{{ l }}</button></form> {% endfor %}{% endif %}</td>
 <td>{% if g.user.role in STAFF %}{{ post(url_for('reunion_supprimer', rid=r.id), 'Supprimer', 'sec sm', 'Supprimer cette réunion ?') }}{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucune réunion.</td></tr>{% endfor %}</table></div>
-{% if g.user.role in STAFF %}<div class="card"><h2>Convoquer</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Titre</label><input name="titre" required></div><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
+{% if g.user.role in STAFF %}<div class="card"><h2>Convoquer</h2><form method="post" data-convocation>{{ csrf() }}<div class="row"><div><label>Titre</label><input name="titre" required></div><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
 <div><label>Heure</label><input type="time" name="heure"></div><div><label>Lieu</label><input name="lieu"></div></div>
 <label>Ordre du jour</label><textarea name="ordre_du_jour"></textarea>
-<div class="row"><div><label>Convoqués : classes (équipes)</label><select name="classes" multiple size="5">{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div>
-<div><label>et/ou professeurs</label><select name="profs" multiple size="5">{% for p in profs %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>
-<div><label><input type="checkbox" name="tous" value="1"> Tous les professeurs</label></div></div><br><button>Créer et convoquer</button></form></div>{% endif %}{% endblock %}
+<div class="row"><div><label>Par classe (sélectionne toute son équipe)</label><select name="classes" multiple size="6" data-conv-classes>{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div>
+<div><label>Professeurs convoqués (ajustables à la main)</label><select name="profs" multiple size="6" data-conv-profs>{% for p in profs %}<option value="{{ p.id }}" data-classes="{{ classes_par_prof.get(p.id, [])|join('|') }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>
+<div style="flex:0 0 190px"><label class="check"><input type="checkbox" name="tous" value="1" data-conv-tous> Tous les professeurs</label>
+<p class="mute" data-conv-resume style="margin-top:12px"></p></div></div>
+<p class="mute">Sélectionner une classe coche automatiquement les professeurs qui y enseignent ; vous pouvez ensuite en ajouter ou en retirer. Maintenez Ctrl (⌘ sur Mac) pour en choisir plusieurs.</p>
+<button>Créer et convoquer</button></form></div>{% endif %}{% endblock %}

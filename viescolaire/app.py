@@ -939,7 +939,10 @@ def reunions():
                  "WHERE r.etab_id=? AND rc.prof_id=? ORDER BY r.date DESC", (g.etab_id, g.prof["id"] if g.prof else -1))
     profs = q("SELECT id,nom,prenom FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,)) if g.user["role"] in STAFF else []
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    return render_template("reunions.html", rows=rows, profs=profs, classes=classes_)
+    classes_par_prof = {}
+    for c in q("SELECT DISTINCT prof_id, classe FROM creneaux WHERE etab_id=? ORDER BY classe", (g.etab_id,)):
+        classes_par_prof.setdefault(c["prof_id"], []).append(c["classe"])
+    return render_template("reunions.html", rows=rows, profs=profs, classes=classes_, classes_par_prof=classes_par_prof)
 
 
 @app.route("/reunions/<int:rid>/repondre", methods=["POST"])

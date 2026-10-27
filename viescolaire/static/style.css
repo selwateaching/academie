@@ -58,7 +58,8 @@ label{display:block;font-size:13px;color:var(--mute);margin:8px 0 3px}
 .btn.sec,button.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .btn.sec:hover,button.sec:hover{background:var(--bisque);color:var(--noir)}
 .btn.red,button.red{background:var(--err);color:#fff}.btn.sm,button.sm{padding:3px 9px;font-size:13px}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.row>div{flex:1;min-width:140px}.row input,.row select{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.row>div{flex:1;min-width:140px}.row input,.row select{width:100%}.row input[type=checkbox]{width:auto}
+label.check{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:14px;margin-top:22px}
 .flash{padding:10px 14px;border-radius:8px;margin-bottom:12px;background:var(--ok-bg);color:var(--ok-ink)}
 .flash.err{background:var(--err-bg);color:var(--err-ink)}
 .al{padding:8px 12px;border-radius:8px;margin-bottom:6px;display:block;border-left:4px solid var(--vert-de-gris);background:var(--card);color:var(--ink)}
@@ -78,3 +79,4 @@ nav.side .etab select option{color:var(--noir)}
 @media(max-width:800px){.layout{display:block}nav.side{width:auto;height:auto;position:static;display:flex;flex-wrap:wrap;gap:4px;padding:8px}
 nav.side h4,nav.side .logo{display:none}nav.side a{padding:6px 10px}main{padding:14px}}
 @media print{nav.side,.noprint{display:none!important}main{padding:0}.card{border:0}body{background:#fff;color:#000}}
+select[multiple] option:checked{background:linear-gradient(var(--bisque),var(--bisque));color:var(--noir)}
