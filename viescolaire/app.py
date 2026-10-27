@@ -323,7 +323,7 @@ def client_static(chemin):
 def manifest():
     return Response(json.dumps({
         "name": CFG["produit"], "short_name": CFG["produit"][:12], "start_url": "/", "display": "standalone",
-        "background_color": "#f4f6fb", "theme_color": CFG["couleur"], "lang": "fr",
+        "background_color": "#F4EBD7", "theme_color": CFG["couleur"], "lang": "fr",
         "icons": [{"src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml"}]}),
         mimetype="application/manifest+json")
 

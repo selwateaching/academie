@@ -4,6 +4,6 @@
 <form method="post" action="{{ action }}">{{ csrf() }}<table><tr><th rowspan="2">Professeur</th>{% for j in JOURS %}<th colspan="2" style="text-align:center">{{ j }}</th>{% endfor %}<th rowspan="2">Max h/jour</th></tr>
 <tr>{% for j in JOURS %}{% for d, l in demis %}<th>{{ 'Mat.' if d == 'matin' else 'Ap.-m.' }}</th>{% endfor %}{% endfor %}</tr>
 {% for p in profs %}<tr><td><b>{{ p.nom }}</b> {{ p.prenom }}<br><span class="mute">{{ p.matiere }}</span></td>
-{% for j in range(5) %}{% for d, l in demis %}{% set v = voeux[p.id].get((j, d), '') %}<td><select name="v_{{ p.id }}_{{ j }}_{{ d }}" style="padding:3px;{{ 'background:#fee2e2' if v == 'non' else ('background:#fef3c7' if v == 'souhait' else '') }}">
+{% for j in range(5) %}{% for d, l in demis %}{% set v = voeux[p.id].get((j, d), '') %}<td><select name="v_{{ p.id }}_{{ j }}_{{ d }}" class="{{ 'v-non' if v == 'non' else ('v-souhait' if v == 'souhait' else '') }}" style="padding:3px">
 <option value="">libre</option><option value="non" {{ 'selected' if v == 'non' }}>✗ impératif</option><option value="souhait" {{ 'selected' if v == 'souhait' }}>~ souhait</option></select></td>{% endfor %}{% endfor %}
 <td><input type="number" name="max_{{ p.id }}" value="{{ p.max_heures_jour }}" min="2" max="10" style="width:60px"></td></tr>{% endfor %}</table><br><button>Enregistrer</button></form></div>{% endblock %}
