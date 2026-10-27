@@ -1,0 +1,36 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Comptage des heures{% endblock %}{% block body %}
+<div class="top"><h1>Comptage des heures</h1><span class="noprint">
+<a class="btn sec sm" href="{{ url_for('heures_csv', vue=vue, debut=debut, fin=fin) }}">Export Excel (CSV)</a> <button class="sec sm" data-print>Imprimer / PDF</button></span></div>
+<p class="noprint">{% for v, l, n in [('profs', 'Professeurs', profs|length), ('classes', 'Classes', classes|length), ('personnel', 'Personnel de vie scolaire', agents|length)] %}<a class="btn {{ '' if vue == v else 'sec' }} sm" href="{{ url_for('heures', vue=v, debut=debut, fin=fin) }}">{{ l }} ({{ n }})</a> {% endfor %}</p>
+
+{% if vue == 'profs' %}
+<div class="card"><b>{{ tot.profs|hm }} h</b> de cours par semaine pour {{ profs|length }} professeurs <span class="mute">· heures d'emploi du temps (1 h 30 = 1:30). Le service dû se saisit dans la colonne « Service dû ».</span>
+<form method="get" class="row noprint" style="margin-top:8px"><input type="hidden" name="vue" value="profs"><div><label>Remplacements du</label><input type="date" name="debut" value="{{ debut }}"></div><div><label>au</label><input type="date" name="fin" value="{{ fin }}"></div><div style="flex:0 0 auto"><button class="sec">Actualiser</button></div></form></div>
+<form method="post" action="{{ url_for('heures_services') }}">{{ csrf() }}<input type="hidden" name="debut" value="{{ debut }}"><input type="hidden" name="fin" value="{{ fin }}">
+<div class="card scroll"><table><tr><th>Professeur</th><th>Matière</th><th>Heures / semaine</th><th>Service dû (h)</th><th>Écart</th><th>Cours</th><th>Classes</th><th>A été remplacé</th><th>A remplacé</th></tr>
+{% for p in profs %}{% set ecart = p.minutes - p.service_min %}<tr><td><a href="{{ url_for('professeur', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a></td><td>{{ p.matiere }}</td>
+<td><b>{{ p.minutes|hm }}</b></td>
+<td><input name="service_{{ p.id }}" value="{{ ('%g' % (p.service_min / 60))|replace('.', ',') if p.service_min else '' }}" inputmode="decimal" style="width:70px" aria-label="Service dû de {{ p.prenom }} {{ p.nom }}"></td>
+<td>{% if p.service_min %}<span class="solde {{ 'zero' if ecart == 0 else ('reste' if ecart < 0 else 'depasse') }}" title="Heures d'emploi du temps moins service dû : positif = heures en plus">{{ ecart|hm_signe if ecart else '0:00' }}</span>{% else %}<span class="mute">—</span>{% endif %}</td>
+<td>{{ p.cours }}</td><td>{{ p.classes }}</td>
+<td>{% if p.remplace %}{{ p.remplace|hm }} <span class="mute">({{ p.nb_remplace }})</span>{% else %}<span class="mute">—</span>{% endif %}</td>
+<td>{% if p.remplacant %}<b>{{ p.remplacant|hm }}</b> <span class="mute">({{ p.nb_remplacant }})</span>{% else %}<span class="mute">—</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="9" class="mute">Aucun professeur.</td></tr>{% endfor %}</table>
+<p class="noprint"><button>Enregistrer les services dus</button> <span class="mute">Écart : heures d'emploi du temps moins service dû (rouge = en plus, vert = reste à placer). Remplacements désignés ou effectués entre {{ debut|fr_date }} et {{ fin|fr_date }}.</span></p></div></form>
+
+{% elif vue == 'classes' %}
+<div class="card"><b>{{ tot.classes|hm }} h</b> de cours par semaine, {{ classes|length }} classes <span class="mute">· chaque cours compte pour sa classe ; le détail par matière est donné à droite.</span></div>
+<div class="card scroll"><table><tr><th>Classe</th><th>Heures / semaine</th><th>Cours</th><th>Professeurs</th><th>Détail par matière</th></tr>
+{% for c in classes %}<tr><td><b>{{ c.nom }}</b></td><td><b>{{ c.minutes|hm }}</b></td><td>{{ c.cours }}</td><td>{{ c.profs }}</td>
+<td>{% for m, x in c.matieres %}<span class="puce-matiere" style="--m:{{ m|teinte }}">{{ m }} {{ x|hm }}</span> {% else %}<span class="mute">Aucun cours</span>{% endfor %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucune classe.</td></tr>{% endfor %}</table></div>
+
+{% else %}
+<div class="card"><b>{{ tot.agents|hm }} h</b> planifiées pour {{ tot.contrats|hm }} h de contrat, {{ agents|length }} agents <span class="mute">· solde = contrat moins heures planifiées (vert : reste à placer, rouge : dépassement).</span></div>
+<div class="card scroll"><table><tr><th>Agent</th><th>Catégorie</th><th>Contrat</th><th>Planifié</th><th>Solde</th><th>Détail par poste</th></tr>
+{% for a in agents %}{% set solde = a.contrat_min - a.planifie_min %}<tr><td><a href="{{ url_for('pers_fiche', pid=a.id) }}"><b>{{ a.nom }}</b> {{ a.prenom }}</a></td><td>{{ a.categorie }}</td>
+<td>{{ a.contrat_min|hm }}</td><td><b>{{ a.planifie_min|hm }}</b></td>
+<td><span class="solde {{ 'zero' if solde == 0 else ('reste' if solde > 0 else 'depasse') }}">{{ solde|hm_signe if solde else '0:00' }}</span></td>
+<td>{% for nom, (m, coul) in a.postes.items() %}<span class="chip-poste" style="background:{{ coul }};color:{{ coul|couleur_texte }}">{{ nom }} {{ m|hm }}</span> {% else %}<span class="mute">Rien de planifié</span>{% endfor %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucun agent.</td></tr>{% endfor %}</table></div>
+{% endif %}{% endblock %}

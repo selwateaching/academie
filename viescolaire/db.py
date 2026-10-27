@@ -257,7 +257,7 @@ MIGRATIONS = [
             motif TEXT NOT NULL DEFAULT '', contenu TEXT NOT NULL
         );
     """),  # gestion du personnel : postes, assistants, indisponibilités, besoins, planning, sauvegardes
-    # (11, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (11, "ALTER TABLE professeurs ADD COLUMN service_min INTEGER NOT NULL DEFAULT 0;"),  # service hebdomadaire dû (0 = non renseigné)
 ]
 
 
@@ -689,6 +689,10 @@ def seed_demo(password="demo1234"):
         con.execute("INSERT INTO passages(etab_id,eleve_id,eleve_nom,classe,date,heure,motif,soins,decision,parents_prevenus,par_nom) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     (e1, e["id"], f"{e['prenom']} {e['nom']}", e["classe"], dj.isoformat(), f"{8 + (n * 7) % 9:02d}:{(n * 13) % 60:02d}", motif, soins_, decision,
                      1 if "domicile" in decision else 0, "Sophie Lambert (Infirmière)"))
+    # service dû de la démo : volume de l'emploi du temps arrondi à l'heure (certains écarts restent visibles)
+    for pid, tot in con.execute("SELECT prof_id, SUM((CAST(substr(fin,1,2) AS INTEGER)*60+CAST(substr(fin,4,2) AS INTEGER))"
+                                "-(CAST(substr(debut,1,2) AS INTEGER)*60+CAST(substr(debut,4,2) AS INTEGER))) FROM creneaux GROUP BY prof_id").fetchall():
+        con.execute("UPDATE professeurs SET service_min=? WHERE id=?", ((tot // 60) * 60 if pid % 3 else ((tot + 59) // 60) * 60, pid))
     con.commit()
     from .modeles_defaut import installer
     for eid in (e1, e2):

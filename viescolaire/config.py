@@ -7,7 +7,7 @@ import json
 import os
 
 MODULES = ["professeurs", "emplois_du_temps", "absences", "remplacements", "cours", "classes", "incidents",
-           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel"]
+           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel", "heures"]
 
 DEFAUTS = {
     "produit": "VieScolairePro",

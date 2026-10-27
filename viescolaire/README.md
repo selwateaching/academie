@@ -65,6 +65,12 @@ rôles, indisponibilités, maxima journaliers et contrats ; il explique les cré
 *compléter*, *tout régénérer*, avec annulation. Clic sur une plage = modifier / supprimer / copier vers d'autres jours ou un autre agent.
 Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_personnel` désactivables par client.
 
+## Comptage des heures
+
+Menu *Personnel → Comptage des heures* : heures hebdomadaires de chaque **professeur** (avec service dû saisissable, écart, nombre de cours et de classes,
+heures remplacées / effectuées en remplacement sur une période), de chaque **classe** (avec détail par matière) et du **personnel de vie scolaire**
+(contrat, heures planifiées, solde, détail par poste). Export CSV et impression. Module `heures`, désactivable par client.
+
 ## Limites connues
 
 - Planification : semaine du lundi au vendredi uniquement (pas encore de semaines Dim.–Jeu. ou avec samedi), pas d'alternance de semaines A/B, pas de gestion des

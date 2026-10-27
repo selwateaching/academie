@@ -66,6 +66,7 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
+    "heures": ["heures", "heures_services", "heures_csv"],
     "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
     "planning_personnel": ["pers_planning", "pers_affectation_creer", "pers_affectation_modifier", "pers_affectation_supprimer", "pers_affectation_copier",
@@ -2897,6 +2898,106 @@ def pers_annuler():
     log("génération du planning du personnel annulée", f"{n} plages restaurées")
     flash(f"Planning restauré ({n} plages) : {sv['motif']}.", "ok")
     return redirect(url_for("pers_planning"))
+
+
+DUREE_SQL = ("((CAST(substr({t}fin,1,2) AS INTEGER)*60+CAST(substr({t}fin,4,2) AS INTEGER))"
+             "-(CAST(substr({t}debut,1,2) AS INTEGER)*60+CAST(substr({t}debut,4,2) AS INTEGER)))")
+
+
+def comptage_heures(debut, fin):
+    """Volumes horaires (en minutes) : professeurs, classes et personnel de vie scolaire. Hebdomadaires, sauf les remplacements (sur la période)."""
+    d = DUREE_SQL.format(t="c.")
+    profs = {p["id"]: dict(p, minutes=0, cours=0, classes=0, remplace=0, remplacant=0, nb_remplace=0, nb_remplacant=0)
+             for p in q("SELECT id,nom,prenom,matiere,service_min FROM professeurs WHERE etab_id=? ORDER BY nom,prenom", (g.etab_id,))}
+    for r in q(f"SELECT c.prof_id, SUM({d}) m, COUNT(*) n, COUNT(DISTINCT c.classe) k FROM creneaux c WHERE c.etab_id=? GROUP BY c.prof_id", (g.etab_id,)):
+        if r["prof_id"] in profs:
+            profs[r["prof_id"]].update(minutes=r["m"], cours=r["n"], classes=r["k"])
+    for r in q(f"SELECT c.prof_id, r.remplacant_id, r.statut, SUM({d}) m, COUNT(*) n FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id "
+               "WHERE r.etab_id=? AND r.date BETWEEN ? AND ? AND r.statut IN ('assigne','effectue') GROUP BY c.prof_id, r.remplacant_id", (g.etab_id, debut, fin)):
+        if r["prof_id"] in profs:
+            profs[r["prof_id"]]["remplace"] += r["m"]; profs[r["prof_id"]]["nb_remplace"] += r["n"]
+        if r["remplacant_id"] in profs:
+            profs[r["remplacant_id"]]["remplacant"] += r["m"]; profs[r["remplacant_id"]]["nb_remplacant"] += r["n"]
+    classes = {c["nom"]: {"nom": c["nom"], "minutes": 0, "cours": 0, "profs": 0, "matieres": {}} for c in
+               q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))}
+    for r in q(f"SELECT c.classe, c.matiere, SUM({d}) m, COUNT(*) n, COUNT(DISTINCT c.prof_id) k FROM creneaux c WHERE c.etab_id=? GROUP BY c.classe, c.matiere", (g.etab_id,)):
+        cl = classes.setdefault(r["classe"], {"nom": r["classe"], "minutes": 0, "cours": 0, "profs": 0, "matieres": {}})
+        cl["minutes"] += r["m"]; cl["cours"] += r["n"]; cl["matieres"][r["matiere"] or "—"] = r["m"]
+    for r in q("SELECT classe, COUNT(DISTINCT prof_id) k FROM creneaux WHERE etab_id=? GROUP BY classe", (g.etab_id,)):
+        classes[r["classe"]]["profs"] = r["k"]
+    for cl in classes.values():
+        cl["matieres"] = sorted(cl["matieres"].items(), key=lambda x: -x[1])
+    da = DUREE_SQL.format(t="a.")
+    agents = {p["id"]: dict(p, planifie_min=0, postes={}) for p in
+              q("SELECT id,nom,prenom,categorie,contrat_min,max_jour_min FROM personnel WHERE etab_id=? AND actif=1 ORDER BY nom,prenom", (g.etab_id,))}
+    for r in q(f"SELECT a.personnel_id, po.nom poste, po.couleur, SUM({da}) m FROM affectations a JOIN postes po ON po.id=a.poste_id "
+               "WHERE a.etab_id=? GROUP BY a.personnel_id, a.poste_id ORDER BY po.ordre", (g.etab_id,)):
+        if r["personnel_id"] in agents:
+            agents[r["personnel_id"]]["planifie_min"] += r["m"]
+            agents[r["personnel_id"]]["postes"][r["poste"]] = (r["m"], r["couleur"])
+    return list(profs.values()), list(classes.values()), list(agents.values())
+
+
+@app.route("/heures")
+@staff_only
+def heures():
+    debut = parse_date(request.args.get("debut"), date.today().replace(day=1)).isoformat()
+    fin = parse_date(request.args.get("fin"), date.today()).isoformat()
+    profs, classes, agents = comptage_heures(debut, fin)
+    vue = request.args.get("vue", "profs")
+    tot = {"profs": sum(p["minutes"] for p in profs), "classes": sum(c["minutes"] for c in classes),
+           "agents": sum(a["planifie_min"] for a in agents), "contrats": sum(a["contrat_min"] for a in agents)}
+    return render_template("heures.html", profs=profs, classes=classes, agents=agents, vue=vue if vue in ("profs", "classes", "personnel") else "profs",
+                           debut=debut, fin=fin, tot=tot)
+
+
+@app.route("/heures/services", methods=["POST"])
+@staff_only
+def heures_services():
+    """Enregistre le service hebdomadaire dû de chaque professeur (heures, décimales acceptées : 18 ou 18,5)."""
+    n = 0
+    for p in q("SELECT id FROM professeurs WHERE etab_id=?", (g.etab_id,)):
+        brut = request.form.get(f"service_{p['id']}")
+        if brut is None:
+            continue
+        try:
+            minutes = max(0, min(round(float(brut.replace(",", ".") or 0) * 60), 60 * 60))
+        except ValueError:
+            continue
+        run("UPDATE professeurs SET service_min=? WHERE id=?", (minutes, p["id"]))
+        n += 1
+    log("services horaires enregistrés", f"{n} professeur(s)")
+    flash("Services enregistrés.", "ok")
+    return redirect(url_for("heures", vue="profs", debut=request.form.get("debut", ""), fin=request.form.get("fin", "")))
+
+
+@app.route("/heures.csv")
+@staff_only
+def heures_csv():
+    debut = parse_date(request.args.get("debut"), date.today().replace(day=1)).isoformat()
+    fin = parse_date(request.args.get("fin"), date.today()).isoformat()
+    profs, classes, agents = comptage_heures(debut, fin)
+    vue = request.args.get("vue", "profs")
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    h = lambda m: f"{(m or 0) / 60:.2f}".replace(".", ",")
+    if vue == "classes":
+        w.writerow(["classe", "heures_hebdo", "nb_cours", "nb_professeurs", "detail_matieres"])
+        for c in classes:
+            w.writerow([cellule_csv(c["nom"]), h(c["minutes"]), c["cours"], c["profs"], cellule_csv("; ".join(f"{m} {h(x)}" for m, x in c["matieres"]))])
+    elif vue == "personnel":
+        w.writerow(["agent", "categorie", "contrat_h", "planifie_h", "solde_h", "detail_postes"])
+        for a in agents:
+            w.writerow([cellule_csv(f"{a['prenom']} {a['nom']}".strip()), cellule_csv(a["categorie"]), h(a["contrat_min"]), h(a["planifie_min"]),
+                        h(a["contrat_min"] - a["planifie_min"]), cellule_csv("; ".join(f"{k} {h(v[0])}" for k, v in a["postes"].items()))])
+    else:
+        vue = "profs"
+        w.writerow(["professeur", "matiere", "service_du_h", "heures_hebdo", "ecart_h", "nb_cours", "nb_classes", f"remplace_h_{debut}_{fin}", f"remplacant_h_{debut}_{fin}"])
+        for p in profs:
+            w.writerow([cellule_csv(f"{p['prenom']} {p['nom']}".strip()), cellule_csv(p["matiere"]), h(p["service_min"]), h(p["minutes"]),
+                        h(p["minutes"] - p["service_min"]) if p["service_min"] else "", p["cours"], p["classes"], h(p["remplace"]), h(p["remplacant"])])
+    log("export", f"heures {vue}")
+    return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=heures_{vue}_{date.today()}.csv"})
 
 
 @app.route("/personnel/planning.csv")
