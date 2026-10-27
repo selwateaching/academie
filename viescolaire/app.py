@@ -258,6 +258,12 @@ def entetes(resp):
 
 
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
+# Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
+PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
+                "document_genere": "documents", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
+                "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
+
+
 def menu_sections():
     """Rubriques du menu (barre latérale et cartes de l'accueil) selon le rôle et les modules actifs : titre, pages, compteurs."""
     u, ma = g.user, module_actif
@@ -276,7 +282,7 @@ def menu_sections():
     def item(ep, label, ico, desc="", mod=None, badge=None, **kw):
         if mod and not ma(mod):
             return None
-        on = request.endpoint == ep or (ep == "infirmerie_eleves" and request.endpoint == "infirmerie_fiche")
+        on = request.endpoint == ep or PAGE_PARENTE.get(request.endpoint) == ep
         return {"label": label, "ico": ico, "desc": desc, "url": url_for(ep, **kw), "badge": badge or None, "on": on}
 
     def section(titre, items, ouvert=True):
@@ -3962,7 +3968,7 @@ def proposition(pid):
             continue
         texte = f"{x['matiere']} · {profs.get(x['prof_id'], {}).get('nom', '?')}" if vue == "classe" else f"{x['classe']} · {x['matiere']}"
         for k in range(x["longueur"]):
-            cases[(x["jour"], x["debut_idx"] + k)] = texte + (f" ({x['salle']})" if x["salle"] else "")
+            cases[(x["jour"], x["debut_idx"] + k)] = (texte + (f" ({x['salle']})" if x["salle"] else ""), x["matiere"])
     non_places = [dict(n, prof=profs.get(n["prof_id"], {}).get("nom", "?")) for n in res["non_places"]]
     impact = {
         "creneaux": one("SELECT COUNT(*) c FROM creneaux WHERE etab_id=?", (g.etab_id,))["c"],
