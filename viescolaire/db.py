@@ -258,6 +258,12 @@ MIGRATIONS = [
         );
     """),  # gestion du personnel : postes, assistants, indisponibilités, besoins, planning, sauvegardes
     (11, "ALTER TABLE professeurs ADD COLUMN service_min INTEGER NOT NULL DEFAULT 0;"),  # service hebdomadaire dû (0 = non renseigné)
+    (12, """
+        CREATE TABLE IF NOT EXISTS photos (   -- trombinoscope : une photo par personne (kind = eleve | prof | perso)
+            kind TEXT NOT NULL, ref_id INTEGER NOT NULL, etab_id INTEGER NOT NULL, mime TEXT NOT NULL, data BLOB NOT NULL,
+            at TEXT NOT NULL DEFAULT '', PRIMARY KEY (kind, ref_id)
+        );
+    """),
 ]
 
 

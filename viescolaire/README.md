@@ -71,6 +71,13 @@ Menu *Personnel → Comptage des heures* : heures hebdomadaires de chaque **prof
 heures remplacées / effectuées en remplacement sur une période), de chaque **classe** (avec détail par matière) et du **personnel de vie scolaire**
 (contrat, heures planifiées, solde, détail par poste). Export CSV et impression. Module `heures`, désactivable par client.
 
+## Trombinoscope
+
+Menu *Vie scolaire → Trombinoscope* (et *Mon espace* pour les enseignants) : élèves par classe (avec le professeur principal), professeurs (matière, classes dont ils sont
+professeur principal) et personnel de vie scolaire (postes). Photos envoyées par le personnel de vie scolaire (JPEG/PNG/WebP, réduites à 400 px dans le navigateur,
+400 Ko maximum, stockées en base) ; sans photo, des initiales s'affichent. Impression par classe. Module `trombinoscope`, désactivable par client.
+Les photos d'élèves sont des données personnelles : recueillir le consentement des familles.
+
 ## Limites connues
 
 - Planification : semaine du lundi au vendredi uniquement (pas encore de semaines Dim.–Jeu. ou avec samedi), pas d'alternance de semaines A/B, pas de gestion des

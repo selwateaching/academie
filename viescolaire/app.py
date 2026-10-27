@@ -67,6 +67,7 @@ MODULE_DES_ENDPOINTS = {
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
     "heures": ["heures", "heures_services", "heures_csv"],
+    "trombinoscope": ["trombinoscope", "photo", "photo_enregistrer"],
     "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
     "planning_personnel": ["pers_planning", "pers_affectation_creer", "pers_affectation_modifier", "pers_affectation_supprimer", "pers_affectation_copier",
@@ -2925,6 +2926,130 @@ def pers_annuler():
     log("génération du planning du personnel annulée", f"{n} plages restaurées")
     flash(f"Planning restauré ({n} plages) : {sv['motif']}.", "ok")
     return redirect(url_for("pers_planning"))
+
+
+# ───────────────────────── Trombinoscope ─────────────────────────
+PHOTO_TABLES = {"eleve": "eleves", "prof": "professeurs", "perso": "personnel"}
+PHOTO_MAX = 400 * 1024
+
+
+def type_image(data):
+    """Type MIME d'après les premiers octets (on ne se fie pas au nom ni au type annoncé)."""
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
+
+
+def personne_photo(kind, rid):
+    t = PHOTO_TABLES.get(kind)
+    return one(f"SELECT * FROM {t} WHERE id=? AND etab_id=?", (rid, g.etab_id)) if t else None
+
+
+def avatar_svg(prenom, nom):
+    """Avatar à initiales quand il n'y a pas de photo (teinte stable selon le nom)."""
+    ini = ((prenom or " ")[:1] + (nom or " ")[:1]).upper().strip() or "?"
+    teinte = teinte_matiere(f"{prenom} {nom}")
+    ini = ini.replace("&", "").replace("<", "")
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150"><rect width="120" height="150" fill="hsl({teinte} 45% 82%)"/>'
+            f'<text x="60" y="88" text-anchor="middle" font-family="sans-serif" font-size="44" font-weight="600" fill="hsl({teinte} 45% 28%)">{ini}</text></svg>')
+
+
+def peut_voir_trombinoscope():
+    return g.user["role"] in STAFF or bool(g.prof)
+
+
+@app.route("/photo/<kind>/<int:rid>")
+def photo(kind, rid):
+    if not peut_voir_trombinoscope() or (kind == "perso" and g.user["role"] not in STAFF):
+        abort(403)
+    p = personne_photo(kind, rid)
+    if not p:
+        abort(404)
+    ph = one("SELECT mime,data FROM photos WHERE kind=? AND ref_id=? AND etab_id=?", (kind, rid, g.etab_id))
+    if ph:
+        resp = Response(ph["data"], mimetype=ph["mime"])
+    else:
+        resp = Response(avatar_svg(p["prenom"], p["nom"]), mimetype="image/svg+xml")
+    resp.headers["Cache-Control"] = "private, max-age=60"
+    return resp
+
+
+@app.route("/trombinoscope")
+def trombinoscope():
+    if not peut_voir_trombinoscope():
+        abort(403)
+    staff = g.user["role"] in STAFF
+    vue = request.args.get("vue", "eleves")
+    if vue not in ("eleves", "profs", "personnel") or (vue == "personnel" and not staff):
+        vue = "eleves"
+    classe = request.args.get("classe", "")
+    classes_ = q("SELECT c.nom, p.nom pnom, p.prenom pprenom FROM classes c LEFT JOIN professeurs p ON p.id=c.prof_principal_id WHERE c.etab_id=? ORDER BY c.nom", (g.etab_id,))
+    avec_photo = {(r["kind"], r["ref_id"]) for r in q("SELECT kind,ref_id FROM photos WHERE etab_id=?", (g.etab_id,))}
+    groupes = []   # [(titre, sous-titre, [personnes])]
+    if vue == "eleves":
+        pp = {c["nom"]: (f"{c['pprenom']} {c['pnom']}" if c["pnom"] else "") for c in classes_}
+        par = {}
+        for e in q("SELECT id,nom,prenom,classe FROM eleves WHERE etab_id=? " + ("AND classe=? " if classe else "") + "ORDER BY classe,nom,prenom",
+                   (g.etab_id, classe) if classe else (g.etab_id,)):
+            par.setdefault(e["classe"] or "Sans classe", []).append({"kind": "eleve", "id": e["id"], "nom": e["nom"], "prenom": e["prenom"], "ligne": ""})
+        groupes = [(c, f"Prof principal : {pp[c]}" if pp.get(c) else "", l) for c, l in par.items()]
+    elif vue == "profs":
+        pp_de = {}
+        for c in classes_:
+            if c["pnom"]:
+                pp_de.setdefault(f"{c['pprenom']} {c['pnom']}", []).append(c["nom"])
+        lst = []
+        for p in q("SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=? ORDER BY nom,prenom", (g.etab_id,)):
+            pp = pp_de.get(f"{p['prenom']} {p['nom']}", [])
+            lst.append({"kind": "prof", "id": p["id"], "nom": p["nom"], "prenom": p["prenom"],
+                        "ligne": p["matiere"] + (f" · PP {', '.join(pp)}" if pp else "")})
+        groupes = [("Professeurs", "", lst)]
+    else:
+        roles = {}
+        for r in q("SELECT pp.personnel_id, po.nom, po.couleur FROM personnel_postes pp JOIN postes po ON po.id=pp.poste_id WHERE po.etab_id=? ORDER BY po.ordre", (g.etab_id,)):
+            roles.setdefault(r["personnel_id"], []).append((r["nom"], r["couleur"]))
+        par = {}
+        for p in q("SELECT id,nom,prenom,categorie,fonction FROM personnel WHERE etab_id=? AND actif=1 ORDER BY categorie,nom,prenom", (g.etab_id,)):
+            par.setdefault(p["categorie"], []).append({"kind": "perso", "id": p["id"], "nom": p["nom"], "prenom": p["prenom"],
+                                                       "ligne": p["fonction"], "roles": roles.get(p["id"], [])})
+        groupes = [(c, "", l) for c, l in par.items()]
+    for _, _, lst in groupes:
+        for x in lst:
+            x["photo"] = (x["kind"], x["id"]) in avec_photo
+    return render_template("trombinoscope.html", vue=vue, classe=classe, classes=classes_, groupes=groupes, staff=staff,
+                           total=sum(len(l) for _, _, l in groupes))
+
+
+@app.route("/trombinoscope/photo/<kind>/<int:rid>", methods=["POST"])
+@staff_only
+def photo_enregistrer(kind, rid):
+    p = personne_photo(kind, rid)
+    if not p:
+        abort(404)
+    retour = redirect(request.referrer or url_for("trombinoscope"))
+    if request.form.get("action") == "supprimer":
+        run("DELETE FROM photos WHERE kind=? AND ref_id=? AND etab_id=?", (kind, rid, g.etab_id))
+        log("photo supprimée", f"{kind} {rid}")
+        flash("Photo supprimée.", "ok")
+        return retour
+    f = request.files.get("photo")
+    data = f.read(PHOTO_MAX + 1) if f else b""
+    if not data:
+        flash("Choisissez une image.", "err")
+    elif len(data) > PHOTO_MAX:
+        flash("Image trop lourde (400 Ko maximum) : réduisez-la ou utilisez un format plus léger.", "err")
+    elif not type_image(data):
+        flash("Format non reconnu : utilisez une image JPEG, PNG ou WebP.", "err")
+    else:
+        run("INSERT OR REPLACE INTO photos(kind,ref_id,etab_id,mime,data,at) VALUES (?,?,?,?,?,?)",
+            (kind, rid, g.etab_id, type_image(data), data, datetime.now().isoformat(timespec="seconds")))
+        log("photo enregistrée", f"{kind} {rid}")
+        flash(f"Photo de {p['prenom']} {p['nom']} enregistrée.", "ok")
+    return retour
 
 
 DUREE_SQL = ("((CAST(substr({t}fin,1,2) AS INTEGER)*60+CAST(substr({t}fin,4,2) AS INTEGER))"

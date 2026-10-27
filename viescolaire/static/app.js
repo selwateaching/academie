@@ -335,3 +335,26 @@ document.querySelectorAll('[data-filtre-select]').forEach(function (inp) {
   bSuppr.addEventListener('click', function (e) { if (!confirm('Supprimer cette plage ?')) e.preventDefault(); });
   panneau.setAttribute('action', grille.getAttribute('data-url-creer'));
 })();
+
+/* Trombinoscope : réduit la photo choisie (400 px max, JPEG) puis envoie le formulaire */
+document.querySelectorAll('input[data-photo]').forEach(function (inp) {
+  inp.addEventListener('change', function () {
+    var f = inp.files[0], form = inp.form;
+    if (!f) return;
+    var envoyer = function () { form.submit(); };
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function () {
+      try {
+        var k = Math.min(1, 400 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) {
+          if (b) { var dt = new DataTransfer(); dt.items.add(new File([b], 'photo.jpg', { type: 'image/jpeg' })); inp.files = dt.files; }
+          envoyer();
+        }, 'image/jpeg', 0.85);
+      } catch (e) { envoyer(); }
+    };
+    img.onerror = envoyer;
+    img.src = url;
+  });
+});
