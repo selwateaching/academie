@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}{{ d.titre }}{% endblock %}{% block body %}
+<div class="top noprint"><h1>{{ d.titre }}</h1><span><button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('document_genere_docx', did=d.id) }}">Télécharger Word</a>
+<a class="btn sec" href="{{ url_for('documents') }}">← Documents</a></span></div>
+<div class="card paper"><p class="mute" style="margin:0 0 18px"><b>{{ g.etab.nom }}</b></p><div class="paper-body">{{ d.contenu }}</div></div>
+<div class="card noprint"><h2>Modifier</h2><form method="post" action="{{ url_for('document_genere_modifier', did=d.id) }}">{{ csrf() }}
+<label>Titre</label><input name="titre" value="{{ d.titre }}" style="width:100%"><label>Texte</label><textarea name="contenu" rows="18" style="font-family:inherit">{{ d.contenu }}</textarea><br><br>
+<button>Enregistrer les modifications</button> {{ post(url_for('document_genere_supprimer', did=d.id), 'Supprimer', 'red', 'Supprimer ce document ?') }}</form>
+<p class="mute">Rédigé par {{ d.auteur }} le {{ d.created_at.replace('T',' ') }}{% if d.incident_id %} · <a href="{{ url_for('incidents') }}">incident associé</a>{% endif %}.</p></div>{% endblock %}

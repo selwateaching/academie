@@ -139,7 +139,29 @@ MIGRATIONS = [
             grille TEXT NOT NULL DEFAULT ''                -- une plage par ligne "HH:MM-HH:MM" ; vide = grille par défaut
         );
     """),  # réglages du générateur propres à chaque établissement
-    # (5, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (5, """
+        CREATE TABLE IF NOT EXISTS eleves (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, nom TEXT NOT NULL, prenom TEXT NOT NULL DEFAULT '',
+            classe TEXT NOT NULL DEFAULT '', responsable TEXT NOT NULL DEFAULT '', contact TEXT NOT NULL DEFAULT ''
+        );
+        CREATE INDEX IF NOT EXISTS idx_eleves_classe ON eleves(etab_id, classe);
+        CREATE TABLE IF NOT EXISTS modeles_documents (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, code TEXT NOT NULL DEFAULT '', titre TEXT NOT NULL, corps TEXT NOT NULL,
+            ouvert_enseignants INTEGER NOT NULL DEFAULT 0,   -- 1 : les enseignants peuvent rédiger ce document
+            avec_incident INTEGER NOT NULL DEFAULT 0         -- 1 : propose d'enregistrer aussi un incident
+        );
+        CREATE TABLE IF NOT EXISTS types_incident (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, libelle TEXT NOT NULL, texte TEXT NOT NULL DEFAULT '',
+            gravite TEXT NOT NULL DEFAULT 'mineur'
+        );
+        CREATE TABLE IF NOT EXISTS documents_generes (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, modele_id INTEGER, type TEXT NOT NULL DEFAULT '', titre TEXT NOT NULL,
+            eleve_id INTEGER REFERENCES eleves(id) ON DELETE SET NULL, eleve_nom TEXT NOT NULL DEFAULT '', prof_id INTEGER,
+            contenu TEXT NOT NULL, auteur_id INTEGER, auteur TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, incident_id INTEGER
+        );
+        ALTER TABLE incidents ADD COLUMN eleve_id INTEGER;
+    """),  # élèves, modèles de documents, types d'incident, documents rédigés
+    # (6, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
@@ -152,6 +174,9 @@ def init_db(extra_sql=()):
             con.executescript(sql)
             con.execute("INSERT INTO schema_version VALUES (?, datetime('now'))", (version,))
             con.commit()
+    from .modeles_defaut import installer
+    for (eid,) in con.execute("SELECT id FROM etablissements").fetchall():  # modèles par défaut pour chaque établissement
+        installer(con, eid)
     for sql in extra_sql:  # tables des extensions (idempotentes)
         con.executescript(sql)
     con.commit()
@@ -168,6 +193,8 @@ def create_admin(email, password, nom, etab_nom):
     ).lastrowid
     con.execute("INSERT INTO user_etabs VALUES (?,?)", (uid, etab_id))
     con.commit()
+    from .modeles_defaut import installer
+    installer(con, etab_id)
     con.close()
 
 
@@ -337,6 +364,19 @@ def seed_demo(password="demo1234"):
         con.execute("INSERT INTO audit(etab_id,user_id,user_nom,action,detail,created_at) VALUES (?,?,?,?,?,?)",
                     (e1, cpe, "Camille Durand (CPE)", action, detail, ts(300 - k * 40)))
 
+    # Élèves fictifs (8 par classe) pour la démonstration
+    prenoms = ["Léa", "Lucas", "Emma", "Nathan", "Chloé", "Hugo", "Inès", "Louis", "Jade", "Gabriel", "Manon", "Raphaël", "Camille", "Tom",
+               "Zoé", "Arthur", "Sarah", "Jules", "Lina", "Adam", "Eva", "Noé", "Clara", "Mathis"]
+    noms = ["Dubois", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Lefèvre", "Faure", "André", "Mercier", "Blanc", "Guérin",
+            "Boyer", "Garnier", "Chevalier", "François", "Perrin", "Morel", "Clément", "Gauthier", "Roche", "Noël", "Meyer", "Lopez"]
+    k = 0
+    for c in classes:
+        for _ in range(8):
+            pr, nm = prenoms[k % len(prenoms)], noms[(k * 7 + 3) % len(noms)]
+            con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
+                        (e1, nm, pr, c, f"Famille {nm}", f"famille.{nm.lower().replace('è', 'e').replace('é', 'e')}{k}@exemple.fr"))
+            k += 1
+
     # Second établissement (démonstration du multi-établissements)
     for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:
         con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
@@ -344,6 +384,9 @@ def seed_demo(password="demo1234"):
     for c in ["2nde1", "1ère S", "Term ES"]:
         con.execute("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (e2, c, c[:3]))
     con.commit()
+    from .modeles_defaut import installer
+    for eid in (e1, e2):
+        installer(con, eid)
     con.close()
     return cpe
 

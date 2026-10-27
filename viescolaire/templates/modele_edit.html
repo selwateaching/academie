@@ -1,0 +1,8 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Modèle{% endblock %}{% block body %}
+<div class="top"><h1>Modifier le modèle</h1><a class="btn sec" href="{{ url_for('modeles_documents') }}">← Modèles</a></div>
+<div class="card"><form method="post">{{ csrf() }}<label>Titre</label><input name="titre" value="{{ m.titre }}" required style="width:100%">
+<label>Texte du modèle</label><textarea name="corps" rows="22" required style="font-family:inherit">{{ m.corps }}</textarea>
+<label class="check"><input type="checkbox" name="ouvert_enseignants" value="1" {{ 'checked' if m.ouvert_enseignants }}> Les enseignants peuvent rédiger ce document (pour leurs classes)</label>
+<label class="check"><input type="checkbox" name="avec_incident" value="1" {{ 'checked' if m.avec_incident }}> Proposer d'enregistrer aussi un incident</label><br><button>Enregistrer</button></form></div>
+<div class="card"><h2>Informations remplies automatiquement</h2><p class="mute">Écrivez-les entre doubles accolades dans le texte.</p>
+{% for v, desc in variables %}<p style="margin:2px 0"><code>{{ '{{' }}{{ v }}{{ '}}' }}</code> — {{ desc }}</p>{% endfor %}</div>{% endblock %}

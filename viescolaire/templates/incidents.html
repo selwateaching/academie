@@ -1,7 +1,8 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Incidents{% endblock %}{% block body %}
 <div class="top"><h1>Incidents et continuité pédagogique</h1><a class="btn sec" href="{{ url_for('export_csv', nom='incidents') }}">Export CSV</a></div>
 <div class="card"><h2>Nouvel incident</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
-<div><label>Classe</label><select name="classe"><option value="">—</option>{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div><div><label>Élève(s) concerné(s)</label><input name="eleve"></div></div>
+<div><label>Classe</label><select name="classe"><option value="">—</option>{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div><div><label>Élève (liste)</label><select name="eleve_id"><option value="">— autre / plusieurs —</option>{% for e in eleves %}<option value="{{ e.id }}">{{ e.classe }} · {{ e.nom }} {{ e.prenom }}</option>{% endfor %}</select></div>
+<div><label>ou texte libre</label><input name="eleve" placeholder="Élèves A. et B."></div></div>
 <label>Description</label><textarea name="description" required></textarea><label>Suite donnée / continuité pédagogique</label><input name="suite" style="width:100%"><br><br><button>Enregistrer</button></form></div>
 <div class="card scroll"><table><tr><th>Date</th><th>Classe</th><th>Élève</th><th>Description</th><th>Suite</th><th></th></tr>
 {% for i in incidents %}<tr><td>{{ i.date|fr_date }}</td><td>{{ i.classe }}</td><td>{{ i.eleve }}</td><td>{{ i.description }}</td><td>{{ i.suite }}</td>

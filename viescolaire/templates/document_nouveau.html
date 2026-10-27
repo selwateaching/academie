@@ -1,0 +1,26 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Rédiger un document{% endblock %}{% block body %}
+<div class="top"><h1>Rédiger un document</h1>{% if staff %}<a class="btn sec" href="{{ url_for('modeles_documents') }}">Modèles et types d'incident</a>{% endif %}</div>
+{% if aucun_eleve %}<div class="al warn">Aucun élève disponible{% if staff %} : ajoutez-les dans <a href="{{ url_for('eleves') }}">Élèves</a> ou par import CSV{% endif %}. Vous pouvez tout de même rédiger un document sans élève.</div>{% endif %}
+<script type="application/json" id="redaction-data">{{ donnees|tojson }}</script>
+<form method="post" data-redaction>{{ csrf() }}
+<div class="card"><h2>1. Choisir le document et l'élève</h2><div class="row">
+<div><label>Modèle de document</label><select name="modele_id" required>{% for m in donnees.modeles %}<option value="{{ m.id }}">{{ m.titre }}</option>{% endfor %}</select></div>
+<div><label>Classe</label><select data-filtre-classe><option value="">Toutes</option>{% for c in donnees.classes %}<option>{{ c }}</option>{% endfor %}</select></div>
+<div><label>Rechercher un élève</label><input type="search" data-filtre-texte placeholder="Tapez un nom…" autocomplete="off"></div>
+<div style="flex:2"><label>Élève</label><select name="eleve_id" data-eleve><option value="">— aucun —</option>{% for e in donnees.eleves %}<option value="{{ e.id }}">{{ e.classe }} · {{ e.nom }}</option>{% endfor %}</select></div></div>
+<p class="mute" style="margin:10px 0 0" data-infos>Sélectionnez un élève : sa classe, son professeur principal et l'équipe pédagogique s'affichent automatiquement.</p></div>
+<div class="card"><h2>2. Informations</h2><div class="row">
+<div style="flex:2"><label>Professeur concerné (équipe de la classe)</label><select name="prof_id" data-prof><option value="">—</option></select></div>
+<div><label>Matière</label><input name="matiere" data-matiere-champ></div>
+<div><label>Date des faits</label><input type="date" name="date" value="{{ donnees.today }}" data-champ></div>
+<div><label>Heure</label><input type="time" name="heure" data-champ></div><div><label>Lieu</label><input name="lieu" data-champ placeholder="Salle, cour…"></div></div>
+<div class="row"><div><label>Type d'incident / motif</label><select name="type_libelle" data-type><option value="">— choisir —</option>{% for t in donnees.types %}<option value="{{ t.libelle }}">{{ t.libelle }}</option>{% endfor %}</select></div>
+<div data-autre hidden><label>Précisez</label><input name="type_autre" data-champ></div></div>
+<label>Faits constatés <button type="button" class="sec sm" data-regen-desc>↻ proposition du type</button></label><textarea name="description" rows="3" data-description></textarea>
+<label>Mesures prises / suite donnée</label><textarea name="suite" rows="2" data-suite></textarea></div>
+<div class="card"><h2>3. Document (modifiable)</h2><div class="row"><div style="flex:3"><label>Titre</label><input name="titre" data-titre style="width:100%"></div>
+<div><label>Ajouter une information</label><select data-inserer><option value="">Insérer…</option>{% for v, desc in donnees.variables %}<option value="{{ v }}">{{ desc }}</option>{% endfor %}</select></div></div>
+<label>Texte <button type="button" class="sec sm" data-regen-corps>↻ régénérer depuis le modèle</button> <span class="mute" data-notice-corps hidden>— texte modifié à la main : les champs ci-dessus ne le remplacent plus.</span></label>
+<textarea name="contenu" rows="20" required data-corps style="font-family:inherit"></textarea>
+{% if staff %}<label class="check" data-incident-box hidden><input type="checkbox" name="creer_incident" value="1"> Enregistrer aussi cet incident dans le suivi des incidents</label>{% endif %}<br>
+<button>Enregistrer le document</button> <span class="mute">Vous pourrez ensuite l'imprimer, l'exporter en PDF ou en Word.</span></div></form>{% endblock %}

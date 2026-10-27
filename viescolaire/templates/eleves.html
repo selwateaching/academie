@@ -1,0 +1,10 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Élèves{% endblock %}{% block body %}
+<div class="top"><h1>Élèves <span class="mute" style="font-size:14px">({{ total }})</span></h1>
+<form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, prénom, responsable…"><select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select><button class="sec">Filtrer</button></form></div>
+<div class="card scroll"><table><tr><th>Classe</th><th>Nom</th><th>Prénom</th><th>Responsable légal</th><th>Contact</th><th></th></tr>
+{% for e in rows %}<tr><td>{{ e.classe }}</td><td><b>{{ e.nom }}</b></td><td>{{ e.prenom }}</td><td>{{ e.responsable }}</td><td>{{ e.contact }}</td><td>{{ post(url_for('eleve_supprimer', eid=e.id), '✕', 'sec sm', 'Supprimer cet élève ?') }}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Ajouter un élève</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
+<div><label>Classe</label><input name="classe" list="cl"><datalist id="cl">{% for c in classes %}<option value="{{ c.nom }}">{% endfor %}</datalist></div>
+<div><label>Responsable légal</label><input name="responsable"></div><div><label>Contact</label><input name="contact"></div><div><button>Ajouter</button></div></div></form>
+<p class="mute">Liste complète : <a href="{{ url_for('importer') }}">Import CSV</a> (type « Élèves »). Ne conservez que les données utiles à la vie scolaire.</p></div>{% endblock %}

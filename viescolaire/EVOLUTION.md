@@ -63,6 +63,7 @@ avec d'éventuels ajouts) :
 | `tache.creee` | tache_id, titre, echeance |
 | `incident.cree` | incident_id, classe, description |
 | `utilisateur.cree` | user_id, email, nom, role |
+| `document.genere` | document_id, modele, eleve_id, auteur |
 
 Une extension qui plante est journalisée et **ne bloque jamais** l'action de l'utilisateur.
 Les secrets (mots de passe SMTP…) vont dans des variables d'environnement, pas dans `config.json`.

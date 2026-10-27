@@ -21,6 +21,7 @@ EVENEMENTS = {
     "incident.cree": "incident_id, classe, description",
     "utilisateur.cree": "user_id, email, nom, role",
     "emploi_du_temps.applique": "proposition_id, nb_creneaux",
+    "document.genere": "document_id, modele, eleve_id, auteur",
 }
 
 

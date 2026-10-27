@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Modèles{% endblock %}{% block body %}
+<div class="top"><h1>Modèles de documents et types d'incident</h1><a class="btn sec" href="{{ url_for('documents') }}">← Documents</a></div>
+<div class="card scroll"><h2>Modèles de documents</h2><table><tr><th>Modèle</th><th>Enseignants</th><th>Incident</th><th></th></tr>
+{% for m in modeles %}<tr><td><b>{{ m.titre }}</b></td><td>{{ 'oui' if m.ouvert_enseignants else 'non' }}</td><td>{{ 'proposé' if m.avec_incident else '' }}</td>
+<td><a class="btn sec sm" href="{{ url_for('modele_edit', mid=m.id) }}">Modifier</a> {{ post(url_for('modele_supprimer', mid=m.id), 'Supprimer', 'sec sm', 'Supprimer ce modèle ?') }}</td></tr>{% endfor %}</table>
+<h2 style="margin-top:18px">Nouveau modèle</h2><form method="post">{{ csrf() }}<label>Titre</label><input name="titre" required style="width:100%"><label>Texte (utilisez les informations automatiques, ex. {{ '{{eleve}}' }}, {{ '{{classe}}' }}, {{ '{{prof_principal}}' }})</label>
+<textarea name="corps" rows="8" required style="font-family:inherit"></textarea>
+<label class="check"><input type="checkbox" name="ouvert_enseignants" value="1"> Les enseignants peuvent le rédiger</label><label class="check"><input type="checkbox" name="avec_incident" value="1"> Proposer d'enregistrer aussi un incident</label><br><button>Créer le modèle</button></form></div>
+<div class="card scroll"><h2>Types d'incident (liste déroulante)</h2><p class="mute">Le texte proposé pré-remplit les « faits constatés » ; il reste modifiable à chaque rédaction.</p>
+<table><tr><th>Libellé</th><th>Texte proposé</th><th>Gravité</th><th></th></tr>
+{% for t in types %}<tr><form method="post" action="{{ url_for('type_incident_modifier', tid=t.id) }}">{{ csrf() }}<td><input name="libelle" value="{{ t.libelle }}" required></td><td><input name="texte" value="{{ t.texte }}" style="width:100%"></td>
+<td><select name="gravite">{% for g_ in ['mineur','moyen','grave'] %}<option {{ 'selected' if t.gravite == g_ }}>{{ g_ }}</option>{% endfor %}</select></td>
+<td><button class="sm">Enregistrer</button></form> {{ post(url_for('type_incident_supprimer', tid=t.id), '✕', 'sec sm', 'Supprimer ce type ?') }}</td></tr>{% endfor %}</table>
+<form method="post" action="{{ url_for('type_incident_ajouter') }}">{{ csrf() }}<div class="row" style="margin-top:12px"><div><label>Nouveau type</label><input name="libelle" required></div><div style="flex:3"><label>Texte proposé</label><input name="texte"></div>
+<div><label>Gravité</label><select name="gravite"><option>mineur</option><option>moyen</option><option>grave</option></select></div><div><button>Ajouter</button></div></div></form></div>
+<div class="card"><h2>Informations remplies automatiquement</h2>{% for v, desc in variables %}<p style="margin:2px 0"><code>{{ '{{' }}{{ v }}{{ '}}' }}</code> — {{ desc }}</p>{% endfor %}</div>{% endblock %}

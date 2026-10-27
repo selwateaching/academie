@@ -1,5 +1,8 @@
 """VieScolairePro : logiciel de gestion de la vie scolaire (CPE, enseignants, direction)."""
 import base64
+import re
+import zipfile
+from xml.sax.saxutils import escape as xml_escape
 import csv
 import hashlib
 import hmac
@@ -21,6 +24,7 @@ from werkzeug.utils import secure_filename
 from . import db as database
 from . import ext
 from . import planning
+from .modeles_defaut import VARIABLES, installer as installer_modeles
 from .config import CFG, MODULES
 
 app = Flask(__name__)
@@ -61,6 +65,9 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
+    "eleves": ["eleves", "eleve_supprimer"],
+    "redaction": ["document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
+                  "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -773,15 +780,18 @@ def incidents():
     if request.method == "POST":
         f = request.form
         if f.get("description", "").strip():
-            iid = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite) VALUES (?,?,?,?,?,?)",
-                (g.etab_id, parse_date(f.get("date")).isoformat(), f.get("classe", "").strip(), f.get("eleve", "").strip(),
-                 f["description"].strip(), f.get("suite", "").strip()))
+            el = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (f.get("eleve_id", type=int), g.etab_id)) if f.get("eleve_id") else None
+            iid = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,eleve_id) VALUES (?,?,?,?,?,?,?)",
+                (g.etab_id, parse_date(f.get("date")).isoformat(), (f.get("classe", "").strip() or (el["classe"] if el else "")),
+                 (f"{el['prenom']} {el['nom']}" if el else f.get("eleve", "").strip()),
+                 f["description"].strip(), f.get("suite", "").strip(), el["id"] if el else None))
             log("incident enregistré", f.get("classe", ""))
             ext.emit("incident.cree", incident_id=iid, classe=f.get("classe", ""), description=f["description"].strip())
         return redirect(url_for("incidents"))
     rows = q("SELECT * FROM incidents WHERE etab_id=? ORDER BY statut='clos', date DESC LIMIT 200", (g.etab_id,))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    return render_template("incidents.html", incidents=rows, classes=classes_)
+    eleves_ = q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
+    return render_template("incidents.html", incidents=rows, classes=classes_, eleves=eleves_)
 
 
 @app.route("/incidents/<int:iid>/<action>", methods=["POST"])
@@ -982,7 +992,12 @@ def documents():
         return redirect(url_for("documents"))
     rows = q("SELECT d.*, u.nom auteur FROM documents d LEFT JOIN users u ON u.id=d.uploaded_by WHERE d.etab_id=? "
              "ORDER BY d.created_at DESC", (g.etab_id,))
-    return render_template("documents.html", docs=rows)
+    sql, args = "SELECT * FROM documents_generes WHERE etab_id=?", [g.etab_id]
+    if g.user["role"] not in STAFF:
+        sql += " AND auteur_id=?"
+        args.append(g.user["id"])
+    generes = q(sql + " ORDER BY id DESC LIMIT 200", args)
+    return render_template("documents.html", docs=rows, generes=generes)
 
 
 @app.route("/documents/<int:did>/telecharger")
@@ -1110,6 +1125,300 @@ def rapports():
 def historique():
     rows = q("SELECT * FROM audit WHERE etab_id=? OR etab_id IS NULL ORDER BY id DESC LIMIT 300", (g.etab_id,))
     return render_template("historique.html", rows=rows)
+
+
+# ───────────────────────── Élèves ─────────────────────────
+@app.route("/eleves", methods=["GET", "POST"])
+@staff_only
+def eleves():
+    if request.method == "POST":
+        f = request.form
+        if not f.get("nom", "").strip():
+            flash("Le nom est obligatoire.", "err")
+        else:
+            run("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
+                (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(),
+                 f.get("responsable", "").strip(), f.get("contact", "").strip()))
+            log("élève ajouté", f"{f['nom']} {f.get('classe', '')}")
+        return redirect(url_for("eleves"))
+    terme, classe = request.args.get("q", "").strip(), request.args.get("classe", "")
+    like = f"%{terme}%"
+    sql = "SELECT * FROM eleves WHERE etab_id=? AND (nom LIKE ? OR prenom LIKE ? OR responsable LIKE ?)"
+    args = [g.etab_id, like, like, like]
+    if classe:
+        sql += " AND classe=?"
+        args.append(classe)
+    rows = q(sql + " ORDER BY classe, nom, prenom LIMIT 500", args)
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    total = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=?", (g.etab_id,))["c"]
+    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total)
+
+
+@app.route("/eleves/<int:eid>/supprimer", methods=["POST"])
+@staff_only
+def eleve_supprimer(eid):
+    e = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id))
+    if e:
+        run("DELETE FROM eleves WHERE id=?", (eid,))
+        log("élève supprimé", f"{e['nom']} {e['prenom']}")
+    return redirect(url_for("eleves"))
+
+
+# ───────────────────────── Rédaction assistée de documents ─────────────────────────
+MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+JOURS_FR = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+
+
+def date_longue(iso):
+    """'2026-10-27' -> 'mardi 27 octobre 2026' (même rendu que le formulaire côté navigateur)."""
+    try:
+        d = date.fromisoformat(iso)
+    except (TypeError, ValueError):
+        return iso or ""
+    return f"{JOURS_FR[d.weekday()]} {'1er' if d.day == 1 else d.day} {MOIS_FR[d.month - 1]} {d.year}"
+
+
+def remplir(texte, ctx):
+    """Remplace {{variable}} par sa valeur ; une variable inconnue reste telle quelle."""
+    return re.sub(r"\{\{\s*(\w+)\s*\}\}", lambda m: str(ctx.get(m.group(1), m.group(0))), texte or "")
+
+
+def nom_complet(p):
+    return f"{p['prenom']} {p['nom']}".strip()
+
+
+def classes_enseignees():
+    """Classes où intervient l'enseignant connecté (pour limiter ses choix)."""
+    if not g.prof:
+        return set()
+    return {r["classe"] for r in q("SELECT DISTINCT classe FROM creneaux WHERE prof_id=?", (g.prof["id"],))}
+
+
+def equipe_et_pp(classe):
+    equipe = [{"prof_id": r["prof_id"], "nom": f"{r['prenom']} {r['nom']}".strip(), "matiere": r["matiere"]} for r in
+              q("SELECT DISTINCT c.prof_id, p.nom, p.prenom, c.matiere FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
+                "WHERE c.etab_id=? AND c.classe=? ORDER BY c.matiere, p.nom", (g.etab_id, classe))]
+    cl = one("SELECT c.*, p.nom pnom, p.prenom pprenom, p.matiere pmat FROM classes c LEFT JOIN professeurs p ON p.id=c.prof_principal_id "
+             "WHERE c.etab_id=? AND c.nom=?", (g.etab_id, classe))
+    pp = None
+    if cl and cl["prof_principal_id"]:
+        mat = next((e["matiere"] for e in equipe if e["prof_id"] == cl["prof_principal_id"]), cl["pmat"])
+        pp = {"prof_id": cl["prof_principal_id"], "nom": f"{cl['pprenom']} {cl['pnom']}".strip(), "matiere": mat}
+    return equipe, pp
+
+
+def donnees_redaction():
+    installer_modeles(db(), g.etab_id)
+    staff = g.user["role"] in STAFF
+    autorisees = None if staff else classes_enseignees()
+    modeles_ = [dict(id=m["id"], titre=m["titre"], corps=m["corps"], avec_incident=bool(m["avec_incident"]))
+                for m in q("SELECT * FROM modeles_documents WHERE etab_id=? ORDER BY id", (g.etab_id,))
+                if staff or m["ouvert_enseignants"]]
+    types = [dict(id=t["id"], libelle=t["libelle"], texte=t["texte"])
+             for t in q("SELECT * FROM types_incident WHERE etab_id=? ORDER BY id", (g.etab_id,))]
+    eleves_ = [dict(id=e["id"], nom=f"{e['prenom']} {e['nom']}".strip(), classe=e["classe"], responsable=e["responsable"])
+               for e in q("SELECT * FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
+               if autorisees is None or e["classe"] in autorisees]
+    classes_ = {}
+    for c in sorted({e["classe"] for e in eleves_}):
+        equipe, pp = equipe_et_pp(c)
+        classes_[c] = {"equipe": equipe, "pp": pp}
+    return {"modeles": modeles_, "types": types, "eleves": eleves_, "classes": classes_, "etablissement": g.etab["nom"],
+            "auteur": g.user["nom"], "today": date.today().isoformat(), "variables": VARIABLES}
+
+
+def contexte_document(f, eleve):
+    classe = eleve["classe"] if eleve else ""
+    _, pp = equipe_et_pp(classe) if classe else ([], None)
+    prof = one("SELECT * FROM professeurs WHERE id=? AND etab_id=?", (f.get("prof_id", type=int), g.etab_id)) if f.get("prof_id") else None
+    libelle = f.get("type_libelle", "").strip()
+    if libelle.startswith("Autre") and f.get("type_autre", "").strip():
+        libelle = f["type_autre"].strip()
+    ctx = {
+        "eleve": nom_complet(eleve) if eleve else "", "prenom": eleve["prenom"] if eleve else "", "nom": eleve["nom"] if eleve else "",
+        "classe": classe, "responsable": (eleve["responsable"] if eleve and eleve["responsable"] else "Madame, Monsieur"),
+        "professeur": nom_complet(prof) if prof else "", "matiere": f.get("matiere", "").strip() or (prof["matiere"] if prof else ""),
+        "prof_principal": pp["nom"] if pp else "", "date": date_longue(f.get("date", "")), "heure": f.get("heure", "").strip(),
+        "lieu": f.get("lieu", "").strip(), "type_incident": libelle, "auteur": g.user["nom"],
+        "date_du_jour": date_longue(date.today().isoformat()), "etablissement": g.etab["nom"],
+    }
+    ctx["description"] = remplir(f.get("description", "").strip(), ctx)
+    ctx["suite"] = remplir(f.get("suite", "").strip(), ctx)
+    return ctx
+
+
+def fabriquer_docx(titre, contenu, etablissement):
+    """Document Word minimal (.docx) : en-tête, titre centré, puis le texte ligne par ligne."""
+    def para(texte, gras=False, centre=False, taille=None):
+        ppr = "<w:pPr><w:jc w:val=\"center\"/></w:pPr>" if centre else ""
+        rpr = ("<w:rPr>" + ("<w:b/>" if gras else "") + (f"<w:sz w:val=\"{taille}\"/>" if taille else "") + "</w:rPr>") if (gras or taille) else ""
+        return f"<w:p>{ppr}<w:r>{rpr}<w:t xml:space=\"preserve\">{xml_escape(texte)}</w:t></w:r></w:p>"
+    corps = [para(etablissement, gras=True), para(""), para(titre, gras=True, centre=True, taille=32), para("")]
+    corps += [para(l) for l in contenu.replace("\r\n", "\n").split("\n")]
+    xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+           '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+           + "".join(corps) + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" '
+           'w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>')
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                   '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+                   '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+                   '<Default Extension="xml" ContentType="application/xml"/>'
+                   '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')
+        z.writestr("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                   '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                   '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
+        z.writestr("word/document.xml", xml)
+    return buf.getvalue()
+
+
+@app.route("/documents/nouveau", methods=["GET", "POST"])
+def document_nouveau():
+    staff = g.user["role"] in STAFF
+    if not staff and not g.prof:
+        abort(403)
+    donnees = donnees_redaction()
+    if request.method == "POST":
+        f = request.form
+        modele = next((m for m in donnees["modeles"] if m["id"] == f.get("modele_id", type=int)), None)
+        eleve = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (f.get("eleve_id", type=int), g.etab_id)) if f.get("eleve_id") else None
+        if not modele or (eleve and eleve["id"] not in {e["id"] for e in donnees["eleves"]}):
+            abort(403)
+        if not f.get("contenu", "").strip():
+            flash("Le document est vide.", "err")
+            return redirect(url_for("document_nouveau"))
+        ctx = contexte_document(f, eleve)
+        contenu = remplir(f["contenu"].strip(), ctx)
+        titre = (f.get("titre", "").strip() or modele["titre"] + (f" — {ctx['eleve']}" if ctx["eleve"] else ""))[:200]
+        incident_id = None
+        if staff and f.get("creer_incident") and eleve and modele["avec_incident"]:
+            incident_id = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,eleve_id) VALUES (?,?,?,?,?,?,?)",
+                              (g.etab_id, parse_date(f.get("date")).isoformat(), eleve["classe"], ctx["eleve"],
+                               (ctx["type_incident"] + " — " if ctx["type_incident"] else "") + ctx["description"], ctx["suite"], eleve["id"]))
+        did = run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,prof_id,contenu,auteur_id,auteur,created_at,incident_id) "
+                  "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                  (g.etab_id, modele["id"], modele["titre"], titre, eleve["id"] if eleve else None, ctx["eleve"], f.get("prof_id", type=int),
+                   contenu, g.user["id"], g.user["nom"], datetime.now().isoformat(timespec="minutes"), incident_id))
+        log("document rédigé", f"{modele['titre']} — {ctx['eleve']}")
+        ext.emit("document.genere", document_id=did, modele=modele["titre"], eleve_id=eleve["id"] if eleve else None, auteur=g.user["nom"])
+        flash("Document enregistré." + (" Un incident a aussi été créé." if incident_id else ""), "ok")
+        return redirect(url_for("document_genere", did=did))
+    return render_template("document_nouveau.html", donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"])
+
+
+def get_document(did):
+    d = one("SELECT * FROM documents_generes WHERE id=? AND etab_id=?", (did, g.etab_id))
+    if not d or (g.user["role"] not in STAFF and d["auteur_id"] != g.user["id"]):
+        abort(404)
+    return d
+
+
+@app.route("/documents/generes/<int:did>")
+def document_genere(did):
+    return render_template("document_genere.html", d=get_document(did))
+
+
+@app.route("/documents/generes/<int:did>.docx")
+def document_genere_docx(did):
+    d = get_document(did)
+    nom = re.sub(r"[^\w-]+", "_", d["titre"]).strip("_")[:60] or "document"
+    log("document exporté (Word)", d["titre"])
+    return Response(fabriquer_docx(d["titre"], d["contenu"], g.etab["nom"]),
+                    mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={"Content-Disposition": f"attachment; filename={nom}.docx"})
+
+
+@app.route("/documents/generes/<int:did>/modifier", methods=["POST"])
+def document_genere_modifier(did):
+    d = get_document(did)
+    if not request.form.get("contenu", "").strip():
+        flash("Le document ne peut pas être vide.", "err")
+    else:
+        run("UPDATE documents_generes SET titre=?, contenu=? WHERE id=?",
+            (request.form.get("titre", "").strip()[:200] or d["titre"], request.form["contenu"].strip(), did))
+        log("document modifié", d["titre"])
+        flash("Modifications enregistrées.", "ok")
+    return redirect(url_for("document_genere", did=did))
+
+
+@app.route("/documents/generes/<int:did>/supprimer", methods=["POST"])
+def document_genere_supprimer(did):
+    d = get_document(did)
+    run("DELETE FROM documents_generes WHERE id=?", (did,))
+    log("document supprimé", d["titre"])
+    return redirect(url_for("documents"))
+
+
+@app.route("/documents/modeles", methods=["GET", "POST"])
+@staff_only
+def modeles_documents():
+    installer_modeles(db(), g.etab_id)
+    if request.method == "POST":
+        f = request.form
+        if f.get("titre", "").strip() and f.get("corps", "").strip():
+            run("INSERT INTO modeles_documents(etab_id,code,titre,corps,ouvert_enseignants,avec_incident) VALUES (?,?,?,?,?,?)",
+                (g.etab_id, "", f["titre"].strip(), f["corps"].strip(), 1 if f.get("ouvert_enseignants") else 0, 1 if f.get("avec_incident") else 0))
+            log("modèle créé", f["titre"])
+        else:
+            flash("Titre et texte obligatoires.", "err")
+        return redirect(url_for("modeles_documents"))
+    return render_template("modeles_documents.html", variables=VARIABLES,
+                           modeles=q("SELECT * FROM modeles_documents WHERE etab_id=? ORDER BY id", (g.etab_id,)),
+                           types=q("SELECT * FROM types_incident WHERE etab_id=? ORDER BY id", (g.etab_id,)))
+
+
+@app.route("/documents/modeles/<int:mid>", methods=["GET", "POST"])
+@staff_only
+def modele_edit(mid):
+    m = one("SELECT * FROM modeles_documents WHERE id=? AND etab_id=?", (mid, g.etab_id))
+    if not m:
+        abort(404)
+    if request.method == "POST":
+        f = request.form
+        if f.get("titre", "").strip() and f.get("corps", "").strip():
+            run("UPDATE modeles_documents SET titre=?, corps=?, ouvert_enseignants=?, avec_incident=? WHERE id=?",
+                (f["titre"].strip(), f["corps"].strip(), 1 if f.get("ouvert_enseignants") else 0, 1 if f.get("avec_incident") else 0, mid))
+            log("modèle modifié", f["titre"])
+            flash("Modèle enregistré.", "ok")
+            return redirect(url_for("modeles_documents"))
+        flash("Titre et texte obligatoires.", "err")
+    return render_template("modele_edit.html", m=m, variables=VARIABLES)
+
+
+@app.route("/documents/modeles/<int:mid>/supprimer", methods=["POST"])
+@staff_only
+def modele_supprimer(mid):
+    run("DELETE FROM modeles_documents WHERE id=? AND etab_id=?", (mid, g.etab_id))
+    return redirect(url_for("modeles_documents"))
+
+
+@app.route("/documents/types", methods=["POST"])
+@staff_only
+def type_incident_ajouter():
+    f = request.form
+    if f.get("libelle", "").strip():
+        run("INSERT INTO types_incident(etab_id,libelle,texte,gravite) VALUES (?,?,?,?)",
+            (g.etab_id, f["libelle"].strip(), f.get("texte", "").strip(), f.get("gravite") if f.get("gravite") in ("mineur", "moyen", "grave") else "mineur"))
+        log("type d'incident ajouté", f["libelle"])
+    return redirect(url_for("modeles_documents"))
+
+
+@app.route("/documents/types/<int:tid>", methods=["POST"])
+@staff_only
+def type_incident_modifier(tid):
+    f = request.form
+    if f.get("libelle", "").strip():
+        run("UPDATE types_incident SET libelle=?, texte=?, gravite=? WHERE id=? AND etab_id=?",
+            (f["libelle"].strip(), f.get("texte", "").strip(), f.get("gravite") if f.get("gravite") in ("mineur", "moyen", "grave") else "mineur", tid, g.etab_id))
+    return redirect(url_for("modeles_documents"))
+
+
+@app.route("/documents/types/<int:tid>/supprimer", methods=["POST"])
+@staff_only
+def type_incident_supprimer(tid):
+    run("DELETE FROM types_incident WHERE id=? AND etab_id=?", (tid, g.etab_id))
+    return redirect(url_for("modeles_documents"))
 
 
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────
@@ -1559,7 +1868,7 @@ def importer():
     if request.method == "POST":
         fichier = request.files.get("fichier")
         kind = request.form.get("kind")
-        if not fichier or kind not in ("professeurs", "creneaux", "besoins"):
+        if not fichier or kind not in ("professeurs", "creneaux", "besoins", "eleves"):
             flash("Fichier ou type manquant.", "err")
             return redirect(url_for("importer"))
         try:
@@ -1581,6 +1890,13 @@ def importer():
                     continue
                 db().execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email,telephone) VALUES (?,?,?,?,?,?)",
                              (g.etab_id, r["nom"], r.get("prenom", ""), r.get("matiere", ""), r.get("email", ""), r.get("telephone", "")))
+                ok += 1
+            elif kind == "eleves":
+                if not r.get("nom"):
+                    ignores += 1
+                    continue
+                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
+                             (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), r.get("responsable", ""), r.get("contact", "")))
                 ok += 1
             elif kind == "besoins":
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",
