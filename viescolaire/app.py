@@ -632,7 +632,8 @@ def emploi_du_temps():
     lundi = jour - timedelta(days=jour.weekday())
     semaine = [lundi + timedelta(days=i) for i in range(5)]
     grille = {j.isoformat(): cours_du_jour(j, prof_id, classe) for j in semaine}
-    return render_template("edt.html", semaine=semaine, grille=grille, lundi=lundi, **ctx)
+    matieres_vues = sorted({c["matiere"] for cs in grille.values() for c in cs if c["matiere"]})
+    return render_template("edt.html", semaine=semaine, grille=grille, lundi=lundi, matieres_vues=matieres_vues, **ctx)
 
 
 # ───────────────────────── Absences, indisponibilités, remplacements ─────────────────────────
@@ -2339,6 +2340,16 @@ def hm(m, signe=False):
 
 app.jinja_env.filters["hm"] = hm
 app.jinja_env.filters["hm_signe"] = lambda m: hm(m, True)
+
+
+def teinte_matiere(matiere):
+    """Teinte (0-359) stable pour une matière : un même cours garde la même couleur d'une semaine à l'autre."""
+    import zlib
+    cle = (matiere or "").strip().lower()
+    return (zlib.crc32(cle.encode()) * 137) % 360 if cle else 220
+
+
+app.jinja_env.filters["teinte"] = teinte_matiere
 
 
 def couleur_texte(hexa):

@@ -70,6 +70,8 @@ label.check{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:1
 code{background:var(--field);padding:1px 5px;border-radius:4px}
 .cal td{height:78px;width:20%;font-size:13px}.cal .n{font-weight:600}
 .edt-col{vertical-align:top}.slot{border-left:4px solid var(--brand);background:var(--field);padding:4px 8px;border-radius:6px;margin-bottom:6px;font-size:13px}
+.slot[style]{border-left-color:hsl(var(--m) 60% 45%);background:color-mix(in srgb,hsl(var(--m) 70% 55%) 24%,var(--field))}
+.puce-matiere{display:inline-block;padding:2px 10px;margin:0 4px 4px 0;border-radius:999px;font-size:12px;border:1px solid hsl(var(--m) 60% 45%);background:color-mix(in srgb,hsl(var(--m) 70% 55%) 24%,var(--field))}
 .slot.a_pourvoir,.slot.annule{border-color:var(--err)}.slot.remplace{border-color:var(--brand-strong)}.slot.perturbe,.slot.indispo{border-color:var(--orange)}
 .v-non{background:var(--err-bg)!important}.v-souhait{background:var(--warn-bg)!important}
 .login{max-width:380px;margin:9vh auto}
