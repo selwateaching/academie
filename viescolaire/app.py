@@ -775,8 +775,9 @@ def remplacements():
     absence = None
     if absence_id:
         absence = one("SELECT a.*, p.nom, p.prenom FROM absences a JOIN professeurs p ON p.id=a.prof_id WHERE a.id=? AND a.etab_id=?", (absence_id, g.etab_id))
-        if not absence:
-            abort(404)
+        if not absence:   # lien d'un autre établissement ou absence supprimée : on revient à la liste au lieu d'une page d'erreur
+            flash("Cette absence n'existe pas dans l'établissement affiché (changez d'établissement en haut du menu, ou elle a été supprimée).", "err")
+            return redirect(url_for("remplacements"))
         sql += " AND r.absence_id=?"
         args.append(absence_id)
     else:
