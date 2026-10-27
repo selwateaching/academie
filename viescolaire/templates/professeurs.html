@@ -2,13 +2,10 @@
 <div class="top"><h1>Annuaire des professeurs</h1>
 <form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, matière, e-mail…"><button class="sec">Rechercher</button></form></div>
 <div class="card scroll"><table><tr><th>Nom</th><th>Matière</th><th>Classes</th><th>Contact</th><th>Compte</th></tr>
-{% for p in profs %}<tr><td><a href="{{ url_for('professeur', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a>{% for e in ailleurs.get(p.id, []) %}<br><span class="tag">aussi : {{ e }}</span>{% endfor %}</td><td>{{ p.matiere }}</td>
+{% for p in profs %}<tr><td><a href="{{ url_for('professeur', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a></td><td>{{ p.matiere }}</td>
 <td>{{ classes_par_prof.get(p.id, [])|join(', ') }}</td><td>{{ p.email }}<br><span class="mute">{{ p.telephone }}</span></td>
 <td>{% if p.user_id %}<span class="tag ok">Actif</span>{% elif p.email and module_actif('utilisateurs') %}<form method="post" action="{{ url_for('professeur_compte', pid=p.id) }}" class="inline">{{ csrf() }}<button class="sec sm">Créer le compte</button></form>{% else %}<span class="mute">—</span>{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucun professeur.</td></tr>{% endfor %}</table></div>
-{% if candidats %}<div class="card"><h2>Professeurs d'un autre établissement</h2><p class="mute">Ces professeurs sont enregistrés dans votre autre établissement. Reprenez-les ici pour qu'ils apparaissent dans les deux annuaires, avec le même compte de connexion ; leurs cours, vœux et absences restent propres à chaque établissement.</p>
-<form method="post" action="{{ url_for('professeurs_reprendre') }}">{{ csrf() }}<div class="scroll" style="max-height:260px;overflow:auto"><table>{% for c in candidats %}<tr><td style="width:30px"><input type="checkbox" name="source" value="{{ c.id }}" id="s{{ c.id }}"></td><td><label for="s{{ c.id }}"><b>{{ c.nom }}</b> {{ c.prenom }}</label></td><td>{{ c.matiere }}</td><td class="mute">{{ c.enom }}</td></tr>{% endfor %}</table></div>
-<p><button>Reprendre les professeurs cochés</button></p></form></div>{% endif %}
 <div class="card"><h2>Ajouter un professeur</h2><form method="post">{{ csrf() }}<div class="row">
 <div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
 <div><label>Matière</label><input name="matiere"></div><div><label>E-mail</label><input type="email" name="email"></div>
