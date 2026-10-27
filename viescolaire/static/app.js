@@ -253,3 +253,22 @@ document.querySelectorAll('[data-filtre-select]').forEach(function (inp) {
     r.addEventListener('blur', function () { tip.hidden = true; });
   });
 })();
+/* Absences : la liste des motifs suit le type (absence / indisponibilité) ; « Autre » rend la saisie libre obligatoire */
+(function () {
+  var motifs = document.querySelector('[data-motifs]'), type = document.querySelector('[data-type-absence]'), libre = document.querySelector('[data-motif-libre]');
+  if (!motifs || !type) return;
+  var listes = { absence: JSON.parse(motifs.getAttribute('data-motifs-absence')), indisponibilite: JSON.parse(motifs.getAttribute('data-motifs-indispo')) };
+  function remplir() {
+    motifs.innerHTML = '';
+    listes[type.value].forEach(function (m) { var o = document.createElement('option'); o.textContent = m; motifs.appendChild(o); });
+    majLibre();
+  }
+  function majLibre() {
+    var autre = /^Autre/.test(motifs.value);
+    libre.required = autre;
+    libre.placeholder = autre ? 'Précisez le motif' : 'Facultatif (ex. grippe, jury du bac…)';
+  }
+  type.addEventListener('change', remplir);
+  motifs.addEventListener('change', majLibre);
+  majLibre();
+})();

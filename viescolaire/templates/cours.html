@@ -1,11 +1,36 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post, cours_table %}{% block title %}Cours perturbés{% endblock %}{% block body %}
-<div class="top"><h1>Suivi des cours</h1></div>
-<div class="card"><h2>Tableau de bord quotidien</h2><form method="get" class="row"><div><input type="date" name="date" value="{{ jour.isoformat() }}"></div><div><button class="sec">Afficher</button></div></form>{{ cours_table(du_jour) }}</div>
-<div class="card"><h2>Signaler une perturbation</h2><form method="post">{{ csrf() }}<div class="row">
+{% set k = analyse.kpi %}
+<div class="top"><h1>Cours perturbés · analyse</h1><span class="noprint"><a class="btn sec" href="{{ url_for('cours_csv', du=du.isoformat(), au=au.isoformat()) }}">Export Excel (CSV)</a> <button class="sec" data-print>Imprimer / PDF</button></span></div>
+<p class="mute">Cette page réunit toutes les causes : <b>absences des professeurs</b> (avec leurs remplacements), <b>indisponibilités</b> et <b>perturbations signalées</b> (salle, déplacement…). Chaque ligne renvoie vers l'absence et le remplacement concernés.</p>
+<form method="get" class="nav-jour noprint"><label style="margin:0">Du</label><input type="date" name="du" value="{{ du.isoformat() }}"><label style="margin:0">au</label><input type="date" name="au" value="{{ au.isoformat() }}"><button class="sec sm">Analyser</button>
+
+<span class="mute" style="margin-left:8px">Raccourcis :</span><a class="btn sec sm" href="{{ url_for('cours', du=aujourdhui.isoformat(), au=aujourdhui.isoformat()) }}">Aujourd'hui</a>
+<a class="btn sec sm" href="{{ url_for('cours') }}">3 semaines autour d'aujourd'hui</a></form>
+<div class="stats"><div class="stat"><b>{{ k.total }}</b><span>Cours perturbés</span></div><div class="stat"><b>{{ k.remplace }}</b><span>Remplacés</span></div>
+<div class="stat"><b>{{ k.annule + k.non_assure }}</b><span>Annulés / non assurés · {{ (k.minutes_perdues / 60)|round(1)|string|replace('.', ',') }} h perdues</span></div>
+<div class="stat"><b>{{ k.a_pourvoir }}</b><span>Remplacements à pourvoir</span></div><div class="stat"><b>{{ k.perturbe }}</b><span>Maintenus mais perturbés</span></div>
+<div class="stat"><b>{{ k.taux_couverture ~ ' %' if k.taux_couverture is not none else '—' }}</b><span>Cours d'absents remplacés</span></div></div>
+{% if k.total %}<div class="grid g2">
+<div class="card scroll"><h2>Par classe</h2><table><tr><th>Classe</th><th>Cours perturbés</th><th>Remplacés</th><th>Annulés</th><th>À pourvoir</th><th>Heures perdues</th></tr>
+{% for classe, c in analyse.par_classe %}<tr><td><b>{{ classe }}</b></td><td>{{ c.total }}</td><td>{{ c.remplace }}</td><td>{{ c.annule }}</td><td>{{ c.a_pourvoir }}</td><td>{{ (c.minutes / 60)|round(1)|string|replace('.', ',') }} h</td></tr>{% endfor %}</table></div>
+<div class="card scroll"><h2>Par cause</h2><table><tr><th>Cause</th><th>Cours</th></tr>{% for cause, n in analyse.par_cause %}<tr><td>{{ LIBELLE_CAUSE.get(cause, cause) }}</td><td>{{ n }}</td></tr>{% endfor %}</table>
+{% if analyse.par_motif %}<h2 style="margin-top:14px">Motifs d'absence</h2><table>{% for motif, n in analyse.par_motif %}<tr><td>{{ motif }}</td><td>{{ n }}</td></tr>{% endfor %}</table>{% endif %}</div>
+<div class="card scroll"><h2>Professeurs absents <span class="mute" style="font-weight:400;font-size:13px">· cours à couvrir</span></h2><table><tr><th>Professeur</th><th>Cours</th><th>Remplacés</th><th>Annulés</th><th>À pourvoir</th></tr>
+{% for nom, p in analyse.par_prof %}<tr><td>{{ nom }}</td><td>{{ p.total }}</td><td>{{ p.remplace }}</td><td>{{ p.annule }}</td><td>{{ p.a_pourvoir }}</td></tr>{% else %}<tr><td colspan="5" class="mute">Aucune absence sur la période.</td></tr>{% endfor %}</table></div>
+<div class="card scroll"><h2>Remplaçants les plus sollicités</h2><table>{% for nom, n in analyse.remplacants %}<tr><td>{{ nom }}</td><td>{{ n }} cours</td></tr>{% else %}<tr><td class="mute">Aucun remplacement désigné.</td></tr>{% endfor %}</table>
+<h2 style="margin-top:14px">Matières les plus touchées</h2><table>{% for nom, n in analyse.par_matiere %}<tr><td>{{ nom }}</td><td>{{ n }}</td></tr>{% endfor %}</table></div></div>
+<div class="card scroll"><h2>Détail des cours perturbés ({{ lignes|length }})</h2><table><tr><th>Date</th><th>Cours</th><th>Professeur</th><th>Cause</th><th>État</th><th class="noprint">Liens</th></tr>
+{% for l in lignes %}<tr><td>{{ l.date|fr_date }}<br><span class="mute">{{ l.debut }}–{{ l.fin }}</span></td><td>{{ l.classe }}<br><span class="mute">{{ l.matiere }}{% if l.salle %} · {{ l.salle }}{% endif %}</span></td><td>{{ l.prof }}</td>
+<td>{% for cause, detail in l.causes %}{{ LIBELLE_CAUSE.get(cause, cause) }}{% if detail %} <span class="mute">({{ detail }})</span>{% endif %}{{ '<br>'|safe if not loop.last }}{% endfor %}</td>
+<td><span class="tag {{ 'ok' if l.etat == 'remplace' else ('err' if l.etat in ('annule', 'a_pourvoir', 'non_assure') else 'warn') }}">{{ ETATS_COURS[l.etat] }}</span>{% if l.remplacant %}<br><span class="mute">par {{ l.remplacant }}</span>{% endif %}</td>
+<td class="noprint">{% if l.aid %}<a href="{{ url_for('remplacements', absence=l.aid) }}">Absence et remplacements</a>{% endif %}{% if l.pid %}<br><a href="#perturbations">Perturbation</a>{% endif %}</td></tr>{% endfor %}</table></div>
+{% else %}<div class="card"><p class="mute">Aucun cours perturbé sur cette période.</p></div>{% endif %}
+<div class="card noprint"><h2>Vue du jour</h2><form method="get" class="row"><input type="hidden" name="du" value="{{ du.isoformat() }}"><input type="hidden" name="au" value="{{ au.isoformat() }}"><div><input type="date" name="date" value="{{ jour.isoformat() }}"></div><div><button class="sec">Afficher</button></div></form>{{ cours_table(du_jour) }}</div>
+<div class="card noprint"><h2>Signaler une perturbation</h2><form method="post">{{ csrf() }}<div class="row">
 <div><label>Date</label><input type="date" name="date" value="{{ jour.isoformat() }}" required></div>
 <div><label>Cours concerné ({{ JOURS[jour.weekday()] if jour.weekday() < 5 else 'week-end' }})</label><select name="creneau_id"><option value="">— hors emploi du temps —</option>{% for c in creneaux %}<option value="{{ c.id }}">{{ c.debut }} {{ c.classe }} ({{ c.nom }})</option>{% endfor %}</select></div>
-<div><label>Type</label><select name="type">{% for k, v in TYPES_PERTURBATION.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+<div><label>Type</label><select name="type">{% for kk, v in TYPES_PERTURBATION.items() %}<option value="{{ kk }}">{{ v }}</option>{% endfor %}</select></div>
 <div><label>Précision</label><input name="detail" placeholder="ex. salle B12 fermée"></div><div><button>Signaler</button></div></div></form></div>
-<div class="card scroll"><h2>Perturbations récentes et à venir</h2><table><tr><th>Date</th><th>Cours</th><th>Type</th><th>Détail</th><th></th></tr>
+<div class="card scroll noprint" id="perturbations"><h2>Perturbations signalées (récentes et à venir)</h2><table><tr><th>Date</th><th>Cours</th><th>Type</th><th>Détail</th><th></th></tr>
 {% for p in perts %}<tr><td>{{ p.date|fr_date }}</td><td>{{ p.debut or '' }} {{ p.classe }} {{ p.pnom or '' }}</td><td><span class="tag warn">{{ TYPES_PERTURBATION[p.type] }}</span></td><td>{{ p.detail }}</td><td>{{ post(url_for('perturbation_supprimer', pid=p.id), 'Supprimer', 'sec sm', 'Supprimer ?') }}</td></tr>
-{% else %}<tr><td colspan="5" class="mute">Aucune perturbation.</td></tr>{% endfor %}</table></div>{% endblock %}
+{% else %}<tr><td colspan="5" class="mute">Aucune perturbation signalée.</td></tr>{% endfor %}</table></div>{% endblock %}

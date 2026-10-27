@@ -26,6 +26,10 @@ DEFAUTS = {
     "session_heures": 8,
     "upload_max_mo": 8,
     "fichiers_autorises": ["pdf", "doc", "docx", "xls", "xlsx", "csv", "odt", "ods", "png", "jpg", "jpeg", "txt", "pptx"],
+    "motifs_absence": ["Maladie", "Congé maternité / paternité", "Accident du travail", "Formation", "Rendez-vous médical", "Raison familiale",
+                       "Enfant malade", "Jury d'examen / concours", "Mission pédagogique", "Grève", "Autre (préciser)"],
+    "motifs_indisponibilite": ["Sortie scolaire", "Voyage scolaire", "Garde d'enfant", "Rendez-vous médical", "Convenance personnelle",
+                               "Réunion / conseil", "Formation", "Autre (préciser)"],
     "infirmerie_roles": ["infirmier", "direction", "admin"],   # rôles ayant accès aux données de santé (le CPE n'y a pas accès par défaut)
     "creneaux": [],                   # grille horaire proposée à la saisie, ex. ["08:00-09:00", "09:00-10:00"]
 }

@@ -1,9 +1,13 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Remplacements{% endblock %}{% block body %}
 <div class="top"><h1>Organisation des remplacements</h1><span>
-{% for v, l in [('', 'Tous'), ('a_pourvoir', 'À pourvoir'), ('assigne', 'Assignés'), ('annule', 'Annulés')] %}<a class="btn {{ '' if statut == v else 'sec' }} sm" href="{{ url_for('remplacements', statut=v) }}">{{ l }}</a> {% endfor %}
+{% for v, l in [('', 'Tous'), ('a_pourvoir', 'À pourvoir'), ('assigne', 'Assignés'), ('annule', 'Annulés')] %}<a class="btn {{ '' if statut == v else 'sec' }} sm" href="{{ url_for('remplacements', statut=v, absence=absence.id if absence else None) }}">{{ l }}</a> {% endfor %}
 <a class="btn sec sm" href="{{ url_for('export_csv', nom='remplacements') }}">Export CSV</a></span></div>
+{% if absence %}<div class="al warn"><b>Absence de {{ absence.prenom }} {{ absence.nom }}</b> du {{ absence.date_debut|fr_date }} au {{ absence.date_fin|fr_date }} — {{ absence.motif or 'motif non précisé' }}
+ · <a href="{{ url_for('absences') }}">Voir les absences</a> · <a href="{{ url_for('remplacements') }}">Afficher tous les remplacements</a></div>{% endif %}
+{% if nb_attente %}<div class="card" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><form method="post" action="{{ url_for('remplacements_auto') }}">{{ csrf() }}<input type="hidden" name="absence" value="{{ absence.id if absence else '' }}"><button>⚡ Pourvoir automatiquement les {{ nb_attente }} cours à venir</button></form>
+<span class="mute">Chaque cours reçoit le meilleur remplaçant disponible (même matière d'abord, puis le moins sollicité). Les remplaçants désignés sont prévenus par message ; les cours sans professeur libre restent à traiter.</span></div>{% endif %}
 <div class="card scroll"><table><tr><th>Date</th><th>Cours</th><th>Professeur absent</th><th>Remplaçant / suggestions</th></tr>
-{% for r in rows %}<tr><td>{{ r.date|fr_date }}<br>{{ r.debut }}–{{ r.fin }}</td><td>{{ r.classe }} · {{ r.matiere }}<br><span class="mute">{{ r.salle }}</span></td><td>{{ r.pprenom }} {{ r.pnom }}</td>
+{% for r in rows %}<tr><td>{{ r.date|fr_date }}<br>{{ r.debut }}–{{ r.fin }}</td><td>{{ r.classe }} · {{ r.matiere }}<br><span class="mute">{{ r.salle }}</span></td><td>{{ r.pprenom }} {{ r.pnom }}{% if r.motif %}<br><a href="{{ url_for('remplacements', absence=r.absence_id) }}" class="mute" title="Tous les cours de cette absence">{{ r.motif }}</a>{% endif %}</td>
 <td>{% if r.statut == 'a_pourvoir' %}{% for s in r.suggestions %}<form method="post" action="{{ url_for('remplacement_action', rid=r.id, action='assigner') }}" class="inline">{{ csrf() }}<input type="hidden" name="prof_id" value="{{ s.prof.id }}">
 <button class="sec sm" title="{{ 'Même matière · ' if s.meme_matiere }}{{ s.charge }} remplacement(s) sur 30 j">{{ s.prof.prenom }} {{ s.prof.nom }}{{ ' ★' if s.meme_matiere }}</button></form> {% else %}<span class="mute">Aucun professeur libre.</span> {% endfor %}
 {{ post(url_for('remplacement_action', rid=r.id, action='annuler-cours'), 'Annuler le cours', 'red sm', 'Annuler ce cours ?') }}

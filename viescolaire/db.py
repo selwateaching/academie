@@ -281,6 +281,9 @@ def seed_demo(password="demo1234"):
         ("Richard", "Emma", "SVT"), ("Moreau", "Louis", "Physique-Chimie"),
         ("Simon", "Chloé", "EPS"), ("Laurent", "Noah", "Mathématiques"),
         ("Fournier", "Inès", "Arts plastiques"), ("Girard", "Théo", "Technologie"),
+        ("Besson", "Claire", "Français"), ("Lemaire", "Sophie", "Histoire-Géographie"),
+        ("Carpentier", "Julien", "Anglais"), ("Navarro", "Lucia", "Espagnol"),
+        ("Dupuis", "Antoine", "Musique"), ("Morin", "Karim", "EPS"),
     ]
     ids, uids = [], []
     for i, (nom, prenom, mat) in enumerate(profs, 1):
@@ -293,32 +296,50 @@ def seed_demo(password="demo1234"):
         ).lastrowid
         ids.append(pid)
         uids.append(uid)
+    uid_de = dict(zip(ids, uids))
 
     classes = ["6A", "6B", "5A", "5B", "4A", "4B", "3A", "3B"]
     for ordre, nv in enumerate(["6e", "5e", "4e", "3e"], 1):
         con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e1, nv, ordre))
-    for i, c in enumerate(classes):
-        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)",
-                    (e1, c, c[0] + "e", ids[i % len(ids)]))
+    for i, c in enumerate(classes):   # professeur principal = professeur de Français de la classe
+        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e1, c, c[0] + "e", ids[1 if i < 4 else 10]))
 
-    horaires = [("08:00", "09:00"), ("09:00", "10:00"), ("10:15", "11:15"), ("11:15", "12:15"),
-                ("14:00", "15:00"), ("15:00", "16:00"), ("16:00", "17:00")]
-    for i, pid in enumerate(ids):
-        mat = profs[i][2]
-        for j in range(7):  # 7 créneaux par professeur répartis sur la semaine
-            jour = (i + j * 2) % 5
-            deb, fin = horaires[(i * 3 + j) % len(horaires)]
-            con.execute(
-                "INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
-                (e1, pid, classes[(i + j) % len(classes)], mat, jour, deb, fin, f"B{10 + (i + j) % 8}"),
-            )
+    # Besoins horaires (24 h par classe) : matière -> (heures par classe, séances de 2 h ?, salle spécialisée)
+    matieres = {"Mathématiques": (4, 1, ""), "Français": (4, 1, ""), "Histoire-Géographie": (3, 1, ""), "Anglais": (3, 1, ""),
+                "Espagnol": (2, 1, ""), "SVT": (1, 1, "Labo SVT"), "Physique-Chimie": (1, 1, "Labo PC"), "Technologie": (1, 1, "Salle techno"),
+                "Arts plastiques": (1, 1, "Salle arts"), "Musique": (1, 1, "Salle musique"), "EPS": (3, 2, "Gymnase")}
+    affectation = {"Mathématiques": [(0, classes[:4]), (7, classes[4:])], "Français": [(1, classes[:4]), (10, classes[4:])],
+                   "Histoire-Géographie": [(2, classes[:4]), (11, classes[4:])], "Anglais": [(3, classes[:4]), (12, classes[4:])],
+                   "Espagnol": [(13, classes)], "SVT": [(4, classes)], "Physique-Chimie": [(5, classes)], "Technologie": [(9, classes)],
+                   "Arts plastiques": [(8, classes)], "Musique": [(14, classes)], "EPS": [(6, classes[:4]), (15, classes[4:])]}
+    besoins_gen = []
+    for matiere, (heures, bloc, salle) in matieres.items():
+        for idx_prof, cls in affectation[matiere]:
+            for c in cls:
+                bid = con.execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle) VALUES (?,?,?,?,?,?,?)",
+                                  (e1, c, matiere, ids[idx_prof], heures, bloc, salle)).lastrowid
+                besoins_gen.append({"id": bid, "classe": c, "matiere": matiere, "prof_id": ids[idx_prof], "heures": heures, "bloc": bloc, "salle": salle})
 
-    # Besoins du générateur (déduits des cours existants) et vœux des professeurs
-    con.execute("""INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc)
-                   SELECT etab_id, classe, matiere, prof_id, COUNT(*), 1 FROM creneaux WHERE etab_id=? GROUP BY classe, matiere, prof_id""", (e1,))
-    for pid, jour, demi, niveau in [(ids[0], 2, "apres_midi", "non"), (ids[1], 0, "matin", "souhait"), (ids[2], 4, "apres_midi", "souhait"),
-                                    (ids[3], 3, "matin", "non"), (ids[6], 1, "matin", "souhait"), (ids[7], 2, "apres_midi", "non")]:
+    # Vœux des professeurs (ex. mercredi après-midi impératif pour certains)
+    voeux_demo = [(ids[0], 2, "apres_midi", "non"), (ids[1], 0, "matin", "souhait"), (ids[2], 4, "apres_midi", "souhait"),
+                  (ids[3], 3, "matin", "non"), (ids[6], 1, "matin", "souhait"), (ids[7], 2, "apres_midi", "non")]
+    for pid, jour, demi, niveau in voeux_demo:
         con.execute("INSERT INTO voeux VALUES (?,?,?,?)", (pid, jour, demi, niveau))
+
+    # Emploi du temps complet généré par le moteur de planification (collège : mercredi après-midi sans cours, réglage de l'établissement)
+    from . import planning
+    grille = planning.construire_grille()
+    horaires = [(c["debut"], c["fin"]) for c in grille]
+    profs_gen = {pid: {"nom": f"{profs[k][1]} {profs[k][0]}", "max_jour": 6, "voeux": {}} for k, pid in enumerate(ids)}
+    for pid, jour, demi, niveau in voeux_demo:
+        profs_gen[pid]["voeux"][(jour, demi)] = niveau
+    con.execute("INSERT INTO reglages_planning(etab_id,classe_fermee,max_classe_jour,grille) VALUES (?,?,?,?)", (e1, '["2:apres_midi"]', 7, ""))
+    res1 = planning.generer(grille, besoins_gen, profs_gen, {"classe_fermee": {(2, "apres_midi")}, "max_classe_jour": 7}, essais=40, temps_max=5, graine=2026)
+    salle_classe = {c: f"B{10 + k}" for k, c in enumerate(classes)}
+    for x in res1["placements"]:
+        con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
+                    (e1, x["prof_id"], x["classe"], x["matiere"], x["jour"], grille[x["debut_idx"]]["debut"],
+                     grille[x["debut_idx"] + x["longueur"] - 1]["fin"], x["salle"] or salle_classe[x["classe"]]))
 
     def absence(prof, typ, a, b, motif, statut="validee"):
         return con.execute("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",
@@ -330,8 +351,26 @@ def seed_demo(password="demo1234"):
         absence(ids[6], "absence", d(5), d(7), "Formation", "declaree"),
         absence(ids[4], "absence", d(-9), d(-8), "Maladie"),
         absence(ids[1], "absence", d(-3), d(-3), "Rendez-vous médical"),
+        absence(ids[10], "absence", d(-2), d(4), "Maladie"),
     ]
-    # Remplacements : un par cours des professeurs absents
+    # Remplacements : un par cours des professeurs absents, pourvus avec un professeur réellement libre
+    def libre(prof_absent, jour, debut, fin, depart):
+        iso = jour.isoformat()
+        for k in range(len(ids)):
+            pid = ids[(depart + k) % len(ids)]
+            if pid == prof_absent:
+                continue
+            if con.execute("SELECT 1 FROM absences WHERE prof_id=? AND date_debut<=? AND date_fin>=?", (pid, iso, iso)).fetchone():
+                continue
+            if con.execute("SELECT 1 FROM creneaux WHERE prof_id=? AND jour=? AND debut<? AND fin>?", (pid, jour.weekday(), fin, debut)).fetchone():
+                continue
+            if con.execute("SELECT 1 FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id WHERE r.remplacant_id=? AND r.date=? "
+                           "AND r.statut IN ('assigne','effectue') AND c.debut<? AND c.fin>?", (pid, iso, fin, debut)).fetchone():
+                continue
+            return pid
+        return None
+
+    a_notifier = []
     for aid in abs_ids:
         a = con.execute("SELECT * FROM absences WHERE id=?", (aid,)).fetchone()
         if a["type"] != "absence":
@@ -339,19 +378,21 @@ def seed_demo(password="demo1234"):
         jour = date.fromisoformat(a["date_debut"])
         while jour <= date.fromisoformat(a["date_fin"]):
             if jour.weekday() < 5:
-                for c in con.execute("SELECT id FROM creneaux WHERE prof_id=? AND jour=?", (a["prof_id"], jour.weekday())).fetchall():
-                    statut, remp = "a_pourvoir", None
+                for n, c in enumerate(con.execute("SELECT * FROM creneaux WHERE prof_id=? AND jour=? ORDER BY debut", (a["prof_id"], jour.weekday())).fetchall()):
+                    remp = libre(a["prof_id"], jour, c["debut"], c["fin"], c["id"])
                     if jour < today:
-                        statut, remp = "effectue", ids[(a["prof_id"] + 2) % len(ids)] if (a["prof_id"] + 2) % len(ids) != a["prof_id"] else None
-                    con.execute("INSERT INTO remplacements(etab_id,absence_id,creneau_id,date,remplacant_id,statut) VALUES (?,?,?,?,?,?)",
-                                (e1, aid, c["id"], jour.isoformat(), remp, statut))
+                        statut = "effectue" if remp else "annule"
+                    elif a["statut"] == "declaree" or n % 3 == 1:
+                        statut, remp = "a_pourvoir", None            # reste à pourvoir (absence encore à valider, ou en cours de recherche)
+                    elif jour == today and n % 4 == 3:
+                        statut, remp = "annule", None                # cours annulé
+                    else:
+                        statut = "assigne" if remp else "a_pourvoir"
+                    cur = con.execute("INSERT INTO remplacements(etab_id,absence_id,creneau_id,date,remplacant_id,statut) VALUES (?,?,?,?,?,?)",
+                                      (e1, aid, c["id"], jour.isoformat(), remp, statut))
+                    if statut == "assigne":
+                        a_notifier.append((remp, c, jour, a["prof_id"]))
             jour += timedelta(days=1)
-    # Quelques remplacements déjà traités pour illustrer les statuts
-    aujourdhui = con.execute("SELECT id FROM remplacements WHERE etab_id=? AND date>=? AND statut='a_pourvoir' ORDER BY date,id", (e1, d(0))).fetchall()
-    if aujourdhui:
-        con.execute("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (ids[7], aujourdhui[0]["id"]))
-    if len(aujourdhui) > 2:
-        con.execute("UPDATE remplacements SET statut='annule' WHERE id=?", (aujourdhui[2]["id"],))
 
     cr = con.execute("SELECT id, classe FROM creneaux WHERE etab_id=? AND jour=? ORDER BY debut", (e1, (today + timedelta(days=1)).weekday() % 5)).fetchall()
     if cr:
@@ -383,6 +424,21 @@ def seed_demo(password="demo1234"):
             "Les appréciations sont à saisir pour vendredi.", "classe", "3A", uids[:6], 1500, 3, 1)
     message(cpe, "Remplacement du jour", "Pouvez-vous prendre le cours de 6B de 9 h à 10 h ? Merci.", "individuel", str(uids[7]), [uids[7]], 90, 0, 0)
     message(uids[2], "Sortie au musée jeudi", "Je serai absente jeudi après-midi pour la sortie avec les 5A.", "individuel", str(cpe), [cpe], 600, 0, 0)
+
+    # Messages automatiques liés aux absences et remplacements (communication entre les deux modules)
+    jours_fr = ["lun.", "mar.", "mer.", "jeu.", "ven."]
+    for remp, c, jour, absent in a_notifier[:6]:
+        nom_absent = next(f"{profs[k][1]} {profs[k][0]}" for k, pid in enumerate(ids) if pid == absent)
+        mid = con.execute("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
+                          (e1, cpe, f"Remplacement : {c['classe']} {jours_fr[jour.weekday()]} {jour.strftime('%d/%m')} à {c['debut']}",
+                           f"Vous êtes désigné(e) pour remplacer {nom_absent}.\n\nCours : {c['classe']} ({c['matiere']})\nDate : {jour.strftime('%d/%m/%Y')}, {c['debut']}–{c['fin']}\n"
+                           f"Salle : {c['salle']}\n\nMessage automatique de la vie scolaire.", "auto", "", ts(40))).lastrowid
+        con.execute("INSERT INTO message_dest(message_id,user_id) VALUES (?,?)", (mid, uid_de[remp]))
+    mid = con.execute("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
+                      (e1, uids[6], "Absence déclarée : Chloé Simon", f"Chloé Simon déclare une absence du {date.fromisoformat(d(5)).strftime('%d/%m/%Y')} au {date.fromisoformat(d(7)).strftime('%d/%m/%Y')} (Formation).\n"
+                       "Les remplacements à prévoir sont listés dans l'onglet Remplacements.", "auto", "", ts(180))).lastrowid
+    for u in (cpe, direction):
+        con.execute("INSERT INTO message_dest(message_id,user_id) VALUES (?,?)", (mid, u))
 
     # Réunions et convocations
     r1 = con.execute("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
@@ -456,14 +512,25 @@ def seed_demo(password="demo1234"):
     classes2 = [("2nde1", "2nde"), ("1ère S", "1ère"), ("Term ES", "Terminale")]
     for ordre, (c, nv) in enumerate(classes2, 1):
         con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e2, nv, ordre))
-        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e2, c, nv, ids2[(ordre * 2) % len(ids2)]))
-    for i2, pid in enumerate(ids2):          # emplois du temps du lycée : 6 créneaux par professeur
-        for j2 in range(6):
-            deb, fin = horaires[(i2 * 2 + j2) % len(horaires)]
-            con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
-                        (e2, pid, classes2[(i2 + j2) % 3][0], profs2[i2][2], (i2 + j2 * 2) % 5, deb, fin, f"L{20 + (i2 + j2) % 6}"))
-    con.execute("""INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc)
-                   SELECT etab_id, classe, matiere, prof_id, COUNT(*), 1 FROM creneaux WHERE etab_id=? GROUP BY classe, matiere, prof_id""", (e2,))
+        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e2, c, nv, ids2[0 if nv == "Terminale" else 1]))
+    # Besoins et emploi du temps du lycée (générés par le moteur, aucun réglage particulier : rien n'est supposé)
+    besoins2 = [("2nde1", "Lettres", 4, 1), ("2nde1", "Mathématiques", 4, 2), ("2nde1", "Histoire-Géographie", 3, 3), ("2nde1", "Anglais", 3, 4),
+                ("2nde1", "SVT", 2, 5), ("2nde1", "Physique-Chimie", 3, 6), ("2nde1", "Sciences économiques", 2, 7),
+                ("1ère S", "Lettres", 4, 1), ("1ère S", "Mathématiques", 5, 2), ("1ère S", "Histoire-Géographie", 3, 3), ("1ère S", "Anglais", 3, 4),
+                ("1ère S", "SVT", 3, 5), ("1ère S", "Physique-Chimie", 4, 6),
+                ("Term ES", "Philosophie", 4, 0), ("Term ES", "Mathématiques", 4, 2), ("Term ES", "Histoire-Géographie", 3, 3), ("Term ES", "Anglais", 3, 4),
+                ("Term ES", "Sciences économiques", 5, 7)]
+    besoins2_gen = []
+    for c, matiere, heures, idx in besoins2:
+        bid = con.execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle) VALUES (?,?,?,?,?,?,?)",
+                          (e2, c, matiere, ids2[idx], heures, 1, "")).lastrowid
+        besoins2_gen.append({"id": bid, "classe": c, "matiere": matiere, "prof_id": ids2[idx], "heures": heures, "bloc": 1, "salle": ""})
+    profs2_gen = {pid: {"nom": f"{profs2[k][1]} {profs2[k][0]}", "max_jour": 6, "voeux": {}} for k, pid in enumerate(ids2)}
+    res2 = planning.generer(grille, besoins2_gen, profs2_gen, {"classe_fermee": set(), "max_classe_jour": 8}, essais=30, temps_max=3, graine=7)
+    for x in res2["placements"]:
+        con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
+                    (e2, x["prof_id"], x["classe"], x["matiere"], x["jour"], grille[x["debut_idx"]]["debut"],
+                     grille[x["debut_idx"] + x["longueur"] - 1]["fin"], f"L{20 + classes2.index(next(cc for cc in classes2 if cc[0] == x['classe']))}"))
     k2 = 0
     for c, nv in classes2:                   # 8 élèves par classe, 15 à 18 ans
         base_age = {"2nde": 15, "1ère": 16, "Terminale": 17}[nv]

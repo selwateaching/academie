@@ -61,7 +61,8 @@ class Etat:
     def refus(self, s, j, i, strict=True):
         """None si la séance peut être posée en (jour j, créneau i), sinon la raison du refus."""
         b, L = s["besoin"], s["len"]
-        if i + L > self.n or any(self.g[i + k]["demi"] != self.g[i]["demi"] for k in range(L)):
+        # une séance de 2 h doit tenir sur des créneaux contigus (pas de récréation ni de pause entre les deux)
+        if i + L > self.n or any(self.g[i + k]["demi"] != self.g[i]["demi"] or (k and self.g[i + k]["debut"] != self.g[i + k - 1]["fin"]) for k in range(L)):
             return "forme"
         demi = self.g[i]["demi"]
         if (j, demi) in self.o["classe_fermee"]:

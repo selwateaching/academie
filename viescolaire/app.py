@@ -58,7 +58,7 @@ FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
 MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
     "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
-    "remplacements": ["remplacements", "remplacement_action"], "cours": ["cours", "perturbation_supprimer"],
+    "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
     "classes": ["classes", "classe_pp", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
     "reunions": ["reunions", "reunion_repondre", "reunion_supprimer", "reunion_detail", "reunion_convocations_parents"],
@@ -631,6 +631,47 @@ def emploi_du_temps():
 
 
 # ───────────────────────── Absences, indisponibilités, remplacements ─────────────────────────
+def utilisateurs_personnel():
+    return [r["id"] for r in q("SELECT u.id FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 "
+                               "AND u.role IN ('admin','direction','cpe')", (g.etab_id,))]
+
+
+def notifier(destinataires, sujet, corps):
+    """Message interne automatique (ex. remplacement confié) : arrive dans la messagerie des destinataires, jamais à l'expéditeur lui-même."""
+    dest = sorted({u for u in destinataires if u and u != g.user["id"]})
+    if not dest:
+        return 0
+    mid = run("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
+              (g.etab_id, g.user["id"], sujet, corps, "auto", "", datetime.now().isoformat(timespec="minutes")))
+    for u in dest:
+        db().execute("INSERT INTO message_dest(message_id,user_id) VALUES (?,?)", (mid, u))
+    db().commit()
+    return len(dest)
+
+
+def detail_remplacement(rid):
+    return one("SELECT r.*, c.classe, c.matiere, c.debut, c.fin, c.salle, p.nom pnom, p.prenom pprenom, a.motif, a.date_debut adebut, a.date_fin afin "
+               "FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id JOIN professeurs p ON p.id=c.prof_id "
+               "LEFT JOIN absences a ON a.id=r.absence_id WHERE r.id=?", (rid,))
+
+
+def texte_cours(r):
+    return f"{r['classe']} ({r['matiere']}), {date_longue(r['date'])}, {r['debut']}–{r['fin']}" + (f", salle {r['salle']}" if r["salle"] else "")
+
+
+def user_du_prof(pid):
+    r = one("SELECT user_id FROM professeurs WHERE id=?", (pid,)) if pid else None
+    return r["user_id"] if r else None
+
+
+def motif_depuis_formulaire(f):
+    """Motif choisi dans la liste, avec saisie libre : « Autre » prend le texte saisi, sinon il le complète."""
+    choix, libre = f.get("motif_choix", "").strip(), f.get("motif_libre", "").strip()
+    if not choix or choix.startswith("Autre"):
+        return (libre or "Autre")[:200]
+    return (f"{choix} — {libre}" if libre else choix)[:200]
+
+
 @app.route("/absences", methods=["GET", "POST"])
 def absences():
     staff = g.user["role"] in STAFF
@@ -644,23 +685,34 @@ def absences():
         else:
             typ = f.get("type") if f.get("type") in ("absence", "indisponibilite") else "absence"
             aid = run("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",
-                      (g.etab_id, p["id"], typ, d1.isoformat(), d2.isoformat(), f.get("motif", "").strip(),
+                      (g.etab_id, p["id"], typ, d1.isoformat(), d2.isoformat(), motif_depuis_formulaire(f),
                        "validee" if staff else "declaree"))
             n = generer_remplacements(aid)
             log("absence enregistrée", f"{p['nom']} {d1} → {d2} ({typ})")
             ext.emit("absence.creee", absence_id=aid, prof_id=p["id"], type=typ, date_debut=d1.isoformat(),
                      date_fin=d2.isoformat(), nb_remplacements=n)
-            flash(f"Enregistré. {n} cours à remplacer ou réorganiser." if n else "Enregistré.", "ok")
+            if not staff:   # un enseignant déclare sa propre absence : le personnel est prévenu
+                notifier(utilisateurs_personnel(), f"Absence déclarée : {nom_complet(p)}",
+                         f"{nom_complet(p)} déclare une {'absence' if typ == 'absence' else 'indisponibilité'} du {d1.strftime('%d/%m/%Y')} au {d2.strftime('%d/%m/%Y')} "
+                         f"({motif_depuis_formulaire(f)}).\n{n} cours à remplacer : voir l'onglet Remplacements.")
+            if staff and n:
+                flash(f"Enregistré : {n} cours à remplacer. Désignez les remplaçants ci-dessous ou utilisez « Pourvoir automatiquement ».", "ok")
+                return redirect(url_for("remplacements", absence=aid))
+            flash(f"Enregistré. {n} cours à remplacer." if n else "Enregistré.", "ok")
             return redirect(url_for("absences"))
-    sql = ("SELECT a.*, p.nom, p.prenom, (SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id "
-           "AND r.statut='a_pourvoir') restants FROM absences a JOIN professeurs p ON p.id=a.prof_id WHERE a.etab_id=?")
+    sql = ("SELECT a.*, p.nom, p.prenom, "
+           "(SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id) nb_total, "
+           "(SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id AND r.statut IN ('assigne','effectue')) nb_pourvus, "
+           "(SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id AND r.statut='annule') nb_annules, "
+           "(SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id AND r.statut='a_pourvoir') restants "
+           "FROM absences a JOIN professeurs p ON p.id=a.prof_id WHERE a.etab_id=?")
     args = [g.etab_id]
     if not staff:
         sql += " AND a.prof_id=?"
         args.append(g.prof["id"] if g.prof else -1)
     rows = q(sql + " ORDER BY a.date_debut DESC LIMIT 200", args)
     profs = q("SELECT id,nom,prenom FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,)) if staff else []
-    return render_template("absences.html", absences=rows, profs=profs)
+    return render_template("absences.html", absences=rows, profs=profs, motifs_absence=CFG["motifs_absence"], motifs_indispo=CFG["motifs_indisponibilite"])
 
 
 @app.route("/absences/<int:aid>/<action>", methods=["POST"])
@@ -671,7 +723,19 @@ def absence_action(aid, action):
         abort(404)
     if action == "valider":
         run("UPDATE absences SET statut='validee' WHERE id=?", (aid,))
+        notifier([user_du_prof(a["prof_id"])], "Votre absence a été validée",
+                 f"Votre {'absence' if a['type'] == 'absence' else 'indisponibilité'} du {fr_date(a['date_debut'])} au {fr_date(a['date_fin'])} est validée par la vie scolaire.")
     elif action == "supprimer":
+        # les remplaçants déjà désignés sur cette absence sont prévenus que leur remplacement tombe
+        par_user = {}
+        for r in q("SELECT r.id FROM remplacements r WHERE r.absence_id=? AND r.remplacant_id IS NOT NULL AND r.statut='assigne' AND r.date>=?",
+                   (aid, date.today().isoformat())):
+            d = detail_remplacement(r["id"])
+            u = user_du_prof(d["remplacant_id"])
+            if u:
+                par_user.setdefault(u, []).append(texte_cours(d))
+        for u, cours_ in par_user.items():
+            notifier([u], "Remplacement annulé", "L'absence est annulée : vous n'avez plus à assurer ce(s) cours :\n- " + "\n- ".join(cours_))
         run("DELETE FROM absences WHERE id=?", (aid,))
     else:
         abort(404)
@@ -683,11 +747,23 @@ def absence_action(aid, action):
 @staff_only
 def remplacements():
     statut = request.args.get("statut", "")
+    absence_id = request.args.get("absence", type=int)
     sql = ("SELECT r.*, c.classe, c.matiere, c.debut, c.fin, c.salle, p.nom pnom, p.prenom pprenom, "
-           "rp.nom rnom, rp.prenom rprenom FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id "
-           "JOIN professeurs p ON p.id=c.prof_id LEFT JOIN professeurs rp ON rp.id=r.remplacant_id "
-           "WHERE r.etab_id=? AND r.date>=?")
-    args = [g.etab_id, (date.today() - timedelta(days=7)).isoformat()]
+           "rp.nom rnom, rp.prenom rprenom, a.motif, a.type atype, a.date_debut adebut, a.date_fin afin "
+           "FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id "
+           "JOIN professeurs p ON p.id=c.prof_id LEFT JOIN professeurs rp ON rp.id=r.remplacant_id LEFT JOIN absences a ON a.id=r.absence_id "
+           "WHERE r.etab_id=?")
+    args = [g.etab_id]
+    absence = None
+    if absence_id:
+        absence = one("SELECT a.*, p.nom, p.prenom FROM absences a JOIN professeurs p ON p.id=a.prof_id WHERE a.id=? AND a.etab_id=?", (absence_id, g.etab_id))
+        if not absence:
+            abort(404)
+        sql += " AND r.absence_id=?"
+        args.append(absence_id)
+    else:
+        sql += " AND r.date>=?"
+        args.append((date.today() - timedelta(days=7)).isoformat())
     if statut:
         sql += " AND r.statut=?"
         args.append(statut)
@@ -696,7 +772,8 @@ def remplacements():
         d = dict(r)
         d["suggestions"] = suggerer_remplacants(r, 4) if r["statut"] == "a_pourvoir" else []
         rows.append(d)
-    return render_template("remplacements.html", rows=rows, statut=statut)
+    nb_attente = sum(1 for r in rows if r["statut"] == "a_pourvoir" and r["date"] >= date.today().isoformat())
+    return render_template("remplacements.html", rows=rows, statut=statut, absence=absence, nb_attente=nb_attente)
 
 
 @app.route("/remplacements/<int:rid>/<action>", methods=["POST"])
@@ -705,6 +782,9 @@ def remplacement_action(rid, action):
     r = one("SELECT * FROM remplacements WHERE id=? AND etab_id=?", (rid, g.etab_id))
     if not r:
         abort(404)
+    ancien = user_du_prof(r["remplacant_id"]) if r["statut"] == "assigne" else None
+    d = detail_remplacement(rid)
+    absent = f"{d['pprenom']} {d['pnom']}"
     if action == "assigner":
         pid = request.form.get("prof_id", type=int)
         if not one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (pid, g.etab_id)):
@@ -712,11 +792,18 @@ def remplacement_action(rid, action):
         run("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (pid, rid))
         log("remplacement assigné", f"{r['date']} créneau {r['creneau_id']} → prof {pid}")
         ext.emit("remplacement.assigne", remplacement_id=rid, remplacant_id=pid, date=r["date"])
+        nouveau = user_du_prof(pid)
+        if ancien and ancien != nouveau:
+            notifier([ancien], "Remplacement retiré", f"Vous n'assurez plus ce cours : {texte_cours(d)} (remplacement de {absent}).")
+        notifier([nouveau], f"Remplacement : {d['classe']} le {fr_date(r['date'])} à {d['debut']}",
+                 f"Vous êtes désigné(e) pour remplacer {absent}.\n\nCours : {texte_cours(d)}\n\nMessage automatique de la vie scolaire.")
     elif action == "annuler-cours":
         run("UPDATE remplacements SET remplacant_id=NULL, statut='annule' WHERE id=?", (rid,))
         log("cours annulé", f"{r['date']} créneau {r['creneau_id']}")
+        notifier([ancien], "Remplacement retiré", f"Le cours est annulé : {texte_cours(d)}. Vous n'avez plus à le remplacer.")
     elif action == "reouvrir":
         run("UPDATE remplacements SET remplacant_id=NULL, statut='a_pourvoir' WHERE id=?", (rid,))
+        notifier([ancien], "Remplacement retiré", f"Vous n'assurez plus ce cours : {texte_cours(d)} (remplacement de {absent}).")
     elif action == "effectue":
         run("UPDATE remplacements SET statut='effectue' WHERE id=?", (rid,))
     else:
@@ -724,7 +811,140 @@ def remplacement_action(rid, action):
     return redirect(request.referrer or url_for("remplacements"))
 
 
+@app.route("/remplacements/auto", methods=["POST"])
+@staff_only
+def remplacements_auto():
+    """Désigne automatiquement, pour chaque cours à pourvoir (à venir), le meilleur remplaçant disponible ; chaque remplaçant reçoit un message récapitulatif."""
+    absence_id = request.form.get("absence", type=int)
+    sql = ("SELECT r.* FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id WHERE r.etab_id=? AND r.statut='a_pourvoir' AND r.date>=?")
+    args = [g.etab_id, date.today().isoformat()]
+    if absence_id:
+        sql += " AND r.absence_id=?"
+        args.append(absence_id)
+    total, pourvus, par_user = 0, 0, {}
+    for r in q(sql + " ORDER BY r.date, c.debut", args):
+        total += 1
+        sug = suggerer_remplacants(r, 1)
+        if not sug:
+            continue
+        run("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (sug[0]["prof"]["id"], r["id"]))
+        d = detail_remplacement(r["id"])
+        pourvus += 1
+        u = user_du_prof(sug[0]["prof"]["id"])
+        if u:
+            par_user.setdefault(u, []).append(f"{texte_cours(d)} (pour {d['pprenom']} {d['pnom']})")
+        ext.emit("remplacement.assigne", remplacement_id=r["id"], remplacant_id=sug[0]["prof"]["id"], date=r["date"])
+    for u, cours_ in par_user.items():
+        notifier([u], f"Remplacement(s) : {len(cours_)} cours vous sont confiés", "Vous êtes désigné(e) pour :\n- " + "\n- ".join(cours_) + "\n\nMessage automatique de la vie scolaire.")
+    log("remplacements pourvus automatiquement", f"{pourvus}/{total}")
+    if not total:
+        flash("Aucun remplacement à pourvoir.", "ok")
+    elif pourvus == total:
+        flash(f"{pourvus} remplacement(s) pourvu(s) automatiquement ; les remplaçants ont été prévenus par message.", "ok")
+    else:
+        flash(f"{pourvus} remplacement(s) sur {total} pourvu(s) ; {total - pourvus} sans professeur libre (à annuler ou réorganiser).", "err" if not pourvus else "ok")
+    return redirect(request.referrer or url_for("remplacements"))
+
+
 # ───────────────────────── 3. Suivi des cours et coordination ─────────────────────────
+def minutes_cours(debut, fin):
+    (h1, m1), (h2, m2) = (int(x) for x in debut.split(":")), (int(x) for x in fin.split(":"))
+    return (h2 * 60 + m2) - (h1 * 60 + m1)
+
+
+ETATS_COURS = {"remplace": "Remplacé", "annule": "Annulé", "a_pourvoir": "À pourvoir", "perturbe": "Perturbé (maintenu)", "non_assure": "Non assuré"}
+
+
+def cours_perturbes(du, au):
+    """Tous les cours perturbés d'une période, toutes causes confondues : absences de professeurs (via les remplacements),
+    indisponibilités et perturbations signalées (salle, déplacement…). Chaque ligne renvoie vers l'absence et le remplacement."""
+    lignes = {}
+    for r in q("SELECT r.id rid, r.creneau_id, r.date, r.statut, r.remplacant_id, r.absence_id, c.classe, c.matiere, c.debut, c.fin, c.salle, "
+               "p.nom pnom, p.prenom pprenom, a.motif, rp.nom rnom, rp.prenom rprenom "
+               "FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id JOIN professeurs p ON p.id=c.prof_id "
+               "LEFT JOIN absences a ON a.id=r.absence_id LEFT JOIN professeurs rp ON rp.id=r.remplacant_id "
+               "WHERE r.etab_id=? AND r.date BETWEEN ? AND ?", (g.etab_id, du.isoformat(), au.isoformat())):
+        etat = {"annule": "annule", "effectue": "remplace", "assigne": "remplace", "a_pourvoir": "a_pourvoir"}[r["statut"]]
+        lignes[(r["creneau_id"], r["date"])] = {
+            "date": r["date"], "debut": r["debut"], "fin": r["fin"], "classe": r["classe"], "matiere": r["matiere"], "salle": r["salle"],
+            "prof": f"{r['pprenom']} {r['pnom']}", "causes": [("absence", r["motif"] or "")], "etat": etat,
+            "remplacant": f"{r['rprenom']} {r['rnom']}" if r["remplacant_id"] else "", "aid": r["absence_id"], "rid": r["rid"], "pid": None}
+    for pt in q("SELECT pt.*, c.classe cclasse, c.matiere, c.debut, c.fin, c.salle, p.nom pnom, p.prenom pprenom FROM perturbations pt "
+                "LEFT JOIN creneaux c ON c.id=pt.creneau_id LEFT JOIN professeurs p ON p.id=c.prof_id "
+                "WHERE pt.etab_id=? AND pt.date BETWEEN ? AND ?", (g.etab_id, du.isoformat(), au.isoformat())):
+        cle = (pt["creneau_id"], pt["date"]) if pt["creneau_id"] else ("p", pt["id"])
+        if cle in lignes:
+            lignes[cle]["causes"].append((pt["type"], pt["detail"]))
+            lignes[cle]["pid"] = pt["id"]
+            if pt["type"] == "annule":
+                lignes[cle]["etat"] = "annule"
+        else:
+            lignes[cle] = {"date": pt["date"], "debut": pt["debut"] or "", "fin": pt["fin"] or "", "classe": pt["cclasse"] or pt["classe"], "matiere": pt["matiere"] or "",
+                           "salle": pt["salle"] or "", "prof": f"{pt['pprenom']} {pt['pnom']}" if pt["pnom"] else "", "causes": [(pt["type"], pt["detail"])],
+                           "etat": "annule" if pt["type"] == "annule" else "perturbe", "remplacant": "", "aid": None, "rid": None, "pid": pt["id"]}
+    for a in q("SELECT a.*, p.nom, p.prenom FROM absences a JOIN professeurs p ON p.id=a.prof_id "
+               "WHERE a.etab_id=? AND a.type='indisponibilite' AND a.date_debut<=? AND a.date_fin>=?", (g.etab_id, au.isoformat(), du.isoformat())):
+        for jour in jours_ouvres(max(du, parse_date(a["date_debut"])), min(au, parse_date(a["date_fin"]))):
+            for c in q("SELECT * FROM creneaux WHERE prof_id=? AND jour=?", (a["prof_id"], jour.weekday())):
+                cle = (c["id"], jour.isoformat())
+                if cle not in lignes:
+                    lignes[cle] = {"date": jour.isoformat(), "debut": c["debut"], "fin": c["fin"], "classe": c["classe"], "matiere": c["matiere"], "salle": c["salle"],
+                                   "prof": f"{a['prenom']} {a['nom']}", "causes": [("indisponibilite", a["motif"])], "etat": "non_assure",
+                                   "remplacant": "", "aid": a["id"], "rid": None, "pid": None}
+    out = sorted(lignes.values(), key=lambda l: (l["date"], l["debut"], l["classe"]))
+    for l in out:
+        l["minutes"] = minutes_cours(l["debut"], l["fin"]) if l["debut"] and l["fin"] else 0
+    return out
+
+
+LIBELLE_CAUSE = dict(TYPES_PERTURBATION, absence="Absence du professeur", indisponibilite="Professeur indisponible")
+app.jinja_env.globals["LIBELLE_CAUSE"] = LIBELLE_CAUSE
+app.jinja_env.globals["ETATS_COURS"] = ETATS_COURS
+
+
+def analyser_perturbations(lignes):
+    """Chiffres clés et ventilations (classe, cause, professeur, matière, remplaçants) d'une liste de cours perturbés."""
+    kpi = {k: 0 for k in ETATS_COURS}
+    kpi["total"], kpi["minutes_perdues"] = len(lignes), 0
+    par_classe, par_cause, par_prof, par_matiere, remplacants, par_motif = {}, {}, {}, {}, {}, {}
+    for l in lignes:
+        kpi[l["etat"]] += 1
+        if l["etat"] in ("annule", "non_assure"):
+            kpi["minutes_perdues"] += l["minutes"]
+        c = par_classe.setdefault(l["classe"] or "—", {"total": 0, "remplace": 0, "annule": 0, "a_pourvoir": 0, "autres": 0, "minutes": 0})
+        c["total"] += 1
+        c[l["etat"] if l["etat"] in ("remplace", "annule", "a_pourvoir") else "autres"] += 1
+        if l["etat"] in ("annule", "non_assure"):
+            c["minutes"] += l["minutes"]
+        for cause, detail in l["causes"]:
+            par_cause[cause] = par_cause.get(cause, 0) + 1
+            if cause == "absence":
+                par_motif[detail or "Non précisé"] = par_motif.get(detail or "Non précisé", 0) + 1
+        if any(cs == "absence" for cs, _ in l["causes"]):
+            p = par_prof.setdefault(l["prof"], {"total": 0, "remplace": 0, "annule": 0, "a_pourvoir": 0})
+            p["total"] += 1
+            if l["etat"] in p:
+                p[l["etat"]] += 1
+        if l["matiere"]:
+            par_matiere[l["matiere"]] = par_matiere.get(l["matiere"], 0) + 1
+        if l["remplacant"]:
+            remplacants[l["remplacant"]] = remplacants.get(l["remplacant"], 0) + 1
+    absences_ = kpi["remplace"] + kpi["annule"] + kpi["a_pourvoir"]
+    couverts = sum(1 for l in lignes if l["etat"] == "remplace")
+    kpi["taux_couverture"] = round(100 * couverts / absences_) if absences_ else None
+    tri = lambda d, n=6: sorted(d.items(), key=lambda kv: -(kv[1]["total"] if isinstance(kv[1], dict) else kv[1]))[:n]
+    return {"kpi": kpi, "par_classe": tri(par_classe, 12), "par_cause": tri(par_cause), "par_prof": tri(par_prof), "par_matiere": tri(par_matiere),
+            "remplacants": tri(remplacants), "par_motif": tri(par_motif)}
+
+
+def periode_perturbations():
+    aujourdhui = date.today()
+    du, au = parse_date(request.args.get("du"), aujourdhui - timedelta(days=21)), parse_date(request.args.get("au"), aujourdhui + timedelta(days=14))
+    if au < du:
+        du, au = au, du
+    return du, min(au, du + timedelta(days=180))
+
+
 @app.route("/cours", methods=["GET", "POST"])
 @staff_only
 def cours():
@@ -741,12 +961,31 @@ def cours():
         log("perturbation enregistrée", f"{typ} {f.get('date')}")
         return redirect(url_for("cours"))
     jour = parse_date(request.args.get("date"))
+    du, au = periode_perturbations()
+    lignes = cours_perturbes(du, au)
     perts = q("SELECT pt.*, c.debut, c.fin, c.salle, p.nom pnom FROM perturbations pt LEFT JOIN creneaux c ON c.id=pt.creneau_id "
               "LEFT JOIN professeurs p ON p.id=c.prof_id WHERE pt.etab_id=? AND pt.date>=? ORDER BY pt.date, c.debut LIMIT 100",
               (g.etab_id, (date.today() - timedelta(days=3)).isoformat()))
     creneaux = q("SELECT c.id, c.classe, c.debut, c.fin, p.nom FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
                  "WHERE c.etab_id=? AND c.jour=? ORDER BY c.debut", (g.etab_id, jour.weekday() if jour.weekday() < 5 else 0))
-    return render_template("cours.html", perts=perts, creneaux=creneaux, jour=jour, du_jour=cours_du_jour(jour))
+    return render_template("cours.html", perts=perts, creneaux=creneaux, jour=jour, du_jour=cours_du_jour(jour), lignes=lignes, du=du, au=au,
+                           analyse=analyser_perturbations(lignes), aujourdhui=date.today(),
+                           lundi=date.today() - timedelta(days=date.today().weekday()))
+
+
+@app.route("/cours.csv")
+@staff_only
+def cours_csv():
+    du, au = periode_perturbations()
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(["date", "debut", "fin", "classe", "matiere", "professeur", "cause", "etat", "remplacant", "minutes"])
+    for l in cours_perturbes(du, au):
+        w.writerow([cellule_csv(v) for v in (l["date"], l["debut"], l["fin"], l["classe"], l["matiere"], l["prof"],
+                                             " + ".join(LIBELLE_CAUSE.get(c, c) + (f" ({d})" if d else "") for c, d in l["causes"]),
+                                             ETATS_COURS[l["etat"]], l["remplacant"], l["minutes"])])
+    log("export", "cours perturbés")
+    return Response("\ufeff" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=cours_perturbes_{date.today()}.csv"})
 
 
 @app.route("/perturbations/<int:pid>/supprimer", methods=["POST"])
