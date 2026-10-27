@@ -384,7 +384,7 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     h.setAttribute('role', 'button'); h.tabIndex = 0;
     var regler = function (ouvert) { corps.hidden = !ouvert; h.setAttribute('aria-expanded', ouvert ? 'true' : 'false'); };
     var courant = !!corps.querySelector('a.on');
-    regler(courant || etat[titre] === true);
+    regler(courant || (etat[titre] === undefined ? h.hasAttribute('data-ouvert') : etat[titre] === true));
     var bascule = function () { var ouvert = corps.hidden; regler(ouvert); etat[titre] = ouvert; sauver(); };
     h.addEventListener('click', bascule);
     h.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bascule(); } });
