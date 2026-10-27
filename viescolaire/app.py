@@ -65,7 +65,7 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
-    "eleves": ["eleves", "eleve_supprimer"],
+    "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier"],
     "redaction": ["document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
@@ -1204,7 +1204,50 @@ def eleves():
     rows = q(sql + " ORDER BY classe, nom, prenom LIMIT 500", args)
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     total = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=?", (g.etab_id,))["c"]
-    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total)
+    # professeur principal et équipe de chaque classe affichée (calculés une fois par classe)
+    infos = {}
+    for c in {e["classe"] for e in rows if e["classe"]}:
+        equipe, pp = equipe_et_pp(c)
+        infos[c] = {"pp": pp, "profs": sorted({e["nom"] for e in equipe})}
+    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos)
+
+
+@app.route("/eleves/<int:eid>")
+@staff_only
+def eleve_fiche(eid):
+    e = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id))
+    if not e:
+        abort(404)
+    equipe, pp = equipe_et_pp(e["classe"]) if e["classe"] else ([], None)
+    profs = {}
+    for m in equipe + ([pp] if pp else []):
+        p = profs.setdefault(m["prof_id"], {"prof_id": m["prof_id"], "nom": m["nom"], "matieres": [], "principal": False})
+        if m["matiere"] and m["matiere"] not in p["matieres"]:
+            p["matieres"].append(m["matiere"])
+        if pp and m["prof_id"] == pp["prof_id"]:
+            p["principal"] = True
+    for pid, p in profs.items():
+        fiche = one("SELECT email, telephone FROM professeurs WHERE id=?", (pid,))
+        p["email"], p["telephone"] = fiche["email"], fiche["telephone"]
+        p["cours"] = [f"{JOURS[c['jour']][:3]}. {c['debut']}–{c['fin']}" for c in
+                      q("SELECT jour, debut, fin FROM creneaux WHERE prof_id=? AND classe=? ORDER BY jour, debut", (pid, e["classe"]))]
+    equipe_liste = sorted(profs.values(), key=lambda p: (not p["principal"], p["nom"]))
+    incidents_ = q("SELECT * FROM incidents WHERE etab_id=? AND eleve_id=? ORDER BY date DESC", (g.etab_id, eid))
+    documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
+    reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
+    return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_)
+
+
+@app.route("/eleves/<int:eid>/modifier", methods=["POST"])
+@staff_only
+def eleve_modifier(eid):
+    f = request.form
+    if f.get("nom", "").strip() and one("SELECT 1 FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id)):
+        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=? WHERE id=?",
+            (f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(), f.get("responsable", "").strip(), f.get("contact", "").strip(), eid))
+        log("fiche élève modifiée", f"{f['nom']} {f.get('prenom', '')}")
+        flash("Fiche enregistrée.", "ok")
+    return redirect(url_for("eleve_fiche", eid=eid))
 
 
 @app.route("/eleves/<int:eid>/supprimer", methods=["POST"])
@@ -1362,7 +1405,8 @@ def document_nouveau():
         ext.emit("document.genere", document_id=did, modele=modele["titre"], eleve_id=eleve["id"] if eleve else None, auteur=g.user["nom"])
         flash("Document enregistré." + (" Un incident a aussi été créé." if incident_id else ""), "ok")
         return redirect(url_for("document_genere", did=did))
-    return render_template("document_nouveau.html", donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"])
+    return render_template("document_nouveau.html", donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"],
+                           eleve_initial=request.args.get("eleve", type=int) or "")
 
 
 def get_document(did):

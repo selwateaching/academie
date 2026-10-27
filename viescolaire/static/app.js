@@ -156,6 +156,8 @@ document.addEventListener('click', function (e) {
     c.value = c.value.slice(0, a) + v + c.value.slice(b); c.focus(); c.selectionStart = c.selectionEnd = a + v.length;
     corpsModifie = true; el.notice.hidden = false; el.inserer.value = '';
   });
+  var initial = form.getAttribute('data-eleve-initial');   // arrivée depuis la fiche d'un élève
+  if (initial) el.eleve.value = initial;
   surEleve();
 })();
 /* Convocation d'élèves : sélection par classe, recherche, décompte. */

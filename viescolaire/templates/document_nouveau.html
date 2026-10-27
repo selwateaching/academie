@@ -2,7 +2,7 @@
 <div class="top"><h1>Rédiger un document</h1>{% if staff %}<a class="btn sec" href="{{ url_for('modeles_documents') }}">Modèles et types d'incident</a>{% endif %}</div>
 {% if aucun_eleve %}<div class="al warn">Aucun élève disponible{% if staff %} : ajoutez-les dans <a href="{{ url_for('eleves') }}">Élèves</a> ou par import CSV{% endif %}. Vous pouvez tout de même rédiger un document sans élève.</div>{% endif %}
 <script type="application/json" id="redaction-data">{{ donnees|tojson }}</script>
-<form method="post" data-redaction>{{ csrf() }}
+<form method="post" data-redaction data-eleve-initial="{{ eleve_initial }}">{{ csrf() }}
 <div class="card"><h2>1. Choisir le document et l'élève</h2><div class="row">
 <div><label>Modèle de document</label><select name="modele_id" required>{% for m in donnees.modeles %}<option value="{{ m.id }}">{{ m.titre }}</option>{% endfor %}</select></div>
 <div><label>Classe</label><select data-filtre-classe><option value="">Toutes</option>{% for c in donnees.classes %}<option>{{ c }}</option>{% endfor %}</select></div>

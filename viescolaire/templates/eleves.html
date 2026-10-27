@@ -1,8 +1,11 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Élèves{% endblock %}{% block body %}
 <div class="top"><h1>Élèves <span class="mute" style="font-size:14px">({{ total }})</span></h1>
 <form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, prénom, responsable…"><select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select><button class="sec">Filtrer</button></form></div>
-<div class="card scroll"><table><tr><th>Classe</th><th>Nom</th><th>Prénom</th><th>Responsable légal</th><th>Contact</th><th></th></tr>
-{% for e in rows %}<tr><td>{{ e.classe }}</td><td><b>{{ e.nom }}</b></td><td>{{ e.prenom }}</td><td>{{ e.responsable }}</td><td>{{ e.contact }}</td><td>{{ post(url_for('eleve_supprimer', eid=e.id), '✕', 'sec sm', 'Supprimer cet élève ?') }}</td></tr>
+<div class="card scroll"><table><tr><th>Classe</th><th>Élève</th><th>Professeur principal</th><th>Équipe pédagogique</th><th>Responsable légal (famille)</th><th></th></tr>
+{% for e in rows %}{% set i = infos.get(e.classe) %}<tr><td>{{ e.classe }}</td><td><a href="{{ url_for('eleve_fiche', eid=e.id) }}"><b>{{ e.nom }}</b> {{ e.prenom }}</a></td>
+<td>{% if i and i.pp %}{{ i.pp.nom }}<br><span class="mute">{{ i.pp.matiere }}</span>{% else %}<span class="mute">non renseigné</span>{% endif %}</td>
+<td>{% if i and i.profs %}<a href="{{ url_for('eleve_fiche', eid=e.id) }}" title="{{ i.profs|join(', ') }}">{{ i.profs|length }} professeur(s)</a><br><span class="mute">{{ i.profs[:3]|join(', ') }}{{ '…' if i.profs|length > 3 }}</span>{% else %}<span class="mute">aucun cours planifié</span>{% endif %}</td>
+<td>{{ e.responsable }}<br><span class="mute">{{ e.contact }}</span></td><td>{{ post(url_for('eleve_supprimer', eid=e.id), '✕', 'sec sm', 'Supprimer cet élève ?') }}</td></tr>
 {% else %}<tr><td colspan="6" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>Ajouter un élève</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
 <div><label>Classe</label><input name="classe" list="cl"><datalist id="cl">{% for c in classes %}<option value="{{ c.nom }}">{% endfor %}</datalist></div>

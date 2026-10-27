@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ e.prenom }} {{ e.nom }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ e.prenom }} {{ e.nom }} <span class="mute" style="font-size:15px">· {{ e.classe or 'sans classe' }}</span></h1>
+<span>{% if module_actif('redaction') %}<a class="btn" href="{{ url_for('document_nouveau', eleve=e.id) }}">Rédiger un document</a> {% endif %}<a class="btn sec" href="{{ url_for('eleves', classe=e.classe) }}">← Élèves</a></span></div>
+<div class="grid g2">
+<div class="card"><h2>Professeur principal</h2>{% if pp %}<p style="font-size:17px;margin:0"><b>{{ pp.nom }}</b></p><p class="mute" style="margin:2px 0 0">{{ pp.matiere }}</p>
+{% for p in equipe if p.principal %}<p style="margin:6px 0 0">{% if p.email %}{{ p.email }}{% endif %}{% if p.telephone %} · {{ p.telephone }}{% endif %}</p>{% endfor %}
+{% else %}<p class="mute">Aucun professeur principal pour cette classe. Vous pouvez le renseigner dans <a href="{{ url_for('classes') }}">Classes</a>.</p>{% endif %}</div>
+<div class="card"><h2>Fiche</h2><form method="post" action="{{ url_for('eleve_modifier', eid=e.id) }}">{{ csrf() }}<div class="row">
+<div><label>Nom</label><input name="nom" value="{{ e.nom }}" required></div><div><label>Prénom</label><input name="prenom" value="{{ e.prenom }}"></div><div><label>Classe</label><input name="classe" value="{{ e.classe }}"></div></div>
+<div class="row"><div><label>Responsable légal</label><input name="responsable" value="{{ e.responsable }}"></div><div><label>Contact</label><input name="contact" value="{{ e.contact }}"></div></div><br><button>Enregistrer</button></form></div></div>
+<div class="card scroll"><h2>Équipe pédagogique de la classe {{ e.classe }} ({{ equipe|length }})</h2><table><tr><th>Professeur</th><th>Matière</th><th>Contact</th><th>Cours avec la classe</th></tr>
+{% for p in equipe %}<tr><td><a href="{{ url_for('professeur', pid=p.prof_id) }}"><b>{{ p.nom }}</b></a>{% if p.principal %} <span class="tag ok">Prof. principal</span>{% endif %}</td><td>{{ p.matieres|join(', ') }}</td>
+<td>{{ p.email }}{% if p.telephone %}<br><span class="mute">{{ p.telephone }}</span>{% endif %}</td><td class="mute">{{ p.cours|join(' · ') }}</td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun cours planifié pour cette classe.</td></tr>{% endfor %}</table></div>
+<div class="grid g2"><div class="card"><h2>Incidents ({{ incidents|length }})</h2>{% for i in incidents %}<p><b>{{ i.date|fr_date }}</b> <span class="tag {{ 'ok' if i.statut == 'clos' else 'warn' }}">{{ i.statut }}</span><br>{{ i.description }}</p>{% else %}<p class="mute">Aucun incident enregistré pour cet élève.</p>{% endfor %}</div>
+<div class="card"><h2>Documents et réunions</h2>{% for d in documents %}<p><a href="{{ url_for('document_genere', did=d.id) }}">{{ d.titre }}</a> <span class="mute">{{ d.created_at.replace('T', ' ') }}</span></p>{% endfor %}
+{% for r in reunions %}<p>Convoqué(e) : <b>{{ r.titre }}</b> <span class="mute">{{ r.date|fr_date }} {{ r.heure }}</span></p>{% endfor %}
+{% if not documents and not reunions %}<p class="mute">Aucun document ni convocation.</p>{% endif %}</div></div>{% endblock %}
