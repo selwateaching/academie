@@ -244,7 +244,7 @@ def entetes(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "same-origin"
-    resp.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    resp.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:"
     if g.get("user"):
         resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -1998,7 +1998,7 @@ def logo_entete():
     if not r or not r["logo"]:
         abort(404)
     resp = Response(r["logo"], mimetype=r["logo_mime"])
-    resp.headers["Cache-Control"] = "private, max-age=60"
+    resp.headers["Cache-Control"] = "private, no-cache"
     return resp
 
 
@@ -3134,7 +3134,7 @@ def photo(kind, rid):
         resp = Response(ph["data"], mimetype=ph["mime"])
     else:
         resp = Response(avatar_svg(p["prenom"], p["nom"]), mimetype="image/svg+xml")
-    resp.headers["Cache-Control"] = "private, max-age=60"
+    resp.headers["Cache-Control"] = "private, no-cache"   # la page ajoute ?v=<date d'envoi> : une nouvelle photo s'affiche tout de suite
     return resp
 
 
@@ -3148,7 +3148,7 @@ def trombinoscope():
         vue = "eleves"
     classe = request.args.get("classe", "")
     classes_ = q("SELECT c.nom, p.nom pnom, p.prenom pprenom FROM classes c LEFT JOIN professeurs p ON p.id=c.prof_principal_id WHERE c.etab_id=? ORDER BY c.nom", (g.etab_id,))
-    avec_photo = {(r["kind"], r["ref_id"]) for r in q("SELECT kind,ref_id FROM photos WHERE etab_id=?", (g.etab_id,))}
+    avec_photo = {(r["kind"], r["ref_id"]): r["at"] for r in q("SELECT kind,ref_id,at FROM photos WHERE etab_id=?", (g.etab_id,))}
     groupes = []   # [(titre, sous-titre, [personnes])]
     if vue == "eleves":
         pp = {c["nom"]: (f"{c['pprenom']} {c['pnom']}" if c["pnom"] else "") for c in classes_}
@@ -3179,7 +3179,7 @@ def trombinoscope():
         groupes = [(c, "", l) for c, l in par.items()]
     for _, _, lst in groupes:
         for x in lst:
-            x["photo"] = (x["kind"], x["id"]) in avec_photo
+            x["photo"] = avec_photo.get((x["kind"], x["id"]), "")
     return render_template("trombinoscope.html", vue=vue, classe=classe, classes=classes_, groupes=groupes, staff=staff,
                            total=sum(len(l) for _, _, l in groupes))
 

@@ -6,7 +6,7 @@
 {% for titre, sous, liste in groupes %}
 <div class="card tromb"><h2>{{ titre }} <span class="mute" style="font-size:14px;font-weight:400">· {{ liste|length }}{% if sous %} · {{ sous }}{% endif %}</span></h2>
 <div class="tromb-grille">
-{% for x in liste %}<figure class="tromb-fiche"><img src="{{ url_for('photo', kind=x.kind, rid=x.id) }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
+{% for x in liste %}<figure class="tromb-fiche"><img src="{{ url_for('photo', kind=x.kind, rid=x.id, v=x.photo or 'initiales') }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
 <figcaption><b>{{ x.nom }}</b> {{ x.prenom }}{% if x.ligne %}<br><span class="mute">{{ x.ligne }}</span>{% endif %}
 {% if x.roles %}<br>{% for n, c in x.roles %}<span class="chip-poste" style="background:{{ c }};color:{{ c|couleur_texte }}">{{ n }}</span> {% endfor %}{% endif %}</figcaption>
 {% if staff %}<form method="post" action="{{ url_for('photo_enregistrer', kind=x.kind, rid=x.id) }}" enctype="multipart/form-data" class="noprint tromb-actions">{{ csrf() }}
