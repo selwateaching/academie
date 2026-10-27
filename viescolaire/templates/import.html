@@ -4,6 +4,6 @@
 <div><label>Fichier CSV (séparateur ; ou ,)</label><input type="file" name="fichier" accept=".csv,text/csv" required></div><div><button>Importer</button></div></div></form></div>
 <div class="card"><h2>Format attendu (première ligne = en-têtes)</h2>
 <p><b>Professeurs</b> : <code>nom;prenom;matiere;email;telephone</code> (les e-mails déjà connus sont ignorés)</p>
-<p><b>Élèves</b> : <code>nom;prenom;classe;responsable;contact</code> (responsable et contact facultatifs).</p>
+<p><b>Élèves</b> : <code>nom;prenom;classe;responsable;contact;date_naissance;sexe</code> (responsable, contact, date de naissance — AAAA-MM-JJ ou JJ/MM/AAAA — et sexe F/M facultatifs).</p>
 <p><b>Besoins</b> : <code>email;classe;matiere;heures;bloc;salle</code> — heures = volume hebdomadaire, bloc = 1 ou 2 (séances de 2 h consécutives).</p>
 <p><b>Créneaux</b> : <code>email;classe;matiere;jour;debut;fin;salle</code> — jour = lundi…vendredi, heures au format 08:00. À défaut d'e-mail, le professeur est retrouvé par <code>nom</code> et <code>prenom</code>.</p></div>{% endblock %}

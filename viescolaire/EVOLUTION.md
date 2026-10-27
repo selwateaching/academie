@@ -21,6 +21,7 @@ Lancer un client : `VSP_CONFIG=viescolaire/clients/<client>/config.json python -
 | Charte graphique complète (toutes les couleurs) | variables CSS en tête de `static/style.css` (palette actuelle : « gaya cocoon »), ou feuille `css` du client qui les redéfinit | minutes |
 | Retirer une fonction (ex. pas d'incidents) | `config.json` → `"modules": {"incidents": false}` | minutes |
 | Règles (mot de passe, durée de session, taille/type de fichiers) | `config.json` | minutes |
+| Qui accède aux données de santé de l'infirmerie | `config.json` → `infirmerie_roles` | minutes |
 | Changer un texte ou une page | copier le gabarit du socle dans `templates/` du client et le modifier | heures |
 | Réagir à un événement (e-mail, SMS, webhook…) | extension avec `@api.on("événement")` | heures |
 | Nouvelle page, table, export, bloc de tableau de bord | extension (`ajouter_menu`, `ajouter_widget`, `ajouter_export`, `ajouter_schema`) | heures–jours |
@@ -64,6 +65,8 @@ avec d'éventuels ajouts) :
 | `incident.cree` | incident_id, classe, description |
 | `utilisateur.cree` | user_id, email, nom, role |
 | `document.genere` | document_id, modele, eleve_id, auteur |
+| `soin.programme` | soin_id, eleve_id, intitule |
+| `passage.enregistre` | passage_id, eleve_id, motif |
 
 Une extension qui plante est journalisée et **ne bloque jamais** l'action de l'utilisateur.
 Les secrets (mots de passe SMTP…) vont dans des variables d'environnement, pas dans `config.json`.

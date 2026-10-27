@@ -1,0 +1,30 @@
+{% extends 'base.html' %}{% block title %}Pyramide des âges{% endblock %}{% block body %}
+<div class="top"><h1>Pyramide des âges et des sexes</h1><span class="noprint"><a class="btn sec" href="{{ url_for('pyramide_csv', niveau=niveau, classe=classe, date=ref.isoformat()) }}">Export Excel (CSV)</a> <button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('eleves') }}">← Élèves</a></span></div>
+<form method="get" class="row noprint" style="margin-bottom:14px"><div><label>Niveau</label><select name="niveau"><option value="">Tous</option>{% for n in niveaux %}<option {{ 'selected' if n.nom == niveau }}>{{ n.nom }}</option>{% endfor %}</select></div>
+<div><label>Classe</label><select name="classe"><option value="">Toutes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>
+<div><label>Âge calculé au</label><input type="date" name="date" value="{{ ref.isoformat() }}"></div><div style="flex:0 0 auto"><button>Afficher</button></div></form>
+{% if not lignes %}<div class="card"><p>Aucune date de naissance renseignée pour cette sélection{% if sans_naissance %} ({{ sans_naissance }} élève(s) sans date){% endif %}.</p><p class="mute">Ajoutez-les dans la fiche de chaque élève, ou par <a href="{{ url_for('importer') }}">import CSV</a> (colonnes <code>date_naissance</code> et <code>sexe</code>).</p></div>
+{% else %}
+{% set connus = tot.m + tot.f %}
+<div class="stats"><div class="stat"><b>{{ tot.total }}</b><span>Élèves{% if niveau %} · {{ niveau }}{% endif %}{% if classe %} · {{ classe }}{% endif %}</span></div>
+<div class="stat"><b>{{ tot.age_moyen|string|replace('.', ',') }}</b><span>Âge moyen (ans)</span></div>
+<div class="stat"><b>{{ lignes[-1].age }}–{{ lignes[0].age }}</b><span>Tranche d'âges</span></div></div>
+<div class="card" data-pyramide>
+<h2>Effectifs par âge et par sexe <span class="mute" style="font-weight:400;font-size:13px">· âge révolu au {{ ref|string|fr_date }}</span></h2>
+<div class="legende"><span><i class="sw sw-m"></i> Garçons <b>{{ tot.m }}</b>{% if connus %} ({{ (100 * tot.m / connus)|round|int }} %){% endif %}</span>
+<span><i class="sw sw-f"></i> Filles <b>{{ tot.f }}</b>{% if connus %} ({{ (100 * tot.f / connus)|round|int }} %){% endif %}</span></div>
+<svg viewBox="0 0 {{ geo.W }} {{ geo.H }}" class="pyramide" role="img" aria-label="Pyramide des âges : {{ tot.m }} garçons et {{ tot.f }} filles, de {{ lignes[-1].age }} à {{ lignes[0].age }} ans. Le détail figure dans le tableau ci-dessous.">
+{% for t in geo.ticks %}<line class="py-grid" x1="{{ '%.1f'|format(t.x_g) }}" x2="{{ '%.1f'|format(t.x_g) }}" y1="0" y2="{{ geo.h_plot }}"/><line class="py-grid" x1="{{ '%.1f'|format(t.x_d) }}" x2="{{ '%.1f'|format(t.x_d) }}" y1="0" y2="{{ geo.h_plot }}"/>
+<text class="py-txt" x="{{ '%.1f'|format(t.x_g) }}" y="{{ geo.y_axe + 14 }}" text-anchor="middle">{{ t.v }}</text><text class="py-txt" x="{{ '%.1f'|format(t.x_d) }}" y="{{ geo.y_axe + 14 }}" text-anchor="middle">{{ t.v }}</text>{% endfor %}
+{% for r in geo.rangs %}<g class="py-rang" tabindex="0" data-age="{{ r.age }}" data-m="{{ r.m }}" data-f="{{ r.f }}" data-nr="{{ r.nr }}" data-total="{{ r.total }}">
+<rect class="py-hit" x="0" y="{{ r.y_bande }}" width="{{ geo.W }}" height="{{ r.pas }}"/>
+{% if r.chemin_m %}<path class="py-m" d="{{ r.chemin_m }}"/>{% endif %}{% if r.chemin_f %}<path class="py-f" d="{{ r.chemin_f }}"/>{% endif %}
+<text class="py-age" x="{{ '%.1f'|format(geo.x_centre) }}" y="{{ '%.1f'|format(r.yc) }}" text-anchor="middle">{{ r.age }} ans</text>
+{% if r.etiq_m %}<text class="py-val" x="{{ '%.1f'|format(r.x_m) }}" y="{{ '%.1f'|format(r.yc) }}" text-anchor="end">{{ r.m }}</text>{% endif %}
+{% if r.etiq_f %}<text class="py-val" x="{{ '%.1f'|format(r.x_f) }}" y="{{ '%.1f'|format(r.yc) }}" text-anchor="start">{{ r.f }}</text>{% endif %}</g>{% endfor %}
+<text class="py-txt py-serie" x="{{ '%.1f'|format(geo.x_g_titre) }}" y="{{ geo.y_titre }}" text-anchor="middle">← Garçons (nombre d'élèves)</text><text class="py-txt py-serie" x="{{ '%.1f'|format(geo.x_d_titre) }}" y="{{ geo.y_titre }}" text-anchor="middle">Filles (nombre d'élèves) →</text>
+</svg>
+{% if sans_naissance or sans_sexe %}<p class="mute" style="margin:6px 0 0">{% if sans_naissance %}{{ sans_naissance }} élève(s) sans date de naissance ne sont pas comptés. {% endif %}{% if sans_sexe %}{{ sans_sexe }} élève(s) sans sexe renseigné sont comptés dans le total mais non dessinés.{% endif %}</p>{% endif %}
+<details open style="margin-top:14px"><summary><b>Tableau des effectifs</b></summary><div class="scroll"><table style="max-width:560px"><tr><th>Âge</th><th>Garçons</th><th>Filles</th>{% if tot.nr %}<th>Non précisé</th>{% endif %}<th>Total</th></tr>
+{% for l in lignes %}<tr><td>{{ l.age }} ans</td><td>{{ l.m }}</td><td>{{ l.f }}</td>{% if tot.nr %}<td>{{ l.nr }}</td>{% endif %}<td>{{ l.total }}</td></tr>{% endfor %}
+<tr><td><b>Total</b></td><td><b>{{ tot.m }}</b></td><td><b>{{ tot.f }}</b></td>{% if tot.nr %}<td><b>{{ tot.nr }}</b></td>{% endif %}<td><b>{{ tot.total }}</b></td></tr></table></div></details></div>{% endif %}{% endblock %}

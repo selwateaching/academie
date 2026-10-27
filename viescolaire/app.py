@@ -65,7 +65,9 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
-    "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier"],
+    "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
+    "infirmerie": ["infirmerie", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
+                   "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
@@ -78,6 +80,20 @@ EXPORT_VERS_MODULE = {"absences": "absences", "remplacements": "remplacements", 
 
 def module_actif(nom):
     return CFG["modules"].get(nom, True)
+
+
+def roles_infirmerie():
+    """Rôles ayant accès aux données de santé. En démonstration, le CPE y accède aussi pour faciliter la visite."""
+    return set(CFG["infirmerie_roles"]) | ({"cpe"} if DEMO else set())
+
+
+def infirmerie_only(f):
+    @wraps(f)
+    def wrapper(*a, **kw):
+        if g.user["role"] not in roles_infirmerie():
+            abort(403)
+        return f(*a, **kw)
+    return wrapper
 TYPES_PERTURBATION = {"annule": "Cours annulé", "salle_indisponible": "Salle indisponible",
                       "deplace": "Cours déplacé", "remplace": "Cours remplacé"}
 
@@ -141,6 +157,7 @@ def fr_date(s):
 
 
 app.jinja_env.filters["fr_date"] = fr_date
+app.jinja_env.filters["age"] = lambda iso: age_au(iso, date.today()) if iso else ""
 
 
 # ───────────────────────── Sécurité : session, CSRF, rôles, MFA ─────────────────────────
@@ -229,7 +246,8 @@ def entetes(resp):
 @app.context_processor
 def contexte():
     ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
-           "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": []}
+           "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": [],
+           "infirmerie_ok": bool(g.get("user")) and g.user["role"] in roles_infirmerie()}
     if g.get("user"):
         for item in ext.NAV:
             if g.user["role"] in item["roles"]:
@@ -455,6 +473,8 @@ def alertes():
 
 @app.route("/")
 def dashboard():
+    if g.user["role"] == "infirmier" and module_actif("infirmerie"):
+        return redirect(url_for("infirmerie"))
     today = date.today()
     iso = today.isoformat()
     if g.user["role"] not in STAFF:
@@ -1250,6 +1270,33 @@ def historique():
 
 
 # ───────────────────────── Élèves ─────────────────────────
+def parse_naissance(texte):
+    """Accepte AAAA-MM-JJ ou JJ/MM/AAAA ; retourne la date ISO si elle est plausible pour un élève (2 à 30 ans), sinon ''."""
+    t = (texte or "").strip()
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
+        try:
+            d = datetime.strptime(t, fmt).date()
+        except ValueError:
+            continue
+        age = (date.today() - d).days / 365.25
+        return d.isoformat() if 2 <= age <= 30 else ""
+    return ""
+
+
+def norm_sexe(texte):
+    t = (texte or "").strip().lower()
+    if t in ("f", "fille", "féminin", "feminin", "femme", "girl"):
+        return "F"
+    if t in ("m", "g", "garçon", "garcon", "masculin", "homme", "boy"):
+        return "M"
+    return ""
+
+
+def age_au(naissance_iso, ref):
+    d = date.fromisoformat(naissance_iso)
+    return ref.year - d.year - ((ref.month, ref.day) < (d.month, d.day))
+
+
 @app.route("/eleves", methods=["GET", "POST"])
 @staff_only
 def eleves():
@@ -1258,9 +1305,9 @@ def eleves():
         if not f.get("nom", "").strip():
             flash("Le nom est obligatoire.", "err")
         else:
-            run("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
+            run("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
                 (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(),
-                 f.get("responsable", "").strip(), f.get("contact", "").strip()))
+                 f.get("responsable", "").strip(), f.get("contact", "").strip(), parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe"))))
             log("élève ajouté", f"{f['nom']} {f.get('classe', '')}")
         return redirect(url_for("eleves"))
     terme, classe, niveau = request.args.get("q", "").strip(), request.args.get("classe", ""), request.args.get("niveau", "")
@@ -1283,6 +1330,98 @@ def eleves():
         infos[c] = {"pp": pp, "profs": sorted({e["nom"] for e in equipe})}
     return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos,
                            niveau=niveau, niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)))
+
+
+def donnees_pyramide(niveau, classe, ref):
+    """Effectifs par âge révolu à la date de référence et par sexe."""
+    sql = "SELECT sexe, date_naissance FROM eleves WHERE etab_id=?"
+    args = [g.etab_id]
+    if classe:
+        sql += " AND classe=?"
+        args.append(classe)
+    if niveau:
+        sql += " AND classe IN (SELECT nom FROM classes WHERE etab_id=? AND niveau=?)"
+        args += [g.etab_id, niveau]
+    compte, sans_naissance = {}, 0
+    for r in q(sql, args):
+        if not r["date_naissance"]:
+            sans_naissance += 1
+            continue
+        a = age_au(r["date_naissance"], ref)
+        ligne = compte.setdefault(a, {"M": 0, "F": 0, "?": 0})
+        ligne[r["sexe"] if r["sexe"] in ("M", "F") else "?"] += 1
+    lignes = []
+    if compte:
+        for a in range(max(compte), min(compte) - 1, -1):   # du plus âgé (en haut) au plus jeune
+            c = compte.get(a, {"M": 0, "F": 0, "?": 0})
+            lignes.append({"age": a, "m": c["M"], "f": c["F"], "nr": c["?"], "total": c["M"] + c["F"] + c["?"]})
+    tot = {"m": sum(l["m"] for l in lignes), "f": sum(l["f"] for l in lignes), "nr": sum(l["nr"] for l in lignes)}
+    tot["total"] = tot["m"] + tot["f"] + tot["nr"]
+    tot["age_moyen"] = round(sum(l["age"] * l["total"] for l in lignes) / tot["total"], 1) if tot["total"] else None
+    return lignes, tot, sans_naissance
+
+
+def geometrie_pyramide(lignes):
+    """Calcule le dessin SVG : barres dos à dos (garçons à gauche, filles à droite), échelle commune aux deux côtés."""
+    W, MARGE, CENTRE, PAS, EPAISSEUR, HAUT = 760, 18, 64, 30, 22, 8
+    cote = (W - 2 * MARGE - CENTRE) / 2
+    cl, cr = MARGE + cote, MARGE + cote + CENTRE
+    maxi = max([max(l["m"], l["f"]) for l in lignes] + [1])
+    paliers = [4, 8, 12, 16, 20, 28, 40, 60, 80, 100, 120, 160, 200, 300, 400, 600, 800, 1000]
+    echelle = next((p for p in paliers if p >= maxi * 1.12), paliers[-1])
+    px = cote / echelle
+
+    def barre(x0, longueur, y, sens):  # arrondi de 4 px côté valeur, angle droit côté axe
+        r = min(4, longueur / 2)
+        if longueur <= 0:
+            return ""
+        if sens < 0:
+            x1 = x0 - longueur
+            return f"M{x0:.1f},{y} L{x1 + r:.1f},{y} Q{x1:.1f},{y} {x1:.1f},{y + r} L{x1:.1f},{y + EPAISSEUR - r} Q{x1:.1f},{y + EPAISSEUR} {x1 + r:.1f},{y + EPAISSEUR} L{x0:.1f},{y + EPAISSEUR} Z"
+        x1 = x0 + longueur
+        return f"M{x0:.1f},{y} L{x1 - r:.1f},{y} Q{x1:.1f},{y} {x1:.1f},{y + r} L{x1:.1f},{y + EPAISSEUR - r} Q{x1:.1f},{y + EPAISSEUR} {x1 - r:.1f},{y + EPAISSEUR} L{x0:.1f},{y + EPAISSEUR} Z"
+
+    max_m, max_f = max(l["m"] for l in lignes), max(l["f"] for l in lignes)
+    rangs = []
+    for i, l in enumerate(lignes):
+        y_bande = HAUT + i * PAS
+        y = y_bande + (PAS - EPAISSEUR) / 2
+        rangs.append({**l, "y_bande": y_bande, "pas": PAS, "yc": y + EPAISSEUR / 2 + 4,
+                      "chemin_m": barre(cl, l["m"] * px, y, -1), "chemin_f": barre(cr, l["f"] * px, y, 1),
+                      "etiq_m": l["m"] == max_m and l["m"] > 0, "etiq_f": l["f"] == max_f and l["f"] > 0,
+                      "x_m": cl - l["m"] * px - 6, "x_f": cr + l["f"] * px + 6})
+    h_plot = HAUT + len(lignes) * PAS
+    pas_tick = echelle // 4
+    ticks = [{"v": v, "x_g": cl - v * px, "x_d": cr + v * px} for v in range(0, echelle + 1, pas_tick)]
+    return {"W": W, "H": h_plot + 40, "cl": cl, "cr": cr, "rangs": rangs, "ticks": ticks, "y_axe": h_plot + 4, "h_plot": h_plot,
+            "x_centre": (cl + cr) / 2, "y_titre": h_plot + 34, "x_g_titre": cl - cote / 2, "x_d_titre": cr + cote / 2}
+
+
+@app.route("/eleves/pyramide")
+@staff_only
+def pyramide():
+    niveau, classe = request.args.get("niveau", ""), request.args.get("classe", "")
+    ref = parse_date(request.args.get("date"))
+    lignes, tot, sans_naissance = donnees_pyramide(niveau, classe, ref)
+    geo = geometrie_pyramide(lignes) if lignes else None
+    sans_sexe_total = tot["nr"]
+    return render_template("pyramide.html", lignes=lignes, tot=tot, geo=geo, sans_naissance=sans_naissance, ref=ref, niveau=niveau, classe=classe,
+                           niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)),
+                           classes=q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,)), sans_sexe=sans_sexe_total)
+
+
+@app.route("/eleves/pyramide.csv")
+@staff_only
+def pyramide_csv():
+    lignes, tot, _ = donnees_pyramide(request.args.get("niveau", ""), request.args.get("classe", ""), parse_date(request.args.get("date")))
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(["age", "garcons", "filles", "sexe_non_renseigne", "total"])
+    for l in reversed(lignes):
+        w.writerow([l["age"], l["m"], l["f"], l["nr"], l["total"]])
+    w.writerow(["total", tot["m"], tot["f"], tot["nr"], tot["total"]])
+    log("export", "pyramide des âges")
+    return Response("\ufeff" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=pyramide_{date.today()}.csv"})
 
 
 @app.route("/eleves/<int:eid>")
@@ -1316,8 +1455,9 @@ def eleve_fiche(eid):
 def eleve_modifier(eid):
     f = request.form
     if f.get("nom", "").strip() and one("SELECT 1 FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id)):
-        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=? WHERE id=?",
-            (f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(), f.get("responsable", "").strip(), f.get("contact", "").strip(), eid))
+        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=?, date_naissance=?, sexe=? WHERE id=?",
+            (f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(), f.get("responsable", "").strip(), f.get("contact", "").strip(),
+             parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe")), eid))
         log("fiche élève modifiée", f"{f['nom']} {f.get('prenom', '')}")
         flash("Fiche enregistrée.", "ok")
     return redirect(url_for("eleve_fiche", eid=eid))
@@ -1596,8 +1736,249 @@ def type_incident_supprimer(tid):
     return redirect(url_for("modeles_documents"))
 
 
+# ───────────────────────── Infirmerie : planning des soins, passages, fiches santé ─────────────────────────
+# Données de santé : accès limité aux rôles de roles_infirmerie() ; la consultation d'une fiche santé est journalisée.
+MOTIFS_PASSAGE = ["Mal de tête", "Mal au ventre", "Nausées", "Fièvre", "Chute / blessure", "Choc à la tête", "Malaise", "Saignement de nez",
+                  "Crise d'asthme", "Allergie", "Stress / angoisse", "Délivrance d'un médicament (PAI)", "Autre"]
+DECISIONS_PASSAGE = ["Retour en classe", "Repos à l'infirmerie", "Rentrée à domicile", "Appel des secours", "Orientation vers un médecin"]
+TYPES_SOINS = ["Pansement", "Contrôle de glycémie", "Administration d'un traitement", "Prise de température", "Contrôle après blessure",
+               "Injection", "Vaccination", "Surveillance", "Soin des yeux", "Bilan infirmier"]
+STATUTS_SOIN = {"fait": "Fait", "absent": "Élève absent", "annule": "Annulé"}
+
+
+def soin_a_lieu(s, jour):
+    """Un soin ponctuel a lieu à sa date ; un soin récurrent chaque jour de la semaine coché, entre ses dates de début et de fin."""
+    iso = jour.isoformat()
+    if not s["actif"] or s["date_debut"] > iso or (s["date_fin"] and s["date_fin"] < iso):
+        return False
+    if not s["jours"]:
+        return s["date_debut"] == iso
+    return str(jour.weekday()) in s["jours"].split(",")
+
+
+def occurrences_soins(jour):
+    iso, maintenant = jour.isoformat(), datetime.now()
+    lignes = q("SELECT s.*, e.nom enom, e.prenom eprenom, e.classe, fs.pai, fs.allergies, sr.statut rstatut, sr.note rnote, sr.par_nom rpar "
+               "FROM soins s JOIN eleves e ON e.id=s.eleve_id LEFT JOIN fiches_sante fs ON fs.eleve_id=e.id "
+               "LEFT JOIN soins_realises sr ON sr.soin_id=s.id AND sr.date=? "
+               "WHERE s.etab_id=? AND s.actif=1 AND s.date_debut<=? AND (s.date_fin='' OR s.date_fin>=?) ORDER BY s.heure, e.nom",
+               (iso, g.etab_id, iso, iso))
+    out = []
+    for s in lignes:
+        if not soin_a_lieu(s, jour):
+            continue
+        d = dict(s)
+        d["statut"] = s["rstatut"] or "a_faire"
+        fin = datetime.strptime(f"{iso} {s['heure']}", "%Y-%m-%d %H:%M") + timedelta(minutes=s["duree"])
+        d["en_retard"] = d["statut"] == "a_faire" and fin < maintenant
+        out.append(d)
+    return out
+
+
+def resume_recurrence(s):
+    if not s["jours"]:
+        return f"Le {fr_date(s['date_debut'])} à {s['heure']}"
+    noms = [JOURS[int(j)] + "s" for j in s["jours"].split(",") if j.strip().isdigit() and int(j) < 5]
+    texte = f"Chaque {', '.join(n.lower() for n in noms)} à {s['heure']}" if noms else f"À {s['heure']}"
+    return texte + f" · du {fr_date(s['date_debut'])}" + (f" au {fr_date(s['date_fin'])}" if s["date_fin"] else " (sans fin)")
+
+
+app.jinja_env.globals["resume_recurrence"] = resume_recurrence
+
+
+@app.route("/infirmerie")
+@infirmerie_only
+def infirmerie():
+    jour = parse_date(request.args.get("date"))
+    vue = "semaine" if request.args.get("vue") == "semaine" else "jour"
+    ctx = {"jour": jour, "vue": vue, "veille": (jour - timedelta(days=1)).isoformat(), "lendemain": (jour + timedelta(days=1)).isoformat()}
+    if vue == "jour":
+        occ = occurrences_soins(jour)
+        ctx.update(occ=occ, nb_faits=sum(1 for o in occ if o["statut"] == "fait"), nb_attente=sum(1 for o in occ if o["statut"] == "a_faire"),
+                   nb_passages=one("SELECT COUNT(*) c FROM passages WHERE etab_id=? AND date=?", (g.etab_id, jour.isoformat()))["c"])
+    else:
+        lundi = jour - timedelta(days=jour.weekday())
+        jours_ = [lundi + timedelta(days=i) for i in range(5)]
+        ctx.update(semaine=jours_, grille={d.isoformat(): occurrences_soins(d) for d in jours_}, lundi=lundi,
+                   veille=(lundi - timedelta(days=7)).isoformat(), lendemain=(lundi + timedelta(days=7)).isoformat())
+    return render_template("infirmerie.html", **ctx)
+
+
+@app.route("/infirmerie/realise/<int:sid>/<jour>/<statut>", methods=["POST"])
+@infirmerie_only
+def infirmerie_realise(sid, jour, statut):
+    s = one("SELECT * FROM soins WHERE id=? AND etab_id=?", (sid, g.etab_id))
+    d = parse_date(jour)
+    if not s or statut not in ("fait", "absent", "annule", "reset") or not soin_a_lieu(s, d):
+        abort(404)
+    if statut == "reset":
+        run("DELETE FROM soins_realises WHERE soin_id=? AND date=?", (sid, d.isoformat()))
+    else:
+        run("INSERT INTO soins_realises(soin_id,date,statut,note,par_nom,at) VALUES (?,?,?,?,?,?) "
+            "ON CONFLICT(soin_id,date) DO UPDATE SET statut=excluded.statut, note=excluded.note, par_nom=excluded.par_nom, at=excluded.at",
+            (sid, d.isoformat(), statut, request.form.get("note", "").strip()[:300], g.user["nom"], datetime.now().isoformat(timespec="minutes")))
+    log("soin " + statut, f"soin {sid} le {d}")
+    return redirect(url_for("infirmerie", date=d.isoformat(), vue=request.form.get("vue") or None))
+
+
+@app.route("/infirmerie/soins", methods=["GET", "POST"])
+@infirmerie_only
+def infirmerie_soins():
+    if request.method == "POST":
+        f = request.form
+        eleve = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (f.get("eleve_id", type=int), g.etab_id)) if f.get("eleve_id") else None
+        jours_ = ",".join(str(j) for j in range(5) if f.get(f"jour_{j}")) if f.get("mode") == "recurrent" else ""
+        debut = parse_date(f.get("date_debut")).isoformat()
+        fin = parse_date(f.get("date_fin")).isoformat() if f.get("date_fin") and jours_ else ""
+        duree = f.get("duree", type=int) or 15
+        erreur = None
+        if not eleve:
+            erreur = "Choisissez un élève."
+        elif not f.get("intitule", "").strip():
+            erreur = "Indiquez le soin à réaliser."
+        elif not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", f.get("heure", "")):
+            erreur = "Indiquez l'heure du soin."
+        elif f.get("mode") == "recurrent" and not jours_:
+            erreur = "Cochez au moins un jour pour un soin récurrent."
+        elif fin and fin < debut:
+            erreur = "La date de fin précède la date de début."
+        elif not 5 <= duree <= 180:
+            erreur = "La durée doit être comprise entre 5 et 180 minutes."
+        if erreur:
+            flash(erreur, "err")
+        else:
+            sid = run("INSERT INTO soins(etab_id,eleve_id,intitule,details,heure,duree,date_debut,date_fin,jours,cree_par) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                      (g.etab_id, eleve["id"], f["intitule"].strip()[:120], f.get("details", "").strip()[:500], f["heure"], duree, debut, fin, jours_, g.user["nom"]))
+            log("soin programmé", f"{nom_complet(eleve)} — {f['intitule'].strip()}")
+            ext.emit("soin.programme", soin_id=sid, eleve_id=eleve["id"], intitule=f["intitule"].strip())
+            flash("Soin programmé.", "ok")
+        return redirect(url_for("infirmerie_soins"))
+    soins_ = q("SELECT s.*, e.nom enom, e.prenom eprenom, e.classe FROM soins s JOIN eleves e ON e.id=s.eleve_id WHERE s.etab_id=? "
+               "ORDER BY s.actif DESC, (s.date_fin<>'' AND s.date_fin<?), e.nom, s.heure", (g.etab_id, date.today().isoformat()))
+    eleves_ = q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
+    return render_template("infirmerie_soins.html", soins=soins_, eleves=eleves_, types=TYPES_SOINS, aujourdhui=date.today().isoformat())
+
+
+@app.route("/infirmerie/soins/<int:sid>/<action>", methods=["POST"])
+@infirmerie_only
+def infirmerie_soin_action(sid, action):
+    if not one("SELECT 1 FROM soins WHERE id=? AND etab_id=?", (sid, g.etab_id)):
+        abort(404)
+    if action == "suspendre":
+        run("UPDATE soins SET actif=0 WHERE id=?", (sid,))
+    elif action == "reprendre":
+        run("UPDATE soins SET actif=1 WHERE id=?", (sid,))
+    elif action == "supprimer":
+        run("DELETE FROM soins WHERE id=?", (sid,))
+    else:
+        abort(404)
+    log("soin " + action, f"soin {sid}")
+    return redirect(url_for("infirmerie_soins"))
+
+
+def filtre_passages():
+    fin = parse_date(request.args.get("au"))
+    debut = parse_date(request.args.get("du"), fin - timedelta(days=30))
+    return debut, fin
+
+
+@app.route("/infirmerie/passages", methods=["GET", "POST"])
+@infirmerie_only
+def infirmerie_passages():
+    if request.method == "POST":
+        f = request.form
+        eleve = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (f.get("eleve_id", type=int), g.etab_id)) if f.get("eleve_id") else None
+        nom = nom_complet(eleve) if eleve else f.get("eleve_nom", "").strip()
+        if not nom or not f.get("motif", "").strip():
+            flash("Indiquez l'élève et le motif du passage.", "err")
+        else:
+            heure = f.get("heure", "") if re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", f.get("heure", "")) else datetime.now().strftime("%H:%M")
+            pid = run("INSERT INTO passages(etab_id,eleve_id,eleve_nom,classe,date,heure,motif,soins,decision,parents_prevenus,note,par_nom) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                      (g.etab_id, eleve["id"] if eleve else None, nom, eleve["classe"] if eleve else "", parse_date(f.get("date")).isoformat(), heure,
+                       f["motif"].strip()[:120], f.get("soins", "").strip()[:300], f.get("decision", "").strip()[:80], 1 if f.get("parents_prevenus") else 0,
+                       f.get("note", "").strip()[:500], g.user["nom"]))
+            log("passage enregistré", nom)
+            ext.emit("passage.enregistre", passage_id=pid, eleve_id=eleve["id"] if eleve else None, motif=f["motif"].strip())
+            flash("Passage enregistré.", "ok")
+        return redirect(url_for("infirmerie_passages"))
+    debut, fin = filtre_passages()
+    rows = q("SELECT * FROM passages WHERE etab_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, heure DESC LIMIT 500",
+             (g.etab_id, debut.isoformat(), fin.isoformat()))
+    motifs = q("SELECT motif, COUNT(*) n FROM passages WHERE etab_id=? AND date BETWEEN ? AND ? GROUP BY motif ORDER BY n DESC LIMIT 5",
+               (g.etab_id, debut.isoformat(), fin.isoformat()))
+    eleves_ = q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
+    return render_template("infirmerie_passages.html", rows=rows, motifs=motifs, eleves=eleves_, debut=debut, fin=fin, motifs_liste=MOTIFS_PASSAGE,
+                           decisions=DECISIONS_PASSAGE, maintenant=datetime.now().strftime("%H:%M"), aujourdhui=date.today().isoformat(),
+                           domicile=sum(1 for r in rows if "domicile" in r["decision"]))
+
+
+@app.route("/infirmerie/passages/<int:pid>/supprimer", methods=["POST"])
+@infirmerie_only
+def infirmerie_passage_supprimer(pid):
+    run("DELETE FROM passages WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    log("passage supprimé", str(pid))
+    return redirect(url_for("infirmerie_passages"))
+
+
+@app.route("/infirmerie/passages.csv")
+@infirmerie_only
+def infirmerie_passages_csv():
+    debut, fin = filtre_passages()
+    cur = db().execute("SELECT date, heure, eleve_nom, classe, motif, soins, decision, parents_prevenus, note, par_nom FROM passages "
+                       "WHERE etab_id=? AND date BETWEEN ? AND ? ORDER BY date, heure", (g.etab_id, debut.isoformat(), fin.isoformat()))
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow([c[0] for c in cur.description])
+    for r in cur.fetchall():
+        w.writerow([cellule_csv(v) for v in r])
+    log("export", "passages infirmerie")
+    return Response("\ufeff" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=passages_{date.today()}.csv"})
+
+
+@app.route("/infirmerie/eleves")
+@infirmerie_only
+def infirmerie_eleves():
+    terme, classe = request.args.get("q", "").strip(), request.args.get("classe", "")
+    like = f"%{terme}%"
+    sql = ("SELECT e.id, e.nom, e.prenom, e.classe, fs.pai, fs.allergies, fs.traitements, "
+           "(SELECT COUNT(*) FROM passages p WHERE p.eleve_id=e.id) passages FROM eleves e LEFT JOIN fiches_sante fs ON fs.eleve_id=e.id "
+           "WHERE e.etab_id=? AND (e.nom LIKE ? OR e.prenom LIKE ?)")
+    args = [g.etab_id, like, like]
+    if classe:
+        sql += " AND e.classe=?"
+        args.append(classe)
+    if request.args.get("seulement"):
+        sql += " AND (fs.pai=1 OR fs.allergies<>'' OR fs.traitements<>'')"
+    rows = q(sql + " ORDER BY e.classe, e.nom, e.prenom LIMIT 300", args)
+    return render_template("infirmerie_eleves.html", rows=rows, terme=terme, classe=classe, seulement=bool(request.args.get("seulement")),
+                           classes=q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,)))
+
+
+@app.route("/infirmerie/eleves/<int:eid>", methods=["GET", "POST"])
+@infirmerie_only
+def infirmerie_fiche(eid):
+    e = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id))
+    if not e:
+        abort(404)
+    if request.method == "POST":
+        f = request.form
+        run("INSERT INTO fiches_sante(eleve_id,pai,allergies,traitements,contact_urgence,observations,maj_at) VALUES (?,?,?,?,?,?,?) "
+            "ON CONFLICT(eleve_id) DO UPDATE SET pai=excluded.pai, allergies=excluded.allergies, traitements=excluded.traitements, "
+            "contact_urgence=excluded.contact_urgence, observations=excluded.observations, maj_at=excluded.maj_at",
+            (eid, 1 if f.get("pai") else 0, f.get("allergies", "").strip()[:300], f.get("traitements", "").strip()[:300],
+             f.get("contact_urgence", "").strip()[:200], f.get("observations", "").strip()[:1000], datetime.now().isoformat(timespec="minutes")))
+        log("fiche santé modifiée", nom_complet(e))
+        flash("Fiche santé enregistrée.", "ok")
+        return redirect(url_for("infirmerie_fiche", eid=eid))
+    log("fiche santé consultée", nom_complet(e))
+    fiche = one("SELECT * FROM fiches_sante WHERE eleve_id=?", (eid,))
+    passages_ = q("SELECT * FROM passages WHERE eleve_id=? ORDER BY date DESC, heure DESC LIMIT 30", (eid,))
+    soins_ = q("SELECT * FROM soins WHERE eleve_id=? ORDER BY actif DESC, date_debut DESC", (eid,))
+    return render_template("infirmerie_fiche.html", e=e, fiche=fiche, passages=passages_, soins=soins_)
+
+
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────
-ROLES = {"enseignant": "Enseignant", "cpe": "CPE", "direction": "Direction", "admin": "Administrateur"}
+ROLES = {"enseignant": "Enseignant", "cpe": "CPE", "infirmier": "Infirmier(ère)", "direction": "Direction", "admin": "Administrateur"}
 
 
 def peut_gerer(cible_role):
@@ -2070,8 +2451,9 @@ def importer():
                 if not r.get("nom"):
                     ignores += 1
                     continue
-                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
-                             (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), r.get("responsable", ""), r.get("contact", "")))
+                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
+                             (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), r.get("responsable", ""), r.get("contact", ""),
+                              parse_naissance(r.get("date_naissance", "")), norm_sexe(r.get("sexe", ""))))
                 ok += 1
             elif kind == "besoins":
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",

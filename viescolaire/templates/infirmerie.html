@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Infirmerie{% endblock %}{% block body %}
+<div class="top"><h1>Infirmerie</h1><span class="noprint"><a class="btn" href="{{ url_for('infirmerie_soins') }}">Programmer un soin</a> <a class="btn sec" href="{{ url_for('infirmerie_passages') }}">Enregistrer un passage</a></span></div>
+{% set actif = 'planning' %}{% include '_infirmerie_tabs.html' %}
+<form method="get" class="nav-jour noprint"><input type="hidden" name="vue" value="{{ vue }}">
+<a class="btn sec sm" href="{{ url_for('infirmerie', date=veille, vue=vue) }}">← {{ 'Semaine précédente' if vue == 'semaine' else 'Veille' }}</a>
+<input type="date" name="date" value="{{ jour.isoformat() }}" data-autosubmit>
+<a class="btn sec sm" href="{{ url_for('infirmerie', date=lendemain, vue=vue) }}">{{ 'Semaine suivante' if vue == 'semaine' else 'Lendemain' }} →</a> <a class="btn sec sm" href="{{ url_for('infirmerie', vue=vue) }}">Aujourd'hui</a>
+<span style="margin-left:10px"><a class="btn {{ '' if vue == 'jour' else 'sec' }} sm" href="{{ url_for('infirmerie', date=jour.isoformat(), vue='jour') }}">Jour</a> <a class="btn {{ '' if vue == 'semaine' else 'sec' }} sm" href="{{ url_for('infirmerie', date=jour.isoformat(), vue='semaine') }}">Semaine</a></span></form>
+{% if vue == 'jour' %}
+<div class="stats"><div class="stat"><b>{{ occ|length }}</b><span>Soins prévus {{ jour|string|fr_date }}</span></div><div class="stat"><b>{{ nb_faits }}</b><span>Réalisés</span></div>
+<div class="stat"><b>{{ nb_attente }}</b><span>À faire</span></div><a class="stat" href="{{ url_for('infirmerie_passages', du=jour.isoformat(), au=jour.isoformat()) }}"><b>{{ nb_passages }}</b><span>Passages ce jour</span></a></div>
+<div class="card scroll"><table><tr><th>Heure</th><th>Élève</th><th>Soin</th><th>État</th><th class="noprint">Action</th></tr>
+{% for o in occ %}<tr><td style="white-space:nowrap"><b>{{ o.heure }}</b><br><span class="mute">{{ o.duree }} min</span></td>
+<td><a href="{{ url_for('infirmerie_fiche', eid=o.eleve_id) }}"><b>{{ o.enom }}</b> {{ o.eprenom }}</a> <span class="mute">{{ o.classe }}</span>
+{% if o.pai %}<br><span class="tag err" title="Projet d'accueil individualisé">PAI</span>{% endif %}{% if o.allergies %} <span class="tag warn" title="{{ o.allergies }}">Allergie</span>{% endif %}</td>
+<td><b>{{ o.intitule }}</b><br><span class="mute">{{ o.details }}</span></td>
+<td>{% if o.statut == 'fait' %}<span class="tag ok">Fait</span>{% elif o.statut == 'absent' %}<span class="tag warn">Élève absent</span>{% elif o.statut == 'annule' %}<span class="tag warn">Annulé</span>{% elif o.en_retard %}<span class="tag err">En retard</span>{% else %}<span class="tag">À faire</span>{% endif %}
+{% if o.rnote %}<br><span class="mute">{{ o.rnote }}</span>{% endif %}{% if o.rpar %}<br><span class="mute" style="font-size:12px">{{ o.rpar }}</span>{% endif %}</td>
+<td class="noprint">{% if o.statut == 'a_faire' %}<form method="post" class="row" style="gap:4px;flex-wrap:nowrap;white-space:nowrap">{{ csrf() }}<input name="note" placeholder="Note" style="width:110px">
+<button class="sm" formaction="{{ url_for('infirmerie_realise', sid=o.id, jour=jour.isoformat(), statut='fait') }}">✓ Fait</button>
+<button class="sec sm" formaction="{{ url_for('infirmerie_realise', sid=o.id, jour=jour.isoformat(), statut='absent') }}">Absent</button>
+<button class="sec sm" formaction="{{ url_for('infirmerie_realise', sid=o.id, jour=jour.isoformat(), statut='annule') }}">Annulé</button></form>
+{% else %}<form method="post" class="inline">{{ csrf() }}<button class="sec sm" formaction="{{ url_for('infirmerie_realise', sid=o.id, jour=jour.isoformat(), statut='reset') }}">Rouvrir</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun soin programmé ce jour. <a href="{{ url_for('infirmerie_soins') }}">Programmer un soin</a></td></tr>{% endfor %}</table></div>
+{% else %}
+<div class="card scroll"><table><tr>{% for d in semaine %}<th>{{ JOURS[loop.index0] }} {{ d.strftime('%d/%m') }}</th>{% endfor %}</tr><tr>
+{% for d in semaine %}<td class="edt-col" style="width:20%">{% for o in grille[d.isoformat()] %}<a href="{{ url_for('infirmerie', date=d.isoformat()) }}" style="display:block;color:inherit;text-decoration:none">
+<div class="slot {{ 'remplace' if o.statut == 'fait' else ('a_pourvoir' if o.en_retard else ('perturbe' if o.statut in ('absent','annule') else '')) }}"><b>{{ o.heure }}</b> {{ o.enom }} {{ o.eprenom[:1] }}.<br>{{ o.intitule }}{% if o.pai %} <span class="tag err">PAI</span>{% endif %}</div></a>{% else %}<span class="mute">—</span>{% endfor %}</td>{% endfor %}</tr></table>
+<p class="mute">Vert : fait · rouge : en retard · orange : élève absent ou soin annulé.</p></div>{% endif %}{% endblock %}

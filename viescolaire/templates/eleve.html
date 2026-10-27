@@ -7,7 +7,8 @@
 {% else %}<p class="mute">Aucun professeur principal pour cette classe. Vous pouvez le renseigner dans <a href="{{ url_for('classes') }}">Classes</a>.</p>{% endif %}</div>
 <div class="card"><h2>Fiche</h2><form method="post" action="{{ url_for('eleve_modifier', eid=e.id) }}">{{ csrf() }}<div class="row">
 <div><label>Nom</label><input name="nom" value="{{ e.nom }}" required></div><div><label>Prénom</label><input name="prenom" value="{{ e.prenom }}"></div><div><label>Classe</label><input name="classe" value="{{ e.classe }}"></div></div>
-<div class="row"><div><label>Responsable légal</label><input name="responsable" value="{{ e.responsable }}"></div><div><label>Contact</label><input name="contact" value="{{ e.contact }}"></div></div><br><button>Enregistrer</button></form></div></div>
+<div class="row"><div><label>Responsable légal</label><input name="responsable" value="{{ e.responsable }}"></div><div><label>Contact</label><input name="contact" value="{{ e.contact }}"></div></div>
+<div class="row"><div><label>Date de naissance</label><input type="date" name="date_naissance" value="{{ e.date_naissance }}"></div><div><label>Sexe</label><select name="sexe"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>Fille</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>Garçon</option></select></div></div><br><button>Enregistrer</button></form></div></div>
 <div class="card scroll"><h2>Équipe pédagogique de la classe {{ e.classe }} ({{ equipe|length }})</h2><table><tr><th>Professeur</th><th>Matière</th><th>Contact</th><th>Cours avec la classe</th></tr>
 {% for p in equipe %}<tr><td><a href="{{ url_for('professeur', pid=p.prof_id) }}"><b>{{ p.nom }}</b></a>{% if p.principal %} <span class="tag ok">Prof. principal</span>{% endif %}</td><td>{{ p.matieres|join(', ') }}</td>
 <td>{{ p.email }}{% if p.telephone %}<br><span class="mute">{{ p.telephone }}</span>{% endif %}</td><td class="mute">{{ p.cours|join(' · ') }}</td></tr>

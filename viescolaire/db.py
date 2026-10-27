@@ -175,7 +175,48 @@ MIGRATIONS = [
         );
         INSERT OR IGNORE INTO niveaux(etab_id, nom, ordre) SELECT DISTINCT etab_id, niveau, 0 FROM classes WHERE niveau <> '';
     """),  # niveaux de classe gérés (6e, 2nde, Terminale…) ; reprise des niveaux déjà saisis
-    # (8, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (8, """
+        PRAGMA foreign_keys = OFF;   -- reconstruction de la table users (nouveau rôle) sans effacer les données liées
+        BEGIN;
+        CREATE TABLE users_new (
+            id INTEGER PRIMARY KEY, nom TEXT NOT NULL, email TEXT NOT NULL UNIQUE, pwd_hash TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('admin','direction','cpe','enseignant','infirmier')),
+            totp_secret TEXT, actif INTEGER NOT NULL DEFAULT 1, must_change INTEGER NOT NULL DEFAULT 0
+        );
+        INSERT INTO users_new(id,nom,email,pwd_hash,role,totp_secret,actif,must_change)
+            SELECT id,nom,email,pwd_hash,role,totp_secret,actif,must_change FROM users;
+        DROP TABLE users;
+        ALTER TABLE users_new RENAME TO users;
+        ALTER TABLE eleves ADD COLUMN date_naissance TEXT NOT NULL DEFAULT '';   -- AAAA-MM-JJ, statistiques uniquement
+        ALTER TABLE eleves ADD COLUMN sexe TEXT NOT NULL DEFAULT '';             -- 'F', 'M' ou vide
+        CREATE TABLE IF NOT EXISTS soins (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE,
+            intitule TEXT NOT NULL, details TEXT NOT NULL DEFAULT '', heure TEXT NOT NULL, duree INTEGER NOT NULL DEFAULT 15,
+            date_debut TEXT NOT NULL, date_fin TEXT NOT NULL DEFAULT '',
+            jours TEXT NOT NULL DEFAULT '',          -- '' = soin ponctuel (date_debut) ; sinon "0,2,4" = lundi, mercredi, vendredi
+            actif INTEGER NOT NULL DEFAULT 1, cree_par TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS soins_realises (
+            soin_id INTEGER NOT NULL REFERENCES soins(id) ON DELETE CASCADE, date TEXT NOT NULL,
+            statut TEXT NOT NULL, note TEXT NOT NULL DEFAULT '', par_nom TEXT NOT NULL DEFAULT '', at TEXT NOT NULL DEFAULT '',
+            PRIMARY KEY (soin_id, date)
+        );
+        CREATE TABLE IF NOT EXISTS passages (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, eleve_id INTEGER REFERENCES eleves(id) ON DELETE SET NULL,
+            eleve_nom TEXT NOT NULL DEFAULT '', classe TEXT NOT NULL DEFAULT '', date TEXT NOT NULL, heure TEXT NOT NULL DEFAULT '',
+            motif TEXT NOT NULL, soins TEXT NOT NULL DEFAULT '', decision TEXT NOT NULL DEFAULT '',
+            parents_prevenus INTEGER NOT NULL DEFAULT 0, note TEXT NOT NULL DEFAULT '', par_nom TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS fiches_sante (
+            eleve_id INTEGER PRIMARY KEY REFERENCES eleves(id) ON DELETE CASCADE, pai INTEGER NOT NULL DEFAULT 0,
+            allergies TEXT NOT NULL DEFAULT '', traitements TEXT NOT NULL DEFAULT '', contact_urgence TEXT NOT NULL DEFAULT '',
+            observations TEXT NOT NULL DEFAULT '', maj_at TEXT NOT NULL DEFAULT ''
+        );
+        COMMIT;
+        PRAGMA foreign_keys = ON;
+    """),  # date de naissance et sexe des élèves (pyramide des âges), rôle infirmier, infirmerie (soins, passages, fiches santé)
+    # (9, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
@@ -380,32 +421,102 @@ def seed_demo(password="demo1234"):
         con.execute("INSERT INTO audit(etab_id,user_id,user_nom,action,detail,created_at) VALUES (?,?,?,?,?,?)",
                     (e1, cpe, "Camille Durand (CPE)", action, detail, ts(300 - k * 40)))
 
-    # Élèves fictifs (8 par classe) pour la démonstration
-    prenoms = ["Léa", "Lucas", "Emma", "Nathan", "Chloé", "Hugo", "Inès", "Louis", "Jade", "Gabriel", "Manon", "Raphaël", "Camille", "Tom",
-               "Zoé", "Arthur", "Sarah", "Jules", "Lina", "Adam", "Eva", "Noé", "Clara", "Mathis"]
-    noms = ["Dubois", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Lefèvre", "Faure", "André", "Mercier", "Blanc", "Guérin",
-            "Boyer", "Garnier", "Chevalier", "François", "Perrin", "Morel", "Clément", "Gauthier", "Roche", "Noël", "Meyer", "Lopez"]
-    k = 0
-    for c in classes:
-        for _ in range(24):  # 24 élèves par classe
-            pr, nm = prenoms[k % len(prenoms)], noms[(k * 7 + 3 + (k // len(prenoms)) * 5) % len(noms)]   # couples prénom/nom tous distincts
-            con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
-                        (e1, nm, pr, c, f"Famille {nm}", f"famille.{nm.lower().replace('è', 'e').replace('é', 'e')}{k}@exemple.fr"))
+    # Élèves fictifs (effectifs variables par classe) : sexe cohérent avec le prénom, âges selon le niveau
+    import random
+    rng = random.Random(2026)
+    filles = ["Léa", "Emma", "Chloé", "Inès", "Jade", "Manon", "Camille", "Zoé", "Sarah", "Lina", "Eva", "Clara", "Louise", "Alice", "Rose", "Anna", "Mila", "Nina"]
+    garcons = ["Lucas", "Nathan", "Hugo", "Louis", "Gabriel", "Raphaël", "Tom", "Arthur", "Jules", "Adam", "Noé", "Mathis", "Paul", "Enzo", "Léo", "Maël", "Ethan", "Sacha"]
+    noms = ["Dubois", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Lefèvre", "Faure", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Garnier",
+            "Chevalier", "François", "Perrin", "Morel", "Clément", "Gauthier", "Roche", "Noël", "Meyer", "Lopez", "Colin", "Aubert", "Renard", "Marchand"]
+    age_niveau = {"6": 11, "5": 12, "4": 13, "3": 14}
+    deja, k = set(), 0
+    for c, effectif, part_filles in zip(classes, [24, 26, 23, 25, 22, 24, 26, 23], [0.58, 0.46, 0.52, 0.44, 0.55, 0.5, 0.42, 0.56]):
+        for _ in range(effectif):
+            fille = rng.random() < part_filles
+            while True:
+                pr, nm = rng.choice(filles if fille else garcons), rng.choice(noms)
+                if (pr, nm) not in deja:
+                    deja.add((pr, nm))
+                    break
+            age = age_niveau[c[0]] + (1 if rng.random() < 0.12 else 0) - (1 if rng.random() < 0.03 else 0)   # quelques redoublants / élèves en avance
+            naissance = today - timedelta(days=int(age * 365.25) + rng.randint(0, 364))
+            con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
+                        (e1, nm, pr, c, f"Famille {nm}", f"famille.{nm.lower().replace('è', 'e').replace('é', 'e')}{k}@exemple.fr",
+                         naissance.isoformat(), "F" if fille else "M"))
             k += 1
 
     for (eid,) in con.execute("SELECT id FROM eleves WHERE etab_id=? AND classe='3A' ORDER BY id LIMIT 2", (e1,)).fetchall():
         con.execute("INSERT INTO reunion_eleves VALUES (?,?)", (r1, eid))   # délégués convoqués au conseil de classe
 
-    # Second établissement (démonstration du multi-établissements)
-    for k2, c in enumerate(["2nde1", "2nde1", "2nde1", "1ère S", "1ère S", "1ère S", "Term ES", "Term ES"]):
-        con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
-                    (e2, noms[(k2 * 5 + 11) % len(noms)], prenoms[(k2 * 3 + 5) % len(prenoms)], c, f"Famille {noms[(k2 * 5 + 11) % len(noms)]}", ""))
-    for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:
-        con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
-                    (e2, nom, prenom, mat, f"{prenom.lower()}@demo.fr"))
-    for ordre, (c, nv) in enumerate([("2nde1", "2nde"), ("1ère S", "1ère"), ("Term ES", "Terminale")], 1):
+    # Second établissement (lycée) : même fonctionnement, données propres (niveaux, classes, équipe, emplois du temps, élèves)
+    profs2 = [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques"), ("Henry", "Julie", "Histoire-Géographie"),
+              ("Perez", "Karim", "Anglais"), ("Marchand", "Élise", "SVT"), ("Noël", "Victor", "Physique-Chimie"), ("Aubert", "Sonia", "Sciences économiques")]
+    ids2 = [con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
+                        (e2, nom, prenom, mat, f"{prenom.lower().replace('é', 'e')}@demo.fr")).lastrowid for nom, prenom, mat in profs2]
+    classes2 = [("2nde1", "2nde"), ("1ère S", "1ère"), ("Term ES", "Terminale")]
+    for ordre, (c, nv) in enumerate(classes2, 1):
         con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e2, nv, ordre))
-        con.execute("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (e2, c, nv))
+        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e2, c, nv, ids2[(ordre * 2) % len(ids2)]))
+    for i2, pid in enumerate(ids2):          # emplois du temps du lycée : 6 créneaux par professeur
+        for j2 in range(6):
+            deb, fin = horaires[(i2 * 2 + j2) % len(horaires)]
+            con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
+                        (e2, pid, classes2[(i2 + j2) % 3][0], profs2[i2][2], (i2 + j2 * 2) % 5, deb, fin, f"L{20 + (i2 + j2) % 6}"))
+    con.execute("""INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc)
+                   SELECT etab_id, classe, matiere, prof_id, COUNT(*), 1 FROM creneaux WHERE etab_id=? GROUP BY classe, matiere, prof_id""", (e2,))
+    k2 = 0
+    for c, nv in classes2:                   # 8 élèves par classe, 15 à 18 ans
+        base_age = {"2nde": 15, "1ère": 16, "Terminale": 17}[nv]
+        for _ in range(8):
+            fille2 = rng.random() < 0.55
+            while True:
+                pr, nm = rng.choice(filles if fille2 else garcons), rng.choice(noms)
+                if (pr, nm) not in deja:
+                    deja.add((pr, nm))
+                    break
+            con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
+                        (e2, nm, pr, c, f"Famille {nm}", "", (today - timedelta(days=int((base_age + (1 if rng.random() < 0.15 else 0)) * 365.25) + rng.randint(0, 364))).isoformat(),
+                         "F" if fille2 else "M"))
+            k2 += 1
+    # Infirmerie : compte infirmier, fiches santé fictives, soins programmés, passages
+    infirmiere = user("Sophie Lambert (Infirmière)", "infirmerie@demo.fr", "infirmier", [e1])
+    ts_now = datetime.now().isoformat(timespec="minutes")
+    eleves_e1 = con.execute("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY id", (e1,)).fetchall()
+    pick = lambda n: eleves_e1[(n * 17 + 5) % len(eleves_e1)]
+    fiches = [(pick(1), 1, "Arachides, fruits à coque", "Stylo auto-injecteur d'adrénaline (dans le sac)", "Mère : 06 00 00 10 01", "PAI allergie alimentaire : ne pas servir de plat contenant des arachides."),
+              (pick(2), 1, "", "Spray bronchodilatateur en cas de crise", "Père : 06 00 00 10 02", "PAI asthme à l'effort ; dispense d'EPS en cas de crise."),
+              (pick(3), 1, "", "Contrôle de la glycémie avant le repas", "Mère : 06 00 00 10 03", "Diabète de type 1 (PAI) : collation autorisée en classe."),
+              (pick(4), 0, "Pollen, acariens", "", "Père : 06 00 00 10 04", ""),
+              (pick(5), 0, "", "", "Mère : 06 00 00 10 05", "Port de semelles orthopédiques.")]
+    for e, pai, allerg, trait, contact, obs in fiches:
+        con.execute("INSERT INTO fiches_sante(eleve_id,pai,allergies,traitements,contact_urgence,observations,maj_at) VALUES (?,?,?,?,?,?,?)",
+                    (e["id"], pai, allerg, trait, contact, obs, ts_now))
+    def soin(e, intitule, details, heure, duree, debut, fin="", jours=""):
+        return con.execute("INSERT INTO soins(etab_id,eleve_id,intitule,details,heure,duree,date_debut,date_fin,jours,cree_par) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                           (e1, e["id"], intitule, details, heure, duree, debut, fin, jours, "Sophie Lambert (Infirmière)")).lastrowid
+    s1 = soin(pick(3), "Contrôle de glycémie", "Avant le repas ; noter la valeur dans le carnet.", "11:45", 10, d(-30), "", "0,1,2,3,4")
+    s2 = soin(pick(6), "Pansement", "Genou gauche, à refaire en nettoyant la plaie.", "10:15", 15, d(-10), d(14), "0,2,4")
+    s3 = soin(pick(7), "Traitement du midi", "Comprimé fourni par la famille, à prendre après le repas.", "12:30", 5, d(-20), "", "0,1,3,4")
+    s4 = soin(pick(8), "Contrôle après entorse", "Vérifier la mobilité de la cheville.", "14:00", 15, d(1))
+    s5 = soin(pick(9), "Pansement", "Coude droit.", "15:00", 10, d(0))
+    s6 = soin(pick(10), "Rappel de vaccination (campagne)", "Autorisation parentale reçue.", "09:30", 20, d(3))
+    for jour_idx in (-3, -2, -1):
+        dj = today + timedelta(days=jour_idx)
+        if dj.weekday() < 5:
+            for sid in (s1, s3):
+                con.execute("INSERT OR IGNORE INTO soins_realises VALUES (?,?,?,?,?,?)", (sid, dj.isoformat(), "fait", "", "Sophie Lambert (Infirmière)", ts_now))
+            if dj.weekday() in (0, 2, 4):
+                con.execute("INSERT OR IGNORE INTO soins_realises VALUES (?,?,?,?,?,?)", (s2, dj.isoformat(), "fait", "", "Sophie Lambert (Infirmière)", ts_now))
+    motifs = [("Mal de tête", "Repos 20 min, eau", "Retour en classe"), ("Mal au ventre", "Repos, bouillotte", "Retour en classe"),
+              ("Chute en cour de récréation", "Désinfection, pansement", "Retour en classe"), ("Fièvre", "Température 38,4 °C", "Rentrée à domicile"),
+              ("Nausées", "Repos 30 min", "Rentrée à domicile"), ("Choc à la tête (EPS)", "Surveillance, glace", "Repos à l'infirmerie"),
+              ("Malaise", "Allongé, sucre", "Retour en classe"), ("Saignement de nez", "Compresse", "Retour en classe")]
+    for n, (motif, soins_, decision) in enumerate(motifs * 2):
+        e = pick(20 + n)
+        dj = today - timedelta(days=n // 3)
+        con.execute("INSERT INTO passages(etab_id,eleve_id,eleve_nom,classe,date,heure,motif,soins,decision,parents_prevenus,par_nom) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                    (e1, e["id"], f"{e['prenom']} {e['nom']}", e["classe"], dj.isoformat(), f"{8 + (n * 7) % 9:02d}:{(n * 13) % 60:02d}", motif, soins_, decision,
+                     1 if "domicile" in decision else 0, "Sophie Lambert (Infirmière)"))
     con.commit()
     from .modeles_defaut import installer
     for eid in (e1, e2):

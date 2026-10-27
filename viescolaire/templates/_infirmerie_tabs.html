@@ -1,0 +1,7 @@
+{# Onglets de l'infirmerie. Variable : actif ('planning' | 'soins' | 'passages' | 'fiches') #}
+<div class="tabs noprint">
+<a href="{{ url_for('infirmerie') }}" class="{{ 'on' if actif == 'planning' }}">Planning des soins</a>
+<a href="{{ url_for('infirmerie_soins') }}" class="{{ 'on' if actif == 'soins' }}">Soins programmés</a>
+<a href="{{ url_for('infirmerie_passages') }}" class="{{ 'on' if actif == 'passages' }}">Passages à l'infirmerie</a>
+<a href="{{ url_for('infirmerie_eleves') }}" class="{{ 'on' if actif == 'fiches' }}">Fiches santé</a></div>
+<p class="mute noprint" style="margin:0 0 14px;font-size:13px">🔒 Données de santé : accès réservé aux personnes habilitées ; la consultation des fiches est enregistrée dans l'historique.</p>

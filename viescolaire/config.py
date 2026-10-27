@@ -7,7 +7,7 @@ import json
 import os
 
 MODULES = ["professeurs", "emplois_du_temps", "absences", "remplacements", "cours", "classes", "incidents",
-           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction"]
+           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie"]
 
 DEFAUTS = {
     "produit": "VieScolairePro",
@@ -26,6 +26,7 @@ DEFAUTS = {
     "session_heures": 8,
     "upload_max_mo": 8,
     "fichiers_autorises": ["pdf", "doc", "docx", "xls", "xlsx", "csv", "odt", "ods", "png", "jpg", "jpeg", "txt", "pptx"],
+    "infirmerie_roles": ["infirmier", "direction", "admin"],   # rôles ayant accès aux données de santé (le CPE n'y a pas accès par défaut)
     "creneaux": [],                   # grille horaire proposée à la saisie, ex. ["08:00-09:00", "09:00-10:00"]
 }
 

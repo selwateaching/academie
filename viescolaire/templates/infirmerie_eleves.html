@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block title %}Fiches santé{% endblock %}{% block body %}
+<div class="top"><h1>Infirmerie · fiches santé</h1></div>{% set actif = 'fiches' %}{% include '_infirmerie_tabs.html' %}
+<form method="get" class="row noprint" style="margin-bottom:12px"><div><input name="q" value="{{ terme }}" placeholder="Rechercher un élève…"></div>
+<div><select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>
+<div style="flex:0 0 auto"><label class="check" style="margin:0"><input type="checkbox" name="seulement" value="1" {{ 'checked' if seulement }}> Seulement PAI, allergies et traitements</label></div><div style="flex:0 0 auto"><button class="sec">Filtrer</button></div></form>
+<div class="card scroll"><table><tr><th>Classe</th><th>Élève</th><th>Particularités</th><th>Passages</th></tr>
+{% for r in rows %}<tr><td>{{ r.classe }}</td><td><a href="{{ url_for('infirmerie_fiche', eid=r.id) }}"><b>{{ r.nom }}</b> {{ r.prenom }}</a></td>
+<td>{% if r.pai %}<span class="tag err">PAI</span> {% endif %}{% if r.allergies %}<span class="tag warn">Allergie : {{ r.allergies }}</span> {% endif %}{% if r.traitements %}<span class="tag">Traitement</span>{% endif %}{% if not r.pai and not r.allergies and not r.traitements %}<span class="mute">—</span>{% endif %}</td><td>{{ r.passages or '' }}</td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>{% endblock %}

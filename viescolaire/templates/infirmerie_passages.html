@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Passages à l'infirmerie{% endblock %}{% block body %}
+<div class="top"><h1>Infirmerie · passages</h1></div>{% set actif = 'passages' %}{% include '_infirmerie_tabs.html' %}
+<div class="card"><h2>Enregistrer un passage</h2><form method="post">{{ csrf() }}
+<div class="row"><div style="flex:2"><label>Élève</label><input type="search" data-filtre-select="#passage-eleve" placeholder="Rechercher un élève…" autocomplete="off" style="margin-bottom:4px">
+<select name="eleve_id" id="passage-eleve"><option value="">— autre personne (saisir le nom) —</option>{% for e in eleves %}<option value="{{ e.id }}">{{ e.classe }} · {{ e.nom }} {{ e.prenom }}</option>{% endfor %}</select></div>
+<div><label>ou nom saisi</label><input name="eleve_nom"></div><div><label>Date</label><input type="date" name="date" value="{{ aujourdhui }}"></div><div><label>Heure</label><input type="time" name="heure" value="{{ maintenant }}"></div></div>
+<div class="row"><div><label>Motif</label><input name="motif" list="motifs-passage" required><datalist id="motifs-passage">{% for m in motifs_liste %}<option value="{{ m }}">{% endfor %}</datalist></div>
+<div style="flex:2"><label>Soins donnés</label><input name="soins"></div>
+<div><label>Décision</label><select name="decision"><option value="">—</option>{% for d in decisions %}<option>{{ d }}</option>{% endfor %}</select></div></div>
+<div class="row"><div style="flex:3"><label>Observations</label><input name="note"></div><div><label class="check"><input type="checkbox" name="parents_prevenus" value="1"> Parents prévenus</label></div></div><br><button>Enregistrer</button></form></div>
+<form method="get" class="row noprint" style="margin-bottom:10px"><div style="flex:0 0 160px"><label>Du</label><input type="date" name="du" value="{{ debut.isoformat() }}"></div><div style="flex:0 0 160px"><label>Au</label><input type="date" name="au" value="{{ fin.isoformat() }}"></div>
+<div style="flex:0 0 auto"><button class="sec">Filtrer</button> <a class="btn sec" href="{{ url_for('infirmerie_passages_csv', du=debut.isoformat(), au=fin.isoformat()) }}">Export Excel (CSV)</a></div></form>
+<div class="stats"><div class="stat"><b>{{ rows|length }}</b><span>Passages sur la période</span></div><div class="stat"><b>{{ domicile }}</b><span>Rentrées à domicile</span></div>
+<div class="card" style="margin:0"><span class="mute" style="font-size:13px">Motifs les plus fréquents</span>{% for m in motifs %}<div>{{ m.motif }} <b>{{ m.n }}</b></div>{% else %}<div class="mute">—</div>{% endfor %}</div></div>
+<div class="card scroll"><table><tr><th>Date</th><th>Élève</th><th>Motif</th><th>Soins</th><th>Décision</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.date|fr_date }}<br><span class="mute">{{ r.heure }}</span></td><td>{% if r.eleve_id %}<a href="{{ url_for('infirmerie_fiche', eid=r.eleve_id) }}">{{ r.eleve_nom }}</a>{% else %}{{ r.eleve_nom }}{% endif %} <span class="mute">{{ r.classe }}</span></td>
+<td>{{ r.motif }}{% if r.note %}<br><span class="mute">{{ r.note }}</span>{% endif %}</td><td>{{ r.soins }}</td><td>{{ r.decision }}{% if r.parents_prevenus %}<br><span class="tag ok">Parents prévenus</span>{% endif %}</td>
+<td>{{ post(url_for('infirmerie_passage_supprimer', pid=r.id), '✕', 'sec sm', 'Supprimer ce passage ?') }}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucun passage sur cette période.</td></tr>{% endfor %}</table></div>{% endblock %}

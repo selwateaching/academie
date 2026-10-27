@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Soins programmés{% endblock %}{% block body %}
+<div class="top"><h1>Infirmerie · soins programmés</h1></div>{% set actif = 'soins' %}{% include '_infirmerie_tabs.html' %}
+<div class="card"><h2>Programmer un soin</h2><form method="post">{{ csrf() }}
+<div class="row"><div style="flex:2"><label>Élève</label><input type="search" data-filtre-select="#soin-eleve" placeholder="Rechercher un élève…" autocomplete="off" style="margin-bottom:4px">
+<select name="eleve_id" id="soin-eleve" required size="1"><option value="">— choisir —</option>{% for e in eleves %}<option value="{{ e.id }}">{{ e.classe }} · {{ e.nom }} {{ e.prenom }}</option>{% endfor %}</select></div>
+<div><label>Soin</label><input name="intitule" list="types-soins" required><datalist id="types-soins">{% for t in types %}<option value="{{ t }}">{% endfor %}</datalist></div>
+<div style="flex:2"><label>Précisions</label><input name="details" placeholder="Consignes, localisation, matériel…"></div></div>
+<div class="row"><div><label>Heure</label><input type="time" name="heure" required></div><div><label>Durée (min)</label><input type="number" name="duree" value="15" min="5" max="180"></div>
+<div><label>À partir du</label><input type="date" name="date_debut" value="{{ aujourdhui }}" required></div>
+<div><label>Fréquence</label><select name="mode" data-mode-soin><option value="ponctuel">Une seule fois</option><option value="recurrent">Chaque semaine</option></select></div></div>
+<div class="row" data-recurrence hidden><div style="flex:2"><label>Jours</label><div class="row" style="gap:14px">{% for j in JOURS %}<label class="check" style="margin-top:6px"><input type="checkbox" name="jour_{{ loop.index0 }}" value="1"> {{ j }}</label>{% endfor %}</div></div>
+<div><label>Jusqu'au (facultatif)</label><input type="date" name="date_fin"></div></div><br><button>Programmer</button></form></div>
+<div class="card scroll"><h2>Soins ({{ soins|length }})</h2><table><tr><th>Élève</th><th>Soin</th><th>Quand</th><th>État</th><th></th></tr>
+{% for s in soins %}{% set termine = s.date_fin and s.date_fin < aujourdhui %}<tr><td><a href="{{ url_for('infirmerie_fiche', eid=s.eleve_id) }}"><b>{{ s.enom }}</b> {{ s.eprenom }}</a> <span class="mute">{{ s.classe }}</span></td>
+<td><b>{{ s.intitule }}</b><br><span class="mute">{{ s.details }}</span></td><td>{{ resume_recurrence(s) }} <span class="mute">· {{ s.duree }} min</span></td>
+<td>{% if termine %}<span class="tag">Terminé</span>{% elif s.actif %}<span class="tag ok">Actif</span>{% else %}<span class="tag warn">Suspendu</span>{% endif %}</td>
+<td>{% if s.actif %}{{ post(url_for('infirmerie_soin_action', sid=s.id, action='suspendre'), 'Suspendre', 'sec sm') }}{% else %}{{ post(url_for('infirmerie_soin_action', sid=s.id, action='reprendre'), 'Reprendre', 'sm') }}{% endif %}
+{{ post(url_for('infirmerie_soin_action', sid=s.id, action='supprimer'), 'Supprimer', 'sec sm', 'Supprimer ce soin et son suivi ?') }}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun soin programmé.</td></tr>{% endfor %}</table></div>{% endblock %}

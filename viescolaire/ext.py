@@ -22,6 +22,8 @@ EVENEMENTS = {
     "utilisateur.cree": "user_id, email, nom, role",
     "emploi_du_temps.applique": "proposition_id, nb_creneaux",
     "document.genere": "document_id, modele, eleve_id, auteur",
+    "soin.programme": "soin_id, eleve_id, intitule",
+    "passage.enregistre": "passage_id, eleve_id, motif",
 }
 
 

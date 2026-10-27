@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Fiche santé{% endblock %}{% block body %}
+<div class="top"><h1>{{ e.prenom }} {{ e.nom }} <span class="mute" style="font-size:15px">· {{ e.classe }}</span></h1><a class="btn sec" href="{{ url_for('infirmerie_eleves') }}">← Fiches santé</a></div>
+{% set actif = 'fiches' %}{% include '_infirmerie_tabs.html' %}
+<div class="grid g2"><div class="card"><h2>Fiche santé</h2><form method="post">{{ csrf() }}
+<label class="check" style="margin-top:0"><input type="checkbox" name="pai" value="1" {{ 'checked' if fiche and fiche.pai }}> Projet d'accueil individualisé (PAI)</label>
+<label>Allergies</label><input name="allergies" value="{{ fiche.allergies if fiche }}" style="width:100%"><label>Traitements et conduite à tenir</label><textarea name="traitements" rows="3">{{ fiche.traitements if fiche }}</textarea>
+<label>Contact en cas d'urgence</label><input name="contact_urgence" value="{{ fiche.contact_urgence if fiche }}" style="width:100%"><label>Observations</label><textarea name="observations" rows="4">{{ fiche.observations if fiche }}</textarea><br><br>
+<button>Enregistrer</button>{% if fiche and fiche.maj_at %} <span class="mute">Mise à jour le {{ fiche.maj_at.replace('T',' ') }}</span>{% endif %}</form>
+<p class="mute" style="margin-top:10px">Famille : {{ e.responsable or '—' }} {{ e.contact }}</p></div>
+<div class="card"><h2>Soins programmés</h2>{% for s in soins %}<p><b>{{ s.intitule }}</b> {% if not s.actif %}<span class="tag warn">suspendu</span>{% endif %}<br><span class="mute">{{ resume_recurrence(s) }}</span></p>{% else %}<p class="mute">Aucun.</p>{% endfor %}
+<h2 style="margin-top:16px">Derniers passages</h2>{% for r in passages %}<p>{{ r.date|fr_date }} {{ r.heure }} — <b>{{ r.motif }}</b><br><span class="mute">{{ r.soins }}{% if r.decision %} · {{ r.decision }}{% endif %}</span></p>{% else %}<p class="mute">Aucun passage.</p>{% endfor %}</div></div>{% endblock %}

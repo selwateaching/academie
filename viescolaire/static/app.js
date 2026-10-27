@@ -199,3 +199,57 @@ document.addEventListener('click', function (e) {
   recherche.addEventListener('input', filtrer);
   majResume();
 })();
+/* Filtre de liste déroulante : <input data-filtre-select="#id-du-select"> */
+document.querySelectorAll('[data-filtre-select]').forEach(function (inp) {
+  var sel = document.querySelector(inp.getAttribute('data-filtre-select'));
+  if (!sel) return;
+  var tout = Array.prototype.map.call(sel.options, function (o) { return { v: o.value, t: o.textContent }; });
+  inp.addEventListener('input', function () {
+    var terme = inp.value.trim().toLowerCase(), courant = sel.value;
+    sel.innerHTML = '';
+    tout.forEach(function (o, i) {
+      if (i === 0 || !terme || o.t.toLowerCase().indexOf(terme) !== -1) { var e = document.createElement('option'); e.value = o.v; e.textContent = o.t; sel.appendChild(e); }
+    });
+    sel.value = courant; if (sel.value !== courant) sel.selectedIndex = 0;
+    if (terme && sel.options.length === 2) sel.selectedIndex = 1;   // une seule correspondance : elle est choisie
+  });
+});
+/* Soin programmé : afficher les jours seulement pour un soin récurrent */
+(function () {
+  var mode = document.querySelector('[data-mode-soin]'), rec = document.querySelector('[data-recurrence]');
+  if (mode && rec) { var maj = function () { rec.hidden = mode.value !== 'recurrent'; }; mode.addEventListener('change', maj); maj(); }
+})();
+/* Pyramide des âges : infobulle au survol et au clavier (les valeurs figurent aussi dans le tableau) */
+(function () {
+  var zone = document.querySelector('[data-pyramide]');
+  if (!zone) return;
+  var tip = document.createElement('div'); tip.className = 'tooltip'; tip.hidden = true; document.body.appendChild(tip);
+  function ligne(cle, libelle, valeur) {
+    var l = document.createElement('div'); l.className = 'tt-ligne';
+    var k = document.createElement('span'); k.className = 'tt-cle'; if (cle) k.style.background = cle; else k.style.visibility = 'hidden';
+    var t = document.createElement('span'); t.textContent = libelle;
+    var v = document.createElement('span'); v.className = 'tt-val'; v.textContent = valeur;
+    l.appendChild(k); l.appendChild(t); l.appendChild(v); return l;
+  }
+  function afficher(r) {
+    tip.textContent = '';
+    var t = document.createElement('div'); t.className = 'tt-titre'; t.textContent = r.getAttribute('data-age') + ' ans'; tip.appendChild(t);
+    tip.appendChild(ligne('var(--serie-m)', 'Garçons', r.getAttribute('data-m')));
+    tip.appendChild(ligne('var(--serie-f)', 'Filles', r.getAttribute('data-f')));
+    if (+r.getAttribute('data-nr')) tip.appendChild(ligne(null, 'Non précisé', r.getAttribute('data-nr')));
+    tip.appendChild(ligne(null, 'Total', r.getAttribute('data-total')));
+    tip.hidden = false;
+  }
+  function placer(x, y) {
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(x + 14, window.innerWidth - w - 8)) + 'px';
+    tip.style.top = Math.max(8, Math.min(y + 14, window.innerHeight - h - 8)) + 'px';
+  }
+  zone.querySelectorAll('.py-rang').forEach(function (r) {
+    r.addEventListener('pointerenter', function () { afficher(r); });
+    r.addEventListener('pointermove', function (e) { placer(e.clientX, e.clientY); });
+    r.addEventListener('pointerleave', function () { tip.hidden = true; });
+    r.addEventListener('focus', function () { afficher(r); var b = r.getBoundingClientRect(); placer(b.left + b.width / 2, b.top); });
+    r.addEventListener('blur', function () { tip.hidden = true; });
+  });
+})();
