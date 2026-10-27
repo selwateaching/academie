@@ -2,7 +2,8 @@
 <div class="top"><h1>Rédiger un document</h1>{% if staff %}<a class="btn sec" href="{{ url_for('modeles_documents') }}">Modèles et types d'incident</a>{% endif %}</div>
 {% if aucun_eleve %}<div class="al warn">Aucun élève disponible{% if staff %} : ajoutez-les dans <a href="{{ url_for('eleves') }}">Élèves</a> ou par import CSV{% endif %}. Vous pouvez tout de même rédiger un document sans élève.</div>{% endif %}
 <script type="application/json" id="redaction-data">{{ donnees|tojson }}</script>
-<form method="post" data-redaction data-eleve-initial="{{ eleve_initial }}">{{ csrf() }}
+{% if incident %}<div class="al warn">Document pré-rempli à partir de l'<b>incident n° {{ incident.id }}</b> du {{ incident.date|fr_date }} : élève, date et faits sont repris. Choisissez le modèle (rapport, convocation, sanction…) ; il sera relié à cet incident.</div>{% endif %}
+<form method="post" data-redaction data-eleve-initial="{{ eleve_initial }}"{% if incident %} data-incident='{{ incident|tojson|forceescape }}'{% endif %}>{{ csrf() }}{% if incident %}<input type="hidden" name="incident_ref" value="{{ incident.id }}">{% endif %}
 <div class="card"><h2>1. Choisir le document et l'élève</h2><div class="row">
 <div><label>Modèle de document</label><select name="modele_id" required>{% for m in donnees.modeles %}<option value="{{ m.id }}">{{ m.titre }}</option>{% endfor %}</select></div>
 <div><label>Classe</label><select data-filtre-classe><option value="">Toutes</option>{% for c in donnees.classes %}<option>{{ c }}</option>{% endfor %}</select></div>
@@ -22,6 +23,6 @@
 <div><label>Ajouter une information</label><select data-inserer><option value="">Insérer…</option>{% for v, desc in donnees.variables %}<option value="{{ v }}">{{ desc }}</option>{% endfor %}</select></div></div>
 <label>Texte <button type="button" class="sec sm" data-regen-corps>↻ régénérer depuis le modèle</button> <span class="mute" data-notice-corps hidden>— texte modifié à la main : les champs ci-dessus ne le remplacent plus.</span></label>
 <textarea name="contenu" rows="20" required data-corps style="font-family:inherit"></textarea>
-{% if staff %}<label class="check" data-incident-box hidden><input type="checkbox" name="creer_incident" value="1"> Enregistrer aussi cet incident dans le suivi des incidents</label>{% endif %}<br>
+{% if staff and not incident %}<label class="check" data-incident-box hidden><input type="checkbox" name="creer_incident" value="1"> Enregistrer aussi cet incident dans le suivi des incidents</label>{% endif %}<br>
 <input type="hidden" name="signataires_envoyes" value="1"><label>Signataires {% if staff %}<a href="{{ url_for('documents_parametres') }}" class="mute" style="font-weight:400">(gérer l'en-tête et les signataires)</a>{% endif %}</label><p>{% for s in signataires %}<label class="check" style="display:inline-flex;margin-right:14px"><input type="checkbox" name="signataire" value="{{ s.id }}" {{ 'checked' if s.par_defaut }}> {{ s.fonction }} — {{ s.nom }}</label>{% else %}<span class="mute">Aucun signataire défini.</span>{% endfor %}</p>
 <button>Enregistrer le document</button> <span class="mute">Vous pourrez ensuite l'imprimer, l'exporter en PDF ou en Word.</span></div></form>{% endblock %}

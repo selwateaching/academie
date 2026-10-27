@@ -169,8 +169,17 @@ document.addEventListener('click', function (e) {
     c.value = c.value.slice(0, a) + v + c.value.slice(b); c.focus(); c.selectionStart = c.selectionEnd = a + v.length;
     corpsModifie = true; el.notice.hidden = false; el.inserer.value = '';
   });
-  var initial = form.getAttribute('data-eleve-initial');   // arrivée depuis la fiche d'un élève
+  var initial = form.getAttribute('data-eleve-initial');   // arrivée depuis la fiche d'un élève ou un incident
   if (initial) el.eleve.value = initial;
+  var inc = form.getAttribute('data-incident');            // arrivée depuis un incident : date, faits et suite repris
+  if (inc) {
+    try {
+      var I = JSON.parse(inc);
+      if (I.date) el.date.value = I.date;
+      if (I.description) { el.desc.value = I.description; descModifiee = true; }
+      if (I.suite) el.suite.value = I.suite;
+    } catch (e) { /* données illisibles : on laisse le formulaire vide */ }
+  }
   surEleve();
 })();
 /* Convocation d'élèves : sélection par classe, recherche, décompte. */

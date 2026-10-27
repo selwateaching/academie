@@ -1173,11 +1173,16 @@ def incidents():
                  f["description"].strip(), f.get("suite", "").strip(), el["id"] if el else None))
             log("incident enregistré", f.get("classe", ""))
             ext.emit("incident.cree", incident_id=iid, classe=f.get("classe", ""), description=f["description"].strip())
+            if f.get("rediger"):   # enchaîne directement sur la rédaction du document, pré-rempli depuis cet incident
+                return redirect(url_for("document_nouveau", incident=iid))
         return redirect(url_for("incidents"))
     rows = q("SELECT * FROM incidents WHERE etab_id=? ORDER BY statut='clos', date DESC LIMIT 200", (g.etab_id,))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     eleves_ = q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
-    return render_template("incidents.html", incidents=rows, classes=classes_, eleves=eleves_)
+    docs = {}
+    for d in q("SELECT id, titre, incident_id FROM documents_generes WHERE etab_id=? AND incident_id IS NOT NULL ORDER BY id", (g.etab_id,)):
+        docs.setdefault(d["incident_id"], []).append(d)
+    return render_template("incidents.html", incidents=rows, classes=classes_, eleves=eleves_, docs=docs)
 
 
 @app.route("/incidents/<int:iid>/<action>", methods=["POST"])
@@ -2087,7 +2092,10 @@ def document_nouveau():
         contenu = remplir(f["contenu"].strip(), ctx)
         titre = (f.get("titre", "").strip() or modele["titre"] + (f" — {ctx['eleve']}" if ctx["eleve"] else ""))[:200]
         incident_id = None
-        if staff and f.get("creer_incident") and eleve and modele["avec_incident"]:
+        ref = one("SELECT id FROM incidents WHERE id=? AND etab_id=?", (f.get("incident_ref", type=int), g.etab_id)) if staff and f.get("incident_ref") else None
+        if ref:   # document rédigé à partir d'un incident déjà enregistré : on le relie, on n'en crée pas un second
+            incident_id = ref["id"]
+        elif staff and f.get("creer_incident") and eleve and modele["avec_incident"]:
             incident_id = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,eleve_id) VALUES (?,?,?,?,?,?,?)",
                               (g.etab_id, parse_date(f.get("date")).isoformat(), eleve["classe"], ctx["eleve"],
                                (ctx["type_incident"] + " — " if ctx["type_incident"] else "") + ctx["description"], ctx["suite"], eleve["id"]))
@@ -2099,8 +2107,12 @@ def document_nouveau():
         ext.emit("document.genere", document_id=did, modele=modele["titre"], eleve_id=eleve["id"] if eleve else None, auteur=g.user["nom"])
         flash("Document enregistré." + (" Un incident a aussi été créé." if incident_id else ""), "ok")
         return redirect(url_for("document_genere", did=did))
+    inc = one("SELECT * FROM incidents WHERE id=? AND etab_id=?", (request.args.get("incident", type=int), g.etab_id)) if staff and request.args.get("incident") else None
+    prefill = None
+    if inc:
+        prefill = {"id": inc["id"], "date": inc["date"], "description": inc["description"], "suite": inc["suite"] or ""}
     return render_template("document_nouveau.html", signataires=signataires_actifs(), donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"],
-                           eleve_initial=request.args.get("eleve", type=int) or "")
+                           eleve_initial=(inc["eleve_id"] if inc and inc["eleve_id"] else request.args.get("eleve", type=int)) or "", incident=prefill)
 
 
 def get_document(did):
