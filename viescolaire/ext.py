@@ -19,6 +19,7 @@ EVENEMENTS = {
     "reunion.creee": "reunion_id, titre, date, heure, lieu, emails",
     "tache.creee": "tache_id, titre, echeance",
     "incident.cree": "incident_id, classe, description",
+    "utilisateur.cree": "user_id, email, nom, role",
 }
 
 

@@ -59,6 +59,7 @@ MODULE_DES_ENDPOINTS = {
     "reunions": ["reunions", "reunion_repondre", "reunion_supprimer"],
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
+    "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
 }
 ENDPOINT_VERS_MODULE = {ep: m for m, eps in MODULE_DES_ENDPOINTS.items() for ep in eps}
 EXPORT_VERS_MODULE = {"absences": "absences", "remplacements": "remplacements", "taches": "taches",
@@ -187,6 +188,9 @@ def charger_contexte():
     g.etab = next((e for e in etabs if e["id"] == session.get("etab_id")), etabs[0])
     g.etab_id = g.etab["id"]
     g.prof = one("SELECT * FROM professeurs WHERE user_id=? AND etab_id=?", (user["id"], g.etab_id))
+    if user["must_change"] and request.endpoint not in ("compte", "logout"):
+        flash("Choisissez un nouveau mot de passe pour continuer.", "err")
+        return redirect(url_for("compte"))
     mod = ENDPOINT_VERS_MODULE.get(request.endpoint)
     if mod and not module_actif(mod):
         abort(404)
@@ -799,6 +803,9 @@ def destinataires(cible_type, cible):
         sql = ("SELECT DISTINCT p.user_id id FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
                "WHERE c.etab_id=? AND c.classe=? AND p.user_id IS NOT NULL")
         args = (g.etab_id, cible)
+    elif cible_type == "matiere":
+        sql = ("SELECT DISTINCT user_id id FROM professeurs WHERE etab_id=? AND matiere=? AND user_id IS NOT NULL")
+        args = (g.etab_id, cible)
     elif cible_type == "niveau":
         sql = ("SELECT DISTINCT p.user_id id FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
                "WHERE c.etab_id=? AND c.classe LIKE ? AND p.user_id IS NOT NULL")
@@ -830,10 +837,10 @@ def message_nouveau():
     if request.method == "POST":
         f = request.form
         typ = f.get("cible_type", "individuel")
-        if typ not in ("individuel", "classe", "niveau", "tous") or (typ != "individuel" and not staff):
+        if typ not in ("individuel", "classe", "niveau", "matiere", "tous") or (typ != "individuel" and not staff):
             abort(403)
         cible = {"individuel": f.get("cible", ""), "classe": f.get("cible_classe", ""),
-                 "niveau": f.get("cible_niveau", ""), "tous": ""}[typ]
+                 "niveau": f.get("cible_niveau", ""), "matiere": f.get("cible_matiere", ""), "tous": ""}[typ]
         dest = destinataires(typ, cible) if (typ != "individuel" or cible.isdigit()) else []
         if not f.get("sujet", "").strip() or not f.get("corps", "").strip():
             flash("Sujet et message obligatoires.", "err")
@@ -856,7 +863,8 @@ def message_nouveau():
               "ORDER BY u.nom", (g.etab_id, g.user["id"]))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     niveaux = sorted({c["nom"][:1] for c in classes_ if c["nom"]})
-    return render_template("message_nouveau.html", users=users, classes=classes_, niveaux=niveaux,
+    matieres = [r["matiere"] for r in q("SELECT DISTINCT matiere FROM professeurs WHERE etab_id=? AND matiere<>'' ORDER BY matiere", (g.etab_id,))]
+    return render_template("message_nouveau.html", users=users, classes=classes_, niveaux=niveaux, matieres=matieres,
                            repondre=request.args.get("a", ""), sujet=request.args.get("sujet", ""))
 
 
@@ -1096,6 +1104,139 @@ def historique():
     return render_template("historique.html", rows=rows)
 
 
+# ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────
+ROLES = {"enseignant": "Enseignant", "cpe": "CPE", "direction": "Direction", "admin": "Administrateur"}
+
+
+def peut_gerer(cible_role):
+    """Le personnel gère les enseignants ; direction/admin gèrent aussi le personnel."""
+    return cible_role == "enseignant" or g.user["role"] in ("admin", "direction")
+
+
+def mot_de_passe_temporaire():
+    return secrets.token_urlsafe(9)
+
+
+def creer_compte(nom, email, role, prof_id=None):
+    """Crée (ou rattache à cet établissement) un compte. Retourne (user_id, mot_de_passe_temporaire ou None)."""
+    email = email.strip().lower()
+    existant = one("SELECT * FROM users WHERE email=?", (email,))
+    if existant:
+        if one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (existant["id"], g.etab_id)):
+            raise ValueError("Ce compte existe déjà dans cet établissement.")
+        if existant["role"] != role and role != "enseignant":
+            raise ValueError("Cette adresse existe déjà avec un autre rôle.")
+        run("INSERT INTO user_etabs VALUES (?,?)", (existant["id"], g.etab_id))
+        uid, mdp = existant["id"], None
+    else:
+        mdp = mot_de_passe_temporaire()
+        uid = run("INSERT INTO users(nom,email,pwd_hash,role,must_change) VALUES (?,?,?,?,?)",
+                  (nom.strip(), email, generate_password_hash(mdp), role, 0 if DEMO else 1))
+        run("INSERT INTO user_etabs VALUES (?,?)", (uid, g.etab_id))
+    if prof_id:
+        run("UPDATE professeurs SET user_id=? WHERE id=? AND etab_id=? AND user_id IS NULL", (uid, prof_id, g.etab_id))
+    log("compte créé", f"{email} ({role})")
+    ext.emit("utilisateur.cree", user_id=uid, email=email, nom=nom.strip(), role=role)
+    return uid, mdp
+
+
+@app.route("/utilisateurs", methods=["GET", "POST"])
+@staff_only
+def utilisateurs():
+    if request.method == "POST":
+        f = request.form
+        role = f.get("role", "enseignant")
+        email = f.get("email", "").strip()
+        if role not in ROLES or not peut_gerer(role):
+            abort(403)
+        if not f.get("nom", "").strip() or "@" not in email:
+            flash("Nom et adresse e-mail valide obligatoires.", "err")
+        else:
+            try:
+                _, mdp = creer_compte(f["nom"], email, role, f.get("prof_id", type=int))
+                flash(f"Compte créé pour {email}. Mot de passe temporaire (à transmettre, affiché une seule fois) : {mdp}"
+                      if mdp else f"{email} a déjà un compte : il a été rattaché à cet établissement.", "ok")
+            except ValueError as e:
+                flash(str(e), "err")
+        return redirect(url_for("utilisateurs"))
+    rows = q("SELECT u.*, (SELECT COUNT(*) FROM user_etabs WHERE user_id=u.id) nb_etabs, "
+             "(SELECT nom || ' ' || prenom FROM professeurs WHERE user_id=u.id AND etab_id=?) fiche "
+             "FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? ORDER BY u.actif DESC, u.nom",
+             (g.etab_id, g.etab_id))
+    sans_compte = q("SELECT id,nom,prenom,email FROM professeurs WHERE etab_id=? AND user_id IS NULL ORDER BY nom", (g.etab_id,))
+    return render_template("utilisateurs.html", rows=rows, roles=ROLES, sans_compte=sans_compte, peut_gerer=peut_gerer)
+
+
+@app.route("/utilisateurs/<int:uid>/<action>", methods=["POST"])
+@staff_only
+def utilisateur_action(uid, action):
+    u = one("SELECT u.* FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE u.id=? AND ue.etab_id=?", (uid, g.etab_id))
+    if not u or not peut_gerer(u["role"]):
+        abort(404 if not u else 403)
+    if uid == g.user["id"]:
+        flash("Vous ne pouvez pas modifier votre propre compte ici (utilisez Sécurité).", "err")
+        return redirect(url_for("utilisateurs"))
+    nb_etabs = one("SELECT COUNT(*) c FROM user_etabs WHERE user_id=?", (uid,))["c"]
+    if action == "reinitialiser" and nb_etabs == 1:
+        mdp = mot_de_passe_temporaire()
+        run("UPDATE users SET pwd_hash=?, must_change=?, totp_secret=NULL WHERE id=?",
+            (generate_password_hash(mdp), 0 if DEMO else 1, uid))
+        log("mot de passe réinitialisé", u["email"])
+        flash(f"Nouveau mot de passe temporaire pour {u['email']} (affiché une seule fois) : {mdp}", "ok")
+    elif action in ("desactiver", "activer") and nb_etabs == 1:
+        run("UPDATE users SET actif=? WHERE id=?", (1 if action == "activer" else 0, uid))
+        log(f"compte {action}", u["email"])
+    elif action == "retirer":
+        run("DELETE FROM user_etabs WHERE user_id=? AND etab_id=?", (uid, g.etab_id))
+        run("UPDATE professeurs SET user_id=NULL WHERE user_id=? AND etab_id=?", (uid, g.etab_id))
+        log("compte retiré de l'établissement", u["email"])
+    else:
+        flash("Action impossible : ce compte est partagé avec d'autres établissements (utilisez « Retirer »).", "err")
+    return redirect(url_for("utilisateurs"))
+
+
+@app.route("/professeurs/<int:pid>/compte", methods=["POST"])
+@staff_only
+def professeur_compte(pid):
+    p = get_prof(pid)
+    if p["user_id"] or "@" not in p["email"]:
+        flash("Cette fiche a déjà un compte ou n'a pas d'adresse e-mail.", "err")
+    else:
+        try:
+            _, mdp = creer_compte(f"{p['prenom']} {p['nom']}".strip(), p["email"], "enseignant", pid)
+            flash(f"Compte créé pour {p['email']}. Mot de passe temporaire (affiché une seule fois) : {mdp}"
+                  if mdp else f"{p['email']} rattaché à cet établissement.", "ok")
+        except ValueError as e:
+            flash(str(e), "err")
+    return redirect(request.referrer or url_for("professeurs"))
+
+
+# ───────────────────────── Sauvegarde ─────────────────────────
+@app.route("/sauvegarde", methods=["GET", "POST"])
+@staff_only
+def sauvegarde():
+    if g.user["role"] not in ("admin", "direction"):
+        abort(403)
+    if request.method == "POST":
+        import sqlite3
+        import tempfile
+        import zipfile
+        buf = io.BytesIO()
+        with tempfile.TemporaryDirectory() as tmp:
+            copie = os.path.join(tmp, "viescolaire.db")
+            dest = sqlite3.connect(copie)
+            db().backup(dest)  # copie cohérente même pendant l'utilisation
+            dest.close()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+                z.write(copie, "viescolaire.db")
+                for nom in os.listdir(UPLOAD_DIR):
+                    z.write(os.path.join(UPLOAD_DIR, nom), f"uploads/{nom}")
+        log("sauvegarde téléchargée")
+        return Response(buf.getvalue(), mimetype="application/zip", headers={
+            "Content-Disposition": f"attachment; filename=sauvegarde_{datetime.now():%Y%m%d_%H%M}.zip"})
+    return render_template("sauvegarde.html")
+
+
 # ───────────────────────── 5. Fonctionnalités avancées ─────────────────────────
 @app.route("/assistant")
 @staff_only
@@ -1189,7 +1330,7 @@ def compte():
             elif len(request.form.get("nouveau", "")) < CFG["mdp_min"]:
                 flash(f"Le nouveau mot de passe doit contenir au moins {CFG['mdp_min']} caractères.", "err")
             else:
-                run("UPDATE users SET pwd_hash=? WHERE id=?", (generate_password_hash(request.form["nouveau"]), g.user["id"]))
+                run("UPDATE users SET pwd_hash=?, must_change=0 WHERE id=?", (generate_password_hash(request.form["nouveau"]), g.user["id"]))
                 log("mot de passe modifié")
                 flash("Mot de passe modifié.", "ok")
         elif action == "mfa_init":

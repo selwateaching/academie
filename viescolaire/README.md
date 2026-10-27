@@ -30,7 +30,7 @@ Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variab
 | 3. Suivi des cours | Cours perturbés (annulé, salle indisponible, déplacé, remplacé), classes et professeurs principaux, tableau de bord quotidien, incidents |
 | 4. Administratif | Tâches et échéances, alertes automatiques, rapports et statistiques (impression PDF, exports CSV pour Excel), historique des actions |
 | 5. Avancé | Assistant (résumé du jour, suggestions), import CSV (professeurs, créneaux), interface adaptée au mobile et installable (PWA) |
-| 6. Sécurité | Rôles (CPE, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (RGPD), plusieurs établissements cloisonnés |
+| 6. Sécurité | Gestion des comptes (création, mot de passe temporaire à changer, réinitialisation, désactivation), sauvegarde téléchargeable, rôles (CPE, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (RGPD), plusieurs établissements cloisonnés |
 
 ## Un socle commun, une configuration par client
 
@@ -45,5 +45,7 @@ VSP_CONFIG=viescolaire/clients/exemple/config.json python -m viescolaire.app
 ## Limites connues
 
 - L'« assistant intelligent » repose sur des règles locales (disponibilités, matière, charge) et non sur un modèle de langage.
-- Pas d'envoi d'e-mails ni de notifications push : les alertes s'affichent dans l'application.
+- Pas d'envoi d'e-mails ni de notifications push : les alertes s'affichent dans l'application (l'envoi d'e-mails se branche par extension, voir `clients/exemple`).
+- Exports : CSV (ouvrable dans Excel) et impression PDF depuis le navigateur ; pas de fichiers .xlsx/.pdf générés côté serveur.
+- Pas d'API publique pour des intégrations tierces.
 - Un enseignant intervenant dans plusieurs établissements a une fiche par établissement.

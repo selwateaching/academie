@@ -1,10 +1,11 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Professeurs{% endblock %}{% block body %}
 <div class="top"><h1>Annuaire des professeurs</h1>
 <form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, matière, e-mail…"><button class="sec">Rechercher</button></form></div>
-<div class="card scroll"><table><tr><th>Nom</th><th>Matière</th><th>Classes</th><th>Contact</th></tr>
+<div class="card scroll"><table><tr><th>Nom</th><th>Matière</th><th>Classes</th><th>Contact</th><th>Compte</th></tr>
 {% for p in profs %}<tr><td><a href="{{ url_for('professeur', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a></td><td>{{ p.matiere }}</td>
-<td>{{ classes_par_prof.get(p.id, [])|join(', ') }}</td><td>{{ p.email }}<br><span class="mute">{{ p.telephone }}</span></td></tr>
-{% else %}<tr><td colspan="4" class="mute">Aucun professeur.</td></tr>{% endfor %}</table></div>
+<td>{{ classes_par_prof.get(p.id, [])|join(', ') }}</td><td>{{ p.email }}<br><span class="mute">{{ p.telephone }}</span></td>
+<td>{% if p.user_id %}<span class="tag ok">Actif</span>{% elif p.email and module_actif('utilisateurs') %}<form method="post" action="{{ url_for('professeur_compte', pid=p.id) }}" class="inline">{{ csrf() }}<button class="sec sm">Créer le compte</button></form>{% else %}<span class="mute">—</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun professeur.</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>Ajouter un professeur</h2><form method="post">{{ csrf() }}<div class="row">
 <div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
 <div><label>Matière</label><input name="matiere"></div><div><label>E-mail</label><input type="email" name="email"></div>

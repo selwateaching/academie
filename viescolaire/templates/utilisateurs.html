@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Utilisateurs{% endblock %}{% block body %}
+<div class="top"><h1>Comptes utilisateurs</h1></div>
+<div class="card"><h2>Créer un compte</h2><form method="post">{{ csrf() }}<div class="row">
+<div><label>Nom complet</label><input name="nom" required></div><div><label>E-mail (identifiant)</label><input type="email" name="email" required></div>
+<div><label>Rôle</label><select name="role">{% for k, v in roles.items() %}{% if peut_gerer(k) %}<option value="{{ k }}">{{ v }}</option>{% endif %}{% endfor %}</select></div>
+<div><label>Fiche professeur liée</label><select name="prof_id"><option value="">—</option>{% for p in sans_compte %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>
+<div><button>Créer</button></div></div></form>
+<p class="mute">Un mot de passe temporaire est généré et affiché une seule fois ; la personne devra le changer à sa première connexion.
+Si l'adresse a déjà un compte (autre établissement), il est simplement rattaché à celui-ci.</p></div>
+<div class="card scroll"><table><tr><th>Nom</th><th>E-mail</th><th>Rôle</th><th>Fiche</th><th>État</th><th></th></tr>
+{% for u in rows %}<tr><td>{{ u.nom }}</td><td>{{ u.email }}</td><td>{{ roles[u.role] }}</td><td>{{ u.fiche or '' }}</td>
+<td>{% if not u.actif %}<span class="tag err">Désactivé</span>{% else %}<span class="tag ok">Actif</span>{% endif %}{% if u.totp_secret %} <span class="tag">MFA</span>{% endif %}{% if u.must_change %} <span class="tag warn">Mot de passe à changer</span>{% endif %}{% if u.nb_etabs > 1 %} <span class="tag">{{ u.nb_etabs }} établissements</span>{% endif %}</td>
+<td>{% if u.id != g.user.id and peut_gerer(u.role) %}{% if u.nb_etabs == 1 %}{{ post(url_for('utilisateur_action', uid=u.id, action='reinitialiser'), 'Réinitialiser le mot de passe', 'sec sm', 'Générer un nouveau mot de passe temporaire ?') }}
+{% if u.actif %}{{ post(url_for('utilisateur_action', uid=u.id, action='desactiver'), 'Désactiver', 'sec sm', 'Désactiver ce compte ?') }}{% else %}{{ post(url_for('utilisateur_action', uid=u.id, action='activer'), 'Réactiver', 'sm') }}{% endif %}{% endif %}
+{{ post(url_for('utilisateur_action', uid=u.id, action='retirer'), 'Retirer', 'red sm', 'Retirer ce compte de l\'établissement ?') }}{% endif %}</td></tr>{% endfor %}</table></div>{% endblock %}

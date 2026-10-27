@@ -61,6 +61,7 @@ avec d'éventuels ajouts) :
 | `reunion.creee` | reunion_id, titre, date, heure, lieu, emails |
 | `tache.creee` | tache_id, titre, echeance |
 | `incident.cree` | incident_id, classe, description |
+| `utilisateur.cree` | user_id, email, nom, role |
 
 Une extension qui plante est journalisée et **ne bloque jamais** l'action de l'utilisateur.
 Les secrets (mots de passe SMTP…) vont dans des variables d'environnement, pas dans `config.json`.

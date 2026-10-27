@@ -1,9 +1,10 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Nouveau message{% endblock %}{% block body %}
 <div class="top"><h1>Nouveau message</h1></div><div class="card"><form method="post">{{ csrf() }}
 <div class="row"><div><label>Envoyer à</label><select name="cible_type" id="ct">
-<option value="individuel">Une personne</option>{% if g.user.role in STAFF %}<option value="classe">Une classe (son équipe)</option><option value="niveau">Un niveau</option><option value="tous">Tout l'établissement</option>{% endif %}</select></div>
+<option value="individuel">Une personne</option>{% if g.user.role in STAFF %}<option value="classe">Une classe (son équipe)</option><option value="niveau">Un niveau</option><option value="matiere">Une matière</option><option value="tous">Tout l'établissement</option>{% endif %}</select></div>
 <div><label>Personne</label><select name="cible">{% for u in users %}<option value="{{ u.id }}" {{ 'selected' if repondre == u.id|string }}>{{ u.nom }}</option>{% endfor %}</select></div>
 {% if g.user.role in STAFF %}<div><label>Classe</label><select name="cible_classe">{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div>
-<div><label>Niveau</label><select name="cible_niveau">{% for n in niveaux %}<option>{{ n }}</option>{% endfor %}</select></div>{% endif %}</div>
-<p class="mute">Pour une classe ou un niveau, le message part à toutes les personnes qui y enseignent.</p>
+<div><label>Niveau</label><select name="cible_niveau">{% for n in niveaux %}<option>{{ n }}</option>{% endfor %}</select></div>
+<div><label>Matière</label><select name="cible_matiere">{% for m in matieres %}<option>{{ m }}</option>{% endfor %}</select></div>{% endif %}</div>
+<p class="mute">Pour une classe, un niveau ou une matière, le message part à toutes les personnes concernées qui ont un compte.</p>
 <label>Sujet</label><input name="sujet" value="{{ sujet }}" required style="width:100%"><label>Message</label><textarea name="corps" required></textarea><br><br><button>Envoyer</button></form></div>{% endblock %}

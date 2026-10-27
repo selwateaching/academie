@@ -113,7 +113,8 @@ def connect():
 # Chaque migration est un script SQL ; elle est appliquée une seule fois par base.
 MIGRATIONS = [
     (1, SCHEMA),
-    # (2, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (2, "ALTER TABLE users ADD COLUMN must_change INTEGER NOT NULL DEFAULT 0;"),  # mot de passe temporaire à changer
+    # (3, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 

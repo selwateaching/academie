@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Sauvegarde{% endblock %}{% block body %}
+<div class="top"><h1>Sauvegarde des données</h1></div><div class="card">
+<p>Télécharge une archive (.zip) contenant la base de données <b>de tous les établissements</b> et les documents déposés.</p>
+<form method="post">{{ csrf() }}<button>Télécharger la sauvegarde</button></form>
+<p class="mute">Conservez l'archive dans un endroit sûr : elle contient des données personnelles. Pour restaurer, remplacez le contenu du dossier de données du serveur par celui de l'archive.</p></div>{% endblock %}
