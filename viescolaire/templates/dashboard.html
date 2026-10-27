@@ -1,6 +1,7 @@
 {% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block title %}Espace CPE{% endblock %}{% block body %}
 <div class="top"><h1>Espace CPE</h1><span class="mute">{{ today|fr_date }}</span></div>
 {% for kind, msg, url in alertes %}<a class="al {{ kind }}" href="{{ url }}">{{ msg }}</a>{% endfor %}
+{% include '_hub.html' %}
 <div class="stats" style="margin-top:14px">
 {% if module_actif('professeurs') %}<a class="stat" href="{{ url_for('professeurs') }}"><b>{{ stats.profs }}</b><span>Professeurs</span></a>{% endif %}
 {% if module_actif('absences') %}<a class="stat" href="{{ url_for('absences') }}"><b>{{ stats.absents }}</b><span>Absents aujourd'hui</span></a>{% endif %}

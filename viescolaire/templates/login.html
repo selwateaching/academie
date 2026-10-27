@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block body %}
-<div class="card login"><h1>{% if cfg.logo %}<img src="{{ url_for('client_static', chemin=cfg.logo) }}" alt="" style="height:34px;vertical-align:middle"> {% else %}🎓 {% endif %}{{ cfg.produit }}</h1><p class="mute">{{ cfg.slogan }}</p>
+<div class="card login"><h1>{% if cfg.logo %}<img src="{{ url_for('client_static', chemin=cfg.logo) }}" alt="" style="height:34px;vertical-align:middle"> {% else %}{% endif %}{{ cfg.produit }}</h1><p class="mute">{{ cfg.slogan }}</p>
 {% if demo %}<div class="al warn" style="margin:12px 0"><b>Mode démonstration</b> (données fictives)<br>
 CPE : <code>cpe@demo.fr</code><br>Direction : <code>direction@demo.fr</code><br>Enseignant : <code>prof1@demo.fr</code> … <code>prof10@demo.fr</code><br>Mot de passe : <code>demo1234</code></div>{% endif %}
 <form method="post">{% from '_macros.html' import csrf %}{{ csrf() }}

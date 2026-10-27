@@ -8,7 +8,7 @@
 <div class="stat"><b>{{ lacunes|length }}</b><span>Plage(s) sans agent</span></div></div>
 {% if lacunes %}<div class="card" style="border-left:4px solid var(--err)"><h2>Besoins non couverts</h2>{% for l in lacunes[:12] %}<p style="margin:3px 0"><a href="{{ url_for('pers_planning', jour=l.jour) }}"><b>{{ JOURS[l.jour] }}</b> {{ l.debut }}–{{ l.fin }}</a> · {{ l.poste }} · il manque {{ l.manque }} agent(s)</p>{% endfor %}
 {% if lacunes|length > 12 %}<p class="mute">… et {{ lacunes|length - 12 }} autre(s).</p>{% endif %}<p class="mute" style="margin-bottom:0">Cliquez sur une plage vide du planning pour affecter quelqu'un, ou relancez la génération (élargir les rôles ou les contrats peut aider).</p></div>{% endif %}
-<details class="card noprint"><summary><b>⚙ Générer le planning automatiquement</b> <span class="mute">— répartit les agents sur les besoins selon leurs rôles, contrats et indisponibilités</span></summary>
+<details class="card noprint"><summary><b>Générer le planning automatiquement</b> <span class="mute">— répartit les agents sur les besoins selon leurs rôles, contrats et indisponibilités</span></summary>
 <form method="post" action="{{ url_for('pers_generer') }}" style="margin-top:12px">{{ csrf() }}<input type="hidden" name="retour_jour" value="{{ 'semaine' if semaine else jour }}">
 <label class="check"><input type="radio" name="mode" value="auto" checked> <span><b>Refaire le planning automatique</b> — garde ce que vous avez saisi à la main</span></label>
 <label class="check"><input type="radio" name="mode" value="completer"> <span><b>Compléter seulement</b> — ne change rien, ajoute des plages là où il manque quelqu'un</span></label>

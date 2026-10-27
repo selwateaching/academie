@@ -257,6 +257,98 @@ def entetes(resp):
     return resp
 
 
+# ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
+COULEURS_MENU = {"quotidien": "#D3803C", "eleves": "#3F8F8A", "profs": "#5B7A9A", "personnel": "#8A5A83",
+                 "documents": "#B08A2E", "planification": "#7B8F3A", "admin": "#8B6F5C", "compte": "#8E9080"}
+
+
+def menu_sections():
+    """Sections du menu (titre, couleur, pages avec description et compteur) selon le rôle et les modules actifs."""
+    u, ma = g.user, module_actif
+    staff = u["role"] in STAFF
+    today = date.today()
+    nb = {"messages": one("SELECT COUNT(*) c FROM message_dest md JOIN messages m ON m.id=md.message_id WHERE md.user_id=? AND m.etab_id=? AND md.lu_at IS NULL",
+                          (u["id"], g.etab_id))["c"]}
+    if staff:
+        nb["remplacements"] = one("SELECT COUNT(*) c FROM remplacements WHERE etab_id=? AND statut='a_pourvoir' AND date>=?", (g.etab_id, today.isoformat()))["c"]
+        nb["incidents"] = one("SELECT COUNT(*) c FROM incidents WHERE etab_id=? AND statut='ouvert'", (g.etab_id,))["c"]
+        nb["taches"] = one("SELECT COUNT(*) c FROM taches WHERE etab_id=? AND statut<>'faite'", (g.etab_id,))["c"]
+        nb["absences"] = one("SELECT COUNT(*) c FROM absences WHERE etab_id=? AND type='absence' AND date_debut<=? AND date_fin>=?",
+                             (g.etab_id, today.isoformat(), today.isoformat()))["c"]
+
+    def item(ep, label, desc="", mod=None, badge=None, tone="", **kw):
+        if mod and not ma(mod):
+            return None
+        on = request.endpoint == ep or (ep == "infirmerie" and (request.endpoint or "").startswith("infirmerie"))
+        return {"label": label, "desc": desc, "url": url_for(ep, **kw), "badge": badge or None, "tone": tone, "on": on}
+
+    def section(slug, titre, items, ouvert=False):
+        items = [i for i in items if i]
+        return {"slug": slug, "titre": titre, "couleur": COULEURS_MENU[slug], "pages": items, "ouvert": ouvert} if items else None
+
+    sections = []
+    if staff:
+        sections = [
+            section("quotidien", "Au quotidien", [
+                item("absences", "Absences", "Déclarer et suivre les absences", "absences", nb["absences"]),
+                item("remplacements", "Remplacements", "Désigner les remplaçants", "remplacements", nb["remplacements"], "err", statut="a_pourvoir"),
+                item("cours", "Cours perturbés", "Analyse des cours touchés", "cours"),
+                item("incidents", "Incidents", "Signaler et rédiger les documents", "incidents", nb["incidents"], "warn"),
+                item("messages", "Messagerie", "Messages internes", "messagerie", nb["messages"], "err")], True),
+            section("eleves", "Élèves", [
+                item("eleves", "Liste des élèves", "Fiches, responsables, pyramide", "eleves"),
+                item("classes", "Classes et niveaux", "Professeur principal, niveaux", "classes"),
+                item("trombinoscope", "Trombinoscope", "Photos par classe", "trombinoscope"),
+                item("infirmerie", "Infirmerie", "Soins, passages, fiches santé") if g.get("user") and u["role"] in roles_infirmerie() and ma("infirmerie") else None]),
+            section("profs", "Professeurs", [
+                item("professeurs", "Annuaire des professeurs", "Coordonnées, cours, comptes", "professeurs"),
+                item("emploi_du_temps", "Emplois du temps", "Jour, semaine, mois", "emplois_du_temps"),
+                item("heures", "Comptage des heures", "Heures par professeur, classe, agent", "heures")]),
+            section("personnel", "Personnel de vie scolaire", [
+                item("pers_liste", "Annuaire du personnel", "Assistants et rôles", "personnel"),
+                item("pers_planning", "Planning du personnel", "Planning automatique", "planning_personnel"),
+                item("pers_postes", "Postes et besoins", "Rôles, couleurs, besoins", "personnel")]),
+            section("documents", "Documents et réunions", [
+                item("reunions", "Réunions", "Convocations, réponses", "reunions"),
+                item("document_nouveau", "Rédiger un document", "Rapports, convocations…", "redaction"),
+                item("documents", "Documents", "Partagés et rédigés", "documents")]),
+            section("planification", "Planification et suivi", [
+                item("planification", "Génération des emplois du temps", "Besoins, vœux, proposition", "planification"),
+                item("taches", "Tâches", "À faire", "taches", nb["taches"]),
+                item("rapports", "Rapports", "Chiffres sur une période", "rapports"),
+                item("assistant", "Assistant", "Conseils automatiques", "assistant"),
+                item("importer", "Import CSV", "Professeurs, élèves, cours", "import"),
+                item("historique", "Historique", "Journal des actions")]),
+            section("admin", "Administration", [
+                item("utilisateurs", "Utilisateurs", "Comptes et droits", "utilisateurs"),
+                item("etablissements", "Établissements", "Ajouter ou supprimer") if u["role"] == "admin" else None,
+                item("sauvegarde", "Sauvegarde", "Copie des données", "sauvegarde") if u["role"] in ("admin", "direction") else None]),
+        ]
+    elif g.prof:
+        sections = [
+            section("quotidien", "Mon espace", [
+                item("emploi_du_temps", "Mon emploi du temps", "Mes cours", "emplois_du_temps"),
+                item("absences", "Mes absences", "Déclarer une absence", "absences"),
+                item("mes_voeux", "Mes vœux", "Disponibilités pour l'emploi du temps", "planification"),
+                item("messages", "Messagerie", "Messages internes", "messagerie", nb["messages"], "err")], True),
+            section("documents", "Classes et documents", [
+                item("trombinoscope", "Trombinoscope", "Photos par classe", "trombinoscope"),
+                item("document_nouveau", "Rédiger un document", "Rapport d'incident…", "redaction"),
+                item("reunions", "Réunions", "Convocations", "reunions"),
+                item("documents", "Documents", "Partagés et rédigés", "documents")]),
+        ]
+    else:
+        sections = [
+            section("quotidien", "Au quotidien", [
+                item("messages", "Messagerie", "Messages internes", "messagerie", nb["messages"], "err"),
+                item("infirmerie", "Infirmerie", "Soins, passages, fiches santé") if u["role"] in roles_infirmerie() and ma("infirmerie") else None,
+                item("reunions", "Réunions", "Convocations", "reunions"),
+                item("documents", "Documents", "Partagés", "documents")], True)]
+    sections.append(section("compte", "Mon compte", [item("compte", "Sécurité", "Mot de passe, double authentification"), item("rgpd", "RGPD", "Mes données")]))
+    return [x for x in sections if x]
+
+
+
 @app.context_processor
 def contexte():
     ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
@@ -278,6 +370,7 @@ def contexte():
                 except Exception:
                     ext.journal.exception("Widget %s en erreur", w["titre"])
     if g.get("user") and g.get("etab_id"):
+        ctx["menu"] = menu_sections()
         ctx["non_lus"] = one("SELECT COUNT(*) c FROM message_dest md JOIN messages m ON m.id=md.message_id "
                              "WHERE md.user_id=? AND m.etab_id=? AND md.lu_at IS NULL", (g.user["id"], g.etab_id))["c"]
     return ctx

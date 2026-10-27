@@ -180,3 +180,19 @@ nav.side h4[role=button]:hover,nav.side h4[role=button]:focus-visible{color:var(
   .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.card{padding:12px}
 }
 .btn:not(.sec) .mute,button:not(.sec) .mute{color:inherit;opacity:.75}
+/* Menu en cartes colorées : une couleur par domaine (--cc), carte dépliable */
+nav.side .nav-carte{margin:8px 0;border-radius:12px;border-left:5px solid var(--cc);background:color-mix(in srgb,var(--cc) 24%,var(--brand-strong));overflow:hidden}
+nav.side .nav-carte h4{margin:0;padding:10px 12px;font-size:12px;color:var(--coquille);letter-spacing:.07em;border-bottom:2px solid transparent}
+nav.side .nav-carte.ouverte h4{background:color-mix(in srgb,var(--cc) 55%,var(--brand-strong));border-bottom-color:var(--cc)}
+nav.side .nav-carte .nav-groupe{padding:4px 6px 6px}
+nav.side .nav-carte a{padding:7px 8px;align-items:center}
+nav.side .nav-carte a.on{background:var(--orange);color:var(--noir)}
+nav.side .badge.err{background:var(--err);color:#fff}nav.side .badge.warn{background:var(--bisque);color:var(--noir)}
+/* Accueil : cartes colorées avec compteurs */
+.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:6px 0 20px}
+.hub-carte{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.hub-carte>h3{margin:0;padding:11px 14px;background:var(--cc);color:var(--hub-ink,#fff);font-size:15px}
+.hub-carte a{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}
+.hub-carte a:first-of-type{border-top:0}.hub-carte a:hover{background:color-mix(in srgb,var(--cc) 14%,var(--card))}
+.hub-carte a small{display:block;color:var(--mute);font-size:12px}
+.hub-carte .badge{background:var(--cc);color:var(--hub-ink,#fff)}.hub-carte .badge.err{background:var(--err);color:#fff}.hub-carte .badge.warn{background:var(--orange);color:var(--noir)}

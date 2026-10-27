@@ -9,7 +9,7 @@
 <p class="mute" style="margin-top:10px">Famille : {{ e.responsable or '—' }} {{ e.contact }}</p></div>
 <div class="card"><h2>Classe {{ e.classe }}</h2>
 {% if pp %}<p style="margin:0"><b>Professeur principal : {{ pp.nom }}</b> <span class="mute">({{ pp.matiere }})</span><br>{{ pp.email }}{% if pp.telephone %} · {{ pp.telephone }}{% endif %}</p>
-{% if pp.user_id %}<p style="margin:6px 0"><a class="btn sec sm" href="{{ url_for('message_nouveau', a=pp.user_id, sujet='À propos de ' ~ e.prenom ~ ' ' ~ e.nom) }}">✉ Écrire au professeur principal</a></p>{% endif %}
+{% if pp.user_id %}<p style="margin:6px 0"><a class="btn sec sm" href="{{ url_for('message_nouveau', a=pp.user_id, sujet='À propos de ' ~ e.prenom ~ ' ' ~ e.nom) }}">Écrire au professeur principal</a></p>{% endif %}
 {% else %}<p class="mute">Pas de professeur principal renseigné.</p>{% endif %}
 <p class="mute" style="margin:6px 0 0">Équipe : {% for p in equipe|map(attribute='nom')|unique %}{{ p }}{{ ', ' if not loop.last }}{% else %}aucun cours planifié{% endfor %}</p>
 {% if g.user.role in STAFF %}<p style="margin:8px 0 0"><a href="{{ url_for('eleve_fiche', eid=e.id) }}">Fiche élève (vie scolaire)</a></p>{% endif %}</div>
