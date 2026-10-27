@@ -206,3 +206,4 @@ nav.side .nav-outils{margin:6px 10px 2px}
 .hub-carte .ico{flex:none;color:var(--brand-strong);opacity:.85}
 .hub-carte .hub-lib{flex:1;min-width:0}.hub-carte a small{display:block;color:var(--mute);font-size:12px}
 .hub-carte .badge{background:var(--orange);color:var(--noir);border-radius:99px;padding:0 8px;font-size:12px;font-weight:700}
+[data-tromb-fiche][hidden],[data-tromb-groupe][hidden]{display:none!important}

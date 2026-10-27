@@ -3282,14 +3282,24 @@ def trombinoscope():
     if vue not in ("eleves", "profs", "personnel") or (vue == "personnel" and not staff):
         vue = "eleves"
     classe = request.args.get("classe", "")
+    terme = request.args.get("q", "").strip()[:60]
+    tri = request.args.get("tri", "nom")
+    ordre = "prenom, nom" if tri == "prenom" else "nom, prenom"
+    like = f"%{terme}%"
     classes_ = q("SELECT c.nom, p.nom pnom, p.prenom pprenom FROM classes c LEFT JOIN professeurs p ON p.id=c.prof_principal_id WHERE c.etab_id=? ORDER BY c.nom", (g.etab_id,))
     avec_photo = {(r["kind"], r["ref_id"]): r["at"] for r in q("SELECT kind,ref_id,at FROM photos WHERE etab_id=?", (g.etab_id,))}
     groupes = []   # [(titre, sous-titre, [personnes])]
     if vue == "eleves":
         pp = {c["nom"]: (f"{c['pprenom']} {c['pnom']}" if c["pnom"] else "") for c in classes_}
+        sql, args = "SELECT id,nom,prenom,classe FROM eleves WHERE etab_id=?", [g.etab_id]
+        if classe:
+            sql += " AND classe=?"
+            args.append(classe)
+        if terme:
+            sql += " AND (nom LIKE ? OR prenom LIKE ? OR (prenom||' '||nom) LIKE ? OR (nom||' '||prenom) LIKE ?)"
+            args += [like] * 4
         par = {}
-        for e in q("SELECT id,nom,prenom,classe FROM eleves WHERE etab_id=? " + ("AND classe=? " if classe else "") + "ORDER BY classe,nom,prenom",
-                   (g.etab_id, classe) if classe else (g.etab_id,)):
+        for e in q(sql + f" ORDER BY classe, {ordre}", args):
             par.setdefault(e["classe"] or "Sans classe", []).append({"kind": "eleve", "id": e["id"], "nom": e["nom"], "prenom": e["prenom"], "ligne": ""})
         groupes = [(c, f"Prof principal : {pp[c]}" if pp.get(c) else "", l) for c, l in par.items()]
     elif vue == "profs":
@@ -3297,26 +3307,34 @@ def trombinoscope():
         for c in classes_:
             if c["pnom"]:
                 pp_de.setdefault(f"{c['pprenom']} {c['pnom']}", []).append(c["nom"])
+        sql, args = "SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=?", [g.etab_id]
+        if terme:
+            sql += " AND (nom LIKE ? OR prenom LIKE ? OR (prenom||' '||nom) LIKE ? OR matiere LIKE ?)"
+            args += [like] * 4
         lst = []
-        for p in q("SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=? ORDER BY nom,prenom", (g.etab_id,)):
+        for p in q(sql + f" ORDER BY {ordre}", args):
             pp = pp_de.get(f"{p['prenom']} {p['nom']}", [])
             lst.append({"kind": "prof", "id": p["id"], "nom": p["nom"], "prenom": p["prenom"],
                         "ligne": p["matiere"] + (f" · PP {', '.join(pp)}" if pp else "")})
-        groupes = [("Professeurs", "", lst)]
+        groupes = [("Professeurs", "", lst)] if lst or not terme else []
     else:
         roles = {}
         for r in q("SELECT pp.personnel_id, po.nom, po.couleur FROM personnel_postes pp JOIN postes po ON po.id=pp.poste_id WHERE po.etab_id=? ORDER BY po.ordre", (g.etab_id,)):
             roles.setdefault(r["personnel_id"], []).append((r["nom"], r["couleur"]))
+        sql, args = "SELECT id,nom,prenom,categorie,fonction FROM personnel WHERE etab_id=? AND actif=1", [g.etab_id]
+        if terme:
+            sql += " AND (nom LIKE ? OR prenom LIKE ? OR (prenom||' '||nom) LIKE ? OR fonction LIKE ?)"
+            args += [like] * 4
         par = {}
-        for p in q("SELECT id,nom,prenom,categorie,fonction FROM personnel WHERE etab_id=? AND actif=1 ORDER BY categorie,nom,prenom", (g.etab_id,)):
+        for p in q(sql + f" ORDER BY categorie, {ordre}", args):
             par.setdefault(p["categorie"], []).append({"kind": "perso", "id": p["id"], "nom": p["nom"], "prenom": p["prenom"],
                                                        "ligne": p["fonction"], "roles": roles.get(p["id"], [])})
         groupes = [(c, "", l) for c, l in par.items()]
     for _, _, lst in groupes:
         for x in lst:
             x["photo"] = avec_photo.get((x["kind"], x["id"]), "")
-    return render_template("trombinoscope.html", vue=vue, classe=classe, classes=classes_, groupes=groupes, staff=staff,
-                           total=sum(len(l) for _, _, l in groupes))
+    return render_template("trombinoscope.html", vue=vue, classe=classe, classes=classes_, groupes=groupes, staff=staff, terme=terme,
+                           tri=tri if tri in ("nom", "prenom") else "nom", total=sum(len(l) for _, _, l in groupes))
 
 
 @app.route("/trombinoscope/photo/<kind>/<int:rid>", methods=["POST"])

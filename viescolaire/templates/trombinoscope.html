@@ -1,12 +1,16 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Trombinoscope{% endblock %}{% block body %}
 <div class="top"><h1>Trombinoscope</h1><span class="noprint"><button class="sec sm" data-print>Imprimer / PDF</button></span></div>
 <p class="noprint">{% for v, l in [('eleves', 'Élèves'), ('profs', 'Professeurs')] + ([('personnel', 'Personnel de vie scolaire')] if staff else []) %}<a class="btn {{ '' if vue == v else 'sec' }} sm" href="{{ url_for('trombinoscope', vue=v) }}">{{ l }}</a> {% endfor %}</p>
-{% if vue == 'eleves' %}<form method="get" class="row noprint" style="margin-bottom:12px"><input type="hidden" name="vue" value="eleves">
-<div><select name="classe" data-autosubmit><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div></form>{% endif %}
+<form method="get" class="row noprint" style="margin-bottom:12px" data-tromb-form><input type="hidden" name="vue" value="{{ vue }}">
+<div style="flex:2"><label>Rechercher</label><input type="search" name="q" value="{{ terme }}" placeholder="Nom, prénom{{ ', classe' if vue == 'eleves' else ', matière' }}…" autocomplete="off" data-tromb-recherche></div>
+{% if vue == 'eleves' %}<div><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>{% endif %}
+<div><label>Trier par</label><select name="tri" data-autosubmit><option value="nom" {{ 'selected' if tri == 'nom' }}>Nom (A → Z)</option><option value="prenom" {{ 'selected' if tri == 'prenom' }}>Prénom (A → Z)</option></select></div>
+<div style="flex:0 0 auto"><button class="sec">Rechercher</button></div></form>
+<p class="mute noprint" data-tromb-compte>{{ total }} personne{{ 's' if total > 1 }}{% if terme %} pour « {{ terme }} »{% endif %}.</p>
 {% for titre, sous, liste in groupes %}
-<div class="card tromb"><h2>{{ titre }} <span class="mute" style="font-size:14px;font-weight:400">· {{ liste|length }}{% if sous %} · {{ sous }}{% endif %}</span></h2>
+<div class="card tromb" data-tromb-groupe><h2>{{ titre }} <span class="mute" style="font-size:14px;font-weight:400">· {{ liste|length }}{% if sous %} · {{ sous }}{% endif %}</span></h2>
 <div class="tromb-grille">
-{% for x in liste %}<figure class="tromb-fiche"><img src="{{ url_for('photo', kind=x.kind, rid=x.id, v=x.photo or 'initiales') }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
+{% for x in liste %}<figure class="tromb-fiche" data-tromb-fiche><img src="{{ url_for('photo', kind=x.kind, rid=x.id, v=x.photo or 'initiales') }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
 <figcaption><b>{{ x.nom }}</b> {{ x.prenom }}{% if x.ligne %}<br><span class="mute">{{ x.ligne }}</span>{% endif %}
 {% if x.roles %}<br>{% for n, c in x.roles %}<span class="chip-poste" style="background:{{ c }};color:{{ c|couleur_texte }}">{{ n }}</span> {% endfor %}{% endif %}</figcaption>
 {% if staff %}<form method="post" action="{{ url_for('photo_enregistrer', kind=x.kind, rid=x.id) }}" enctype="multipart/form-data" class="noprint tromb-actions">{{ csrf() }}

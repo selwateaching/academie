@@ -411,3 +411,21 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
   var logo = nav.querySelector('.logo');
   nav.insertBefore(b, logo ? logo.nextSibling : nav.firstChild);
 })();
+
+/* Trombinoscope : filtrage instantané pendant la frappe (la recherche serveur reste disponible avec Entrée) */
+(function () {
+  var champ = document.querySelector('[data-tromb-recherche]');
+  if (!champ) return;
+  var fiches = document.querySelectorAll('[data-tromb-fiche]'), groupes = document.querySelectorAll('[data-tromb-groupe]'), compte = document.querySelector('[data-tromb-compte]');
+  var norm = function (t) { return t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); };
+  fiches.forEach(function (f) { f.setAttribute('data-texte', norm(f.textContent)); });
+  champ.addEventListener('input', function () {
+    var mots = norm(champ.value).split(/\s+/).filter(Boolean), n = 0;
+    fiches.forEach(function (f) {
+      var ok = mots.every(function (m) { return f.getAttribute('data-texte').indexOf(m) !== -1; });
+      f.hidden = !ok; if (ok) n++;
+    });
+    groupes.forEach(function (g) { g.hidden = !g.querySelector('[data-tromb-fiche]:not([hidden])'); });
+    if (compte) compte.textContent = n + ' personne' + (n > 1 ? 's' : '') + (champ.value.trim() ? ' pour « ' + champ.value.trim() + ' »' : '') + '.';
+  });
+})();
