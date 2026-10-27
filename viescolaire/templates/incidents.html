@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Incidents{% endblock %}{% block body %}
+<div class="top"><h1>Incidents et continuité pédagogique</h1><a class="btn sec" href="{{ url_for('export_csv', nom='incidents') }}">Export CSV</a></div>
+<div class="card"><h2>Nouvel incident</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
+<div><label>Classe</label><select name="classe"><option value="">—</option>{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div><div><label>Élève(s) concerné(s)</label><input name="eleve"></div></div>
+<label>Description</label><textarea name="description" required></textarea><label>Suite donnée / continuité pédagogique</label><input name="suite" style="width:100%"><br><br><button>Enregistrer</button></form></div>
+<div class="card scroll"><table><tr><th>Date</th><th>Classe</th><th>Élève</th><th>Description</th><th>Suite</th><th></th></tr>
+{% for i in incidents %}<tr><td>{{ i.date|fr_date }}</td><td>{{ i.classe }}</td><td>{{ i.eleve }}</td><td>{{ i.description }}</td><td>{{ i.suite }}</td>
+<td>{% if i.statut == 'ouvert' %}<form method="post" action="{{ url_for('incident_action', iid=i.id, action='cloturer') }}" class="inline">{{ csrf() }}<input name="suite" placeholder="Suite…" style="width:120px"><button class="sm">Clore</button></form>{% else %}<span class="tag ok">Clos</span> {{ post(url_for('incident_action', iid=i.id, action='rouvrir'), 'Rouvrir', 'sec sm') }}{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucun incident.</td></tr>{% endfor %}</table></div>{% endblock %}

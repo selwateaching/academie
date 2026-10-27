@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post, cours_table %}{% block title %}Cours perturbés{% endblock %}{% block body %}
+<div class="top"><h1>Suivi des cours</h1></div>
+<div class="card"><h2>Tableau de bord quotidien</h2><form method="get" class="row"><div><input type="date" name="date" value="{{ jour.isoformat() }}"></div><div><button class="sec">Afficher</button></div></form>{{ cours_table(du_jour) }}</div>
+<div class="card"><h2>Signaler une perturbation</h2><form method="post">{{ csrf() }}<div class="row">
+<div><label>Date</label><input type="date" name="date" value="{{ jour.isoformat() }}" required></div>
+<div><label>Cours concerné ({{ JOURS[jour.weekday()] if jour.weekday() < 5 else 'week-end' }})</label><select name="creneau_id"><option value="">— hors emploi du temps —</option>{% for c in creneaux %}<option value="{{ c.id }}">{{ c.debut }} {{ c.classe }} ({{ c.nom }})</option>{% endfor %}</select></div>
+<div><label>Type</label><select name="type">{% for k, v in TYPES_PERTURBATION.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+<div><label>Précision</label><input name="detail" placeholder="ex. salle B12 fermée"></div><div><button>Signaler</button></div></div></form></div>
+<div class="card scroll"><h2>Perturbations récentes et à venir</h2><table><tr><th>Date</th><th>Cours</th><th>Type</th><th>Détail</th><th></th></tr>
+{% for p in perts %}<tr><td>{{ p.date|fr_date }}</td><td>{{ p.debut or '' }} {{ p.classe }} {{ p.pnom or '' }}</td><td><span class="tag warn">{{ TYPES_PERTURBATION[p.type] }}</span></td><td>{{ p.detail }}</td><td>{{ post(url_for('perturbation_supprimer', pid=p.id), 'Supprimer', 'sec sm', 'Supprimer ?') }}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucune perturbation.</td></tr>{% endfor %}</table></div>{% endblock %}

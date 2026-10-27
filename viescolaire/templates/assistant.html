@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Assistant{% endblock %}{% block body %}
+<div class="top"><h1>Assistant</h1></div>
+<div class="card"><h2>Résumé du jour</h2>{% for l in resume %}<p>{{ l }}</p>{% endfor %}</div>
+<div class="card"><h2>Suggestions de remplacement</h2>{% for s in suggestions %}<p><b>{{ s.r.date|fr_date }} {{ s.r.debut }}–{{ s.r.fin }}</b> · {{ s.r.classe }} (cours de {{ s.r.pnom }}) →
+{% if s.sug %}<form method="post" action="{{ url_for('remplacement_action', rid=s.r.id, action='assigner') }}" class="inline">{{ csrf() }}<input type="hidden" name="prof_id" value="{{ s.sug.prof.id }}"><button class="sm">Assigner {{ s.sug.prof.prenom }} {{ s.sug.prof.nom }}{{ ' ★' if s.sug.meme_matiere }}</button></form>{% else %}<span class="tag err">aucun professeur libre : prévoir une étude ou annuler</span>{% endif %}</p>
+{% else %}<p class="mute">Aucun remplacement en attente.</p>{% endfor %}</div>
+<div class="card"><h2>Rappels</h2>{% if relances %}<p>{{ relances }} confirmation(s) de lecture en attente depuis plus de 2 jours : <a href="{{ url_for('messages', boite='envoyes') }}">voir mes envois</a>.</p>{% endif %}
+{% for kind, msg, url in alertes %}<a class="al {{ kind }}" href="{{ url }}">{{ msg }}</a>{% else %}<p class="mute">Rien à signaler.</p>{% endfor %}</div>
+<p class="mute">L'assistant s'appuie sur des règles de calcul locales (disponibilités, matière, charge de remplacement) : aucune donnée n'est envoyée à un service externe.</p>{% endblock %}

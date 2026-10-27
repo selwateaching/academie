@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Absences{% endblock %}{% block body %}
+<div class="top"><h1>Absences et indisponibilités</h1>{% if g.user.role in STAFF %}<a class="btn sec" href="{{ url_for('export_csv', nom='absences') }}">Export Excel (CSV)</a>{% endif %}</div>
+<div class="card"><h2>Déclarer</h2><form method="post">{{ csrf() }}<div class="row">
+{% if g.user.role in STAFF %}<div><label>Professeur</label><select name="prof_id" required>{% for p in profs %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>{% endif %}
+<div><label>Type</label><select name="type"><option value="absence">Absence (cours à remplacer)</option><option value="indisponibilite">Indisponibilité (pas de remplaçant)</option></select></div>
+<div><label>Du</label><input type="date" name="date_debut" value="{{ today }}" required></div><div><label>Au</label><input type="date" name="date_fin" value="{{ today }}" required></div>
+<div><label>Motif</label><input name="motif"></div><div><button>Enregistrer</button></div></div></form>
+<p class="mute">Pour une absence, les remplacements à prévoir sont créés automatiquement pour chaque cours concerné.</p></div>
+<div class="card scroll"><table><tr><th>Professeur</th><th>Type</th><th>Période</th><th>Motif</th><th>Statut</th><th></th></tr>
+{% for a in absences %}<tr><td>{{ a.prenom }} {{ a.nom }}</td><td>{{ 'Absence' if a.type=='absence' else 'Indisponibilité' }}</td><td>{{ a.date_debut|fr_date }} → {{ a.date_fin|fr_date }}</td><td>{{ a.motif }}</td>
+<td><span class="tag {{ 'ok' if a.statut=='validee' else 'warn' }}">{{ 'Validée' if a.statut=='validee' else 'À valider' }}</span>{% if a.restants %} <span class="tag err">{{ a.restants }} à pourvoir</span>{% endif %}</td>
+<td>{% if g.user.role in STAFF %}{% if a.statut != 'validee' %}{{ post(url_for('absence_action', aid=a.id, action='valider'), 'Valider', 'sm') }}{% endif %} {{ post(url_for('absence_action', aid=a.id, action='supprimer'), 'Supprimer', 'red sm', 'Supprimer cette absence et ses remplacements ?') }}{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucune absence.</td></tr>{% endfor %}</table></div>{% endblock %}

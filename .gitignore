@@ -10,3 +10,5 @@ dist/
 build/
 .DS_Store
 tadriss.db
+viescolaire/data/
+__pycache__/

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Professeurs{% endblock %}{% block body %}
+<div class="top"><h1>Annuaire des professeurs</h1>
+<form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, matière, e-mail…"><button class="sec">Rechercher</button></form></div>
+<div class="card scroll"><table><tr><th>Nom</th><th>Matière</th><th>Classes</th><th>Contact</th></tr>
+{% for p in profs %}<tr><td><a href="{{ url_for('professeur', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a></td><td>{{ p.matiere }}</td>
+<td>{{ classes_par_prof.get(p.id, [])|join(', ') }}</td><td>{{ p.email }}<br><span class="mute">{{ p.telephone }}</span></td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun professeur.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Ajouter un professeur</h2><form method="post">{{ csrf() }}<div class="row">
+<div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
+<div><label>Matière</label><input name="matiere"></div><div><label>E-mail</label><input type="email" name="email"></div>
+<div><label>Téléphone</label><input name="telephone"></div><div><button>Ajouter</button></div></div></form>
+<p class="mute">Pour de gros volumes, utilisez l'<a href="{{ url_for('importer') }}">import CSV</a>. <a href="{{ url_for('export_csv', nom='professeurs') }}">Exporter l'annuaire</a></p></div>{% endblock %}

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}{{ p.nom }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ p.prenom }} {{ p.nom }}</h1><a class="btn sec" href="{{ url_for('emploi_du_temps', prof=p.id) }}">Emploi du temps</a></div>
+<div class="grid g2"><div class="card"><h2>Fiche individuelle</h2><form method="post">{{ csrf() }}
+<label>Nom</label><input name="nom" value="{{ p.nom }}" required><label>Prénom</label><input name="prenom" value="{{ p.prenom }}">
+<label>Matière</label><input name="matiere" value="{{ p.matiere }}"><label>E-mail</label><input name="email" value="{{ p.email }}">
+<label>Téléphone</label><input name="telephone" value="{{ p.telephone }}"><label>Notes (suivi, particularités)</label><textarea name="notes">{{ p.notes }}</textarea><br><br>
+<button>Enregistrer</button> {{ post(url_for('professeur_supprimer', pid=p.id), 'Supprimer', 'red', 'Supprimer ce professeur et toutes ses données ?') }}</form>
+{% if pp %}<p>Professeur principal : {{ pp|map(attribute='nom')|join(', ') }}</p>{% endif %}</div>
+<div class="card"><h2>Absences et indisponibilités</h2>{% for a in absences %}<p><span class="tag {{ 'err' if a.type=='absence' else 'warn' }}">{{ 'Absence' if a.type=='absence' else 'Indisponibilité' }}</span> {{ a.date_debut|fr_date }} → {{ a.date_fin|fr_date }}<br><span class="mute">{{ a.motif }}</span></p>{% else %}<p class="mute">Aucune.</p>{% endfor %}
+<h2 style="margin-top:14px">Remplacements assurés</h2>{% for r in remps %}<p>{{ r.date|fr_date }} {{ r.debut }}–{{ r.fin }} · {{ r.classe }}</p>{% else %}<p class="mute">Aucun.</p>{% endfor %}</div></div>
+<div class="card scroll"><h2>Créneaux hebdomadaires</h2><table><tr><th>Jour</th><th>Horaire</th><th>Classe</th><th>Matière</th><th>Salle</th><th></th></tr>
+{% for c in creneaux %}<tr><td>{{ JOURS[c.jour] }}</td><td>{{ c.debut }}–{{ c.fin }}</td><td>{{ c.classe }}</td><td>{{ c.matiere }}</td><td>{{ c.salle }}</td><td>{{ post(url_for('creneau_supprimer', cid=c.id), 'Retirer', 'sec sm', 'Retirer ce créneau ?') }}</td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucun créneau.</td></tr>{% endfor %}</table>
+<form method="post" action="{{ url_for('creneau_ajouter', pid=p.id) }}">{{ csrf() }}<div class="row"><div><label>Jour</label><select name="jour">{% for j in JOURS %}<option value="{{ loop.index0 }}">{{ j }}</option>{% endfor %}</select></div>
+<div><label>Début</label><input type="time" name="debut" required></div><div><label>Fin</label><input type="time" name="fin" required></div>
+<div><label>Classe</label><input name="classe" required></div><div><label>Salle</label><input name="salle"></div><div><button>Ajouter</button></div></div></form></div>{% endblock %}

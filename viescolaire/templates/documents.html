@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Documents{% endblock %}{% block body %}
+<div class="top"><h1>Documents partagés</h1></div>
+<div class="card scroll"><table><tr><th>Titre</th><th>Fichier</th><th>Déposé par</th><th>Date</th><th></th></tr>
+{% for d in docs %}<tr><td><b>{{ d.titre }}</b></td><td><a href="{{ url_for('document_telecharger', did=d.id) }}">{{ d.filename }}</a></td><td>{{ d.auteur }}</td><td>{{ d.created_at.replace('T',' ') }}</td>
+<td>{% if g.user.role in STAFF %}{{ post(url_for('document_supprimer', did=d.id), 'Supprimer', 'sec sm', 'Supprimer ce document ?') }}{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun document.</td></tr>{% endfor %}</table></div>
+{% if g.user.role in STAFF %}<div class="card"><h2>Partager un document</h2><form method="post" enctype="multipart/form-data">{{ csrf() }}<div class="row"><div><label>Titre</label><input name="titre"></div><div><label>Fichier (8 Mo max)</label><input type="file" name="fichier" required></div><div><button>Envoyer</button></div></div></form></div>{% endif %}{% endblock %}

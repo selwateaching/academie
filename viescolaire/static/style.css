@@ -1,0 +1,47 @@
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1e293b;--mute:#64748b;--line:#e2e8f0;--brand:#2563eb;--brand-d:#1d4ed8;
+--ok:#16a34a;--warn:#d97706;--err:#dc2626;--info:#0891b2}
+@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--card:#1e293b;--ink:#e2e8f0;--mute:#94a3b8;--line:#334155}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+.layout{display:flex;min-height:100vh}
+nav.side{width:230px;background:var(--card);border-right:1px solid var(--line);padding:16px 12px;position:sticky;top:0;height:100vh;overflow:auto;flex-shrink:0}
+nav.side .logo{font-weight:700;font-size:18px;color:var(--brand);margin:0 8px 14px;display:block}
+nav.side a{display:flex;justify-content:space-between;padding:8px 10px;border-radius:8px;color:var(--ink);font-size:14px}
+nav.side a:hover,nav.side a.on{background:var(--brand);color:#fff;text-decoration:none}
+nav.side h4{margin:14px 10px 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.badge{background:var(--err);color:#fff;border-radius:99px;padding:0 7px;font-size:12px}
+main{flex:1;padding:22px 26px;max-width:1200px;min-width:0}
+.top{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap}
+h1{font-size:22px;margin:0}h2{font-size:16px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;color:var(--ink)}
+.stat b{display:block;font-size:28px;line-height:1.1}.stat span{color:var(--mute);font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;color:var(--mute);letter-spacing:.04em}
+.scroll{overflow-x:auto}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:100%}
+textarea{width:100%;min-height:90px}
+label{display:block;font-size:13px;color:var(--mute);margin:8px 0 3px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.row>div{flex:1;min-width:140px}.row input,.row select{width:100%}
+.btn,button{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;display:inline-block}
+.btn:hover,button:hover{background:var(--brand-d);text-decoration:none}
+.btn.sec,button.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.red,button.red{background:var(--err)}.btn.sm,button.sm{padding:3px 9px;font-size:13px}
+.flash{padding:10px 14px;border-radius:8px;margin-bottom:12px;background:#dcfce7;color:#14532d}
+.flash.err{background:#fee2e2;color:#7f1d1d}
+.al{padding:8px 12px;border-radius:8px;margin-bottom:6px;display:block;border-left:4px solid var(--info);background:var(--bg);color:var(--ink)}
+.al.err{border-color:var(--err)}.al.warn{border-color:var(--warn)}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;background:var(--line);color:var(--ink)}
+.tag.err{background:#fee2e2;color:#7f1d1d}.tag.ok{background:#dcfce7;color:#14532d}.tag.warn{background:#fef3c7;color:#78350f}
+.mute{color:var(--mute)}.inline{display:inline}form.inline{display:inline}
+.cal td{height:78px;width:20%;font-size:13px}.cal .n{font-weight:600}
+.edt-col{vertical-align:top}.slot{border-left:4px solid var(--brand);background:var(--bg);padding:4px 8px;border-radius:6px;margin-bottom:6px;font-size:13px}
+.slot.a_pourvoir,.slot.annule{border-color:var(--err)}.slot.remplace{border-color:var(--ok)}.slot.perturbe,.slot.indispo{border-color:var(--warn)}
+.login{max-width:380px;margin:9vh auto}
+.etab select{width:100%}
+@media(max-width:800px){.layout{display:block}nav.side{width:auto;height:auto;position:static;display:flex;flex-wrap:wrap;gap:4px;padding:8px}
+nav.side h4,nav.side .logo{display:none}nav.side a{padding:6px 10px}main{padding:14px}}
+@media print{nav.side,.noprint{display:none!important}main{padding:0}.card{border:0}}

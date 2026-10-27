@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block body %}
+<div class="top"><h1>Bonjour {{ g.user.nom }}</h1><span class="mute">{{ today|fr_date }}</span></div>
+<div class="card"><h2>Mes cours aujourd'hui</h2>{{ cours_table(cours) }}</div>
+<div class="card"><h2>Prochaines réunions</h2>{% for r in reunions %}<p><b>{{ r.titre }}</b> — {{ r.date|fr_date }} {{ r.heure }} {{ r.lieu }}</p>{% else %}<p class="mute">Aucune.</p>{% endfor %}</div>{% endblock %}

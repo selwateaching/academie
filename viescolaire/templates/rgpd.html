@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}RGPD{% endblock %}{% block body %}
+<div class="top"><h1>Protection des données (RGPD)</h1></div>
+<div class="card"><h2>Vos données</h2><p>VieScolairePro ne conserve que les données nécessaires à la gestion de la vie scolaire : fiches professionnelles des enseignants, absences, messages internes, journal des actions. Les données sont cloisonnées par établissement et les accès dépendent du rôle.</p>
+<p><a class="btn" href="{{ url_for('rgpd_export') }}">Télécharger mes données (JSON)</a></p></div>
+<div class="card"><h2>Supprimer mon compte</h2><p class="mute">Le compte est désactivé et anonymisé. Les messages déjà envoyés restent visibles de leurs destinataires, sans lien nominatif.</p>
+<form method="post" action="{{ url_for('rgpd_supprimer') }}" data-confirm="Supprimer définitivement mon compte ?">{{ csrf() }}<label>Mot de passe</label><input type="password" name="password" required><br><br><button class="red">Supprimer mon compte</button></form></div>
+<div class="card"><h2>Mesures de sécurité</h2><ul><li>Mots de passe chiffrés (hachage), verrouillage après tentatives répétées</li><li>Authentification à deux facteurs disponible</li><li>Journal d'audit de toutes les actions sensibles</li><li>Accès limités par rôle et par établissement</li></ul></div>{% endblock %}

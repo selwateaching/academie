@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Import CSV{% endblock %}{% block body %}
+<div class="top"><h1>Import CSV</h1></div><div class="card"><form method="post" enctype="multipart/form-data">{{ csrf() }}<div class="row">
+<div><label>Type de données</label><select name="kind"><option value="professeurs">Professeurs</option><option value="creneaux">Emplois du temps (créneaux)</option></select></div>
+<div><label>Fichier CSV (séparateur ; ou ,)</label><input type="file" name="fichier" accept=".csv,text/csv" required></div><div><button>Importer</button></div></div></form></div>
+<div class="card"><h2>Format attendu (première ligne = en-têtes)</h2>
+<p><b>Professeurs</b> : <code>nom;prenom;matiere;email;telephone</code> (les e-mails déjà connus sont ignorés)</p>
+<p><b>Créneaux</b> : <code>email;classe;matiere;jour;debut;fin;salle</code> — jour = lundi…vendredi, heures au format 08:00. À défaut d'e-mail, le professeur est retrouvé par <code>nom</code> et <code>prenom</code>.</p></div>{% endblock %}

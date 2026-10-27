@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block title %}Emplois du temps{% endblock %}{% block body %}
+<div class="top"><h1>Emplois du temps</h1>
+<form method="get" class="row noprint"><input type="hidden" name="vue" value="{{ vue }}">
+{% if g.user.role in STAFF %}<select name="prof"><option value="">Tous les professeurs</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == prof_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select>
+<select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select>{% endif %}
+<input type="date" name="date" value="{{ jour.isoformat() }}"><button class="sec">Afficher</button></form></div>
+<p class="noprint">{% for v, l in [('jour','Jour'),('semaine','Semaine'),('mois','Mois')] %}<a class="btn {{ '' if vue == v else 'sec' }} sm" href="{{ url_for('emploi_du_temps', vue=v, date=jour.isoformat(), prof=prof_id, classe=classe) }}">{{ l }}</a> {% endfor %}
+<button class="sec sm" data-print>Imprimer / PDF</button></p>
+{% if vue == 'jour' %}<div class="card"><h2>{{ jour|string|fr_date }}</h2>{{ cours_table(cours) }}</div>
+{% elif vue == 'mois' %}<div class="card scroll"><h2>{{ debut.strftime('%m/%Y') }}</h2><table class="cal"><tr>{% for j in JOURS %}<th>{{ j }}</th>{% endfor %}</tr>
+{% for sem in semaines %}<tr>{% for d in sem %}<td>{% if d.month == debut.month %}<a href="{{ url_for('emploi_du_temps', vue='jour', date=d.isoformat(), prof=prof_id, classe=classe) }}"><span class="n">{{ d.day }}</span></a>
+{% set c = compte[d.isoformat()] %}{% if c.absences %}<br><span class="tag err">{{ c.absences }} absence(s)</span>{% endif %}{% if c.pert %}<br><span class="tag warn">{{ c.pert }} perturbation(s)</span>{% endif %}{% endif %}</td>{% endfor %}</tr>{% endfor %}</table></div>
+{% else %}<div class="card scroll"><table><tr>{% for d in semaine %}<th>{{ JOURS[loop.index0] }} {{ d.strftime('%d/%m') }}</th>{% endfor %}</tr><tr>
+{% for d in semaine %}<td class="edt-col">{% for c in grille[d.isoformat()] %}<div class="slot {{ c.etat }}"><b>{{ c.debut }}–{{ c.fin }}</b> {{ c.classe }}<br>{{ c.pprenom[:1] }}. {{ c.pnom }} · {{ c.salle }}{% if c.info %}<br><em>{{ c.info }}</em>{% endif %}</div>{% else %}<span class="mute">—</span>{% endfor %}</td>{% endfor %}</tr></table></div>{% endif %}
+{% endblock %}

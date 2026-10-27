@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Sécurité{% endblock %}{% block body %}
+<div class="top"><h1>Sécurité du compte</h1></div><div class="grid g2">
+<div class="card"><h2>Mot de passe</h2><form method="post">{{ csrf() }}<input type="hidden" name="action" value="mdp"><label>Actuel</label><input type="password" name="actuel" required>
+<label>Nouveau (10 caractères min.)</label><input type="password" name="nouveau" minlength="10" required><br><br><button>Modifier</button></form></div>
+<div class="card"><h2>Double authentification (MFA)</h2>
+{% if u.totp_secret %}<p><span class="tag ok">Activée</span></p><form method="post">{{ csrf() }}<input type="hidden" name="action" value="mfa_off"><label>Mot de passe</label><input type="password" name="actuel" required><br><br><button class="red">Désactiver</button></form>
+{% elif nouveau %}<p>Ajoutez cette clé dans votre application d'authentification (Google Authenticator, FreeOTP…) en saisie manuelle, type « basé sur le temps » :</p><p><code style="font-size:16px">{{ nouveau }}</code></p>
+<form method="post">{{ csrf() }}<input type="hidden" name="action" value="mfa_valider"><label>Code à 6 chiffres</label><input name="code" inputmode="numeric" required><br><br><button>Activer</button></form>
+{% else %}<p class="mute">Ajoute un code à usage unique à la connexion.</p><form method="post">{{ csrf() }}<input type="hidden" name="action" value="mfa_init"><button>Configurer</button></form>{% endif %}</div></div>{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block title %}Rapports{% endblock %}{% block body %}
+<div class="top"><h1>Rapports et statistiques</h1><span class="noprint"><button class="sec" data-print>Imprimer / enregistrer en PDF</button></span></div>
+<form method="get" class="row noprint card"><div><label>Du</label><input type="date" name="debut" value="{{ debut }}"></div><div><label>Au</label><input type="date" name="fin" value="{{ fin }}"></div><div><button>Calculer</button></div></form>
+<div class="stats"><div class="stat"><b>{{ s.absences }}</b><span>Absences</span></div><div class="stat"><b>{{ s.indispos }}</b><span>Indisponibilités</span></div>
+<div class="stat"><b>{{ s.remp_ok }}/{{ s.remp_total }}</b><span>Cours remplacés</span></div><div class="stat"><b>{{ s.annules }}</b><span>Cours annulés</span></div>
+<div class="stat"><b>{{ s.incidents }}</b><span>Incidents</span></div><div class="stat"><b>{{ s.taches_faites }}/{{ s.taches_faites + s.taches_ouvertes }}</b><span>Tâches terminées</span></div></div>
+<div class="grid g2"><div class="card"><h2>Professeurs les plus absents</h2>{% for t in top_abs %}<p>{{ t.prenom }} {{ t.nom }} — {{ t.n }}</p>{% else %}<p class="mute">Aucune donnée.</p>{% endfor %}</div>
+<div class="card"><h2>Remplaçants les plus sollicités</h2>{% for t in top_remp %}<p>{{ t.prenom }} {{ t.nom }} — {{ t.n }}</p>{% else %}<p class="mute">Aucune donnée.</p>{% endfor %}</div></div>
+<div class="card noprint"><h2>Exports Excel (CSV)</h2>{% for e in exports %}<a class="btn sec sm" href="{{ url_for('export_csv', nom=e) }}">{{ e|capitalize }}</a> {% endfor %}</div>{% endblock %}

@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ m.sujet }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ m.sujet }}</h1><a class="btn sec" href="{{ url_for('messages') }}">← Retour</a></div>
+<div class="card"><p class="mute">De {{ m.expediteur }} · {{ m.created_at.replace('T',' ') }}</p><p style="white-space:pre-wrap">{{ m.corps }}</p>
+{% if mon %}{% if mon.confirme_at %}<span class="tag ok">Lecture confirmée le {{ mon.confirme_at.replace('T',' ') }}</span>{% else %}<form method="post" action="{{ url_for('message_confirmer', mid=m.id) }}" class="inline">{{ csrf() }}<button>Confirmer la lecture</button></form>{% endif %}
+ <a class="btn sec" href="{{ url_for('message_nouveau', a=m.sender_id, sujet='Re: ' + m.sujet) }}">Répondre</a>{% endif %}</div>
+{% if suivi %}<div class="card scroll"><h2>Suivi de lecture</h2><table><tr><th>Destinataire</th><th>Lu</th><th>Confirmé</th></tr>{% for s in suivi %}<tr><td>{{ s.nom }}</td><td>{{ s.lu_at.replace('T',' ') if s.lu_at else '—' }}</td><td>{{ s.confirme_at.replace('T',' ') if s.confirme_at else '—' }}</td></tr>{% endfor %}</table></div>{% endif %}{% endblock %}

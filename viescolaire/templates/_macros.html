@@ -1,0 +1,6 @@
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+{% macro post(url, label, cls='sec sm', confirm='') %}<form method="post" action="{{ url }}" class="inline" {% if confirm %}data-confirm="{{ confirm }}"{% endif %}>{{ csrf() }}<button class="{{ cls }}">{{ label }}</button></form>{% endmacro %}
+{% macro etat(c) %}{% if c.etat == 'normal' %}<span class="tag ok">Normal</span>{% elif c.etat in ('a_pourvoir','annule') %}<span class="tag err">{{ c.info }}</span>{% elif c.etat == 'remplace' %}<span class="tag ok">{{ c.info }}</span>{% else %}<span class="tag warn">{{ c.info }}</span>{% endif %}{% endmacro %}
+{% macro cours_table(cours) %}<div class="scroll"><table><tr><th>Horaire</th><th>Classe</th><th>Professeur</th><th>Salle</th><th>État</th></tr>
+{% for c in cours %}<tr><td>{{ c.debut }}–{{ c.fin }}</td><td>{{ c.classe }}</td><td>{{ c.pprenom }} {{ c.pnom }}</td><td>{{ c.salle }}</td><td>{{ etat(c) }}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun cours.</td></tr>{% endfor %}</table></div>{% endmacro %}

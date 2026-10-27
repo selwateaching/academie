@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block title %}Espace CPE{% endblock %}{% block body %}
+<div class="top"><h1>Espace CPE</h1><span class="mute">{{ today|fr_date }}</span></div>
+{% for kind, msg, url in alertes %}<a class="al {{ kind }}" href="{{ url }}">{{ msg }}</a>{% endfor %}
+<div class="stats" style="margin-top:14px">
+<a class="stat" href="{{ url_for('professeurs') }}"><b>{{ stats.profs }}</b><span>Professeurs</span></a>
+<a class="stat" href="{{ url_for('absences') }}"><b>{{ stats.absents }}</b><span>Absents aujourd'hui</span></a>
+<a class="stat" href="{{ url_for('remplacements', statut='a_pourvoir') }}"><b>{{ stats.remplacements }}</b><span>Remplacements à pourvoir</span></a>
+<a class="stat" href="{{ url_for('messages') }}"><b>{{ stats.messages }}</b><span>Messages non lus</span></a>
+<a class="stat" href="{{ url_for('reunions') }}"><b>{{ stats.reunions }}</b><span>Réunions à venir</span></a>
+<a class="stat" href="{{ url_for('taches') }}"><b>{{ stats.taches }}</b><span>Tâches ouvertes</span></a></div>
+<div class="grid g2">
+<div class="card"><h2>Cours à réorganiser aujourd'hui</h2>{{ cours_table(cours) }}</div>
+<div class="card"><h2>Absences enseignants du jour</h2>
+{% for a in absents %}<p><b>{{ a.prenom }} {{ a.nom }}</b> <span class="tag {{ 'err' if a.type=='absence' else 'warn' }}">{{ 'Absent' if a.type=='absence' else 'Indisponible' }}</span><br><span class="mute">jusqu'au {{ a.date_fin|fr_date }} · {{ a.motif }}</span></p>
+{% else %}<p class="mute">Aucune absence aujourd'hui.</p>{% endfor %}</div>
+<div class="card"><h2>Réunions et événements</h2>{% for r in reunions %}<p><b>{{ r.titre }}</b><br><span class="mute">{{ r.date|fr_date }} {{ r.heure }} {{ r.lieu }}</span></p>{% else %}<p class="mute">Rien de prévu.</p>{% endfor %}</div>
+<div class="card"><h2>Mes tâches et alertes</h2>{% for t in taches %}<p><b>{{ t.titre }}</b> {% if t.echeance %}<span class="tag {{ 'err' if t.echeance < today else 'warn' }}">{{ t.echeance|fr_date }}</span>{% endif %}</p>{% else %}<p class="mute">Aucune tâche.</p>{% endfor %}</div>
+</div>{% endblock %}
