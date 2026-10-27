@@ -5140,7 +5140,7 @@ function telechargerPDF(titre, element) {
     image: { type: 'jpeg', quality: 0.95 },
     html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], avoid: ['.pp-step', '.tc-box', '.tc-remember', 'tr'] }
+    pagebreak: { mode: ['css', 'legacy'], avoid: ['.pp-step', '.tc-box', '.tc-remember', 'tr', '.tc-tri-table', '.tc-bulle-table', '.tc-bmap-table'] }
   }).from(wrap).save();
 }
 /* Plusieurs morceaux de HTML générés dynamiquement (bandeau officiel MEN, corps de Cours IA...)
@@ -5194,7 +5194,7 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bulle-txt{background:#fff;border:1.5pt solid #1A1A1F;padding:8pt 10pt;font-size:12pt;}' +
     /* Bulle vide : taille adaptée au niveau, calibrée pour que les 4 bulles tiennent sur une
        seule page ; le corrigé est renvoyé sur une page séparée (saut de page Word). */
-    '.tc-bulle-vide{min-height:68pt;}' +
+    '.tc-bulle-vide{background:#F5F8F6;border-radius:6pt;min-height:68pt;}' +
     '.tc-bulle-vide.tc-sz-xl{min-height:68pt;}' +
     '.tc-bulle-vide.tc-sz-md{min-height:46pt;}' +
     '.tc-bulle-vide.tc-sz-sm{min-height:30pt;}' +
@@ -5210,12 +5210,13 @@ function telechargerWord(titre, contenuHTML) {
     '.tc-bmap-b4{border-color:#D4AF37;} .tc-bmap-b4 b{color:#8a6d00;}' +
     '.tc-bmap-b5{border-color:#C44569;} .tc-bmap-b5 b{color:#C44569;}' +
     '.tc-bmap-b6{border-color:#00A0A0;} .tc-bmap-b6 b{color:#00A0A0;}' +
-    '.tc-bmap-vide{min-height:48pt;}' +
+    '.tc-bmap-vide{background:#F5F8F6;border-radius:6pt;min-height:48pt;}' +
     '.tc-tri-banque{background:#E6F4EE;padding:10pt 14pt;margin:14pt 0;line-height:2.2;}' +
     '.tc-tri-item{background:#fff;border:1.5pt solid #006B3F;padding:4pt 12pt;margin:2pt 4pt;font-size:12pt;font-weight:bold;color:#006B3F;}' +
     '.tc-tri-table{width:100%;border-collapse:separate;border-spacing:8pt;margin:14pt 0;}' +
     '.tc-tri-case{width:50%;vertical-align:top;background:#fff;border:2.5pt solid #006B3F;padding:12pt 14pt;}' +
     '.tc-tri-titre{font-weight:bold;font-size:12pt;color:#006B3F;text-align:center;margin-bottom:6pt;}' +
+    '.tc-tri-lignes{background:#F5F8F6;border-radius:6pt;}' +
     '.tc-tri-lignes{min-height:120pt;}' +
     '.tc-tri-lignes.tc-sz-xl{min-height:120pt;}' +
     '.tc-tri-lignes.tc-sz-md{min-height:85pt;}' +
@@ -11102,6 +11103,13 @@ function tailleEcritureNiveau(nv) {
   if (/AM\b/.test(s)) return 'md';
   return 'sm';
 }
+/* Nombre de bulles du Jeu des bulles : les bulles xl (primaire) sont grandes, 4 suffisent déjà à
+   remplir une page ; les bulles md/sm (moyen/secondaire) étant plus petites, il y a la place pour
+   un dialogue plus long tout en restant sur une seule page. */
+function nbBullesNiveau(nv) {
+  var t = tailleEcritureNiveau(nv);
+  return t === 'xl' ? 4 : (t === 'md' ? 6 : 8);
+}
 function parseDureeMinutes(durStr) {
   if (!durStr) return 60;
   if (durStr.indexOf('30')>=0) return 30;
@@ -11626,21 +11634,24 @@ async function genCours(extraInstruction) {
       var tdVide = '<td class="tc-bulle-td tc-bulle-td-empty"></td>';
       return '<tr>' + (cote === 'd' ? tdVide + tdPleine : tdPleine + tdVide) + '</tr>';
     }
+    var nbBulles = nbBullesNiveau(nv);
+    var lignesBullesHtml = '';
+    for (var ib = 1; ib <= nbBulles; ib++) { lignesBullesHtml += ligneBulle(ib, ib % 2 === 1 ? 'g' : 'd'); }
     var skeletonBulles =
       '<p><strong>Mise en situation :</strong> [1 à 2 phrases qui plantent le décor : qui sont les deux personnages, où ils sont, pourquoi ils parlent — en lien direct avec le sujet "'+titre+'"]</p>'+
       '<table class="tc-bulle-table"><tbody>'+
-      ligneBulle(1,'g') + ligneBulle(2,'d') + ligneBulle(3,'g') + ligneBulle(4,'d') +
+      lignesBullesHtml +
       '</tbody></table>'+
-      '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les 4 répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
+      '<div class="tc-box tc-example tc-bulle-corrige"><div class="tc-box-title">📘 Corrigé indicatif (pour le professeur)</div>[une version complète et cohérente du dialogue entier, les '+nbBulles+' répliques, une par ligne avec le nom du personnage en gras suivi de « : » — précise en une phrase à la fin que ce n\'est qu\'UN exemple parmi plusieurs réponses correctes possibles]</div>';
     prompt = 'Tu es professeur de '+mat+' dans le système éducatif algérien (MEN), niveau '+nv+'. Crée un JEU DES BULLES : un mini-dialogue de bande dessinée à imprimer, à 2 personnages, que l\'élève complète À LA MAIN dans les bulles laissées vides — une activité ludique de production '+(isLangueMatiere(mat)?'orale/écrite':'écrite')+'. Sujet : "'+titre+'". Langue : '+langRedactionTxt+'.'+(obj?'\nObjectifs: '+obj:'')+
-      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, à 4 lignes = 4 répliques, 2 par personnage en alternance stricte gauche/droite — volontairement court pour tenir sur UNE SEULE page imprimée avec de grandes bulles). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans chaque <div class="tc-bulle-txt tc-bulle-vide ..."> (bulle à remplir), ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé, en GRAND car l\'écriture d\'un enfant prend de la place ; (2) le corrigé (classe "tc-bulle-corrige") part automatiquement sur une page séparée à l\'impression, ne l\'écris donc PAS trop long (4 répliques courtes suffisent, pas de paragraphe). NE CHANGE PAS la structure du tableau (lignes, colonnes, cellules vides), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
+      '\n\nVoici le squelette HTML EXACT à utiliser (un vrai tableau HTML <table>, à '+nbBulles+' lignes = '+nbBulles+' répliques, en alternance stricte gauche/droite — calibré pour tenir sur UNE SEULE page imprimée avec des bulles adaptées au niveau '+nv+'). Remplace chaque texte entre crochets [ ]. RÈGLES ABSOLUES : (1) dans chaque <div class="tc-bulle-txt tc-bulle-vide ..."> (bulle à remplir), ne mets STRICTEMENT RIEN à l\'intérieur — pas de texte, pas de [indication], pas de points de suspension — ce div doit rester complètement vide dans ta réponse, c\'est l\'élève qui y écrira à la main sur le papier imprimé ; (2) le corrigé (classe "tc-bulle-corrige") part automatiquement sur une page séparée à l\'impression, ne l\'écris donc PAS trop long ('+nbBulles+' répliques courtes suffisent, pas de paragraphe). NE CHANGE PAS la structure du tableau (lignes, colonnes, cellules vides), ni les classes CSS. Ta réponse doit commencer par "<p><strong>Mise en situation" et ne rien contenir avant :\n\n'+skeletonBulles+
       '\n\nExigences :\n'+
       '- Choisis 2 PRÉNOMS algériens réalistes, adaptés à des élèves de '+nv+', comme personnages (remplace "[Emoji + prénom personnage 1]" par "👦 Prénom" et "[Emoji + prénom personnage 2]" par "👧 Prénom", de façon cohérente dans tout le document)\n'+
       '- La situation et le dialogue doivent porter PRÉCISÉMENT sur le sujet "'+titre+'" — jamais une scène générique sans rapport\n'+
       '- Chaque indice (tc-bulle-indice) fait 5 à 10 mots maximum, et aide l\'élève à savoir QUOI écrire dans la bulle juste au-dessus, sans jamais lui donner la réponse toute faite\n'+
       '- Ton naturel, proche de ce que diraient vraiment des élèves algériens de cet âge — pas de registre trop soutenu ni trop enfantin\n'+
       '- Vocabulaire et complexité adaptés au niveau '+nv+'\n'+
-      '- Le corrigé indicatif doit être une vraie version complète et cohérente des 4 répliques, pas un résumé';
+      '- Le corrigé indicatif doit être une vraie version complète et cohérente des '+nbBulles+' répliques, pas un résumé';
   } else if (ty === 'bmap') {
     enteteHTML += '<div class="pp-meta"><div><b>Sujet :</b> '+titre+'</div><div><b>Niveau :</b> '+nv+'</div></div>';
     /* Carte mentale en <table> (thème central avec rowspan=3, 6 bulles autour) pour la même
