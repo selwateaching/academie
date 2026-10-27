@@ -26,7 +26,7 @@ Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variab
 | Module | Contenu |
 |---|---|
 | 1. Professeurs | Annuaire (matière, classes, contacts), fiches individuelles, emplois du temps jour/semaine/mois, absences et indisponibilités, remplacements avec suggestions automatiques |
-| 2. Communication | Messagerie interne (personne, classe, niveau, tous), accusés et confirmations de lecture, réunions et convocations avec réponses, documents partagés |
+| 2. Communication | Messagerie interne (personne, classe, niveau, tous), accusés et confirmations de lecture, réunions et convocations (professeurs par classe ou à la main, **élèves par classe** avec « toute la classe », recherche et décompte ; convocations aux parents rédigées en un clic) avec réponses, documents partagés |
 | 3. Suivi des cours | Cours perturbés (annulé, salle indisponible, déplacé, remplacé), classes et professeurs principaux, tableau de bord quotidien, incidents |
 | 4. Administratif | Tâches et échéances, alertes automatiques, rapports et statistiques (impression PDF, exports CSV pour Excel), historique des actions |
 | Rédaction de documents | **Saisie automatique** : choisir un modèle (rapport d'incident, convocation des parents, avertissement, compte rendu d'entretien, signalement d'absences) et un élève → classe, professeur principal, équipe pédagogique, matière et responsable légal sont remplis ; liste déroulante de types d'incident avec texte proposé ; texte entièrement modifiable ; enregistrement dans *Documents*, impression/PDF, export Word. Modèles et types modifiables par l'établissement. Fichier des élèves (saisie ou import CSV) |

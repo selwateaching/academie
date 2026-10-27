@@ -33,7 +33,7 @@ Rédigé par {{auteur}}, le {{date_du_jour}}.""", 1, 1),
 
 {{responsable}},
 
-Je vous prie de bien vouloir vous présenter à la vie scolaire de l'établissement le {{date}} à {{heure}} afin d'échanger au sujet de {{eleve}}, élève de {{classe}}.
+Je vous prie de bien vouloir vous présenter le {{date}} à {{heure}} (lieu : {{lieu}}) afin d'échanger au sujet de {{eleve}}, élève de {{classe}}.
 
 Motif de la convocation : {{type_incident}}.
 {{description}}

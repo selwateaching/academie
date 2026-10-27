@@ -61,7 +61,7 @@ MODULE_DES_ENDPOINTS = {
     "remplacements": ["remplacements", "remplacement_action"], "cours": ["cours", "perturbation_supprimer"],
     "classes": ["classes", "classe_pp"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
-    "reunions": ["reunions", "reunion_repondre", "reunion_supprimer"],
+    "reunions": ["reunions", "reunion_repondre", "reunion_supprimer", "reunion_detail", "reunion_convocations_parents"],
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
@@ -930,6 +930,10 @@ def reunions():
             valides = {r["id"] for r in q("SELECT id FROM professeurs WHERE etab_id=?", (g.etab_id,))}
             for pid in ids & valides:
                 db().execute("INSERT INTO reunion_convoques(reunion_id,prof_id) VALUES (?,?)", (rid, pid))
+            eleves_ok = {r["id"] for r in q("SELECT id FROM eleves WHERE etab_id=?", (g.etab_id,))}
+            choisis = set(request.form.getlist("eleves", type=int)) & eleves_ok
+            for eid in choisis:
+                db().execute("INSERT INTO reunion_eleves(reunion_id,eleve_id) VALUES (?,?)", (rid, eid))
             db().commit()
             log("réunion créée", f"{f['titre']} ({len(ids & valides)} convoqués)")
             convoques = list(ids & valides)
@@ -937,12 +941,13 @@ def reunions():
                      heure=f.get("heure", ""), lieu=f.get("lieu", "").strip(),
                      emails=[r["email"] for r in q("SELECT email FROM professeurs WHERE email<>'' AND id IN (%s)"
                                                    % ",".join("?" * len(convoques)), convoques)] if convoques else [])
-            flash(f"Réunion créée, {len(ids & valides)} convocation(s).", "ok")
+            flash(f"Réunion créée : {len(ids & valides)} professeur(s)" + (f" et {len(choisis)} élève(s)" if choisis else "") + " convoqué(s).", "ok")
             return redirect(url_for("reunions"))
     if g.user["role"] in STAFF:
         rows = q("SELECT r.*, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id) nb, "
                  "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='oui') oui, "
-                 "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non "
+                 "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non, "
+                 "(SELECT COUNT(*) FROM reunion_eleves WHERE reunion_id=r.id) nb_eleves "
                  "FROM reunions r WHERE r.etab_id=? ORDER BY r.date DESC, r.heure LIMIT 100", (g.etab_id,))
     else:
         rows = q("SELECT r.*, rc.reponse FROM reunions r JOIN reunion_convoques rc ON rc.reunion_id=r.id "
@@ -952,7 +957,55 @@ def reunions():
     classes_par_prof = {}
     for c in q("SELECT DISTINCT prof_id, classe FROM creneaux WHERE etab_id=? ORDER BY classe", (g.etab_id,)):
         classes_par_prof.setdefault(c["prof_id"], []).append(c["classe"])
-    return render_template("reunions.html", rows=rows, profs=profs, classes=classes_, classes_par_prof=classes_par_prof)
+    eleves_par_classe = {}
+    if g.user["role"] in STAFF:
+        for e in q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,)):
+            eleves_par_classe.setdefault(e["classe"] or "Sans classe", []).append(e)
+    return render_template("reunions.html", rows=rows, profs=profs, classes=classes_, classes_par_prof=classes_par_prof,
+                           eleves_par_classe=eleves_par_classe)
+
+
+@app.route("/reunions/<int:rid>")
+@staff_only
+def reunion_detail(rid):
+    r = one("SELECT * FROM reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    profs = q("SELECT p.nom, p.prenom, p.matiere, rc.reponse FROM reunion_convoques rc JOIN professeurs p ON p.id=rc.prof_id "
+              "WHERE rc.reunion_id=? ORDER BY p.nom", (rid,))
+    eleves_ = q("SELECT e.* FROM reunion_eleves re JOIN eleves e ON e.id=re.eleve_id WHERE re.reunion_id=? ORDER BY e.classe, e.nom, e.prenom", (rid,))
+    deja = {d["eleve_id"] for d in q("SELECT eleve_id FROM documents_generes WHERE etab_id=? AND titre LIKE ?", (g.etab_id, f"% — {r['titre']} (réunion {rid})"))}
+    return render_template("reunion_detail.html", r=r, profs=profs, eleves=eleves_, deja=deja)
+
+
+@app.route("/reunions/<int:rid>/convocations-parents", methods=["POST"])
+@staff_only
+def reunion_convocations_parents(rid):
+    """Rédige une convocation aux parents par élève convoqué, à partir du modèle « Convocation des parents »."""
+    r = one("SELECT * FROM reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    installer_modeles(db(), g.etab_id)
+    m = one("SELECT * FROM modeles_documents WHERE etab_id=? AND code='convocation_parents'", (g.etab_id,)) \
+        or one("SELECT * FROM modeles_documents WHERE etab_id=? AND titre LIKE '%onvocation%' ORDER BY id LIMIT 1", (g.etab_id,))
+    if not m:
+        flash("Aucun modèle de convocation : créez-en un dans « Modèles et types d'incident ».", "err")
+        return redirect(url_for("reunion_detail", rid=rid))
+    n = 0
+    for e in q("SELECT e.* FROM reunion_eleves re JOIN eleves e ON e.id=re.eleve_id WHERE re.reunion_id=?", (rid,)):
+        titre = f"Convocation des parents — {nom_complet(e)} — {r['titre']} (réunion {rid})"
+        if one("SELECT 1 FROM documents_generes WHERE etab_id=? AND eleve_id=? AND titre=?", (g.etab_id, e["id"], titre)):
+            continue
+        ctx = construire_ctx(e, date_iso=r["date"], heure=r["heure"], lieu=r["lieu"] or "la vie scolaire de l'établissement",
+                             libelle=r["titre"], description=r["ordre_du_jour"])
+        run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,contenu,auteur_id,auteur,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (g.etab_id, m["id"], m["titre"], titre, e["id"], nom_complet(e), remplir(m["corps"], ctx), g.user["id"], g.user["nom"],
+             datetime.now().isoformat(timespec="minutes")))
+        n += 1
+    log("convocations aux parents rédigées", f"réunion {rid} : {n}")
+    flash(f"{n} convocation(s) aux parents rédigée(s) : retrouvez-les dans Documents (modifiables, imprimables, export Word)." if n
+          else "Toutes les convocations de cette réunion ont déjà été rédigées.", "ok")
+    return redirect(url_for("documents" if n else "reunion_detail", **({} if n else {"rid": rid})))
 
 
 @app.route("/reunions/<int:rid>/repondre", methods=["POST"])
@@ -1228,22 +1281,27 @@ def donnees_redaction():
 
 
 def contexte_document(f, eleve):
-    classe = eleve["classe"] if eleve else ""
-    _, pp = equipe_et_pp(classe) if classe else ([], None)
-    prof = one("SELECT * FROM professeurs WHERE id=? AND etab_id=?", (f.get("prof_id", type=int), g.etab_id)) if f.get("prof_id") else None
     libelle = f.get("type_libelle", "").strip()
     if libelle.startswith("Autre") and f.get("type_autre", "").strip():
         libelle = f["type_autre"].strip()
+    return construire_ctx(eleve, f.get("prof_id", type=int) if f.get("prof_id") else None, f.get("matiere", ""), f.get("date", ""),
+                          f.get("heure", ""), f.get("lieu", ""), libelle, f.get("description", ""), f.get("suite", ""))
+
+
+def construire_ctx(eleve, prof_id=None, matiere="", date_iso="", heure="", lieu="", libelle="", description="", suite=""):
+    classe = eleve["classe"] if eleve else ""
+    _, pp = equipe_et_pp(classe) if classe else ([], None)
+    prof = one("SELECT * FROM professeurs WHERE id=? AND etab_id=?", (prof_id, g.etab_id)) if prof_id else None
     ctx = {
         "eleve": nom_complet(eleve) if eleve else "", "prenom": eleve["prenom"] if eleve else "", "nom": eleve["nom"] if eleve else "",
         "classe": classe, "responsable": (eleve["responsable"] if eleve and eleve["responsable"] else "Madame, Monsieur"),
-        "professeur": nom_complet(prof) if prof else "", "matiere": f.get("matiere", "").strip() or (prof["matiere"] if prof else ""),
-        "prof_principal": pp["nom"] if pp else "", "date": date_longue(f.get("date", "")), "heure": f.get("heure", "").strip(),
-        "lieu": f.get("lieu", "").strip(), "type_incident": libelle, "auteur": g.user["nom"],
+        "professeur": nom_complet(prof) if prof else "", "matiere": matiere.strip() or (prof["matiere"] if prof else ""),
+        "prof_principal": pp["nom"] if pp else "", "date": date_longue(date_iso), "heure": heure.strip(),
+        "lieu": lieu.strip(), "type_incident": libelle, "auteur": g.user["nom"],
         "date_du_jour": date_longue(date.today().isoformat()), "etablissement": g.etab["nom"],
     }
-    ctx["description"] = remplir(f.get("description", "").strip(), ctx)
-    ctx["suite"] = remplir(f.get("suite", "").strip(), ctx)
+    ctx["description"] = remplir(description.strip(), ctx)
+    ctx["suite"] = remplir(suite.strip(), ctx)
     return ctx
 
 

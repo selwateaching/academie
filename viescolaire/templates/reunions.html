@@ -1,8 +1,8 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Réunions{% endblock %}{% block body %}
 <div class="top"><h1>Réunions et convocations</h1></div>
 <div class="card scroll"><table><tr><th>Date</th><th>Réunion</th><th>Lieu</th><th>{{ 'Réponses' if g.user.role in STAFF else 'Ma réponse' }}</th><th></th></tr>
-{% for r in rows %}<tr><td>{{ r.date|fr_date }}<br>{{ r.heure }}</td><td><b>{{ r.titre }}</b><br><span class="mute" style="white-space:pre-wrap">{{ r.ordre_du_jour }}</span></td><td>{{ r.lieu }}</td>
-<td>{% if g.user.role in STAFF %}{{ r.nb }} convoqué(s) · <span class="tag ok">{{ r.oui }} oui</span> <span class="tag err">{{ r.non }} non</span>
+{% for r in rows %}<tr><td>{{ r.date|fr_date }}<br>{{ r.heure }}</td><td><b>{% if g.user.role in STAFF %}<a href="{{ url_for('reunion_detail', rid=r.id) }}">{{ r.titre }}</a>{% else %}{{ r.titre }}{% endif %}</b><br><span class="mute" style="white-space:pre-wrap">{{ r.ordre_du_jour }}</span></td><td>{{ r.lieu }}</td>
+<td>{% if g.user.role in STAFF %}{{ r.nb }} professeur(s){% if r.nb_eleves %} · {{ r.nb_eleves }} élève(s){% endif %} · <span class="tag ok">{{ r.oui }} oui</span> <span class="tag err">{{ r.non }} non</span>
 {% else %}{% for v, l in [('oui','Présent'),('non','Absent')] %}<form method="post" action="{{ url_for('reunion_repondre', rid=r.id) }}" class="inline">{{ csrf() }}<input type="hidden" name="reponse" value="{{ v }}"><button class="{{ '' if r.reponse == v else 'sec' }} sm">{{ l }}</button></form> {% endfor %}{% endif %}</td>
 <td>{% if g.user.role in STAFF %}{{ post(url_for('reunion_supprimer', rid=r.id), 'Supprimer', 'sec sm', 'Supprimer cette réunion ?') }}{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucune réunion.</td></tr>{% endfor %}</table></div>
@@ -14,4 +14,11 @@
 <div style="flex:0 0 190px"><label class="check"><input type="checkbox" name="tous" value="1" data-conv-tous> Tous les professeurs</label>
 <p class="mute" data-conv-resume style="margin-top:12px"></p></div></div>
 <p class="mute">Sélectionner une classe coche automatiquement les professeurs qui y enseignent ; vous pouvez ensuite en ajouter ou en retirer. Maintenez Ctrl (⌘ sur Mac) pour en choisir plusieurs.</p>
+{% if eleves_par_classe %}<h2 style="margin-top:16px">Élèves convoqués <span class="mute" style="font-weight:400">(facultatif)</span></h2>
+<div class="row"><div><label>Aller à une classe</label><select data-el-classe><option value="">Toutes les classes</option>{% for c in eleves_par_classe %}<option>{{ c }}</option>{% endfor %}</select></div>
+<div><label>Rechercher un élève</label><input type="search" data-el-recherche placeholder="Tapez un nom…" autocomplete="off"></div>
+<div style="flex:0 0 190px"><p class="mute" data-el-resume style="margin-top:28px">Aucun élève sélectionné.</p></div></div>
+<div class="eleves-box" data-el-box>{% for c, liste in eleves_par_classe.items() %}<fieldset data-el-groupe="{{ c }}"><legend><label class="check"><input type="checkbox" data-el-toute-classe> <b>{{ c }}</b> <span class="mute">— toute la classe ({{ liste|length }})</span></label></legend>
+<div class="eleves-grille">{% for e in liste %}<label class="check" data-el-nom="{{ (e.nom ~ ' ' ~ e.prenom)|lower }}"><input type="checkbox" name="eleves" value="{{ e.id }}"> {{ e.nom }} {{ e.prenom }}</label>{% endfor %}</div></fieldset>{% endfor %}</div>
+<p class="mute">Cochez « toute la classe » pour convoquer tous ses élèves, ou choisissez-les un par un (ex. délégués). Les convocations aux parents se rédigent ensuite depuis la réunion.</p>{% endif %}
 <button>Créer et convoquer</button></form></div>{% endif %}{% endblock %}

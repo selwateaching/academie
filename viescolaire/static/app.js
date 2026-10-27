@@ -158,3 +158,42 @@ document.addEventListener('click', function (e) {
   });
   surEleve();
 })();
+/* Convocation d'élèves : sélection par classe, recherche, décompte. */
+(function () {
+  var box = document.querySelector('[data-el-box]');
+  if (!box) return;
+  var form = box.closest('form');
+  var filtreClasse = form.querySelector('[data-el-classe]');
+  var recherche = form.querySelector('[data-el-recherche]');
+  var resume = form.querySelector('[data-el-resume]');
+  var groupes = Array.prototype.slice.call(box.querySelectorAll('[data-el-groupe]'));
+  function cases(g) { return Array.prototype.slice.call(g.querySelectorAll('input[name=eleves]')); }
+  function majGroupe(g) {
+    var cs = cases(g), n = cs.filter(function (c) { return c.checked; }).length, t = g.querySelector('[data-el-toute-classe]');
+    t.checked = n === cs.length; t.indeterminate = n > 0 && n < cs.length;
+  }
+  function majResume() {
+    var n = box.querySelectorAll('input[name=eleves]:checked').length;
+    resume.textContent = n ? n + ' élève(s) sélectionné(s).' : 'Aucun élève sélectionné.';
+  }
+  function filtrer() {
+    var cl = filtreClasse.value, terme = recherche.value.trim().toLowerCase();
+    groupes.forEach(function (g) {
+      var visibles = 0;
+      Array.prototype.forEach.call(g.querySelectorAll('[data-el-nom]'), function (l) {
+        var ok = !terme || l.getAttribute('data-el-nom').indexOf(terme) !== -1; l.hidden = !ok; if (ok) visibles++;
+      });
+      g.hidden = (cl && g.getAttribute('data-el-groupe') !== cl) || visibles === 0;
+    });
+  }
+  groupes.forEach(function (g) {
+    g.querySelector('[data-el-toute-classe]').addEventListener('change', function (e) {
+      cases(g).forEach(function (c) { if (!c.closest('[data-el-nom]').hidden) c.checked = e.target.checked; });
+      majGroupe(g); majResume();
+    });
+    g.addEventListener('change', function (e) { if (e.target.name === 'eleves') { majGroupe(g); majResume(); } });
+  });
+  filtreClasse.addEventListener('change', filtrer);
+  recherche.addEventListener('input', filtrer);
+  majResume();
+})();

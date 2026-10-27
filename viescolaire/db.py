@@ -161,7 +161,14 @@ MIGRATIONS = [
         );
         ALTER TABLE incidents ADD COLUMN eleve_id INTEGER;
     """),  # élèves, modèles de documents, types d'incident, documents rédigés
-    # (6, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (6, """
+        CREATE TABLE IF NOT EXISTS reunion_eleves (
+            reunion_id INTEGER NOT NULL REFERENCES reunions(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE,
+            PRIMARY KEY (reunion_id, eleve_id)
+        );
+    """),  # élèves convoqués à une réunion
+    # (7, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
@@ -372,10 +379,13 @@ def seed_demo(password="demo1234"):
     k = 0
     for c in classes:
         for _ in range(8):
-            pr, nm = prenoms[k % len(prenoms)], noms[(k * 7 + 3) % len(noms)]
+            pr, nm = prenoms[k % len(prenoms)], noms[(k * 7 + 3 + (k // len(prenoms)) * 5) % len(noms)]   # couples prénom/nom tous distincts
             con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
                         (e1, nm, pr, c, f"Famille {nm}", f"famille.{nm.lower().replace('è', 'e').replace('é', 'e')}{k}@exemple.fr"))
             k += 1
+
+    for (eid,) in con.execute("SELECT id FROM eleves WHERE etab_id=? AND classe='3A' ORDER BY id LIMIT 2", (e1,)).fetchall():
+        con.execute("INSERT INTO reunion_eleves VALUES (?,?)", (r1, eid))   # délégués convoqués au conseil de classe
 
     # Second établissement (démonstration du multi-établissements)
     for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:

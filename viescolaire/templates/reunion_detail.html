@@ -1,0 +1,11 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ r.titre }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ r.titre }}</h1><a class="btn sec" href="{{ url_for('reunions') }}">← Réunions</a></div>
+<div class="card"><p><b>{{ r.date|fr_date }}</b> {{ r.heure }} · {{ r.lieu }}</p><p style="white-space:pre-wrap" class="mute">{{ r.ordre_du_jour }}</p></div>
+<div class="grid g2"><div class="card scroll"><h2>Professeurs convoqués ({{ profs|length }})</h2><table><tr><th>Professeur</th><th>Réponse</th></tr>
+{% for p in profs %}<tr><td>{{ p.prenom }} {{ p.nom }} <span class="mute">{{ p.matiere }}</span></td><td>{% if p.reponse == 'oui' %}<span class="tag ok">Présent</span>{% elif p.reponse == 'non' %}<span class="tag err">Absent</span>{% else %}<span class="tag">En attente</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="2" class="mute">Aucun.</td></tr>{% endfor %}</table></div>
+<div class="card scroll"><h2>Élèves convoqués ({{ eleves|length }})</h2><table><tr><th>Classe</th><th>Élève</th><th>Responsable</th><th>Convocation</th></tr>
+{% for e in eleves %}<tr><td>{{ e.classe }}</td><td>{{ e.nom }} {{ e.prenom }}</td><td>{{ e.responsable }}<br><span class="mute">{{ e.contact }}</span></td><td>{% if e.id in deja %}<span class="tag ok">rédigée</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun élève convoqué.</td></tr>{% endfor %}</table>
+{% if eleves and module_actif('redaction') %}<form method="post" action="{{ url_for('reunion_convocations_parents', rid=r.id) }}" style="margin-top:12px">{{ csrf() }}<button>Rédiger les convocations aux parents</button>
+<p class="mute">Crée un document par élève à partir du modèle « Convocation des parents » (date, heure et lieu de la réunion), modifiable ensuite.</p></form>{% endif %}</div></div>{% endblock %}
