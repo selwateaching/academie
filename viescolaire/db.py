@@ -378,7 +378,7 @@ def seed_demo(password="demo1234"):
             "Boyer", "Garnier", "Chevalier", "François", "Perrin", "Morel", "Clément", "Gauthier", "Roche", "Noël", "Meyer", "Lopez"]
     k = 0
     for c in classes:
-        for _ in range(8):
+        for _ in range(24):  # 24 élèves par classe
             pr, nm = prenoms[k % len(prenoms)], noms[(k * 7 + 3 + (k // len(prenoms)) * 5) % len(noms)]   # couples prénom/nom tous distincts
             con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
                         (e1, nm, pr, c, f"Famille {nm}", f"famille.{nm.lower().replace('è', 'e').replace('é', 'e')}{k}@exemple.fr"))
@@ -388,6 +388,9 @@ def seed_demo(password="demo1234"):
         con.execute("INSERT INTO reunion_eleves VALUES (?,?)", (r1, eid))   # délégués convoqués au conseil de classe
 
     # Second établissement (démonstration du multi-établissements)
+    for k2, c in enumerate(["2nde1", "2nde1", "2nde1", "1ère S", "1ère S", "1ère S", "Term ES", "Term ES"]):
+        con.execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact) VALUES (?,?,?,?,?,?)",
+                    (e2, noms[(k2 * 5 + 11) % len(noms)], prenoms[(k2 * 3 + 5) % len(prenoms)], c, f"Famille {noms[(k2 * 5 + 11) % len(noms)]}", ""))
     for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:
         con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
                     (e2, nom, prenom, mat, f"{prenom.lower()}@demo.fr"))
