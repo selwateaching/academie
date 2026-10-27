@@ -779,7 +779,17 @@ def remplacements():
         d["suggestions"] = suggerer_remplacants(r, 4) if r["statut"] == "a_pourvoir" else []
         rows.append(d)
     nb_attente = sum(1 for r in rows if r["statut"] == "a_pourvoir" and r["date"] >= date.today().isoformat())
-    return render_template("remplacements.html", rows=rows, statut=statut, absence=absence, nb_attente=nb_attente)
+    # effectifs par statut sur le même périmètre (sans le filtre de statut), pour les boutons et le message de page vide
+    sql_n, args_n = "SELECT statut, COUNT(*) n FROM remplacements WHERE etab_id=?", [g.etab_id]
+    if absence_id:
+        sql_n += " AND absence_id=?"
+        args_n.append(absence_id)
+    else:
+        sql_n += " AND date>=?"
+        args_n.append((date.today() - timedelta(days=7)).isoformat())
+    effectifs = {r["statut"]: r["n"] for r in q(sql_n + " GROUP BY statut", args_n)}
+    effectifs[""] = sum(effectifs.values())
+    return render_template("remplacements.html", rows=rows, statut=statut, absence=absence, nb_attente=nb_attente, effectifs=effectifs)
 
 
 @app.route("/remplacements/<int:rid>/<action>", methods=["POST"])
@@ -849,7 +859,7 @@ def remplacements_auto():
         flash(f"{pourvus} remplacement(s) pourvu(s) automatiquement ; les remplaçants ont été prévenus par message.", "ok")
     else:
         flash(f"{pourvus} remplacement(s) sur {total} pourvu(s) ; {total - pourvus} sans professeur libre (à annuler ou réorganiser).", "err" if not pourvus else "ok")
-    return redirect(request.referrer or url_for("remplacements"))
+    return redirect(url_for("remplacements", statut="assigne" if pourvus else "", absence=absence_id))
 
 
 # ───────────────────────── 3. Suivi des cours et coordination ─────────────────────────
