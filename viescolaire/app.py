@@ -595,13 +595,21 @@ def creneau_ajouter(pid):
     f = request.form
     try:
         jour = int(f["jour"])
-        assert 0 <= jour <= 4 and f["debut"] < f["fin"] and f["classe"].strip()
+        debut, fin = heure_norm(f["debut"]), heure_norm(f["fin"])
+        assert 0 <= jour <= 4 and debut and fin and debut < fin and f["classe"].strip()
     except (KeyError, ValueError, AssertionError):
-        flash("Créneau invalide (jour, heures et classe requis).", "err")
+        flash("Créneau invalide (jour, heures au format HH:MM, début avant la fin, et classe requis).", "err")
         return redirect(url_for("professeur", pid=pid))
     run("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
-        (g.etab_id, pid, f["classe"].strip(), f.get("matiere") or p["matiere"], jour, f["debut"], f["fin"], f.get("salle", "").strip()))
-    log("créneau ajouté", f"{p['nom']} {JOURS[jour]} {f['debut']}")
+        (g.etab_id, pid, f["classe"].strip(), f.get("matiere") or p["matiere"], jour, debut, fin, f.get("salle", "").strip()))
+    for x in q("SELECT classe,debut,fin FROM creneaux WHERE prof_id=? AND jour=? AND NOT (debut=? AND fin=? AND classe=?)", (pid, jour, debut, fin, f["classe"].strip())):
+        if chevauche(debut, fin, x["debut"], x["fin"]):
+            flash(f"Attention : {nom_complet(p)} a déjà cours avec la {x['classe']} de {x['debut']} à {x['fin']} ce jour-là.", "err")
+    for x in q("SELECT c.debut,c.fin,p.nom FROM creneaux c JOIN professeurs p ON p.id=c.prof_id WHERE c.etab_id=? AND c.classe=? AND c.jour=? AND c.prof_id<>?",
+               (g.etab_id, f["classe"].strip(), jour, pid)):
+        if chevauche(debut, fin, x["debut"], x["fin"]):
+            flash(f"Attention : la classe {f['classe'].strip()} a déjà cours avec {x['nom']} de {x['debut']} à {x['fin']}.", "err")
+    log("créneau ajouté", f"{p['nom']} {JOURS[jour]} {debut}")
     return redirect(url_for("professeur", pid=pid))
 
 
@@ -798,7 +806,7 @@ def remplacements():
         d = dict(r)
         d["suggestions"] = suggerer_remplacants(r, 4) if r["statut"] == "a_pourvoir" else []
         d["semaine"] = parse_date(r["date"]).isocalendar()[1]
-        if r["statut"] in ("a_pourvoir", "assigne"):   # tous les professeurs avec leur disponibilité, pour un choix éclairé
+        if r["statut"] == "a_pourvoir":   # tous les professeurs avec leur disponibilité, pour un choix éclairé
             c = one("SELECT * FROM creneaux WHERE id=?", (r["creneau_id"],))
             d["autres"] = sorted(((p, conflit_remplacant(p["id"], c, r["date"], r["id"])) for p in
                                   q("SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=? AND id<>?", (g.etab_id, c["prof_id"]))),
@@ -2575,6 +2583,12 @@ def hhmm_vers_min(texte):
     return int(m.group(1)) * 60 + int(m.group(2)) if m else None
 
 
+def heure_norm(texte):
+    """« 8:30 » ou « 08:30 » -> « 08:30 » ; None si ce n'est pas une heure valide (les heures sont comparées comme du texte)."""
+    m = hhmm_vers_min(texte)
+    return None if m is None else f"{m // 60:02d}:{m % 60:02d}"
+
+
 def min_vers_hhmm(m):
     return f"{m // 60:02d}:{m % 60:02d}"
 
@@ -3827,11 +3841,12 @@ def importer():
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",
                         (g.etab_id, r.get("email", "~"), r.get("nom", "~"), r.get("prenom", "")))
                 jour = [j.lower() for j in JOURS].index(r["jour"].lower()) if r.get("jour", "").lower() in [j.lower() for j in JOURS] else -1
-                if not p or jour < 0 or not r.get("classe") or not r.get("debut") or not r.get("fin") or r["debut"] >= r["fin"]:
+                d_, f_ = heure_norm(r.get("debut", "")), heure_norm(r.get("fin", ""))
+                if not p or jour < 0 or not r.get("classe") or not d_ or not f_ or d_ >= f_:
                     ignores += 1
                     continue
                 db().execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
-                             (g.etab_id, p["id"], r["classe"], r.get("matiere") or p["matiere"], jour, r["debut"], r["fin"], r.get("salle", "")))
+                             (g.etab_id, p["id"], r["classe"], r.get("matiere") or p["matiere"], jour, d_, f_, r.get("salle", "")))
                 ok += 1
         db().commit()
         log("import CSV", f"{kind}: {ok} importés, {ignores} ignorés")
