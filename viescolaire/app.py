@@ -75,7 +75,7 @@ MODULE_DES_ENDPOINTS = {
     "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
     "infirmerie": ["infirmerie", "infirmerie_prevenir", "infirmerie_prevenir_jour", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
-    "redaction": ["document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
+    "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
@@ -1371,9 +1371,9 @@ def reunion_convocations_parents(rid):
             continue
         ctx = construire_ctx(e, date_iso=r["date"], heure=r["heure"], lieu=r["lieu"] or "la vie scolaire de l'établissement",
                              libelle=r["titre"], description=r["ordre_du_jour"])
-        run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,contenu,auteur_id,auteur,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,contenu,auteur_id,auteur,created_at,signataires) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
             (g.etab_id, m["id"], m["titre"], titre, e["id"], nom_complet(e), remplir(m["corps"], ctx), g.user["id"], g.user["nom"],
-             datetime.now().isoformat(timespec="minutes")))
+             datetime.now().isoformat(timespec="minutes"), signataires_choisis()))
         n += 1
     log("convocations aux parents rédigées", f"réunion {rid} : {n}")
     flash(f"{n} convocation(s) aux parents rédigée(s) : retrouvez-les dans Documents (modifiables, imprimables, export Word)." if n
@@ -1874,30 +1874,183 @@ def construire_ctx(eleve, prof_id=None, matiere="", date_iso="", heure="", lieu=
     return ctx
 
 
-def fabriquer_docx(titre, contenu, etablissement):
-    """Document Word minimal (.docx) : en-tête, titre centré, puis le texte ligne par ligne."""
-    def para(texte, gras=False, centre=False, taille=None):
-        ppr = "<w:pPr><w:jc w:val=\"center\"/></w:pPr>" if centre else ""
-        rpr = ("<w:rPr>" + ("<w:b/>" if gras else "") + (f"<w:sz w:val=\"{taille}\"/>" if taille else "") + "</w:rPr>") if (gras or taille) else ""
-        return f"<w:p>{ppr}<w:r>{rpr}<w:t xml:space=\"preserve\">{xml_escape(texte)}</w:t></w:r></w:p>"
-    corps = [para(etablissement, gras=True), para(""), para(titre, gras=True, centre=True, taille=32), para("")]
+def dimensions_image(data):
+    """(largeur, hauteur) d'un PNG ou JPEG, sinon None."""
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return struct.unpack(">II", data[16:24])
+    if data[:3] == b"\xff\xd8\xff":
+        i = 2
+        while i + 9 < len(data):
+            if data[i] != 0xFF:
+                i += 1
+                continue
+            marq = data[i + 1]
+            if marq in (0xC0, 0xC1, 0xC2):
+                h, w = struct.unpack(">HH", data[i + 5:i + 9])
+                return w, h
+            i += 2 + struct.unpack(">H", data[i + 2:i + 4])[0]
+    return None
+
+
+def fabriquer_docx(titre, contenu, etablissement, entete=None, signes=(), logo=None, fait_le=""):
+    """Document Word (.docx) : logo et en-tête de l'établissement, titre, texte, « Fait à… le… », signataires, pied de page."""
+    entete = entete or {}
+
+    def para(texte, gras=False, centre=False, taille=None, droite=False, italique=False):
+        jc = "center" if centre else ("right" if droite else "")
+        ppr = f'<w:pPr><w:spacing w:after="40"/>{f"<w:jc w:val={chr(34)}{jc}{chr(34)}/>" if jc else ""}</w:pPr>'
+        rpr = ("<w:rPr>" + ("<w:b/>" if gras else "") + ("<w:i/>" if italique else "") + (f'<w:sz w:val="{taille}"/>' if taille else "") + "</w:rPr>") \
+            if (gras or taille or italique) else ""
+        return f'<w:p>{ppr}<w:r>{rpr}<w:t xml:space="preserve">{xml_escape(texte)}</w:t></w:r></w:p>'
+
+    corps = []
+    dim = dimensions_image(logo[1]) if logo else None
+    if logo and dim:
+        cx = int(2.6 * 360000)
+        cy = int(cx * dim[1] / dim[0])
+        corps.append('<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="%d" cy="%d"/><wp:docPr id="1" name="Logo"/>'
+                     '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="1" name="logo"/><pic:cNvPicPr/></pic:nvPicPr>'
+                     '<pic:blipFill><a:blip r:embed="rIdLogo"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+                     '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="%d" cy="%d"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic>'
+                     '</wp:inline></w:drawing></w:r></w:p>' % (cx, cy, cx, cy))
+    if entete.get("ligne_haut"):
+        corps.append(para(entete["ligne_haut"], taille=18, italique=True))
+    corps.append(para(entete.get("nom_affiche") or etablissement, gras=True, taille=28))
+    for l in (entete.get("adresse"), entete.get("contact")):
+        if l:
+            corps.append(para(l, taille=18))
+    corps += [para(""), para(titre, gras=True, centre=True, taille=32), para("")]
     corps += [para(l) for l in contenu.replace("\r\n", "\n").split("\n")]
-    xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-           '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'
+    if signes or fait_le:
+        corps += [para(""), para(fait_le, droite=True) if fait_le else para("")]
+    if signes:
+        cell = lambda nom, fonction: ('<w:tc><w:tcPr><w:tcW w:w="%d" w:type="dxa"/></w:tcPr>%s%s%s</w:tc>' % (
+            9000 // len(signes), para(fonction, gras=True, centre=True), para("", centre=True) * 3, para(nom, centre=True)))
+        corps.append('<w:tbl><w:tblPr><w:tblW w:w="9000" w:type="dxa"/></w:tblPr><w:tr>' + "".join(cell(n, f) for n, f in signes) + "</w:tr></w:tbl>")
+    if entete.get("pied"):
+        corps += [para(""), para(entete["pied"], centre=True, taille=16, italique=True)]
+    ns = ('xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" '
+          'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+          'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"')
+    xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' f'<w:document {ns}><w:body>'
            + "".join(corps) + '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" '
            'w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>')
+    ext_logo = "png" if logo and logo[0] == "image/png" else "jpeg"
+    avec_logo = bool(logo and dim)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
                    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
                    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
                    '<Default Extension="xml" ContentType="application/xml"/>'
+                   + (f'<Default Extension="{ext_logo}" ContentType="image/{ext_logo}"/>' if avec_logo else "") +
                    '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>')
         z.writestr("_rels/.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
                    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
                    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>')
+        if avec_logo:
+            z.writestr("word/_rels/document.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+                       f'<Relationship Id="rIdLogo" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/logo.{ext_logo}"/></Relationships>')
+            z.writestr(f"word/media/logo.{ext_logo}", logo[1])
         z.writestr("word/document.xml", xml)
     return buf.getvalue()
+
+
+
+# ───────────────────────── En-tête commun et signataires des documents ─────────────────────────
+def entete_documents():
+    """En-tête de l'établissement courant (jamais None : valeurs vides si rien n'est saisi)."""
+    r = one("SELECT etab_id,ligne_haut,nom_affiche,adresse,telephone,email,site,pied,ville,logo_mime,(logo IS NOT NULL AND length(logo)>0) a_logo "
+            "FROM entete_documents WHERE etab_id=?", (g.etab_id,))
+    d = dict(r) if r else {k: "" for k in ("ligne_haut", "nom_affiche", "adresse", "telephone", "email", "site", "pied", "ville", "logo_mime")}
+    d["nom_affiche"] = d.get("nom_affiche") or g.etab["nom"]
+    d["a_logo"] = bool(d.get("a_logo"))
+    d["contact"] = " · ".join(x for x in (d.get("telephone"), d.get("email"), d.get("site")) if x)
+    return d
+
+
+def signataires_actifs():
+    return q("SELECT * FROM signataires WHERE etab_id=? AND actif=1 ORDER BY ordre,id", (g.etab_id,))
+
+
+def signataires_choisis(form=None):
+    """Copie figée [[nom, fonction], ...] : ceux cochés dans le formulaire, sinon ceux marqués « par défaut »."""
+    liste = signataires_actifs()
+    if form is not None and form.get("signataires_envoyes"):
+        ids = {int(x) for x in form.getlist("signataire") if x.isdigit()}
+        choisis = [s for s in liste if s["id"] in ids]
+    else:
+        choisis = [s for s in liste if s["par_defaut"]]
+    return json.dumps([[s["nom"], s["fonction"]] for s in choisis], ensure_ascii=False)
+
+
+def lire_signataires(d):
+    try:
+        return [tuple(x) for x in json.loads(d["signataires"] or "[]")]
+    except (ValueError, TypeError, KeyError):
+        return []
+
+
+@app.route("/documents/entete")
+def logo_entete():
+    r = one("SELECT logo_mime, logo FROM entete_documents WHERE etab_id=?", (g.etab_id,))
+    if not r or not r["logo"]:
+        abort(404)
+    resp = Response(r["logo"], mimetype=r["logo_mime"])
+    resp.headers["Cache-Control"] = "private, max-age=60"
+    return resp
+
+
+@app.route("/documents/parametres", methods=["GET", "POST"])
+@staff_only
+def documents_parametres():
+    """Un seul endroit pour l'en-tête, le pied de page, le logo et les signataires de TOUS les documents de l'établissement."""
+    if request.method == "POST":
+        f, action = request.form, request.form.get("action", "entete")
+        if action == "entete":
+            champs = {k: f.get(k, "").strip()[:300] for k in ("ligne_haut", "nom_affiche", "adresse", "telephone", "email", "site", "pied", "ville")}
+            run("INSERT OR IGNORE INTO entete_documents(etab_id) VALUES (?)", (g.etab_id,))
+            run("UPDATE entete_documents SET ligne_haut=?,nom_affiche=?,adresse=?,telephone=?,email=?,site=?,pied=?,ville=? WHERE etab_id=?",
+                (*[champs[k] for k in ("ligne_haut", "nom_affiche", "adresse", "telephone", "email", "site", "pied", "ville")], g.etab_id))
+            fl = request.files.get("logo")
+            if f.get("supprimer_logo"):
+                run("UPDATE entete_documents SET logo=NULL, logo_mime='' WHERE etab_id=?", (g.etab_id,))
+            elif fl and fl.filename:
+                data = fl.read(PHOTO_MAX + 1)
+                if len(data) > PHOTO_MAX or type_image(data) not in ("image/jpeg", "image/png"):
+                    flash("Logo non enregistré : image JPEG ou PNG de 400 Ko maximum.", "err")
+                else:
+                    run("UPDATE entete_documents SET logo=?, logo_mime=? WHERE etab_id=?", (data, type_image(data), g.etab_id))
+            log("en-tête des documents modifié", g.etab["nom"])
+            flash("En-tête enregistré : il s'applique à tous les documents.", "ok")
+        elif action == "ajouter" and f.get("nom", "").strip():
+            n = one("SELECT COALESCE(MAX(ordre),-1)+1 n FROM signataires WHERE etab_id=?", (g.etab_id,))["n"]
+            run("INSERT INTO signataires(etab_id,nom,fonction,ordre,par_defaut) VALUES (?,?,?,?,?)",
+                (g.etab_id, f["nom"].strip()[:120], f.get("fonction", "").strip()[:120], n, 1 if f.get("par_defaut") else 0))
+            flash("Signataire ajouté.", "ok")
+        elif action in ("modifier", "supprimer", "monter", "descendre"):
+            sid = f.get("id", type=int)
+            s_ = one("SELECT * FROM signataires WHERE id=? AND etab_id=?", (sid, g.etab_id))
+            if not s_:
+                abort(404)
+            if action == "supprimer":
+                run("DELETE FROM signataires WHERE id=?", (sid,))
+            elif action == "modifier":
+                run("UPDATE signataires SET nom=?,fonction=?,par_defaut=?,actif=? WHERE id=?",
+                    (f.get("nom", "").strip()[:120] or s_["nom"], f.get("fonction", "").strip()[:120], 1 if f.get("par_defaut") else 0,
+                     1 if f.get("actif") else 0, sid))
+                flash("Signataire modifié.", "ok")
+            else:
+                autre = one("SELECT * FROM signataires WHERE etab_id=? AND " + ("ordre<? ORDER BY ordre DESC" if action == "monter" else "ordre>? ORDER BY ordre")
+                            + " LIMIT 1", (g.etab_id, s_["ordre"]))
+                if autre:
+                    run("UPDATE signataires SET ordre=? WHERE id=?", (autre["ordre"], sid))
+                    run("UPDATE signataires SET ordre=? WHERE id=?", (s_["ordre"], autre["id"]))
+            log("signataires des documents", action)
+        return redirect(url_for("documents_parametres"))
+    liste = q("SELECT * FROM signataires WHERE etab_id=? ORDER BY ordre,id", (g.etab_id,))
+    return render_template("documents_parametres.html", e=entete_documents(), signataires=liste)
 
 
 @app.route("/documents/nouveau", methods=["GET", "POST"])
@@ -1923,15 +2076,15 @@ def document_nouveau():
             incident_id = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,eleve_id) VALUES (?,?,?,?,?,?,?)",
                               (g.etab_id, parse_date(f.get("date")).isoformat(), eleve["classe"], ctx["eleve"],
                                (ctx["type_incident"] + " — " if ctx["type_incident"] else "") + ctx["description"], ctx["suite"], eleve["id"]))
-        did = run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,prof_id,contenu,auteur_id,auteur,created_at,incident_id) "
-                  "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+        did = run("INSERT INTO documents_generes(etab_id,modele_id,type,titre,eleve_id,eleve_nom,prof_id,contenu,auteur_id,auteur,created_at,incident_id,signataires) "
+                  "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                   (g.etab_id, modele["id"], modele["titre"], titre, eleve["id"] if eleve else None, ctx["eleve"], f.get("prof_id", type=int),
-                   contenu, g.user["id"], g.user["nom"], datetime.now().isoformat(timespec="minutes"), incident_id))
+                   contenu, g.user["id"], g.user["nom"], datetime.now().isoformat(timespec="minutes"), incident_id, signataires_choisis(f)))
         log("document rédigé", f"{modele['titre']} — {ctx['eleve']}")
         ext.emit("document.genere", document_id=did, modele=modele["titre"], eleve_id=eleve["id"] if eleve else None, auteur=g.user["nom"])
         flash("Document enregistré." + (" Un incident a aussi été créé." if incident_id else ""), "ok")
         return redirect(url_for("document_genere", did=did))
-    return render_template("document_nouveau.html", donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"],
+    return render_template("document_nouveau.html", signataires=signataires_actifs(), donnees=donnees, staff=staff, aucun_eleve=not donnees["eleves"],
                            eleve_initial=request.args.get("eleve", type=int) or "")
 
 
@@ -1944,7 +2097,8 @@ def get_document(did):
 
 @app.route("/documents/generes/<int:did>")
 def document_genere(did):
-    return render_template("document_genere.html", d=get_document(did))
+    d = get_document(did)
+    return render_template("document_genere.html", d=d, e=entete_documents(), signes=lire_signataires(d), tous_signataires=signataires_actifs())
 
 
 @app.route("/documents/generes/<int:did>.docx")
@@ -1952,7 +2106,12 @@ def document_genere_docx(did):
     d = get_document(did)
     nom = re.sub(r"[^\w-]+", "_", d["titre"]).strip("_")[:60] or "document"
     log("document exporté (Word)", d["titre"])
-    return Response(fabriquer_docx(d["titre"], d["contenu"], g.etab["nom"]),
+    ent = entete_documents()
+    lg = one("SELECT logo_mime, logo FROM entete_documents WHERE etab_id=?", (g.etab_id,))
+    logo = (lg["logo_mime"], lg["logo"]) if lg and lg["logo"] else None
+    ville = ent["ville"]
+    fait_le = (f"Fait à {ville}, le " if ville else "Fait le ") + date_longue(d["created_at"][:10]) if lire_signataires(d) else ""
+    return Response(fabriquer_docx(d["titre"], d["contenu"], g.etab["nom"], ent, lire_signataires(d), logo, fait_le),
                     mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     headers={"Content-Disposition": f"attachment; filename={nom}.docx"})
 
@@ -1963,8 +2122,9 @@ def document_genere_modifier(did):
     if not request.form.get("contenu", "").strip():
         flash("Le document ne peut pas être vide.", "err")
     else:
-        run("UPDATE documents_generes SET titre=?, contenu=? WHERE id=?",
-            (request.form.get("titre", "").strip()[:200] or d["titre"], request.form["contenu"].strip(), did))
+        run("UPDATE documents_generes SET titre=?, contenu=?, signataires=? WHERE id=?",
+            (request.form.get("titre", "").strip()[:200] or d["titre"], request.form["contenu"].strip(),
+             signataires_choisis(request.form) if request.form.get("signataires_envoyes") else d["signataires"], did))
         log("document modifié", d["titre"])
         flash("Modifications enregistrées.", "ok")
     return redirect(url_for("document_genere", did=did))

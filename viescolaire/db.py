@@ -264,6 +264,20 @@ MIGRATIONS = [
             at TEXT NOT NULL DEFAULT '', PRIMARY KEY (kind, ref_id)
         );
     """),
+    (13, """
+        CREATE TABLE IF NOT EXISTS entete_documents (   -- en-tête et pied de page communs à tous les documents de l'établissement
+            etab_id INTEGER PRIMARY KEY REFERENCES etablissements(id) ON DELETE CASCADE,
+            ligne_haut TEXT NOT NULL DEFAULT '', nom_affiche TEXT NOT NULL DEFAULT '', adresse TEXT NOT NULL DEFAULT '',
+            telephone TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '', site TEXT NOT NULL DEFAULT '',
+            pied TEXT NOT NULL DEFAULT '', ville TEXT NOT NULL DEFAULT '', logo_mime TEXT NOT NULL DEFAULT '', logo BLOB
+        );
+        CREATE TABLE IF NOT EXISTS signataires (        -- personnes qui signent les documents (cochées par défaut ou à la demande)
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            nom TEXT NOT NULL, fonction TEXT NOT NULL DEFAULT '', ordre INTEGER NOT NULL DEFAULT 0,
+            par_defaut INTEGER NOT NULL DEFAULT 1, actif INTEGER NOT NULL DEFAULT 1
+        );
+        ALTER TABLE documents_generes ADD COLUMN signataires TEXT NOT NULL DEFAULT '[]';   -- copie figée [[nom, fonction], ...]
+    """),
 ]
 
 
@@ -703,6 +717,11 @@ def seed_demo(password="demo1234"):
     from .modeles_defaut import installer
     for eid in (e1, e2):
         installer(con, eid)
+    for eid, ville, adr in ((e1, "Lyon", "12 rue des Écoles, 69000 Lyon"), (e2, "Lyon", "3 avenue Victor Hugo, 69000 Lyon")):
+        con.execute("UPDATE entete_documents SET ligne_haut=?, adresse=?, telephone=?, email=?, ville=?, pied=? WHERE etab_id=?",
+                    ("République française — Ministère de l'Éducation nationale", adr, "04 00 00 00 00", "vie-scolaire@demo.fr", ville,
+                     "Établissement fictif de démonstration", eid))
+    con.commit()
     con.close()
     return cpe
 

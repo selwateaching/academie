@@ -1,8 +1,12 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}{{ d.titre }}{% endblock %}{% block body %}
 <div class="top noprint"><h1>{{ d.titre }}</h1><span><button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('document_genere_docx', did=d.id) }}">Télécharger Word</a>
 <a class="btn sec" href="{{ url_for('documents') }}">← Documents</a></span></div>
-<div class="card paper"><p class="mute" style="margin:0 0 18px"><b>{{ g.etab.nom }}</b></p><div class="paper-body">{{ d.contenu }}</div></div>
+<div class="card paper">{% include '_entete.html' %}<h2 class="paper-titre">{{ d.titre }}</h2><div class="paper-body">{{ d.contenu }}</div>
+{% if signes %}<p class="paper-fait">{{ ('Fait à ' ~ e.ville ~ ', le ') if e.ville else 'Fait le ' }}{{ d.created_at[:10]|fr_date }}</p>
+<div class="paper-signes">{% for nom, fonction in signes %}<div><b>{{ fonction }}</b><span class="paper-case"></span>{{ nom }}</div>{% endfor %}</div>{% endif %}
+{% if e.pied %}<p class="paper-pied">{{ e.pied }}</p>{% endif %}</div>
 <div class="card noprint"><h2>Modifier</h2><form method="post" action="{{ url_for('document_genere_modifier', did=d.id) }}">{{ csrf() }}
-<label>Titre</label><input name="titre" value="{{ d.titre }}" style="width:100%"><label>Texte</label><textarea name="contenu" rows="18" style="font-family:inherit">{{ d.contenu }}</textarea><br><br>
+<label>Titre</label><input name="titre" value="{{ d.titre }}" style="width:100%"><label>Texte</label><textarea name="contenu" rows="18" style="font-family:inherit">{{ d.contenu }}</textarea>
+<input type="hidden" name="signataires_envoyes" value="1"><label>Signataires</label><p>{% for s in tous_signataires %}<label class="check" style="display:inline-flex;margin-right:14px"><input type="checkbox" name="signataire" value="{{ s.id }}" {{ 'checked' if (s.nom, s.fonction) in signes }}> {{ s.fonction }} — {{ s.nom }}</label>{% else %}<span class="mute">Aucun signataire défini.</span>{% endfor %} <a href="{{ url_for('documents_parametres') }}">Gérer les signataires</a></p><br>
 <button>Enregistrer les modifications</button> {{ post(url_for('document_genere_supprimer', did=d.id), 'Supprimer', 'red', 'Supprimer ce document ?') }}</form>
 <p class="mute">Rédigé par {{ d.auteur }} le {{ d.created_at.replace('T',' ') }}{% if d.incident_id %} · <a href="{{ url_for('incidents') }}">incident associé</a>{% endif %}.</p></div>{% endblock %}

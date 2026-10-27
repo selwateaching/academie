@@ -153,3 +153,9 @@ svg.pyramide{width:100%;height:auto;display:block;max-width:900px}
 .pict-duo{display:inline-flex;gap:2px;align-items:flex-end}.stat-pict{display:flex;align-items:center;gap:12px}.stat-pict>div{display:flex;flex-direction:column}
 .stat-m{border-top-color:var(--serie-m)}.stat-f{border-top-color:var(--serie-f)}
 .legende .leg-m,.legende .leg-f{display:inline-flex;align-items:center;gap:6px}
+/* Documents : en-tête commun, « Fait à… », cases de signature, pied de page */
+.paper-entete{display:flex;gap:18px;align-items:center;border-bottom:2px solid var(--orange);padding-bottom:12px;margin-bottom:18px}
+.paper-logo{max-height:72px;max-width:140px;object-fit:contain}.pe-haut{font-size:12px;font-style:italic;color:#555}.pe-nom{font-size:19px;font-weight:700}.pe-ligne{font-size:12px;color:#444}
+.paper-titre{text-align:center;font-size:20px;margin:6px 0 16px}.paper-fait{text-align:right;margin:26px 0 8px}
+.paper-signes{display:flex;gap:24px;justify-content:space-around;flex-wrap:wrap;text-align:center;break-inside:avoid}.paper-signes>div{flex:1;min-width:170px}.paper-case{display:block;height:70px}
+.paper-pied{margin-top:30px;border-top:1px solid #ccc;padding-top:8px;text-align:center;font-size:11px;color:#555}
