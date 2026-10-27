@@ -114,7 +114,32 @@ def connect():
 MIGRATIONS = [
     (1, SCHEMA),
     (2, "ALTER TABLE users ADD COLUMN must_change INTEGER NOT NULL DEFAULT 0;"),  # mot de passe temporaire à changer
-    # (3, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (3, """
+        ALTER TABLE professeurs ADD COLUMN max_heures_jour INTEGER NOT NULL DEFAULT 6;
+        CREATE TABLE IF NOT EXISTS besoins (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, classe TEXT NOT NULL, matiere TEXT NOT NULL,
+            prof_id INTEGER NOT NULL REFERENCES professeurs(id) ON DELETE CASCADE,
+            heures INTEGER NOT NULL, bloc INTEGER NOT NULL DEFAULT 1, salle TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS voeux (
+            prof_id INTEGER NOT NULL REFERENCES professeurs(id) ON DELETE CASCADE,
+            jour INTEGER NOT NULL, demi TEXT NOT NULL, niveau TEXT NOT NULL,
+            PRIMARY KEY (prof_id, jour, demi)
+        );
+        CREATE TABLE IF NOT EXISTS propositions (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, created_at TEXT NOT NULL, auteur TEXT NOT NULL DEFAULT '',
+            options TEXT NOT NULL, resultat TEXT NOT NULL, statut TEXT NOT NULL DEFAULT 'brouillon'
+        );
+    """),  # générateur d'emploi du temps : besoins, vœux, propositions
+    (4, """
+        CREATE TABLE IF NOT EXISTS reglages_planning (
+            etab_id INTEGER PRIMARY KEY REFERENCES etablissements(id) ON DELETE CASCADE,
+            classe_fermee TEXT NOT NULL DEFAULT '[]',      -- demi-journées sans cours pour les classes, ex. ["2:apres_midi"]
+            max_classe_jour INTEGER NOT NULL DEFAULT 7,
+            grille TEXT NOT NULL DEFAULT ''                -- une plage par ligne "HH:MM-HH:MM" ; vide = grille par défaut
+        );
+    """),  # réglages du générateur propres à chaque établissement
+    # (5, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
@@ -203,6 +228,13 @@ def seed_demo(password="demo1234"):
                 "INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
                 (e1, pid, classes[(i + j) % len(classes)], mat, jour, deb, fin, f"B{10 + (i + j) % 8}"),
             )
+
+    # Besoins du générateur (déduits des cours existants) et vœux des professeurs
+    con.execute("""INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc)
+                   SELECT etab_id, classe, matiere, prof_id, COUNT(*), 1 FROM creneaux WHERE etab_id=? GROUP BY classe, matiere, prof_id""", (e1,))
+    for pid, jour, demi, niveau in [(ids[0], 2, "apres_midi", "non"), (ids[1], 0, "matin", "souhait"), (ids[2], 4, "apres_midi", "souhait"),
+                                    (ids[3], 3, "matin", "non"), (ids[6], 1, "matin", "souhait"), (ids[7], 2, "apres_midi", "non")]:
+        con.execute("INSERT INTO voeux VALUES (?,?,?,?)", (pid, jour, demi, niveau))
 
     def absence(prof, typ, a, b, motif, statut="validee"):
         return con.execute("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",

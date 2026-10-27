@@ -20,6 +20,7 @@ from werkzeug.utils import secure_filename
 
 from . import db as database
 from . import ext
+from . import planning
 from .config import CFG, MODULES
 
 app = Flask(__name__)
@@ -60,6 +61,8 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
+    "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
+                      "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
 ENDPOINT_VERS_MODULE = {ep: m for m, eps in MODULE_DES_ENDPOINTS.items() for ep in eps}
 EXPORT_VERS_MODULE = {"absences": "absences", "remplacements": "remplacements", "taches": "taches",
@@ -375,12 +378,14 @@ def cours_du_jour(jour, prof_id=None, classe=None):
     return out
 
 
-def generer_remplacements(absence_id):
+def generer_remplacements(absence_id, depuis=None):
     a = one("SELECT * FROM absences WHERE id=?", (absence_id,))
     if not a or a["type"] != "absence":
         return 0
     n = 0
     d1, d2 = parse_date(a["date_debut"]), parse_date(a["date_fin"])
+    if depuis:
+        d1 = max(d1, depuis)
     for jour in jours_ouvres(d1, min(d2, d1 + timedelta(days=120))):
         for c in q("SELECT id FROM creneaux WHERE prof_id=? AND jour=?", (a["prof_id"], jour.weekday())):
             if not one("SELECT 1 FROM remplacements WHERE creneau_id=? AND date=?", (c["id"], jour.isoformat())):
@@ -1237,6 +1242,282 @@ def sauvegarde():
     return render_template("sauvegarde.html")
 
 
+# ───────────────────────── Génération automatique de l'emploi du temps ─────────────────────────
+DEMIS = (("matin", "Matin"), ("apres_midi", "Après-midi"))
+
+
+def reglages_planning():
+    """Réglages du générateur propres à l'établissement courant (aucune demi-journée fermée par défaut)."""
+    r = one("SELECT * FROM reglages_planning WHERE etab_id=?", (g.etab_id,))
+    fermee, maxc, grille = set(), 7, None
+    if r:
+        fermee = {(int(x.split(":")[0]), x.split(":")[1]) for x in json.loads(r["classe_fermee"])}
+        maxc = r["max_classe_jour"]
+        grille = [l.strip() for l in r["grille"].splitlines() if l.strip()] or None
+    return {"classe_fermee": fermee, "max_classe_jour": maxc, "grille": grille or CFG["creneaux"] or None}
+
+
+def charger_planification():
+    reg = reglages_planning()
+    grille = planning.construire_grille(reg["grille"])
+    profs = {p["id"]: {"nom": f"{p['prenom']} {p['nom']}".strip(), "max_jour": p["max_heures_jour"], "voeux": {}, "matiere": p["matiere"]}
+             for p in q("SELECT * FROM professeurs WHERE etab_id=?", (g.etab_id,))}
+    for v in q("SELECT v.* FROM voeux v JOIN professeurs p ON p.id=v.prof_id WHERE p.etab_id=?", (g.etab_id,)):
+        profs[v["prof_id"]]["voeux"][(v["jour"], v["demi"])] = v["niveau"]
+    besoins = [dict(b) for b in q("SELECT * FROM besoins WHERE etab_id=? ORDER BY id", (g.etab_id,))]
+    return grille, profs, besoins
+
+
+def temps_depuis_formulaire(f):
+    try:
+        return min(max(float(f.get("temps_max", 8)), 2), 25)
+    except ValueError:
+        return 8
+
+
+@app.route("/planification/parametres", methods=["GET", "POST"])
+@staff_only
+def planification_parametres():
+    reg = reglages_planning()
+    if request.method == "POST":
+        f = request.form
+        fermee = [f"{j}:{d}" for j in range(5) for d, _ in DEMIS if f.get(f"ferme_{j}_{d}")]
+        maxc = f.get("max_classe_jour", type=int) or 7
+        lignes = [l.strip() for l in f.get("grille", "").splitlines() if l.strip()]
+        try:
+            assert 3 <= maxc <= 10, "Le maximum d'heures par jour et par classe doit être compris entre 3 et 10."
+            if lignes:
+                import re as _re
+                assert 3 <= len(lignes) <= 14, "La grille doit comporter entre 3 et 14 plages."
+                assert all(_re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d", l) for l in lignes), \
+                    "Chaque plage doit s'écrire HH:MM-HH:MM (ex. 08:00-09:00)."
+                plages = [tuple(l.split("-")) for l in lignes]
+                assert all(d < fi for d, fi in plages) and all(plages[k][1] <= plages[k + 1][0] for k in range(len(plages) - 1)), \
+                    "Les plages doivent être dans l'ordre, sans chevauchement."
+        except AssertionError as e:
+            flash(str(e), "err")
+            return redirect(url_for("planification_parametres"))
+        run("INSERT INTO reglages_planning(etab_id,classe_fermee,max_classe_jour,grille) VALUES (?,?,?,?) "
+            "ON CONFLICT(etab_id) DO UPDATE SET classe_fermee=excluded.classe_fermee, max_classe_jour=excluded.max_classe_jour, grille=excluded.grille",
+            (g.etab_id, json.dumps(fermee), maxc, "\n".join(lignes)))
+        log("réglages de planification modifiés", f"fermées: {fermee or 'aucune'}")
+        flash("Réglages enregistrés.", "ok")
+        return redirect(url_for("planification"))
+    grille_txt = "\n".join(reg["grille"] or planning.GRILLE_PAR_DEFAUT)
+    return render_template("planification_parametres.html", reg=reg, demis=DEMIS, grille_txt=grille_txt)
+
+
+@app.route("/planification")
+@staff_only
+def planification():
+    grille, profs, besoins = charger_planification()
+    opt = reglages_planning()
+    diag = planning.diagnostic(grille, besoins, profs, opt)
+    stats = {
+        "besoins": len(besoins), "heures": sum(b["heures"] for b in besoins),
+        "classes": len({b["classe"] for b in besoins}),
+        "voeux": one("SELECT COUNT(*) c FROM voeux v JOIN professeurs p ON p.id=v.prof_id WHERE p.etab_id=?", (g.etab_id,))["c"],
+        "profs_avec_voeux": one("SELECT COUNT(DISTINCT v.prof_id) c FROM voeux v JOIN professeurs p ON p.id=v.prof_id WHERE p.etab_id=?", (g.etab_id,))["c"],
+        "profs": len(profs),
+    }
+    props = q("SELECT id, created_at, auteur, resultat, statut FROM propositions WHERE etab_id=? ORDER BY id DESC LIMIT 10", (g.etab_id,))
+    props = [dict(p, res=json.loads(p["resultat"])["stats"]) for p in props]
+    return render_template("planification.html", stats=stats, diag=diag, props=props, grille=grille, reg=opt, demis=DEMIS)
+
+
+@app.route("/planification/besoins", methods=["GET", "POST"])
+@staff_only
+def besoins():
+    if request.method == "POST":
+        f = request.form
+        pid = f.get("prof_id", type=int)
+        h = f.get("heures", type=int) or 0
+        if not f.get("classe", "").strip() or not f.get("matiere", "").strip() or not 1 <= h <= 30 \
+                or not one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (pid, g.etab_id)):
+            flash("Classe, matière, professeur et un volume horaire de 1 à 30 h sont obligatoires.", "err")
+        else:
+            run("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle) VALUES (?,?,?,?,?,?,?)",
+                (g.etab_id, f["classe"].strip(), f["matiere"].strip(), pid, h, 2 if f.get("bloc") == "2" else 1, f.get("salle", "").strip()))
+            log("besoin ajouté", f"{f['classe']} {f['matiere']} {h} h")
+        return redirect(url_for("besoins"))
+    rows = q("SELECT b.*, p.nom pnom, p.prenom pprenom FROM besoins b JOIN professeurs p ON p.id=b.prof_id WHERE b.etab_id=? "
+             "ORDER BY b.classe, b.matiere", (g.etab_id,))
+    par_prof = q("SELECT p.id, p.nom, p.prenom, p.max_heures_jour, COALESCE(SUM(b.heures),0) h FROM professeurs p "
+                 "LEFT JOIN besoins b ON b.prof_id=p.id WHERE p.etab_id=? GROUP BY p.id ORDER BY p.nom", (g.etab_id,))
+    par_classe = q("SELECT classe, SUM(heures) h FROM besoins WHERE etab_id=? GROUP BY classe ORDER BY classe", (g.etab_id,))
+    profs = q("SELECT id,nom,prenom,matiere FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    return render_template("besoins.html", rows=rows, par_prof=par_prof, par_classe=par_classe, profs=profs, classes=classes_)
+
+
+@app.route("/planification/besoins/<int:bid>/supprimer", methods=["POST"])
+@staff_only
+def besoin_supprimer(bid):
+    run("DELETE FROM besoins WHERE id=? AND etab_id=?", (bid, g.etab_id))
+    return redirect(url_for("besoins"))
+
+
+@app.route("/planification/besoins/depuis-edt", methods=["POST"])
+@staff_only
+def besoins_depuis_edt():
+    """Remplace les besoins par ceux déduits de l'emploi du temps actuel (une heure par créneau, durée convertie en heures)."""
+    grille = planning.construire_grille(reglages_planning()["grille"])
+    agreg = {}
+    for c in q("SELECT prof_id, classe, matiere, salle, debut, fin FROM creneaux WHERE etab_id=?", (g.etab_id,)):
+        nb = max(1, sum(1 for x in grille if x["debut"] >= c["debut"] and x["fin"] <= c["fin"]))
+        a = agreg.setdefault((c["prof_id"], c["classe"], c["matiere"]), {"h": 0, "tous_doubles": True})
+        a["h"] += nb
+        a["tous_doubles"] = a["tous_doubles"] and nb == 2
+    run("DELETE FROM besoins WHERE etab_id=?", (g.etab_id,))
+    for (pid, classe, matiere), a in agreg.items():
+        db().execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc) VALUES (?,?,?,?,?,?)",
+                     (g.etab_id, classe, matiere, pid, a["h"], 2 if a["tous_doubles"] and a["h"] % 2 == 0 else 1))
+    db().commit()
+    lignes = agreg
+    log("besoins repris de l'emploi du temps", f"{len(lignes)} lignes")
+    flash(f"{len(lignes)} besoin(s) repris de l'emploi du temps actuel.", "ok")
+    return redirect(url_for("besoins"))
+
+
+def enregistrer_voeux(prof_ids, f):
+    for pid in prof_ids:
+        db().execute("DELETE FROM voeux WHERE prof_id=?", (pid,))
+        for j in range(5):
+            for demi, _ in DEMIS:
+                niveau = f.get(f"v_{pid}_{j}_{demi}", "")
+                if niveau in ("non", "souhait"):
+                    db().execute("INSERT INTO voeux VALUES (?,?,?,?)", (pid, j, demi, niveau))
+        m = f.get(f"max_{pid}", type=int)
+        if m and 2 <= m <= 10:
+            db().execute("UPDATE professeurs SET max_heures_jour=? WHERE id=?", (m, pid))
+    db().commit()
+
+
+def voeux_par_prof(prof_ids):
+    out = {pid: {} for pid in prof_ids}
+    for v in q("SELECT * FROM voeux WHERE prof_id IN (%s)" % ",".join("?" * len(prof_ids)), list(prof_ids)) if prof_ids else []:
+        out[v["prof_id"]][(v["jour"], v["demi"])] = v["niveau"]
+    return out
+
+
+@app.route("/planification/voeux", methods=["GET", "POST"])
+@staff_only
+def voeux():
+    profs = q("SELECT id,nom,prenom,matiere,max_heures_jour FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    if request.method == "POST":
+        enregistrer_voeux([p["id"] for p in profs], request.form)
+        log("vœux enregistrés", f"{len(profs)} professeurs")
+        flash("Vœux enregistrés.", "ok")
+        return redirect(url_for("voeux"))
+    return render_template("voeux.html", profs=profs, voeux=voeux_par_prof([p["id"] for p in profs]), demis=DEMIS,
+                           action=url_for("voeux"), titre="Disponibilités et vœux des professeurs")
+
+
+@app.route("/mes-voeux", methods=["GET", "POST"])
+def mes_voeux():
+    if not g.prof:
+        abort(403)
+    p = one("SELECT id,nom,prenom,matiere,max_heures_jour FROM professeurs WHERE id=?", (g.prof["id"],))
+    if request.method == "POST":
+        enregistrer_voeux([p["id"]], request.form)
+        log("vœux enregistrés (enseignant)", p["nom"])
+        flash("Vos vœux ont été enregistrés. Ils seront pris en compte lors de la prochaine génération.", "ok")
+        return redirect(url_for("mes_voeux"))
+    return render_template("voeux.html", profs=[p], voeux=voeux_par_prof([p["id"]]), demis=DEMIS, action=url_for("mes_voeux"),
+                           titre="Mes disponibilités et vœux")
+
+
+@app.route("/planification/generer", methods=["POST"])
+@staff_only
+def generer_edt():
+    grille, profs, besoins_ = charger_planification()
+    if not besoins_:
+        flash("Aucun besoin saisi : ajoutez d'abord les classes, matières, professeurs et volumes horaires.", "err")
+        return redirect(url_for("planification"))
+    opt, temps = reglages_planning(), temps_depuis_formulaire(request.form)
+    erreurs = [m for k, m in planning.diagnostic(grille, besoins_, profs, opt) if k == "err"]
+    if erreurs and not request.form.get("forcer"):
+        flash("Génération impossible en l'état : " + " ".join(erreurs[:3]), "err")
+        return redirect(url_for("planification"))
+    res = planning.generer(grille, besoins_, {k: v for k, v in profs.items()}, opt, temps_max=temps)
+    pid = run("INSERT INTO propositions(etab_id,created_at,auteur,options,resultat) VALUES (?,?,?,?,?)",
+              (g.etab_id, datetime.now().isoformat(timespec="minutes"), g.user["nom"],
+               json.dumps({"classe_fermee": sorted(f"{j}:{d}" for j, d in opt["classe_fermee"]), "max_classe_jour": opt["max_classe_jour"],
+                           "grille": opt["grille"] or planning.GRILLE_PAR_DEFAUT}),
+               json.dumps(res)))
+    log("emploi du temps généré", f"{res['stats']['placees']}/{res['stats']['seances']} séances")
+    return redirect(url_for("proposition", pid=pid))
+
+
+def get_proposition(pid):
+    p = one("SELECT * FROM propositions WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    if not p:
+        abort(404)
+    return p
+
+
+@app.route("/planification/propositions/<int:pid>")
+@staff_only
+def proposition(pid):
+    p = get_proposition(pid)
+    res = json.loads(p["resultat"])
+    _, profs, _ = charger_planification()
+    grille = planning.construire_grille(json.loads(p["options"]).get("grille"))  # la grille utilisée lors de la génération
+    vue = "prof" if request.args.get("vue") == "prof" else "classe"
+    classes_ = sorted({x["classe"] for x in res["placements"]})
+    profs_tries = sorted(profs, key=lambda i: profs[i]["nom"])
+    cible = request.args.get("cible") or (str(profs_tries[0]) if vue == "prof" and profs_tries else (classes_[0] if classes_ else ""))
+    cases = {}
+    for x in res["placements"]:
+        if (vue == "classe" and x["classe"] != cible) or (vue == "prof" and str(x["prof_id"]) != cible):
+            continue
+        texte = f"{x['matiere']} · {profs.get(x['prof_id'], {}).get('nom', '?')}" if vue == "classe" else f"{x['classe']} · {x['matiere']}"
+        for k in range(x["longueur"]):
+            cases[(x["jour"], x["debut_idx"] + k)] = texte + (f" ({x['salle']})" if x["salle"] else "")
+    non_places = [dict(n, prof=profs.get(n["prof_id"], {}).get("nom", "?")) for n in res["non_places"]]
+    impact = {
+        "creneaux": one("SELECT COUNT(*) c FROM creneaux WHERE etab_id=?", (g.etab_id,))["c"],
+        "remplacements": one("SELECT COUNT(*) c FROM remplacements WHERE etab_id=? AND date>=?", (g.etab_id, date.today().isoformat()))["c"],
+        "perturbations": one("SELECT COUNT(*) c FROM perturbations WHERE etab_id=? AND date>=?", (g.etab_id, date.today().isoformat()))["c"],
+    }
+    return render_template("proposition.html", p=p, res=res, grille=grille, cases=cases, vue=vue, cible=cible,
+                           classes=classes_, profs=sorted(profs.items(), key=lambda kv: kv[1]["nom"]), non_places=non_places, impact=impact)
+
+
+@app.route("/planification/propositions/<int:pid>/appliquer", methods=["POST"])
+@staff_only
+def proposition_appliquer(pid):
+    p = get_proposition(pid)
+    if not request.form.get("confirmer"):
+        flash("Cochez la case de confirmation pour remplacer l'emploi du temps.", "err")
+        return redirect(url_for("proposition", pid=pid))
+    res = json.loads(p["resultat"])
+    grille = planning.construire_grille(json.loads(p["options"]).get("grille"))
+    con = db()
+    con.execute("DELETE FROM creneaux WHERE etab_id=?", (g.etab_id,))  # les remplacements/perturbations liés sont supprimés (cascade)
+    for x in res["placements"]:
+        fin_idx = x["debut_idx"] + x["longueur"] - 1
+        con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
+                    (g.etab_id, x["prof_id"], x["classe"], x["matiere"], x["jour"], grille[x["debut_idx"]]["debut"],
+                     grille[fin_idx]["fin"], x["salle"]))
+    con.execute("UPDATE propositions SET statut='appliquee' WHERE id=?", (pid,))
+    con.commit()
+    for a in q("SELECT id FROM absences WHERE etab_id=? AND type='absence' AND date_fin>=?", (g.etab_id, date.today().isoformat())):
+        generer_remplacements(a["id"], depuis=date.today())
+    log("emploi du temps appliqué", f"proposition {pid}, {len(res['placements'])} créneaux")
+    ext.emit("emploi_du_temps.applique", proposition_id=pid, nb_creneaux=len(res["placements"]))
+    flash(f"Emploi du temps appliqué ({len(res['placements'])} créneaux). Les remplacements à venir ont été recalculés.", "ok")
+    return redirect(url_for("emploi_du_temps"))
+
+
+@app.route("/planification/propositions/<int:pid>/supprimer", methods=["POST"])
+@staff_only
+def proposition_supprimer(pid):
+    get_proposition(pid)
+    run("DELETE FROM propositions WHERE id=?", (pid,))
+    return redirect(url_for("planification"))
+
+
 # ───────────────────────── 5. Fonctionnalités avancées ─────────────────────────
 @app.route("/assistant")
 @staff_only
@@ -1275,7 +1556,7 @@ def importer():
     if request.method == "POST":
         fichier = request.files.get("fichier")
         kind = request.form.get("kind")
-        if not fichier or kind not in ("professeurs", "creneaux"):
+        if not fichier or kind not in ("professeurs", "creneaux", "besoins"):
             flash("Fichier ou type manquant.", "err")
             return redirect(url_for("importer"))
         try:
@@ -1297,6 +1578,19 @@ def importer():
                     continue
                 db().execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email,telephone) VALUES (?,?,?,?,?,?)",
                              (g.etab_id, r["nom"], r.get("prenom", ""), r.get("matiere", ""), r.get("email", ""), r.get("telephone", "")))
+                ok += 1
+            elif kind == "besoins":
+                p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",
+                        (g.etab_id, r.get("email", "~"), r.get("nom", "~"), r.get("prenom", "")))
+                try:
+                    h = int(r.get("heures", ""))
+                except ValueError:
+                    h = 0
+                if not p or not r.get("classe") or not r.get("matiere") or not 1 <= h <= 30:
+                    ignores += 1
+                    continue
+                db().execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle) VALUES (?,?,?,?,?,?,?)",
+                             (g.etab_id, r["classe"], r["matiere"], p["id"], h, 2 if r.get("bloc") == "2" else 1, r.get("salle", "")))
                 ok += 1
             else:
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",

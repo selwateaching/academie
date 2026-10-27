@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Planification{% endblock %}{% block body %}
+<div class="top"><h1>Génération automatique de l'emploi du temps</h1></div>
+<p class="mute">Renseignez les besoins (qui enseigne quoi, à quelle classe, combien d'heures) et les vœux des professeurs ; l'application propose un emploi du temps complet que vous relisez avant de l'appliquer.</p>
+<div class="stats">
+<a class="stat" href="{{ url_for('besoins') }}"><b>{{ stats.besoins }}</b><span>Besoins · {{ stats.heures }} h · {{ stats.classes }} classe(s)</span></a>
+<a class="stat" href="{{ url_for('voeux') }}"><b>{{ stats.profs_avec_voeux }}/{{ stats.profs }}</b><span>Professeurs avec vœux</span></a>
+<div class="stat"><b>{{ props|length }}</b><span>Propositions</span></div></div>
+{% for kind, msg in diag %}<div class="al {{ kind }}">{{ msg }}</div>{% endfor %}
+<div class="grid g2">
+<div class="card"><h2>1. Besoins horaires</h2><p>Classe × matière × professeur × heures par semaine (séances de 1 h ou de 2 h consécutives).</p><a class="btn" href="{{ url_for('besoins') }}">Saisir / modifier</a></div>
+<div class="card"><h2>2. Vœux des professeurs</h2><p>Indisponibilités impératives (ex. mercredi après-midi), souhaits, maximum d'heures par jour. Les enseignants peuvent saisir les leurs depuis « Mes vœux ».</p><a class="btn" href="{{ url_for('voeux') }}">Saisir / modifier</a></div></div>
+<div class="card"><h2>3. Générer</h2><p class="mute">Les règles propres à l'école (jours et demi-journées sans cours, horaires des créneaux) se règlent dans <a href="{{ url_for('planification_parametres') }}">Réglages de l'établissement</a> : rien n'est supposé par défaut.</p><form method="post" action="{{ url_for('generer_edt') }}">{{ csrf() }}<div class="row">
+<div><label>Durée de calcul max (secondes)</label><input type="number" name="temps_max" value="8" min="2" max="25"></div>
+<div><button>Générer une proposition</button></div></div>
+{% if diag|selectattr(0, 'equalto', 'err')|list %}<label><input type="checkbox" name="forcer" value="1"> Générer quand même (certaines séances ne pourront pas être placées)</label>{% endif %}</form>
+<p class="mute"><b>Réglages de l'établissement</b> (<a href="{{ url_for('planification_parametres') }}">modifier</a>) :
+grille {% for c in grille %}{{ c.debut }}–{{ c.fin }}{{ ' · ' if not loop.last }}{% endfor %} ;
+demi-journées sans cours pour les classes : {% if reg.classe_fermee %}{% for j, d in reg.classe_fermee|sort %}{{ JOURS[j] }} {{ 'matin' if d == 'matin' else 'après-midi' }}{{ ', ' if not loop.last }}{% endfor %}{% else %}aucune{% endif %} ;
+max {{ reg.max_classe_jour }} h par jour et par classe.</p></div>
+{% if props %}<div class="card scroll"><h2>Propositions récentes</h2><table><tr><th>Date</th><th>Auteur</th><th>Séances placées</th><th>Vœux non respectés</th><th>Statut</th><th></th></tr>
+{% for p in props %}<tr><td>{{ p.created_at.replace('T',' ') }}</td><td>{{ p.auteur }}</td><td>{{ p.res.placees }}/{{ p.res.seances }}</td><td>{{ p.res.souhaits_non_respectes }}</td>
+<td><span class="tag {{ 'ok' if p.statut == 'appliquee' else '' }}">{{ 'Appliquée' if p.statut == 'appliquee' else 'Brouillon' }}</span></td>
+<td><a class="btn sec sm" href="{{ url_for('proposition', pid=p.id) }}">Voir</a> {{ post(url_for('proposition_supprimer', pid=p.id), 'Supprimer', 'sec sm', 'Supprimer cette proposition ?') }}</td></tr>{% endfor %}</table></div>{% endif %}{% endblock %}

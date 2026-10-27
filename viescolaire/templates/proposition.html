@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Proposition{% endblock %}{% block body %}
+{% set s = res.stats %}
+<div class="top"><h1>Proposition d'emploi du temps</h1><a class="btn sec" href="{{ url_for('planification') }}">← Planification</a></div>
+<div class="stats"><div class="stat"><b>{{ s.placees }}/{{ s.seances }}</b><span>Séances placées</span></div>
+<div class="stat"><b>{{ s.souhaits_non_respectes }}</b><span>Heures sur un souhait non respecté</span></div>
+<div class="stat"><b>{{ s.trous_professeurs }}</b><span>Trous dans les journées des professeurs</span></div>
+<div class="stat"><b>{{ s.trous_classes }}</b><span>Trous dans les journées des classes</span></div></div>
+{% if non_places %}<div class="card"><h2>Séances non placées ({{ non_places|length }})</h2>
+{% for n in non_places %}<div class="al err"><b>{{ n.classe }} · {{ n.matiere }}</b> ({{ n.prof }}, {{ n.longueur }} h) : {{ n.raisons|join(' ; ') or 'aucun créneau compatible' }}</div>{% endfor %}
+<p class="mute">Assouplissez un vœu impératif, augmentez le maximum d'heures par jour ou réduisez le volume, puis régénérez.</p></div>{% endif %}
+<div class="card"><form method="get" class="row noprint"><div><label>Afficher</label><select name="vue" data-autosubmit><option value="classe" {{ 'selected' if vue == 'classe' }}>Une classe</option><option value="prof" {{ 'selected' if vue == 'prof' }}>Un professeur</option></select></div>
+<div><label>&nbsp;</label><select name="cible" data-autosubmit>{% if vue == 'classe' %}{% for c in classes %}<option {{ 'selected' if c == cible }}>{{ c }}</option>{% endfor %}{% else %}{% for id, pr in profs %}<option value="{{ id }}" {{ 'selected' if id|string == cible }}>{{ pr.nom }}</option>{% endfor %}{% endif %}</select></div></form>
+<div class="scroll"><table><tr><th>Horaire</th>{% for j in JOURS %}<th>{{ j }}</th>{% endfor %}</tr>
+{% for c in grille %}{% set i = loop.index0 %}<tr><td>{{ c.debut }}–{{ c.fin }}</td>{% for j in range(5) %}<td>{% if cases.get((j, i)) %}<div class="slot">{{ cases[(j, i)] }}</div>{% endif %}</td>{% endfor %}</tr>{% endfor %}</table></div></div>
+{% if p.statut != 'appliquee' %}<div class="card"><h2>Appliquer cet emploi du temps</h2>
+<p>Remplace l'emploi du temps actuel ({{ impact.creneaux }} créneaux). {% if impact.remplacements or impact.perturbations %}<b>Attention :</b> {{ impact.remplacements }} remplacement(s) et {{ impact.perturbations }} perturbation(s) à venir, rattachés aux anciens créneaux, seront supprimés ; les remplacements des absences en cours seront recalculés.{% endif %} Pensez à faire une <a href="{{ url_for('sauvegarde') if g.user.role in ('admin','direction') else '#' }}">sauvegarde</a> avant.</p>
+<form method="post" action="{{ url_for('proposition_appliquer', pid=p.id) }}">{{ csrf() }}<label><input type="checkbox" name="confirmer" value="1"> Je confirme le remplacement de l'emploi du temps actuel</label><br><button>Appliquer</button></form></div>
+{% else %}<div class="al info">Cette proposition a été appliquée.</div>{% endif %}{% endblock %}

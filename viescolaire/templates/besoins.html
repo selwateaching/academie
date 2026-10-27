@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Besoins horaires{% endblock %}{% block body %}
+<div class="top"><h1>Besoins horaires</h1><a class="btn sec" href="{{ url_for('planification') }}">← Planification</a></div>
+<div class="card"><h2>Ajouter</h2><form method="post">{{ csrf() }}<div class="row">
+<div><label>Classe</label><input name="classe" list="cl" required><datalist id="cl">{% for c in classes %}<option value="{{ c.nom }}">{% endfor %}</datalist></div>
+<div><label>Matière</label><input name="matiere" required></div>
+<div><label>Professeur</label><select name="prof_id">{% for p in profs %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }} ({{ p.matiere }})</option>{% endfor %}</select></div>
+<div><label>Heures / semaine</label><input type="number" name="heures" min="1" max="30" value="2" required></div>
+<div><label>Séances</label><select name="bloc"><option value="1">d'1 h</option><option value="2">de 2 h consécutives</option></select></div>
+<div><label>Salle (optionnel)</label><input name="salle"></div><div><button>Ajouter</button></div></div></form>
+<p class="mute">Plusieurs lignes d'import : <a href="{{ url_for('importer') }}">Import CSV</a> (type « Besoins horaires »). {{ post(url_for('besoins_depuis_edt'), 'Reprendre les besoins depuis l\'emploi du temps actuel', 'sec sm', 'Remplacer tous les besoins par ceux déduits de l\'emploi du temps actuel ?') }}</p></div>
+<div class="grid g2"><div class="card scroll"><h2>Charge par professeur</h2><table><tr><th>Professeur</th><th>Heures</th></tr>{% for p in par_prof %}<tr><td>{{ p.prenom }} {{ p.nom }}</td><td>{{ p.h }} h</td></tr>{% endfor %}</table></div>
+<div class="card scroll"><h2>Volume par classe</h2><table><tr><th>Classe</th><th>Heures</th></tr>{% for c in par_classe %}<tr><td>{{ c.classe }}</td><td>{{ c.h }} h</td></tr>{% else %}<tr><td colspan="2" class="mute">Aucun besoin.</td></tr>{% endfor %}</table></div></div>
+<div class="card scroll"><table><tr><th>Classe</th><th>Matière</th><th>Professeur</th><th>Heures</th><th>Séances</th><th>Salle</th><th></th></tr>
+{% for b in rows %}<tr><td>{{ b.classe }}</td><td>{{ b.matiere }}</td><td>{{ b.pprenom }} {{ b.pnom }}</td><td>{{ b.heures }} h</td><td>{{ 'de 2 h' if b.bloc == 2 else "d'1 h" }}</td><td>{{ b.salle }}</td><td>{{ post(url_for('besoin_supprimer', bid=b.id), '✕', 'sec sm', 'Supprimer ce besoin ?') }}</td></tr>
+{% else %}<tr><td colspan="7" class="mute">Aucun besoin saisi.</td></tr>{% endfor %}</table></div>{% endblock %}

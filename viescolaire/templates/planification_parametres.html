@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Réglages de planification{% endblock %}{% block body %}
+<div class="top"><h1>Réglages de l'établissement</h1><a class="btn sec" href="{{ url_for('planification') }}">← Planification</a></div>
+<form method="post">{{ csrf() }}
+<div class="card"><h2>Demi-journées sans cours pour les classes</h2>
+<p class="mute">Cochez les demi-journées où aucune classe n'a cours dans votre établissement (par exemple le mercredi après-midi dans certains collèges, ou aucune). Rien n'est coché par défaut.</p>
+<table style="max-width:520px"><tr><th></th>{% for j in JOURS %}<th>{{ j }}</th>{% endfor %}</tr>
+{% for d, l in demis %}<tr><td><b>{{ l }}</b></td>{% for j in range(5) %}<td><input type="checkbox" name="ferme_{{ j }}_{{ d }}" value="1" {{ 'checked' if (j, d) in reg.classe_fermee }}></td>{% endfor %}</tr>{% endfor %}</table></div>
+<div class="card"><h2>Horaires des créneaux</h2>
+<p class="mute">Une plage par ligne, au format <code>HH:MM-HH:MM</code>, dans l'ordre. Une plage qui commence avant 12:30 est comptée dans le matin, sinon dans l'après-midi. Les séances de 2 h utilisent deux plages consécutives d'une même demi-journée.</p>
+<textarea name="grille" rows="9" style="max-width:260px;font-family:monospace">{{ grille_txt }}</textarea></div>
+<div class="card"><h2>Charge maximale</h2><label>Heures de cours maximum par jour et par classe</label><input type="number" name="max_classe_jour" value="{{ reg.max_classe_jour }}" min="3" max="10">
+<p class="mute">Le maximum d'heures par jour de chaque professeur se règle dans <a href="{{ url_for('voeux') }}">Vœux</a>.</p></div>
+<button>Enregistrer</button></form>{% endblock %}

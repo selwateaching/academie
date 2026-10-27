@@ -20,6 +20,7 @@ EVENEMENTS = {
     "tache.creee": "tache_id, titre, echeance",
     "incident.cree": "incident_id, classe, description",
     "utilisateur.cree": "user_id, email, nom, role",
+    "emploi_du_temps.applique": "proposition_id, nb_creneaux",
 }
 
 
