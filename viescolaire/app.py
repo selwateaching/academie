@@ -276,10 +276,10 @@ def menu_sections():
     def item(ep, label, ico, desc="", mod=None, badge=None, **kw):
         if mod and not ma(mod):
             return None
-        on = request.endpoint == ep or (ep == "infirmerie" and (request.endpoint or "").startswith("infirmerie"))
+        on = request.endpoint == ep or (ep == "infirmerie_eleves" and request.endpoint == "infirmerie_fiche")
         return {"label": label, "ico": ico, "desc": desc, "url": url_for(ep, **kw), "badge": badge or None, "on": on}
 
-    def section(titre, items, ouvert=False):
+    def section(titre, items, ouvert=True):
         items = [i for i in items if i]
         return {"titre": titre, "pages": items, "ouvert": ouvert} if items else None
 
@@ -288,15 +288,19 @@ def menu_sections():
     if staff:
         sections = [
             section("1. Élèves et vie scolaire", [
-                item("eleves", "Liste des élèves", "eleve", "Fiches, responsables, pyramide", "eleves"),
+                item("eleves", "Liste des élèves", "eleve", "Fiches, responsables, import", "eleves"),
+                item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
                 item("absences", "Absences", "absence", "Déclarer et suivre les absences", "absences", nb["absences"]),
                 item("remplacements", "Remplacements", "remplace", "Désigner les remplaçants", "remplacements", nb["remplacements"], statut="a_pourvoir"),
                 item("cours", "Cours perturbés", "alerte", "Analyse des cours touchés", "cours"),
                 item("incidents", "Incidents", "incident", "Signaler et rédiger les documents", "incidents", nb["incidents"]),
-                item("infirmerie", "Infirmerie", "sante", "Soins, passages, fiches santé") if infirmerie_ok else None,
-                item("messages", "Messagerie", "message", "Messages internes", "messagerie", nb["messages"])], True),
+                item("infirmerie", "Infirmerie", "sante", "Tableau de bord du jour") if infirmerie_ok else None,
+                item("infirmerie_soins", "Planning des soins", "calendrier", "Soins programmés") if infirmerie_ok else None,
+                item("infirmerie_passages", "Passages à l'infirmerie", "sante", "Registre des passages") if infirmerie_ok else None,
+                item("infirmerie_eleves", "Fiches santé", "dossier", "Allergies, PAI, traitements") if infirmerie_ok else None,
+                item("messages", "Messagerie", "message", "Messages internes", "messagerie", nb["messages"])]),
             section("2. Personnel", [
                 item("professeurs", "Annuaire des professeurs", "profs", "Coordonnées, cours, comptes", "professeurs"),
                 item("pers_liste", "Annuaire du personnel de vie scolaire", "personnel", "Assistants et rôles", "personnel"),
@@ -305,7 +309,10 @@ def menu_sections():
                 item("heures", "Comptage des heures", "barres", "Heures par professeur, classe, agent", "heures"),
                 item("pers_postes", "Postes et besoins", "postes", "Rôles, couleurs, besoins", "personnel")]),
             section("3. Planification et suivi", [
-                item("planification", "Génération des emplois du temps", "generer", "Besoins, vœux, proposition", "planification"),
+                item("planification", "Génération des emplois du temps", "generer", "Lancer le calcul et relire la proposition", "planification"),
+                item("besoins", "Besoins en heures", "postes", "Classe × matière × professeur", "planification"),
+                item("voeux", "Vœux des professeurs", "voeux", "Indisponibilités et souhaits", "planification"),
+                item("planification_parametres", "Réglages de l'établissement", "generer", "Horaires, demi-journées sans cours", "planification"),
                 item("taches", "Tâches", "taches", "À faire", "taches", nb["taches"]),
                 item("rapports", "Rapports", "rapports", "Chiffres sur une période", "rapports"),
                 item("assistant", "Assistant", "assistant", "Conseils automatiques", "assistant"),
@@ -314,7 +321,9 @@ def menu_sections():
             section("4. Documents et réunions", [
                 item("reunions", "Réunions", "reunion", "Convocations, réponses", "reunions"),
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapports, convocations…", "redaction"),
-                item("documents", "Documents", "dossier", "Partagés et rédigés", "documents")]),
+                item("documents", "Documents", "dossier", "Partagés et rédigés", "documents"),
+                item("modeles_documents", "Modèles et types d'incident", "redaction", "Textes types des documents", "redaction"),
+                item("documents_parametres", "En-tête et signataires", "dossier", "Commun à tous les documents", "redaction")]),
             section("5. Administration", [
                 item("utilisateurs", "Utilisateurs", "utilisateurs", "Comptes et droits", "utilisateurs"),
                 item("etablissements", "Établissements", "etablissement", "Ajouter ou supprimer") if u["role"] == "admin" else None,
