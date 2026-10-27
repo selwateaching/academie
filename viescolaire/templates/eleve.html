@@ -13,6 +13,14 @@
 {% for p in equipe %}<tr><td><a href="{{ url_for('professeur', pid=p.prof_id) }}"><b>{{ p.nom }}</b></a>{% if p.principal %} <span class="tag ok">Prof. principal</span>{% endif %}</td><td>{{ p.matieres|join(', ') }}</td>
 <td>{{ p.email }}{% if p.telephone %}<br><span class="mute">{{ p.telephone }}</span>{% endif %}</td><td class="mute">{{ p.cours|join(' · ') }}</td></tr>
 {% else %}<tr><td colspan="4" class="mute">Aucun cours planifié pour cette classe.</td></tr>{% endfor %}</table></div>
+{% if inf %}<div class="card"><h2>Infirmerie</h2>
+{% if inf.habilite %}<p>{% if inf.fiche and inf.fiche.pai %}<span class="tag err">PAI</span> {% endif %}{% if inf.fiche and inf.fiche.allergies %}<span class="tag warn">Allergie : {{ inf.fiche.allergies }}</span> {% endif %}{% if inf.fiche and inf.fiche.traitements %}<span class="tag">Traitement : voir la fiche santé</span>{% endif %}
+{% if not inf.fiche or (not inf.fiche.pai and not inf.fiche.allergies and not inf.fiche.traitements) %}<span class="mute">Aucune particularité enregistrée.</span>{% endif %}
+ <a class="btn sec sm" href="{{ url_for('infirmerie_fiche', eid=e.id) }}">Fiche santé</a></p>{% endif %}
+<div class="grid g2"><div><p class="mute" style="margin:0 0 4px">Rendez-vous à venir (14 jours)</p>{% for r in inf.rdv %}<p style="margin:2px 0">{{ r.date|fr_date }} à <b>{{ r.heure }}</b> <span class="mute">· {{ r.duree }} min{% if r.intitule %} · {{ r.intitule }}{% endif %}</span></p>{% else %}<p class="mute" style="margin:2px 0">Aucun.</p>{% endfor %}{% if inf.rdv_plus %}<p class="mute" style="margin:2px 0">… et {{ inf.rdv_plus }} autre(s) dans les 14 prochains jours</p>{% endif %}</div>
+<div><p class="mute" style="margin:0 0 4px">Passages à l'infirmerie</p><p style="margin:2px 0">{{ inf.nb_passages_30j }} sur les 30 derniers jours</p>
+{% if inf.habilite %}{% for p in inf.passages %}<p style="margin:2px 0">{{ p.date|fr_date }} {{ p.heure }} — {{ p.motif }}{% if p.decision %} <span class="mute">· {{ p.decision }}</span>{% endif %}</p>{% endfor %}{% endif %}</div></div>
+{% if not inf.habilite %}<p class="mute" style="margin-bottom:0">Le détail médical est réservé à l'infirmerie.</p>{% endif %}</div>{% endif %}
 <div class="grid g2"><div class="card"><h2>Incidents ({{ incidents|length }})</h2>{% for i in incidents %}<p><b>{{ i.date|fr_date }}</b> <span class="tag {{ 'ok' if i.statut == 'clos' else 'warn' }}">{{ i.statut }}</span><br>{{ i.description }}</p>{% else %}<p class="mute">Aucun incident enregistré pour cet élève.</p>{% endfor %}</div>
 <div class="card"><h2>Documents et réunions</h2>{% for d in documents %}<p><a href="{{ url_for('document_genere', did=d.id) }}">{{ d.titre }}</a> <span class="mute">{{ d.created_at.replace('T', ' ') }}</span></p>{% endfor %}
 {% for r in reunions %}<p>Convoqué(e) : <b>{{ r.titre }}</b> <span class="mute">{{ r.date|fr_date }} {{ r.heure }}</span></p>{% endfor %}

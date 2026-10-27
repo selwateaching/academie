@@ -66,7 +66,7 @@ MODULE_DES_ENDPOINTS = {
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
     "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
-    "infirmerie": ["infirmerie", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
+    "infirmerie": ["infirmerie", "infirmerie_prevenir", "infirmerie_prevenir_jour", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
@@ -1567,7 +1567,12 @@ def eleves():
     for c in {e["classe"] for e in rows if e["classe"]}:
         equipe, pp = equipe_et_pp(c)
         infos[c] = {"pp": pp, "profs": sorted({e["nom"] for e in equipe})}
-    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos,
+    soins_jour = {}
+    if module_actif("infirmerie"):
+        for o in occurrences_soins(date.today()):
+            if o["statut"] == "a_faire":
+                soins_jour.setdefault(o["eleve_id"], []).append(o["heure"])
+    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos, soins_jour=soins_jour,
                            niveau=niveau, niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)))
 
 
@@ -1663,6 +1668,29 @@ def pyramide_csv():
     return Response("\ufeff" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=pyramide_{date.today()}.csv"})
 
 
+def infos_infirmerie(eid):
+    """Ce que le personnel voit de l'infirmerie sur la fiche d'un élève. Habilité : PAI, allergies, soins et passages détaillés ;
+    sinon uniquement les rendez-vous à venir (date, heure, durée), sans nature du soin ni motif."""
+    if not module_actif("infirmerie"):
+        return None
+    habilite = g.user["role"] in roles_infirmerie()
+    aujourdhui = date.today()
+    soins_ = q("SELECT * FROM soins WHERE etab_id=? AND eleve_id=? AND actif=1", (g.etab_id, eid))
+    rdv = []
+    for k in range(0, 15):
+        jour = aujourdhui + timedelta(days=k)
+        for s in soins_:
+            if soin_a_lieu(s, jour):
+                rdv.append({"date": jour.isoformat(), "heure": s["heure"], "duree": s["duree"], "intitule": s["intitule"] if habilite else ""})
+    rdv.sort(key=lambda r: (r["date"], r["heure"]))
+    info = {"habilite": habilite, "rdv": rdv[:5], "rdv_plus": max(0, len(rdv) - 5),
+            "nb_passages_30j": one("SELECT COUNT(*) c FROM passages WHERE eleve_id=? AND date>=?", (eid, (aujourdhui - timedelta(days=30)).isoformat()))["c"]}
+    if habilite:
+        info["fiche"] = one("SELECT * FROM fiches_sante WHERE eleve_id=?", (eid,))
+        info["passages"] = q("SELECT date, heure, motif, decision FROM passages WHERE eleve_id=? ORDER BY date DESC, heure DESC LIMIT 5", (eid,))
+    return info
+
+
 @app.route("/eleves/<int:eid>")
 @staff_only
 def eleve_fiche(eid):
@@ -1686,7 +1714,8 @@ def eleve_fiche(eid):
     incidents_ = q("SELECT * FROM incidents WHERE etab_id=? AND eleve_id=? ORDER BY date DESC", (g.etab_id, eid))
     documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
     reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
-    return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_)
+    return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_,
+                           inf=infos_infirmerie(eid))
 
 
 @app.route("/eleves/<int:eid>/modifier", methods=["POST"])
@@ -2010,8 +2039,71 @@ def occurrences_soins(jour):
         d["statut"] = s["rstatut"] or "a_faire"
         fin = datetime.strptime(f"{iso} {s['heure']}", "%Y-%m-%d %H:%M") + timedelta(minutes=s["duree"])
         d["en_retard"] = d["statut"] == "a_faire" and fin < maintenant
+        d["cours"] = cours_pendant_soin(s, jour, fin.strftime("%H:%M"))
+        d["prevenu"] = bool(one("SELECT 1 FROM soins_prevenus WHERE soin_id=? AND date=?", (s["id"], iso)))
         out.append(d)
     return out
+
+
+def cours_pendant_soin(s, jour, fin_soin):
+    """Cours de la classe de l'élève pendant le soin : professeur en charge (le remplaçant s'il y en a un), ou cours annulé."""
+    res = []
+    for c in q("SELECT c.id, c.matiere, c.debut, c.fin, c.salle, p.id pid, p.nom, p.prenom, p.user_id FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
+               "WHERE c.etab_id=? AND c.classe=? AND c.jour=? AND c.debut<? AND c.fin>?", (g.etab_id, s["classe"], jour.weekday(), fin_soin, s["heure"])):
+        item = {"matiere": c["matiere"], "salle": c["salle"], "debut": c["debut"], "fin": c["fin"], "nom": f"{c['prenom']} {c['nom']}", "user_id": c["user_id"],
+                "annule": False, "remplacant": False}
+        r = one("SELECT r.statut, r.remplacant_id FROM remplacements r WHERE r.creneau_id=? AND r.date=?", (c["id"], jour.isoformat()))
+        if r and r["statut"] == "annule":
+            item["annule"] = True
+        elif r and r["remplacant_id"]:
+            rp = one("SELECT nom, prenom, user_id FROM professeurs WHERE id=?", (r["remplacant_id"],))
+            item.update(nom=f"{rp['prenom']} {rp['nom']}", user_id=rp["user_id"], remplacant=True)
+        elif r:   # professeur absent, remplacement à pourvoir : personne à prévenir pour l'instant
+            item.update(nom="remplaçant à désigner", user_id=None)
+        res.append(item)
+    return res
+
+
+def prevenir_professeurs(sid, jour):
+    """Prévient le(s) professeur(s) en charge qu'un élève quitte leur cours pour l'infirmerie (aucune information médicale)."""
+    s = one("SELECT s.*, e.nom enom, e.prenom eprenom, e.classe FROM soins s JOIN eleves e ON e.id=s.eleve_id WHERE s.id=? AND s.etab_id=?", (sid, g.etab_id))
+    if not s or not soin_a_lieu(s, jour):
+        return None
+    fin = (datetime.strptime(s["heure"], "%H:%M") + timedelta(minutes=s["duree"])).strftime("%H:%M")
+    n = 0
+    for c in cours_pendant_soin(s, jour, fin):
+        if c["annule"] or not c["user_id"]:
+            continue
+        n += notifier([c["user_id"]], f"Infirmerie : {s['eprenom']} {s['enom']} à {s['heure']}",
+                      f"L'élève {s['eprenom']} {s['enom']} ({s['classe']}) doit se rendre à l'infirmerie le {date_longue(jour.isoformat())} à {s['heure']} "
+                      f"(environ {s['duree']} min), pendant le cours de {c['matiere']}. Merci de l'autoriser à sortir.\n\nMessage automatique de l'infirmerie.")
+    run("INSERT OR REPLACE INTO soins_prevenus(soin_id,date,at) VALUES (?,?,?)", (sid, jour.isoformat(), datetime.now().isoformat(timespec="minutes")))
+    return n
+
+
+@app.route("/infirmerie/prevenir/<int:sid>/<jour>", methods=["POST"])
+@infirmerie_only
+def infirmerie_prevenir(sid, jour):
+    d = parse_date(jour)
+    n = prevenir_professeurs(sid, d)
+    if n is None:
+        abort(404)
+    log("professeur prévenu (soin)", f"soin {sid} le {d}")
+    flash(f"{n} professeur(s) prévenu(s) par message." if n else "Aucun professeur à prévenir (hors cours, cours annulé ou remplaçant pas encore désigné).", "ok")
+    return redirect(url_for("infirmerie", date=d.isoformat()))
+
+
+@app.route("/infirmerie/prevenir-jour/<jour>", methods=["POST"])
+@infirmerie_only
+def infirmerie_prevenir_jour(jour):
+    d = parse_date(jour)
+    total = 0
+    for o in occurrences_soins(d):
+        if o["statut"] == "a_faire" and not o["prevenu"] and any(c["user_id"] and not c["annule"] for c in o["cours"]):
+            total += prevenir_professeurs(o["id"], d) or 0
+    log("professeurs prévenus (soins du jour)", f"{d}: {total}")
+    flash(f"{total} message(s) envoyé(s) aux professeurs concernés." if total else "Tous les professeurs concernés sont déjà prévenus.", "ok")
+    return redirect(url_for("infirmerie", date=d.isoformat()))
 
 
 def resume_recurrence(s):
@@ -2138,7 +2230,18 @@ def infirmerie_passages():
                        f.get("note", "").strip()[:500], g.user["nom"]))
             log("passage enregistré", nom)
             ext.emit("passage.enregistre", passage_id=pid, eleve_id=eleve["id"] if eleve else None, motif=f["motif"].strip())
-            flash("Passage enregistré.", "ok")
+            decision = f.get("decision", "").strip()
+            if eleve and ("domicile" in decision.lower() or "secours" in decision.lower()):
+                # la vie scolaire doit enregistrer l'absence : elle est prévenue, ainsi que le professeur principal (sans le motif médical)
+                _, pp = equipe_et_pp(eleve["classe"]) if eleve["classe"] else ([], None)
+                dest = utilisateurs_personnel() + ([user_du_prof(pp["prof_id"])] if pp else [])
+                action = "est rentré(e) à son domicile" if "domicile" in decision.lower() else "a été pris(e) en charge par les secours"
+                nb = notifier(dest, f"Infirmerie : {nom_complet(eleve)} ({eleve['classe']}) {('rentre à domicile' if 'domicile' in decision.lower() else 'secours appelés')}",
+                              f"{nom_complet(eleve)} ({eleve['classe']}) {action} à {heure}.\nParents prévenus : {'oui' if f.get('parents_prevenus') else 'non'}.\n"
+                              "Merci d'enregistrer l'absence.\n\nMessage automatique de l'infirmerie (aucune information médicale).")
+                flash(f"Passage enregistré. La vie scolaire et le professeur principal ont été prévenus ({nb} personne(s)).", "ok")
+            else:
+                flash("Passage enregistré.", "ok")
         return redirect(url_for("infirmerie_passages"))
     debut, fin = filtre_passages()
     rows = q("SELECT * FROM passages WHERE etab_id=? AND date BETWEEN ? AND ? ORDER BY date DESC, heure DESC LIMIT 500",
@@ -2213,7 +2316,12 @@ def infirmerie_fiche(eid):
     fiche = one("SELECT * FROM fiches_sante WHERE eleve_id=?", (eid,))
     passages_ = q("SELECT * FROM passages WHERE eleve_id=? ORDER BY date DESC, heure DESC LIMIT 30", (eid,))
     soins_ = q("SELECT * FROM soins WHERE eleve_id=? ORDER BY actif DESC, date_debut DESC", (eid,))
-    return render_template("infirmerie_fiche.html", e=e, fiche=fiche, passages=passages_, soins=soins_)
+    equipe, pp = equipe_et_pp(e["classe"]) if e["classe"] else ([], None)
+    pp_info = None
+    if pp:
+        pr = one("SELECT email, telephone, user_id FROM professeurs WHERE id=?", (pp["prof_id"],))
+        pp_info = dict(pp, email=pr["email"], telephone=pr["telephone"], user_id=pr["user_id"])
+    return render_template("infirmerie_fiche.html", e=e, fiche=fiche, passages=passages_, soins=soins_, pp=pp_info, equipe=equipe)
 
 
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────

@@ -17,6 +17,8 @@ document.addEventListener('click', function (e) {
   var tous = form.querySelector('[data-conv-tous]');
   var resume = form.querySelector('[data-conv-resume]');
   var auto = new Set();  // professeurs cochés automatiquement par une classe (les choix manuels n'en font pas partie)
+  var effacer = form.querySelector('[data-conv-clear]');
+  form.reset();          // le navigateur peut restaurer d'anciens choix : on repart toujours d'une sélection vide
 
   function classesChoisies() {
     return Array.prototype.filter.call(classes.options, function (o) { return o.selected; }).map(function (o) { return o.value || o.text; });
@@ -24,7 +26,7 @@ document.addEventListener('click', function (e) {
   function majResume() {
     if (tous.checked) { resume.textContent = 'Tous les professeurs seront convoqués.'; return; }
     var n = Array.prototype.filter.call(profs.options, function (o) { return o.selected; }).length;
-    resume.textContent = n ? n + ' professeur(s) convoqué(s).' : 'Aucun professeur sélectionné.';
+    resume.textContent = n ? n + ' professeur(s) sur ' + profs.options.length + ' convoqué(s).' : 'Aucun professeur sélectionné.';
   }
   function surClasses() {
     var choisies = classesChoisies();
@@ -43,6 +45,17 @@ document.addEventListener('click', function (e) {
     classes.disabled = profs.disabled = tous.checked;
     majResume();
   }
+  function toutEffacer() {
+    Array.prototype.forEach.call(classes.options, function (o) { o.selected = false; });
+    Array.prototype.forEach.call(profs.options, function (o) { o.selected = false; });
+    form.querySelectorAll('input[name=eleves]').forEach(function (c) { c.checked = false; });
+    form.querySelectorAll('[data-el-toute-classe]').forEach(function (c) { c.checked = false; c.indeterminate = false; });
+    tous.checked = false; classes.disabled = profs.disabled = false; auto.clear();
+    majResume();
+    var r = form.querySelector('[data-el-resume]'); if (r) r.textContent = 'Aucun élève sélectionné.';
+  }
+  if (effacer) effacer.addEventListener('click', toutEffacer);
+  window.addEventListener('pageshow', function (e) { if (e.persisted) toutEffacer(); });
   classes.addEventListener('change', surClasses);
   profs.addEventListener('change', surProfs);
   tous.addEventListener('change', surTous);

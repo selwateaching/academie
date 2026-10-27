@@ -7,5 +7,11 @@
 <label>Contact en cas d'urgence</label><input name="contact_urgence" value="{{ fiche.contact_urgence if fiche }}" style="width:100%"><label>Observations</label><textarea name="observations" rows="4">{{ fiche.observations if fiche }}</textarea><br><br>
 <button>Enregistrer</button>{% if fiche and fiche.maj_at %} <span class="mute">Mise à jour le {{ fiche.maj_at.replace('T',' ') }}</span>{% endif %}</form>
 <p class="mute" style="margin-top:10px">Famille : {{ e.responsable or '—' }} {{ e.contact }}</p></div>
+<div class="card"><h2>Classe {{ e.classe }}</h2>
+{% if pp %}<p style="margin:0"><b>Professeur principal : {{ pp.nom }}</b> <span class="mute">({{ pp.matiere }})</span><br>{{ pp.email }}{% if pp.telephone %} · {{ pp.telephone }}{% endif %}</p>
+{% if pp.user_id %}<p style="margin:6px 0"><a class="btn sec sm" href="{{ url_for('message_nouveau', a=pp.user_id, sujet='À propos de ' ~ e.prenom ~ ' ' ~ e.nom) }}">✉ Écrire au professeur principal</a></p>{% endif %}
+{% else %}<p class="mute">Pas de professeur principal renseigné.</p>{% endif %}
+<p class="mute" style="margin:6px 0 0">Équipe : {% for p in equipe|map(attribute='nom')|unique %}{{ p }}{{ ', ' if not loop.last }}{% else %}aucun cours planifié{% endfor %}</p>
+{% if g.user.role in STAFF %}<p style="margin:8px 0 0"><a href="{{ url_for('eleve_fiche', eid=e.id) }}">Fiche élève (vie scolaire)</a></p>{% endif %}</div>
 <div class="card"><h2>Soins programmés</h2>{% for s in soins %}<p><b>{{ s.intitule }}</b> {% if not s.actif %}<span class="tag warn">suspendu</span>{% endif %}<br><span class="mute">{{ resume_recurrence(s) }}</span></p>{% else %}<p class="mute">Aucun.</p>{% endfor %}
 <h2 style="margin-top:16px">Derniers passages</h2>{% for r in passages %}<p>{{ r.date|fr_date }} {{ r.heure }} — <b>{{ r.motif }}</b><br><span class="mute">{{ r.soins }}{% if r.decision %} · {{ r.decision }}{% endif %}</span></p>{% else %}<p class="mute">Aucun passage.</p>{% endfor %}</div></div>{% endblock %}

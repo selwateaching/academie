@@ -216,7 +216,13 @@ MIGRATIONS = [
         COMMIT;
         PRAGMA foreign_keys = ON;
     """),  # date de naissance et sexe des élèves (pyramide des âges), rôle infirmier, infirmerie (soins, passages, fiches santé)
-    # (9, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (9, """
+        CREATE TABLE IF NOT EXISTS soins_prevenus (
+            soin_id INTEGER NOT NULL REFERENCES soins(id) ON DELETE CASCADE, date TEXT NOT NULL, at TEXT NOT NULL DEFAULT '',
+            PRIMARY KEY (soin_id, date)
+        );
+    """),  # professeurs prévenus qu'un élève quitte le cours pour un soin
+    # (10, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
