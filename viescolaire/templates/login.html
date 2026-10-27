@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% block body %}
-<div class="card login"><h1>🎓 VieScolairePro</h1><p class="mute">La vie scolaire, mieux organisée.</p>
+<div class="card login"><h1>{% if cfg.logo %}<img src="{{ url_for('client_static', chemin=cfg.logo) }}" alt="" style="height:34px;vertical-align:middle"> {% else %}🎓 {% endif %}{{ cfg.produit }}</h1><p class="mute">{{ cfg.slogan }}</p>
 <form method="post">{% from '_macros.html' import csrf %}{{ csrf() }}
 <label>Adresse e-mail</label><input type="email" name="email" required autofocus style="width:100%">
 <label>Mot de passe</label><input type="password" name="password" required style="width:100%"><br><br>

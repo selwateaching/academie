@@ -4,7 +4,9 @@ from datetime import date, timedelta
 
 from werkzeug.security import generate_password_hash
 
-DATA_DIR = os.environ.get("VSP_DATA") or os.path.join(os.path.dirname(__file__), "data")
+from .config import CFG
+
+DATA_DIR = os.environ.get("VSP_DATA") or CFG["data_dir"] or os.path.join(os.path.dirname(__file__), "data")
 DB_PATH = os.path.join(DATA_DIR, "viescolaire.db")
 
 SCHEMA = """
@@ -107,9 +109,25 @@ def connect():
     return con
 
 
-def init_db():
+# Migrations : on n'édite jamais une migration déjà livrée, on en AJOUTE une (numéro suivant).
+# Chaque migration est un script SQL ; elle est appliquée une seule fois par base.
+MIGRATIONS = [
+    (1, SCHEMA),
+    # (2, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+]
+
+
+def init_db(extra_sql=()):
     con = connect()
-    con.executescript(SCHEMA)
+    con.execute("CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY, applied_at TEXT)")
+    deja = {r[0] for r in con.execute("SELECT version FROM schema_version")}
+    for version, sql in MIGRATIONS:
+        if version not in deja:
+            con.executescript(sql)
+            con.execute("INSERT INTO schema_version VALUES (?, datetime('now'))", (version,))
+            con.commit()
+    for sql in extra_sql:  # tables des extensions (idempotentes)
+        con.executescript(sql)
     con.commit()
     con.close()
 

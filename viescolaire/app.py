@@ -12,18 +12,20 @@ import time
 from datetime import date, datetime, timedelta
 from functools import wraps
 
+from markupsafe import Markup
 from flask import (Flask, Response, abort, flash, g, redirect, render_template, request,
                    send_from_directory, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from . import db as database
+from . import ext
+from .config import CFG, MODULES
 
 app = Flask(__name__)
 os.makedirs(database.DATA_DIR, exist_ok=True)
 UPLOAD_DIR = os.path.join(database.DATA_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-database.init_db()
 
 _key_file = os.path.join(database.DATA_DIR, "secret_key")
 if not os.path.exists(_key_file):
@@ -36,12 +38,35 @@ app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=os.environ.get("VSP_HTTPS") == "1",
-    PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=CFG["session_heures"]),
 )
+app.config["MAX_CONTENT_LENGTH"] = CFG["upload_max_mo"] * 1024 * 1024
+if CFG["templates_dir"]:  # gabarits du client prioritaires sur ceux du socle
+    from jinja2 import ChoiceLoader, FileSystemLoader
+    app.jinja_loader = ChoiceLoader([FileSystemLoader(CFG["templates_dir"]), app.jinja_loader])
 
 STAFF = ("admin", "direction", "cpe")
 JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
-EXTENSIONS = {"pdf", "doc", "docx", "xls", "xlsx", "csv", "odt", "ods", "png", "jpg", "jpeg", "txt", "pptx"}
+FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
+
+# Quels endpoints appartiennent à quel module (un module désactivé répond 404).
+MODULE_DES_ENDPOINTS = {
+    "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
+    "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
+    "remplacements": ["remplacements", "remplacement_action"], "cours": ["cours", "perturbation_supprimer"],
+    "classes": ["classes", "classe_pp"], "incidents": ["incidents", "incident_action"],
+    "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
+    "reunions": ["reunions", "reunion_repondre", "reunion_supprimer"],
+    "documents": ["documents", "document_telecharger", "document_supprimer"],
+    "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
+}
+ENDPOINT_VERS_MODULE = {ep: m for m, eps in MODULE_DES_ENDPOINTS.items() for ep in eps}
+EXPORT_VERS_MODULE = {"absences": "absences", "remplacements": "remplacements", "taches": "taches",
+                      "incidents": "incidents", "professeurs": "professeurs"}
+
+
+def module_actif(nom):
+    return CFG["modules"].get(nom, True)
 TYPES_PERTURBATION = {"annule": "Cours annulé", "salle_indisponible": "Salle indisponible",
                       "deplace": "Cours déplacé", "remplace": "Cours remplacé"}
 
@@ -147,7 +172,7 @@ def charger_contexte():
         if not hmac.compare_digest(request.form.get("_csrf", ""), session.get("csrf", "x")):
             abort(400, "Jeton de sécurité invalide, rechargez la page.")
     g.user = g.etab_id = g.etab = g.prof = None
-    if request.endpoint in ("static", "login", "mfa", "manifest", "logout") or request.endpoint is None:
+    if request.endpoint in ("static", "client_static", "login", "mfa", "manifest", "logout") or request.endpoint is None:
         return
     uid = session.get("uid")
     user = one("SELECT * FROM users WHERE id=? AND actif=1", (uid,)) if uid else None
@@ -162,6 +187,9 @@ def charger_contexte():
     g.etab = next((e for e in etabs if e["id"] == session.get("etab_id")), etabs[0])
     g.etab_id = g.etab["id"]
     g.prof = one("SELECT * FROM professeurs WHERE user_id=? AND etab_id=?", (user["id"], g.etab_id))
+    mod = ENDPOINT_VERS_MODULE.get(request.endpoint)
+    if mod and not module_actif(mod):
+        abort(404)
 
 
 def staff_only(f):
@@ -186,7 +214,23 @@ def entetes(resp):
 
 @app.context_processor
 def contexte():
-    ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION}
+    ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
+           "cfg": CFG, "module_actif": module_actif, "ext_nav": [], "ext_widgets": []}
+    if g.get("user"):
+        for item in ext.NAV:
+            if g.user["role"] in item["roles"]:
+                cible = item["cible"]
+                try:
+                    url = cible if cible.startswith("/") else url_for(cible)
+                except Exception:
+                    continue
+                ctx["ext_nav"].append({"libelle": item["libelle"], "url": url})
+        if request.endpoint == "dashboard" and g.user["role"] in STAFF:
+            for w in ext.WIDGETS:
+                try:
+                    ctx["ext_widgets"].append({"titre": w["titre"], "html": Markup(w["fn"]())})
+                except Exception:
+                    ext.journal.exception("Widget %s en erreur", w["titre"])
     if g.get("user") and g.get("etab_id"):
         ctx["non_lus"] = one("SELECT COUNT(*) c FROM message_dest md JOIN messages m ON m.id=md.message_id "
                              "WHERE md.user_id=? AND m.etab_id=? AND md.lu_at IS NULL", (g.user["id"], g.etab_id))["c"]
@@ -211,6 +255,7 @@ def login():
             session["uid"] = user["id"]
             g.user = user
             log("connexion", email)
+            ext.emit("connexion", user_id=user["id"])
             return redirect(url_for("dashboard"))
         _tentatives.setdefault(cle, []).append(time.time())
         flash("Identifiants incorrects.", "err")
@@ -233,6 +278,7 @@ def mfa():
             session["uid"] = user["id"]
             g.user = user
             log("connexion (MFA)", user["email"])
+            ext.emit("connexion", user_id=user["id"])
             return redirect(url_for("dashboard"))
         else:
             _tentatives.setdefault(cle, []).append(time.time())
@@ -254,11 +300,18 @@ def changer_etab():
     return redirect(request.referrer or url_for("dashboard"))
 
 
+@app.route("/client-static/<path:chemin>")
+def client_static(chemin):
+    if not CFG["static_dir"]:
+        abort(404)
+    return send_from_directory(CFG["static_dir"], chemin)
+
+
 @app.route("/manifest.webmanifest")
 def manifest():
     return Response(json.dumps({
-        "name": "VieScolairePro", "short_name": "VieScolaire", "start_url": "/", "display": "standalone",
-        "background_color": "#f4f6fb", "theme_color": "#2563eb", "lang": "fr",
+        "name": CFG["produit"], "short_name": CFG["produit"][:12], "start_url": "/", "display": "standalone",
+        "background_color": "#f4f6fb", "theme_color": CFG["couleur"], "lang": "fr",
         "icons": [{"src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml"}]}),
         mimetype="application/manifest+json")
 
@@ -421,6 +474,7 @@ def professeurs():
                       (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), f.get("matiere", "").strip(),
                        f.get("email", "").strip(), f.get("telephone", "").strip()))
             log("professeur créé", f"{f['nom']} {f.get('prenom', '')}")
+            ext.emit("professeur.cree", prof_id=pid, nom=f["nom"].strip())
             return redirect(url_for("professeur", pid=pid))
     terme = request.args.get("q", "").strip()
     like = f"%{terme}%"
@@ -553,6 +607,8 @@ def absences():
                        "validee" if staff else "declaree"))
             n = generer_remplacements(aid)
             log("absence enregistrée", f"{p['nom']} {d1} → {d2} ({typ})")
+            ext.emit("absence.creee", absence_id=aid, prof_id=p["id"], type=typ, date_debut=d1.isoformat(),
+                     date_fin=d2.isoformat(), nb_remplacements=n)
             flash(f"Enregistré. {n} cours à remplacer ou réorganiser." if n else "Enregistré.", "ok")
             return redirect(url_for("absences"))
     sql = ("SELECT a.*, p.nom, p.prenom, (SELECT COUNT(*) FROM remplacements r WHERE r.absence_id=a.id "
@@ -614,6 +670,7 @@ def remplacement_action(rid, action):
             abort(400)
         run("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (pid, rid))
         log("remplacement assigné", f"{r['date']} créneau {r['creneau_id']} → prof {pid}")
+        ext.emit("remplacement.assigne", remplacement_id=rid, remplacant_id=pid, date=r["date"])
     elif action == "annuler-cours":
         run("UPDATE remplacements SET remplacant_id=NULL, statut='annule' WHERE id=?", (rid,))
         log("cours annulé", f"{r['date']} créneau {r['creneau_id']}")
@@ -702,10 +759,11 @@ def incidents():
     if request.method == "POST":
         f = request.form
         if f.get("description", "").strip():
-            run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite) VALUES (?,?,?,?,?,?)",
+            iid = run("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite) VALUES (?,?,?,?,?,?)",
                 (g.etab_id, parse_date(f.get("date")).isoformat(), f.get("classe", "").strip(), f.get("eleve", "").strip(),
                  f["description"].strip(), f.get("suite", "").strip()))
             log("incident enregistré", f.get("classe", ""))
+            ext.emit("incident.cree", incident_id=iid, classe=f.get("classe", ""), description=f["description"].strip())
         return redirect(url_for("incidents"))
     rows = q("SELECT * FROM incidents WHERE etab_id=? ORDER BY statut='clos', date DESC LIMIT 200", (g.etab_id,))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
@@ -784,6 +842,9 @@ def message_nouveau():
                 db().execute("INSERT INTO message_dest(message_id,user_id) VALUES (?,?)", (mid, uid))
             db().commit()
             log("message envoyé", f"{typ} {cible} ({len(dest)} destinataires)")
+            ext.emit("message.envoye", message_id=mid, sujet=f["sujet"].strip(), corps=f["corps"].strip(),
+                     expediteur=g.user["nom"],
+                     emails=[r["email"] for r in q("SELECT email FROM users WHERE id IN (%s)" % ",".join("?" * len(dest)), dest)])
             flash(f"Message envoyé à {len(dest)} personne(s).", "ok")
             return redirect(url_for("messages", boite="envoyes"))
     users = q("SELECT u.id,u.nom FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? "
@@ -843,6 +904,11 @@ def reunions():
                 db().execute("INSERT INTO reunion_convoques(reunion_id,prof_id) VALUES (?,?)", (rid, pid))
             db().commit()
             log("réunion créée", f"{f['titre']} ({len(ids & valides)} convoqués)")
+            convoques = list(ids & valides)
+            ext.emit("reunion.creee", reunion_id=rid, titre=f["titre"].strip(), date=parse_date(f.get("date")).isoformat(),
+                     heure=f.get("heure", ""), lieu=f.get("lieu", "").strip(),
+                     emails=[r["email"] for r in q("SELECT email FROM professeurs WHERE email<>'' AND id IN (%s)"
+                                                   % ",".join("?" * len(convoques)), convoques)] if convoques else [])
             flash(f"Réunion créée, {len(ids & valides)} convocation(s).", "ok")
             return redirect(url_for("reunions"))
     if g.user["role"] in STAFF:
@@ -882,7 +948,7 @@ def documents():
             abort(403)
         fichier = request.files.get("fichier")
         nom = secure_filename(fichier.filename) if fichier and fichier.filename else ""
-        if not nom or nom.rsplit(".", 1)[-1].lower() not in EXTENSIONS:
+        if not nom or nom.rsplit(".", 1)[-1].lower() not in FICHIERS_AUTORISES:
             flash("Fichier absent ou type non autorisé.", "err")
         else:
             stored = secrets.token_hex(12) + "_" + nom
@@ -933,10 +999,11 @@ def taches():
             ass = f.get("assigne_id", type=int)
             if ass and not one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (ass, g.etab_id)):
                 ass = None
-            run("INSERT INTO taches(etab_id,titre,description,echeance,priorite,assigne_id) VALUES (?,?,?,?,?,?)",
+            tid = run("INSERT INTO taches(etab_id,titre,description,echeance,priorite,assigne_id) VALUES (?,?,?,?,?,?)",
                 (g.etab_id, f["titre"].strip(), f.get("description", "").strip(), ech,
                  f.get("priorite") if f.get("priorite") in ("basse", "normale", "haute") else "normale", ass or g.user["id"]))
             log("tâche créée", f["titre"])
+            ext.emit("tache.creee", tache_id=tid, titre=f["titre"].strip(), echeance=ech)
         return redirect(url_for("taches"))
     rows = q("SELECT t.*, u.nom assigne FROM taches t LEFT JOIN users u ON u.id=t.assigne_id WHERE t.etab_id=? "
              "ORDER BY t.statut='faite', t.echeance IS NULL, t.echeance", (g.etab_id,))
@@ -981,7 +1048,7 @@ def cellule_csv(v):
 @app.route("/export/<nom>.csv")
 @staff_only
 def export_csv(nom):
-    if nom not in EXPORTS:
+    if nom not in EXPORTS or not module_actif(EXPORT_VERS_MODULE.get(nom, "rapports")):
         abort(404)
     cur = db().execute(EXPORTS[nom], (g.etab_id,))
     buf = io.StringIO()
@@ -1013,7 +1080,8 @@ def rapports():
                 "AND a.type='absence' AND a.date_debut<=? AND a.date_fin>=? GROUP BY p.id ORDER BY n DESC LIMIT 5", (g.etab_id, fin, debut))
     top_remp = q("SELECT p.nom, p.prenom, COUNT(*) n FROM remplacements r JOIN professeurs p ON p.id=r.remplacant_id WHERE r.etab_id=? "
                  "AND r.date BETWEEN ? AND ? GROUP BY p.id ORDER BY n DESC LIMIT 5", (g.etab_id, debut, fin))
-    return render_template("rapports.html", s=s, top_abs=top_abs, top_remp=top_remp, debut=debut, fin=fin, exports=list(EXPORTS))
+    return render_template("rapports.html", s=s, top_abs=top_abs, top_remp=top_remp, debut=debut, fin=fin,
+                           exports=[e for e in EXPORTS if module_actif(EXPORT_VERS_MODULE.get(e, "rapports"))])
 
 
 @app.route("/historique")
@@ -1110,8 +1178,8 @@ def compte():
         if action == "mdp":
             if not check_password_hash(g.user["pwd_hash"], request.form.get("actuel", "")):
                 flash("Mot de passe actuel incorrect.", "err")
-            elif len(request.form.get("nouveau", "")) < 10:
-                flash("Le nouveau mot de passe doit contenir au moins 10 caractères.", "err")
+            elif len(request.form.get("nouveau", "")) < CFG["mdp_min"]:
+                flash(f"Le nouveau mot de passe doit contenir au moins {CFG['mdp_min']} caractères.", "err")
             else:
                 run("UPDATE users SET pwd_hash=? WHERE id=?", (generate_password_hash(request.form["nouveau"]), g.user["id"]))
                 log("mot de passe modifié")
@@ -1177,14 +1245,20 @@ def rgpd_supprimer():
     return redirect(url_for("login"))
 
 
+# ───────────────────────── Extensions du client ─────────────────────────
+ext.charger_extensions(app, CFG, {"q": q, "one": one, "run": run, "log": log, "staff_only": staff_only,
+                                  "exports": EXPORTS, "csrf": csrf_token})
+database.init_db(ext.SCHEMAS)
+
+
 # ───────────────────────── Commandes CLI ─────────────────────────
 @app.cli.command("create-admin")
 def cli_create_admin():
     """Crée un établissement et un compte CPE (variables VSP_EMAIL, VSP_PASSWORD, VSP_NOM, VSP_ETAB)."""
     import click
     email, pwd = os.environ.get("VSP_EMAIL"), os.environ.get("VSP_PASSWORD")
-    if not email or not pwd or len(pwd) < 10:
-        raise click.UsageError("Définissez VSP_EMAIL et VSP_PASSWORD (10 caractères minimum).")
+    if not email or not pwd or len(pwd) < CFG["mdp_min"]:
+        raise click.UsageError(f"Définissez VSP_EMAIL et VSP_PASSWORD ({CFG['mdp_min']} caractères minimum).")
     database.create_admin(email, pwd, os.environ.get("VSP_NOM", "CPE"), os.environ.get("VSP_ETAB", "Mon établissement"))
     click.echo("Compte créé.")
 

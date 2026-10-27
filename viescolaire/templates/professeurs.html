@@ -9,4 +9,4 @@
 <div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
 <div><label>Matière</label><input name="matiere"></div><div><label>E-mail</label><input type="email" name="email"></div>
 <div><label>Téléphone</label><input name="telephone"></div><div><button>Ajouter</button></div></div></form>
-<p class="mute">Pour de gros volumes, utilisez l'<a href="{{ url_for('importer') }}">import CSV</a>. <a href="{{ url_for('export_csv', nom='professeurs') }}">Exporter l'annuaire</a></p></div>{% endblock %}
+<p class="mute">{% if module_actif('import') %}Pour de gros volumes, utilisez l'<a href="{{ url_for('importer') }}">import CSV</a>. {% endif %}<a href="{{ url_for('export_csv', nom='professeurs') }}">Exporter l'annuaire</a></p></div>{% endblock %}

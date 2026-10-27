@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{# Exemple de surcharge : même nom que le gabarit du socle => celui du client est utilisé. #}
+{% block title %}RGPD{% endblock %}{% block body %}
+<div class="top"><h1>Protection des données – Collège Exemple</h1></div>
+<div class="card"><p>Délégué à la protection des données : dpo@exemple.fr</p>
+<p><a class="btn" href="{{ url_for('rgpd_export') }}">Télécharger mes données (JSON)</a></p></div>{% endblock %}

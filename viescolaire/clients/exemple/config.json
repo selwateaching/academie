@@ -1,0 +1,18 @@
+{
+  "produit": "Collège Exemple – Vie scolaire",
+  "slogan": "Espace vie scolaire du collège Exemple",
+  "couleur": "#0f766e",
+  "css": "client.css",
+  "modules": {"import": true, "assistant": true, "documents": true},
+  "extensions": ["notifications_email", "indicateurs_client"],
+  "extensions_config": {
+    "notifications_email": {"actif": false, "smtp_host": "smtp.exemple.fr", "smtp_port": 587,
+                             "smtp_user_env": "SMTP_USER", "smtp_password_env": "SMTP_PASSWORD",
+                             "expediteur": "viescolaire@exemple.fr"}
+  },
+  "extensions_dir": "extensions",
+  "templates_dir": "templates",
+  "static_dir": "static",
+  "data_dir": "../../data-exemple",
+  "mdp_min": 12
+}

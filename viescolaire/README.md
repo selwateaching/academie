@@ -16,7 +16,7 @@ VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='un-mot-de-passe-long' VSP_NOM='Prénom N
   flask --app viescolaire.app create-admin
 ```
 
-Variables : `VSP_DATA` (dossier des données, défaut `viescolaire/data`), `VSP_SECRET_KEY`, `VSP_HTTPS=1` (cookies sécurisés derrière HTTPS), `PORT`.
+Variables : `VSP_CONFIG` (fichier de configuration du client), `VSP_DATA` (dossier des données, défaut `viescolaire/data`), `VSP_SECRET_KEY`, `VSP_HTTPS=1` (cookies sécurisés derrière HTTPS), `PORT`.
 En production, servez l'application derrière HTTPS avec un vrai serveur WSGI (gunicorn) et sauvegardez `VSP_DATA`.
 
 ## Fonctionnalités
@@ -29,6 +29,16 @@ En production, servez l'application derrière HTTPS avec un vrai serveur WSGI (g
 | 4. Administratif | Tâches et échéances, alertes automatiques, rapports et statistiques (impression PDF, exports CSV pour Excel), historique des actions |
 | 5. Avancé | Assistant (résumé du jour, suggestions), import CSV (professeurs, créneaux), interface adaptée au mobile et installable (PWA) |
 | 6. Sécurité | Rôles (CPE, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (RGPD), plusieurs établissements cloisonnés |
+
+## Un socle commun, une configuration par client
+
+Chaque client a un fichier `config.json` (nom, logo, couleur, modules activés, règles de sécurité, extensions)
+et, au besoin, ses propres extensions Python et gabarits, sans toucher au socle.
+Exemple complet : `viescolaire/clients/exemple/`. Guide : [EVOLUTION.md](EVOLUTION.md).
+
+```bash
+VSP_CONFIG=viescolaire/clients/exemple/config.json python -m viescolaire.app
+```
 
 ## Limites connues
 

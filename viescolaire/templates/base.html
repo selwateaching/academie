@@ -1,25 +1,28 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{% block title %}VieScolairePro{% endblock %} · VieScolairePro</title>
+<title>{% block title %}{{ cfg.produit }}{% endblock %} · {{ cfg.produit }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="manifest" href="{{ url_for('manifest') }}"><link rel="icon" href="{{ url_for('static', filename='icon.svg') }}">
-<meta name="theme-color" content="#2563eb"></head><body>
+<meta name="theme-color" content="{{ cfg.couleur }}">
+<style>:root{--brand:{{ cfg.couleur }}}</style>
+{% if cfg.css %}<link rel="stylesheet" href="{{ url_for('client_static', chemin=cfg.css) }}">{% endif %}</head><body>
 {% if g.user %}
 {% macro nav(ep, label, extra='') %}<a href="{{ url_for(ep) }}" class="{{ 'on' if request.endpoint == ep }}">{{ label }}{{ extra|safe }}</a>{% endmacro %}
 <div class="layout"><nav class="side">
-<span class="logo">🎓 VieScolairePro</span>
+<span class="logo">{% if cfg.logo %}<img src="{{ url_for('client_static', chemin=cfg.logo) }}" alt="" style="height:26px;vertical-align:middle"> {% else %}🎓 {% endif %}{{ cfg.produit }}</span>
 {% if g.etabs|length > 1 %}<form method="post" class="etab" action="{{ url_for('changer_etab') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
 <select name="etab" data-autosubmit>{% for e in g.etabs %}<option value="{{ e.id }}" {{ 'selected' if e.id == g.etab_id }}>{{ e.nom }}</option>{% endfor %}</select></form>
 {% else %}<div class="mute" style="margin:0 10px 8px;font-size:13px">{{ g.etab.nom }}</div>{% endif %}
 {{ nav('dashboard', 'Tableau de bord') }}
 {% if g.user.role in STAFF %}
-<h4>Professeurs</h4>{{ nav('professeurs','Annuaire') }}{{ nav('emploi_du_temps','Emplois du temps') }}{{ nav('absences','Absences') }}{{ nav('remplacements','Remplacements') }}
-<h4>Vie scolaire</h4>{{ nav('cours','Cours perturbés') }}{{ nav('classes','Classes') }}{{ nav('incidents','Incidents') }}
+<h4>Professeurs</h4>{% if module_actif('professeurs') %}{{ nav('professeurs','Annuaire') }}{% endif %}{% if module_actif('emplois_du_temps') %}{{ nav('emploi_du_temps','Emplois du temps') }}{% endif %}{% if module_actif('absences') %}{{ nav('absences','Absences') }}{% endif %}{% if module_actif('remplacements') %}{{ nav('remplacements','Remplacements') }}{% endif %}
+<h4>Vie scolaire</h4>{% if module_actif('cours') %}{{ nav('cours','Cours perturbés') }}{% endif %}{% if module_actif('classes') %}{{ nav('classes','Classes') }}{% endif %}{% if module_actif('incidents') %}{{ nav('incidents','Incidents') }}{% endif %}
 {% else %}
-<h4>Mon espace</h4>{{ nav('emploi_du_temps','Mon emploi du temps') }}{{ nav('absences','Mes absences') }}
+<h4>Mon espace</h4>{% if module_actif('emplois_du_temps') %}{{ nav('emploi_du_temps','Mon emploi du temps') }}{% endif %}{% if module_actif('absences') %}{{ nav('absences','Mes absences') }}{% endif %}
 {% endif %}
-<h4>Communication</h4>{{ nav('messages','Messagerie', ('<span class="badge">%d</span>' % non_lus) if non_lus else '') }}{{ nav('reunions','Réunions') }}{{ nav('documents','Documents') }}
-{% if g.user.role in STAFF %}<h4>Pilotage</h4>{{ nav('taches','Tâches') }}{{ nav('rapports','Rapports') }}{{ nav('historique','Historique') }}{{ nav('assistant','Assistant') }}{{ nav('importer','Import CSV') }}{% endif %}
+<h4>Communication</h4>{% if module_actif('messagerie') %}{{ nav('messages','Messagerie', ('<span class="badge">%d</span>' % non_lus) if non_lus else '') }}{% endif %}{% if module_actif('reunions') %}{{ nav('reunions','Réunions') }}{% endif %}{% if module_actif('documents') %}{{ nav('documents','Documents') }}{% endif %}
+{% if g.user.role in STAFF %}<h4>Pilotage</h4>{% if module_actif('taches') %}{{ nav('taches','Tâches') }}{% endif %}{% if module_actif('rapports') %}{{ nav('rapports','Rapports') }}{% endif %}{{ nav('historique','Historique') }}{% if module_actif('assistant') %}{{ nav('assistant','Assistant') }}{% endif %}{% if module_actif('import') %}{{ nav('importer','Import CSV') }}{% endif %}{% endif %}
+{% if ext_nav %}<h4>Spécifique</h4>{% for e in ext_nav %}<a href="{{ e.url }}">{{ e.libelle }}</a>{% endfor %}{% endif %}
 <h4>Compte</h4>{{ nav('compte','Sécurité') }}{{ nav('rgpd','RGPD') }}<a href="{{ url_for('logout') }}">Déconnexion</a>
 <div class="mute" style="margin:12px 10px;font-size:12px">{{ g.user.nom }}</div>
 </nav><main>
