@@ -358,3 +358,36 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     img.src = url;
   });
 });
+
+/* Menu latéral : sections dépliables (état mémorisé dans le navigateur ; la section de la page courante reste ouverte) */
+(function () {
+  var nav = document.querySelector('nav.side');
+  if (!nav) return;
+  var cle = 'vsp_menu', etat = {};
+  try { etat = JSON.parse(localStorage.getItem(cle) || '{}'); } catch (e) { etat = {}; }
+  var sauver = function () { try { localStorage.setItem(cle, JSON.stringify(etat)); } catch (e) { /* stockage indisponible : sans conséquence */ } };
+  var groupes = [];
+  nav.querySelectorAll('h4').forEach(function (h) {
+    var corps = document.createElement('div'), n = h.nextSibling, titre = h.textContent.trim();
+    corps.className = 'nav-groupe';
+    while (n && !(n.nodeType === 1 && (n.tagName === 'H4' || n.classList.contains('mute')))) { var suivant = n.nextSibling; corps.appendChild(n); n = suivant; }
+    h.parentNode.insertBefore(corps, n);
+    h.setAttribute('role', 'button'); h.tabIndex = 0;
+    var regler = function (ouvert) { corps.hidden = !ouvert; h.setAttribute('aria-expanded', ouvert ? 'true' : 'false'); };
+    var courant = !!corps.querySelector('a.on');
+    regler(courant || etat[titre] === true);
+    var bascule = function () { var ouvert = corps.hidden; regler(ouvert); etat[titre] = ouvert; sauver(); };
+    h.addEventListener('click', bascule);
+    h.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bascule(); } });
+    groupes.push({ h: h, regler: regler, titre: titre });
+  });
+  if (groupes.length > 1) {
+    var outils = document.createElement('div'); outils.className = 'nav-outils';
+    [['Tout déplier', true], ['Tout replier', false]].forEach(function (o) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = o[0];
+      b.addEventListener('click', function () { groupes.forEach(function (g) { g.regler(o[1]); etat[g.titre] = o[1]; }); sauver(); });
+      outils.appendChild(b);
+    });
+    nav.insertBefore(outils, groupes[0].h);
+  }
+})();

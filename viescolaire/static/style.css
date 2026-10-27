@@ -159,3 +159,11 @@ svg.pyramide{width:100%;height:auto;display:block;max-width:900px}
 .paper-titre{text-align:center;font-size:20px;margin:6px 0 16px}.paper-fait{text-align:right;margin:26px 0 8px}
 .paper-signes{display:flex;gap:24px;justify-content:space-around;flex-wrap:wrap;text-align:center;break-inside:avoid}.paper-signes>div{flex:1;min-width:170px}.paper-case{display:block;height:70px}
 .paper-pied{margin-top:30px;border-top:1px solid #ccc;padding-top:8px;text-align:center;font-size:11px;color:#555}
+/* Menu latéral dépliable : une section = un titre cliquable ; la section de la page courante est ouverte */
+nav.side h4[role=button]{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;padding:4px 0}
+nav.side h4[role=button]::after{content:"▸";transition:transform .15s;font-size:12px}
+nav.side h4[aria-expanded=true]::after{transform:rotate(90deg)}
+nav.side h4[role=button]:hover,nav.side h4[role=button]:focus-visible{color:var(--coquille);outline:none}
+.nav-groupe[hidden]{display:none}
+.nav-outils{display:flex;gap:10px;margin:10px 10px 0;font-size:12px}.nav-outils button{background:none;color:var(--side-title);padding:0;border-radius:0;text-decoration:underline}
+@media(max-width:800px){.nav-groupe,.nav-groupe[hidden]{display:contents!important}.nav-outils{display:none}}
