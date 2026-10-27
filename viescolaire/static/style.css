@@ -147,3 +147,9 @@ svg.pyramide{width:100%;height:auto;display:block;max-width:900px}
 .tromb-actions{margin-top:6px;display:flex;gap:4px;justify-content:center}
 .tromb-actions label.btn{cursor:pointer}
 @media print{.tromb-actions{display:none}.tromb-grille{grid-template-columns:repeat(5,1fr)}}
+/* Pyramide : pictogrammes fille / garçon (couleur de la série, visage en bisque de la charte) ; teintes foncées validées pour le mode sombre */
+@media(prefers-color-scheme:dark){:root{--serie-m:#2FA5BA;--serie-f:#CF7D2E}}
+.pict{display:inline-block;vertical-align:middle;flex:none}.pict-m .pc-corps{fill:var(--serie-m)}.pict-f .pc-corps{fill:var(--serie-f)}
+.pict-duo{display:inline-flex;gap:2px;align-items:flex-end}.stat-pict{display:flex;align-items:center;gap:12px}.stat-pict>div{display:flex;flex-direction:column}
+.stat-m{border-top-color:var(--serie-m)}.stat-f{border-top-color:var(--serie-f)}
+.legende .leg-m,.legende .leg-f{display:inline-flex;align-items:center;gap:6px}

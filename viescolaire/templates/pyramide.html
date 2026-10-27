@@ -1,4 +1,7 @@
 {% extends 'base.html' %}{% block title %}Pyramide des âges{% endblock %}{% block body %}
+{% macro pict(sexe, taille=44) %}<svg class="pict pict-{{ sexe }}" viewBox="0 0 48 56" width="{{ taille }}" height="{{ (taille * 56 / 48)|round|int }}" aria-hidden="true" focusable="false">
+{% if sexe == 'f' %}<path class="pc-corps" d="M13 20C13 9 18 4 24 4s11 5 11 16v14h-6V22H19v12h-6z"/><path class="pc-corps" d="M24 29c-6 0-11 4-12 10l-3 15h30l-3-15c-1-6-6-10-12-10z"/><circle cx="24" cy="18" r="8" fill="#EDC59D"/><path class="pc-corps" d="M15 17c1-6 5-8 9-8s8 2 9 8c-3-3-6-4-9-4s-6 1-9 4z"/>
+{% else %}<path class="pc-corps" d="M12 54V39c0-6 5-10 12-10s12 4 12 10v15z"/><circle cx="24" cy="18" r="8" fill="#EDC59D"/><path class="pc-corps" d="M15 17c0-8 4-12 9-12s9 4 9 12c-3-4-6-5-9-5s-6 1-9 5z"/>{% endif %}</svg>{% endmacro %}
 <div class="top"><h1>Pyramide des âges et des sexes</h1><span class="noprint"><a class="btn sec" href="{{ url_for('pyramide_csv', niveau=niveau, classe=classe, date=ref.isoformat()) }}">Export Excel (CSV)</a> <button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('eleves') }}">← Élèves</a></span></div>
 <form method="get" class="row noprint" style="margin-bottom:14px"><div><label>Niveau</label><select name="niveau"><option value="">Tous</option>{% for n in niveaux %}<option {{ 'selected' if n.nom == niveau }}>{{ n.nom }}</option>{% endfor %}</select></div>
 <div><label>Classe</label><select name="classe"><option value="">Toutes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>
@@ -6,13 +9,15 @@
 {% if not lignes %}<div class="card"><p>Aucune date de naissance renseignée pour cette sélection{% if sans_naissance %} ({{ sans_naissance }} élève(s) sans date){% endif %}.</p><p class="mute">Ajoutez-les dans la fiche de chaque élève, ou par <a href="{{ url_for('importer') }}">import CSV</a> (colonnes <code>date_naissance</code> et <code>sexe</code>).</p></div>
 {% else %}
 {% set connus = tot.m + tot.f %}
-<div class="stats"><div class="stat"><b>{{ tot.total }}</b><span>Élèves{% if niveau %} · {{ niveau }}{% endif %}{% if classe %} · {{ classe }}{% endif %}</span></div>
+<div class="stats"><div class="stat stat-pict"><span class="pict-duo">{{ pict('m', 34) }}{{ pict('f', 34) }}</span><div><b>{{ tot.total }}</b><span>Élèves au total{% if niveau %} · {{ niveau }}{% endif %}{% if classe %} · {{ classe }}{% endif %}</span></div></div>
+<div class="stat stat-pict stat-m"><span class="pict-duo">{{ pict('m', 34) }}</span><div><b>{{ tot.m }}</b><span>Garçons{% if connus %} · {{ (100 * tot.m / connus)|round|int }} %{% endif %}</span></div></div>
+<div class="stat stat-pict stat-f"><span class="pict-duo">{{ pict('f', 34) }}</span><div><b>{{ tot.f }}</b><span>Filles{% if connus %} · {{ (100 * tot.f / connus)|round|int }} %{% endif %}</span></div></div>
 <div class="stat"><b>{{ tot.age_moyen|string|replace('.', ',') }}</b><span>Âge moyen (ans)</span></div>
 <div class="stat"><b>{{ lignes[-1].age }}–{{ lignes[0].age }}</b><span>Tranche d'âges</span></div></div>
 <div class="card" data-pyramide>
-<h2>Effectifs par âge et par sexe <span class="mute" style="font-weight:400;font-size:13px">· âge révolu au {{ ref|string|fr_date }}</span></h2>
-<div class="legende"><span><i class="sw sw-m"></i> Garçons <b>{{ tot.m }}</b>{% if connus %} ({{ (100 * tot.m / connus)|round|int }} %){% endif %}</span>
-<span><i class="sw sw-f"></i> Filles <b>{{ tot.f }}</b>{% if connus %} ({{ (100 * tot.f / connus)|round|int }} %){% endif %}</span></div>
+<h2>Effectifs par âge et par sexe <span class="mute" style="font-weight:400;font-size:13px">· {{ tot.total }} élèves · âge révolu au {{ ref|string|fr_date }}</span></h2>
+<div class="legende"><span class="leg-m">{{ pict('m', 32) }} Garçons <b>{{ tot.m }}</b>{% if connus %} ({{ (100 * tot.m / connus)|round|int }} %){% endif %}</span>
+<span class="leg-f">{{ pict('f', 32) }} Filles <b>{{ tot.f }}</b>{% if connus %} ({{ (100 * tot.f / connus)|round|int }} %){% endif %}</span></div>
 <svg viewBox="0 0 {{ geo.W }} {{ geo.H }}" class="pyramide" role="img" aria-label="Pyramide des âges : {{ tot.m }} garçons et {{ tot.f }} filles, de {{ lignes[-1].age }} à {{ lignes[0].age }} ans. Le détail figure dans le tableau ci-dessous.">
 {% for t in geo.ticks %}<line class="py-grid" x1="{{ '%.1f'|format(t.x_g) }}" x2="{{ '%.1f'|format(t.x_g) }}" y1="0" y2="{{ geo.h_plot }}"/><line class="py-grid" x1="{{ '%.1f'|format(t.x_d) }}" x2="{{ '%.1f'|format(t.x_d) }}" y1="0" y2="{{ geo.h_plot }}"/>
 <text class="py-txt" x="{{ '%.1f'|format(t.x_g) }}" y="{{ geo.y_axe + 14 }}" text-anchor="middle">{{ t.v }}</text><text class="py-txt" x="{{ '%.1f'|format(t.x_d) }}" y="{{ geo.y_axe + 14 }}" text-anchor="middle">{{ t.v }}</text>{% endfor %}
