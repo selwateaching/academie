@@ -19,6 +19,8 @@ VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='un-mot-de-passe-long' VSP_NOM='Prénom N
 Variables : `VSP_CONFIG` (fichier de configuration du client), `VSP_DATA` (dossier des données, défaut `viescolaire/data`), `VSP_SECRET_KEY`, `VSP_HTTPS=1` (cookies sécurisés derrière HTTPS), `PORT`.
 En production, servez l'application derrière HTTPS avec un vrai serveur WSGI (gunicorn) et sauvegardez `VSP_DATA`.
 
+Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variable `VSP_DEMO=1` : charge la démo au premier démarrage.
+
 ## Fonctionnalités
 
 | Module | Contenu |

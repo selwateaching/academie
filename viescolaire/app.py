@@ -172,7 +172,7 @@ def charger_contexte():
         if not hmac.compare_digest(request.form.get("_csrf", ""), session.get("csrf", "x")):
             abort(400, "Jeton de sécurité invalide, rechargez la page.")
     g.user = g.etab_id = g.etab = g.prof = None
-    if request.endpoint in ("static", "client_static", "login", "mfa", "manifest", "logout") or request.endpoint is None:
+    if request.endpoint in ("static", "client_static", "healthz", "login", "mfa", "manifest", "logout") or request.endpoint is None:
         return
     uid = session.get("uid")
     user = one("SELECT * FROM users WHERE id=? AND actif=1", (uid,)) if uid else None
@@ -215,7 +215,7 @@ def entetes(resp):
 @app.context_processor
 def contexte():
     ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
-           "cfg": CFG, "module_actif": module_actif, "ext_nav": [], "ext_widgets": []}
+           "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": []}
     if g.get("user"):
         for item in ext.NAV:
             if g.user["role"] in item["roles"]:
@@ -298,6 +298,11 @@ def changer_etab():
     if any(e["id"] == eid for e in g.etabs):
         session["etab_id"] = eid
     return redirect(request.referrer or url_for("dashboard"))
+
+
+@app.route("/healthz")
+def healthz():
+    return "ok"
 
 
 @app.route("/client-static/<path:chemin>")
@@ -1173,6 +1178,9 @@ def importer():
 @app.route("/compte", methods=["GET", "POST"])
 def compte():
     nouveau = session.get("totp_pending")
+    if request.method == "POST" and DEMO:
+        flash("Désactivé en mode démonstration (les comptes de démo sont partagés).", "err")
+        return redirect(url_for("compte"))
     if request.method == "POST":
         action = request.form.get("action")
         if action == "mdp":
@@ -1228,6 +1236,9 @@ def rgpd_export():
 
 @app.route("/rgpd/supprimer-compte", methods=["POST"])
 def rgpd_supprimer():
+    if DEMO:
+        flash("Désactivé en mode démonstration.", "err")
+        return redirect(url_for("rgpd"))
     if not check_password_hash(g.user["pwd_hash"], request.form.get("password", "")):
         flash("Mot de passe incorrect.", "err")
         return redirect(url_for("rgpd"))
@@ -1249,6 +1260,9 @@ def rgpd_supprimer():
 ext.charger_extensions(app, CFG, {"q": q, "one": one, "run": run, "log": log, "staff_only": staff_only,
                                   "exports": EXPORTS, "csrf": csrf_token})
 database.init_db(ext.SCHEMAS)
+DEMO = os.environ.get("VSP_DEMO") == "1"
+if DEMO:
+    database.demo_si_vide()
 
 
 # ───────────────────────── Commandes CLI ─────────────────────────
@@ -1268,10 +1282,6 @@ def cli_seed_demo():
     """Charge des données fictives de démonstration (mot de passe : demo1234)."""
     import click
     database.seed_demo()
-    with app.test_request_context():
-        g.db = database.connect()
-        for a in g.db.execute("SELECT id FROM absences").fetchall():
-            generer_remplacements(a["id"])
     click.echo("Démo prête : cpe@demo.fr / demo1234")
 
 

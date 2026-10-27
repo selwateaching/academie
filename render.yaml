@@ -59,3 +59,21 @@ databases:
   - name: tadriss-db
     plan: free
     databaseName: tadriss
+
+  - type: web
+    name: viescolaire-pro
+    runtime: python
+    rootDir: viescolaire
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn server:app --workers 1 --threads 8 --bind 0.0.0.0:$PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: VSP_DEMO
+        value: "1"
+      - key: VSP_HTTPS
+        value: "1"
+      - key: VSP_SECRET_KEY
+        generateValue: true

@@ -146,9 +146,15 @@ def create_admin(email, password, nom, etab_nom):
 
 
 def seed_demo(password="demo1234"):
-    """Jeu de données fictives (personnes imaginaires) pour tester l'application."""
+    """Jeu de données fictives (personnes imaginaires) pour démontrer l'application."""
+    from datetime import datetime
+
     con = connect()
     h = generate_password_hash(password)
+    now = datetime.now()
+    today = date.today()
+    d = lambda n: (today + timedelta(days=n)).isoformat()
+    ts = lambda minutes_ago: (now - timedelta(minutes=minutes_ago)).isoformat(timespec="minutes")
     e1 = con.execute("INSERT INTO etablissements(nom) VALUES ('Collège Victor Hugo')").lastrowid
     e2 = con.execute("INSERT INTO etablissements(nom) VALUES ('Lycée Jean Moulin')").lastrowid
 
@@ -159,47 +165,161 @@ def seed_demo(password="demo1234"):
         return uid
 
     cpe = user("Camille Durand (CPE)", "cpe@demo.fr", "cpe", [e1, e2])
-    user("Dominique Leroy (Direction)", "direction@demo.fr", "direction", [e1])
+    direction = user("Dominique Leroy (Direction)", "direction@demo.fr", "direction", [e1])
 
     profs = [
         ("Martin", "Alice", "Mathématiques"), ("Bernard", "Hugo", "Français"),
         ("Petit", "Léa", "Histoire-Géographie"), ("Robert", "Paul", "Anglais"),
         ("Richard", "Emma", "SVT"), ("Moreau", "Louis", "Physique-Chimie"),
         ("Simon", "Chloé", "EPS"), ("Laurent", "Noah", "Mathématiques"),
+        ("Fournier", "Inès", "Arts plastiques"), ("Girard", "Théo", "Technologie"),
     ]
-    ids = []
+    ids, uids = [], []
     for i, (nom, prenom, mat) in enumerate(profs, 1):
         email = f"prof{i}@demo.fr"
         uid = user(f"{prenom} {nom}", email, "enseignant", [e1])
         pid = con.execute(
-            "INSERT INTO professeurs(etab_id,user_id,nom,prenom,matiere,email,telephone) VALUES (?,?,?,?,?,?,?)",
-            (e1, uid, nom, prenom, mat, email, f"06 00 00 00 {i:02d}"),
+            "INSERT INTO professeurs(etab_id,user_id,nom,prenom,matiere,email,telephone,notes) VALUES (?,?,?,?,?,?,?,?)",
+            (e1, uid, nom, prenom, mat, email, f"06 12 34 56 {i:02d}",
+             "Référent sorties pédagogiques." if i == 3 else ""),
         ).lastrowid
         ids.append(pid)
+        uids.append(uid)
 
-    classes = ["6A", "6B", "5A", "5B", "4A", "3A"]
+    classes = ["6A", "6B", "5A", "5B", "4A", "4B", "3A", "3B"]
     for i, c in enumerate(classes):
         con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)",
                     (e1, c, c[0] + "e", ids[i % len(ids)]))
 
     horaires = [("08:00", "09:00"), ("09:00", "10:00"), ("10:15", "11:15"), ("11:15", "12:15"),
-                ("14:00", "15:00"), ("15:00", "16:00")]
+                ("14:00", "15:00"), ("15:00", "16:00"), ("16:00", "17:00")]
     for i, pid in enumerate(ids):
         mat = profs[i][2]
-        for j in range(5):  # 5 créneaux par prof, répartis sur la semaine
-            jour = (i + j) % 5
-            d, f = horaires[(i * 2 + j) % len(horaires)]
+        for j in range(7):  # 7 créneaux par professeur répartis sur la semaine
+            jour = (i + j * 2) % 5
+            deb, fin = horaires[(i * 3 + j) % len(horaires)]
             con.execute(
                 "INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
-                (e1, pid, classes[(i + j) % len(classes)], mat, jour, d, f, f"B{10 + (i + j) % 8}"),
+                (e1, pid, classes[(i + j) % len(classes)], mat, jour, deb, fin, f"B{10 + (i + j) % 8}"),
             )
 
-    today = date.today()
-    con.execute("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",
-                (e1, ids[0], "absence", today.isoformat(), (today + timedelta(days=1)).isoformat(), "Maladie", "validee"))
-    con.execute("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",
-                (e1, ids[3], "indisponibilite", (today + timedelta(days=3)).isoformat(),
-                 (today + timedelta(days=3)).isoformat(), "Sortie scolaire", "validee"))
+    def absence(prof, typ, a, b, motif, statut="validee"):
+        return con.execute("INSERT INTO absences(etab_id,prof_id,type,date_debut,date_fin,motif,statut) VALUES (?,?,?,?,?,?,?)",
+                           (e1, prof, typ, a, b, motif, statut)).lastrowid
+
+    abs_ids = [
+        absence(ids[0], "absence", d(0), d(1), "Maladie"),
+        absence(ids[3], "indisponibilite", d(3), d(3), "Sortie scolaire"),
+        absence(ids[6], "absence", d(5), d(7), "Formation", "declaree"),
+        absence(ids[4], "absence", d(-9), d(-8), "Maladie"),
+        absence(ids[1], "absence", d(-3), d(-3), "Rendez-vous médical"),
+    ]
+    # Remplacements : un par cours des professeurs absents
+    for aid in abs_ids:
+        a = con.execute("SELECT * FROM absences WHERE id=?", (aid,)).fetchone()
+        if a["type"] != "absence":
+            continue
+        jour = date.fromisoformat(a["date_debut"])
+        while jour <= date.fromisoformat(a["date_fin"]):
+            if jour.weekday() < 5:
+                for c in con.execute("SELECT id FROM creneaux WHERE prof_id=? AND jour=?", (a["prof_id"], jour.weekday())).fetchall():
+                    statut, remp = "a_pourvoir", None
+                    if jour < today:
+                        statut, remp = "effectue", ids[(a["prof_id"] + 2) % len(ids)] if (a["prof_id"] + 2) % len(ids) != a["prof_id"] else None
+                    con.execute("INSERT INTO remplacements(etab_id,absence_id,creneau_id,date,remplacant_id,statut) VALUES (?,?,?,?,?,?)",
+                                (e1, aid, c["id"], jour.isoformat(), remp, statut))
+            jour += timedelta(days=1)
+    # Quelques remplacements déjà traités pour illustrer les statuts
+    aujourdhui = con.execute("SELECT id FROM remplacements WHERE etab_id=? AND date>=? AND statut='a_pourvoir' ORDER BY date,id", (e1, d(0))).fetchall()
+    if aujourdhui:
+        con.execute("UPDATE remplacements SET remplacant_id=?, statut='assigne' WHERE id=?", (ids[7], aujourdhui[0]["id"]))
+    if len(aujourdhui) > 2:
+        con.execute("UPDATE remplacements SET statut='annule' WHERE id=?", (aujourdhui[2]["id"],))
+
+    cr = con.execute("SELECT id, classe FROM creneaux WHERE etab_id=? AND jour=? ORDER BY debut", (e1, (today + timedelta(days=1)).weekday() % 5)).fetchall()
+    if cr:
+        con.execute("INSERT INTO perturbations(etab_id,date,creneau_id,classe,type,detail) VALUES (?,?,?,?,?,?)",
+                    (e1, d(1), cr[0]["id"], cr[0]["classe"], "salle_indisponible", "Salle fermée : dégât des eaux"))
+    if len(cr) > 3:
+        con.execute("INSERT INTO perturbations(etab_id,date,creneau_id,classe,type,detail) VALUES (?,?,?,?,?,?)",
+                    (e1, d(1), cr[3]["id"], cr[3]["classe"], "deplace", "Déplacé en salle B15"))
+
+    for dt, classe, eleve, desc, suite, statut in [
+        (d(0), "5A", "Élève A.", "Retards répétés en première heure (3 cette semaine).", "Entretien avec la famille prévu jeudi.", "ouvert"),
+        (d(-2), "4B", "Élève B.", "Altercation dans la cour à la récréation.", "Médiation réalisée, information des familles.", "clos"),
+        (d(-1), "6A", "Élèves C. et D.", "Matériel dégradé en salle B12.", "En attente de l'avis du principal.", "ouvert"),
+    ]:
+        con.execute("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,statut) VALUES (?,?,?,?,?,?,?)",
+                    (e1, dt, classe, eleve, desc, suite, statut))
+
+    # Messagerie : envois du CPE avec lectures et confirmations variées
+    def message(sender, sujet, corps, typ, cible, dest, minutes, lus=0, confirmes=0):
+        mid = con.execute("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
+                          (e1, sender, sujet, corps, typ, cible, ts(minutes))).lastrowid
+        for k, u in enumerate(dest):
+            con.execute("INSERT INTO message_dest(message_id,user_id,lu_at,confirme_at) VALUES (?,?,?,?)",
+                        (mid, u, ts(minutes - 30) if k < lus else None, ts(minutes - 45) if k < confirmes else None))
+
+    message(cpe, "Rappel : remontée des absences avant 9 h",
+            "Bonjour à tous,\nmerci de signaler toute absence d'élève dans le logiciel avant 9 h.\nCordialement,\nLa vie scolaire", "tous", "", uids, 3000, 7, 5)
+    message(cpe, "Conseil de classe 3A : bulletins à saisir",
+            "Les appréciations sont à saisir pour vendredi.", "classe", "3A", uids[:6], 1500, 3, 1)
+    message(cpe, "Remplacement du jour", "Pouvez-vous prendre le cours de 6B de 9 h à 10 h ? Merci.", "individuel", str(uids[7]), [uids[7]], 90, 0, 0)
+    message(uids[2], "Sortie au musée jeudi", "Je serai absente jeudi après-midi pour la sortie avec les 5A.", "individuel", str(cpe), [cpe], 600, 0, 0)
+
+    # Réunions et convocations
+    r1 = con.execute("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
+                     (e1, "Conseil de classe 3A", d(2), "17:00", "Salle des professeurs", "1. Bilan du trimestre\n2. Orientation\n3. Cas particuliers", cpe)).lastrowid
+    r2 = con.execute("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
+                     (e1, "Réunion équipe 6A", d(6), "12:30", "Salle B10", "Harmonisation des évaluations.", cpe)).lastrowid
+    for k, pid in enumerate(ids[:6]):
+        con.execute("INSERT INTO reunion_convoques(reunion_id,prof_id,reponse) VALUES (?,?,?)", (r1, pid, ["oui", "oui", "non", "", "oui", ""][k]))
+    for k, pid in enumerate(ids[2:6]):
+        con.execute("INSERT INTO reunion_convoques(reunion_id,prof_id,reponse) VALUES (?,?,?)", (r2, pid, ["oui", "", "", "oui"][k]))
+
+    for titre, desc, ech, prio, statut in [
+        ("Relancer les familles des élèves absents", "Liste fournie par le secrétariat.", d(-1), "haute", "a_faire"),
+        ("Préparer le conseil de classe 3A", "Statistiques d'absences et incidents.", d(1), "haute", "a_faire"),
+        ("Mettre à jour l'emploi du temps de 4B", "Changement de salle depuis lundi.", d(4), "normale", "a_faire"),
+        ("Commander les fournitures vie scolaire", "", d(10), "basse", "a_faire"),
+        ("Envoyer le bilan des retards au principal", "", d(-4), "normale", "faite"),
+    ]:
+        con.execute("INSERT INTO taches(etab_id,titre,description,echeance,priorite,statut,assigne_id) VALUES (?,?,?,?,?,?,?)",
+                    (e1, titre, desc, ech, prio, statut, cpe))
+
+    os.makedirs(os.path.join(DATA_DIR, "uploads"), exist_ok=True)
+    for titre, nom, contenu in [
+        ("Règlement intérieur (extrait)", "reglement_interieur.txt", "Extrait fictif du règlement intérieur - document de démonstration."),
+        ("Procédure d'absence d'un professeur", "procedure_absence.txt", "1. Signaler l'absence avant 8 h.\n2. La vie scolaire organise le remplacement.\n(Document de démonstration.)"),
+    ]:
+        stored = f"demo_{nom}"
+        with open(os.path.join(DATA_DIR, "uploads", stored), "w", encoding="utf-8") as f:
+            f.write(contenu)
+        con.execute("INSERT INTO documents(etab_id,titre,filename,stored,uploaded_by,created_at) VALUES (?,?,?,?,?,?)",
+                    (e1, titre, nom, stored, cpe, ts(5000)))
+
+    for k, (action, detail) in enumerate([("connexion", "cpe@demo.fr"), ("absence enregistrée", "Martin 2 jours (absence)"),
+                                          ("remplacement assigné", "6B 9h-10h → Laurent"), ("réunion créée", "Conseil de classe 3A"),
+                                          ("message envoyé", "tous (10 destinataires)")]):
+        con.execute("INSERT INTO audit(etab_id,user_id,user_nom,action,detail,created_at) VALUES (?,?,?,?,?,?)",
+                    (e1, cpe, "Camille Durand (CPE)", action, detail, ts(300 - k * 40)))
+
+    # Second établissement (démonstration du multi-établissements)
+    for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:
+        con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
+                    (e2, nom, prenom, mat, f"{prenom.lower()}@demo.fr"))
+    for c in ["2nde1", "1ère S", "Term ES"]:
+        con.execute("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (e2, c, c[:3]))
     con.commit()
     con.close()
     return cpe
+
+
+def demo_si_vide():
+    """Charge la démo si la base ne contient aucun utilisateur. Retourne True si elle a été chargée."""
+    con = connect()
+    vide = con.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0
+    con.close()
+    if vide:
+        seed_demo()
+    return vide
