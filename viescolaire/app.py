@@ -289,37 +289,35 @@ def menu_sections():
     sections = []
     if staff:
         sections = [
-            section("quotidien", "Au quotidien", [
+            section("quotidien", "1. Élèves et vie scolaire", [
+                item("eleves", "Liste des élèves", "Fiches, responsables, pyramide", "eleves"),
+                item("classes", "Classes et niveaux", "Professeur principal, niveaux", "classes"),
+                item("trombinoscope", "Trombinoscope", "Photos par classe", "trombinoscope"),
                 item("absences", "Absences", "Déclarer et suivre les absences", "absences", nb["absences"]),
                 item("remplacements", "Remplacements", "Désigner les remplaçants", "remplacements", nb["remplacements"], "err", statut="a_pourvoir"),
                 item("cours", "Cours perturbés", "Analyse des cours touchés", "cours"),
                 item("incidents", "Incidents", "Signaler et rédiger les documents", "incidents", nb["incidents"], "warn"),
+                item("infirmerie", "Infirmerie", "Soins, passages, fiches santé") if u["role"] in roles_infirmerie() and ma("infirmerie") else None,
                 item("messages", "Messagerie", "Messages internes", "messagerie", nb["messages"], "err")], True),
-            section("eleves", "Élèves", [
-                item("eleves", "Liste des élèves", "Fiches, responsables, pyramide", "eleves"),
-                item("classes", "Classes et niveaux", "Professeur principal, niveaux", "classes"),
-                item("trombinoscope", "Trombinoscope", "Photos par classe", "trombinoscope"),
-                item("infirmerie", "Infirmerie", "Soins, passages, fiches santé") if g.get("user") and u["role"] in roles_infirmerie() and ma("infirmerie") else None]),
-            section("profs", "Professeurs", [
+            section("profs", "2. Personnel et enseignants", [
                 item("professeurs", "Annuaire des professeurs", "Coordonnées, cours, comptes", "professeurs"),
                 item("emploi_du_temps", "Emplois du temps", "Jour, semaine, mois", "emplois_du_temps"),
-                item("heures", "Comptage des heures", "Heures par professeur, classe, agent", "heures")]),
-            section("personnel", "Personnel de vie scolaire", [
                 item("pers_liste", "Annuaire du personnel", "Assistants et rôles", "personnel"),
                 item("pers_planning", "Planning du personnel", "Planning automatique", "planning_personnel"),
-                item("pers_postes", "Postes et besoins", "Rôles, couleurs, besoins", "personnel")]),
-            section("documents", "Documents et réunions", [
-                item("reunions", "Réunions", "Convocations, réponses", "reunions"),
-                item("document_nouveau", "Rédiger un document", "Rapports, convocations…", "redaction"),
-                item("documents", "Documents", "Partagés et rédigés", "documents")]),
-            section("planification", "Planification et suivi", [
+                item("pers_postes", "Postes et besoins", "Rôles, couleurs, besoins", "personnel"),
+                item("heures", "Comptage des heures", "Heures par professeur, classe, agent", "heures")]),
+            section("planification", "3. Planification et suivi", [
                 item("planification", "Génération des emplois du temps", "Besoins, vœux, proposition", "planification"),
                 item("taches", "Tâches", "À faire", "taches", nb["taches"]),
                 item("rapports", "Rapports", "Chiffres sur une période", "rapports"),
                 item("assistant", "Assistant", "Conseils automatiques", "assistant"),
                 item("importer", "Import CSV", "Professeurs, élèves, cours", "import"),
                 item("historique", "Historique", "Journal des actions")]),
-            section("admin", "Administration", [
+            section("documents", "4. Documents et réunions", [
+                item("reunions", "Réunions", "Convocations, réponses", "reunions"),
+                item("document_nouveau", "Rédiger un document", "Rapports, convocations…", "redaction"),
+                item("documents", "Documents", "Partagés et rédigés", "documents")]),
+            section("admin", "5. Administration", [
                 item("utilisateurs", "Utilisateurs", "Comptes et droits", "utilisateurs"),
                 item("etablissements", "Établissements", "Ajouter ou supprimer") if u["role"] == "admin" else None,
                 item("sauvegarde", "Sauvegarde", "Copie des données", "sauvegarde") if u["role"] in ("admin", "direction") else None]),
@@ -344,7 +342,7 @@ def menu_sections():
                 item("infirmerie", "Infirmerie", "Soins, passages, fiches santé") if u["role"] in roles_infirmerie() and ma("infirmerie") else None,
                 item("reunions", "Réunions", "Convocations", "reunions"),
                 item("documents", "Documents", "Partagés", "documents")], True)]
-    sections.append(section("compte", "Mon compte", [item("compte", "Sécurité", "Mot de passe, double authentification"), item("rgpd", "RGPD", "Mes données")]))
+    sections.append(section("compte", "6. Mon compte" if staff else "Mon compte", [item("compte", "Sécurité", "Mot de passe, double authentification"), item("rgpd", "RGPD", "Mes données")]))
     return [x for x in sections if x]
 
 
