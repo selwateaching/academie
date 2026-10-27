@@ -7,6 +7,7 @@ import csv
 import hashlib
 import hmac
 import io
+import sqlite3
 import json
 import os
 import secrets
@@ -3344,6 +3345,125 @@ def pers_planning_csv():
                     cellule_csv(a["poste"]), "automatique" if a["source"] == "auto" else "saisi à la main"])
     log("export", "planning du personnel")
     return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=planning_personnel_{date.today()}.csv"})
+
+
+# ───────────────────────── Établissements (administrateur) ─────────────────────────
+ETABS_DEMO_PROTEGES = ("Lycée Jean Moulin", "Collège Victor Hugo")
+
+
+def admin_only(f):
+    @wraps(f)
+    def wrapper(*a, **kw):
+        if g.user["role"] != "admin":
+            abort(403)
+        return f(*a, **kw)
+    return wrapper
+
+
+def purger_etablissement(con, eid):
+    """Supprime l'établissement et TOUT ce qui en dépend (tables à etab_id et leurs tables liées par clé étrangère)."""
+    tables = [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
+    enfants = {}   # parent -> [(table enfant, colonne enfant, colonne parent)]
+    for t in tables:
+        for fk in con.execute(f'PRAGMA foreign_key_list("{t}")').fetchall():
+            enfants.setdefault(fk["table"], []).append((t, fk["from"], fk["to"] or "id"))
+
+    def supprimer(table, where, args, profondeur=0):
+        if profondeur > 6:
+            return
+        for enfant, col, col_parent in enfants.get(table, []):
+            if enfant != table:
+                supprimer(enfant, f'"{col}" IN (SELECT "{col_parent}" FROM "{table}" WHERE {where})', args, profondeur + 1)
+        con.execute(f'DELETE FROM "{table}" WHERE {where}', args)
+
+    for t in tables:
+        if t != "etablissements" and any(c["name"] == "etab_id" for c in con.execute(f'PRAGMA table_info("{t}")')):
+            supprimer(t, "etab_id=?", (eid,))
+    con.execute("DELETE FROM etablissements WHERE id=?", (eid,))
+
+
+@app.route("/etablissements", methods=["GET", "POST"])
+@admin_only
+def etablissements():
+    from .db import installer_postes
+    from .modeles_defaut import installer
+    if request.method == "POST":
+        f, action = request.form, request.form.get("action")
+        if action == "ajouter":
+            nom = f.get("nom", "").strip()[:120]
+            if not nom:
+                flash("Indiquez le nom de l'établissement.", "err")
+            elif one("SELECT 1 FROM etablissements WHERE lower(nom)=lower(?)", (nom,)):
+                flash("Un établissement porte déjà ce nom.", "err")
+            else:
+                eid = run("INSERT INTO etablissements(nom) VALUES (?)", (nom,))
+                run("INSERT OR IGNORE INTO user_etabs VALUES (?,?)", (g.user["id"], eid))
+                installer(db(), eid)
+                installer_postes(db(), eid)
+                log("établissement créé", nom)
+                session["etab_id"] = eid
+                flash(f"Établissement « {nom} » créé et sélectionné : modèles de documents, postes et en-tête par défaut installés. "
+                      "Complétez l'en-tête (Documents), les niveaux (Classes), puis ajoutez professeurs et élèves.", "ok")
+                return redirect(url_for("dashboard"))
+        elif action == "renommer":
+            e = one("SELECT * FROM etablissements WHERE id=?", (f.get("id", type=int),))
+            nom = f.get("nom", "").strip()[:120]
+            if e and nom and not one("SELECT 1 FROM etablissements WHERE lower(nom)=lower(?) AND id<>?", (nom, e["id"])):
+                run("UPDATE etablissements SET nom=? WHERE id=?", (nom, e["id"]))
+                log("établissement renommé", f"{e['nom']} -> {nom}")
+                flash("Établissement renommé.", "ok")
+            else:
+                flash("Nom invalide ou déjà utilisé.", "err")
+        elif action == "rattacher":
+            e = one("SELECT * FROM etablissements WHERE id=?", (f.get("id", type=int),))
+            if not e:
+                abort(404)
+            run("INSERT OR IGNORE INTO user_etabs VALUES (?,?)", (g.user["id"], e["id"]))
+            log("rattachement à un établissement", e["nom"])
+            flash(f"Vous avez maintenant accès à « {e['nom']} » (menu de sélection en haut à gauche).", "ok")
+        elif action == "supprimer":
+            e = one("SELECT * FROM etablissements WHERE id=?", (f.get("id", type=int),))
+            if not e:
+                abort(404)
+            if DEMO and e["nom"] in ETABS_DEMO_PROTEGES:
+                flash("Les deux établissements d'origine de la démonstration sont protégés ; vous pouvez supprimer ceux que vous avez créés.", "err")
+            elif one("SELECT COUNT(*) c FROM etablissements", ())["c"] <= 1:
+                flash("Impossible de supprimer le dernier établissement.", "err")
+            elif not one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id<>?", (g.user["id"], e["id"])):
+                flash("Rattachez-vous d'abord à un autre établissement (bouton « Me rattacher »), sinon vous n'auriez plus accès à rien.", "err")
+            elif f.get("confirmation", "").strip() != e["nom"]:
+                flash("Confirmation incorrecte : recopiez exactement le nom de l'établissement.", "err")
+            elif not check_password_hash(g.user["pwd_hash"], f.get("password", "")):
+                flash("Mot de passe incorrect.", "err")
+            else:
+                con = db()
+                try:
+                    con.execute("BEGIN")
+                    purger_etablissement(con, e["id"])
+                    orphelins = con.execute("SELECT id FROM users WHERE actif=1 AND id<>? AND NOT EXISTS (SELECT 1 FROM user_etabs ue WHERE ue.user_id=users.id)",
+                                            (g.user["id"],)).fetchall()
+                    for o in orphelins:
+                        con.execute("UPDATE users SET actif=0 WHERE id=?", (o["id"],))
+                    if con.execute("PRAGMA foreign_key_check").fetchall():
+                        raise sqlite3.IntegrityError("références restantes")
+                    con.commit()
+                except Exception as ex:   # rien n'est supprimé en cas de problème
+                    con.rollback()
+                    flash(f"Suppression annulée, rien n'a été effacé ({ex}).", "err")
+                    return redirect(url_for("etablissements"))
+                log("établissement supprimé", e["nom"])
+                restants = q("SELECT e.id FROM etablissements e JOIN user_etabs ue ON ue.etab_id=e.id WHERE ue.user_id=? ORDER BY e.nom", (g.user["id"],))
+                session["etab_id"] = restants[0]["id"] if restants else None
+                flash(f"Établissement « {e['nom']} » supprimé avec toutes ses données."
+                      + (f" {len(orphelins)} compte(s) rattaché(s) à lui seul ont été désactivés." if orphelins else ""), "ok")
+        return redirect(url_for("etablissements"))
+    rows = []
+    for e in q("SELECT * FROM etablissements ORDER BY nom"):
+        n = lambda sql: one(sql, (e["id"],))["c"]
+        rows.append(dict(e, eleves=n("SELECT COUNT(*) c FROM eleves WHERE etab_id=?"), profs=n("SELECT COUNT(*) c FROM professeurs WHERE etab_id=?"),
+                         classes=n("SELECT COUNT(*) c FROM classes WHERE etab_id=?"), comptes=n("SELECT COUNT(*) c FROM user_etabs WHERE etab_id=?"),
+                         protege=bool(DEMO and e["nom"] in ETABS_DEMO_PROTEGES), a_acces=bool(one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (g.user["id"], e["id"])))))
+    return render_template("etablissements.html", rows=rows, nb=len(rows))
 
 
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────

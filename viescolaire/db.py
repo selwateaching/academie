@@ -319,7 +319,7 @@ def create_admin(email, password, nom, etab_nom):
     etab = con.execute("SELECT id FROM etablissements WHERE nom=?", (etab_nom,)).fetchone()
     etab_id = etab["id"] if etab else con.execute("INSERT INTO etablissements(nom) VALUES (?)", (etab_nom,)).lastrowid
     uid = con.execute(
-        "INSERT INTO users(nom,email,pwd_hash,role) VALUES (?,?,?,'cpe')",
+        "INSERT INTO users(nom,email,pwd_hash,role) VALUES (?,?,?,'admin')",
         (nom, email.lower(), generate_password_hash(password)),
     ).lastrowid
     con.execute("INSERT INTO user_etabs VALUES (?,?)", (uid, etab_id))
@@ -350,6 +350,7 @@ def seed_demo(password="demo1234"):
 
     cpe = user("Camille Durand (CPE)", "cpe@demo.fr", "cpe", [e1, e2])
     direction = user("Dominique Leroy (Direction)", "direction@demo.fr", "direction", [e1])
+    user("Alex Morel (Administrateur)", "admin@demo.fr", "admin", [e1, e2])
 
     profs = [
         ("Martin", "Alice", "Mathématiques"), ("Bernard", "Hugo", "Français"),

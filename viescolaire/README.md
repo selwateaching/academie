@@ -7,7 +7,7 @@ Logiciel web de gestion de la vie scolaire pour les CPE, la direction et les ens
 
 ```bash
 pip install flask
-# Démo avec données fictives (cpe@demo.fr / demo1234, direction@demo.fr, prof1@demo.fr … prof8@demo.fr)
+# Démo avec données fictives (cpe@demo.fr / demo1234, admin@demo.fr (gestion des établissements), direction@demo.fr, prof1@demo.fr … prof8@demo.fr)
 flask --app viescolaire.app seed-demo
 python -m viescolaire.app            # http://localhost:5001
 
