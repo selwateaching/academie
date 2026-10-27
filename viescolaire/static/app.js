@@ -391,3 +391,17 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     nav.insertBefore(outils, groupes[0].h);
   }
 })();
+
+/* Téléphone : bouton « Menu » qui ouvre / ferme le menu latéral */
+(function () {
+  var nav = document.querySelector('nav.side');
+  if (!nav) return;
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'menu-btn'; b.textContent = '☰ Menu'; b.setAttribute('aria-expanded', 'false');
+  b.addEventListener('click', function () {
+    var o = nav.classList.toggle('ouvert');
+    b.textContent = o ? '✕ Fermer' : '☰ Menu'; b.setAttribute('aria-expanded', o ? 'true' : 'false');
+  });
+  var logo = nav.querySelector('.logo');
+  nav.insertBefore(b, logo ? logo.nextSibling : nav.firstChild);
+})();

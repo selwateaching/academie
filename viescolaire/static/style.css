@@ -78,8 +78,7 @@ code{background:var(--field);padding:1px 5px;border-radius:4px}
 .etab select{width:100%}
 nav.side .etab select{background:color-mix(in srgb,var(--coquille) 14%,transparent);border-color:color-mix(in srgb,var(--coquille) 30%,transparent);color:var(--coquille)}
 nav.side .etab select option{color:var(--noir)}
-@media(max-width:800px){.layout{display:block}nav.side{width:auto;height:auto;position:static;display:flex;flex-wrap:wrap;gap:4px;padding:8px}
-nav.side h4,nav.side .logo{display:none}nav.side a{padding:6px 10px}main{padding:14px}}
+@media(max-width:800px){main{padding:14px}}
 @media print{nav.side,.noprint{display:none!important}main{padding:0}.card{border:0}body{background:#fff;color:#000}}
 select[multiple] option:checked{background:linear-gradient(var(--bisque),var(--bisque));color:var(--noir)}
 [hidden]{display:none!important}
@@ -166,4 +165,18 @@ nav.side h4[aria-expanded=true]::after{transform:rotate(90deg)}
 nav.side h4[role=button]:hover,nav.side h4[role=button]:focus-visible{color:var(--coquille);outline:none}
 .nav-groupe[hidden]{display:none}
 .nav-outils{display:flex;gap:10px;margin:10px 10px 0;font-size:12px}.nav-outils button{background:none;color:var(--side-title);padding:0;border-radius:0;text-decoration:underline}
-@media(max-width:800px){.nav-groupe,.nav-groupe[hidden]{display:contents!important}.nav-outils{display:none}}
+/* Téléphone : barre fixe en haut avec un bouton « Menu » ; le menu complet s'ouvre en plein écran défilant */
+.menu-btn{display:none}
+@media(max-width:800px){
+  .layout{display:block}
+  nav.side{width:auto;height:auto;max-height:100vh;position:sticky;top:0;z-index:40;padding:8px 12px;display:block}
+  nav.side .logo{display:inline-block;margin:4px 0;font-size:17px}
+  .menu-btn{display:inline-block;float:right;margin:2px 0;background:var(--orange);color:var(--noir);font-weight:600;padding:8px 14px}
+  nav.side:not(.ouvert)>*:not(.logo):not(.menu-btn){display:none}
+  nav.side.ouvert{height:100vh;overflow:auto;-webkit-overflow-scrolling:touch}
+  nav.side a{padding:11px 10px}nav.side h4[role=button]{padding:12px 0}
+  h1{font-size:22px}.top{flex-wrap:wrap;gap:8px}.row{flex-wrap:wrap}.row>div{flex:1 1 100%}
+  input,select,textarea{font-size:16px}   /* évite le zoom automatique sur iPhone */
+  .stats{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.card{padding:12px}
+}
+.btn:not(.sec) .mute,button:not(.sec) .mute{color:inherit;opacity:.75}
