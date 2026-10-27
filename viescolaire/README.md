@@ -56,6 +56,15 @@ La proposition se relit par classe ou par professeur avant d'être appliquée (a
 **Rien n'est supposé par défaut** : les demi-journées sans cours (ex. mercredi après-midi), les horaires des créneaux et le maximum d'heures par classe
 se règlent par établissement dans *Planification → Réglages de l'établissement*.
 
+## Personnel (assistants pédagogiques / surveillants)
+
+Menu *Personnel* : **annuaire** (poste(s) tenus par chaque agent, contrat hebdomadaire, maximum par jour, indisponibilités et souhaits), **postes** colorés
+(Service, Étude, Foyer, Cour, Portail, Self, Bureau, Renfort… modifiables) avec leurs **besoins** par jour et plage horaire, et un **planning** visuel
+(agents × axe horaire, pas de 15 min) avec solde hebdomadaire (contrat − planifié). Le moteur (`planning_personnel.py`) couvre les besoins en respectant
+rôles, indisponibilités, maxima journaliers et contrats ; il explique les créneaux non couverts. Modes : *auto* (conserve les plages saisies à la main),
+*compléter*, *tout régénérer*, avec annulation. Clic sur une plage = modifier / supprimer / copier vers d'autres jours ou un autre agent.
+Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_personnel` désactivables par client.
+
 ## Limites connues
 
 - Planification : semaine du lundi au vendredi uniquement (pas encore de semaines Dim.–Jeu. ou avec samedi), pas d'alternance de semaines A/B, pas de gestion des

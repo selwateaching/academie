@@ -105,3 +105,36 @@ svg.pyramide{width:100%;height:auto;display:block;max-width:900px}
 .tooltip{position:fixed;z-index:50;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;min-width:150px}
 .tooltip .tt-titre{font-weight:700;margin-bottom:4px}.tooltip .tt-ligne{display:flex;align-items:center;gap:8px}.tooltip .tt-cle{display:inline-block;width:14px;height:3px;border-radius:2px}.tooltip .tt-val{margin-left:auto;font-weight:700;padding-left:12px}
 .nav-jour{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.nav-jour input[type=date]{width:auto}
+/* Personnel : postes (rôles) colorés, solde hebdomadaire, planning en grille (agents × heures) */
+.chip-poste{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.solde{display:inline-block;min-width:54px;text-align:center;padding:1px 8px;border-radius:6px;font-size:13px;font-weight:700;white-space:nowrap}
+.solde.zero{background:color-mix(in srgb,var(--mastic) 55%,var(--coquille));color:var(--noir)}
+.solde.reste{background:color-mix(in srgb,#1F86A8 22%,var(--coquille));color:var(--noir)}
+.solde.depasse{background:var(--err);color:#fff}
+.pg-scroll{overflow-x:auto;margin-bottom:14px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.pg{min-width:900px;padding:8px 10px}
+.pg-row{display:flex;align-items:stretch;min-height:46px;border-bottom:1px solid var(--line)}
+.pg-row:last-child{border-bottom:0}
+.pg-tete{min-height:30px;border-bottom:2px solid var(--line)}
+.pg-nom{flex:0 0 190px;padding:4px 8px 4px 2px;display:flex;flex-direction:column;justify-content:center;line-height:1.25}
+.pg-nom small{color:var(--mute);font-size:11.5px;margin-top:2px}
+.pg-solde{flex:0 0 78px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--mute)}
+.pg-solde.zero{color:var(--ink);background:color-mix(in srgb,var(--mastic) 40%,transparent)}
+.pg-solde.reste{color:var(--ink);background:color-mix(in srgb,#1F86A8 18%,transparent)}
+.pg-solde.depasse{color:#fff;background:var(--err)}
+.pg-piste{flex:1;position:relative;min-width:620px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px);background-size:calc(100% / var(--heures)) 100%}
+.pg-axe{background-image:none;height:30px}
+.pg-axe span{position:absolute;top:6px;transform:translateX(-50%);font-size:12px;color:var(--mute)}
+.pg-bloc{position:absolute;top:5px;bottom:5px;border:0;border-radius:6px;padding:0 5px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;cursor:pointer;text-align:left;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);line-height:1.15;font-size:12px}
+.pg-bloc:hover,.pg-bloc.actif{filter:brightness(.93);box-shadow:inset 0 0 0 2px var(--noir)}
+.pg-bloc.manuel{box-shadow:inset 0 0 0 1px rgba(0,0,0,.18),inset 0 -3px 0 rgba(0,0,0,.35)}
+.pg-bl-nom{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pg-bl-h{font-size:11px;white-space:nowrap;opacity:.85}
+.pg-piste:not(.pg-couv):not(.pg-axe){cursor:crosshair}
+.pg-couv{min-height:22px;cursor:default}
+.pg-seg{position:absolute;top:4px;bottom:4px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;overflow:hidden;color:var(--noir)}
+.pg-seg.ok{background:color-mix(in srgb,var(--mastic) 55%,var(--coquille))}
+.pg-seg.manque{background:repeating-linear-gradient(135deg,var(--err-bg) 0 6px,color-mix(in srgb,var(--err) 35%,var(--coquille)) 6px 12px);color:var(--err-ink);box-shadow:inset 0 0 0 1px var(--err)}
+.pg-seg.surplus{background:color-mix(in srgb,#1F86A8 24%,var(--coquille))}
+#pg-panneau[hidden]{display:none}
+@media print{.pg-scroll{border:0;overflow:visible}.pg{min-width:0}.pg-bloc{box-shadow:inset 0 0 0 1px #888}}

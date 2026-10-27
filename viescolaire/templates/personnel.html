@@ -1,0 +1,20 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Personnel{% endblock %}{% block body %}
+<div class="top"><h1>Personnel</h1><span class="noprint">{% if module_actif('planning_personnel') %}<a class="btn" href="{{ url_for('pers_planning') }}">Planning du personnel</a> {% endif %}<a class="btn sec" href="{{ url_for('pers_postes') }}">Postes et besoins</a></span></div>
+<form method="get" class="row noprint" style="margin-bottom:12px"><div><input name="q" value="{{ terme }}" placeholder="Rechercher…"></div>
+<div><select name="categorie"><option value="">Toutes les catégories</option>{% for c in categories %}<option {{ 'selected' if c == categorie }}>{{ c }}</option>{% endfor %}</select></div><div style="flex:0 0 auto"><button class="sec">Filtrer</button></div></form>
+<div class="card scroll"><table><tr><th>Nom</th><th>Catégorie</th><th>Rôles (postes)</th><th>Contrat</th><th>Affecté</th><th>Solde hebdo</th><th>Contact</th></tr>
+{% for p in rows %}{% set aff = tot.get(p.id, 0) %}{% set solde = p.contrat_min - aff %}<tr {% if not p.actif %}style="opacity:.55"{% endif %}>
+<td><a href="{{ url_for('pers_fiche', pid=p.id) }}"><b>{{ p.nom }}</b> {{ p.prenom }}</a>{% if not p.actif %} <span class="tag">inactif</span>{% endif %}<br><span class="mute">{{ p.fonction }}</span></td>
+<td>{{ p.categorie }}{% if not p.planifie %}<br><span class="mute" style="font-size:12px">hors planning</span>{% endif %}</td>
+<td>{% for r in roles.get(p.id, []) %}<span class="chip-poste" style="background:{{ r.couleur }};color:{{ r.couleur|couleur_texte }}">{{ r.nom }}</span> {% else %}<span class="mute">{{ '—' if not p.planifie else 'aucun rôle' }}</span>{% endfor %}</td>
+<td>{% if p.planifie %}{{ p.contrat_min|hm }}{% endif %}</td><td>{% if p.planifie %}{{ aff|hm }}{% endif %}</td>
+<td>{% if p.planifie %}<span class="solde {{ 'zero' if solde == 0 else ('reste' if solde > 0 else 'depasse') }}" title="Contrat moins heures affectées">{{ solde|hm_signe if solde else '0:00' }}</span>{% endif %}</td>
+<td>{{ p.email }}{% if p.telephone %}<br><span class="mute">{{ p.telephone }}</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="7" class="mute">Aucune fiche.</td></tr>{% endfor %}</table>
+<p class="mute" style="margin-bottom:0">Solde hebdo = heures du contrat moins heures affectées : <span class="solde reste">+</span> il reste des heures à affecter, <span class="solde zero">0</span> contrat atteint, <span class="solde depasse">−</span> contrat dépassé.</p></div>
+<div class="card"><h2>Ajouter une personne</h2><form method="post">{{ csrf() }}<div class="row">
+<div><label>Nom</label><input name="nom" required></div><div><label>Prénom</label><input name="prenom"></div>
+<div><label>Catégorie</label><select name="categorie">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select></div><div><label>Fonction</label><input name="fonction" placeholder="ex. Assistant d'éducation"></div></div>
+<div class="row"><div><label>E-mail</label><input type="email" name="email"></div><div><label>Téléphone</label><input name="telephone"></div>
+<div><label>Contrat (heures / semaine)</label><input type="number" name="contrat" min="0" max="60" step="0.25" value="20"></div>
+<div style="flex:0 0 auto"><label class="check"><input type="checkbox" name="planifie" value="1" checked> Inclus dans le planning</label></div><div style="flex:0 0 auto"><button>Ajouter</button></div></div></form></div>{% endblock %}

@@ -80,6 +80,9 @@ Les secrets (mots de passe SMTP…) vont dans des variables d'environnement, pas
 2. **Nouveau module** : ajouter son nom dans `MODULES` (`config.py`), ses endpoints dans `MODULE_DES_ENDPOINTS`
    (`app.py`) et protéger les entrées de menu par `module_actif('nom')`.
 3. **Nouvel événement** : l'ajouter dans `EVENEMENTS` (`ext.py`) puis `ext.emit(...)` à l'endroit voulu ; documenter ici.
+   Événement émis par le planning du personnel : `planning_personnel.genere` (`nb_affectations`, `couverture`).
+   Réglages par client : `categories_personnel`, `grille_personnel` (axe horaire du planning), `creneaux`.
+   Le moteur du planning du personnel (`planning_personnel.py`) est autonome : `generer(besoins, agents, fixes, options)`.
 4. Garder les valeurs par défaut identiques au comportement actuel : un client existant ne doit rien remarquer.
 5. Avant livraison : relancer les tests (parcours complet, rôles, cloisonnement) sur le socle **et** sur `clients/exemple`.
 

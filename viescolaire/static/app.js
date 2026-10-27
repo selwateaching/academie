@@ -285,3 +285,53 @@ document.querySelectorAll('[data-filtre-select]').forEach(function (inp) {
   motifs.addEventListener('change', majLibre);
   majLibre();
 })();
+/* Planning du personnel : clic sur une plage = modifier / supprimer / copier ; clic sur une zone vide = créer à l'heure cliquée */
+(function () {
+  var grille = document.querySelector('[data-pg]'), panneau = document.querySelector('[data-panneau]');
+  if (!grille || !panneau) return;
+  var debutAxe = +grille.getAttribute('data-debut'), finAxe = +grille.getAttribute('data-fin');
+  var jourCourant = grille.getAttribute('data-jour');
+  var champ = function (n) { return panneau.querySelector('[data-champ=' + n + ']'); };
+  var titre = panneau.querySelector('[data-pg-titre]'), bEnreg = panneau.querySelector('[data-pg-enregistrer]');
+  var bSuppr = panneau.querySelector('[data-pg-supprimer]'), bCopier = panneau.querySelector('[data-pg-copier]'), copie = panneau.querySelector('[data-pg-copie]');
+  var url = function (cle, id) { return grille.getAttribute('data-url-' + cle).replace(/0$/, id).replace('/0/', '/' + id + '/'); };
+  var hhmm = function (m) { return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + (m % 60)).slice(-2); };
+  var courant = null;
+
+  function ouvrir() { panneau.hidden = false; panneau.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  function marquer(bloc) {
+    grille.querySelectorAll('.pg-bloc.actif').forEach(function (b) { b.classList.remove('actif'); });
+    if (bloc) bloc.classList.add('actif');
+  }
+  function nouveau(agent, debutMin) {
+    courant = null; marquer(null);
+    titre.textContent = 'Nouvelle plage';
+    champ('agent').value = agent; champ('jour').value = jourCourant;
+    champ('debut').value = hhmm(debutMin); champ('fin').value = hhmm(Math.min(debutMin + 60, finAxe));
+    panneau.action = grille.getAttribute('data-url-creer');
+    bEnreg.textContent = 'Ajouter'; bSuppr.hidden = true; copie.hidden = true; ouvrir();
+  }
+  function modifier(bloc) {
+    courant = bloc.getAttribute('data-id'); marquer(bloc);
+    titre.textContent = 'Modifier la plage';
+    champ('agent').value = bloc.getAttribute('data-agent'); champ('poste').value = bloc.getAttribute('data-poste'); champ('jour').value = jourCourant;
+    champ('debut').value = bloc.getAttribute('data-debut'); champ('fin').value = bloc.getAttribute('data-fin');
+    panneau.action = url('modifier', courant);
+    bEnreg.textContent = 'Enregistrer'; bSuppr.hidden = false; copie.hidden = false;
+    bSuppr.setAttribute('formaction', url('supprimer', courant)); bCopier.setAttribute('formaction', url('copier', courant));
+    panneau.querySelectorAll('[name^=copie_jour_]').forEach(function (c) { c.checked = false; });
+    ouvrir();
+  }
+  grille.addEventListener('click', function (e) {
+    var bloc = e.target.closest('.pg-bloc');
+    if (bloc) { modifier(bloc); return; }
+    var piste = e.target.closest('.pg-piste[data-agent]');
+    if (piste) {
+      var r = piste.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+      nouveau(piste.getAttribute('data-agent'), Math.round((debutAxe + x * (finAxe - debutAxe)) / 15) * 15);
+    }
+  });
+  panneau.querySelector('[data-pg-fermer]').addEventListener('click', function () { panneau.hidden = true; marquer(null); });
+  bSuppr.addEventListener('click', function (e) { if (!confirm('Supprimer cette plage ?')) e.preventDefault(); });
+  panneau.setAttribute('action', grille.getAttribute('data-url-creer'));
+})();

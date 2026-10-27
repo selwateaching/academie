@@ -1,0 +1,53 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Planning du personnel{% endblock %}{% block body %}
+<div class="top"><h1>Planning du personnel</h1><span class="noprint"><a class="btn sec" href="{{ url_for('pers_planning_csv') }}">Export Excel (CSV)</a> <button class="sec" data-print>Imprimer / PDF</button>
+{% if module_actif('personnel') %} <a class="btn sec" href="{{ url_for('pers_liste') }}">Personnel</a> <a class="btn sec" href="{{ url_for('pers_postes') }}">Postes et besoins</a>{% endif %}</span></div>
+<div class="tabs noprint">{% for j in JOURS %}<a href="{{ url_for('pers_planning', jour=loop.index0) }}" class="{{ 'on' if not semaine and loop.index0 == jour }}">{{ j }}</a>{% endfor %}<a href="{{ url_for('pers_planning', jour='semaine') }}" class="{{ 'on' if semaine }}">Semaine</a></div>
+{% if pas_postes or pas_agents or not nb_besoins %}<div class="al warn">{% if pas_agents %}Aucun agent n'est inclus dans le planning : <a href="{{ url_for('pers_liste') }}">ajoutez du personnel</a>. {% endif %}{% if not nb_besoins %}Aucun besoin n'est défini : <a href="{{ url_for('pers_postes') }}">indiquez les postes à couvrir</a>. {% endif %}</div>{% endif %}
+<div class="stats"><div class="stat"><b>{{ kpi.taux ~ ' %' if kpi.taux is not none else '—' }}</b><span>Besoins couverts{% if kpi.besoin %} · {{ kpi.couvert|hm }} sur {{ kpi.besoin|hm }}{% endif %}</span></div>
+<div class="stat"><b>{{ kpi.affecte|hm }}</b><span>Heures affectées sur {{ kpi.contrat|hm }} de contrats</span></div>
+<div class="stat"><b>{{ lacunes|length }}</b><span>Plage(s) sans agent</span></div></div>
+{% if lacunes %}<div class="card" style="border-left:4px solid var(--err)"><h2>Besoins non couverts</h2>{% for l in lacunes[:12] %}<p style="margin:3px 0"><a href="{{ url_for('pers_planning', jour=l.jour) }}"><b>{{ JOURS[l.jour] }}</b> {{ l.debut }}–{{ l.fin }}</a> · {{ l.poste }} · il manque {{ l.manque }} agent(s)</p>{% endfor %}
+{% if lacunes|length > 12 %}<p class="mute">… et {{ lacunes|length - 12 }} autre(s).</p>{% endif %}<p class="mute" style="margin-bottom:0">Cliquez sur une plage vide du planning pour affecter quelqu'un, ou relancez la génération (élargir les rôles ou les contrats peut aider).</p></div>{% endif %}
+<details class="card noprint"><summary><b>⚙ Générer le planning automatiquement</b> <span class="mute">— répartit les agents sur les besoins selon leurs rôles, contrats et indisponibilités</span></summary>
+<form method="post" action="{{ url_for('pers_generer') }}" style="margin-top:12px">{{ csrf() }}<input type="hidden" name="retour_jour" value="{{ 'semaine' if semaine else jour }}">
+<label class="check"><input type="radio" name="mode" value="auto" checked> <span><b>Refaire le planning automatique</b> — garde ce que vous avez saisi à la main</span></label>
+<label class="check"><input type="radio" name="mode" value="completer"> <span><b>Compléter seulement</b> — ne change rien, ajoute des plages là où il manque quelqu'un</span></label>
+<label class="check"><input type="radio" name="mode" value="tout"> <span><b>Tout recalculer</b> — remplace aussi ce que vous avez saisi</span></label>
+<div class="row" style="margin-top:8px"><div><label>Durée maximale d'une plage</label><select name="bloc_max"><option value="120">2 h</option><option value="180" selected>3 h</option><option value="240">4 h</option><option value="360">6 h</option></select></div>
+<div><label>Dépassement de contrat toléré</label><select name="marge"><option value="0" selected>Aucun</option><option value="30">30 min</option><option value="60">1 h</option><option value="120">2 h</option></select></div><div style="flex:0 0 auto"><button>Générer</button></div></div>
+<p class="mute" style="margin-bottom:0">Chaque génération est sauvegardée : vous pouvez l'annuler juste après.</p></form>
+{% if sauvegardes %}<form method="post" action="{{ url_for('pers_annuler') }}" style="margin-top:8px" data-confirm="Revenir au planning d'avant la dernière génération ?">{{ csrf() }}<button class="sec sm">↶ Annuler la dernière génération</button></form>{% endif %}</details>
+<p class="legende">{% for p in postes %}{% if p.actif %}<span><span class="chip-poste" style="background:{{ p.couleur }};color:{{ p.couleur|couleur_texte }}">{{ p.nom }}</span></span>{% endif %}{% endfor %}</p>
+{% if not semaine %}
+<div class="pg-scroll"><div class="pg" data-pg data-debut="{{ axe[0] }}" data-fin="{{ axe[1] }}" data-jour="{{ jour }}" style="--heures:{{ nb_heures }}"
+ data-url-creer="{{ url_for('pers_affectation_creer') }}" data-url-modifier="{{ url_for('pers_affectation_modifier', aid=0) }}" data-url-supprimer="{{ url_for('pers_affectation_supprimer', aid=0) }}" data-url-copier="{{ url_for('pers_affectation_copier', aid=0) }}">
+<div class="pg-row pg-tete"><div class="pg-nom"><b>{{ JOURS[jour]|upper }}</b></div><div class="pg-solde">Solde hebdo</div>
+<div class="pg-piste pg-axe">{% for h in heures %}<span style="left:{{ '%.2f'|format(h.left) }}%">{{ h.label }}</span>{% endfor %}</div></div>
+{% for l in lignes %}<div class="pg-row"><div class="pg-nom"><b>{{ l.prenom }}</b> {{ l.nom }}<small>Contrat {{ l.contrat|hm }} · affecté {{ l.affecte|hm }} · ce jour {{ l.minutes_jour|hm }}</small></div>
+<div class="pg-solde {{ l.etat }}" title="Contrat {{ l.contrat|hm }} − affecté {{ l.affecte|hm }}">{{ l.solde|hm_signe if l.solde else '0:00' }}</div>
+<div class="pg-piste" data-agent="{{ l.id }}">{% for b in l.jours[jour] %}<button type="button" class="pg-bloc {{ 'manuel' if b.source == 'manuel' }}" data-id="{{ b.id }}" data-agent="{{ l.id }}" data-poste="{{ b.poste_id }}" data-debut="{{ b.debut }}" data-fin="{{ b.fin }}"
+ style="left:{{ '%.3f'|format(b.left) }}%;width:{{ '%.3f'|format(b.width) }}%;background:{{ b.couleur }};color:{{ b.couleur|couleur_texte }}" title="{{ b.poste }} · {{ b.debut }}–{{ b.fin }}{{ ' · saisi à la main' if b.source == 'manuel' }}">
+<span class="pg-bl-nom">{{ b.poste }}</span><span class="pg-bl-h">{{ b.debut }}–{{ b.fin }}</span></button>{% endfor %}</div></div>
+{% else %}<div class="pg-row"><div class="pg-nom mute">Aucun agent dans le planning</div></div>{% endfor %}
+{% if couv %}<div class="pg-row pg-tete" style="margin-top:6px"><div class="pg-nom"><b>Couverture des besoins</b></div><div class="pg-solde"></div><div class="pg-piste"></div></div>
+{% for c in couv %}<div class="pg-row"><div class="pg-nom"><small style="margin:0">{{ c.nom }}</small></div><div class="pg-solde"></div><div class="pg-piste pg-couv">{% for s in c.segments %}<span class="pg-seg {{ s.statut }}" style="left:{{ '%.3f'|format(s.left) }}%;width:{{ '%.3f'|format(s.width) }}%"
+ title="{{ c.nom }} {{ s.debut }}–{{ s.fin }} : {{ s.present }} agent(s) pour {{ s.besoin }} attendu(s)">{{ '−' ~ (s.besoin - s.present) if s.statut == 'manque' else ('+' ~ (s.present - s.besoin) if s.statut == 'surplus' else '✓') }}</span>{% endfor %}</div></div>{% endfor %}
+<p class="mute" style="margin:6px 0 0"><span class="pg-seg ok" style="position:static;display:inline-block;padding:0 8px">✓</span> besoin couvert · <span class="pg-seg manque" style="position:static;display:inline-block;padding:0 8px">−1</span> agent manquant · <span class="pg-seg surplus" style="position:static;display:inline-block;padding:0 8px">+1</span> agent en trop</p>{% endif %}
+</div></div>
+<form method="post" class="card noprint" id="pg-panneau" data-panneau hidden>{{ csrf() }}<input type="hidden" name="retour_jour" value="{{ jour }}"><h2 data-pg-titre>Nouvelle plage</h2>
+<div class="row"><div><label>Agent</label><select name="personnel_id" data-champ="agent">{% for l in lignes %}<option value="{{ l.id }}">{{ l.prenom }} {{ l.nom }}</option>{% endfor %}</select></div>
+<div><label>Poste</label><select name="poste_id" data-champ="poste">{% for p in postes if p.actif %}<option value="{{ p.id }}">{{ p.nom }}</option>{% endfor %}</select></div>
+<div><label>Jour</label><select name="jour" data-champ="jour">{% for j in JOURS %}<option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == jour }}>{{ j }}</option>{% endfor %}</select></div>
+<div><label>Début</label><input type="time" name="debut" step="900" required data-champ="debut"></div><div><label>Fin</label><input type="time" name="fin" step="900" required data-champ="fin"></div></div>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button data-pg-enregistrer>Ajouter</button><button type="button" class="sec" data-pg-fermer>Fermer</button>
+<button class="red" data-pg-supprimer hidden>Supprimer la plage</button></div>
+<fieldset data-pg-copie hidden style="border:1px solid var(--line);border-radius:10px;margin-top:12px;padding:8px 12px"><legend class="mute" style="padding:0 6px">Copier cette plage</legend>
+<div class="row" style="gap:12px;align-items:center">{% for j in JOURS %}<label class="check" style="margin:0"><input type="checkbox" name="copie_jour_{{ loop.index0 }}" value="1"> {{ j[:3] }}.</label>{% endfor %}
+<div style="flex:0 0 220px"><select name="vers_agent"><option value="">pour le même agent</option>{% for l in lignes %}<option value="{{ l.id }}">pour {{ l.prenom }} {{ l.nom }}</option>{% endfor %}</select></div><div style="flex:0 0 auto"><button class="sec sm" data-pg-copier>Copier</button></div></div></fieldset>
+<p class="mute" style="margin:8px 0 0">Cliquez sur une plage colorée pour la modifier, la supprimer ou la copier ; cliquez sur une zone vide d'une ligne pour en créer une. Les heures sont arrondies au quart d'heure.</p></form>
+{% else %}
+<div class="card scroll"><table><tr><th>Agent</th>{% for j in JOURS %}<th><a href="{{ url_for('pers_planning', jour=loop.index0) }}">{{ j }}</a></th>{% endfor %}<th>Total</th><th>Solde</th></tr>
+{% for l in lignes %}<tr><td><b>{{ l.prenom }}</b> {{ l.nom }}<br><span class="mute" style="font-size:12px">Contrat {{ l.contrat|hm }}</span></td>
+{% for j in range(5) %}<td style="min-width:130px">{% for b in l.jours[j] %}<div class="chip-poste" style="background:{{ b.couleur }};color:{{ b.couleur|couleur_texte }};display:block;margin:2px 0;border-radius:6px" title="{{ b.poste }}">{{ b.debut }}–{{ b.fin }} {{ b.poste }}</div>{% else %}<span class="mute">—</span>{% endfor %}</td>{% endfor %}
+<td><b>{{ l.affecte|hm }}</b></td><td><span class="solde {{ l.etat }}">{{ l.solde|hm_signe if l.solde else '0:00' }}</span></td></tr>{% endfor %}</table></div>
+{% endif %}{% endblock %}

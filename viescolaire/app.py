@@ -24,6 +24,7 @@ from werkzeug.utils import secure_filename
 from . import db as database
 from . import ext
 from . import planning
+from . import planning_personnel as planpers
 from .modeles_defaut import VARIABLES, installer as installer_modeles
 from .config import CFG, MODULES
 
@@ -65,6 +66,10 @@ MODULE_DES_ENDPOINTS = {
     "documents": ["documents", "document_telecharger", "document_supprimer"],
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
+    "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
+                  "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
+    "planning_personnel": ["pers_planning", "pers_affectation_creer", "pers_affectation_modifier", "pers_affectation_supprimer", "pers_affectation_copier",
+                           "pers_generer", "pers_annuler", "pers_planning_csv"],
     "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
     "infirmerie": ["infirmerie", "infirmerie_prevenir", "infirmerie_prevenir_jour", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
@@ -2322,6 +2327,569 @@ def infirmerie_fiche(eid):
         pr = one("SELECT email, telephone, user_id FROM professeurs WHERE id=?", (pp["prof_id"],))
         pp_info = dict(pp, email=pr["email"], telephone=pr["telephone"], user_id=pr["user_id"])
     return render_template("infirmerie_fiche.html", e=e, fiche=fiche, passages=passages_, soins=soins_, pp=pp_info, equipe=equipe)
+
+
+# ───────────────────────── Personnel : assistants pédagogiques, postes (rôles) et planning intelligent ─────────────────────────
+def hm(m, signe=False):
+    """Minutes -> 'H:MM' (avec signe + ou - si demandé)."""
+    m = int(m or 0)
+    neg, m = m < 0, abs(m)
+    return ("-" if neg else ("+" if signe and m else "")) + f"{m // 60}:{m % 60:02d}"
+
+
+app.jinja_env.filters["hm"] = hm
+app.jinja_env.filters["hm_signe"] = lambda m: hm(m, True)
+
+
+def couleur_texte(hexa):
+    """Noir ou blanc selon la luminance du fond, pour que le texte reste lisible sur la couleur du poste."""
+    try:
+        r, g_, b = (int(hexa.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+    except (ValueError, IndexError):
+        return "#1a1a1a"
+    lum = 0.2126 * (r / 255) ** 2.2 + 0.7152 * (g_ / 255) ** 2.2 + 0.0722 * (b / 255) ** 2.2
+    return "#1a1a1a" if lum > 0.28 else "#ffffff"
+
+
+app.jinja_env.filters["couleur_texte"] = couleur_texte
+
+
+def hhmm_vers_min(texte):
+    m = re.fullmatch(r"([01]?\d|2[0-3]):([0-5]\d)", (texte or "").strip())
+    return int(m.group(1)) * 60 + int(m.group(2)) if m else None
+
+
+def min_vers_hhmm(m):
+    return f"{m // 60:02d}:{m % 60:02d}"
+
+
+def duree_affectation(a):
+    return hhmm_vers_min(a["fin"]) - hhmm_vers_min(a["debut"])
+
+
+def couleur_valide(texte, defaut="#D4D4D8"):
+    return texte if re.fullmatch(r"#[0-9a-fA-F]{6}", texte or "") else defaut
+
+
+def agents_planifies():
+    return q("SELECT * FROM personnel WHERE etab_id=? AND planifie=1 AND actif=1 ORDER BY nom, prenom", (g.etab_id,))
+
+
+def agents_moteur():
+    """Agents au format attendu par le moteur d'affectation."""
+    postes_agent, dispos = {}, {}
+    for r in q("SELECT pp.personnel_id, pp.poste_id FROM personnel_postes pp JOIN personnel p ON p.id=pp.personnel_id WHERE p.etab_id=?", (g.etab_id,)):
+        postes_agent.setdefault(r["personnel_id"], set()).add(r["poste_id"])
+    for r in q("SELECT d.* FROM personnel_dispos d JOIN personnel p ON p.id=d.personnel_id WHERE p.etab_id=?", (g.etab_id,)):
+        dispos.setdefault(r["personnel_id"], []).append((r["jour"], hhmm_vers_min(r["debut"]), hhmm_vers_min(r["fin"]), r["niveau"]))
+    return {a["id"]: {"nom": f"{a['prenom']} {a['nom']}".strip(), "contrat": a["contrat_min"], "max_jour": a["max_jour_min"],
+                      "postes": postes_agent.get(a["id"], set()), "dispos": dispos.get(a["id"], [])} for a in agents_planifies()}
+
+
+def besoins_moteur():
+    return [{"id": b["id"], "poste_id": b["poste_id"], "jour": b["jour"], "debut": hhmm_vers_min(b["debut"]), "fin": hhmm_vers_min(b["fin"]), "effectif": b["effectif"]}
+            for b in q("SELECT b.* FROM besoins_postes b JOIN postes p ON p.id=b.poste_id WHERE b.etab_id=? AND p.actif=1", (g.etab_id,))]
+
+
+def affectations_moteur(source=None):
+    sql, args = "SELECT * FROM affectations WHERE etab_id=?", [g.etab_id]
+    if source:
+        sql += " AND source=?"
+        args.append(source)
+    return [{"id": a["id"], "personnel_id": a["personnel_id"], "poste_id": a["poste_id"], "jour": a["jour"], "debut": hhmm_vers_min(a["debut"]),
+             "fin": hhmm_vers_min(a["fin"]), "source": a["source"]} for a in q(sql, args)]
+
+
+def minutes_par_agent():
+    tot = {}
+    for a in q("SELECT personnel_id, debut, fin FROM affectations WHERE etab_id=?", (g.etab_id,)):
+        tot[a["personnel_id"]] = tot.get(a["personnel_id"], 0) + duree_affectation(a)
+    return tot
+
+
+# ── Annuaire du personnel ──
+@app.route("/personnel", methods=["GET", "POST"])
+@staff_only
+def pers_liste():
+    if request.method == "POST":
+        f = request.form
+        if not f.get("nom", "").strip():
+            flash("Le nom est obligatoire.", "err")
+            return redirect(url_for("pers_liste"))
+        try:
+            contrat = round(float(f.get("contrat", "0").replace(",", ".")) * 60)
+        except ValueError:
+            contrat = 0
+        cat = f.get("categorie", "").strip() or CFG["categories_personnel"][0]
+        pid = run("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,telephone,contrat_min,planifie) VALUES (?,?,?,?,?,?,?,?,?)",
+                  (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), cat, f.get("fonction", "").strip(), f.get("email", "").strip(),
+                   f.get("telephone", "").strip(), max(0, min(contrat, 60 * 60)), 1 if f.get("planifie") else 0))
+        log("personnel ajouté", f"{f['nom']} ({cat})")
+        flash("Fiche créée : indiquez maintenant ses rôles (postes) et ses indisponibilités.", "ok")
+        return redirect(url_for("pers_fiche", pid=pid))
+    terme, cat = request.args.get("q", "").strip(), request.args.get("categorie", "")
+    like = f"%{terme}%"
+    sql = "SELECT * FROM personnel WHERE etab_id=? AND (nom LIKE ? OR prenom LIKE ? OR fonction LIKE ?)"
+    args = [g.etab_id, like, like, like]
+    if cat:
+        sql += " AND categorie=?"
+        args.append(cat)
+    rows = q(sql + " ORDER BY actif DESC, categorie, nom, prenom", args)
+    roles = {}
+    for r in q("SELECT pp.personnel_id, po.nom, po.couleur FROM personnel_postes pp JOIN postes po ON po.id=pp.poste_id WHERE po.etab_id=? ORDER BY po.ordre", (g.etab_id,)):
+        roles.setdefault(r["personnel_id"], []).append(r)
+    return render_template("personnel.html", rows=rows, roles=roles, tot=minutes_par_agent(), terme=terme, categorie=cat, categories=CFG["categories_personnel"])
+
+
+@app.route("/personnel/<int:pid>", methods=["GET", "POST"])
+@staff_only
+def pers_fiche(pid):
+    a = one("SELECT * FROM personnel WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    if not a:
+        abort(404)
+    postes = q("SELECT * FROM postes WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))
+    if request.method == "POST":
+        f = request.form
+        if not f.get("nom", "").strip():
+            flash("Le nom est obligatoire.", "err")
+            return redirect(url_for("pers_fiche", pid=pid))
+        try:
+            contrat = round(float(f.get("contrat", "0").replace(",", ".")) * 60)
+            max_jour = round(float(f.get("max_jour", "8").replace(",", ".")) * 60)
+        except ValueError:
+            contrat, max_jour = a["contrat_min"], a["max_jour_min"]
+        run("UPDATE personnel SET nom=?, prenom=?, categorie=?, fonction=?, email=?, telephone=?, contrat_min=?, max_jour_min=?, planifie=?, actif=?, notes=? WHERE id=?",
+            (f["nom"].strip(), f.get("prenom", "").strip(), f.get("categorie", "").strip() or a["categorie"], f.get("fonction", "").strip(), f.get("email", "").strip(),
+             f.get("telephone", "").strip(), max(0, min(contrat, 60 * 60)), max(60, min(max_jour, 14 * 60)), 1 if f.get("planifie") else 0,
+             1 if f.get("actif") else 0, f.get("notes", "").strip()[:1000], pid))
+        db().execute("DELETE FROM personnel_postes WHERE personnel_id=?", (pid,))
+        for p in postes:
+            if f.get(f"poste_{p['id']}"):
+                db().execute("INSERT INTO personnel_postes VALUES (?,?)", (pid, p["id"]))
+        db().commit()
+        log("fiche personnel modifiée", f"{f['nom']}")
+        flash("Fiche enregistrée.", "ok")
+        return redirect(url_for("pers_fiche", pid=pid))
+    mes_postes = {r["poste_id"] for r in q("SELECT poste_id FROM personnel_postes WHERE personnel_id=?", (pid,))}
+    dispos = q("SELECT * FROM personnel_dispos WHERE personnel_id=? ORDER BY jour, debut", (pid,))
+    affect = q("SELECT af.*, po.nom pnom, po.couleur FROM affectations af JOIN postes po ON po.id=af.poste_id WHERE af.personnel_id=? ORDER BY af.jour, af.debut", (pid,))
+    return render_template("personnel_fiche.html", a=a, postes=postes, mes_postes=mes_postes, dispos=dispos, affect=affect,
+                           total=sum(duree_affectation(x) for x in affect), categories=CFG["categories_personnel"])
+
+
+@app.route("/personnel/<int:pid>/supprimer", methods=["POST"])
+@staff_only
+def pers_supprimer(pid):
+    a = one("SELECT * FROM personnel WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    if a:
+        run("DELETE FROM personnel WHERE id=?", (pid,))
+        log("fiche personnel supprimée", f"{a['nom']} {a['prenom']}")
+        flash("Fiche supprimée (ainsi que ses indisponibilités et ses affectations).", "ok")
+    return redirect(url_for("pers_liste"))
+
+
+@app.route("/personnel/<int:pid>/dispos", methods=["POST"])
+@staff_only
+def pers_dispo_ajouter(pid):
+    if not one("SELECT 1 FROM personnel WHERE id=? AND etab_id=?", (pid, g.etab_id)):
+        abort(404)
+    f = request.form
+    d, fin = hhmm_vers_min(f.get("debut", "")), hhmm_vers_min(f.get("fin", ""))
+    jours = [j for j in range(5) if f.get(f"jour_{j}")] or ([f.get("jour", type=int)] if f.get("jour", type=int) in range(5) else [])
+    if d is None or fin is None or d >= fin or not jours:
+        flash("Indiquez au moins un jour et une plage horaire valide (début avant fin).", "err")
+    else:
+        niveau = "souhait" if f.get("niveau") == "souhait" else "non"
+        for j in jours:
+            db().execute("INSERT INTO personnel_dispos(personnel_id,jour,debut,fin,niveau,motif) VALUES (?,?,?,?,?,?)",
+                         (pid, j, min_vers_hhmm(d), min_vers_hhmm(fin), niveau, f.get("motif", "").strip()[:120]))
+        db().commit()
+        log("indisponibilité ajoutée", f"personnel {pid}")
+    return redirect(url_for("pers_fiche", pid=pid))
+
+
+@app.route("/personnel/dispos/<int:did>/supprimer", methods=["POST"])
+@staff_only
+def pers_dispo_supprimer(did):
+    d = one("SELECT d.* FROM personnel_dispos d JOIN personnel p ON p.id=d.personnel_id WHERE d.id=? AND p.etab_id=?", (did, g.etab_id))
+    if d:
+        run("DELETE FROM personnel_dispos WHERE id=?", (did,))
+        return redirect(url_for("pers_fiche", pid=d["personnel_id"]))
+    abort(404)
+
+
+# ── Postes (rôles) et besoins ──
+@app.route("/personnel/postes", methods=["GET", "POST"])
+@staff_only
+def pers_postes():
+    if request.method == "POST":
+        f = request.form
+        nom = f.get("nom", "").strip()
+        if not nom:
+            flash("Le nom du poste est obligatoire.", "err")
+        elif one("SELECT 1 FROM postes WHERE etab_id=? AND nom=?", (g.etab_id, nom)):
+            flash("Ce poste existe déjà.", "err")
+        else:
+            ordre = one("SELECT COALESCE(MAX(ordre),0)+1 o FROM postes WHERE etab_id=?", (g.etab_id,))["o"]
+            run("INSERT INTO postes(etab_id,nom,couleur,description,ordre) VALUES (?,?,?,?,?)",
+                (g.etab_id, nom[:40], couleur_valide(f.get("couleur")), f.get("description", "").strip()[:200], ordre))
+            log("poste créé", nom)
+        return redirect(url_for("pers_postes"))
+    postes = q("SELECT po.*, (SELECT COUNT(*) FROM personnel_postes pp WHERE pp.poste_id=po.id) nb_agents FROM postes po WHERE po.etab_id=? ORDER BY po.ordre, po.nom", (g.etab_id,))
+    groupes = {}
+    for b in q("SELECT b.*, po.nom pnom, po.couleur FROM besoins_postes b JOIN postes po ON po.id=b.poste_id WHERE b.etab_id=? ORDER BY po.ordre, b.debut, b.jour", (g.etab_id,)):
+        cle = (b["poste_id"], b["debut"], b["fin"], b["effectif"])
+        gr = groupes.setdefault(cle, {"poste": b["pnom"], "couleur": b["couleur"], "debut": b["debut"], "fin": b["fin"], "effectif": b["effectif"], "jours": [], "ids": []})
+        gr["jours"].append(b["jour"])
+        gr["ids"].append(str(b["id"]))
+    return render_template("postes.html", postes=postes, groupes=list(groupes.values()))
+
+
+@app.route("/personnel/postes/<int:pid>", methods=["POST"])
+@staff_only
+def pers_poste_modifier(pid):
+    p = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    if not p:
+        abort(404)
+    f = request.form
+    nom = f.get("nom", "").strip()[:40] or p["nom"]
+    if nom != p["nom"] and one("SELECT 1 FROM postes WHERE etab_id=? AND nom=?", (g.etab_id, nom)):
+        flash("Un poste porte déjà ce nom.", "err")
+    else:
+        run("UPDATE postes SET nom=?, couleur=?, description=?, ordre=?, actif=? WHERE id=?",
+            (nom, couleur_valide(f.get("couleur"), p["couleur"]), f.get("description", "").strip()[:200], f.get("ordre", type=int) or p["ordre"], 1 if f.get("actif") else 0, pid))
+        log("poste modifié", nom)
+    return redirect(url_for("pers_postes"))
+
+
+@app.route("/personnel/postes/<int:pid>/supprimer", methods=["POST"])
+@staff_only
+def pers_poste_supprimer(pid):
+    p = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (pid, g.etab_id))
+    if p:
+        run("DELETE FROM postes WHERE id=?", (pid,))
+        log("poste supprimé", p["nom"])
+        flash(f"Poste « {p['nom']} » supprimé, avec ses besoins et ses affectations.", "ok")
+    return redirect(url_for("pers_postes"))
+
+
+@app.route("/personnel/besoins", methods=["POST"])
+@staff_only
+def pers_besoin_ajouter():
+    f = request.form
+    poste = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (f.get("poste_id", type=int), g.etab_id))
+    d, fin = hhmm_vers_min(f.get("debut", "")), hhmm_vers_min(f.get("fin", ""))
+    jours = [j for j in range(5) if f.get(f"jour_{j}")]
+    eff = f.get("effectif", type=int) or 1
+    if not poste or d is None or fin is None or d >= fin or not jours or not 1 <= eff <= 20:
+        flash("Choisissez un poste, au moins un jour, une plage horaire valide et un effectif de 1 à 20.", "err")
+    else:
+        d, fin = d // 15 * 15, -(-fin // 15) * 15
+        for j in jours:
+            db().execute("INSERT INTO besoins_postes(etab_id,poste_id,jour,debut,fin,effectif) VALUES (?,?,?,?,?,?)", (g.etab_id, poste["id"], j, min_vers_hhmm(d), min_vers_hhmm(fin), eff))
+        db().commit()
+        log("besoin ajouté", f"{poste['nom']} {min_vers_hhmm(d)}-{min_vers_hhmm(fin)} ×{eff}")
+        flash("Besoin ajouté.", "ok")
+    return redirect(url_for("pers_postes"))
+
+
+@app.route("/personnel/besoins/supprimer", methods=["POST"])
+@staff_only
+def pers_besoin_supprimer():
+    ids = [int(x) for x in request.form.get("ids", "").split(",") if x.strip().isdigit()]
+    for i in ids:
+        db().execute("DELETE FROM besoins_postes WHERE id=? AND etab_id=?", (i, g.etab_id))
+    db().commit()
+    return redirect(url_for("pers_postes"))
+
+
+# ── Planning visuel ──
+def bornes_axe(jour_affect, besoins_jour):
+    debut_cfg, fin_cfg = (hhmm_vers_min(x) for x in CFG["grille_personnel"])
+    debuts = [debut_cfg] + [hhmm_vers_min(a["debut"]) for a in jour_affect] + [b["debut"] for b in besoins_jour]
+    fins = [fin_cfg] + [hhmm_vers_min(a["fin"]) for a in jour_affect] + [b["fin"] for b in besoins_jour]
+    return min(debuts) // 60 * 60, -(-max(fins) // 60) * 60
+
+
+def couverture_postes(besoins, affect, jour, debut_axe, fin_axe, postes_nom):
+    """Par poste et par tranche de 15 min : besoin vs agents présents -> segments ok / manque / surplus ; et plages manquantes."""
+    n = (fin_axe - debut_axe) // 15
+    besoin, present = {}, {}
+    for b in besoins:
+        if b["jour"] == jour:
+            tab = besoin.setdefault(b["poste_id"], [0] * n)
+            for s in range((b["debut"] - debut_axe) // 15, (b["fin"] - debut_axe) // 15):
+                if 0 <= s < n:
+                    tab[s] += b["effectif"]
+    for a in affect:
+        if a["jour"] == jour:
+            tab = present.setdefault(a["poste_id"], [0] * n)
+            for s in range((hhmm_vers_min(a["debut"]) - debut_axe) // 15, (hhmm_vers_min(a["fin"]) - debut_axe) // 15):
+                if 0 <= s < n:
+                    tab[s] += 1
+    out, lacunes = [], []
+    for poste, tab in besoin.items():
+        have = present.get(poste, [0] * n)
+        etat = lambda i: "manque" if have[i] < tab[i] else ("surplus" if have[i] > tab[i] else "ok")
+        segs, s = [], 0
+        while s < n:
+            if tab[s] == 0 and have[s] == 0:
+                s += 1
+                continue
+            statut = etat(s)
+            e = s
+            while e < n and not (tab[e] == 0 and have[e] == 0) and etat(e) == statut:
+                e += 1
+            segs.append({"left": 100 * s / n, "width": 100 * (e - s) / n, "statut": statut, "debut": min_vers_hhmm(debut_axe + s * 15), "fin": min_vers_hhmm(debut_axe + e * 15),
+                         "besoin": max(tab[s:e]), "present": min(have[s:e])})
+            if statut == "manque":
+                lacunes.append({"poste_id": poste, "poste": postes_nom.get(poste, "?"), "jour": jour, "debut": min_vers_hhmm(debut_axe + s * 15),
+                                "fin": min_vers_hhmm(debut_axe + e * 15), "manque": max(tab[i] - have[i] for i in range(s, e))})
+            s = e
+        out.append({"poste_id": poste, "nom": postes_nom.get(poste, "?"), "segments": segs})
+    return out, lacunes
+
+
+@app.route("/personnel/planning")
+@staff_only
+def pers_planning():
+    aujourdhui = date.today()
+    vue = request.args.get("jour", "")
+    jour = int(vue) if vue in ("0", "1", "2", "3", "4") else (aujourdhui.weekday() if aujourdhui.weekday() < 5 and vue != "semaine" else 0)
+    semaine = vue == "semaine"
+    postes = q("SELECT * FROM postes WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))
+    postes_nom = {p["id"]: p["nom"] for p in postes}
+    postes_par_id = {p["id"]: p for p in postes}
+    agents = agents_planifies()
+    affect = q("SELECT * FROM affectations WHERE etab_id=? ORDER BY jour, debut", (g.etab_id,))
+    besoins = besoins_moteur()
+    tot = minutes_par_agent()
+    # lacunes de toute la semaine (alerte) et couverture du jour affiché
+    lacunes, couv_jour, axe_jour = [], [], None
+    for j in range(5):
+        d_ax, f_ax = bornes_axe([a for a in affect if a["jour"] == j], [b for b in besoins if b["jour"] == j])
+        cv, lc = couverture_postes(besoins, affect, j, d_ax, f_ax, postes_nom)
+        lacunes += lc
+        if j == jour:
+            couv_jour, axe_jour = cv, (d_ax, f_ax)
+    besoin_total = sum((b["fin"] - b["debut"]) * b["effectif"] for b in besoins)
+    manque_total = sum(l_["manque"] * (hhmm_vers_min(l_["fin"]) - hhmm_vers_min(l_["debut"])) for l_ in lacunes)
+    kpi = {"besoin": besoin_total, "couvert": besoin_total - manque_total, "taux": round(100 * (besoin_total - manque_total) / besoin_total) if besoin_total else None,
+           "affecte": sum(tot.get(a["id"], 0) for a in agents), "contrat": sum(a["contrat_min"] for a in agents)}
+    lignes = []
+    for a in agents:
+        solde = a["contrat_min"] - tot.get(a["id"], 0)
+        ligne = {"id": a["id"], "nom": a["nom"], "prenom": a["prenom"], "contrat": a["contrat_min"], "affecte": tot.get(a["id"], 0), "solde": solde,
+                 "etat": "zero" if solde == 0 else ("reste" if solde > 0 else "depasse"), "jours": {j: [] for j in range(5)}}
+        for af in affect:
+            if af["personnel_id"] == a["id"]:
+                p = postes_par_id.get(af["poste_id"])
+                ligne["jours"][af["jour"]].append({"id": af["id"], "poste_id": af["poste_id"], "poste": p["nom"] if p else "?", "couleur": p["couleur"] if p else "#D4D4D8",
+                                                    "debut": af["debut"], "fin": af["fin"], "source": af["source"], "minutes": duree_affectation(af)})
+        if not semaine:
+            d_ax, f_ax = axe_jour
+            span = f_ax - d_ax
+            for b in ligne["jours"][jour]:
+                b["left"] = 100 * (hhmm_vers_min(b["debut"]) - d_ax) / span
+                b["width"] = 100 * (hhmm_vers_min(b["fin"]) - hhmm_vers_min(b["debut"])) / span
+            ligne["minutes_jour"] = sum(b["minutes"] for b in ligne["jours"][jour])
+        lignes.append(ligne)
+    heures = []
+    if axe_jour and not semaine:
+        d_ax, f_ax = axe_jour
+        heures = [{"label": f"{h_ // 60}h", "left": 100 * (h_ - d_ax) / (f_ax - d_ax)} for h_ in range(d_ax, f_ax, 60)]
+    sauvegardes = one("SELECT COUNT(*) c FROM planning_personnel_sauvegardes WHERE etab_id=?", (g.etab_id,))["c"]
+    return render_template("planning_personnel.html", jour=jour, semaine=semaine, lignes=lignes, postes=postes, couv=couv_jour, heures=heures, axe=axe_jour,
+                           nb_heures=((axe_jour[1] - axe_jour[0]) / 60) if axe_jour else 0, lacunes=lacunes, kpi=kpi, sauvegardes=sauvegardes,
+                           pas_postes=not postes, pas_agents=not agents, nb_besoins=len(besoins))
+
+
+def valider_affectation(personnel_id, poste_id, jour, debut, fin, ignorer_id=None):
+    """Retourne (erreur ou None, avertissements, (début, fin en minutes))."""
+    agent = one("SELECT * FROM personnel WHERE id=? AND etab_id=?", (personnel_id, g.etab_id))
+    poste = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (poste_id, g.etab_id))
+    if not agent or not poste:
+        return "Agent ou poste introuvable.", [], None
+    if jour not in range(5):
+        return "Jour invalide.", [], None
+    d, f = hhmm_vers_min(debut), hhmm_vers_min(fin)
+    if d is None or f is None or d >= f:
+        return "Plage horaire invalide : le début doit précéder la fin.", [], None
+    d, f = d // 15 * 15, -(-f // 15) * 15
+    if d < 5 * 60 or f > 23 * 60:
+        return "Plage hors de la journée de travail (05:00–23:00).", [], None
+    for a in q("SELECT * FROM affectations WHERE etab_id=? AND personnel_id=? AND jour=?", (g.etab_id, personnel_id, jour)):
+        if a["id"] != ignorer_id and d < hhmm_vers_min(a["fin"]) and hhmm_vers_min(a["debut"]) < f:
+            nom_p = one("SELECT nom FROM postes WHERE id=?", (a["poste_id"],))["nom"]
+            return f"{agent['prenom']} {agent['nom']} est déjà affecté(e) à « {nom_p} » de {a['debut']} à {a['fin']} ce jour-là.", [], None
+    avert = []
+    if not one("SELECT 1 FROM personnel_postes WHERE personnel_id=? AND poste_id=?", (personnel_id, poste_id)):
+        avert.append(f"{agent['prenom']} n'a pas le rôle « {poste['nom']} »")
+    for dsp in q("SELECT * FROM personnel_dispos WHERE personnel_id=? AND jour=? AND niveau='non'", (personnel_id, jour)):
+        if d < hhmm_vers_min(dsp["fin"]) and hhmm_vers_min(dsp["debut"]) < f:
+            avert.append(f"indisponible de {dsp['debut']} à {dsp['fin']}" + (f" ({dsp['motif']})" if dsp["motif"] else ""))
+    autres = sum(duree_affectation(a) for a in q("SELECT * FROM affectations WHERE etab_id=? AND personnel_id=? AND id<>?", (g.etab_id, personnel_id, ignorer_id or 0)))
+    if autres + (f - d) > agent["contrat_min"]:
+        avert.append(f"dépasse son contrat ({hm(autres + f - d)} pour {hm(agent['contrat_min'])})")
+    jour_tot = sum(duree_affectation(a) for a in q("SELECT * FROM affectations WHERE etab_id=? AND personnel_id=? AND jour=? AND id<>?", (g.etab_id, personnel_id, jour, ignorer_id or 0)))
+    if jour_tot + (f - d) > agent["max_jour_min"]:
+        avert.append(f"dépasse {hm(agent['max_jour_min'])} de travail ce jour-là")
+    return None, avert, (d, f)
+
+
+def retour_planning(jour=None):
+    return redirect(url_for("pers_planning", jour=jour if jour is not None else request.form.get("retour_jour", "")))
+
+
+@app.route("/personnel/affectations", methods=["POST"])
+@staff_only
+def pers_affectation_creer():
+    f = request.form
+    jour = f.get("jour", type=int)
+    erreur, avert, plage = valider_affectation(f.get("personnel_id", type=int), f.get("poste_id", type=int), jour, f.get("debut", ""), f.get("fin", ""))
+    if erreur:
+        flash(erreur, "err")
+        return retour_planning(jour)
+    run("INSERT INTO affectations(etab_id,personnel_id,poste_id,jour,debut,fin,source) VALUES (?,?,?,?,?,?,'manuel')",
+        (g.etab_id, f.get("personnel_id", type=int), f.get("poste_id", type=int), jour, min_vers_hhmm(plage[0]), min_vers_hhmm(plage[1])))
+    log("affectation ajoutée", f"personnel {f.get('personnel_id')} jour {jour}")
+    flash("Plage ajoutée." + (" Attention : " + " ; ".join(avert) + "." if avert else ""), "err" if avert else "ok")
+    return retour_planning(jour)
+
+
+@app.route("/personnel/affectations/<int:aid>", methods=["POST"])
+@staff_only
+def pers_affectation_modifier(aid):
+    a = one("SELECT * FROM affectations WHERE id=? AND etab_id=?", (aid, g.etab_id))
+    if not a:
+        abort(404)
+    f = request.form
+    pers, poste, jour = f.get("personnel_id", type=int), f.get("poste_id", type=int), f.get("jour", type=int)
+    erreur, avert, plage = valider_affectation(pers, poste, jour, f.get("debut", ""), f.get("fin", ""), ignorer_id=aid)
+    if erreur:
+        flash(erreur, "err")
+        return retour_planning(a["jour"])
+    run("UPDATE affectations SET personnel_id=?, poste_id=?, jour=?, debut=?, fin=?, source='manuel' WHERE id=?",
+        (pers, poste, jour, min_vers_hhmm(plage[0]), min_vers_hhmm(plage[1]), aid))
+    log("affectation modifiée", f"{aid}")
+    flash("Plage modifiée." + (" Attention : " + " ; ".join(avert) + "." if avert else ""), "err" if avert else "ok")
+    return retour_planning(jour)
+
+
+@app.route("/personnel/affectations/<int:aid>/supprimer", methods=["POST"])
+@staff_only
+def pers_affectation_supprimer(aid):
+    a = one("SELECT * FROM affectations WHERE id=? AND etab_id=?", (aid, g.etab_id))
+    if not a:
+        abort(404)
+    run("DELETE FROM affectations WHERE id=?", (aid,))
+    log("affectation supprimée", f"{aid}")
+    return retour_planning(a["jour"])
+
+
+@app.route("/personnel/affectations/<int:aid>/copier", methods=["POST"])
+@staff_only
+def pers_affectation_copier(aid):
+    """Copie une plage sur d'autres jours et/ou pour un autre agent (équivalent de « copier sur d'autres jours »)."""
+    a = one("SELECT * FROM affectations WHERE id=? AND etab_id=?", (aid, g.etab_id))
+    if not a:
+        abort(404)
+    f = request.form
+    jours = [j for j in range(5) if f.get(f"copie_jour_{j}")] or [a["jour"]]
+    cible = f.get("vers_agent", type=int) or a["personnel_id"]
+    faits, refus = 0, []
+    for j in jours:
+        if j == a["jour"] and cible == a["personnel_id"]:
+            continue
+        erreur, _, plage = valider_affectation(cible, a["poste_id"], j, a["debut"], a["fin"])
+        if erreur:
+            refus.append(f"{JOURS[j]} : {erreur}")
+            continue
+        db().execute("INSERT INTO affectations(etab_id,personnel_id,poste_id,jour,debut,fin,source) VALUES (?,?,?,?,?,?,'manuel')",
+                     (g.etab_id, cible, a["poste_id"], j, min_vers_hhmm(plage[0]), min_vers_hhmm(plage[1])))
+        faits += 1
+    db().commit()
+    log("affectation copiée", f"{aid} → {faits} copie(s)")
+    flash(f"{faits} copie(s) créée(s)." + (" Non copié : " + " | ".join(refus) if refus else ""), "ok" if faits else "err")
+    return retour_planning(a["jour"])
+
+
+def sauvegarder_planning(motif):
+    contenu = json.dumps([{k: a[k] for k in ("personnel_id", "poste_id", "jour", "debut", "fin", "source")}
+                          for a in q("SELECT * FROM affectations WHERE etab_id=?", (g.etab_id,))])
+    run("INSERT INTO planning_personnel_sauvegardes(etab_id,created_at,auteur,motif,contenu) VALUES (?,?,?,?,?)",
+        (g.etab_id, datetime.now().isoformat(timespec="seconds"), g.user["nom"], motif, contenu))
+    db().execute("DELETE FROM planning_personnel_sauvegardes WHERE etab_id=? AND id NOT IN (SELECT id FROM planning_personnel_sauvegardes WHERE etab_id=? ORDER BY id DESC LIMIT 10)",
+                 (g.etab_id, g.etab_id))
+    db().commit()
+
+
+@app.route("/personnel/planning/generer", methods=["POST"])
+@staff_only
+def pers_generer():
+    f = request.form
+    mode = f.get("mode") if f.get("mode") in ("auto", "completer", "tout") else "auto"
+    bloc_max = min(max(f.get("bloc_max", type=int) or 180, 60), 360)
+    marge = min(max(f.get("marge", type=int) or 0, 0), 180)
+    agents, besoins = agents_moteur(), besoins_moteur()
+    if not agents or not besoins:
+        flash("Il faut au moins un agent planifié et un besoin (onglet Postes et besoins) pour générer le planning.", "err")
+        return redirect(url_for("pers_planning"))
+    sauvegarder_planning({"auto": "avant régénération automatique", "completer": "avant complément", "tout": "avant recalcul complet"}[mode])
+    if mode == "tout":
+        run("DELETE FROM affectations WHERE etab_id=?", (g.etab_id,))
+    elif mode == "auto":
+        run("DELETE FROM affectations WHERE etab_id=? AND source='auto'", (g.etab_id,))
+    fixes = affectations_moteur()
+    res = planpers.generer(besoins, agents, fixes, {"bloc_max": bloc_max, "marge": marge}, temps_max=6)
+    for a in res["affectations"]:
+        db().execute("INSERT INTO affectations(etab_id,personnel_id,poste_id,jour,debut,fin,source) VALUES (?,?,?,?,?,?,'auto')",
+                     (g.etab_id, a["personnel_id"], a["poste_id"], a["jour"], min_vers_hhmm(a["debut"]), min_vers_hhmm(a["fin"])))
+    db().commit()
+    st = res["stats"]
+    log("planning du personnel généré", f"{len(res['affectations'])} plages, couverture {st['couverture']} %")
+    ext.emit("planning_personnel.genere", nb_affectations=len(res["affectations"]), couverture=st["couverture"])
+    if res["non_couverts"]:
+        flash(f"Planning généré : {st['couverture']} % des besoins couverts, {len(res['non_couverts'])} plage(s) sans agent disponible "
+              f"({hm(sum(n['fin'] - n['debut'] for n in res['non_couverts']))} h). Voir l'alerte sous le planning. Vous pouvez annuler cette génération.", "err")
+    else:
+        flash(f"Planning généré : 100 % des besoins couverts ({len(res['affectations'])} plages). Vous pouvez annuler cette génération.", "ok")
+    return redirect(url_for("pers_planning", jour=request.form.get("retour_jour", "")))
+
+
+@app.route("/personnel/planning/annuler", methods=["POST"])
+@staff_only
+def pers_annuler():
+    sv = one("SELECT * FROM planning_personnel_sauvegardes WHERE etab_id=? ORDER BY id DESC LIMIT 1", (g.etab_id,))
+    if not sv:
+        flash("Rien à annuler.", "err")
+        return redirect(url_for("pers_planning"))
+    run("DELETE FROM affectations WHERE etab_id=?", (g.etab_id,))
+    n = 0
+    for a in json.loads(sv["contenu"]):
+        if one("SELECT 1 FROM personnel WHERE id=? AND etab_id=?", (a["personnel_id"], g.etab_id)) and one("SELECT 1 FROM postes WHERE id=? AND etab_id=?", (a["poste_id"], g.etab_id)):
+            db().execute("INSERT INTO affectations(etab_id,personnel_id,poste_id,jour,debut,fin,source) VALUES (?,?,?,?,?,?,?)",
+                         (g.etab_id, a["personnel_id"], a["poste_id"], a["jour"], a["debut"], a["fin"], a["source"]))
+            n += 1
+    db().execute("DELETE FROM planning_personnel_sauvegardes WHERE id=?", (sv["id"],))
+    db().commit()
+    log("génération du planning du personnel annulée", f"{n} plages restaurées")
+    flash(f"Planning restauré ({n} plages) : {sv['motif']}.", "ok")
+    return redirect(url_for("pers_planning"))
+
+
+@app.route("/personnel/planning.csv")
+@staff_only
+def pers_planning_csv():
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(["agent", "jour", "debut", "fin", "duree_h", "poste", "origine"])
+    for a in q("SELECT af.*, p.nom pnom, p.prenom, po.nom poste FROM affectations af JOIN personnel p ON p.id=af.personnel_id JOIN postes po ON po.id=af.poste_id "
+               "WHERE af.etab_id=? ORDER BY p.nom, af.jour, af.debut", (g.etab_id,)):
+        w.writerow([cellule_csv(f"{a['prenom']} {a['pnom']}".strip()), JOURS[a["jour"]], a["debut"], a["fin"], f"{duree_affectation(a) / 60:.2f}".replace(".", ","),
+                    cellule_csv(a["poste"]), "automatique" if a["source"] == "auto" else "saisi à la main"])
+    log("export", "planning du personnel")
+    return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=planning_personnel_{date.today()}.csv"})
 
 
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────

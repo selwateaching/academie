@@ -222,8 +222,57 @@ MIGRATIONS = [
             PRIMARY KEY (soin_id, date)
         );
     """),  # professeurs prévenus qu'un élève quitte le cours pour un soin
-    # (10, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (10, """
+        CREATE TABLE IF NOT EXISTS postes (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, nom TEXT NOT NULL, couleur TEXT NOT NULL DEFAULT '#D4D4D8',
+            description TEXT NOT NULL DEFAULT '', ordre INTEGER NOT NULL DEFAULT 0, actif INTEGER NOT NULL DEFAULT 1,
+            UNIQUE (etab_id, nom)
+        );
+        CREATE TABLE IF NOT EXISTS personnel (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, user_id INTEGER, nom TEXT NOT NULL, prenom TEXT NOT NULL DEFAULT '',
+            categorie TEXT NOT NULL DEFAULT 'Assistant pédagogique', fonction TEXT NOT NULL DEFAULT '', email TEXT NOT NULL DEFAULT '',
+            telephone TEXT NOT NULL DEFAULT '', contrat_min INTEGER NOT NULL DEFAULT 0, max_jour_min INTEGER NOT NULL DEFAULT 480,
+            planifie INTEGER NOT NULL DEFAULT 1, actif INTEGER NOT NULL DEFAULT 1, notes TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS personnel_postes (   -- rôles que l'agent peut tenir
+            personnel_id INTEGER NOT NULL REFERENCES personnel(id) ON DELETE CASCADE,
+            poste_id INTEGER NOT NULL REFERENCES postes(id) ON DELETE CASCADE, PRIMARY KEY (personnel_id, poste_id)
+        );
+        CREATE TABLE IF NOT EXISTS personnel_dispos (   -- indisponibilités impératives ('non') ou souhaits d'évitement ('souhait')
+            id INTEGER PRIMARY KEY, personnel_id INTEGER NOT NULL REFERENCES personnel(id) ON DELETE CASCADE,
+            jour INTEGER NOT NULL, debut TEXT NOT NULL, fin TEXT NOT NULL, niveau TEXT NOT NULL DEFAULT 'non', motif TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS besoins_postes (     -- combien d'agents sur quel poste, quel jour, à quelle heure
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, poste_id INTEGER NOT NULL REFERENCES postes(id) ON DELETE CASCADE,
+            jour INTEGER NOT NULL, debut TEXT NOT NULL, fin TEXT NOT NULL, effectif INTEGER NOT NULL DEFAULT 1
+        );
+        CREATE TABLE IF NOT EXISTS affectations (       -- planning hebdomadaire du personnel
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, personnel_id INTEGER NOT NULL REFERENCES personnel(id) ON DELETE CASCADE,
+            poste_id INTEGER NOT NULL REFERENCES postes(id) ON DELETE CASCADE, jour INTEGER NOT NULL,
+            debut TEXT NOT NULL, fin TEXT NOT NULL, source TEXT NOT NULL DEFAULT 'manuel'
+        );
+        CREATE INDEX IF NOT EXISTS idx_affectations ON affectations(etab_id, jour, personnel_id);
+        CREATE TABLE IF NOT EXISTS planning_personnel_sauvegardes (   -- pour annuler une génération
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, created_at TEXT NOT NULL, auteur TEXT NOT NULL DEFAULT '',
+            motif TEXT NOT NULL DEFAULT '', contenu TEXT NOT NULL
+        );
+    """),  # gestion du personnel : postes, assistants, indisponibilités, besoins, planning, sauvegardes
+    # (11, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
+
+
+POSTES_DEFAUT = [("Service", "#4ADE80", "Vie scolaire : accueil, billets, téléphone"), ("Étude", "#FDE047", "Surveillance de la salle d'étude / permanence"),
+                 ("Foyer", "#67E8F9", "Foyer des élèves"), ("Cour", "#FB923C", "Surveillance de la cour et des récréations"),
+                 ("Portail", "#A5B4FC", "Entrées et sorties"), ("Self", "#F0ABFC", "Restaurant scolaire"),
+                 ("Bureau", "#FCA5A5", "Travail administratif"), ("Renfort", "#D4D4D8", "Remplacement et appui")]
+
+
+def installer_postes(con, etab_id):
+    """Postes proposés par défaut (modifiables) dans un établissement qui n'en a pas encore."""
+    if not con.execute("SELECT 1 FROM postes WHERE etab_id=?", (etab_id,)).fetchone():
+        for ordre, (nom, couleur, description) in enumerate(POSTES_DEFAUT, 1):
+            con.execute("INSERT INTO postes(etab_id,nom,couleur,description,ordre) VALUES (?,?,?,?,?)", (etab_id, nom, couleur, description, ordre))
+    con.commit()
 
 
 def init_db(extra_sql=()):
@@ -236,8 +285,9 @@ def init_db(extra_sql=()):
             con.execute("INSERT INTO schema_version VALUES (?, datetime('now'))", (version,))
             con.commit()
     from .modeles_defaut import installer
-    for (eid,) in con.execute("SELECT id FROM etablissements").fetchall():  # modèles par défaut pour chaque établissement
+    for (eid,) in con.execute("SELECT id FROM etablissements").fetchall():  # modèles et postes par défaut pour chaque établissement
         installer(con, eid)
+        installer_postes(con, eid)
     for sql in extra_sql:  # tables des extensions (idempotentes)
         con.executescript(sql)
     con.commit()
@@ -551,6 +601,55 @@ def seed_demo(password="demo1234"):
                         (e2, nm, pr, c, f"Famille {nm}", "", (today - timedelta(days=int((base_age + (1 if rng.random() < 0.15 else 0)) * 365.25) + rng.randint(0, 364))).isoformat(),
                          "F" if fille2 else "M"))
             k2 += 1
+    # Personnel : assistants pédagogiques, postes (rôles), besoins, indisponibilités, planning généré par le moteur
+    from . import planning_personnel as pp
+    installer_postes(con, e1)
+    installer_postes(con, e2)
+    poste_id = {nom: con.execute("SELECT id FROM postes WHERE etab_id=? AND nom=?", (e1, nom)).fetchone()[0] for nom, _, _ in POSTES_DEFAUT}
+    mn = pp.minutes
+    equipe_aed = [("Dumont", "Albert", 20, ["Service", "Étude", "Portail", "Cour"]), ("Leclerc", "Bernard", 16, ["Foyer", "Self", "Cour", "Étude"]),
+                  ("Vidal", "Claudine", 20, ["Service", "Étude", "Foyer", "Portail"]), ("Marchal", "Daniela", 16, ["Self", "Cour", "Foyer", "Service"]),
+                  ("Pons", "Ernest", 14, ["Étude", "Cour", "Portail", "Self"]), ("Benali", "Fatima", 16, ["Service", "Étude", "Foyer", "Self", "Cour"]),
+                  ("Rey", "Gaspard", 14, ["Service", "Étude", "Cour", "Portail"]), ("Colin", "Hélène", 12, ["Renfort", "Étude", "Foyer", "Cour", "Bureau"])]
+    dispos_aed = [(0, 2, "12:00", "19:00", "non", "Études universitaires"), (3, 0, "07:00", "12:00", "non", "Cours à l'université"),
+                  (2, 0, "16:00", "19:00", "souhait", "Garde d'enfant"), (2, 1, "16:00", "19:00", "souhait", "Garde d'enfant"),
+                  (2, 3, "16:00", "19:00", "souhait", "Garde d'enfant"), (4, 4, "14:00", "19:00", "non", "Rendez-vous récurrent")]
+    ag_id = []
+    for nom, prenom, contrat, roles in equipe_aed:
+        pid_ = con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,telephone,contrat_min,planifie) VALUES (?,?,?,?,?,?,?,?,1)",
+                           (e1, nom, prenom, "Assistant pédagogique", "Assistant d'éducation", f"{prenom.lower().replace('é', 'e')}.{nom.lower()}@college-demo.fr",
+                            f"06 20 00 00 {len(ag_id) + 1:02d}", contrat * 60)).lastrowid
+        ag_id.append(pid_)
+        for r in roles:
+            con.execute("INSERT INTO personnel_postes VALUES (?,?)", (pid_, poste_id[r]))
+    for nom, prenom, cat, fonction in [("Gilbert", "Martine", "Agent d'accueil", "Accueil et standard"), ("Fabre", "Nadia", "Personnel administratif", "Secrétaire de direction"),
+                                       ("Roche", "Patrick", "Agent technique", "Maintenance des bâtiments")]:
+        con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,planifie) VALUES (?,?,?,?,?,?,0)",
+                    (e1, nom, prenom, cat, fonction, f"{prenom.lower()}.{nom.lower()}@college-demo.fr"))
+    for idx, jour, d1, d2, niveau, motif in dispos_aed:
+        con.execute("INSERT INTO personnel_dispos(personnel_id,jour,debut,fin,niveau,motif) VALUES (?,?,?,?,?,?)", (ag_id[idx], jour, d1, d2, niveau, motif))
+    besoins_pp = []
+
+    def besoin(poste, jours, d1, d2, effectif=1):
+        for j in jours:
+            bid = con.execute("INSERT INTO besoins_postes(etab_id,poste_id,jour,debut,fin,effectif) VALUES (?,?,?,?,?,?)", (e1, poste_id[poste], j, d1, d2, effectif)).lastrowid
+            besoins_pp.append({"id": bid, "poste_id": poste_id[poste], "jour": j, "debut": mn(d1), "fin": mn(d2), "effectif": effectif})
+    besoin("Portail", range(5), "07:45", "08:15"); besoin("Portail", range(5), "16:00", "16:30")
+    besoin("Cour", range(5), "10:00", "10:15", 2); besoin("Cour", [0, 1, 3, 4], "12:15", "13:15", 2)
+    besoin("Self", [0, 1, 3, 4], "12:15", "13:45", 2); besoin("Foyer", [0, 1, 3, 4], "12:15", "14:00")
+    besoin("Étude", range(5), "08:00", "12:00"); besoin("Étude", [0, 1, 3, 4], "14:00", "16:00"); besoin("Étude", [0, 1, 3, 4], "16:00", "17:00", 2)
+    besoin("Service", [0, 1, 3, 4], "08:00", "17:00"); besoin("Service", [2], "08:00", "12:15")
+    agents_pp = {ag_id[k]: {"nom": f"{prenom} {nom}", "contrat": contrat * 60, "max_jour": 480, "postes": {poste_id[r] for r in roles},
+                            "dispos": [(j, mn(a), mn(b), n) for (i2, j, a, b, n, _) in dispos_aed if i2 == k]}
+                 for k, (nom, prenom, contrat, roles) in enumerate(equipe_aed)}
+    res_pp = pp.generer(besoins_pp, agents_pp, options={"marge": 0, "bloc_max": 180}, graine=3, temps_max=3)
+    for a in res_pp["affectations"]:
+        con.execute("INSERT INTO affectations(etab_id,personnel_id,poste_id,jour,debut,fin,source) VALUES (?,?,?,?,?,?,'auto')",
+                    (e1, a["personnel_id"], a["poste_id"], a["jour"], pp.hhmm(a["debut"]), pp.hhmm(a["fin"])))
+    for nom, prenom in [("Garnier", "Théo"), ("Lopes", "Inès")]:   # lycée : équipe réduite, sans planning
+        con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,contrat_min,planifie) VALUES (?,?,?,?,?,?,1)",
+                    (e2, nom, prenom, "Assistant pédagogique", "Assistant d'éducation", 20 * 60))
+
     # Infirmerie : compte infirmier, fiches santé fictives, soins programmés, passages
     infirmiere = user("Sophie Lambert (Infirmière)", "infirmerie@demo.fr", "infirmier", [e1])
     ts_now = datetime.now().isoformat(timespec="minutes")

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Postes et besoins{% endblock %}{% block body %}
+<div class="top"><h1>Postes et besoins</h1><span class="noprint"><a class="btn sec" href="{{ url_for('pers_liste') }}">← Personnel</a>{% if module_actif('planning_personnel') %} <a class="btn" href="{{ url_for('pers_planning') }}">Planning du personnel</a>{% endif %}</span></div>
+<div class="card scroll"><h2>Postes (rôles)</h2><p class="mute">Chaque poste a sa couleur dans le planning. Vous les ajoutez et les modifiez librement ; chaque personne reçoit ensuite les rôles qu'elle peut tenir.</p>
+<table><tr><th>Couleur</th><th>Nom</th><th>Description</th><th>Ordre</th><th>Actif</th><th>Agents</th><th></th></tr>
+{% for p in postes %}<tr><form method="post" action="{{ url_for('pers_poste_modifier', pid=p.id) }}">{{ csrf() }}
+<td><input type="color" name="couleur" value="{{ p.couleur }}" style="width:48px;height:34px;padding:2px"></td><td><input name="nom" value="{{ p.nom }}" required style="width:130px"></td>
+<td><input name="description" value="{{ p.description }}" style="width:100%;min-width:180px"></td><td><input type="number" name="ordre" value="{{ p.ordre }}" style="width:64px"></td>
+<td><input type="checkbox" name="actif" value="1" {{ 'checked' if p.actif }}></td><td>{{ p.nb_agents }}</td><td><button class="sm">Enregistrer</button></form>
+{{ post(url_for('pers_poste_supprimer', pid=p.id), 'Supprimer', 'sec sm', 'Supprimer ce poste, ses besoins et ses affectations ?') }}</td></tr>{% endfor %}</table>
+<form method="post" class="row" style="margin-top:12px">{{ csrf() }}<div style="flex:0 0 70px"><label>Couleur</label><input type="color" name="couleur" value="#9AE6B4" style="height:38px;padding:2px"></div><div><label>Nouveau poste</label><input name="nom" required></div>
+<div style="flex:3"><label>Description</label><input name="description"></div><div style="flex:0 0 auto"><button>Ajouter</button></div></form></div>
+<div class="card scroll"><h2>Besoins : combien d'agents, sur quel poste, à quelles heures</h2><p class="mute">Le planning automatique place les agents pour couvrir ces besoins. Exemple : « Cour, lundi à vendredi, 10:00–10:15, 2 agents ».</p>
+<table><tr><th>Poste</th><th>Jours</th><th>Horaire</th><th>Agents</th><th></th></tr>
+{% for b in groupes %}<tr><td><span class="chip-poste" style="background:{{ b.couleur }};color:{{ b.couleur|couleur_texte }}">{{ b.poste }}</span></td><td>{% for j in b.jours %}{{ JOURS[j][:3] }}.{{ ' ' if not loop.last }}{% endfor %}</td><td>{{ b.debut }}–{{ b.fin }}</td><td>× {{ b.effectif }}</td>
+<td><form method="post" action="{{ url_for('pers_besoin_supprimer') }}" class="inline" data-confirm="Supprimer ce besoin ?">{{ csrf() }}<input type="hidden" name="ids" value="{{ b.ids|join(',') }}"><button class="sec sm">Supprimer</button></form></td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucun besoin défini.</td></tr>{% endfor %}</table>
+<form method="post" action="{{ url_for('pers_besoin_ajouter') }}" style="margin-top:14px">{{ csrf() }}<div class="row"><div><label>Poste</label><select name="poste_id">{% for p in postes if p.actif %}<option value="{{ p.id }}">{{ p.nom }}</option>{% endfor %}</select></div>
+<div><label>De</label><input type="time" name="debut" step="900" required></div><div><label>À</label><input type="time" name="fin" step="900" required></div><div><label>Agents</label><input type="number" name="effectif" min="1" max="20" value="1"></div></div>
+<label>Jours</label><div class="row" style="gap:12px">{% for j in JOURS %}<label class="check" style="margin-top:2px"><input type="checkbox" name="jour_{{ loop.index0 }}" value="1" {{ 'checked' if loop.index0 < 5 }}> {{ j }}</label>{% endfor %}</div><br><button>Ajouter le besoin</button></form></div>{% endblock %}

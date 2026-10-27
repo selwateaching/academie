@@ -1,0 +1,28 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}{{ a.prenom }} {{ a.nom }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ a.prenom }} {{ a.nom }} <span class="mute" style="font-size:15px">· {{ a.categorie }}</span></h1><a class="btn sec" href="{{ url_for('pers_liste') }}">← Personnel</a></div>
+<form method="post">{{ csrf() }}
+<div class="grid g2"><div class="card"><h2>Fiche</h2>
+<div class="row"><div><label>Nom</label><input name="nom" value="{{ a.nom }}" required></div><div><label>Prénom</label><input name="prenom" value="{{ a.prenom }}"></div></div>
+<div class="row"><div><label>Catégorie</label><select name="categorie">{% for c in categories %}<option {{ 'selected' if c == a.categorie }}>{{ c }}</option>{% endfor %}{% if a.categorie not in categories %}<option selected>{{ a.categorie }}</option>{% endif %}</select></div>
+<div><label>Fonction</label><input name="fonction" value="{{ a.fonction }}"></div></div>
+<div class="row"><div><label>E-mail</label><input type="email" name="email" value="{{ a.email }}"></div><div><label>Téléphone</label><input name="telephone" value="{{ a.telephone }}"></div></div>
+<div class="row"><div><label>Contrat (h / semaine)</label><input type="number" name="contrat" min="0" max="60" step="0.25" value="{{ (a.contrat_min / 60)|round(2) }}"></div>
+<div><label>Maximum par jour (h)</label><input type="number" name="max_jour" min="1" max="14" step="0.25" value="{{ (a.max_jour_min / 60)|round(2) }}"></div></div>
+<label>Notes</label><textarea name="notes" rows="2">{{ a.notes }}</textarea>
+<label class="check"><input type="checkbox" name="planifie" value="1" {{ 'checked' if a.planifie }}> Inclus dans le planning du personnel</label>
+<label class="check"><input type="checkbox" name="actif" value="1" {{ 'checked' if a.actif }}> En poste (décocher pour retirer des plannings sans supprimer la fiche)</label></div>
+<div class="card"><h2>Rôles</h2><p class="mute">Les postes que cette personne peut tenir : le planning automatique ne l'affecte qu'à ceux-là.</p>
+{% for p in postes %}<label class="check" style="margin-top:6px"><input type="checkbox" name="poste_{{ p.id }}" value="1" {{ 'checked' if p.id in mes_postes }}>
+<span class="chip-poste" style="background:{{ p.couleur }};color:{{ p.couleur|couleur_texte }}">{{ p.nom }}</span> <span class="mute">{{ p.description }}</span></label>{% else %}<p class="mute">Aucun poste défini : <a href="{{ url_for('pers_postes') }}">créez-en</a>.</p>{% endfor %}</div></div>
+<button>Enregistrer la fiche</button></form>
+<div class="grid g2" style="margin-top:16px"><div class="card scroll"><h2>Indisponibilités et souhaits</h2>
+<table><tr><th>Jour</th><th>Plage</th><th>Type</th><th>Motif</th><th></th></tr>
+{% for d in dispos %}<tr><td>{{ JOURS[d.jour] }}</td><td>{{ d.debut }}–{{ d.fin }}</td><td><span class="tag {{ 'err' if d.niveau == 'non' else 'warn' }}">{{ 'Impératif' if d.niveau == 'non' else 'Souhait' }}</span></td><td>{{ d.motif }}</td>
+<td>{{ post(url_for('pers_dispo_supprimer', did=d.id), '✕', 'sec sm', 'Supprimer ?') }}</td></tr>{% else %}<tr><td colspan="5" class="mute">Aucune : disponible sur toutes les plages.</td></tr>{% endfor %}</table>
+<form method="post" action="{{ url_for('pers_dispo_ajouter', pid=a.id) }}" style="margin-top:12px">{{ csrf() }}<label>Jours</label><div class="row" style="gap:12px">{% for j in JOURS %}<label class="check" style="margin-top:2px"><input type="checkbox" name="jour_{{ loop.index0 }}" value="1"> {{ j[:3] }}.</label>{% endfor %}</div>
+<div class="row"><div><label>De</label><input type="time" name="debut" step="900" value="07:00" required></div><div><label>À</label><input type="time" name="fin" step="900" value="12:00" required></div>
+<div><label>Type</label><select name="niveau"><option value="non">Impératif (jamais affecté)</option><option value="souhait">Souhait (à éviter)</option></select></div><div><label>Motif</label><input name="motif"></div><div style="flex:0 0 auto"><button>Ajouter</button></div></div></form></div>
+<div class="card"><h2>Planning de la semaine <span class="mute" style="font-weight:400;font-size:13px">· {{ total|hm }} sur {{ a.contrat_min|hm }}</span></h2>
+{% for a_ in affect %}<p style="margin:3px 0"><b>{{ JOURS[a_.jour][:3] }}.</b> {{ a_.debut }}–{{ a_.fin }} <span class="chip-poste" style="background:{{ a_.couleur }};color:{{ a_.couleur|couleur_texte }}">{{ a_.pnom }}</span></p>{% else %}<p class="mute">Aucune affectation.</p>{% endfor %}
+{% if module_actif('planning_personnel') %}<p style="margin-top:10px"><a class="btn sec sm" href="{{ url_for('pers_planning') }}">Ouvrir le planning</a></p>{% endif %}
+<div style="margin-top:16px">{{ post(url_for('pers_supprimer', pid=a.id), 'Supprimer cette fiche', 'red sm', 'Supprimer cette fiche et ses affectations ?') }}</div></div></div>{% endblock %}
