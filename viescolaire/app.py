@@ -59,7 +59,7 @@ MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
     "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
     "remplacements": ["remplacements", "remplacement_action"], "cours": ["cours", "perturbation_supprimer"],
-    "classes": ["classes", "classe_pp"], "incidents": ["incidents", "incident_action"],
+    "classes": ["classes", "classe_pp", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
     "reunions": ["reunions", "reunion_repondre", "reunion_supprimer", "reunion_detail", "reunion_convocations_parents"],
     "documents": ["documents", "document_telecharger", "document_supprimer"],
@@ -736,6 +736,16 @@ def perturbation_supprimer(pid):
     return redirect(url_for("cours"))
 
 
+def assurer_niveau(nom):
+    """Enregistre un niveau s'il est nouveau (ex. saisi à la création d'une classe) et retourne son nom nettoyé."""
+    nom = " ".join((nom or "").split())[:40]
+    if nom and not one("SELECT 1 FROM niveaux WHERE etab_id=? AND nom=?", (g.etab_id, nom)):
+        ordre = one("SELECT COALESCE(MAX(ordre), 0) + 1 o FROM niveaux WHERE etab_id=?", (g.etab_id,))["o"]
+        run("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (g.etab_id, nom, ordre))
+        log("niveau créé", nom)
+    return nom
+
+
 @app.route("/classes", methods=["GET", "POST"])
 @staff_only
 def classes():
@@ -749,8 +759,8 @@ def classes():
                 pp = f.get("prof_principal_id", type=int)
                 if pp and not one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (pp, g.etab_id)):
                     pp = None
-                run("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)",
-                    (g.etab_id, nom, f.get("niveau", "").strip(), pp))
+                niveau = assurer_niveau(f.get("niveau", ""))
+                run("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (g.etab_id, nom, niveau, pp))
                 log("classe créée", nom)
         return redirect(url_for("classes"))
     rows = q("SELECT c.*, p.nom pnom, p.prenom pprenom FROM classes c LEFT JOIN professeurs p ON p.id=c.prof_principal_id "
@@ -760,7 +770,14 @@ def classes():
                "WHERE c.etab_id=? ORDER BY p.nom", (g.etab_id,)):
         equipe.setdefault(r["classe"], []).append(r)
     profs = q("SELECT id,nom,prenom FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    return render_template("classes.html", classes=rows, equipe=equipe, profs=profs)
+    niveaux_ = q("SELECT n.*, (SELECT COUNT(*) FROM classes c WHERE c.etab_id=n.etab_id AND c.niveau=n.nom) nb FROM niveaux n "
+                 "WHERE n.etab_id=? ORDER BY n.ordre, n.nom", (g.etab_id,))
+    groupes = [(n["nom"], [c for c in rows if c["niveau"] == n["nom"]]) for n in niveaux_]
+    connus = {n["nom"] for n in niveaux_}
+    sans = [c for c in rows if c["niveau"] not in connus]
+    if sans:
+        groupes.append(("Sans niveau", sans))
+    return render_template("classes.html", groupes=[g_ for g_ in groupes if g_[1]], equipe=equipe, profs=profs, niveaux=niveaux_)
 
 
 @app.route("/classes/<int:cid>/prof-principal", methods=["POST"])
@@ -769,8 +786,58 @@ def classe_pp(cid):
     pp = request.form.get("prof_principal_id", type=int)
     if pp and not one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (pp, g.etab_id)):
         abort(400)
-    run("UPDATE classes SET prof_principal_id=? WHERE id=? AND etab_id=?", (pp or None, cid, g.etab_id))
-    log("professeur principal modifié", f"classe {cid}")
+    niveau = assurer_niveau(request.form.get("niveau", "")) if "niveau" in request.form else None
+    if niveau is None:
+        run("UPDATE classes SET prof_principal_id=? WHERE id=? AND etab_id=?", (pp or None, cid, g.etab_id))
+    else:
+        run("UPDATE classes SET prof_principal_id=?, niveau=? WHERE id=? AND etab_id=?", (pp or None, niveau, cid, g.etab_id))
+    log("classe modifiée", f"classe {cid} niveau {niveau or '-'}")
+    return redirect(url_for("classes"))
+
+
+@app.route("/niveaux", methods=["POST"])
+@staff_only
+def niveaux_ajouter():
+    n = 0
+    for ligne in request.form.get("niveaux", "").replace(",", "\n").splitlines():
+        if ligne.strip() and not one("SELECT 1 FROM niveaux WHERE etab_id=? AND nom=?", (g.etab_id, " ".join(ligne.split())[:40])):
+            assurer_niveau(ligne)
+            n += 1
+    flash(f"{n} niveau(x) ajouté(s)." if n else "Aucun nouveau niveau (déjà présents ou vides).", "ok" if n else "err")
+    return redirect(url_for("classes"))
+
+
+@app.route("/niveaux/<int:nid>", methods=["POST"])
+@staff_only
+def niveau_modifier(nid):
+    n = one("SELECT * FROM niveaux WHERE id=? AND etab_id=?", (nid, g.etab_id))
+    if not n:
+        abort(404)
+    nom = " ".join(request.form.get("nom", "").split())[:40]
+    ordre = request.form.get("ordre", type=int)
+    if not nom:
+        flash("Le nom du niveau est obligatoire.", "err")
+    elif nom != n["nom"] and one("SELECT 1 FROM niveaux WHERE etab_id=? AND nom=?", (g.etab_id, nom)):
+        flash("Ce niveau existe déjà.", "err")
+    else:
+        run("UPDATE niveaux SET nom=?, ordre=? WHERE id=?", (nom, ordre if ordre is not None else n["ordre"], nid))
+        if nom != n["nom"]:
+            run("UPDATE classes SET niveau=? WHERE etab_id=? AND niveau=?", (nom, g.etab_id, n["nom"]))
+        log("niveau modifié", f"{n['nom']} → {nom}")
+    return redirect(url_for("classes"))
+
+
+@app.route("/niveaux/<int:nid>/supprimer", methods=["POST"])
+@staff_only
+def niveau_supprimer(nid):
+    n = one("SELECT * FROM niveaux WHERE id=? AND etab_id=?", (nid, g.etab_id))
+    if not n:
+        abort(404)
+    if one("SELECT 1 FROM classes WHERE etab_id=? AND niveau=?", (g.etab_id, n["nom"])):
+        flash("Ce niveau est utilisé par des classes : changez d'abord leur niveau.", "err")
+    else:
+        run("DELETE FROM niveaux WHERE id=?", (nid,))
+        log("niveau supprimé", n["nom"])
     return redirect(url_for("classes"))
 
 
@@ -823,8 +890,9 @@ def destinataires(cible_type, cible):
         args = (g.etab_id, cible)
     elif cible_type == "niveau":
         sql = ("SELECT DISTINCT p.user_id id FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
-               "WHERE c.etab_id=? AND c.classe LIKE ? AND p.user_id IS NOT NULL")
-        args = (g.etab_id, f"{cible}%")
+               "JOIN classes cl ON cl.etab_id=c.etab_id AND cl.nom=c.classe "
+               "WHERE c.etab_id=? AND cl.niveau=? AND p.user_id IS NOT NULL")
+        args = (g.etab_id, cible)
     else:
         sql, args = "SELECT u.id FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1", (g.etab_id,)
     return [r["id"] for r in q(sql, args) if r["id"] != g.user["id"]]
@@ -877,7 +945,8 @@ def message_nouveau():
     users = q("SELECT u.id,u.nom FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? "
               "ORDER BY u.nom", (g.etab_id, g.user["id"]))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    niveaux = sorted({c["nom"][:1] for c in classes_ if c["nom"]})
+    niveaux = [n["nom"] for n in q("SELECT nom FROM niveaux n WHERE etab_id=? AND EXISTS "
+                                   "(SELECT 1 FROM classes c WHERE c.etab_id=n.etab_id AND c.niveau=n.nom) ORDER BY ordre, nom", (g.etab_id,))]
     matieres = [r["matiere"] for r in q("SELECT DISTINCT matiere FROM professeurs WHERE etab_id=? AND matiere<>'' ORDER BY matiere", (g.etab_id,))]
     return render_template("message_nouveau.html", users=users, classes=classes_, niveaux=niveaux, matieres=matieres,
                            repondre=request.args.get("a", ""), sujet=request.args.get("sujet", ""))
@@ -1194,13 +1263,16 @@ def eleves():
                  f.get("responsable", "").strip(), f.get("contact", "").strip()))
             log("élève ajouté", f"{f['nom']} {f.get('classe', '')}")
         return redirect(url_for("eleves"))
-    terme, classe = request.args.get("q", "").strip(), request.args.get("classe", "")
+    terme, classe, niveau = request.args.get("q", "").strip(), request.args.get("classe", ""), request.args.get("niveau", "")
     like = f"%{terme}%"
     sql = "SELECT * FROM eleves WHERE etab_id=? AND (nom LIKE ? OR prenom LIKE ? OR responsable LIKE ?)"
     args = [g.etab_id, like, like, like]
     if classe:
         sql += " AND classe=?"
         args.append(classe)
+    if niveau:
+        sql += " AND classe IN (SELECT nom FROM classes WHERE etab_id=? AND niveau=?)"
+        args += [g.etab_id, niveau]
     rows = q(sql + " ORDER BY classe, nom, prenom LIMIT 500", args)
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     total = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=?", (g.etab_id,))["c"]
@@ -1209,7 +1281,8 @@ def eleves():
     for c in {e["classe"] for e in rows if e["classe"]}:
         equipe, pp = equipe_et_pp(c)
         infos[c] = {"pp": pp, "profs": sorted({e["nom"] for e in equipe})}
-    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos)
+    return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos,
+                           niveau=niveau, niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)))
 
 
 @app.route("/eleves/<int:eid>")

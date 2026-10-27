@@ -1,6 +1,6 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Élèves{% endblock %}{% block body %}
 <div class="top"><h1>Élèves <span class="mute" style="font-size:14px">({{ total }})</span></h1>
-<form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, prénom, responsable…"><select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select><button class="sec">Filtrer</button></form></div>
+<form method="get" class="row"><input name="q" value="{{ terme }}" placeholder="Nom, prénom, responsable…"><select name="niveau"><option value="">Tous les niveaux</option>{% for n in niveaux %}<option {{ 'selected' if n.nom == niveau }}>{{ n.nom }}</option>{% endfor %}</select><select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select><button class="sec">Filtrer</button></form></div>
 <div class="card scroll"><table><tr><th>Classe</th><th>Élève</th><th>Professeur principal</th><th>Équipe pédagogique</th><th>Responsable légal (famille)</th><th></th></tr>
 {% for e in rows %}{% set i = infos.get(e.classe) %}<tr><td>{{ e.classe }}</td><td><a href="{{ url_for('eleve_fiche', eid=e.id) }}"><b>{{ e.nom }}</b> {{ e.prenom }}</a></td>
 <td>{% if i and i.pp %}{{ i.pp.nom }}<br><span class="mute">{{ i.pp.matiere }}</span>{% else %}<span class="mute">non renseigné</span>{% endif %}</td>

@@ -168,7 +168,14 @@ MIGRATIONS = [
             PRIMARY KEY (reunion_id, eleve_id)
         );
     """),  # élèves convoqués à une réunion
-    # (7, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
+    (7, """
+        CREATE TABLE IF NOT EXISTS niveaux (
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL, nom TEXT NOT NULL, ordre INTEGER NOT NULL DEFAULT 0,
+            UNIQUE (etab_id, nom)
+        );
+        INSERT OR IGNORE INTO niveaux(etab_id, nom, ordre) SELECT DISTINCT etab_id, niveau, 0 FROM classes WHERE niveau <> '';
+    """),  # niveaux de classe gérés (6e, 2nde, Terminale…) ; reprise des niveaux déjà saisis
+    # (8, "ALTER TABLE professeurs ADD COLUMN statut TEXT NOT NULL DEFAULT 'titulaire';"),
 ]
 
 
@@ -247,6 +254,8 @@ def seed_demo(password="demo1234"):
         uids.append(uid)
 
     classes = ["6A", "6B", "5A", "5B", "4A", "4B", "3A", "3B"]
+    for ordre, nv in enumerate(["6e", "5e", "4e", "3e"], 1):
+        con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e1, nv, ordre))
     for i, c in enumerate(classes):
         con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)",
                     (e1, c, c[0] + "e", ids[i % len(ids)]))
@@ -394,8 +403,9 @@ def seed_demo(password="demo1234"):
     for nom, prenom, mat in [("Garcia", "Léo", "Philosophie"), ("Roux", "Manon", "Lettres"), ("Blanc", "Adam", "Mathématiques")]:
         con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
                     (e2, nom, prenom, mat, f"{prenom.lower()}@demo.fr"))
-    for c in ["2nde1", "1ère S", "Term ES"]:
-        con.execute("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (e2, c, c[:3]))
+    for ordre, (c, nv) in enumerate([("2nde1", "2nde"), ("1ère S", "1ère"), ("Term ES", "Terminale")], 1):
+        con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e2, nv, ordre))
+        con.execute("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (e2, c, nv))
     con.commit()
     from .modeles_defaut import installer
     for eid in (e1, e2):

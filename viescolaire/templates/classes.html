@@ -1,8 +1,21 @@
-{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Classes{% endblock %}{% block body %}
-<div class="top"><h1>Classes et professeurs principaux</h1></div>
-<div class="grid g2">{% for c in classes %}<div class="card"><h2>{{ c.nom }} <span class="mute">{{ c.niveau }}</span></h2>
-<form method="post" action="{{ url_for('classe_pp', cid=c.id) }}" class="row">{{ csrf() }}<div><label>Professeur principal</label><select name="prof_principal_id"><option value="">—</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == c.prof_principal_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div><div><button class="sec sm">Enregistrer</button></div></form>
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Classes{% endblock %}{% block body %}
+<div class="top"><h1>Classes et niveaux</h1></div>
+<div class="card"><h2>Niveaux</h2>
+<p class="mute">Les niveaux regroupent les classes (ex. 6e, 5e… ou 2nde, 1ère, Terminale : à vous de définir ceux de votre établissement). Ils servent à filtrer les élèves et à écrire à tous les professeurs d'un niveau.</p>
+{% if niveaux %}<table style="max-width:640px"><tr><th>Ordre</th><th>Niveau</th><th>Classes</th><th></th></tr>
+{% for n in niveaux %}<tr><form method="post" action="{{ url_for('niveau_modifier', nid=n.id) }}">{{ csrf() }}<td><input type="number" name="ordre" value="{{ n.ordre }}" style="width:70px"></td>
+<td><input name="nom" value="{{ n.nom }}" required></td><td>{{ n.nb }}</td><td><button class="sec sm">Enregistrer</button></form>
+{% if not n.nb %}{{ post(url_for('niveau_supprimer', nid=n.id), 'Supprimer', 'sec sm', 'Supprimer ce niveau ?') }}{% endif %}</td></tr>{% endfor %}</table>{% endif %}
+<form method="post" action="{{ url_for('niveaux_ajouter') }}" style="margin-top:12px">{{ csrf() }}<label>Ajouter des niveaux (un par ligne, ou séparés par des virgules)</label>
+<textarea name="niveaux" rows="3" placeholder="6e&#10;5e&#10;4e&#10;3e" style="max-width:320px"></textarea><br><button>Ajouter</button></form></div>
+{% for nom_niveau, classes in groupes %}<h2 style="margin:18px 0 8px">{{ nom_niveau }} <span class="mute" style="font-size:13px;font-weight:400">· {{ classes|length }} classe(s)</span></h2>
+<div class="grid g2">{% for c in classes %}<div class="card"><h2 style="margin:0 0 8px">{{ c.nom }}</h2>
+<form method="post" action="{{ url_for('classe_pp', cid=c.id) }}" class="row">{{ csrf() }}
+<div><label>Niveau</label><input name="niveau" value="{{ c.niveau }}" list="liste-niveaux"></div>
+<div><label>Professeur principal</label><select name="prof_principal_id"><option value="">—</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == c.prof_principal_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div><div><button class="sec sm">Enregistrer</button></div></form>
 <p class="mute" style="margin-bottom:2px">Équipe pédagogique</p>{% for p in equipe.get(c.nom, []) %}<a href="{{ url_for('professeur', pid=p.id) }}">{{ p.prenom }} {{ p.nom }}</a> <span class="mute">({{ p.matiere }})</span>{{ ', ' if not loop.last }}{% else %}<span class="mute">Aucun cours planifié.</span>{% endfor %}
-{% if module_actif('emplois_du_temps') %}<p><a href="{{ url_for('emploi_du_temps', classe=c.nom) }}">Emploi du temps de la classe</a></p>{% endif %}</div>{% endfor %}</div>
-<div class="card"><h2>Nouvelle classe</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Nom</label><input name="nom" required></div><div><label>Niveau</label><input name="niveau"></div>
+{% if module_actif('emplois_du_temps') %}<p><a href="{{ url_for('emploi_du_temps', classe=c.nom) }}">Emploi du temps de la classe</a></p>{% endif %}</div>{% endfor %}</div>{% endfor %}
+<datalist id="liste-niveaux">{% for n in niveaux %}<option value="{{ n.nom }}">{% endfor %}</datalist>
+<div class="card"><h2>Nouvelle classe</h2><form method="post">{{ csrf() }}<div class="row"><div><label>Nom</label><input name="nom" required></div>
+<div><label>Niveau (choisir ou saisir un nouveau)</label><input name="niveau" list="liste-niveaux"></div>
 <div><label>Prof. principal</label><select name="prof_principal_id"><option value="">—</option>{% for p in profs %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div><div><button>Créer</button></div></div></form></div>{% endblock %}
