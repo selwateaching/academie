@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connexion · Formation dessalement</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Source+Sans+3:wght@400;600&family=Noto+Kufi+Arabic:wght@700&family=Noto+Naskh+Arabic:wght@400;600&display=swap">
+<link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+<main class="gate">
+  <div class="gatecard">
+    <div class="gatetop">
+      <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8 8 5.5 11.5 5.5 15a6.5 6.5 0 0 0 13 0c0-3.5-2.5-7-6.5-12.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-g="brand"></span></div>
+      <div class="lang" role="group" aria-label="Langue / اللغة"><button type="button" id="l-fr" lang="fr">FR</button><button type="button" id="l-ar" lang="ar">عربي</button></div>
+    </div>
+    <h1 data-g="loginH"></h1>
+    <p data-g="loginP"></p>
+    <form id="f" novalidate>
+      <div class="field"><label for="email" data-g="email"></label><input id="email" type="email" autocomplete="username" required dir="ltr"></div>
+      <div class="field"><label for="pass" data-g="pass"></label><input id="pass" type="password" autocomplete="current-password" required dir="ltr"></div>
+      <p class="err" id="err" role="alert" hidden></p>
+      <button class="btn main" id="go" type="submit" data-g="go"></button>
+    </form>
+    <p data-g="forgot" style="font-size:14px"></p>
+  </div>
+</main>
+<script src="/js/gate.js"></script>
+<script>
+fetch('/api/me').then(r=>r.ok?r.json():null).then(j=>{if(j)location.href=home(j.user)}).catch(()=>{});
+$('f').onsubmit=async e=>{e.preventDefault();const b=$('go');$('err').hidden=true;busy(b,'busy',true);
+  try{const r=await post('/api/login',{email:$('email').value,password:$('pass').value});
+    if(r.ok){location.href=home(r.j.user);return}$('err').textContent=r.j.error||G[lang].net;$('err').hidden=false}
+  catch(x){$('err').textContent=G[lang].net;$('err').hidden=false}
+  busy(b,'go',false)};
+</script>
+</body>
+</html>

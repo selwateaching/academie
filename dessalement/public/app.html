@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formation dessalement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&family=Noto+Kufi+Arabic:wght@600;700&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/course.css">
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8 8 5.5 11.5 5.5 15a6.5 6.5 0 0 0 13 0c0-3.5-2.5-7-6.5-12.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-t="brand"></span></div>
+    <div class="who"><b id="whoName"></b><a class="linkbtn" id="toDash" href="/tableau-de-bord" hidden></a><button class="linkbtn" id="logout" type="button"></button></div>
+    <div class="lang" role="group" aria-label="Langue / اللغة">
+      <button type="button" id="l-fr" lang="fr">Français</button>
+      <button type="button" id="l-ar" lang="ar">العربية</button>
+    </div>
+  </div>
+
+  <details class="progbox" id="progbox">
+    <summary data-t="progH"></summary>
+    <div class="ov"><span id="ovTxt"></span><div class="bar0"><i id="ovBar"></i></div></div>
+    <ol class="prog" id="prog"></ol>
+  </details>
+
+  <header>
+    <div class="eyebrow" id="lEyebrow"></div>
+    <h1 id="lTitle"></h1>
+    <p class="lead" id="lLead"></p>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section id="prepSec">
+    <div class="step" id="st1"></div>
+    <h2 id="prepH"></h2>
+    <p class="lead" style="margin-bottom:18px" id="prepLead"></p>
+    <div class="basics" id="basics"></div>
+    <div id="basicsExtra">
+      <div class="phcard">
+        <h3 data-t="phH"></h3>
+        <p data-h="phP"></p>
+        <div class="phscroll" dir="ltr"><svg class="phsvg" viewBox="0 0 640 120" role="img" aria-label="pH 0–14">
+          <defs><linearGradient id="phg" x1="0" x2="1"><stop offset="0" stop-color="#D9573F"/><stop offset=".35" stop-color="#E2B33C"/><stop offset=".5" stop-color="#4DB37A"/><stop offset=".75" stop-color="#3C8FC0"/><stop offset="1" stop-color="#6A55B5"/></linearGradient></defs>
+          <rect x="20" y="50" width="600" height="18" rx="9" fill="url(#phg)"/>
+          <g id="phx"></g>
+        </svg></div>
+      </div>
+      <div class="phcard">
+        <h3 data-t="readH"></h3>
+        <div class="readtab" id="readtab"></div>
+      </div>
+    </div>
+    <p id="toBasesP" style="margin:0"><button class="linkbtn" id="toBases" data-t="seeBases"></button></p>
+  </section>
+
+  <div id="vidSec" style="display:grid;gap:36px">
+    <div>
+      <div class="step" id="st2" style="margin-bottom:8px"></div>
+      <section class="player" aria-label="Vidéo">
+        <div class="stage" id="stage" dir="ltr"></div>
+        <div class="segs" id="segs" dir="ltr"></div>
+        <div class="bar">
+          <span class="where" id="where"></span>
+          <button class="btn" id="prev">◀</button>
+          <button class="btn main" id="play"></button>
+          <button class="btn" id="next">▶</button>
+          <label class="tog"><input type="checkbox" id="voice" checked> <span data-t="voice"></span></label>
+          <label class="tog"><input type="checkbox" id="subs" checked> <span data-t="subs"></span></label>
+        </div>
+        <div class="caption" id="caption"><span class="st" id="capT"></span><p id="capP"></p></div>
+        <div class="fx" id="fx"></div>
+        <div class="words" id="words"></div>
+        <p class="note" id="vnote"></p>
+      </section>
+    </div>
+    <section>
+      <h2 data-t="chapH"></h2>
+      <ol class="chap" id="chap"></ol>
+    </section>
+    <section>
+      <div class="step" id="st3"></div>
+      <h2 data-t="glossH"></h2>
+      <dl class="gloss" id="gloss"></dl>
+    </section>
+  </div>
+
+  <section id="quizsec">
+    <div class="step" id="st4"></div>
+    <h2 data-t="quizH"></h2>
+    <p class="lead" style="margin-bottom:14px" data-t="quizLead"></p>
+    <div class="quiz" id="quiz"></div>
+    <div class="score" id="score" style="margin-top:14px"></div>
+    <p class="note" id="srcs" style="padding:14px 0 0"></p>
+  </section>
+
+  <div class="nextbox" id="nextbox"><span id="nextLbl"></span><button class="btn main" id="nextBtn"></button></div>
+</div>
+
+<div class="toast" id="saveErr" role="status" hidden></div>
+<script src="/js/course.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

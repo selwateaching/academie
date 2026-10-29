@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tableau de bord · Formation dessalement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="/css/base.css">
+<style>
+/* Tableau de bord : en-tête, résumé chiffré, tableaux de suivi, panneau de détail */
+body{padding-block:16px 64px}
+.wrap{max-width:1100px;margin:0 auto;display:grid;gap:24px}
+.top{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:14px}
+.top nav{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:15px}
+.role{font:500 12px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--brine)}
+.head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.head h1{font-size:clamp(24px,4vw,32px);line-height:1.2}
+.crumb{font-size:14px;color:var(--muted);margin-bottom:4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font:700 26px var(--f-disp);font-variant-numeric:tabular-nums}
+.stat span{font-size:14px;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel h2{font-size:18px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:start;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+th{font-size:13px;color:var(--muted);font-weight:600;background:var(--bg)}
+td.num,th.num{font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover{background:var(--sea-soft)}
+tr[aria-selected="true"]{background:var(--sea-soft)}
+.meter{display:flex;align-items:center;gap:8px;min-width:130px}
+.meter .b{flex:1;height:7px;border-radius:99px;background:var(--bg);overflow:hidden;min-width:70px}
+.meter .b i{display:block;height:100%;background:var(--sea)}
+.meter .b i.ok{background:var(--ok)}
+.chip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--muted)}
+.chip.ok{background:color-mix(in srgb,var(--ok) 16%,var(--surface));color:var(--ok)}
+.chip.warn{background:color-mix(in srgb,var(--warn) 18%,var(--surface));color:var(--warn)}
+.chip.off{background:color-mix(in srgb,var(--bad) 14%,var(--surface));color:var(--bad)}
+.empty{padding:28px 16px;color:var(--muted);text-align:center}
+.detail{display:grid;gap:14px;padding:16px}
+.detail h3{font-size:20px}
+.missed{margin:0;padding-inline-start:18px;display:grid;gap:4px;font-size:15px;white-space:normal}
+.missed li span{color:var(--muted)}
+td.wrapcell{white-space:normal;min-width:220px}
+dialog{border:1px solid var(--line);border-radius:14px;padding:0;max-width:min(520px,calc(100vw - 32px));width:100%;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(5,20,24,.45)}
+.dlg{padding:22px;display:grid;gap:14px}
+.dlg h2{font-size:22px}
+.dlg p{margin:0;color:var(--muted)}
+.dlg form{display:grid;gap:12px}
+.dlg .row{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.cred{background:var(--bg);border-radius:10px;padding:14px;font-size:15px;display:grid;gap:6px;white-space:pre-wrap;word-break:break-word}
+.cred code{font:500 16px var(--f-mono);background:var(--surface);padding:2px 6px;border-radius:6px}
+.warnbox{border-inline-start:3px solid var(--brine);padding-inline-start:12px;font-size:14px;color:var(--muted)}
+.lessoncell{max-width:260px;white-space:normal}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8 8 5.5 11.5 5.5 15a6.5 6.5 0 0 0 13 0c0-3.5-2.5-7-6.5-12.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg>Formation dessalement</div>
+    <nav><span><b id="meName"></b> · <span class="role" id="meRole"></span></span><a href="/formation">Voir la formation</a><a href="/mot-de-passe">Mon mot de passe</a><button class="linkbtn" id="logout" type="button">Se déconnecter</button></nav>
+  </div>
+  <main id="view" aria-live="polite"></main>
+</div>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+
+<script src="/js/course.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<style>
+.topbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+.brand{font:700 16px var(--f-disp);color:var(--sea);display:flex;align-items:center;gap:8px}
+.brand svg{width:22px;height:22px}
+.progbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 14px 14px}
+.progbox summary{font:700 17px var(--f-disp);cursor:pointer;padding:8px 0;list-style-position:inside}
+.prog{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px}
+.prog button{width:100%;display:grid;grid-template-columns:30px 1fr auto;gap:8px;align-items:center;text-align:start;background:none;border:1px solid transparent;border-radius:8px;padding:7px 8px;color:var(--ink);font:500 15px/1.35 var(--f-body);cursor:pointer}
+.prog button:hover:not([disabled]){border-color:var(--line)}
+.prog button[disabled]{cursor:default;color:var(--muted)}
+.prog button[aria-current="true"]{background:var(--sea-soft);border-color:var(--sea)}
+.prog .n{font:600 13px var(--f-mono);width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--muted)}
+.prog button:not([disabled]) .n{background:var(--sea);color:var(--surface)}
+.prog .st{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--muted);white-space:nowrap}
+.prog .st.on{background:var(--sea-soft);color:var(--sea);font-weight:600}
+.prog .st.done{background:color-mix(in srgb,var(--ok) 16%,var(--surface));color:var(--ok);font-weight:600}
+.linkbtn{background:none;border:0;padding:0;color:var(--sea);font:600 16px var(--f-body);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.nextbox{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.nextbox span{color:var(--muted)}
+.fresh{fill:#4FA9B6}
+.flowline{fill:none;stroke:var(--s-ink);stroke-width:2.5;stroke-dasharray:8 6;animation:dash2 1s linear infinite}
+.flowline.hot{stroke:var(--s-acc)}
+@keyframes dash2{to{stroke-dashoffset:-14}}
+@keyframes sy{from{transform:scaleY(var(--a))}to{transform:scaleY(var(--b))}}
+@keyframes cross{0%{transform:translateX(0);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(72px);opacity:0}}
+@keyframes cross2{0%{transform:translateX(0);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(130px);opacity:0}}
+@keyframes push{from{transform:translateX(0)}to{transform:translateX(34px)}}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.a-sy{transform-box:fill-box;transform-origin:bottom;animation:sy 4s ease-in-out .6s both}
+.a-cross{animation:cross 1.6s linear infinite}
+.a-cross2{animation:cross2 1.8s linear infinite}
+.a-push{animation:push 1.6s ease-in-out infinite alternate}
+.a-pop{transform-box:fill-box;transform-origin:center;animation:pop .6s cubic-bezier(.3,1.4,.5,1) both}
+.a-bob{animation:bob 3s ease-in-out infinite}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5C8 8 5.5 11.5 5.5 15a6.5 6.5 0 0 0 13 0c0-3.5-2.5-7-6.5-12.5z" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-t="brand"></span></div>
+    <div class="lang" role="group" aria-label="Langue / اللغة">
+      <button type="button" id="l-fr" lang="fr">Français</button>
+      <button type="button" id="l-ar" lang="ar">العربية</button>
+    </div>
+  </div>
+
+  <details class="progbox" id="progbox">
+    <summary data-t="progH"></summary>
+    <ol class="prog" id="prog"></ol>
+  </details>
+
+  <header>
+    <div class="eyebrow" id="lEyebrow"></div>
+    <h1 id="lTitle"></h1>
+    <p class="lead" id="lLead"></p>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <section id="prepSec">
+    <div class="step" id="st1"></div>
+    <h2 id="prepH"></h2>
+    <p class="lead" style="margin-bottom:18px" id="prepLead"></p>
+    <div class="basics" id="basics"></div>
+    <div id="basicsExtra">
+      <div class="phcard">
+        <h3 data-t="phH"></h3>
+        <p data-h="phP"></p>
+        <div class="phscroll" dir="ltr"><svg class="phsvg" viewBox="0 0 640 120" role="img" aria-label="pH 0–14">
+          <defs><linearGradient id="phg" x1="0" x2="1"><stop offset="0" stop-color="#D9573F"/><stop offset=".35" stop-color="#E2B33C"/><stop offset=".5" stop-color="#4DB37A"/><stop offset=".75" stop-color="#3C8FC0"/><stop offset="1" stop-color="#6A55B5"/></linearGradient></defs>
+          <rect x="20" y="50" width="600" height="18" rx="9" fill="url(#phg)"/>
+          <g id="phx"></g>
+        </svg></div>
+      </div>
+      <div class="phcard">
+        <h3 data-t="readH"></h3>
+        <div class="readtab" id="readtab"></div>
+      </div>
+    </div>
+    <p id="toBasesP" style="margin:0"><button class="linkbtn" id="toBases" data-t="seeBases"></button></p>
+  </section>
+
+  <div id="vidSec" style="display:grid;gap:36px">
+    <div>
+      <div class="step" id="st2" style="margin-bottom:8px"></div>
+      <section class="player" aria-label="Vidéo">
+        <div class="stage" id="stage" dir="ltr"></div>
+        <div class="segs" id="segs" dir="ltr"></div>
+        <div class="bar">
+          <span class="where" id="where"></span>
+          <button class="btn" id="prev">◀</button>
+          <button class="btn main" id="play"></button>
+          <button class="btn" id="next">▶</button>
+          <label class="tog"><input type="checkbox" id="voice" checked> <span data-t="voice"></span></label>
+          <label class="tog"><input type="checkbox" id="subs" checked> <span data-t="subs"></span></label>
+        </div>
+        <div class="caption" id="caption"><span class="st" id="capT"></span><p id="capP"></p></div>
+        <div class="fx" id="fx"></div>
+        <div class="words" id="words"></div>
+        <p class="note" id="vnote"></p>
+      </section>
+    </div>
+    <section>
+      <h2 data-t="chapH"></h2>
+      <ol class="chap" id="chap"></ol>
+    </section>
+    <section>
+      <div class="step" id="st3"></div>
+      <h2 data-t="glossH"></h2>
+      <dl class="gloss" id="gloss"></dl>
+    </section>
+  </div>
+
+  <section id="quizsec">
+    <div class="step" id="st4"></div>
+    <h2 data-t="quizH"></h2>
+    <p class="lead" style="margin-bottom:14px" data-t="quizLead"></p>
+    <div class="quiz" id="quiz"></div>
+    <div class="score" id="score" style="margin-top:14px"></div>
+    <p class="note" id="srcs" style="padding:14px 0 0"></p>
+  </section>
+
+  <div class="nextbox" id="nextbox"><span id="nextLbl"></span><button class="btn main" id="nextBtn"></button></div>
+</div>

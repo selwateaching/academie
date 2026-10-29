@@ -1,0 +1,18 @@
+{
+  "name": "formation-dessalement",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plateforme de formation au dessalement : comptes clients, apprenants et suivi de progression.",
+  "main": "server.js",
+  "type": "commonjs",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/e2e.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "express": "4.21.2",
+    "pg": "8.13.1"
+  }
+}
