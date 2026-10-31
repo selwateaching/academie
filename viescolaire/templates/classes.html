@@ -10,6 +10,9 @@
 <textarea name="niveaux" rows="3" placeholder="6e&#10;5e&#10;4e&#10;3e" style="max-width:320px"></textarea><br><button>Ajouter</button></form></div>
 {% for nom_niveau, classes in groupes %}<h2 style="margin:18px 0 8px">{{ nom_niveau }} <span class="mute" style="font-size:13px;font-weight:400">· {{ classes|length }} classe(s)</span></h2>
 <div class="grid g2">{% for c in classes %}<div class="card"><h2 style="margin:0 0 8px">{{ c.nom }}</h2>
+<details class="noprint" style="margin-bottom:8px"><summary class="mute" style="cursor:pointer">Renommer ou supprimer la classe</summary>
+<form method="post" action="{{ url_for('classe_renommer', cid=c.id) }}" class="row" style="margin-top:6px">{{ csrf() }}<div><label>Nouveau nom</label><input name="nom" value="{{ c.nom }}" required></div><div style="flex:0 0 auto"><button class="sec sm">Renommer</button></div></form>
+{{ post(url_for('classe_supprimer', cid=c.id), 'Supprimer la classe (si vide)', 'red sm', 'Supprimer la classe ' ~ c.nom ~ ' ? Elle doit être vide.') }}</details>
 <form method="post" action="{{ url_for('classe_pp', cid=c.id) }}" class="row">{{ csrf() }}
 <div><label>Niveau</label><input name="niveau" value="{{ c.niveau }}" list="liste-niveaux"></div>
 <div><label>Professeur principal</label><select name="prof_principal_id"><option value="">—</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == c.prof_principal_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div><div><button class="sec sm">Enregistrer</button></div></form>

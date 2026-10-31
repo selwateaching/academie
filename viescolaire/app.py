@@ -61,7 +61,7 @@ MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
     "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
     "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
-    "classes": ["classes", "classe_pp", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
+    "classes": ["classes", "classe_pp", "classe_renommer", "classe_supprimer", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
     "reunions": ["reunions", "reunion_repondre", "reunion_supprimer", "reunion_detail", "reunion_convocations_parents"],
     "documents": ["documents", "document_telecharger", "document_supprimer"],
@@ -1219,6 +1219,54 @@ def classes():
     if sans:
         groupes.append(("Sans niveau", sans))
     return render_template("classes.html", groupes=[g_ for g_ in groupes if g_[1]], equipe=equipe, profs=profs, niveaux=niveaux_)
+
+
+@app.route("/classes/<int:cid>/renommer", methods=["POST"])
+@staff_only
+def classe_renommer(cid):
+    """Renomme une classe partout où son nom est utilisé (élèves, cours, besoins, incidents, passages, choix, messages)."""
+    c = one("SELECT * FROM classes WHERE id=? AND etab_id=?", (cid, g.etab_id))
+    if not c:
+        abort(404)
+    nouveau = request.form.get("nom", "").strip()[:60]
+    if not nouveau or nouveau == c["nom"]:
+        flash("Indiquez un nouveau nom différent.", "err")
+    elif one("SELECT 1 FROM classes WHERE etab_id=? AND nom=?", (g.etab_id, nouveau)):
+        flash("Une classe porte déjà ce nom.", "err")
+    else:
+        con = db()
+        try:
+            con.execute("UPDATE classes SET nom=? WHERE id=?", (nouveau, cid))
+            for t in ("eleves", "creneaux", "besoins", "incidents", "passages", "perturbations", "choix_professeurs"):
+                con.execute(f"UPDATE {t} SET classe=? WHERE etab_id=? AND classe=?", (nouveau, g.etab_id, c["nom"]))
+            con.execute("UPDATE messages SET cible=? WHERE etab_id=? AND cible_type='classe' AND cible=?", (nouveau, g.etab_id, c["nom"]))
+            con.commit()
+        except Exception as ex:
+            con.rollback()
+            flash(f"Renommage annulé ({ex}).", "err")
+            return redirect(url_for("classes"))
+        log("classe renommée", f"{c['nom']} -> {nouveau}")
+        flash(f"Classe « {c['nom']} » renommée en « {nouveau} » : élèves, emplois du temps et besoins suivent. Les propositions d'emploi du temps déjà calculées gardent l'ancien nom (à regénérer).", "ok")
+    return redirect(url_for("classes"))
+
+
+@app.route("/classes/<int:cid>/supprimer", methods=["POST"])
+@staff_only
+def classe_supprimer(cid):
+    c = one("SELECT * FROM classes WHERE id=? AND etab_id=?", (cid, g.etab_id))
+    if not c:
+        abort(404)
+    n_el = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=? AND classe=?", (g.etab_id, c["nom"]))["c"]
+    n_cr = one("SELECT COUNT(*) c FROM creneaux WHERE etab_id=? AND classe=?", (g.etab_id, c["nom"]))["c"]
+    n_be = one("SELECT COUNT(*) c FROM besoins WHERE etab_id=? AND classe=?", (g.etab_id, c["nom"]))["c"]
+    if n_el or n_cr or n_be:
+        flash(f"La classe {c['nom']} n'est pas vide ({n_el} élève(s), {n_cr} cours, {n_be} besoin(s)) : déplacez-les ou supprimez-les d'abord.", "err")
+    else:
+        run("DELETE FROM choix_professeurs WHERE etab_id=? AND classe=?", (g.etab_id, c["nom"]))
+        run("DELETE FROM classes WHERE id=?", (cid,))
+        log("classe supprimée", c["nom"])
+        flash(f"Classe {c['nom']} supprimée.", "ok")
+    return redirect(url_for("classes"))
 
 
 @app.route("/classes/<int:cid>/prof-principal", methods=["POST"])
