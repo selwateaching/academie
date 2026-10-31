@@ -81,7 +81,7 @@ MODULE_DES_ENDPOINTS = {
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "reunions_ia": ["ri_liste", "ri_creer", "ri_reunion", "ri_preparation", "ri_audio_nouveau", "ri_audio_morceau", "ri_audio_fin", "ri_audio_lire", "ri_audio_supprimer",
-                    "ri_transcrire", "ri_analyser", "ri_hors_sujet", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
+                    "reunion_enregistrer", "ri_transcrire", "ri_analyser", "ri_hors_sujet", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
     "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -276,7 +276,7 @@ def entetes(resp):
 
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
-PAGE_PARENTE = {"ri_reunion": "ri_liste", "ri_cr_voir": "ri_liste", "proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
+PAGE_PARENTE = {"ri_reunion": "reunions", "ri_liste": "reunions", "ri_cr_voir": "reunions", "proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
                 "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "etat_assiduite": "assiduite", "appel": "appel", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
@@ -348,8 +348,7 @@ def menu_sections():
                 item("importer", "Import CSV", "import", "Professeurs, élèves, cours", "import"),
                 item("historique", "Historique", "historique", "Journal des actions")]),
             section("4. Documents et réunions", [
-                item("reunions", "Réunions", "reunion", "Convocations, réponses", "reunions"),
-                item("ri_liste", "Réunions intelligentes", "micro", "Enregistrer, transcrire, compte rendu", "reunions_ia") if u["role"] in RI["roles"] else None,
+                item("reunions", "Réunions", "reunion", "Convoquer, enregistrer, compte rendu", "reunions"),
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapports, convocations…", "redaction"),
                 item("documents", "Bibliothèque de documents", "dossier", "Archive classée par date et niveau", "documents"),
                 item("modeles_documents", "Modèles et types d'incident", "redaction", "Textes types des documents", "redaction"),
@@ -1615,14 +1614,96 @@ def message_confirmer(mid):
     return redirect(url_for("message", mid=mid))
 
 
+def reunions_unifiees(onglet):
+    """Liste unique des réunions : convocations classiques (avec leur compte rendu éventuel) et réunions sans convocation."""
+    aujourdhui = date.today().isoformat()
+    ia = module_actif("reunions_ia") and g.user["role"] in RI["roles"]
+    ris = {}
+    if ia:
+        for r in q("SELECT r.*, (SELECT COUNT(*) FROM ri_audio a WHERE a.reunion_id=r.id) nb_audio, (SELECT valide FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) valide, "
+                   "(SELECT COUNT(*) FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) a_cr FROM ri_reunions r WHERE r.etab_id=?", (g.etab_id,)):
+            ris[r["id"]] = r
+    par_convocation = {r["reunion_id"]: r for r in ris.values() if r["reunion_id"]}
+    items = []
+    for r in q("SELECT r.*, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id) nb, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='oui') oui, "
+               "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non, (SELECT COUNT(*) FROM reunion_eleves WHERE reunion_id=r.id) nb_eleves "
+               "FROM reunions r WHERE r.etab_id=?", (g.etab_id,)):
+        ri = par_convocation.get(r["id"])
+        items.append({"type": "convocation", "id": r["id"], "titre": r["titre"], "date": r["date"], "heure": r["heure"], "lieu": r["lieu"], "ordre": r["ordre_du_jour"],
+                      "nb": r["nb"], "oui": r["oui"], "non": r["non"], "nb_eleves": r["nb_eleves"], "url": url_for("reunion_detail", rid=r["id"]),
+                      "ri_id": ri["id"] if ri else None, "ri_statut": ri_statut(ri, ri["nb_audio"], ri["a_cr"], ri["valide"]) if ri else None,
+                      "a_cr": bool(ri and ri["a_cr"])})
+    for ri in ris.values():
+        if not ri["reunion_id"]:
+            items.append({"type": "compte_rendu", "id": ri["id"], "titre": ri["titre"], "date": ri["date"], "heure": ri["heure"], "lieu": ri["lieu"], "ordre": ri["ordre_jour"],
+                          "nb": len(ri_participants(ri)), "oui": 0, "non": 0, "nb_eleves": 0, "url": url_for("ri_reunion", rid=ri["id"]),
+                          "ri_id": ri["id"], "ri_statut": ri_statut(ri, ri["nb_audio"], ri["a_cr"], ri["valide"]), "a_cr": bool(ri["a_cr"])})
+    comptes = {"avenir": sum(1 for i in items if i["date"] >= aujourdhui), "passees": sum(1 for i in items if i["date"] < aujourdhui), "comptes_rendus": sum(1 for i in items if i["a_cr"])}
+    if onglet not in comptes:
+        onglet = "avenir" if comptes["avenir"] else "passees"
+    if onglet == "avenir":
+        items = sorted((i for i in items if i["date"] >= aujourdhui), key=lambda i: (i["date"], i["heure"]))
+    elif onglet == "passees":
+        items = sorted((i for i in items if i["date"] < aujourdhui), key=lambda i: (i["date"], i["heure"]), reverse=True)
+    else:
+        items = sorted((i for i in items if i["a_cr"]), key=lambda i: (i["date"], i["heure"]), reverse=True)
+    return items[:200], onglet, comptes
+
+
+def ri_creer_depuis(convocation_id, f, prof_ids):
+    """Crée la partie « enregistrement / compte rendu » d'une réunion, en reprenant titre, date, heure, lieu, sujets et participants."""
+    ps = []
+    if prof_ids:
+        for p in q("SELECT nom, prenom, matiere FROM professeurs WHERE etab_id=? AND id IN (%s) ORDER BY nom, prenom" % ",".join("?" * len(prof_ids)), [g.etab_id] + list(prof_ids)):
+            ps.append({"nom": f"{p['prenom']} {p['nom']}".strip(), "fonction": p["matiere"] or "Enseignant", "consent": False})
+    typ = f.get("type") if f.get("type") in ria.TYPES else "autre"
+    rid = run("INSERT INTO ri_reunions(etab_id,titre,type,date,heure,lieu,langue,ordre_jour,participants,reunion_id,cree_par,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+              (g.etab_id, f["titre"].strip()[:160], typ, parse_date(f.get("date")).isoformat(), heure_norm(f.get("heure", "")) or "", f.get("lieu", "").strip()[:120],
+               RI["transcription"].get("langue_defaut", "fr"), f.get("ordre_du_jour", "").strip()[:3000], json.dumps(ps, ensure_ascii=False), convocation_id, g.user["nom"],
+               datetime.now().isoformat(timespec="minutes")))
+    log("réunion intelligente créée", f["titre"].strip())
+    return rid
+
+
+@app.route("/reunions/<int:rid>/enregistrer", methods=["POST"])
+@staff_only
+def reunion_enregistrer(rid):
+    """Depuis une convocation : crée (ou rouvre) la partie enregistrement et compte rendu, avec les informations de la convocation."""
+    r = one("SELECT * FROM reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    if not (module_actif("reunions_ia") and g.user["role"] in RI["roles"]):
+        abort(403)
+    ri = one("SELECT id FROM ri_reunions WHERE reunion_id=? AND etab_id=?", (rid, g.etab_id))
+    if ri:
+        return redirect(url_for("ri_reunion", rid=ri["id"]))
+    ids = [x["prof_id"] for x in q("SELECT prof_id FROM reunion_convoques WHERE reunion_id=?", (rid,))]
+    f = {"titre": r["titre"], "date": r["date"], "heure": r["heure"], "lieu": r["lieu"], "ordre_du_jour": r["ordre_du_jour"], "type": request.form.get("type", "")}
+    ri_id = ri_creer_depuis(rid, f, ids)
+    flash("Informations de la convocation reprises : vérifiez les participants, puis confirmez leur consentement.", "ok")
+    return redirect(url_for("ri_reunion", rid=ri_id) + "#preparation")
+
+
 @app.route("/reunions", methods=["GET", "POST"])
 def reunions():
     if request.method == "POST":
         if g.user["role"] not in STAFF:
             abort(403)
         f = request.form
+        mode = f.get("mode", "convoquer")
+        if mode in ("enregistrer", "compte_rendu") and not (module_actif("reunions_ia") and g.user["role"] in RI["roles"]):
+            mode = "convoquer"
         if not f.get("titre", "").strip():
             flash("Titre obligatoire.", "err")
+        elif mode == "compte_rendu":      # réunion sans convocation : on rédige le compte rendu (notes, transcription collée ou saisie)
+            ids = set(request.form.getlist("profs", type=int))
+            for cl in request.form.getlist("classes"):
+                ids.update(r["prof_id"] for r in q("SELECT DISTINCT prof_id FROM creneaux WHERE etab_id=? AND classe=?", (g.etab_id, cl)))
+            if f.get("tous"):
+                ids.update(r["id"] for r in q("SELECT id FROM professeurs WHERE etab_id=?", (g.etab_id,)))
+            ri_id = ri_creer_depuis(None, f, sorted(ids))
+            flash("Réunion créée sans convocation : saisissez ou collez le texte des échanges, ou créez le compte rendu.", "ok")
+            return redirect(url_for("ri_reunion", rid=ri_id) + "#transcription")
         else:
             rid = run("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
                       (g.etab_id, f["titre"].strip(), parse_date(f.get("date")).isoformat(), f.get("heure", ""),
@@ -1649,8 +1730,14 @@ def reunions():
                      emails=[r["email"] for r in q("SELECT email FROM professeurs WHERE email<>'' AND id IN (%s)"
                                                    % ",".join("?" * len(convoques)), convoques)] if convoques else [])
             flash(f"Réunion créée : {len(ids & valides)} professeur(s)" + (f" et {len(choisis)} élève(s)" if choisis else "") + " convoqué(s).", "ok")
+            if mode == "enregistrer":
+                ri_id = ri_creer_depuis(rid, f, sorted(ids & valides))
+                flash("Passez maintenant au consentement des participants, puis à l'enregistrement.", "ok")
+                return redirect(url_for("ri_reunion", rid=ri_id) + "#preparation")
             return redirect(url_for("reunions"))
+    unifie, onglet, compte_onglets = [], "", {}
     if g.user["role"] in STAFF:
+        unifie, onglet, compte_onglets = reunions_unifiees(request.args.get("onglet", ""))
         rows = q("SELECT r.*, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id) nb, "
                  "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='oui') oui, "
                  "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non, "
@@ -1669,7 +1756,8 @@ def reunions():
         for e in q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,)):
             eleves_par_classe.setdefault(e["classe"] or "Sans classe", []).append(e)
     return render_template("reunions.html", rows=rows, profs=profs, classes=classes_, classes_par_prof=classes_par_prof,
-                           eleves_par_classe=eleves_par_classe)
+                           eleves_par_classe=eleves_par_classe, unifie=unifie, onglet=onglet, compte_onglets=compte_onglets,
+                           ia_ok=module_actif("reunions_ia") and g.user["role"] in RI["roles"], types_ia=ria.TYPES, today=date.today().isoformat())
 
 
 @app.route("/reunions/<int:rid>")
@@ -1682,7 +1770,10 @@ def reunion_detail(rid):
               "WHERE rc.reunion_id=? ORDER BY p.nom", (rid,))
     eleves_ = q("SELECT e.* FROM reunion_eleves re JOIN eleves e ON e.id=re.eleve_id WHERE re.reunion_id=? ORDER BY e.classe, e.nom, e.prenom", (rid,))
     deja = {d["eleve_id"] for d in q("SELECT eleve_id FROM documents_generes WHERE etab_id=? AND titre LIKE ?", (g.etab_id, f"% — {r['titre']} (réunion {rid})"))}
-    return render_template("reunion_detail.html", r=r, profs=profs, eleves=eleves_, deja=deja)
+    ri = one("SELECT r.*, (SELECT COUNT(*) FROM ri_audio a WHERE a.reunion_id=r.id) nb_audio, (SELECT valide FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) valide, "
+             "(SELECT COUNT(*) FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) a_cr FROM ri_reunions r WHERE r.reunion_id=? AND r.etab_id=?", (rid, g.etab_id)) if module_actif("reunions_ia") else None
+    return render_template("reunion_detail.html", r=r, profs=profs, eleves=eleves_, deja=deja, ri=ri, ri_statut=ri_statut(ri, ri["nb_audio"], ri["a_cr"], ri["valide"]) if ri else None,
+                           ia_ok=module_actif("reunions_ia") and g.user["role"] in RI["roles"], types_ia=ria.TYPES)
 
 
 @app.route("/reunions/<int:rid>/convocations-parents", methods=["POST"])
@@ -5770,7 +5861,9 @@ def ri_reunion(rid):
     if parts and RI["conservation_audio_jours"]:
         audio_expire = (datetime.fromisoformat(max(p["created_at"] for p in parts)) + timedelta(days=int(RI["conservation_audio_jours"]))).date().isoformat()
     users = q("SELECT u.id, u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? ORDER BY u.nom", (g.etab_id, g.user["id"]))
-    return render_template("ri_reunion.html", r=r, meta=ri_meta(r), participants=participants, parts=parts, cr=cr, cr_row=cr_row,
+    convocation = one("SELECT r.*, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id) nb, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='oui') oui, "
+                      "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non FROM reunions r WHERE r.id=? AND r.etab_id=?", (r["reunion_id"], g.etab_id)) if r["reunion_id"] else None
+    return render_template("ri_reunion.html", r=r, meta=ri_meta(r), convocation=convocation, participants=participants, parts=parts, cr=cr, cr_row=cr_row,
                            formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
                            nb_annuaire=sum(len(gr["items"]) for gr in annuaire),
                            consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,
@@ -5906,7 +5999,7 @@ def ri_tache_transcription(rid, langue, vocabulaire):
         for p in con.execute("SELECT * FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,)).fetchall():
             if p["transcrit"] or p["taille"] == 0:
                 continue
-            texte = ria.transcrire_fichier(ri_chemin(p["stored"]), p["mime"], CFG, langue, vocabulaire)
+            texte = ria.nettoyer_artefacts(ria.transcrire_fichier(ri_chemin(p["stored"]), p["mime"], CFG, langue, vocabulaire))
             con.execute("UPDATE ri_audio SET texte=?, transcrit=1 WHERE id=?", (texte, p["id"]))
             con.execute("UPDATE ri_reunions SET maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
             con.commit()
@@ -5966,7 +6059,7 @@ def ri_passages(r):
         marques = set(json.loads(r["hors_sujet"] or "[]"))
     except ValueError:
         marques = set()
-    return [{"i": i, "texte": seg, "sep": sep, "hors": seg.strip() in marques and bool(seg.strip())} for i, (seg, sep) in enumerate(ria.decouper(r["transcription"]))]
+    return [{"i": i, "texte": seg, "sep": sep, "hors": bool(seg.strip()) and (seg.strip() in marques or ria.est_artefact(seg))} for i, (seg, sep) in enumerate(ria.decouper(r["transcription"]))]
 
 
 def ri_lancer(cible, *args):

@@ -231,6 +231,27 @@ Sont PERTINENTS : les salutations, l'ouverture et la clôture de séance, les to
 En cas de doute, considère le passage comme pertinent : ne signale que ce qui est clairement hors sujet.
 Réponds UNIQUEMENT par un objet JSON : {"hors_sujet": [numéros des passages hors sujet]}"""
 
+# Phrases que les services de transcription inventent sur les silences et les fins d'enregistrement (artefacts connus, sans rapport avec la réunion)
+ARTEFACTS = re.compile(
+    r"(sous-titr\w+\s+(r[ée]alis\w+\s+)?par?a?\s+la\s+communaut\w+\s+d['’]?\s*amara\.org|sous-titrage\s+st['’]?\s*\d+|sous-titrage\s+soci[ée]t[ée]\s+radio-canada|"
+    r"merci\s+d['’]avoir\s+regard[ée]\s+cette\s+vid[ée]o|n['’]oubliez\s+pas\s+de\s+vous\s+abonner|abonnez-vous\s+[àa]\s+la\s+cha[iî]ne|"
+    r"subtitles\s+by\s+the\s+amara\.org\s+community|thank\s+you\s+for\s+watching|amara\.org|"
+    r"ترجمة\s+نانسي\s+قنقر|اشتركوا?\s+في\s+القناة|شكرا\s+لمشاهدتكم)", re.I)
+
+
+def est_artefact(passage):
+    return bool(ARTEFACTS.search(passage or ""))
+
+
+def nettoyer_artefacts(texte):
+    """Retire les phrases parasites connues d'une transcription automatique."""
+    out = []
+    for seg, sep in decouper(texte):
+        if not est_artefact(seg):
+            out.append(seg + sep)
+    return "".join(out).strip()
+
+
 _SEP = re.compile(r"(\n\s*\n|(?<=[.!?؟…])\s+)")
 
 

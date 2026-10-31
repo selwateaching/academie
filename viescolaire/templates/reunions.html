@@ -1,24 +1,46 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Réunions{% endblock %}{% block body %}
-<div class="top"><h1>Réunions et convocations</h1></div>
+<div class="top"><h1>Réunions</h1></div>
+{% if g.user.role in STAFF %}
+<nav class="ri-onglets noprint" aria-label="Réunions"><a class="{{ 'on' if onglet == 'avenir' }}" href="{{ url_for('reunions', onglet='avenir') }}">À venir <b>{{ compte_onglets.avenir }}</b></a>
+<a class="{{ 'on' if onglet == 'passees' }}" href="{{ url_for('reunions', onglet='passees') }}">Passées <b>{{ compte_onglets.passees }}</b></a>
+{% if ia_ok %}<a class="{{ 'on' if onglet == 'comptes_rendus' }}" href="{{ url_for('reunions', onglet='comptes_rendus') }}">Comptes rendus <b>{{ compte_onglets.comptes_rendus }}</b></a>
+<a class="mute" href="{{ url_for('ri_liste') }}">Recherche dans les comptes rendus →</a>{% endif %}
+<a class="btn sm" href="#nouvelle-reunion" style="margin-left:auto">+ Nouvelle réunion</a></nav>
+<div class="card scroll"><table><tr><th>Date</th><th>Réunion</th><th>Participants</th><th>État</th><th></th></tr>
+{% for i in unifie %}<tr><td>{{ i.date|fr_date }}<br><span class="mute">{{ i.heure }}</span></td>
+<td><b><a href="{{ i.url }}">{{ i.titre }}</a></b>{% if i.lieu %}<br><span class="mute">{{ i.lieu }}</span>{% endif %}{% if i.ordre %}<br><span class="mute" style="white-space:pre-wrap">{{ i.ordre[:140] }}{{ '…' if i.ordre|length > 140 }}</span>{% endif %}</td>
+<td>{% if i.type == 'convocation' %}{{ i.nb }} professeur(s){% if i.nb_eleves %} · {{ i.nb_eleves }} élève(s){% endif %}<br><span class="tag ok">{{ i.oui }} oui</span> <span class="tag err">{{ i.non }} non</span>{% else %}{{ i.nb }} participant(s){% endif %}</td>
+<td>{% if i.type == 'convocation' %}<span class="tag">Convoquée</span> {% endif %}{% if i.ri_statut %}<span class="tag {{ i.ri_statut[1] }}">{{ i.ri_statut[0] }}</span>{% elif i.type == 'convocation' and ia_ok %}<span class="mute">sans compte rendu</span>{% endif %}</td>
+<td><a class="btn sec sm" href="{{ i.url }}">Ouvrir</a>{% if i.ri_id and i.type == 'convocation' %} <a class="btn sec sm" href="{{ url_for('ri_reunion', rid=i.ri_id) }}">Compte rendu</a>{% endif %}
+{% if i.type == 'convocation' %}{{ post(url_for('reunion_supprimer', rid=i.id), 'Supprimer', 'sec sm', 'Supprimer cette réunion ?') }}{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucune réunion dans cet onglet.</td></tr>{% endfor %}</table></div>
+{% else %}
 <div class="card scroll"><table><tr><th>Date</th><th>Réunion</th><th>Lieu</th><th>{{ 'Réponses' if g.user.role in STAFF else 'Ma réponse' }}</th><th></th></tr>
 {% for r in rows %}<tr><td>{{ r.date|fr_date }}<br>{{ r.heure }}</td><td><b>{% if g.user.role in STAFF %}<a href="{{ url_for('reunion_detail', rid=r.id) }}">{{ r.titre }}</a>{% else %}{{ r.titre }}{% endif %}</b><br><span class="mute" style="white-space:pre-wrap">{{ r.ordre_du_jour }}</span></td><td>{{ r.lieu }}</td>
 <td>{% if g.user.role in STAFF %}{{ r.nb }} professeur(s){% if r.nb_eleves %} · {{ r.nb_eleves }} élève(s){% endif %} · <span class="tag ok">{{ r.oui }} oui</span> <span class="tag err">{{ r.non }} non</span>
 {% else %}{% for v, l in [('oui','Présent'),('non','Absent')] %}<form method="post" action="{{ url_for('reunion_repondre', rid=r.id) }}" class="inline">{{ csrf() }}<input type="hidden" name="reponse" value="{{ v }}"><button class="{{ '' if r.reponse == v else 'sec' }} sm">{{ l }}</button></form> {% endfor %}{% endif %}</td>
 <td>{% if g.user.role in STAFF %}{{ post(url_for('reunion_supprimer', rid=r.id), 'Supprimer', 'sec sm', 'Supprimer cette réunion ?') }}{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucune réunion.</td></tr>{% endfor %}</table></div>
-{% if g.user.role in STAFF %}<div class="card"><h2>Convoquer</h2><form method="post" data-convocation autocomplete="off">{{ csrf() }}<div class="row"><div><label>Titre</label><input name="titre" required></div><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
+{% endif %}
+{% if g.user.role in STAFF %}<div class="card" id="nouvelle-reunion"><h2>Nouvelle réunion</h2><form method="post" data-convocation autocomplete="off" class="ri-creation">{{ csrf() }}
+<p class="mute" style="margin-top:0">Que voulez-vous faire ?</p>
+<div class="ri-modes"><label class="ri-mode"><input type="radio" name="mode" value="convoquer" checked><span><b>Convoquer seulement</b>Réunion classique : convocations et réponses des professeurs, sans enregistrement.</span></label>
+{% if ia_ok %}<label class="ri-mode"><input type="radio" name="mode" value="enregistrer"><span><b>Convoquer et enregistrer</b>La même réunion, avec enregistrement, transcription et compte rendu IA.</span></label>
+<label class="ri-mode"><input type="radio" name="mode" value="compte_rendu"><span><b>Rédiger un compte rendu</b>Réunion déjà tenue ou sans enregistrement : vous collez vos notes ou rédigez le compte rendu.</span></label>{% endif %}</div>
+{% if ia_ok %}<div class="row ri-type"><div style="max-width:320px"><label>Type de réunion <span class="mute">(pour le compte rendu)</span></label><select name="type">{% for k, v in types_ia.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div></div>{% endif %}
+<div class="row"><div><label>Titre</label><input name="titre" required></div><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
 <div><label>Heure</label><input type="time" name="heure"></div><div><label>Lieu</label><input name="lieu"></div></div>
-<label>Ordre du jour</label><textarea name="ordre_du_jour"></textarea>
+<label>Ordre du jour / sujets à traiter</label><textarea name="ordre_du_jour"></textarea>
 <div class="row"><div><label>Par classe (sélectionne toute son équipe)</label><select name="classes" multiple size="6" data-conv-classes>{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div>
 <div><label>Professeurs convoqués (ajustables à la main)</label><select name="profs" multiple size="6" data-conv-profs>{% for p in profs %}<option value="{{ p.id }}" data-classes="{{ classes_par_prof.get(p.id, [])|join('|') }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>
 <div style="flex:0 0 190px"><label class="check"><input type="checkbox" name="tous" value="1" data-conv-tous> Tous les professeurs</label>
 <p class="mute" data-conv-resume style="margin-top:12px"></p><button type="button" class="sec sm" data-conv-clear>Tout désélectionner</button></div></div>
 <p class="mute">Sélectionner une classe coche automatiquement les professeurs qui y enseignent ; vous pouvez ensuite en ajouter ou en retirer. Maintenez Ctrl (⌘ sur Mac) pour en choisir plusieurs.</p>
-{% if eleves_par_classe %}<h2 style="margin-top:16px">Élèves convoqués <span class="mute" style="font-weight:400">(facultatif)</span></h2>
+{% if eleves_par_classe %}<div class="bloc-eleves"><h2 style="margin-top:16px">Élèves convoqués <span class="mute" style="font-weight:400">(facultatif)</span></h2>
 <div class="row"><div><label>Aller à une classe</label><select data-el-classe><option value="">Toutes les classes</option>{% for c in eleves_par_classe %}<option>{{ c }}</option>{% endfor %}</select></div>
 <div><label>Rechercher un élève</label><input type="search" data-el-recherche placeholder="Tapez un nom…" autocomplete="off"></div>
 <div style="flex:0 0 190px"><p class="mute" data-el-resume style="margin-top:28px">Aucun élève sélectionné.</p></div></div>
 <div class="eleves-box" data-el-box>{% for c, liste in eleves_par_classe.items() %}<fieldset data-el-groupe="{{ c }}"><legend><label class="check"><input type="checkbox" data-el-toute-classe> <b>{{ c }}</b> <span class="mute">— toute la classe ({{ liste|length }})</span></label></legend>
 <div class="eleves-grille">{% for e in liste %}<label class="check" data-el-nom="{{ (e.nom ~ ' ' ~ e.prenom)|lower }}"><input type="checkbox" name="eleves" value="{{ e.id }}"> {{ e.nom }} {{ e.prenom }}</label>{% endfor %}</div></fieldset>{% endfor %}</div>
-<p class="mute">Cochez « toute la classe » pour convoquer tous ses élèves, ou choisissez-les un par un (ex. délégués). Les convocations aux parents se rédigent ensuite depuis la réunion.</p>{% endif %}
-<button>Créer et convoquer</button></form></div>{% endif %}{% endblock %}
+<p class="mute">Cochez « toute la classe » pour convoquer tous ses élèves, ou choisissez-les un par un (ex. délégués). Les convocations aux parents se rédigent ensuite depuis la réunion.</p></div>{% endif %}
+<button>Créer la réunion</button></form></div>{% endif %}{% endblock %}

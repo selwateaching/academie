@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% from '_icones.html' import ico %}{% block title %}Réunions intelligentes{% endblock %}{% block body %}
-<div class="top"><h1>Réunions intelligentes</h1><span class="noprint"><a class="btn" href="#nouvelle" data-ouvrir="nouvelle">{{ ico('micro') }} Nouvelle réunion</a></span></div>
+<div class="top"><h1>Comptes rendus et enregistrements</h1><span class="noprint"><a class="btn sec" href="{{ url_for('reunions') }}">← Réunions</a> <a class="btn" href="{{ url_for('reunions') }}#nouvelle-reunion">{{ ico('micro') }} Nouvelle réunion</a></span></div>
 {% if demo %}<div class="al warn"><b>Mode démonstration :</b> les données (réunions, enregistrements, comptes rendus) sont effacées à chaque mise à jour du site et après une période d'inactivité de l'hébergement gratuit. Faites votre essai d'une traite, sans pause de plus de 10 minutes. Pour de vraies réunions, utilisez un hébergement avec disque persistant (voir README).</div>{% endif %}
 <p class="mute">Enregistrez une réunion, obtenez sa transcription puis un compte rendu structuré que vous relisez et validez. Les enregistrements sont conservés {{ reglages.conservation_audio_jours }} jours{% if not reglages.conservation_audio_jours %} (sans limite){% endif %} ; la réunion entière {{ reglages.conservation_jours }} jours.</p>
 <div class="ri-services">

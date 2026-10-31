@@ -426,3 +426,13 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-groupe h4{margin:12px 0 4px;display:flex;justify-content:space-between;gap:10px;align-items:center}.ri-tout{font-weight:400;font-size:13px}
 .ri-annuaire .liste-cases{display:flex;flex-wrap:wrap;gap:6px 22px}.ri-annuaire .check{display:inline-flex;align-items:center;gap:6px}
 .ri-tout-consent{display:flex;align-items:center;gap:6px;margin:6px 0 8px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--c-or) 10%,transparent)}
+
+/* ───── Réunions unifiées ───── */
+.ri-onglets{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 12px}.ri-onglets a:not(.btn){padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:14px}
+.ri-onglets a.on{background:var(--brand-strong);color:#fff;border-color:var(--brand-strong)}.ri-onglets a:hover{text-decoration:none;border-color:var(--brand)}.ri-onglets b{margin-left:4px;opacity:.8}
+.ri-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:12px}
+.ri-mode{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:2px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer}
+.ri-mode input{margin-top:4px}.ri-mode span{display:block;font-size:13px;color:var(--mute)}.ri-mode b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.ri-mode:has(input:checked){border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,var(--card))}
+.ri-creation:has(input[name=mode][value=compte_rendu]:checked) .bloc-eleves{display:none}
+.ri-creation:not(:has(input[name=mode][value=enregistrer]:checked)):not(:has(input[name=mode][value=compte_rendu]:checked)) .ri-type{display:none}

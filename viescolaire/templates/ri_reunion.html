@@ -1,8 +1,9 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% from '_icones.html' import ico %}{% block title %}{{ r.titre }}{% endblock %}{% block body %}
 {% set a_audio = parts|length > 0 %}{% set a_texte = r.transcription|trim|length > 0 %}{% set valide = cr_row and cr_row.valide %}
-<div class="top"><h1>{{ r.titre }}</h1><span class="noprint"><a class="btn sec" href="{{ url_for('ri_liste') }}">← Réunions intelligentes</a></span></div>
+<div class="top"><h1>{{ r.titre }}</h1><span class="noprint"><a class="btn sec" href="{{ url_for('reunions', onglet='comptes_rendus') }}">← Réunions</a></span></div>
 <p class="mute">{{ meta.type_libelle }} · {{ meta.date_fr }}{% if r.heure %} à {{ r.heure }}{% endif %}{% if r.lieu %} · {{ r.lieu }}{% endif %} · créée par {{ r.cree_par }}</p>
 {% if demo %}<div class="al warn"><b>Mode démonstration :</b> les données (réunions, enregistrements, comptes rendus) sont effacées à chaque mise à jour du site et après une période d'inactivité de l'hébergement gratuit. Faites votre essai d'une traite, sans pause de plus de 10 minutes. Pour de vraies réunions, utilisez un hébergement avec disque persistant (voir README).</div>{% endif %}
+{% if convocation %}<div class="al ok noprint">Rattachée à la convocation <a href="{{ url_for('reunion_detail', rid=convocation.id) }}"><b>{{ convocation.titre }}</b></a> : {{ convocation.nb }} professeur(s) convoqué(s), {{ convocation.oui }} présent(s) annoncé(s), {{ convocation.non }} absent(s) annoncé(s). Les réponses sont indicatives : cochez les personnes réellement présentes.</div>{% endif %}
 <ol class="ri-etapes noprint">
 <li class="{{ 'fait' if consent_complet }}"><a href="#preparation"><b>1</b> Préparation et consentement</a></li>
 <li class="{{ 'fait' if a_audio }}"><a href="#enregistrement"><b>2</b> Enregistrement</a></li>
@@ -80,11 +81,11 @@
 {% if r.analyse_etat == 'erreur' and r.erreur %}<div class="al err">Échec du repérage : {{ r.erreur }}</div>{% endif %}
 <form method="post" action="{{ url_for('ri_analyser', rid=r.id) }}">{{ csrf() }}<button class="sec" {{ 'disabled' if r.analyse_etat == 'en_cours' or not ia }}>{{ 'Relancer le repérage' if r.analyse_etat == 'ok' else 'Repérer les passages hors sujet' }}</button>
 <span class="mute">{% if not r.ordre_jour.strip() %}Le titre « {{ r.titre }} » sert de sujet. Pour un repérage plus précis, ajoutez des sujets à l'étape 1. {% endif %}{% if not ia %}Nécessite la clé de rédaction IA. {% endif %}L'IA ne signale que ce qui est clairement étranger au sujet : vérifiez avant de supprimer.</span></form>
-{% if r.analyse_etat == 'ok' %}{% if nb_hors %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}">{{ csrf() }}
+{% if nb_hors %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}">{{ csrf() }}
 <p><b>{{ nb_hors }} passage(s) hors sujet</b> sont <span class="ri-hs-exemple">en rouge</span> ci-dessous, déjà cochés. <b>Décochez</b> ceux que vous voulez garder, puis supprimez les autres.</p>
 <div class="ri-lecture">{% for p in passages %}{% if p.hors %}<label class="ri-hs"><input type="checkbox" name="passage" value="{{ p.i }}" checked> {{ p.texte }}</label>{% else %}<span>{{ p.texte }}</span>{% endif %}{{ p.sep }}{% endfor %}</div>
 <p><button name="action" value="supprimer" class="red">Supprimer les passages cochés de la transcription</button> <button name="action" value="effacer_marques" class="sec">Garder tout et retirer le marquage</button></p></form>
-{% else %}<p class="ri-ok">Aucun passage clairement hors sujet n'a été repéré.</p>{% endif %}{% endif %}</div>{% endif %}</div>
+{% elif r.analyse_etat == 'ok' %}<p class="ri-ok">Aucun passage clairement hors sujet n'a été repéré.</p>{% endif %}</div>{% endif %}</div>
 
 <div class="card" id="compte-rendu"><h2>4. Compte rendu</h2>
 {% if r.redaction_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="redaction"><span class="ri-spin"></span> Rédaction du compte rendu en cours (une à deux minutes)… Vous pouvez quitter cette page.</div>{% endif %}

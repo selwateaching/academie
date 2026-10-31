@@ -1,6 +1,11 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ r.titre }}{% endblock %}{% block body %}
 <div class="top"><h1>{{ r.titre }}</h1><a class="btn sec" href="{{ url_for('reunions') }}">← Réunions</a></div>
 <div class="card"><p><b>{{ r.date|fr_date }}</b> {{ r.heure }} · {{ r.lieu }}</p><p style="white-space:pre-wrap" class="mute">{{ r.ordre_du_jour }}</p></div>
+{% if ia_ok %}<div class="card noprint"><h2>Enregistrement et compte rendu</h2>
+{% if ri %}<p><span class="tag {{ ri_statut[1] }}">{{ ri_statut[0] }}</span> Cette réunion a un espace d'enregistrement et de compte rendu. <a class="btn sm" href="{{ url_for('ri_reunion', rid=ri.id) }}">Ouvrir</a></p>
+{% else %}<form method="post" action="{{ url_for('reunion_enregistrer', rid=r.id) }}" class="row">{{ csrf() }}<div style="max-width:300px"><label>Type de réunion</label><select name="type">{% for k, v in types_ia.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+<div style="flex:0 0 auto"><button>Enregistrer cette réunion / rédiger le compte rendu</button></div></form>
+<p class="mute">Le titre, la date, le lieu, l'ordre du jour et les professeurs convoqués sont repris automatiquement ; il reste à confirmer leur consentement pour enregistrer.</p>{% endif %}</div>{% endif %}
 <div class="grid g2"><div class="card scroll"><h2>Professeurs convoqués ({{ profs|length }})</h2><table><tr><th>Professeur</th><th>Réponse</th></tr>
 {% for p in profs %}<tr><td>{{ p.prenom }} {{ p.nom }} <span class="mute">{{ p.matiere }}</span></td><td>{% if p.reponse == 'oui' %}<span class="tag ok">Présent</span>{% elif p.reponse == 'non' %}<span class="tag err">Absent</span>{% else %}<span class="tag">En attente</span>{% endif %}</td></tr>
 {% else %}<tr><td colspan="2" class="mute">Aucun.</td></tr>{% endfor %}</table></div>

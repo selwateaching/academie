@@ -379,6 +379,9 @@ MIGRATIONS = [
         ALTER TABLE ri_reunions ADD COLUMN hors_sujet TEXT NOT NULL DEFAULT '[]';      -- passages de la transcription repérés hors sujet (JSON)
         ALTER TABLE ri_reunions ADD COLUMN analyse_etat TEXT NOT NULL DEFAULT '';      -- '', en_cours, ok, erreur
     """),
+    (23, """
+        ALTER TABLE ri_reunions ADD COLUMN reunion_id INTEGER REFERENCES reunions(id) ON DELETE SET NULL;   -- convocation (module Réunions) à laquelle l'enregistrement est rattaché
+    """),
 ]
 
 
