@@ -436,3 +436,6 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-mode:has(input:checked){border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,var(--card))}
 .ri-creation:has(input[name=mode][value=compte_rendu]:checked) .bloc-eleves{display:none}
 .ri-creation:not(:has(input[name=mode][value=enregistrer]:checked)):not(:has(input[name=mode][value=compte_rendu]:checked)) .ri-type{display:none}
+.slot-trou{display:block;padding:6px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#B3261E;border:2px dashed #E5484D;background:repeating-linear-gradient(45deg,color-mix(in srgb,#E5484D 10%,transparent),color-mix(in srgb,#E5484D 10%,transparent) 6px,transparent 6px,transparent 12px)}
+.legende-trou{display:flex;align-items:center;gap:8px;margin:4px 0 8px}.legende-trou .slot-trou{display:inline-block}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .slot-trou{color:#FF9B9B}}

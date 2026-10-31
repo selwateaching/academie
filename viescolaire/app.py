@@ -5336,6 +5336,36 @@ def get_proposition(pid):
     return p
 
 
+def trous_proposition(placements, grille, profs):
+    """Heures libres entre deux cours d'une même journée, pour chaque professeur et chaque classe : {(clé, jour): [indices de créneaux libres]}."""
+    occ = {"prof": {}, "classe": {}}
+    for x in placements:
+        for k in range(x["longueur"]):
+            occ["prof"].setdefault((x["prof_id"], x["jour"]), set()).add(x["debut_idx"] + k)
+            occ["classe"].setdefault((x["classe"], x["jour"]), set()).add(x["debut_idx"] + k)
+    out = {"prof": {}, "classe": {}}
+    for genre in ("prof", "classe"):
+        for (cle, j), s in occ[genre].items():
+            libres = [i for i in range(min(s), max(s) + 1) if i not in s]
+            if libres:
+                out[genre][(cle, j)] = libres
+    return out
+
+
+def trous_en_plages(libres, grille):
+    """Regroupe des créneaux libres consécutifs en plages horaires lisibles (« 09:00–11:00 »)."""
+    plages, debut, prec = [], None, None
+    for i in libres + [None]:
+        if debut is None:
+            debut = prec = i
+        elif i is not None and i == prec + 1 and grille[prec]["fin"] == grille[i]["debut"]:   # contigus dans le temps (pas de pause entre les deux)
+            prec = i
+        else:
+            plages.append(f"{grille[debut]['debut']}–{grille[prec]['fin']}")
+            debut = prec = i
+    return plages
+
+
 @app.route("/planification/propositions/<int:pid>")
 @staff_only
 def proposition(pid):
@@ -5355,12 +5385,19 @@ def proposition(pid):
         for k in range(x["longueur"]):
             cases[(x["jour"], x["debut_idx"] + k)] = (texte + (f" ({x['salle']})" if x["salle"] else ""), x["matiere"])
     non_places = [dict(n, prof=profs.get(n["prof_id"], {}).get("nom", "?")) for n in res["non_places"]]
+    trous = trous_proposition(res["placements"], grille, profs)
+    cle_cible = (int(cible) if cible.isdigit() else -1) if vue == "prof" else cible
+    trous_cible = {(j, i) for (c, j), libres in trous["prof" if vue == "prof" else "classe"].items() if c == cle_cible for i in libres}
+    liste_trous = {"prof": [], "classe": []}
+    for genre in ("prof", "classe"):
+        for (c, j), libres in sorted(trous[genre].items(), key=lambda kv: (profs.get(kv[0][0], {}).get("nom", "") if genre == "prof" else str(kv[0][0]), kv[0][1])):
+            liste_trous[genre].append({"cle": c, "nom": profs.get(c, {}).get("nom", "?") if genre == "prof" else c, "jour": JOURS[j], "plages": trous_en_plages(libres, grille), "n": len(libres)})
     impact = {
         "creneaux": one("SELECT COUNT(*) c FROM creneaux WHERE etab_id=?", (g.etab_id,))["c"],
         "remplacements": one("SELECT COUNT(*) c FROM remplacements WHERE etab_id=? AND date>=?", (g.etab_id, date.today().isoformat()))["c"],
         "perturbations": one("SELECT COUNT(*) c FROM perturbations WHERE etab_id=? AND date>=?", (g.etab_id, date.today().isoformat()))["c"],
     }
-    return render_template("proposition.html", p=p, res=res, grille=grille, cases=cases, vue=vue, cible=cible,
+    return render_template("proposition.html", p=p, res=res, grille=grille, cases=cases, vue=vue, cible=cible, trous_cible=trous_cible, liste_trous=liste_trous,
                            classes=classes_, profs=sorted(profs.items(), key=lambda kv: kv[1]["nom"]), non_places=non_places, impact=impact)
 
 

@@ -3,15 +3,24 @@
 <div class="top"><h1>Proposition d'emploi du temps</h1><a class="btn sec" href="{{ url_for('planification') }}">← Planification</a></div>
 <div class="stats"><div class="stat"><b>{{ s.placees }}/{{ s.seances }}</b><span>Séances placées</span></div>
 <div class="stat"><b>{{ s.souhaits_non_respectes }}</b><span>Heures sur un souhait non respecté</span></div>
-<div class="stat"><b>{{ s.trous_professeurs }}</b><span>Trous dans les journées des professeurs</span></div>
-<div class="stat"><b>{{ s.trous_classes }}</b><span>Trous dans les journées des classes</span></div></div>
+<a class="stat" href="#trous"><b>{{ s.trous_professeurs }}</b><span>Trous dans les journées des professeurs · voir où</span></a>
+<a class="stat" href="#trous"><b>{{ s.trous_classes }}</b><span>Trous dans les journées des classes · voir où</span></a></div>
 {% if non_places %}<div class="card"><h2>Séances non placées ({{ non_places|length }})</h2>
 {% for n in non_places %}<div class="al err"><b>{{ n.classe }} · {{ n.matiere }}</b> ({{ n.prof }}, {{ n.longueur }} h) : {{ n.raisons|join(' ; ') or 'aucun créneau compatible' }}</div>{% endfor %}
 <p class="mute">Assouplissez un vœu impératif, augmentez le maximum d'heures par jour ou réduisez le volume, puis régénérez.</p></div>{% endif %}
 <div class="card"><form method="get" class="row noprint"><div><label>Afficher</label><select name="vue" data-autosubmit><option value="classe" {{ 'selected' if vue == 'classe' }}>Une classe</option><option value="prof" {{ 'selected' if vue == 'prof' }}>Un professeur</option></select></div>
 <div><label>&nbsp;</label><select name="cible" data-autosubmit>{% if vue == 'classe' %}{% for c in classes %}<option {{ 'selected' if c == cible }}>{{ c }}</option>{% endfor %}{% else %}{% for id, pr in profs %}<option value="{{ id }}" {{ 'selected' if id|string == cible }}>{{ pr.nom }}</option>{% endfor %}{% endif %}</select></div></form>
+{% if trous_cible %}<p class="legende-trou"><span class="slot-trou">Trou</span> {{ trous_cible|length }} heure(s) libre(s) entre deux cours dans cet emploi du temps.</p>{% else %}<p class="mute">Aucun trou dans cet emploi du temps.</p>{% endif %}
 <div class="scroll"><table><tr><th>Horaire</th>{% for j in JOURS %}<th>{{ j }}</th>{% endfor %}</tr>
-{% for c in grille %}{% set i = loop.index0 %}<tr><td>{{ c.debut }}–{{ c.fin }}</td>{% for j in range(5) %}<td>{% set cs = cases.get((j, i)) %}{% if cs %}<div class="slot" style="--m:{{ cs[1]|teinte }}" title="{{ cs[1] }}">{{ cs[0] }}</div>{% endif %}</td>{% endfor %}</tr>{% endfor %}</table></div></div>
+{% for c in grille %}{% set i = loop.index0 %}<tr><td>{{ c.debut }}–{{ c.fin }}</td>{% for j in range(5) %}<td>{% set cs = cases.get((j, i)) %}{% if cs %}<div class="slot" style="--m:{{ cs[1]|teinte }}" title="{{ cs[1] }}">{{ cs[0] }}</div>{% elif (j, i) in trous_cible %}<div class="slot-trou" title="Heure libre entre deux cours">Trou · heure libre</div>{% endif %}</td>{% endfor %}</tr>{% endfor %}</table></div></div>
+<div class="card" id="trous"><h2>Où sont les trous ?</h2>
+<p class="mute">Un trou est une heure libre entre deux cours d'une même journée. Cliquez sur un nom pour afficher son emploi du temps avec les trous en évidence.</p>
+<div class="grid g2"><div class="scroll"><h3>Professeurs ({{ liste_trous.prof|sum(attribute='n') }} heure(s))</h3>
+<table><tr><th>Professeur</th><th>Jour</th><th>Heure(s) libre(s)</th></tr>{% for t in liste_trous.prof %}<tr><td><a href="{{ url_for('proposition', pid=p.id, vue='prof', cible=t.cle) }}">{{ t.nom }}</a></td><td>{{ t.jour }}</td><td>{{ t.plages|join(', ') }}</td></tr>
+{% else %}<tr><td colspan="3" class="mute">Aucun trou.</td></tr>{% endfor %}</table></div>
+<div class="scroll"><h3>Classes ({{ liste_trous.classe|sum(attribute='n') }} heure(s))</h3>
+<table><tr><th>Classe</th><th>Jour</th><th>Heure(s) libre(s)</th></tr>{% for t in liste_trous.classe %}<tr><td><a href="{{ url_for('proposition', pid=p.id, vue='classe', cible=t.cle) }}">{{ t.nom }}</a></td><td>{{ t.jour }}</td><td>{{ t.plages|join(', ') }}</td></tr>
+{% else %}<tr><td colspan="3" class="mute">Aucun trou.</td></tr>{% endfor %}</table></div></div></div>
 {% if p.statut != 'appliquee' %}<div class="card"><h2>Appliquer cet emploi du temps</h2>
 <p>Remplace l'emploi du temps actuel ({{ impact.creneaux }} créneaux). {% if impact.remplacements or impact.perturbations %}<b>Attention :</b> {{ impact.remplacements }} remplacement(s) et {{ impact.perturbations }} perturbation(s) à venir, rattachés aux anciens créneaux, seront supprimés ; les remplacements des absences en cours seront recalculés.{% endif %} Pensez à faire une <a href="{{ url_for('sauvegarde') if g.user.role in ('admin','direction') else '#' }}">sauvegarde</a> avant.</p>
 <form method="post" action="{{ url_for('proposition_appliquer', pid=p.id) }}">{{ csrf() }}<label><input type="checkbox" name="confirmer" value="1"> Je confirme le remplacement de l'emploi du temps actuel</label><br><button>Appliquer</button></form></div>
