@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Notes de {{ e.prenom }} {{ e.nom }}{% endblock %}{% block body %}
+<div class="top"><div><h1 style="margin-bottom:2px">Notes de {{ e.prenom }} {{ e.nom }}</h1><span class="mute">{{ e.classe }}{% if periode %} · {{ periode.nom }}{% endif %}</span></div>
+<span class="noprint barre-actions"><a class="btn" href="{{ url_for('bulletin', eid=e.id, periode=periode.id if periode else '') }}">Bulletin</a>
+<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode=periode.id if periode else '') }}">Relevé de notes</a>
+<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode='annee') }}">Relevé de l'année</a>
+<a class="btn sec" href="{{ url_for('eleve_fiche', eid=e.id) }}">← Fiche</a></span></div>
+<form method="get" class="row noprint" style="margin-bottom:10px"><div style="max-width:240px"><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div></form>
+<div class="stats"><div class="stat"><b>{{ moyenne|fnote }}</b><span>Moyenne générale /20</span></div>
+{% if bulletin %}<div class="stat"><b>{{ bulletin.moyenne_classe|fnote }}</b><span>Moyenne de la classe</span></div><div class="stat"><b>{{ bulletin.rang or '—' }}{% if bulletin.rang %}<small> / {{ bulletin.effectif }}</small>{% endif %}</b><span>Rang dans la classe</span></div>{% endif %}</div>
+{% if bulletin and bulletin.appreciation %}<div class="card"><h2>Appréciation générale</h2><p>{{ bulletin.appreciation }}</p></div>{% endif %}
+{% for m in matieres %}<div class="card scroll"><h2 style="display:flex;justify-content:space-between;gap:12px">{{ m.matiere }} <span class="mute" style="font-size:14px;font-weight:400">{{ m.prof }} · moyenne <b>{{ m.moyenne|fnote }}</b></span></h2>
+<table><tr><th>Date</th><th>Évaluation</th><th>Note</th><th>Coef.</th><th>Observation</th></tr>
+{% for n in m.notes %}<tr><td>{{ n.date|fr_date }}</td><td>{{ n.titre }}</td><td><b>{% if n.valeur is not none %}{{ n.valeur|fnote1 }}/{{ n.bareme|fb }}{% elif n.statut == 'absent' %}Absent{% elif n.statut == 'dispense' %}Dispensé{% else %}—{% endif %}</b></td><td>{{ n.coef|fnote1 }}</td><td class="mute">{{ n.commentaire }}</td></tr>{% endfor %}</table></div>
+{% else %}<div class="card mute">Aucune note pour cette période.</div>{% endfor %}{% endblock %}

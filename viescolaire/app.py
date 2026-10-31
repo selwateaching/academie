@@ -68,6 +68,7 @@ MODULE_DES_ENDPOINTS = {
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
     "heures": ["heures", "heures_services", "heures_csv"],
+    "notes": ["notes", "evaluation", "appreciations", "periodes", "eleve_notes", "releve", "bulletin", "bulletins_classe"],
     "trombinoscope": ["trombinoscope", "photo", "photo_enregistrer"],
     "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
@@ -273,7 +274,7 @@ def entetes(resp):
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
 PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
-                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
+                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "eleve_notes": "notes", "releve": "notes", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
 
@@ -309,6 +310,8 @@ def menu_sections():
             section("1. Élèves et vie scolaire", [
                 item("eleves", "Liste des élèves", "eleve", "Fiches, responsables, import", "eleves"),
                 item("eleves_groupes", "Groupes d'élèves", "reunion", "LV2, ateliers, aide aux devoirs…", "eleves"),
+                item("notes", "Notes et évaluations", "taches", "Notes saisies par les professeurs", "notes"),
+                item("bulletins_classe", "Bulletins de classe", "redaction", "Bulletins à imprimer par classe", "notes"),
                 item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
@@ -348,6 +351,7 @@ def menu_sections():
             section("5. Administration", [
                 item("utilisateurs", "Utilisateurs", "utilisateurs", "Comptes et droits", "utilisateurs"),
                 item("etablissements", "Établissements", "etablissement", "Ajouter ou supprimer") if u["role"] == "admin" else None,
+                item("periodes", "Périodes (trimestres)", "calendrier", "Trimestres ou semestres des notes", "notes"),
                 item("sauvegarde", "Sauvegarde", "sauvegarde", "Copie des données", "sauvegarde") if u["role"] in ("admin", "direction") else None] + compte),
             section("6. Mon compte", [sortie]),
         ]
@@ -356,6 +360,8 @@ def menu_sections():
             section("Mon espace", [
                 item("emploi_du_temps", "Mon emploi du temps", "calendrier", "Mes cours", "emplois_du_temps"),
                 item("absences", "Mes absences", "absence", "Déclarer une absence", "absences"),
+                item("notes", "Mes notes", "taches", "Saisir les notes de mes classes", "notes"),
+                item("appreciations", "Mes appréciations", "redaction", "Appréciations du bulletin", "notes"),
                 item("mes_voeux", "Mes vœux", "voeux", "Disponibilités pour l'emploi du temps", "planification"),
                 item("messages", "Messagerie", "message", "Messages internes", "messagerie", nb["messages"])], True),
             section("Classes et documents", [
@@ -1301,7 +1307,7 @@ def classe_renommer(cid):
         con = db()
         try:
             con.execute("UPDATE classes SET nom=? WHERE id=?", (nouveau, cid))
-            for t in ("eleves", "creneaux", "besoins", "incidents", "passages", "perturbations", "choix_professeurs"):
+            for t in ("eleves", "creneaux", "besoins", "incidents", "passages", "perturbations", "choix_professeurs", "evaluations"):
                 con.execute(f"UPDATE {t} SET classe=? WHERE etab_id=? AND classe=?", (nouveau, g.etab_id, c["nom"]))
             con.execute("UPDATE messages SET cible=? WHERE etab_id=? AND cible_type='classe' AND cible=?", (nouveau, g.etab_id, c["nom"]))
             con.commit()
@@ -2157,7 +2163,7 @@ def eleve_fiche(eid):
     documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
     reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
     return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_,
-                           inf=infos_infirmerie(eid), regimes=REGIMES)
+                           inf=infos_infirmerie(eid), regimes=REGIMES, resume_notes=resume_notes_eleve(e))
 
 
 @app.route("/eleves/completer", methods=["GET", "POST"])
@@ -3781,6 +3787,336 @@ def pers_planning_csv():
                     cellule_csv(a["poste"]), "automatique" if a["source"] == "auto" else "saisi à la main"])
     log("export", "planning du personnel")
     return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=planning_personnel_{date.today()}.csv"})
+
+
+# ───────────────────────── Notes, relevés de notes et bulletins ─────────────────────────
+def fnote(v, dec=2):
+    """12.5 -> « 12,50 » ; None -> « — »."""
+    if v is None:
+        return "—"
+    return f"{v:.{dec}f}".replace(".", ",")
+
+
+app.jinja_env.filters["fnote"] = fnote
+app.jinja_env.filters["fnote1"] = lambda v: fnote(v, 1)
+app.jinja_env.filters["fb"] = lambda v: ("%g" % v).replace(".", ",") if v is not None else ""
+
+
+def periodes_etab():
+    return q("SELECT * FROM periodes WHERE etab_id=? ORDER BY ordre, id", (g.etab_id,))
+
+
+def periode_choisie(valeur=None):
+    """Période demandée (id) ou, par défaut, celle qui contient la date du jour (sinon la première)."""
+    lst = periodes_etab()
+    if valeur:
+        p = next((x for x in lst if str(x["id"]) == str(valeur)), None)
+        if p:
+            return p, lst
+    auj = date.today().isoformat()
+    return next((x for x in lst if x["debut"] <= auj <= x["fin"]), lst[0] if lst else None), lst
+
+
+def moyenne_ponderee(valeurs):
+    """[(note sur 20, coefficient)] -> moyenne pondérée (None s'il n'y a aucune note)."""
+    tot = sum(c for _, c in valeurs)
+    return sum(v * c for v, c in valeurs) / tot if tot else None
+
+
+def notes_eleve(eid, periode_id=None):
+    """Notes d'un élève par matière : liste des évaluations, moyenne de la matière, moyenne générale (matières à coefficients égaux)."""
+    sql = ("SELECT n.valeur, n.statut, n.commentaire, ev.id evid, ev.matiere, ev.titre, ev.date, ev.bareme, ev.coef, ev.prof_id, p.nom pnom, p.prenom pprenom "
+           "FROM notes n JOIN evaluations ev ON ev.id=n.evaluation_id LEFT JOIN professeurs p ON p.id=ev.prof_id WHERE n.eleve_id=? AND ev.etab_id=?")
+    args = [eid, g.etab_id]
+    if periode_id:
+        sql += " AND ev.periode_id=?"
+        args.append(periode_id)
+    matieres = {}
+    for r in q(sql + " ORDER BY ev.matiere, ev.date, ev.id", args):
+        m = matieres.setdefault(r["matiere"], {"matiere": r["matiere"], "prof": f"{r['pprenom'] or ''} {r['pnom'] or ''}".strip(), "notes": [], "moyenne": None})
+        n20 = r["valeur"] * 20 / r["bareme"] if r["valeur"] is not None and r["bareme"] else None
+        m["notes"].append(dict(r, note20=n20))
+    for m in matieres.values():
+        m["moyenne"] = moyenne_ponderee([(n["note20"], n["coef"]) for n in m["notes"] if n["note20"] is not None])
+    liste = sorted(matieres.values(), key=lambda m: cle_matiere(m["matiere"]))
+    gen = [m["moyenne"] for m in liste if m["moyenne"] is not None]
+    return liste, (sum(gen) / len(gen) if gen else None)
+
+
+def moyennes_classe(classe, periode_id):
+    """{élève: {matière: moyenne}} pour une classe et une période + moyennes générales {élève: moyenne}."""
+    par = {}
+    for r in q("SELECT n.eleve_id, n.valeur, ev.matiere, ev.bareme, ev.coef FROM notes n JOIN evaluations ev ON ev.id=n.evaluation_id "
+               "WHERE ev.etab_id=? AND ev.classe=? AND ev.periode_id=? AND n.valeur IS NOT NULL", (g.etab_id, classe, periode_id)):
+        par.setdefault(r["eleve_id"], {}).setdefault(r["matiere"], []).append((r["valeur"] * 20 / r["bareme"], r["coef"]))
+    moy = {e: {m: moyenne_ponderee(v) for m, v in ms.items()} for e, ms in par.items()}
+    gen = {e: sum(ms.values()) / len(ms) for e, ms in moy.items() if ms}
+    return moy, gen
+
+
+def donnees_bulletin(eleve, periode):
+    """Tout ce qu'il faut pour un bulletin : moyennes de l'élève et de la classe par matière, rang, appréciations."""
+    liste, moy_gen = notes_eleve(eleve["id"], periode["id"])
+    moy_cl, gen_cl = moyennes_classe(eleve["classe"], periode["id"])
+    lignes = []
+    for m in liste:
+        vals = [mm[m["matiere"]] for mm in moy_cl.values() if m["matiere"] in mm]
+        app = one("SELECT texte FROM appreciations WHERE eleve_id=? AND periode_id=? AND matiere=?", (eleve["id"], periode["id"], m["matiere"]))
+        lignes.append({"matiere": m["matiere"], "prof": m["prof"], "moyenne": m["moyenne"], "classe": (sum(vals) / len(vals)) if vals else None,
+                       "min": min(vals) if vals else None, "max": max(vals) if vals else None, "appreciation": app["texte"] if app else "", "nb": len(m["notes"])})
+    classement = sorted(gen_cl.values(), reverse=True)
+    rang = (classement.index(gen_cl[eleve["id"]]) + 1) if eleve["id"] in gen_cl else None
+    gen_app = one("SELECT texte FROM appreciations WHERE eleve_id=? AND periode_id=? AND matiere=''", (eleve["id"], periode["id"]))
+    return {"lignes": lignes, "moyenne": moy_gen, "moyenne_classe": (sum(gen_cl.values()) / len(gen_cl)) if gen_cl else None, "rang": rang, "effectif": len(gen_cl),
+            "appreciation": gen_app["texte"] if gen_app else "", "min": min(gen_cl.values()) if gen_cl else None, "max": max(gen_cl.values()) if gen_cl else None}
+
+
+def evaluation_autorisee(ev):
+    """Le personnel de vie scolaire voit tout ; un enseignant ne gère que ses propres évaluations."""
+    if ev["etab_id"] != g.etab_id:
+        return False
+    return g.user["role"] in STAFF or bool(g.prof and ev["prof_id"] == g.prof["id"])
+
+
+def cours_du_prof():
+    """Couples (classe, matière) enseignés par le professeur connecté."""
+    if not g.prof:
+        return []
+    return [(r["classe"], r["matiere"]) for r in q("SELECT DISTINCT classe, matiere FROM creneaux WHERE prof_id=? ORDER BY classe, matiere", (g.prof["id"],))]
+
+
+@app.route("/notes", methods=["GET", "POST"])
+def notes():
+    staff = g.user["role"] in STAFF
+    if not staff and not g.prof:
+        abort(403)
+    periode, periodes_ = periode_choisie(request.values.get("periode"))
+    couples = cours_du_prof() if not staff else []
+    if request.method == "POST":
+        f = request.form
+        classe, matiere = f.get("classe", "").strip(), f.get("matiere", "").strip()
+        if f.get("cours"):   # liste « classe — matière » proposée à l'enseignant
+            classe, _, matiere = f["cours"].partition("||")
+        titre = f.get("titre", "").strip()[:120]
+        try:
+            bareme, coef = float(f.get("bareme", "20").replace(",", ".")), float(f.get("coef", "1").replace(",", "."))
+        except ValueError:
+            bareme, coef = 0, 0
+        permis = (classe, matiere) in couples if not staff else bool(one("SELECT 1 FROM classes WHERE etab_id=? AND nom=?", (g.etab_id, classe)))
+        pid = f.get("periode_id", type=int)
+        if not (titre and matiere and permis and 1 <= bareme <= 100 and 0 < coef <= 20 and one("SELECT 1 FROM periodes WHERE id=? AND etab_id=?", (pid, g.etab_id))):
+            flash("Classe, matière, titre, barème (1 à 100) et coefficient sont obligatoires ; un enseignant ne peut noter que ses propres classes.", "err")
+            return redirect(url_for("notes", periode=periode["id"] if periode else ""))
+        prof_id = g.prof["id"] if g.prof else (one("SELECT prof_id FROM creneaux WHERE etab_id=? AND classe=? AND matiere=? LIMIT 1", (g.etab_id, classe, matiere)) or {"prof_id": None})["prof_id"]
+        evid = run("INSERT INTO evaluations(etab_id,classe,matiere,prof_id,periode_id,titre,date,bareme,coef,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                   (g.etab_id, classe, matiere, prof_id, pid, titre, parse_date(f.get("date")).isoformat(), bareme, coef, datetime.now().isoformat(timespec="minutes")))
+        log("évaluation créée", f"{classe} {matiere} {titre}")
+        return redirect(url_for("evaluation", eid=evid))
+    sql = ("SELECT ev.*, (SELECT COUNT(*) FROM eleves e WHERE e.etab_id=ev.etab_id AND e.classe=ev.classe) nb_eleves, "
+           "(SELECT COUNT(*) FROM notes n WHERE n.evaluation_id=ev.id AND (n.valeur IS NOT NULL OR n.statut<>'')) nb_notes, "
+           "(SELECT AVG(n.valeur*20.0/ev.bareme) FROM notes n WHERE n.evaluation_id=ev.id AND n.valeur IS NOT NULL) moyenne "
+           "FROM evaluations ev WHERE ev.etab_id=?")
+    args = [g.etab_id]
+    if periode:
+        sql += " AND ev.periode_id=?"
+        args.append(periode["id"])
+    if not staff:
+        sql += " AND ev.prof_id=?"
+        args.append(g.prof["id"])
+    classe_f = request.args.get("classe", "")
+    if classe_f:
+        sql += " AND ev.classe=?"
+        args.append(classe_f)
+    evals = q(sql + " ORDER BY ev.date DESC, ev.id DESC LIMIT 300", args)
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    matieres = sorted({r["matiere"] for r in q("SELECT DISTINCT matiere FROM creneaux WHERE etab_id=?", (g.etab_id,))})
+    return render_template("notes.html", evals=evals, periode=periode, periodes=periodes_, couples=couples, classes=classes_, matieres=matieres, classe_f=classe_f, staff=staff)
+
+
+@app.route("/notes/evaluation/<int:eid>", methods=["GET", "POST"])
+def evaluation(eid):
+    ev = one("SELECT * FROM evaluations WHERE id=?", (eid,))
+    if not ev or not evaluation_autorisee(ev):
+        abort(404)
+    eleves_ = q("SELECT id, nom, prenom FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, ev["classe"]))
+    if request.method == "POST":
+        f = request.form
+        if f.get("action") == "supprimer":
+            run("DELETE FROM evaluations WHERE id=?", (eid,))
+            log("évaluation supprimée", f"{ev['classe']} {ev['matiere']} {ev['titre']}")
+            flash("Évaluation supprimée avec ses notes.", "ok")
+            return redirect(url_for("notes"))
+        saisies, erreurs = [], []
+        for e in eleves_:
+            brut = f.get(f"n_{e['id']}", "").strip().lower().replace(",", ".")
+            com = f.get(f"c_{e['id']}", "").strip()[:200]
+            if brut in ("", "-"):
+                saisies.append((e["id"], None, "", com))
+            elif brut in ("abs", "a", "absent"):
+                saisies.append((e["id"], None, "absent", com))
+            elif brut in ("disp", "d", "dispense", "dispensé"):
+                saisies.append((e["id"], None, "dispense", com))
+            else:
+                try:
+                    v = float(brut)
+                    if not 0 <= v <= ev["bareme"]:
+                        raise ValueError
+                    saisies.append((e["id"], v, "", com))
+                except ValueError:
+                    erreurs.append(f"{e['nom']} {e['prenom']} ({f.get(f'n_{e['id']}')})")
+        if erreurs:
+            flash(f"Rien n'a été enregistré : note invalide (entre 0 et {fnote(ev['bareme'], 0)}, « abs » ou « disp ») pour " + ", ".join(erreurs[:5]) + ".", "err")
+            return redirect(url_for("evaluation", eid=eid))
+        for el, v, st, com in saisies:
+            if v is None and not st and not com:
+                db().execute("DELETE FROM notes WHERE evaluation_id=? AND eleve_id=?", (eid, el))
+            else:
+                db().execute("INSERT INTO notes(evaluation_id,eleve_id,valeur,statut,commentaire) VALUES (?,?,?,?,?) "
+                             "ON CONFLICT(evaluation_id,eleve_id) DO UPDATE SET valeur=excluded.valeur, statut=excluded.statut, commentaire=excluded.commentaire", (eid, el, v, st, com))
+        db().commit()
+        log("notes saisies", f"{ev['classe']} {ev['matiere']} {ev['titre']}")
+        flash("Notes enregistrées.", "ok")
+        return redirect(url_for("evaluation", eid=eid))
+    saisies = {n["eleve_id"]: n for n in q("SELECT * FROM notes WHERE evaluation_id=?", (eid,))}
+    vals = [n["valeur"] for n in saisies.values() if n["valeur"] is not None]
+    stats = {"nb": len(vals), "moyenne": (sum(vals) / len(vals)) if vals else None, "min": min(vals) if vals else None, "max": max(vals) if vals else None}
+    periode = one("SELECT * FROM periodes WHERE id=?", (ev["periode_id"],)) if ev["periode_id"] else None
+    return render_template("evaluation.html", ev=ev, eleves=eleves_, saisies=saisies, stats=stats, periode=periode)
+
+
+@app.route("/notes/appreciations", methods=["GET", "POST"])
+def appreciations():
+    staff = g.user["role"] in STAFF
+    if not staff and not g.prof:
+        abort(403)
+    periode, periodes_ = periode_choisie(request.values.get("periode"))
+    couples = cours_du_prof() if not staff else [(r["classe"], r["matiere"]) for r in q("SELECT DISTINCT classe, matiere FROM creneaux WHERE etab_id=? ORDER BY classe, matiere", (g.etab_id,))]
+    choix = request.values.get("cours", "")
+    classe, _, matiere = choix.partition("||")
+    if (classe, matiere) not in couples:
+        classe = matiere = ""
+    if request.method == "POST" and classe and periode:
+        n = 0
+        for e in q("SELECT id FROM eleves WHERE etab_id=? AND classe=?", (g.etab_id, classe)):
+            texte = request.form.get(f"a_{e['id']}", "").strip()[:500]
+            if texte:
+                run("INSERT INTO appreciations(etab_id,eleve_id,periode_id,matiere,prof_id,texte) VALUES (?,?,?,?,?,?) "
+                    "ON CONFLICT(eleve_id,periode_id,matiere) DO UPDATE SET texte=excluded.texte, prof_id=excluded.prof_id",
+                    (g.etab_id, e["id"], periode["id"], matiere, g.prof["id"] if g.prof else None, texte))
+            else:
+                run("DELETE FROM appreciations WHERE eleve_id=? AND periode_id=? AND matiere=?", (e["id"], periode["id"], matiere))
+            n += 1
+        log("appréciations saisies", f"{classe} {matiere}")
+        flash(f"Appréciations enregistrées ({n} élèves).", "ok")
+        return redirect(url_for("appreciations", periode=periode["id"], cours=choix))
+    lignes = []
+    if classe and periode:
+        moy, _g = moyennes_classe(classe, periode["id"])
+        existantes = {a["eleve_id"]: a["texte"] for a in q("SELECT eleve_id, texte FROM appreciations WHERE etab_id=? AND periode_id=? AND matiere=?", (g.etab_id, periode["id"], matiere))}
+        for e in q("SELECT id, nom, prenom FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, classe)):
+            lignes.append({"e": e, "moyenne": moy.get(e["id"], {}).get(matiere), "texte": existantes.get(e["id"], "")})
+    return render_template("appreciations.html", periode=periode, periodes=periodes_, couples=couples, choix=choix, classe=classe, matiere=matiere, lignes=lignes)
+
+
+@app.route("/notes/periodes", methods=["GET", "POST"])
+@staff_only
+def periodes():
+    if request.method == "POST":
+        f, action = request.form, request.form.get("action")
+        if action == "ajouter" and f.get("nom", "").strip():
+            n = one("SELECT COALESCE(MAX(ordre),0)+1 n FROM periodes WHERE etab_id=?", (g.etab_id,))["n"]
+            run("INSERT INTO periodes(etab_id,nom,ordre,debut,fin) VALUES (?,?,?,?,?)", (g.etab_id, f["nom"].strip()[:60], n, parse_date(f.get("debut")).isoformat(), parse_date(f.get("fin")).isoformat()))
+        elif action in ("modifier", "supprimer"):
+            p_ = one("SELECT * FROM periodes WHERE id=? AND etab_id=?", (f.get("id", type=int), g.etab_id))
+            if not p_:
+                abort(404)
+            if action == "supprimer":
+                run("DELETE FROM periodes WHERE id=?", (p_["id"],))
+                flash("Période supprimée ; ses évaluations restent mais ne sont plus rattachées à une période.", "ok")
+            else:
+                run("UPDATE periodes SET nom=?, debut=?, fin=? WHERE id=?", (f.get("nom", "").strip()[:60] or p_["nom"], parse_date(f.get("debut")).isoformat(), parse_date(f.get("fin")).isoformat(), p_["id"]))
+        return redirect(url_for("periodes"))
+    return render_template("periodes.html", periodes=periodes_etab())
+
+
+def resume_notes_eleve(e):
+    """Résumé des résultats pour la fiche élève (période en cours) ; None si le module est désactivé ou sans notes."""
+    if not module_actif("notes"):
+        return None
+    periode, _ = periode_choisie()
+    if not periode:
+        return None
+    liste, moy = notes_eleve(e["id"], periode["id"])
+    if not liste:
+        return None
+    _m, gen_cl = moyennes_classe(e["classe"], periode["id"])
+    return {"periode": periode["nom"], "moyenne": moy, "classe": (sum(gen_cl.values()) / len(gen_cl)) if gen_cl else None, "matieres": liste}
+
+
+def eleve_ou_404(eid):
+    e = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id))
+    if not e:
+        abort(404)
+    return e
+
+
+@app.route("/eleves/<int:eid>/notes")
+@staff_only
+def eleve_notes(eid):
+    e = eleve_ou_404(eid)
+    periode, periodes_ = periode_choisie(request.args.get("periode"))
+    liste, moy_gen = notes_eleve(eid, periode["id"] if periode else None)
+    log("notes consultées", f"{e['nom']} {e['prenom']}")
+    return render_template("eleve_notes.html", e=e, periode=periode, periodes=periodes_, matieres=liste, moyenne=moy_gen, bulletin=donnees_bulletin(e, periode) if periode else None)
+
+
+@app.route("/eleves/<int:eid>/releve")
+@staff_only
+def releve(eid):
+    e = eleve_ou_404(eid)
+    periode, periodes_ = periode_choisie(request.args.get("periode") if request.args.get("periode") != "annee" else None)
+    annee = request.args.get("periode") == "annee"
+    liste, moy_gen = notes_eleve(eid, None if annee else (periode["id"] if periode else None))
+    log("relevé de notes consulté", f"{e['nom']} {e['prenom']}")
+    return render_template("releve.html", e=e, periode=None if annee else periode, periodes=periodes_, matieres=liste, moyenne=moy_gen, ent=entete_documents(),
+                           signataires=signataires_actifs(), aujourdhui=date.today().isoformat())
+
+
+@app.route("/eleves/<int:eid>/bulletin", methods=["GET", "POST"])
+@staff_only
+def bulletin(eid):
+    e = eleve_ou_404(eid)
+    periode, periodes_ = periode_choisie(request.values.get("periode"))
+    if not periode:
+        flash("Aucune période définie : créez d'abord les trimestres.", "err")
+        return redirect(url_for("periodes"))
+    if request.method == "POST":
+        texte = request.form.get("appreciation", "").strip()[:800]
+        if texte:
+            run("INSERT INTO appreciations(etab_id,eleve_id,periode_id,matiere,prof_id,texte) VALUES (?,?,?,'',?,?) ON CONFLICT(eleve_id,periode_id,matiere) DO UPDATE SET texte=excluded.texte",
+                (g.etab_id, eid, periode["id"], g.prof["id"] if g.prof else None, texte))
+        else:
+            run("DELETE FROM appreciations WHERE eleve_id=? AND periode_id=? AND matiere=''", (eid, periode["id"]))
+        flash("Appréciation générale enregistrée.", "ok")
+        return redirect(url_for("bulletin", eid=eid, periode=periode["id"]))
+    log("bulletin consulté", f"{e['nom']} {e['prenom']}")
+    return render_template("bulletin.html", bulletins=[(e, donnees_bulletin(e, periode))], periode=periode, periodes=periodes_, ent=entete_documents(), signataires=signataires_actifs(),
+                           seul=True, aujourdhui=date.today().isoformat())
+
+
+@app.route("/notes/bulletins")
+@staff_only
+def bulletins_classe():
+    periode, periodes_ = periode_choisie(request.args.get("periode"))
+    classe = request.args.get("classe", "")
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    bulletins = []
+    if classe and periode:
+        for e in q("SELECT * FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, classe)):
+            bulletins.append((e, donnees_bulletin(e, periode)))
+        log("bulletins de classe consultés", f"{classe} {periode['nom']}")
+    return render_template("bulletin.html", bulletins=bulletins, periode=periode, periodes=periodes_, classe=classe, classes=classes_, ent=entete_documents(),
+                           signataires=signataires_actifs(), seul=False, aujourdhui=date.today().isoformat())
 
 
 # ───────────────────────── Établissements (administrateur) ─────────────────────────

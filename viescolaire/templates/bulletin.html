@@ -1,0 +1,18 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Bulletin{% endblock %}{% block body %}
+<div class="top noprint"><h1>{{ 'Bulletin' if seul else 'Bulletins de classe' }}</h1><span class="barre-actions">{% if bulletins %}<button data-print>Imprimer / PDF{% if not seul %} ({{ bulletins|length }} bulletins){% endif %}</button>{% endif %}
+{% if seul %}<a class="btn sec" href="{{ url_for('eleve_notes', eid=bulletins[0][0].id, periode=periode.id) }}">← Notes de l'élève</a>{% endif %}</span></div>
+<form method="get" class="row noprint" style="margin-bottom:12px"><div style="max-width:240px"><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div>
+{% if not seul %}<div style="max-width:220px"><label>Classe</label><select name="classe" data-autosubmit><option value="">— choisir —</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>{% endif %}</form>
+{% for e, b in bulletins %}<div class="card paper bulletin-page">{% set e_ent = ent %}{% include '_entete_ent.html' %}
+<h2 class="paper-titre">Bulletin — {{ periode.nom }}</h2>
+<p><b>{{ e.prenom }} {{ e.nom }}</b> · classe {{ e.classe }}{% if e.date_naissance %} · né(e) le {{ e.date_naissance|fr_date }}{% endif %}</p>
+<table class="releve"><tr><th>Matière</th><th>Moy. élève</th><th>Moy. classe</th><th>Min – Max</th><th>Appréciation</th></tr>
+{% for l in b.lignes %}<tr><td><b>{{ l.matiere }}</b><br><span class="mute">{{ l.prof }}</span></td><td><b>{{ l.moyenne|fnote }}</b></td><td>{{ l.classe|fnote }}</td><td>{{ l.min|fnote1 }} – {{ l.max|fnote1 }}</td><td>{{ l.appreciation }}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucune note pour cette période.</td></tr>{% endfor %}
+<tr class="rel-moy"><td><b>Moyenne générale</b></td><td><b>{{ b.moyenne|fnote }}</b></td><td>{{ b.moyenne_classe|fnote }}</td><td>{{ b.min|fnote1 }} – {{ b.max|fnote1 }}</td><td>{% if b.rang %}Rang {{ b.rang }} / {{ b.effectif }}{% endif %}</td></tr></table>
+<div class="appreciation-generale"><b>Appréciation générale</b><p>{{ b.appreciation or '—' }}</p></div>
+{% if seul %}<form method="post" class="noprint">{{ csrf() }}<input type="hidden" name="periode" value="{{ periode.id }}"><label>Modifier l'appréciation générale</label><textarea name="appreciation" rows="3" maxlength="800" style="width:100%">{{ b.appreciation }}</textarea><p><button class="sm">Enregistrer l'appréciation</button></p></form>{% endif %}
+<p class="paper-fait">Édité le {{ aujourdhui|fr_date }}</p>
+<div class="paper-signes">{% for s in signataires if s.par_defaut %}<div><b>{{ s.fonction }}</b><span class="paper-case"></span>{{ s.nom }}</div>{% endfor %}</div>
+{% if ent.pied %}<p class="paper-pied">{{ ent.pied }}</p>{% endif %}</div>
+{% else %}{% if not seul %}<div class="card mute">Choisissez une classe pour afficher tous ses bulletins, prêts à imprimer.</div>{% endif %}{% endfor %}{% endblock %}

@@ -71,6 +71,10 @@ rôles, indisponibilités, maxima journaliers et contrats ; il explique les cré
 *compléter*, *tout régénérer*, avec annulation. Clic sur une plage = modifier / supprimer / copier vers d'autres jours ou un autre agent.
 Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_personnel` désactivables par client.
 
+## Notes, relevés de notes et bulletins
+
+Les **professeurs saisissent les notes** de leurs classes (menu *Mes notes* : une évaluation = classe, matière, titre, date, barème, coefficient, période ; note, « abs » ou « disp » par élève). La **vie scolaire** (CPE, direction) voit toutes les notes d'un élève dans sa fiche (*Notes et bulletin*), avec moyennes par matière, moyenne générale, moyenne et rang dans la classe, et peut **imprimer le relevé de notes** (trimestre ou année) ou le **bulletin** (appréciations par matière et générale, en-tête et signataires de l'établissement), élève par élève ou **pour toute une classe**. Un lien « Notes » est aussi proposé pour chaque élève convoqué dans une réunion. Les trimestres se règlent dans *Périodes*. Module `notes`, désactivable ; un enseignant ne voit et ne modifie que ses propres évaluations.
+
 ## Comptage des heures
 
 Menu *Personnel → Comptage des heures* : heures hebdomadaires de chaque **professeur** (avec service dû saisissable, écart, nombre de cours et de classes,

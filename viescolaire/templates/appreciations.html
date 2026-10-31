@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Appréciations{% endblock %}{% block body %}
+<div class="top"><h1>Appréciations par matière</h1></div>{% include '_notes_tabs.html' %}
+<p class="mute">Rédigez l'appréciation de chaque élève pour votre matière : elle apparaît sur le bulletin.</p>
+<form method="get" class="row noprint" style="margin-bottom:12px"><div style="max-width:240px"><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div>
+<div style="max-width:320px"><label>Classe et matière</label><select name="cours" data-autosubmit><option value="">— choisir —</option>{% for c, m in couples %}<option value="{{ c }}||{{ m }}" {{ 'selected' if c == classe and m == matiere }}>{{ c }} — {{ m }}</option>{% endfor %}</select></div></form>
+{% if lignes %}<form method="post">{{ csrf() }}<input type="hidden" name="periode" value="{{ periode.id }}"><input type="hidden" name="cours" value="{{ choix }}">
+<div class="card scroll"><table><tr><th>Élève</th><th style="width:110px">Moyenne</th><th>Appréciation</th></tr>
+{% for l in lignes %}<tr><td style="white-space:nowrap"><b>{{ l.e.nom }}</b> {{ l.e.prenom }}</td><td>{{ l.moyenne|fnote }}</td><td><textarea name="a_{{ l.e.id }}" rows="2" maxlength="500" style="width:100%" aria-label="Appréciation de {{ l.e.prenom }} {{ l.e.nom }}">{{ l.texte }}</textarea></td></tr>{% endfor %}</table></div>
+<div class="barre-enreg noprint"><button>Enregistrer les appréciations</button></div></form>{% else %}<div class="card mute">Choisissez une classe et une matière.</div>{% endif %}{% endblock %}

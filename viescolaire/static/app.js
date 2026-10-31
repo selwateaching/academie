@@ -499,3 +499,8 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     if (modifie && !confirm('Des modifications ne sont pas enregistrées. Changer de classe les perdra. Continuer ?')) { e.stopImmediatePropagation(); choix.value = new URLSearchParams(location.search).get('classe') || ''; }
   }, true);
 })();
+
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('button[data-confirm-btn]');
+  if (b && !confirm('Supprimer cet élément ?')) e.preventDefault();
+});

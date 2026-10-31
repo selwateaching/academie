@@ -310,6 +310,32 @@ MIGRATIONS = [
             eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE, PRIMARY KEY (groupe_id, eleve_id)
         );
     """),
+    (18, """
+        CREATE TABLE IF NOT EXISTS periodes (   -- trimestres / semestres de l'année scolaire
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            nom TEXT NOT NULL, ordre INTEGER NOT NULL DEFAULT 0, debut TEXT NOT NULL DEFAULT '', fin TEXT NOT NULL DEFAULT ''
+        );
+        CREATE TABLE IF NOT EXISTS evaluations (   -- un devoir ou contrôle d'une matière pour une classe
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            classe TEXT NOT NULL, matiere TEXT NOT NULL, prof_id INTEGER REFERENCES professeurs(id) ON DELETE SET NULL,
+            periode_id INTEGER REFERENCES periodes(id) ON DELETE SET NULL, titre TEXT NOT NULL, date TEXT NOT NULL,
+            bareme REAL NOT NULL DEFAULT 20, coef REAL NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT ''
+        );
+        CREATE INDEX IF NOT EXISTS idx_eval_classe ON evaluations(etab_id, classe, matiere);
+        CREATE TABLE IF NOT EXISTS notes (
+            id INTEGER PRIMARY KEY, evaluation_id INTEGER NOT NULL REFERENCES evaluations(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE,
+            valeur REAL, statut TEXT NOT NULL DEFAULT '',   -- statut : '' (noté), 'absent', 'dispense'
+            commentaire TEXT NOT NULL DEFAULT '', UNIQUE (evaluation_id, eleve_id)
+        );
+        CREATE TABLE IF NOT EXISTS appreciations (   -- appréciation d'une matière (ou générale : matiere = '') pour un élève et une période
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE,
+            periode_id INTEGER NOT NULL REFERENCES periodes(id) ON DELETE CASCADE, matiere TEXT NOT NULL DEFAULT '',
+            prof_id INTEGER REFERENCES professeurs(id) ON DELETE SET NULL, texte TEXT NOT NULL DEFAULT '',
+            UNIQUE (eleve_id, periode_id, matiere)
+        );
+    """),
 ]
 
 
@@ -327,6 +353,18 @@ def installer_postes(con, etab_id):
     con.commit()
 
 
+def installer_periodes(con, etab_id):
+    """Trois trimestres par défaut (modifiables) pour l'année scolaire en cours."""
+    if con.execute("SELECT 1 FROM periodes WHERE etab_id=?", (etab_id,)).fetchone():
+        return
+    from datetime import date as _d
+    a = _d.today().year if _d.today().month >= 8 else _d.today().year - 1
+    for ordre, (nom, debut, fin) in enumerate(((f"Trimestre 1", f"{a}-09-01", f"{a}-11-30"), ("Trimestre 2", f"{a}-12-01", f"{a + 1}-03-15"),
+                                               ("Trimestre 3", f"{a + 1}-03-16", f"{a + 1}-06-30")), 1):
+        con.execute("INSERT INTO periodes(etab_id,nom,ordre,debut,fin) VALUES (?,?,?,?,?)", (etab_id, nom, ordre, debut, fin))
+    con.commit()
+
+
 def init_db(extra_sql=()):
     con = connect()
     con.execute("CREATE TABLE IF NOT EXISTS schema_version (version INTEGER PRIMARY KEY, applied_at TEXT)")
@@ -340,6 +378,7 @@ def init_db(extra_sql=()):
     for (eid,) in con.execute("SELECT id FROM etablissements").fetchall():  # modèles et postes par défaut pour chaque établissement
         installer(con, eid)
         installer_postes(con, eid)
+        installer_periodes(con, eid)
     for sql in extra_sql:  # tables des extensions (idempotentes)
         con.executescript(sql)
     con.commit()
@@ -775,10 +814,40 @@ def seed_demo(password="demo1234"):
     from .modeles_defaut import installer
     for eid in (e1, e2):
         installer(con, eid)
+        installer_periodes(con, eid)
     for eid, ville, adr in ((e1, "Lyon", "12 rue des Écoles, 69000 Lyon"), (e2, "Lyon", "3 avenue Victor Hugo, 69000 Lyon")):
         con.execute("UPDATE entete_documents SET ligne_haut=?, adresse=?, telephone=?, email=?, ville=?, pied=? WHERE etab_id=?",
                     ("République française — Ministère de l'Éducation nationale", adr, "04 00 00 00 00", "vie-scolaire@demo.fr", ville,
                      "Établissement fictif de démonstration", eid))
+    con.commit()
+    # notes de démonstration : deux évaluations par matière et par classe au 1er trimestre, élèves de niveaux variés, quelques absences
+    import random
+    rng = random.Random(2026)
+    for eid in (e1, e2):
+        per = con.execute("SELECT id, debut FROM periodes WHERE etab_id=? ORDER BY ordre LIMIT 1", (eid,)).fetchone()
+        if not per:
+            continue
+        niveau_eleve = {r[0]: rng.gauss(12, 2.8) for r in con.execute("SELECT id FROM eleves WHERE etab_id=?", (eid,))}
+        annee = int(per[1][:4])
+        for classe, matiere, prof_id in con.execute("SELECT DISTINCT classe, matiere, prof_id FROM creneaux WHERE etab_id=? ORDER BY classe, matiere", (eid,)).fetchall():
+            eleves_c = [r[0] for r in con.execute("SELECT id FROM eleves WHERE etab_id=? AND classe=?", (eid, classe))]
+            offset = rng.gauss(0, 1.2)
+            for n, (titre, jour) in enumerate((("Contrôle 1", f"{annee}-09-29"), ("Devoir 2", f"{annee}-10-20"))):
+                ev = con.execute("INSERT INTO evaluations(etab_id,classe,matiere,prof_id,periode_id,titre,date,bareme,coef,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                                 (eid, classe, matiere, prof_id, per[0], titre, jour, 20, 2 if n else 1, jour + "T16:00")).lastrowid
+                for el in eleves_c:
+                    if rng.random() < 0.04:
+                        con.execute("INSERT INTO notes(evaluation_id,eleve_id,valeur,statut) VALUES (?,?,NULL,'absent')", (ev, el))
+                        continue
+                    v = min(20, max(0, niveau_eleve[el] + offset + rng.gauss(0, 2.4)))
+                    con.execute("INSERT INTO notes(evaluation_id,eleve_id,valeur,statut) VALUES (?,?,?,'')", (ev, el, round(v * 2) / 2))
+        for el, in con.execute("SELECT id FROM eleves WHERE etab_id=?", (eid,)).fetchall():
+            moy = con.execute("SELECT AVG(n.valeur) FROM notes n WHERE n.eleve_id=? AND n.valeur IS NOT NULL", (el,)).fetchone()[0]
+            if moy is None:
+                continue
+            texte = ("Excellent trimestre, félicitations." if moy >= 15 else "Bon travail, résultats solides." if moy >= 12 else
+                     "Résultats corrects mais irréguliers : à consolider." if moy >= 9 else "Des difficultés : un soutien et plus de régularité sont nécessaires.")
+            con.execute("INSERT INTO appreciations(etab_id,eleve_id,periode_id,matiere,texte) VALUES (?,?,?,'',?)", (eid, el, per[0], texte))
     con.commit()
     con.close()
     return cpe

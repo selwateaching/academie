@@ -1,6 +1,9 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ e.prenom }} {{ e.nom }}{% endblock %}{% block body %}
 <div class="top"><h1>{{ e.prenom }} {{ e.nom }} <span class="mute" style="font-size:15px">· {{ e.classe or 'sans classe' }}</span></h1>
-<span>{% if module_actif('redaction') %}<a class="btn" href="{{ url_for('document_nouveau', eleve=e.id) }}">Rédiger un document</a> {% endif %}<a class="btn sec" href="{{ url_for('eleves', classe=e.classe) }}">← Élèves</a></span></div>
+<span>{% if module_actif('notes') %}<a class="btn" href="{{ url_for('eleve_notes', eid=e.id) }}">Notes et bulletin</a> {% endif %}{% if module_actif('redaction') %}<a class="btn" href="{{ url_for('document_nouveau', eleve=e.id) }}">Rédiger un document</a> {% endif %}<a class="btn sec" href="{{ url_for('eleves', classe=e.classe) }}">← Élèves</a></span></div>
+{% if resume_notes %}<div class="card"><h2 style="display:flex;justify-content:space-between;gap:12px">Résultats — {{ resume_notes.periode }} <a class="btn sm" href="{{ url_for('eleve_notes', eid=e.id) }}">Toutes les notes</a></h2>
+<div class="stats" style="margin-bottom:0"><div class="stat"><b>{{ resume_notes.moyenne|fnote }}</b><span>Moyenne générale /20</span></div><div class="stat"><b>{{ resume_notes.classe|fnote }}</b><span>Moyenne de la classe</span></div>
+{% for m in resume_notes.matieres[:6] %}<div class="stat"><b>{{ m.moyenne|fnote1 }}</b><span>{{ m.matiere }}</span></div>{% endfor %}</div></div>{% endif %}
 <div class="grid g2">
 <div class="card"><h2>Professeur principal</h2>{% if pp %}<p style="font-size:17px;margin:0"><b>{{ pp.nom }}</b></p><p class="mute" style="margin:2px 0 0">{{ pp.matiere }}</p>
 {% for p in equipe if p.principal %}<p style="margin:6px 0 0">{% if p.email %}{{ p.email }}{% endif %}{% if p.telephone %} · {{ p.telephone }}{% endif %}</p>{% endfor %}

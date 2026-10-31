@@ -1,0 +1,2 @@
+<header class="paper-entete">{% if e_ent.a_logo %}<img src="{{ url_for('logo_entete') }}?v={{ e_ent.a_logo|int }}" alt="" class="paper-logo">{% endif %}
+<div>{% if e_ent.ligne_haut %}<div class="pe-haut">{{ e_ent.ligne_haut }}</div>{% endif %}<div class="pe-nom">{{ e_ent.nom_affiche }}</div>{% if e_ent.adresse %}<div class="pe-ligne">{{ e_ent.adresse }}</div>{% endif %}{% if e_ent.contact %}<div class="pe-ligne">{{ e_ent.contact }}</div>{% endif %}</div></header>

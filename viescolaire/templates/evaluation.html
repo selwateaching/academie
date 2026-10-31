@@ -1,0 +1,12 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}{{ ev.titre }}{% endblock %}{% block body %}
+<div class="top"><div><h1 style="margin-bottom:2px">{{ ev.titre }}</h1><span class="mute">{{ ev.classe }} · {{ ev.matiere }} · {{ ev.date|fr_date }} · sur {{ ev.bareme|fb }} · coefficient {{ ev.coef|fnote1 }}{% if periode %} · {{ periode.nom }}{% endif %}</span></div>
+<a class="btn sec noprint" href="{{ url_for('notes', periode=ev.periode_id) }}">← Évaluations</a></div>
+<div class="stats"><div class="stat"><b>{{ stats.moyenne|fnote }}</b><span>Moyenne de la classe (/{{ ev.bareme|fb }})</span></div><div class="stat"><b>{{ stats.min|fnote1 }} – {{ stats.max|fnote1 }}</b><span>Plus basse – plus haute</span></div><div class="stat"><b>{{ stats.nb }}/{{ eleves|length }}</b><span>Notes saisies</span></div></div>
+<form method="post" data-saisie-notes>{{ csrf() }}<div class="card scroll"><table class="grille-notes"><tr><th>Élève</th><th style="width:130px">Note /{{ ev.bareme|fb }}</th><th>Observation</th></tr>
+{% for e in eleves %}{% set n = saisies.get(e.id) %}<tr><td><b>{{ e.nom }}</b> {{ e.prenom }}</td>
+<td><input name="n_{{ e.id }}" value="{{ (n.valeur|fnote1 if n.valeur is not none else ('abs' if n.statut == 'absent' else ('disp' if n.statut == 'dispense' else ''))) if n else '' }}" inputmode="decimal" autocomplete="off" aria-label="Note de {{ e.prenom }} {{ e.nom }}" style="width:100px"></td>
+<td><input name="c_{{ e.id }}" value="{{ n.commentaire if n else '' }}" placeholder="Facultatif" aria-label="Observation" style="width:100%"></td></tr>
+{% else %}<tr><td colspan="3" class="mute">Aucun élève dans cette classe.</td></tr>{% endfor %}</table></div>
+<p class="mute noprint">Saisissez une note (virgule acceptée : 12,5), <b>abs</b> pour absent, <b>disp</b> pour dispensé, ou laissez vide si l'élève n'a pas été noté. Tout est enregistré en une fois.</p>
+<div class="barre-enreg noprint"><button>Enregistrer les notes</button></div></form>
+<form method="post" class="noprint" data-confirm="Supprimer cette évaluation et toutes ses notes ?" style="margin-top:14px">{{ csrf() }}<input type="hidden" name="action" value="supprimer"><button class="red sm">Supprimer l'évaluation</button></form>{% endblock %}

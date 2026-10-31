@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Périodes{% endblock %}{% block body %}
+<div class="top"><h1>Périodes (trimestres ou semestres)</h1></div>{% include '_notes_tabs.html' %}
+<p class="mute">Les évaluations sont rattachées à une période ; les moyennes et les bulletins se calculent par période.</p>
+<div class="card scroll"><table><tr><th>Nom</th><th>Début</th><th>Fin</th><th></th></tr>
+{% for p in periodes %}<tr><form method="post">{{ csrf() }}<input type="hidden" name="id" value="{{ p.id }}"><td><input name="nom" value="{{ p.nom }}"></td><td><input type="date" name="debut" value="{{ p.debut }}"></td><td><input type="date" name="fin" value="{{ p.fin }}"></td>
+<td style="white-space:nowrap"><button name="action" value="modifier" class="sm">Enregistrer</button> <button name="action" value="supprimer" class="red sm" data-confirm-btn>Supprimer</button></td></form></tr>{% endfor %}</table></div>
+<div class="card"><h2>Ajouter une période</h2><form method="post" class="row">{{ csrf() }}<input type="hidden" name="action" value="ajouter"><div><label>Nom</label><input name="nom" required placeholder="Semestre 1"></div><div><label>Début</label><input type="date" name="debut"></div><div><label>Fin</label><input type="date" name="fin"></div><div style="flex:0 0 auto"><button>Ajouter</button></div></form></div>{% endblock %}

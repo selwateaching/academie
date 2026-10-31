@@ -1,0 +1,16 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Notes et évaluations{% endblock %}{% block body %}
+<div class="top"><h1>Notes et évaluations</h1></div>{% include '_notes_tabs.html' %}
+<form method="get" class="row noprint" style="margin-bottom:12px"><div style="max-width:240px"><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div>
+{% if staff %}<div style="max-width:200px"><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe_f }}>{{ c.nom }}</option>{% endfor %}</select></div>{% endif %}</form>
+<div class="card scroll"><table><tr><th>Date</th><th>Classe</th><th>Matière</th><th>Évaluation</th><th>Barème · coef.</th><th>Saisies</th><th>Moyenne</th><th></th></tr>
+{% for ev in evals %}<tr><td>{{ ev.date|fr_date }}</td><td><b>{{ ev.classe }}</b></td><td>{{ ev.matiere }}</td><td><a href="{{ url_for('evaluation', eid=ev.id) }}"><b>{{ ev.titre }}</b></a></td><td>/{{ ev.bareme|fb }} · ×{{ ev.coef|fnote1 }}</td>
+<td>{{ ev.nb_notes }}/{{ ev.nb_eleves }} {% if ev.nb_notes < ev.nb_eleves %}<span class="tag warn">incomplet</span>{% endif %}</td><td>{{ ev.moyenne|fnote }}</td><td><a class="btn sec sm" href="{{ url_for('evaluation', eid=ev.id) }}">Saisir / modifier</a></td></tr>
+{% else %}<tr><td colspan="8" class="mute">Aucune évaluation pour cette période : créez-en une ci-dessous.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Nouvelle évaluation</h2>
+{% if not staff and not couples %}<p class="mute">Aucun cours n'est rattaché à votre compte dans l'emploi du temps : demandez à la vie scolaire de vous associer à vos classes.</p>{% else %}
+<form method="post">{{ csrf() }}<div class="row">
+{% if staff %}<div><label>Classe</label><select name="classe">{% for c in classes %}<option>{{ c.nom }}</option>{% endfor %}</select></div><div><label>Matière</label><input name="matiere" list="matieres-ev" required><datalist id="matieres-ev">{% for m in matieres %}<option value="{{ m }}">{% endfor %}</datalist></div>
+{% else %}<div style="flex:2"><label>Classe et matière</label><select name="cours">{% for c, m in couples %}<option value="{{ c }}||{{ m }}">{{ c }} — {{ m }}</option>{% endfor %}</select></div>{% endif %}
+<div style="flex:2"><label>Titre</label><input name="titre" required placeholder="ex. Contrôle chapitre 3"></div><div><label>Date</label><input type="date" name="date" value="{{ today }}"></div>
+<div><label>Barème</label><input name="bareme" value="20" style="width:80px"></div><div><label>Coefficient</label><input name="coef" value="1" style="width:80px"></div>
+<div><label>Période</label><select name="periode_id">{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div><div style="flex:0 0 auto"><button>Créer et saisir les notes</button></div></div></form>{% endif %}</div>{% endblock %}
