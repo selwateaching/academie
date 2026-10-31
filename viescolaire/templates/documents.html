@@ -1,9 +1,19 @@
-{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Documents{% endblock %}{% block body %}
-<div class="top"><h1>Documents</h1>{% if module_actif('redaction') and (g.user.role in STAFF or g.prof) %}<span><a class="btn" href="{{ url_for('document_nouveau') }}">Rédiger un document</a>{% if g.user.role in STAFF %} <a class="btn sec" href="{{ url_for('modeles_documents') }}">Modèles et types d'incident</a> <a class="btn sec" href="{{ url_for('documents_parametres') }}">En-tête et signataires</a>{% endif %}</span>{% endif %}</div>
-{% if module_actif('redaction') %}<div class="card scroll"><h2>Documents rédigés</h2><table><tr><th>Date</th><th>Document</th><th>Élève</th><th>Auteur</th><th></th></tr>
-{% for d in generes %}<tr><td>{{ d.created_at.replace('T',' ') }}</td><td><a href="{{ url_for('document_genere', did=d.id) }}"><b>{{ d.titre }}</b></a><br><span class="mute">{{ d.type }}</span></td><td>{{ d.eleve_nom }}</td><td>{{ d.auteur }}</td>
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Bibliothèque de documents{% endblock %}{% block body %}
+<div class="top"><h1>Bibliothèque de documents</h1>{% if module_actif('redaction') and (g.user.role in STAFF or g.prof) %}<span><a class="btn" href="{{ url_for('document_nouveau') }}">Rédiger un document</a>{% if g.user.role in STAFF %} <a class="btn sec" href="{{ url_for('modeles_documents') }}">Modèles et types d'incident</a> <a class="btn sec" href="{{ url_for('documents_parametres') }}">En-tête et signataires</a>{% endif %}</span>{% endif %}</div>
+{% if module_actif('redaction') %}<div class="card scroll"><h2>Documents rédigés (archive)</h2>
+<form method="get" class="row noprint"><div><label>Recherche</label><input name="q" value="{{ f.q }}" placeholder="Titre ou élève"></div>
+<div><label>Niveau</label><select name="niveau"><option value="">Tous</option>{% for n in opts.niveaux %}<option {{ 'selected' if f.niveau==n }}>{{ n }}</option>{% endfor %}</select></div>
+<div><label>Classe</label><select name="classe"><option value="">Toutes</option>{% for n in opts.classes %}<option {{ 'selected' if f.classe==n }}>{{ n }}</option>{% endfor %}</select></div>
+<div><label>Type</label><select name="type"><option value="">Tous</option>{% for n in opts.types %}<option {{ 'selected' if f.type==n }}>{{ n }}</option>{% endfor %}</select></div>
+<div><label>Du</label><input type="date" name="du" value="{{ f.du }}"></div><div><label>Au</label><input type="date" name="au" value="{{ f.au }}"></div>
+<div><label>Classer par</label><select name="tri"><option value="">Date (récents d'abord)</option><option value="ancien" {{ 'selected' if f.tri=='ancien' }}>Date (anciens d'abord)</option><option value="niveau" {{ 'selected' if f.tri=='niveau' }}>Niveau puis classe</option><option value="eleve" {{ 'selected' if f.tri=='eleve' }}>Élève</option><option value="type" {{ 'selected' if f.tri=='type' }}>Type</option></select></div>
+<div><button>Filtrer</button> <a class="btn sec" href="{{ url_for('documents') }}">Réinitialiser</a></div></form>
+<p class="mute">{{ generes|length }} document(s).</p>
+<table><tr><th>Date</th><th>Document</th><th>Élève</th><th>Niveau</th><th>Classe</th><th>Auteur</th><th></th></tr>
+{% for d in generes %}{% set mois = d.created_at[:7] %}{% if not f.tri and (loop.first or generes[loop.index0-1].created_at[:7] != mois) %}<tr><th colspan="7" class="mute">{{ mois[5:] }}/{{ mois[:4] }}</th></tr>{% endif %}
+<tr><td>{{ d.created_at.replace('T',' ') }}</td><td><a href="{{ url_for('document_genere', did=d.id) }}"><b>{{ d.titre }}</b></a><br><span class="mute">{{ d.type }}</span></td><td>{{ d.eleve_nom }}</td><td>{{ d.niveau or '' }}</td><td>{{ d.classe_nom or '' }}</td><td>{{ d.auteur }}</td>
 <td><a class="btn sec sm" href="{{ url_for('document_genere_docx', did=d.id) }}">Word</a></td></tr>
-{% else %}<tr><td colspan="5" class="mute">Aucun document rédigé pour l'instant.</td></tr>{% endfor %}</table></div>{% endif %}
+{% else %}<tr><td colspan="7" class="mute">Aucun document.</td></tr>{% endfor %}</table></div>{% endif %}
 <h2>Fichiers partagés</h2>
 <div class="card scroll"><table><tr><th>Titre</th><th>Fichier</th><th>Déposé par</th><th>Date</th><th></th></tr>
 {% for d in docs %}<tr><td><b>{{ d.titre }}</b></td><td><a href="{{ url_for('document_telecharger', did=d.id) }}">{{ d.filename }}</a></td><td>{{ d.auteur }}</td><td>{{ d.created_at.replace('T',' ') }}</td>

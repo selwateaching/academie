@@ -348,7 +348,7 @@ def menu_sections():
             section("4. Documents et réunions", [
                 item("reunions", "Réunions", "reunion", "Convocations, réponses", "reunions"),
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapports, convocations…", "redaction"),
-                item("documents", "Documents", "dossier", "Partagés et rédigés", "documents"),
+                item("documents", "Bibliothèque de documents", "dossier", "Archive classée par date et niveau", "documents"),
                 item("modeles_documents", "Modèles et types d'incident", "redaction", "Textes types des documents", "redaction"),
                 item("documents_parametres", "En-tête et signataires", "dossier", "Commun à tous les documents", "redaction")]),
             section("5. Administration", [
@@ -372,7 +372,7 @@ def menu_sections():
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapport d'incident…", "redaction"),
                 item("reunions", "Réunions", "reunion", "Convocations", "reunions"),
-                item("documents", "Documents", "dossier", "Partagés et rédigés", "documents")]),
+                item("documents", "Bibliothèque de documents", "dossier", "Archive classée par date et niveau", "documents")]),
             section("Mon compte", compte + [sortie]),
         ]
     else:
@@ -381,7 +381,7 @@ def menu_sections():
                 item("messages", "Messagerie", "message", "Messages internes", "messagerie", nb["messages"]),
                 item("infirmerie", "Infirmerie", "sante", "Soins, passages, fiches santé") if infirmerie_ok else None,
                 item("reunions", "Réunions", "reunion", "Convocations", "reunions"),
-                item("documents", "Documents", "dossier", "Partagés", "documents")], True),
+                item("documents", "Bibliothèque de documents", "dossier", "Documents partagés", "documents")], True),
             section("Mon compte", compte + [sortie]),
         ]
     return [x for x in sections if x]
@@ -1682,12 +1682,39 @@ def documents():
         return redirect(url_for("documents"))
     rows = q("SELECT d.*, u.nom auteur FROM documents d LEFT JOIN users u ON u.id=d.uploaded_by WHERE d.etab_id=? "
              "ORDER BY d.created_at DESC", (g.etab_id,))
-    sql, args = "SELECT * FROM documents_generes WHERE etab_id=?", [g.etab_id]
+    sql = ("SELECT dg.*, c.nom classe_nom, c.niveau niveau FROM documents_generes dg LEFT JOIN eleves e ON e.id=dg.eleve_id "
+           "LEFT JOIN classes c ON c.nom=e.classe AND c.etab_id=e.etab_id WHERE dg.etab_id=?")
+    args = [g.etab_id]
     if g.user["role"] not in STAFF:
-        sql += " AND auteur_id=?"
+        sql += " AND dg.auteur_id=?"
         args.append(g.user["id"])
-    generes = q(sql + " ORDER BY id DESC LIMIT 200", args)
-    return render_template("documents.html", docs=rows, generes=generes)
+    f = {k: request.args.get(k, "").strip() for k in ("q", "niveau", "classe", "type", "du", "au", "tri")}
+    if f["q"]:
+        sql += " AND (dg.titre LIKE ? OR dg.eleve_nom LIKE ?)"
+        args += ["%" + f["q"] + "%"] * 2
+    if f["niveau"]:
+        sql += " AND c.niveau=?"
+        args.append(f["niveau"])
+    if f["classe"]:
+        sql += " AND c.nom=?"
+        args.append(f["classe"])
+    if f["type"]:
+        sql += " AND dg.type=?"
+        args.append(f["type"])
+    if f["du"]:
+        sql += " AND substr(dg.created_at,1,10)>=?"
+        args.append(f["du"])
+    if f["au"]:
+        sql += " AND substr(dg.created_at,1,10)<=?"
+        args.append(f["au"])
+    ordre = {"ancien": "dg.created_at ASC", "niveau": "c.niveau, c.nom, dg.created_at DESC",
+             "eleve": "dg.eleve_nom, dg.created_at DESC", "type": "dg.type, dg.created_at DESC"}.get(f["tri"], "dg.created_at DESC")
+    generes = q(sql + " ORDER BY " + ordre + " LIMIT 500", args)
+    base = "SELECT DISTINCT {} v FROM documents_generes dg LEFT JOIN eleves e ON e.id=dg.eleve_id LEFT JOIN classes c ON c.nom=e.classe AND c.etab_id=e.etab_id WHERE dg.etab_id=? AND {}<>'' ORDER BY v"
+    opts = {"niveaux": [r["v"] for r in q(base.format("c.niveau", "c.niveau"), (g.etab_id,))],
+            "classes": [r["v"] for r in q(base.format("c.nom", "c.nom"), (g.etab_id,))],
+            "types": [r["v"] for r in q(base.format("dg.type", "dg.type"), (g.etab_id,))]}
+    return render_template("documents.html", docs=rows, generes=generes, f=f, opts=opts)
 
 
 @app.route("/documents/<int:did>/telecharger")
