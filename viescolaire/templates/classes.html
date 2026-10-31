@@ -8,6 +8,11 @@
 {% if not n.nb %}{{ post(url_for('niveau_supprimer', nid=n.id), 'Supprimer', 'sec sm', 'Supprimer ce niveau ?') }}{% endif %}</td></tr>{% endfor %}</table>{% endif %}
 <form method="post" action="{{ url_for('niveaux_ajouter') }}" style="margin-top:12px">{{ csrf() }}<label>Ajouter des niveaux (un par ligne, ou séparés par des virgules)</label>
 <textarea name="niveaux" rows="3" placeholder="6e&#10;5e&#10;4e&#10;3e" style="max-width:320px"></textarea><br><button>Ajouter</button></form></div>
+<div class="card"><h2>Nombre de classes par niveau</h2>
+<p class="mute">Indiquez combien de classes compte chaque niveau : l'application crée les classes manquantes (6A, 6B… ou 2nde1, 2nde2… selon vos habitudes) et supprime celles en trop si elles sont vides. Vous pouvez ensuite les renommer.</p>
+<form method="post" action="{{ url_for('niveaux_nombre') }}">{{ csrf() }}<table style="max-width:520px"><tr><th>Niveau</th><th>Classes actuelles</th><th>Nouveau nombre</th></tr>
+{% for n in niveaux %}<tr><td>{{ n.nom }}</td><td>{{ n.nb }}</td><td><input type="number" name="nb_{{ n.id }}" value="{{ n.nb }}" min="0" max="30" style="width:80px" aria-label="Nombre de classes en {{ n.nom }}"></td></tr>{% endfor %}</table>
+<p><button>Appliquer</button></p></form></div>
 {% for nom_niveau, classes in groupes %}<h2 style="margin:18px 0 8px">{{ nom_niveau }} <span class="mute" style="font-size:13px;font-weight:400">· {{ classes|length }} classe(s)</span></h2>
 <div class="grid g2">{% for c in classes %}<div class="card"><h2 style="margin:0 0 8px">{{ c.nom }}</h2>
 <details class="noprint" style="margin-bottom:8px"><summary class="mute" style="cursor:pointer">Renommer ou supprimer la classe</summary>

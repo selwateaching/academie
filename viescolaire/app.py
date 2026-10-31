@@ -61,7 +61,7 @@ MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
     "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
     "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
-    "classes": ["classes", "classe_pp", "classe_renommer", "classe_supprimer", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
+    "classes": ["classes", "classe_pp", "classe_renommer", "classe_supprimer", "niveaux_nombre", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
     "reunions": ["reunions", "reunion_repondre", "reunion_supprimer", "reunion_detail", "reunion_convocations_parents"],
     "documents": ["documents", "document_telecharger", "document_supprimer"],
@@ -1219,6 +1219,68 @@ def classes():
     if sans:
         groupes.append(("Sans niveau", sans))
     return render_template("classes.html", groupes=[g_ for g_ in groupes if g_[1]], equipe=equipe, profs=profs, niveaux=niveaux_)
+
+
+def prochain_nom_classe(niveau, existants):
+    """Nom suivant d'une classe du niveau, dans le style des classes déjà créées (6A, 6B… / 2nde1, 2nde2… / 1ère S, 1ère T…)."""
+    noms = [n for n in existants]
+    modele = re.match(r"^(.*?)([A-Za-z])$", noms[-1]) if noms else None
+    if modele and noms[-1][-1].isalpha() and (modele.group(1) == "" or not modele.group(1)[-1].isalpha() or modele.group(1)[-1] == " "):
+        prefixe, lettres = modele.group(1), "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for l in lettres:
+            if prefixe + l not in noms:
+                return prefixe + l
+    chiffre = re.match(r"^(.*?)(\d+)$", noms[-1]) if noms else None
+    if chiffre:
+        i = 1
+        while f"{chiffre.group(1)}{i}" in noms:
+            i += 1
+        return f"{chiffre.group(1)}{i}"
+    if not noms and niveau[:1].isdigit():
+        base = re.match(r"^\d+", niveau).group(0)
+        for l in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+            if base + l not in noms:
+                return base + l
+    i = 1
+    while f"{niveau} {i}" in noms:
+        i += 1
+    return f"{niveau} {i}"
+
+
+@app.route("/niveaux/nombre-de-classes", methods=["POST"])
+@staff_only
+def niveaux_nombre():
+    """Ajuste le nombre de classes de chaque niveau : crée les classes manquantes ; en supprime en trop seulement si elles sont vides."""
+    ajoutees, retirees, bloquees = 0, 0, []
+    for n in q("SELECT * FROM niveaux WHERE etab_id=?", (g.etab_id,)):
+        cible = request.form.get(f"nb_{n['id']}", type=int)
+        if cible is None or not 0 <= cible <= 30:
+            continue
+        classes_ = [r["nom"] for r in q("SELECT nom FROM classes WHERE etab_id=? AND niveau=? ORDER BY nom", (g.etab_id, n["nom"]))]
+        while len(classes_) < cible:
+            nom = prochain_nom_classe(n["nom"], classes_)
+            while one("SELECT 1 FROM classes WHERE etab_id=? AND nom=?", (g.etab_id, nom)):   # nom pris par un autre niveau
+                nom += "'"
+            run("INSERT INTO classes(etab_id,nom,niveau) VALUES (?,?,?)", (g.etab_id, nom, n["nom"]))
+            classes_.append(nom)
+            ajoutees += 1
+        for nom in sorted(classes_, reverse=True):
+            if len(classes_) <= cible:
+                break
+            vide = not any(one(f"SELECT 1 FROM {t} WHERE etab_id=? AND classe=?", (g.etab_id, nom)) for t in ("eleves", "creneaux", "besoins"))
+            if vide:
+                run("DELETE FROM choix_professeurs WHERE etab_id=? AND classe=?", (g.etab_id, nom))
+                run("DELETE FROM classes WHERE etab_id=? AND nom=?", (g.etab_id, nom))
+                classes_.remove(nom)
+                retirees += 1
+            elif nom not in bloquees:
+                bloquees.append(nom)
+    log("nombre de classes ajusté", f"+{ajoutees} -{retirees}")
+    if bloquees and len(bloquees):
+        flash(f"{ajoutees} classe(s) créée(s), {retirees} supprimée(s). Non supprimées car elles contiennent des élèves, des cours ou des besoins : {', '.join(bloquees)}.", "err")
+    else:
+        flash(f"{ajoutees} classe(s) créée(s), {retirees} supprimée(s).", "ok")
+    return redirect(url_for("classes"))
 
 
 @app.route("/classes/<int:cid>/renommer", methods=["POST"])
