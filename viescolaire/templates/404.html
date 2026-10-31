@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Page introuvable{% endblock %}{% block body %}
+<div class="top"><h1>Page introuvable</h1></div>
+<div class="card"><p>Cette page n'existe pas ou n'existe plus.</p>
+<p class="mute">Cela arrive le plus souvent quand on rouvre un ancien lien ou un onglet resté ouvert vers un élément qui a été supprimé{% if demo %} : <b>la démonstration est réinitialisée à chaque mise à jour du site et après une période d'inactivité</b>, ce qui efface les propositions, réunions et documents créés pendant l'essai{% endif %}.</p>
+<p>{% if g.user %}<a class="btn" href="{{ url_for('dashboard') }}">Retour au tableau de bord</a> {% else %}<a class="btn" href="{{ url_for('login') }}">Se connecter</a> {% endif %}<button type="button" class="sec" data-retour>Page précédente</button></p>
+<p class="mute">Si vous veniez de créer cet élément, recréez-le : par exemple, pour un emploi du temps, retournez dans « Génération des emplois du temps » puis « Générer une proposition ».</p></div>{% endblock %}

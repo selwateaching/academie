@@ -263,6 +263,14 @@ def staff_only(f):
     return wrapper
 
 
+@app.errorhandler(404)
+def page_introuvable(_e):
+    """Page « introuvable » lisible : le plus souvent un lien resté ouvert vers un élément supprimé ou une démonstration réinitialisée."""
+    if request.path.startswith(("/static/", "/client-static/")) or request.path.endswith((".json", ".csv", ".docx")):
+        return Response("Introuvable", status=404)
+    return render_template("404.html", demo=DEMO), 404
+
+
 @app.after_request
 def entetes(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"

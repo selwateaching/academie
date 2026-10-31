@@ -7,6 +7,7 @@ document.addEventListener('change', function (e) {
 });
 document.addEventListener('click', function (e) {
   if (e.target.hasAttribute('data-print')) window.print();
+  if (e.target.hasAttribute('data-retour')) history.back();
 });
 /* Formulaire de convocation : classes -> professeurs de ces classes, « tous » exclusif, décompte en direct. */
 (function () {
