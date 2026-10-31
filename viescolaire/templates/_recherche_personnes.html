@@ -1,0 +1,5 @@
+<details class="ri-aide noprint" open><summary><b>Chercher une personne</b> : élève, professeur ou personnel, sans quitter cette page</summary>
+<div data-recherche-personnes data-donnees="{{ recherche|tojson|forceescape }}">
+<div class="row"><div style="flex:2"><input type="search" data-rp-champ placeholder="Tapez un nom, un prénom ou une classe (ex. Martin, 3A)…" autocomplete="off" aria-label="Chercher une personne"></div></div>
+<div class="ri-pills"><button type="button" class="sec sm on" data-rp-filtre="">Tous</button><button type="button" class="sec sm" data-rp-filtre="E">Élèves</button><button type="button" class="sec sm" data-rp-filtre="P">Professeurs</button><button type="button" class="sec sm" data-rp-filtre="S">Personnel</button></div>
+<p class="mute" data-rp-compte></p><ul class="ri-resultats" data-rp-liste></ul></div></details>

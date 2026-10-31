@@ -11,7 +11,8 @@
 <li class="{{ 'fait' if valide }}"><a href="#compte-rendu"><b>4</b> Compte rendu</a></li></ol>
 
 <div class="card" id="preparation"><h2>1. Préparation et consentement</h2>
-<form method="post" action="{{ url_for('ri_preparation', rid=r.id) }}">{{ csrf() }}<input type="hidden" name="action" value="infos">
+{% include '_recherche_personnes.html' %}
+<form method="post" action="{{ url_for('ri_preparation', rid=r.id) }}" data-brouillon="ri-{{ r.id }}-infos">{{ csrf() }}<input type="hidden" name="action" value="infos">
 <div class="row"><div style="flex:2"><label>Titre</label><input name="titre" value="{{ r.titre }}" required></div>
 <div><label>Type</label><select name="type">{% for k, v in types.items() %}<option value="{{ k }}" {{ 'selected' if r.type == k }}>{{ v }}</option>{% endfor %}</select></div>
 <div><label>Date</label><input type="date" name="date" value="{{ r.date }}"></div><div><label>Heure</label><input type="time" name="heure" value="{{ r.heure }}"></div></div>

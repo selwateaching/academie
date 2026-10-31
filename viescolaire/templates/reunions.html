@@ -22,7 +22,7 @@
 <td>{% if g.user.role in STAFF %}{{ post(url_for('reunion_supprimer', rid=r.id), 'Supprimer', 'sec sm', 'Supprimer cette réunion ?') }}{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucune réunion.</td></tr>{% endfor %}</table></div>
 {% endif %}
-{% if g.user.role in STAFF %}<div class="card" id="nouvelle-reunion"><h2>Nouvelle réunion</h2><form method="post" data-convocation autocomplete="off" class="ri-creation">{{ csrf() }}
+{% if g.user.role in STAFF %}<div class="card" id="nouvelle-reunion"><h2>Nouvelle réunion</h2>{% include '_recherche_personnes.html' %}<form method="post" data-convocation data-brouillon="nouvelle-reunion" autocomplete="off" class="ri-creation">{{ csrf() }}
 <p class="mute" style="margin-top:0">Que voulez-vous faire ?</p>
 <div class="ri-modes"><label class="ri-mode"><input type="radio" name="mode" value="convoquer" checked><span><b>Convoquer seulement</b>Réunion classique : convocations et réponses des professeurs, sans enregistrement.</span></label>
 {% if ia_ok %}<label class="ri-mode"><input type="radio" name="mode" value="enregistrer"><span><b>Convoquer et enregistrer</b>La même réunion, avec enregistrement, transcription et compte rendu IA.</span></label>

@@ -1622,6 +1622,24 @@ def message_confirmer(mid):
     return redirect(url_for("message", mid=mid))
 
 
+def annuaire_recherche():
+    """Élèves, professeurs et personnel de l'établissement pour la recherche rapide (sans quitter la page de création d'une réunion)."""
+    out = []
+    for e in q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,)):
+        out.append({"t": "E", "id": e["id"], "n": f"{e['nom']} {e['prenom']}".strip(), "d": e["classe"] or "sans classe"})
+    classes_prof = {}
+    for c in q("SELECT DISTINCT prof_id, classe FROM creneaux WHERE etab_id=? ORDER BY classe", (g.etab_id,)):
+        classes_prof.setdefault(c["prof_id"], []).append(c["classe"])
+    for p in q("SELECT id, nom, prenom, matiere FROM professeurs WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,)):
+        out.append({"t": "P", "id": p["id"], "n": f"{p['nom']} {p['prenom']}".strip(), "d": " · ".join(x for x in (p["matiere"], ", ".join(classes_prof.get(p["id"], []))) if x)})
+    for p in q("SELECT nom, prenom, categorie, fonction FROM personnel WHERE etab_id=? AND actif=1 ORDER BY nom, prenom", (g.etab_id,)):
+        out.append({"t": "S", "n": f"{p['nom']} {p['prenom']}".strip(), "d": p["fonction"] or p["categorie"]})
+    roles = {"admin": "Administrateur", "direction": "Direction", "cpe": "CPE", "infirmier": "Infirmerie"}
+    for u in q("SELECT u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.role IN ('admin','direction','cpe','infirmier') ORDER BY u.nom", (g.etab_id,)):
+        out.append({"t": "S", "n": re.sub(r"\s*\([^)]*\)\s*$", "", u["nom"]), "d": roles.get(u["role"], u["role"])})
+    return out
+
+
 def reunions_unifiees(onglet):
     """Liste unique des réunions : convocations classiques (avec leur compte rendu éventuel) et réunions sans convocation."""
     aujourdhui = date.today().isoformat()
@@ -1765,7 +1783,8 @@ def reunions():
             eleves_par_classe.setdefault(e["classe"] or "Sans classe", []).append(e)
     return render_template("reunions.html", rows=rows, profs=profs, classes=classes_, classes_par_prof=classes_par_prof,
                            eleves_par_classe=eleves_par_classe, unifie=unifie, onglet=onglet, compte_onglets=compte_onglets,
-                           ia_ok=module_actif("reunions_ia") and g.user["role"] in RI["roles"], types_ia=ria.TYPES, today=date.today().isoformat())
+                           ia_ok=module_actif("reunions_ia") and g.user["role"] in RI["roles"], types_ia=ria.TYPES, today=date.today().isoformat(),
+                           recherche=annuaire_recherche() if g.user["role"] in STAFF else [])
 
 
 @app.route("/reunions/<int:rid>")
@@ -5908,7 +5927,7 @@ def ri_reunion(rid):
     users = q("SELECT u.id, u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? ORDER BY u.nom", (g.etab_id, g.user["id"]))
     convocation = one("SELECT r.*, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id) nb, (SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='oui') oui, "
                       "(SELECT COUNT(*) FROM reunion_convoques WHERE reunion_id=r.id AND reponse='non') non FROM reunions r WHERE r.id=? AND r.etab_id=?", (r["reunion_id"], g.etab_id)) if r["reunion_id"] else None
-    return render_template("ri_reunion.html", r=r, meta=ri_meta(r), convocation=convocation, participants=participants, parts=parts, cr=cr, cr_row=cr_row,
+    return render_template("ri_reunion.html", r=r, meta=ri_meta(r), convocation=convocation, recherche=annuaire_recherche(), participants=participants, parts=parts, cr=cr, cr_row=cr_row,
                            formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
                            nb_annuaire=sum(len(gr["items"]) for gr in annuaire),
                            consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,

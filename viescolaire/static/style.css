@@ -439,3 +439,10 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .slot-trou{display:block;padding:6px 8px;border-radius:8px;font-size:12px;font-weight:600;color:#B3261E;border:2px dashed #E5484D;background:repeating-linear-gradient(45deg,color-mix(in srgb,#E5484D 10%,transparent),color-mix(in srgb,#E5484D 10%,transparent) 6px,transparent 6px,transparent 12px)}
 .legende-trou{display:flex;align-items:center;gap:8px;margin:4px 0 8px}.legende-trou .slot-trou{display:inline-block}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .slot-trou{color:#FF9B9B}}
+
+/* ───── Recherche rapide d'une personne ───── */
+.ri-aide{margin:0 0 14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--brand) 5%,var(--card))}.ri-aide summary{cursor:pointer}
+.ri-pills{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.ri-pills .on{background:var(--brand-strong);color:#fff;border-color:var(--brand-strong)}
+.ri-resultats{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;max-height:260px;overflow:auto}
+.ri-resultats li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.ri-rtag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;color:#fff}.ri-rtag-E{background:var(--c-bleu)}.ri-rtag-P{background:var(--c-vert)}.ri-rtag-S{background:var(--c-violet)}

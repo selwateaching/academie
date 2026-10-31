@@ -548,3 +548,100 @@ document.addEventListener('change', function (e) {
     requestAnimationFrame(pas);
   });
 })();
+
+/* Recherche rapide d'une personne (élève, professeur, personnel) : filtre local, sans quitter la page ; « Ajouter » coche la personne dans la convocation */
+(function () {
+  var zone = document.querySelector('[data-recherche-personnes]');
+  if (!zone) return;
+  var donnees = []; try { donnees = JSON.parse(zone.getAttribute('data-donnees') || '[]'); } catch (e) {}
+  var champ = zone.querySelector('[data-rp-champ]'), liste = zone.querySelector('[data-rp-liste]'), compte = zone.querySelector('[data-rp-compte]');
+  var filtre = '', LIBELLES = { E: 'Élève', P: 'Professeur', S: 'Personnel' };
+  var form = document.querySelector('form[data-convocation]');
+  function norm(s) { return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+  function ajouter(p, bouton) {
+    if (!form) return;
+    if (p.t === 'E') { var c = form.querySelector('input[name=eleves][value="' + p.id + '"]'); if (c) { c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true })); } }
+    if (p.t === 'P') {
+      var s = form.querySelector('[data-conv-profs]'); if (!s) return;
+      Array.prototype.forEach.call(s.options, function (o) { if (o.value === String(p.id)) o.selected = true; });
+      s.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    bouton.textContent = 'Ajouté'; bouton.disabled = true;
+  }
+  function afficher() {
+    var mots = norm(champ.value).split(/\s+/).filter(Boolean);
+    if (!mots.length && !filtre) { liste.textContent = ''; compte.textContent = 'Tapez au moins une lettre, ou choisissez Élèves, Professeurs ou Personnel pour voir la liste.'; return; }
+    var trouves = donnees.filter(function (p) {
+      if (filtre && p.t !== filtre) return false;
+      var h = norm(p.n + ' ' + p.d);
+      return mots.every(function (m) { return h.indexOf(m) !== -1; });
+    });
+    compte.textContent = trouves.length + ' résultat(s)' + (trouves.length > 40 ? ' : affinez la recherche pour voir les autres.' : '.');
+    liste.textContent = '';
+    trouves.slice(0, 40).forEach(function (p) {
+      var li = document.createElement('li');
+      var tag = document.createElement('span'); tag.className = 'ri-rtag ri-rtag-' + p.t; tag.textContent = LIBELLES[p.t];
+      var nom = document.createElement('b'); nom.textContent = p.n;
+      var det = document.createElement('span'); det.className = 'mute'; det.textContent = p.d;
+      li.appendChild(tag); li.appendChild(nom); li.appendChild(det);
+      if (form && (p.t === 'E' || p.t === 'P')) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'sec sm'; b.textContent = 'Ajouter à la réunion';
+        b.addEventListener('click', function () { ajouter(p, b); }); li.appendChild(b);
+      }
+      liste.appendChild(li);
+    });
+  }
+  champ.addEventListener('input', afficher);
+  zone.querySelectorAll('[data-rp-filtre]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      filtre = b.getAttribute('data-rp-filtre');
+      zone.querySelectorAll('[data-rp-filtre]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      afficher();
+    });
+  });
+  afficher();
+})();
+
+/* Brouillon : ce qui est saisi dans un formulaire [data-brouillon] est mémorisé dans ce navigateur (7 jours) et restauré au retour ; effacé à l'envoi */
+(function () {
+  var forms = document.querySelectorAll('form[data-brouillon]');
+  forms.forEach(function (form) {
+    var cle = 'vsp-brouillon:' + form.getAttribute('data-brouillon'), minuteur = 0;
+    function lire() { try { return JSON.parse(localStorage.getItem(cle) || 'null'); } catch (e) { return null; } }
+    function effacerStock() { try { localStorage.removeItem(cle); } catch (e) {} }
+    function champs() { return Array.prototype.filter.call(form.elements, function (el) { return el.name && el.name.charAt(0) !== '_' && el.type !== 'file' && el.type !== 'password' && el.type !== 'hidden' && el.type !== 'button' && el.type !== 'submit'; }); }
+    function sauver() {
+      var vals = [];
+      champs().forEach(function (el) {
+        if (el.type === 'checkbox' || el.type === 'radio') { if (el.checked) vals.push([el.name, el.value]); }
+        else if (el.tagName === 'SELECT' && el.multiple) { Array.prototype.forEach.call(el.options, function (o) { if (o.selected) vals.push([el.name, o.value]); }); }
+        else if (el.value) vals.push([el.name, el.value]);
+      });
+      try { if (vals.length) localStorage.setItem(cle, JSON.stringify({ t: Date.now(), v: vals })); else localStorage.removeItem(cle); } catch (e) {}
+    }
+    function restaurer(d) {
+      var par = {}; d.v.forEach(function (p) { (par[p[0]] = par[p[0]] || []).push(p[1]); });
+      var els = champs();
+      els.sort(function (a, b) { return (b.hasAttribute('data-conv-classes') ? 1 : 0) - (a.hasAttribute('data-conv-classes') ? 1 : 0); });   // les classes d'abord : elles cochent des professeurs, que l'on rectifie ensuite
+      els.forEach(function (el) {
+        var v = par[el.name]; if (!v) return;
+        if (el.type === 'checkbox' || el.type === 'radio') { if (v.indexOf(el.value) !== -1) { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); } }
+        else if (el.tagName === 'SELECT' && el.multiple) { Array.prototype.forEach.call(el.options, function (o) { o.selected = v.indexOf(o.value) !== -1; }); el.dispatchEvent(new Event('change', { bubbles: true })); }
+        else if (el.tagName === 'SELECT') { el.value = v[0]; el.dispatchEvent(new Event('change', { bubbles: true })); }
+        else { el.value = v[0]; el.dispatchEvent(new Event('input', { bubbles: true })); }
+      });
+    }
+    var d = lire();
+    if (d && d.v && Date.now() - d.t < 7 * 86400000) {
+      restaurer(d);
+      var bandeau = document.createElement('div'); bandeau.className = 'al info noprint';
+      bandeau.appendChild(document.createTextNode('Brouillon retrouvé : ce que vous aviez saisi (' + new Date(d.t).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) + ') a été restauré. '));
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'sec sm'; b.textContent = 'Effacer le brouillon';
+      b.addEventListener('click', function () { effacerStock(); location.reload(); });
+      bandeau.appendChild(b); form.parentNode.insertBefore(bandeau, form);
+    }
+    var planifier = function () { clearTimeout(minuteur); minuteur = setTimeout(sauver, 300); };
+    form.addEventListener('input', planifier); form.addEventListener('change', planifier);
+    form.addEventListener('submit', effacerStock);
+  });
+})();
