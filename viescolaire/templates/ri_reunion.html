@@ -2,6 +2,7 @@
 {% set a_audio = parts|length > 0 %}{% set a_texte = r.transcription|trim|length > 0 %}{% set valide = cr_row and cr_row.valide %}
 <div class="top"><h1>{{ r.titre }}</h1><span class="noprint"><a class="btn sec" href="{{ url_for('ri_liste') }}">← Réunions intelligentes</a></span></div>
 <p class="mute">{{ meta.type_libelle }} · {{ meta.date_fr }}{% if r.heure %} à {{ r.heure }}{% endif %}{% if r.lieu %} · {{ r.lieu }}{% endif %} · créée par {{ r.cree_par }}</p>
+{% if demo %}<div class="al warn"><b>Mode démonstration :</b> les données (réunions, enregistrements, comptes rendus) sont effacées à chaque mise à jour du site et après une période d'inactivité de l'hébergement gratuit. Faites votre essai d'une traite, sans pause de plus de 10 minutes. Pour de vraies réunions, utilisez un hébergement avec disque persistant (voir README).</div>{% endif %}
 <ol class="ri-etapes noprint">
 <li class="{{ 'fait' if consent_complet }}"><a href="#preparation"><b>1</b> Préparation et consentement</a></li>
 <li class="{{ 'fait' if a_audio }}"><a href="#enregistrement"><b>2</b> Enregistrement</a></li>

@@ -5702,7 +5702,7 @@ def ri_liste():
     rows = [dict(r, statut=ri_statut(r, r["nb_audio"], r["a_cr"], r["valide"]), nb_part=len(ri_participants(r)), type_libelle=ria.TYPES.get(r["type"], "Autre"))
             for r in q(sql + " ORDER BY r.date DESC, r.heure DESC, r.id DESC LIMIT 300", args)]
     return render_template("ri_liste.html", rows=rows, types=ria.TYPES, langues=ria.LANGUES, t=typ, terme=terme, du=debut, au=fin, today=date.today().isoformat(),
-                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI)
+                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, demo=DEMO)
 
 
 @app.route("/reunions-ia/nouvelle", methods=["POST"])
@@ -5731,7 +5731,8 @@ def ri_reunion(rid):
     ri_purge_automatique()
     r = one("SELECT * FROM ri_reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
     if not r:
-        abort(404)
+        flash("Cette réunion n'existe plus sur le serveur" + (" : la démonstration est réinitialisée à chaque mise à jour et après une période d'inactivité." if DEMO else "."), "err")
+        return redirect(url_for("ri_liste"))
     parts = q("SELECT * FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,))
     cr, cr_row = ri_lire_cr(rid)
     participants = ri_participants(r)
@@ -5747,7 +5748,7 @@ def ri_reunion(rid):
     return render_template("ri_reunion.html", r=r, meta=ri_meta(r), participants=participants, parts=parts, cr=cr, cr_row=cr_row,
                            formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
                            consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,
-                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, max_mo=RI["audio_max_mo"],
+                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, max_mo=RI["audio_max_mo"], demo=DEMO,
                            sans_consent=[p["nom"] for p in participants if not p.get("consent")])
 
 
