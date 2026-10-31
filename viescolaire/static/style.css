@@ -207,3 +207,15 @@ nav.side .nav-outils{margin:6px 10px 2px}
 .hub-carte .hub-lib{flex:1;min-width:0}.hub-carte a small{display:block;color:var(--mute);font-size:12px}
 .hub-carte .badge{background:var(--orange);color:var(--noir);border-radius:99px;padding:0 8px;font-size:12px;font-weight:700}
 [data-tromb-fiche][hidden],[data-tromb-groupe][hidden]{display:none!important}
+
+/* Palettes proposées (activables par client avec la clé "palette" de la configuration, ou à l'essai avec ?palette=sapin|ardoise|petrole|actuel).
+   Tout le thème dérive de quelques couleurs : on ne redéfinit que celles-ci. Mode clair uniquement ; les couleurs d'état sont fixes et distinctes de la marque. */
+@media(prefers-color-scheme:light){
+:root[data-palette=sapin]{--noir:#1F2A24;--coquille:#F6F7F5;--bisque:#DDE5E0;--mastic:#A9C2B4;--orange:#B4571B;--brand:#2F4F46;--brand-strong:#2F4F46;--side-title:#DDE5E0;
+  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
+:root[data-palette=ardoise]{--noir:#1B2430;--coquille:#F5F7FA;--bisque:#DCE3EC;--mastic:#A7B8CE;--orange:#E8A33D;--brand:#1F3A5F;--brand-strong:#1F3A5F;--side-title:#DCE3EC;--link:#1F4FA8;
+  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
+:root[data-palette=petrole]{--noir:#16282A;--coquille:#F4F8F8;--bisque:#D6E6E6;--mastic:#9CC4C4;--orange:#F2B134;--brand:#0F5E63;--brand-strong:#0F5E63;--side-title:#D6E6E6;
+  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
+:root[data-palette=sapin] .btn:not(.sec):not(.red),:root[data-palette=sapin] button:not(.sec):not(.red){background:var(--brand-strong)}
+}

@@ -10,6 +10,7 @@ MODULES = ["professeurs", "emplois_du_temps", "absences", "remplacements", "cour
            "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel", "heures", "trombinoscope"]
 
 DEFAUTS = {
+    "palette": "",   # "", "sapin", "ardoise" ou "petrole" (voir static/style.css)
     "produit": "VieScolairePro",
     "slogan": "La vie scolaire, mieux organisée.",
     "couleur": "#777F67",          # vert-de-gris (charte) ; les teintes de boutons/menus en sont dérivées

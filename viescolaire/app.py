@@ -208,6 +208,19 @@ def trop_de_tentatives(cle):
     return len(essais) >= 8
 
 
+PALETTES = ("sapin", "ardoise", "petrole")
+
+
+@app.before_request
+def choix_palette():
+    """?palette=sapin essaie une palette (mémorisée dans la session) ; ?palette=actuel revient à la palette d'origine."""
+    p = request.args.get("palette")
+    if p in PALETTES:
+        session["palette"] = p
+    elif p == "actuel":
+        session["palette"] = ""
+
+
 @app.before_request
 def charger_contexte():
     if request.method == "POST":
@@ -365,7 +378,8 @@ def menu_sections():
 
 @app.context_processor
 def contexte():
-    ctx = {"STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
+    pal = session.get("palette") if "palette" in session else CFG.get("palette", "")
+    ctx = {"palette": pal if pal in PALETTES else "", "STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
            "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": [],
            "infirmerie_ok": bool(g.get("user")) and g.user["role"] in roles_infirmerie()}
     if g.get("user"):
