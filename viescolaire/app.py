@@ -335,7 +335,7 @@ def menu_sections():
                 item("heures", "Comptage des heures", "barres", "Heures par professeur, classe, agent", "heures"),
                 item("pers_postes", "Postes et besoins", "postes", "Rôles, couleurs, besoins", "personnel")]),
             section("3. Planification et suivi", [
-                item("volumes", "Volumes horaires par niveau", "calendrier", "Heures par matière et par niveau", "planification"),
+                item("volumes", "Matières et heures par niveau", "calendrier", "Ajouter, modifier une matière et ses heures", "planification"),
                 item("planification", "Génération des emplois du temps", "generer", "Lancer le calcul et relire la proposition", "planification"),
                 item("besoins", "Besoins en heures", "postes", "Classe × matière × professeur", "planification"),
                 item("voeux", "Vœux des professeurs", "voeux", "Indisponibilités et souhaits", "planification"),
