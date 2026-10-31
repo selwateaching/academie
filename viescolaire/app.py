@@ -680,7 +680,9 @@ def professeurs():
     rows = q("SELECT * FROM professeurs WHERE etab_id=? AND (nom LIKE ? OR prenom LIKE ? OR matiere LIKE ? OR email LIKE ?) "
              "ORDER BY nom, prenom", (g.etab_id, like, like, like, like))
     classes_par_prof = {}
-    for c in q("SELECT DISTINCT prof_id, classe FROM creneaux WHERE etab_id=? ORDER BY classe", (g.etab_id,)):
+    # classes ayant un cours à l'emploi du temps, ou un besoin horaire attribué (volumes horaires, besoins saisis)
+    for c in q("SELECT prof_id, classe FROM creneaux WHERE etab_id=? UNION SELECT prof_id, classe FROM besoins WHERE etab_id=? ORDER BY classe",
+               (g.etab_id, g.etab_id)):
         classes_par_prof.setdefault(c["prof_id"], []).append(c["classe"])
     return render_template("professeurs.html", profs=rows, terme=terme, classes_par_prof=classes_par_prof)
 
