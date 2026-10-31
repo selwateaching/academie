@@ -278,6 +278,14 @@ MIGRATIONS = [
         );
         ALTER TABLE documents_generes ADD COLUMN signataires TEXT NOT NULL DEFAULT '[]';   -- copie figée [[nom, fonction], ...]
     """),
+    (14, """
+        CREATE TABLE IF NOT EXISTS volumes_horaires (   -- dotation horaire hebdomadaire d'une matière pour un niveau (6e, 2nde…)
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            niveau TEXT NOT NULL, matiere TEXT NOT NULL, heures INTEGER NOT NULL, bloc INTEGER NOT NULL DEFAULT 1,
+            UNIQUE (etab_id, niveau, matiere)
+        );
+        ALTER TABLE besoins ADD COLUMN source TEXT NOT NULL DEFAULT 'manuel';   -- 'volumes' : besoin produit par les volumes horaires
+    """),
 ]
 
 
@@ -710,6 +718,23 @@ def seed_demo(password="demo1234"):
         con.execute("INSERT INTO passages(etab_id,eleve_id,eleve_nom,classe,date,heure,motif,soins,decision,parents_prevenus,par_nom) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                     (e1, e["id"], f"{e['prenom']} {e['nom']}", e["classe"], dj.isoformat(), f"{8 + (n * 7) % 9:02d}:{(n * 13) % 60:02d}", motif, soins_, decision,
                      1 if "domicile" in decision else 0, "Sophie Lambert (Infirmière)"))
+    # volumes horaires par niveau (dotations de démonstration, en heures entières par semaine)
+    def vol(eid, niveau, lignes):
+        for matiere, h, bloc in lignes:
+            con.execute("INSERT OR IGNORE INTO volumes_horaires(etab_id,niveau,matiere,heures,bloc) VALUES (?,?,?,?,?)", (eid, niveau, matiere, h, bloc))
+    base6 = [("Français", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1),
+             ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1), ("Musique", 1, 1)]
+    vol(e1, "6e", base6)
+    vol(e1, "5e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+                   ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1)])
+    vol(e1, "4e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+                   ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Musique", 1, 1)])
+    vol(e1, "3e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+                   ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1)])
+    vol(e2, "2nde", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 2, 1),
+                     ("SVT", 1, 1), ("Physique-Chimie", 3, 1)])
+    vol(e2, "1ère", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("SVT", 2, 1), ("Physique-Chimie", 3, 1)])
+    vol(e2, "Terminale", [("Philosophie", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 4, 1)])
     # service dû de la démo : volume de l'emploi du temps arrondi à l'heure (certains écarts restent visibles)
     for pid, tot in con.execute("SELECT prof_id, SUM((CAST(substr(fin,1,2) AS INTEGER)*60+CAST(substr(fin,4,2) AS INTEGER))"
                                 "-(CAST(substr(debut,1,2) AS INTEGER)*60+CAST(substr(debut,4,2) AS INTEGER))) FROM creneaux GROUP BY prof_id").fetchall():

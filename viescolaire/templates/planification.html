@@ -7,6 +7,7 @@
 <div class="stat"><b>{{ props|length }}</b><span>Propositions</span></div></div>
 {% for kind, msg in diag %}<div class="al {{ kind }}">{{ msg }}</div>{% endfor %}
 <div class="grid g2">
+<div class="card"><h2>0. Volumes horaires par niveau</h2><p>Heures par matière et par niveau saisies une seule fois (ex. 6e : Mathématiques 4 h) : les besoins de toutes les classes et l'affectation des professeurs en découlent, en tenant compte de leurs vœux.</p><a class="btn" href="{{ url_for('volumes') }}">Saisir les volumes horaires</a></div>
 <div class="card"><h2>1. Besoins horaires</h2><p>Classe × matière × professeur × heures par semaine (séances de 1 h ou de 2 h consécutives).</p><a class="btn" href="{{ url_for('besoins') }}">Saisir / modifier</a></div>
 <div class="card"><h2>2. Vœux des professeurs</h2><p>Indisponibilités impératives (ex. mercredi après-midi), souhaits, maximum d'heures par jour. Les enseignants peuvent saisir les leurs depuis « Mes vœux ».</p><a class="btn" href="{{ url_for('voeux') }}">Saisir / modifier</a></div></div>
 <div class="card"><h2>3. Générer</h2><p class="mute">Les règles propres à l'école (jours et demi-journées sans cours, horaires des créneaux) se règlent dans <a href="{{ url_for('planification_parametres') }}">Réglages de l'établissement</a> : rien n'est supposé par défaut.</p><form method="post" action="{{ url_for('generer_edt') }}">{{ csrf() }}<div class="row">

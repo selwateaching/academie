@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Volumes horaires par niveau{% endblock %}{% block body %}
+<div class="top"><h1>Volumes horaires par niveau</h1><a class="btn sec" href="{{ url_for('planification') }}">← Génération des emplois du temps</a></div>
+<p class="mute">Saisissez une seule fois les heures hebdomadaires de chaque matière pour chaque niveau (par exemple 6e : Mathématiques 4 h). L'application en déduit les besoins de <b>toutes les classes</b> du niveau, répartit les professeurs de chaque matière selon leur charge et leurs <b>vœux</b>, puis génère un emploi du temps cohérent avec les deux.</p>
+{% if not niveaux %}<div class="al warn">Aucun niveau défini : créez d'abord vos niveaux dans <a href="{{ url_for('classes') }}">Classes et niveaux</a>.</div>{% else %}
+<form method="post">{{ csrf() }}<input type="hidden" name="action" value="enregistrer">
+<div class="card scroll"><h2>1. Heures par semaine, par matière et par niveau</h2>
+<table class="vol"><tr><th>Matière</th>{% for n in niveaux %}<th>{{ n.nom }}<br><span class="mute" style="font-weight:400;font-size:12px">{{ nb_classes[n.nom] }} classe{{ 's' if nb_classes[n.nom] > 1 }}</span></th>{% endfor %}<th title="Séances de 2 heures consécutives">Séances de 2 h</th></tr>
+{% for m in matieres %}{% set i = loop.index0 %}<tr><td><input name="matiere" value="{{ m }}" aria-label="Matière"></td>
+{% for n in niveaux %}<td><input type="number" min="0" max="30" name="h_{{ i }}_{{ loop.index0 }}" value="{{ cell.get((m, n.nom), '') }}" aria-label="{{ m }} en {{ n.nom }}" style="width:64px"></td>{% endfor %}
+<td><input type="checkbox" name="bloc_{{ i }}" value="1" {{ 'checked' if bloc.get(m) == 2 }}></td></tr>{% endfor %}
+{% for k in range(3) %}{% set i = matieres|length + k %}<tr><td><input name="matiere" placeholder="Nouvelle matière…" aria-label="Nouvelle matière"></td>
+{% for n in niveaux %}<td><input type="number" min="0" max="30" name="h_{{ i }}_{{ loop.index0 }}" style="width:64px" aria-label="Heures"></td>{% endfor %}<td><input type="checkbox" name="bloc_{{ i }}" value="1"></td></tr>{% endfor %}
+<tr><th>Total par classe</th>{% for n in niveaux %}<th>{{ total_niveau[n.nom] }} h</th>{% endfor %}<th></th></tr></table>
+<p class="mute">Heures entières par semaine. Pour retirer une matière d'un niveau, laissez la case vide ou à 0. La case « 2 h » demande des séances de 2 heures consécutives (ex. EPS, sciences en laboratoire).</p>
+<p><button>Enregistrer les volumes horaires</button></p></div></form>
+
+<div class="card"><h2>2. Aperçu : professeurs et vœux</h2>
+<p class="mute">Chaque cours (classe × matière) est confié à un professeur de la matière. La capacité d'un professeur est limitée par son <b>service dû</b> (à renseigner dans <a href="{{ url_for('heures') }}">Comptage des heures</a>, sinon 18 h) et par ses <b>créneaux possibles</b> d'après ses vœux (indisponibilités) et les demi-journées sans cours.</p>
+{% if non_aff %}<div class="al err"><b>{{ non_aff|length }} cours sans professeur :</b>
+{% for t in non_aff[:12] %}{{ t.classe }} {{ t.matiere }} ({{ t.heures }} h){{ ', ' if not loop.last }}{% endfor %}{% if non_aff|length > 12 %}…{% endif %}.
+Raison la plus fréquente : {{ non_aff[0].raison }}. Ajoutez un professeur de la matière, augmentez un service dû, ou assouplissez des vœux.</div>
+{% elif nb_affect %}<div class="al ok">Tous les cours ({{ nb_affect }}) trouvent un professeur.</div>{% endif %}
+<div class="scroll"><table><tr><th>Professeur</th><th>Matière</th><th>Heures affectées</th><th>Capacité</th><th>Créneaux possibles</th><th>Indisponibilités (vœux)</th></tr>
+{% for p in profs_lignes %}<tr><td>{{ p.nom }}</td><td>{{ p.matiere }}</td><td><b>{{ p.heures }} h</b></td><td>{{ p.cap }} h</td><td>{{ p.possibles }}</td>
+<td>{% if p.nb_voeux_non %}<span class="tag warn">{{ p.nb_voeux_non }} demi-journée(s)</span>{% else %}<span class="mute">aucune</span>{% endif %}</td></tr>{% endfor %}</table></div></div>
+
+<div class="card"><h2>3. Générer les besoins puis l'emploi du temps</h2>
+<form method="post">{{ csrf() }}<input type="hidden" name="action" value="appliquer">
+<p class="mute">Besoins actuellement : {{ nb_besoins_volumes }} produits par les volumes, {{ nb_besoins_manuels }} saisis à la main (conservés par défaut).</p>
+<div class="row"><div><label>Durée de calcul max (secondes)</label><input type="number" name="temps_max" value="8" min="2" max="25"></div></div>
+<label class="check"><input type="checkbox" name="tout" value="1"> Remplacer aussi tous les besoins saisis à la main</label><br>
+<button name="enchainer" value="1">Générer les besoins et l'emploi du temps</button>
+<button class="sec">Générer seulement les besoins</button></form>
+<p class="mute">L'emploi du temps respecte ensuite les vœux (indisponibilités impératives, souhaits), les demi-journées sans cours, le maximum d'heures par jour et l'absence de conflit professeur / classe / salle. Vous le relisez avant de l'appliquer.</p></div>{% endif %}{% endblock %}

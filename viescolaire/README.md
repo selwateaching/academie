@@ -53,6 +53,8 @@ les enseignants peuvent saisir les leurs via « Mes vœux »), 3) **générer** 
 (professeur, classe, salle), respecte les vœux impératifs, minimise les souhaits non respectés et les trous, et explique les séances impossibles à placer.
 La proposition se relit par classe ou par professeur avant d'être appliquée (avec confirmation).
 
+**Volumes horaires par niveau** (*Planification → Volumes horaires par niveau*) : on saisit une fois les heures de chaque matière pour chaque niveau (6e : Mathématiques 4 h…) ; l'application crée les besoins de toutes les classes du niveau, confie chaque cours à un professeur de la matière (capacité limitée par le service dû et par les créneaux possibles d'après ses vœux, continuité par niveau, charge équilibrée), signale les cours sans professeur, puis génère l'emploi du temps en respectant les vœux.
+
 **Rien n'est supposé par défaut** : les demi-journées sans cours (ex. mercredi après-midi), les horaires des créneaux et le maximum d'heures par classe
 se règlent par établissement dans *Planification → Réglages de l'établissement*.
 

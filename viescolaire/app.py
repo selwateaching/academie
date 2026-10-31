@@ -78,7 +78,7 @@ MODULE_DES_ENDPOINTS = {
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
-    "planification": ["planification", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
+    "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
 ENDPOINT_VERS_MODULE = {ep: m for m, eps in MODULE_DES_ENDPOINTS.items() for ep in eps}
@@ -315,6 +315,7 @@ def menu_sections():
                 item("heures", "Comptage des heures", "barres", "Heures par professeur, classe, agent", "heures"),
                 item("pers_postes", "Postes et besoins", "postes", "Rôles, couleurs, besoins", "personnel")]),
             section("3. Planification et suivi", [
+                item("volumes", "Volumes horaires par niveau", "calendrier", "Heures par matière et par niveau", "planification"),
                 item("planification", "Génération des emplois du temps", "generer", "Lancer le calcul et relire la proposition", "planification"),
                 item("besoins", "Besoins en heures", "postes", "Classe × matière × professeur", "planification"),
                 item("voeux", "Vœux des professeurs", "voeux", "Indisponibilités et souhaits", "planification"),
@@ -3922,18 +3923,17 @@ def mes_voeux():
                            titre="Mes disponibilités et vœux")
 
 
-@app.route("/planification/generer", methods=["POST"])
-@staff_only
-def generer_edt():
+def produire_proposition(temps, forcer=False):
+    """Calcule une proposition d'emploi du temps à partir des besoins et des vœux ; retourne son identifiant (None si impossible, avec message)."""
     grille, profs, besoins_ = charger_planification()
     if not besoins_:
         flash("Aucun besoin saisi : ajoutez d'abord les classes, matières, professeurs et volumes horaires.", "err")
-        return redirect(url_for("planification"))
-    opt, temps = reglages_planning(), temps_depuis_formulaire(request.form)
+        return None
+    opt = reglages_planning()
     erreurs = [m for k, m in planning.diagnostic(grille, besoins_, profs, opt) if k == "err"]
-    if erreurs and not request.form.get("forcer"):
+    if erreurs and not forcer:
         flash("Génération impossible en l'état : " + " ".join(erreurs[:3]), "err")
-        return redirect(url_for("planification"))
+        return None
     res = planning.generer(grille, besoins_, {k: v for k, v in profs.items()}, opt, temps_max=temps)
     pid = run("INSERT INTO propositions(etab_id,created_at,auteur,options,resultat) VALUES (?,?,?,?,?)",
               (g.etab_id, datetime.now().isoformat(timespec="minutes"), g.user["nom"],
@@ -3941,7 +3941,161 @@ def generer_edt():
                            "grille": opt["grille"] or planning.GRILLE_PAR_DEFAUT}),
                json.dumps(res)))
     log("emploi du temps généré", f"{res['stats']['placees']}/{res['stats']['seances']} séances")
-    return redirect(url_for("proposition", pid=pid))
+    return pid
+
+
+@app.route("/planification/generer", methods=["POST"])
+@staff_only
+def generer_edt():
+    pid = produire_proposition(temps_depuis_formulaire(request.form), bool(request.form.get("forcer")))
+    return redirect(url_for("proposition", pid=pid) if pid else url_for("planification"))
+
+
+# ───────────── Volumes horaires par niveau -> besoins -> professeurs (selon matières, charge et vœux) -> emploi du temps ─────────────
+CAPACITE_DEFAUT_H = 18      # service hebdomadaire supposé quand le « service dû » du professeur n'est pas renseigné
+TAUX_REMPLISSAGE = 0.85     # un professeur ne peut pas occuper 100 % de ses créneaux possibles : on garde une marge pour le placement
+
+
+def cle_matiere(t):
+    import unicodedata
+    return "".join(c for c in unicodedata.normalize("NFD", (t or "").strip().lower()) if unicodedata.category(c) != "Mn")
+
+
+def creneaux_possibles(prof_voeux, grille, reg):
+    """Nombre de créneaux hebdomadaires où le professeur peut enseigner : ni demi-journée fermée aux classes, ni indisponibilité impérative."""
+    n = 0
+    for j in range(5):
+        for c in grille:
+            if (j, c["demi"]) in reg["classe_fermee"] or prof_voeux.get((j, c["demi"])) == "non":
+                continue
+            n += 1
+    return n
+
+
+def affecter_volumes(volumes, classes, ordre_niveaux, profs, charge_initiale, grille, reg, deja_couverts=()):
+    """Répartit les cours (classe × matière) issus des volumes horaires entre les professeurs de la matière.
+    Règles : même matière ; capacité = min(service dû, 85 % des créneaux possibles d'après les vœux) ; un même professeur garde
+    d'abord toutes les classes d'un niveau (continuité) puis on équilibre la charge. Retourne (affectations, non affectées, charges)."""
+    par_matiere = {}
+    for pid, p in profs.items():
+        par_matiere.setdefault(cle_matiere(p["matiere"]), []).append(pid)
+    capacite = {}
+    for pid, p in profs.items():
+        service = (p.get("service_min") or 0) / 60 or CAPACITE_DEFAUT_H
+        capacite[pid] = int(min(service, TAUX_REMPLISSAGE * creneaux_possibles(p["voeux"], grille, reg)))
+    charge = dict(charge_initiale)
+    taches = []
+    for niv in sorted({v["niveau"] for v in volumes}, key=lambda n: ordre_niveaux.get(n, 99)):
+        cl = [c["nom"] for c in classes if c["niveau"] == niv]
+        for v in sorted((x for x in volumes if x["niveau"] == niv and x["heures"] > 0), key=lambda x: cle_matiere(x["matiere"])):
+            for c in cl:
+                if (c, cle_matiere(v["matiere"])) in deja_couverts:
+                    continue   # cours déjà couvert par un besoin saisi à la main : on ne le double pas
+                taches.append({"classe": c, "niveau": niv, "matiere": v["matiere"], "heures": v["heures"], "bloc": v["bloc"]})
+    taches.sort(key=lambda t: (cle_matiere(t["matiere"]), ordre_niveaux.get(t["niveau"], 99), t["classe"]))
+    affectations, non_affectes, deja = [], [], {}
+    for t in taches:
+        cands = par_matiere.get(cle_matiere(t["matiere"]), [])
+        if not cands:
+            non_affectes.append(dict(t, raison="aucun professeur de cette matière"))
+            continue
+        ok = [pid for pid in cands if charge.get(pid, 0) + t["heures"] <= capacite[pid]]
+        if not ok:
+            non_affectes.append(dict(t, raison="capacité des professeurs de la matière atteinte (service dû ou vœux)"))
+            continue
+        cle_niv = (cle_matiere(t["matiere"]), t["niveau"])
+        choisi = min(ok, key=lambda pid: (0 if deja.get(cle_niv) == pid else 1, charge.get(pid, 0) / max(capacite[pid], 1), pid))
+        deja.setdefault(cle_niv, choisi)
+        charge[choisi] = charge.get(choisi, 0) + t["heures"]
+        affectations.append(dict(t, prof_id=choisi))
+    return affectations, non_affectes, charge, capacite
+
+
+def contexte_volumes():
+    """Données communes à la page et à l'application des volumes."""
+    grille, profs, _ = charger_planification()
+    reg = reglages_planning()
+    for r in q("SELECT id, service_min FROM professeurs WHERE etab_id=?", (g.etab_id,)):
+        profs[r["id"]]["service_min"] = r["service_min"]
+    niveaux_ = q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))
+    ordre = {n["nom"]: i for i, n in enumerate(niveaux_)}
+    classes_ = [dict(c) for c in q("SELECT nom, niveau FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))]
+    volumes = [dict(v) for v in q("SELECT * FROM volumes_horaires WHERE etab_id=? ORDER BY matiere", (g.etab_id,))]
+    return grille, profs, reg, niveaux_, ordre, classes_, volumes
+
+
+def besoins_manuels_couverts():
+    return {(b["classe"], cle_matiere(b["matiere"])) for b in q("SELECT classe, matiere FROM besoins WHERE etab_id=? AND source='manuel'", (g.etab_id,))}
+
+
+def charge_manuelle():
+    return {r["prof_id"]: r["h"] for r in q("SELECT prof_id, SUM(heures) h FROM besoins WHERE etab_id=? AND source='manuel' GROUP BY prof_id", (g.etab_id,))}
+
+
+@app.route("/planification/volumes", methods=["GET", "POST"])
+@staff_only
+def volumes():
+    grille, profs, reg, niveaux_, ordre, classes_, vols = contexte_volumes()
+    if request.method == "POST":
+        f, action = request.form, request.form.get("action")
+        if action == "enregistrer":
+            noms = [n["nom"] for n in niveaux_]
+            matieres = sorted({v["matiere"] for v in vols} | {x.strip() for x in f.getlist("matiere") if x.strip()}, key=cle_matiere)
+            run("DELETE FROM volumes_horaires WHERE etab_id=?", (g.etab_id,))
+            for i, m in enumerate(f.getlist("matiere")):
+                m = m.strip()
+                if not m:
+                    continue
+                bloc = 2 if f.get(f"bloc_{i}") else 1
+                for j, niv in enumerate(noms):
+                    try:
+                        h = int(f.get(f"h_{i}_{j}", "0") or 0)
+                    except ValueError:
+                        h = 0
+                    if 0 < h <= 30:
+                        db().execute("INSERT OR REPLACE INTO volumes_horaires(etab_id,niveau,matiere,heures,bloc) VALUES (?,?,?,?,?)", (g.etab_id, niv, m[:80], h, bloc))
+            db().commit()
+            log("volumes horaires enregistrés")
+            flash("Volumes horaires enregistrés.", "ok")
+        elif action == "appliquer":
+            affect, non_aff, charge, cap = affecter_volumes(vols, classes_, ordre, profs, {} if f.get("tout") else charge_manuelle(), grille, reg,
+                                                            () if f.get("tout") else besoins_manuels_couverts())
+            if f.get("tout"):
+                run("DELETE FROM besoins WHERE etab_id=?", (g.etab_id,))
+            else:
+                run("DELETE FROM besoins WHERE etab_id=? AND source='volumes'", (g.etab_id,))
+            existants = {(b["classe"], cle_matiere(b["matiere"])) for b in q("SELECT classe, matiere FROM besoins WHERE etab_id=?", (g.etab_id,))}
+            n = 0
+            for a in affect:
+                if (a["classe"], cle_matiere(a["matiere"])) in existants:
+                    continue   # un besoin saisi à la main pour cette classe et cette matière est conservé
+                db().execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle,source) VALUES (?,?,?,?,?,?,?,'volumes')",
+                             (g.etab_id, a["classe"], a["matiere"], a["prof_id"], a["heures"], a["bloc"], ""))
+                n += 1
+            db().commit()
+            log("besoins générés depuis les volumes horaires", f"{n} besoins, {len(non_aff)} sans professeur")
+            if f.get("enchainer"):
+                flash(f"{n} besoins créés" + (f" ({len(non_aff)} cours sans professeur disponible, voir ci-dessous)" if non_aff else "") + ".", "ok" if not non_aff else "err")
+                pid = produire_proposition(temps_depuis_formulaire(f), True)
+                if pid:
+                    return redirect(url_for("proposition", pid=pid))
+            else:
+                flash(f"{n} besoins créés à partir des volumes horaires" + (f" ; {len(non_aff)} cours restent sans professeur." if non_aff else "."), "ok" if not non_aff else "err")
+        return redirect(url_for("volumes"))
+    # aperçu non destructif de l'affectation
+    affect, non_aff, charge, cap = affecter_volumes(vols, classes_, ordre, profs, charge_manuelle(), grille, reg, besoins_manuels_couverts())
+    matieres = sorted({v["matiere"] for v in vols}, key=cle_matiere)
+    cell = {(v["matiere"], v["niveau"]): v["heures"] for v in vols}
+    bloc = {v["matiere"]: v["bloc"] for v in vols}
+    nb_classes = {n["nom"]: sum(1 for c in classes_ if c["niveau"] == n["nom"]) for n in niveaux_}
+    total_niveau = {n["nom"]: sum(v["heures"] for v in vols if v["niveau"] == n["nom"]) for n in niveaux_}
+    max_hebdo = reg["max_classe_jour"] * (5 - len({j for j, _ in reg["classe_fermee"]})) if reg["max_classe_jour"] else 0
+    lignes_profs = sorted(({"nom": profs[pid]["nom"], "matiere": profs[pid]["matiere"], "heures": charge.get(pid, 0), "cap": cap[pid],
+                            "possibles": creneaux_possibles(profs[pid]["voeux"], grille, reg), "nb_voeux_non": sum(1 for v in profs[pid]["voeux"].values() if v == "non")}
+                           for pid in profs), key=lambda x: (cle_matiere(x["matiere"]), x["nom"]))
+    return render_template("volumes.html", niveaux=niveaux_, matieres=matieres, cell=cell, bloc=bloc, nb_classes=nb_classes, total_niveau=total_niveau,
+                           non_aff=non_aff, profs_lignes=lignes_profs, nb_affect=len(affect), nb_besoins_manuels=one("SELECT COUNT(*) c FROM besoins WHERE etab_id=? AND source='manuel'", (g.etab_id,))["c"],
+                           nb_besoins_volumes=one("SELECT COUNT(*) c FROM besoins WHERE etab_id=? AND source='volumes'", (g.etab_id,))["c"])
 
 
 def get_proposition(pid):
