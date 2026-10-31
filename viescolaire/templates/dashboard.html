@@ -1,14 +1,26 @@
-{% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block title %}Espace CPE{% endblock %}{% block body %}
-<div class="top"><h1>Espace CPE</h1><span class="mute">{{ today|fr_date }}</span></div>
+{% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% from '_graphiques.html' import donut, colonnes, niveaux, classement %}{% from '_icones.html' import ico %}{% block title %}Espace CPE{% endblock %}{% block body %}
+<div class="bandeau-jour"><div><h1>Espace CPE</h1><p>{{ today|fr_date }}{% if stats.absents or stats.remplacements %} · <b>{{ stats.absents }}</b> professeur(s) absent(s), <b>{{ stats.remplacements }}</b> remplacement(s) à pourvoir{% else %} · journée sans perturbation majeure{% endif %}</p></div>
+<span class="bandeau-actions">{% if module_actif('assiduite') %}<a class="btn" href="{{ url_for('appel') }}">Faire l'appel</a>{% endif %}{% if module_actif('redaction') %}<a class="btn" href="{{ url_for('document_nouveau') }}">Rédiger un document</a>{% endif %}</span></div>
 {% for kind, msg, url in alertes %}<a class="al {{ kind }}" href="{{ url }}">{{ msg }}</a>{% endfor %}
+<div class="tuiles">
+<a class="tuile t-bleu" href="{{ url_for('eleves') }}">{{ ico('eleve') }}<b data-compte="{{ graph.eleves }}">{{ graph.eleves }}</b><span>Élèves · {{ graph.classes }} classes</span></a>
+{% if module_actif('professeurs') %}<a class="tuile t-vert" href="{{ url_for('professeurs') }}">{{ ico('profs') }}<b data-compte="{{ stats.profs }}">{{ stats.profs }}</b><span>Professeurs</span></a>{% endif %}
+{% if module_actif('assiduite') %}<a class="tuile t-orange" href="{{ url_for('assiduite') }}">{{ ico('absence') }}<b data-compte="{{ graph.abs_eleves_jour }}">{{ graph.abs_eleves_jour }}</b><span>Élèves absents aujourd'hui</span></a>{% endif %}
+{% if module_actif('absences') %}<a class="tuile t-rose" href="{{ url_for('absences') }}">{{ ico('alerte') }}<b data-compte="{{ stats.absents }}">{{ stats.absents }}</b><span>Professeurs absents</span></a>{% endif %}
+{% if module_actif('remplacements') %}<a class="tuile t-violet" href="{{ url_for('remplacements', statut='a_pourvoir') }}">{{ ico('remplace') }}<b data-compte="{{ stats.remplacements }}">{{ stats.remplacements }}</b><span>Remplacements à pourvoir</span></a>{% endif %}
+{% if module_actif('incidents') %}<a class="tuile t-or" href="{{ url_for('incidents') }}">{{ ico('incident') }}<b data-compte="{{ graph.incidents_ouverts }}">{{ graph.incidents_ouverts }}</b><span>Incidents ouverts</span></a>{% endif %}
+{% if module_actif('messagerie') %}<a class="tuile t-sarcelle" href="{{ url_for('messages') }}">{{ ico('message') }}<b data-compte="{{ stats.messages }}">{{ stats.messages }}</b><span>Messages non lus</span></a>{% endif %}
+{% if module_actif('taches') %}<a class="tuile t-gris" href="{{ url_for('taches') }}">{{ ico('taches') }}<b data-compte="{{ stats.taches }}">{{ stats.taches }}</b><span>Tâches ouvertes</span></a>{% endif %}
+</div>
+<div class="grid g2 graphiques">
+{% if module_actif('assiduite') and graph.assiduite %}<div class="card gc gc-bleu"><h2>Assiduité des élèves <span class="mute">· 7 derniers jours ouvrés</span></h2>{{ colonnes(graph.assiduite, [('absences', 'Absents', '--c-orange'), ('retards', 'Retards', '--c-bleu')], 'Absences et retards des élèves par jour') }}<a class="lien-voir" href="{{ url_for('etat_assiduite') }}">Voir les états jour · semaine · mois →</a></div>{% endif %}
+<div class="card gc gc-vert"><h2>Élèves par niveau <span class="mute">· {{ graph.garcons }} garçons, {{ graph.filles }} filles</span></h2>{{ niveaux(graph.niveaux) }}<a class="lien-voir" href="{{ url_for('pyramide') }}">Voir la pyramide des âges →</a></div>
+{% if module_actif('remplacements') %}<div class="card gc gc-violet"><h2>Remplacements <span class="mute">· cette semaine</span></h2>{{ donut([(graph.remplacements[0][0], graph.remplacements[0][1], '--c-rose'), (graph.remplacements[1][0], graph.remplacements[1][1], '--c-vert'), (graph.remplacements[2][0], graph.remplacements[2][1], '--c-gris')], 'Remplacements de la semaine', graph.remplacements|sum(attribute=1), 'cours') }}</div>{% endif %}
+<div class="card gc gc-or"><h2>Régime des élèves</h2>{{ donut([(graph.regimes[0][0], graph.regimes[0][1], '--c-bleu'), (graph.regimes[1][0], graph.regimes[1][1], '--c-orange'), (graph.regimes[2][0], graph.regimes[2][1], '--c-violet')] + ([(graph.regimes[3][0], graph.regimes[3][1], '--c-gris')] if graph.regimes|length > 3 else []), 'Régime des élèves', graph.eleves, 'élèves') }}</div>
+{% if module_actif('assiduite') %}<div class="card gc gc-orange"><h2>Classes les plus touchées <span class="mute">· absences, 30 jours</span></h2>{{ classement(graph.top_classes, '--c-orange') }}<a class="lien-voir" href="{{ url_for('etat_assiduite') }}">Voir le détail →</a></div>{% endif %}
+{% if module_actif('incidents') %}<div class="card gc gc-rose"><h2>Incidents <span class="mute">· 6 derniers mois</span></h2>{{ colonnes(graph.incidents, [('absences', 'Incidents', '--c-rose')], 'Incidents par mois') }}<a class="lien-voir" href="{{ url_for('incidents') }}">Voir les incidents →</a></div>{% endif %}
+</div>
 {% include '_hub.html' %}
-<div class="stats" style="margin-top:14px">
-{% if module_actif('professeurs') %}<a class="stat" href="{{ url_for('professeurs') }}"><b>{{ stats.profs }}</b><span>Professeurs</span></a>{% endif %}
-{% if module_actif('absences') %}<a class="stat" href="{{ url_for('absences') }}"><b>{{ stats.absents }}</b><span>Absents aujourd'hui</span></a>{% endif %}
-{% if module_actif('remplacements') %}<a class="stat" href="{{ url_for('remplacements', statut='a_pourvoir') }}"><b>{{ stats.remplacements }}</b><span>Remplacements à pourvoir</span></a>{% endif %}
-{% if module_actif('messagerie') %}<a class="stat" href="{{ url_for('messages') }}"><b>{{ stats.messages }}</b><span>Messages non lus</span></a>{% endif %}
-{% if module_actif('reunions') %}<a class="stat" href="{{ url_for('reunions') }}"><b>{{ stats.reunions }}</b><span>Réunions à venir</span></a>{% endif %}
-{% if module_actif('taches') %}<a class="stat" href="{{ url_for('taches') }}"><b>{{ stats.taches }}</b><span>Tâches ouvertes</span></a>{% endif %}</div>
 <div class="grid g2">
 <div class="card"><h2>Cours à réorganiser aujourd'hui</h2>{{ cours_table(cours) }}</div>
 <div class="card"><h2>Absences enseignants du jour</h2>

@@ -528,3 +528,22 @@ document.addEventListener('change', function (e) {
     var t = e.target.closest('table'); t.querySelectorAll('input[name=sel]').forEach(function (c) { c.checked = e.target.checked; });
   }
 });
+
+/* Compteurs animés du tableau de bord : le chiffre monte jusqu'à sa valeur (sans animation si l'utilisateur la réduit) */
+(function () {
+  var els = document.querySelectorAll('[data-compte]');
+  if (!els.length || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  els.forEach(function (el) {
+    var cible = parseInt(el.getAttribute('data-compte'), 10);
+    if (!isFinite(cible) || cible < 2) return;
+    var debut = null, duree = 700;
+    function pas(t) {
+      if (debut === null) debut = t;
+      var k = Math.min(1, (t - debut) / duree);
+      el.textContent = Math.round(cible * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(pas); else el.textContent = cible;
+    }
+    el.textContent = '0';
+    requestAnimationFrame(pas);
+  });
+})();

@@ -657,7 +657,72 @@ def dashboard():
     taches_ = q("SELECT * FROM taches WHERE etab_id=? AND statut<>'faite' ORDER BY echeance IS NULL, echeance LIMIT 5",
                 (g.etab_id,))
     return render_template("dashboard.html", stats=stats, absents=absents, cours=cours, reunions=reunions_,
-                           taches=taches_, alertes=alertes())
+                           taches=taches_, alertes=alertes(), graph=donnees_tableau_bord(today))
+
+
+
+def derniers_jours_ouvres(fin, n):
+    """Les n derniers jours de semaine (lundi-vendredi) jusqu'à `fin` incluse (ou le dernier jour ouvré précédent)."""
+    jours, j = [], fin
+    while len(jours) < n:
+        if j.weekday() < 5:
+            jours.append(j)
+        j -= timedelta(days=1)
+    return list(reversed(jours))
+
+
+MOIS_COURTS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+
+
+def donnees_tableau_bord(today):
+    """Chiffres des graphiques du tableau de bord (vie scolaire) : effectifs, assiduité, remplacements, incidents."""
+    e = g.etab_id
+    d = {}
+    ordre = {n["nom"]: i for i, n in enumerate(q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (e,)))}
+    niv = {}
+    for r in q("SELECT COALESCE(c.niveau,'') niveau, e.sexe sexe, COUNT(*) n FROM eleves e LEFT JOIN classes c ON c.nom=e.classe AND c.etab_id=e.etab_id "
+               "WHERE e.etab_id=? GROUP BY 1, 2", (e,)):
+        ligne = niv.setdefault(r["niveau"] or "Sans niveau", {"m": 0, "f": 0, "nr": 0})
+        ligne["m" if r["sexe"] == "M" else "f" if r["sexe"] == "F" else "nr"] += r["n"]
+    d["niveaux"] = sorted(({"nom": k, **v, "total": v["m"] + v["f"] + v["nr"]} for k, v in niv.items()), key=lambda x: (ordre.get(x["nom"], 99), x["nom"]))
+    d["eleves"] = sum(x["total"] for x in d["niveaux"])
+    d["garcons"], d["filles"] = sum(x["m"] for x in d["niveaux"]), sum(x["f"] for x in d["niveaux"])
+    d["classes"] = one("SELECT COUNT(*) c FROM classes WHERE etab_id=?", (e,))["c"]
+    reg = {r["regime"]: r["n"] for r in q("SELECT regime, COUNT(*) n FROM eleves WHERE etab_id=? GROUP BY regime", (e,))}
+    d["regimes"] = [(REGIMES[k], reg.get(k, 0)) for k in REGIMES] + ([("Non renseigné", reg.get("", 0))] if reg.get("") else [])
+    jours = derniers_jours_ouvres(today, 7)
+    d["assiduite"] = []
+    if module_actif("assiduite"):
+        brut = {(r["date"], r["type"]): r["n"] for r in q(
+            "SELECT date, type, COUNT(DISTINCT eleve_id) n FROM absences_eleves WHERE etab_id=? AND date BETWEEN ? AND ? GROUP BY date, type",
+            (e, jours[0].isoformat(), jours[-1].isoformat()))}
+        for j in jours:
+            d["assiduite"].append({"jour": JOURS[j.weekday()][:3] + ". " + str(j.day), "absences": brut.get((j.isoformat(), "absence"), 0),
+                                   "retards": brut.get((j.isoformat(), "retard"), 0), "aujourdhui": j == today})
+    lundi = today - timedelta(days=today.weekday())
+    rem = {r["statut"]: r["n"] for r in q("SELECT statut, COUNT(*) n FROM remplacements WHERE etab_id=? AND date BETWEEN ? AND ? GROUP BY statut",
+                                         (e, lundi.isoformat(), (lundi + timedelta(days=6)).isoformat()))}
+    d["remplacements"] = [("À pourvoir", rem.get("a_pourvoir", 0)), ("Pourvus", sum(v for k, v in rem.items() if k not in ("a_pourvoir", "annule"))),
+                          ("Annulés", rem.get("annule", 0))]
+    mois = []
+    m, a = today.month, today.year
+    for _ in range(6):
+        mois.append((a, m))
+        m -= 1
+        if m == 0:
+            m, a = 12, a - 1
+    mois.reverse()
+    inc = {r["mois"]: r["n"] for r in q("SELECT substr(date,1,7) mois, COUNT(*) n FROM incidents WHERE etab_id=? AND date>=? GROUP BY 1",
+                                        (e, f"{mois[0][0]}-{mois[0][1]:02d}-01"))}
+    d["incidents"] = [{"jour": MOIS_COURTS[m_ - 1], "absences": inc.get(f"{a_}-{m_:02d}", 0), "aujourdhui": (a_, m_) == (today.year, today.month)} for a_, m_ in mois]
+    d["top_classes"] = []
+    if module_actif("assiduite"):
+        d["top_classes"] = [{"nom": r["classe"], "n": r["n"]} for r in q(
+            "SELECT e.classe classe, COUNT(*) n FROM absences_eleves a JOIN eleves e ON e.id=a.eleve_id WHERE a.etab_id=? AND a.type='absence' AND a.date>=? "
+            "AND e.classe<>'' GROUP BY e.classe ORDER BY n DESC, e.classe LIMIT 6", (e, (today - timedelta(days=30)).isoformat()))]
+    d["incidents_ouverts"] = one("SELECT COUNT(*) c FROM incidents WHERE etab_id=? AND statut='ouvert'", (e,))["c"]
+    d["abs_eleves_jour"] = one("SELECT COUNT(DISTINCT eleve_id) c FROM absences_eleves WHERE etab_id=? AND date=? AND type='absence'", (e, today.isoformat()))["c"] if module_actif("assiduite") else 0
+    return d
 
 
 # ───────────────────────── 1. Gestion des professeurs ─────────────────────────
@@ -2088,7 +2153,7 @@ def donnees_pyramide(niveau, classe, ref):
 
 def geometrie_pyramide(lignes):
     """Calcule le dessin SVG : barres dos à dos (garçons à gauche, filles à droite), échelle commune aux deux côtés."""
-    W, MARGE, CENTRE, PAS, EPAISSEUR, HAUT = 760, 18, 64, 30, 22, 8
+    W, MARGE, CENTRE, PAS, EPAISSEUR, HAUT = 760, 22, 70, 36, 26, 8
     cote = (W - 2 * MARGE - CENTRE) / 2
     cl, cr = MARGE + cote, MARGE + cote + CENTRE
     maxi = max([max(l["m"], l["f"]) for l in lignes] + [1])
@@ -2097,7 +2162,7 @@ def geometrie_pyramide(lignes):
     px = cote / echelle
 
     def barre(x0, longueur, y, sens):  # arrondi de 4 px côté valeur, angle droit côté axe
-        r = min(4, longueur / 2)
+        r = min(9, longueur / 2)
         if longueur <= 0:
             return ""
         if sens < 0:
@@ -2106,14 +2171,14 @@ def geometrie_pyramide(lignes):
         x1 = x0 + longueur
         return f"M{x0:.1f},{y} L{x1 - r:.1f},{y} Q{x1:.1f},{y} {x1:.1f},{y + r} L{x1:.1f},{y + EPAISSEUR - r} Q{x1:.1f},{y + EPAISSEUR} {x1 - r:.1f},{y + EPAISSEUR} L{x0:.1f},{y + EPAISSEUR} Z"
 
-    max_m, max_f = max(l["m"] for l in lignes), max(l["f"] for l in lignes)
+    max_total = max(l["total"] for l in lignes)
     rangs = []
     for i, l in enumerate(lignes):
         y_bande = HAUT + i * PAS
         y = y_bande + (PAS - EPAISSEUR) / 2
         rangs.append({**l, "y_bande": y_bande, "pas": PAS, "yc": y + EPAISSEUR / 2 + 4,
                       "chemin_m": barre(cl, l["m"] * px, y, -1), "chemin_f": barre(cr, l["f"] * px, y, 1),
-                      "etiq_m": l["m"] == max_m and l["m"] > 0, "etiq_f": l["f"] == max_f and l["f"] > 0,
+                      "etiq_m": l["m"] > 0, "etiq_f": l["f"] > 0, "pic": l["total"] == max_total,
                       "x_m": cl - l["m"] * px - 6, "x_f": cr + l["f"] * px + 6})
     h_plot = HAUT + len(lignes) * PAS
     pas_tick = echelle // 4
@@ -2130,7 +2195,12 @@ def pyramide():
     lignes, tot, sans_naissance = donnees_pyramide(niveau, classe, ref)
     geo = geometrie_pyramide(lignes) if lignes else None
     sans_sexe_total = tot["nr"]
-    return render_template("pyramide.html", lignes=lignes, tot=tot, geo=geo, sans_naissance=sans_naissance, ref=ref, niveau=niveau, classe=classe,
+    faits = None
+    if lignes:
+        pic = max(lignes, key=lambda l: l["total"])
+        faits = {"pic_age": pic["age"], "pic_n": pic["total"], "pic_pct": round(100 * pic["total"] / tot["total"]),
+                 "jeune": lignes[-1]["age"], "age": lignes[0]["age"], "ecart": lignes[0]["age"] - lignes[-1]["age"]}
+    return render_template("pyramide.html", faits=faits, lignes=lignes, tot=tot, geo=geo, sans_naissance=sans_naissance, ref=ref, niveau=niveau, classe=classe,
                            niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)),
                            classes=q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,)), sans_sexe=sans_sexe_total)
 

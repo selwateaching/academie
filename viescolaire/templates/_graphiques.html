@@ -1,0 +1,40 @@
+{# Graphiques du tableau de bord : SVG/HTML générés côté serveur, animés en CSS, sans dépendance externe #}
+{% macro donut(parts, titre, valeur, unite='') %}
+{% set total = parts|sum(attribute=1) %}
+<div class="donut-bloc"><div class="donut-zone">
+<svg viewBox="0 0 42 42" class="donut" role="img" aria-label="{{ titre }} : {% for l, v, c in parts %}{{ l }} {{ v }}{{ ', ' if not loop.last }}{% endfor %}">
+<circle class="donut-fond" cx="21" cy="21" r="15.9155"/>
+{% if total %}{% set ns = namespace(cum=0) %}{% for l, v, c in parts if v %}{% set pct = v * 100 / total %}
+<circle class="donut-seg" cx="21" cy="21" r="15.9155" style="stroke:var({{ c }});--len:{{ '%.2f'|format(pct) }};--off:{{ '%.2f'|format(25 - ns.cum) }};animation-delay:{{ loop.index0 * 0.12 }}s" stroke-dasharray="{{ '%.2f'|format(pct) }} {{ '%.2f'|format(100 - pct) }}" stroke-dashoffset="{{ '%.2f'|format(25 - ns.cum) }}"><title>{{ l }} : {{ v }} ({{ pct|round|int }} %)</title></circle>{% set ns.cum = ns.cum + pct %}{% endfor %}{% endif %}
+</svg><div class="donut-centre"><b data-compte="{{ valeur }}">{{ valeur }}</b><span>{{ unite }}</span></div></div>
+<ul class="legende-v">{% for l, v, c in parts %}<li><i class="sw" style="background:var({{ c }})"></i>{{ l }} <b>{{ v }}</b>{% if total %} <span class="mute">· {{ (v * 100 / total)|round|int }} %</span>{% endif %}</li>{% endfor %}</ul></div>
+{% endmacro %}
+
+{% macro colonnes(items, series, titre) %}
+{# items : [{jour, <clé>: n, aujourdhui}] ; series : [(clé, libellé, variable de couleur)] #}
+{% set maxi = namespace(v=1) %}{% for it in items %}{% for cle, lib, col in series %}{% if it[cle] > maxi.v %}{% set maxi.v = it[cle] %}{% endif %}{% endfor %}{% endfor %}
+{% set haut = 150 %}{% set largeur = 520 %}{% set pas = largeur / items|length %}{% set bw = (pas - 14) / series|length %}
+<div class="legende">{% for cle, lib, col in series %}<span class="leg-m"><i class="sw" style="background:var({{ col }})"></i> {{ lib }}</span>{% endfor %}</div>
+<svg viewBox="0 0 {{ largeur }} {{ haut + 38 }}" class="colonnes" role="img" aria-label="{{ titre }}">
+{% for k in range(0, 4) %}{% set y = 14 + (haut - 14) * k / 3 %}<line class="py-grid" x1="0" x2="{{ largeur }}" y1="{{ '%.1f'|format(y) }}" y2="{{ '%.1f'|format(y) }}"/><text class="py-txt" x="0" y="{{ '%.1f'|format(y - 3) }}">{{ ((maxi.v * (3 - k)) / 3)|round|int }}</text>{% endfor %}
+{% for it in items %}{% set i = loop.index0 %}<g class="col-groupe{{ ' col-auj' if it.aujourdhui }}">
+<rect class="py-hit" x="{{ '%.1f'|format(i * pas) }}" y="0" width="{{ '%.1f'|format(pas) }}" height="{{ haut + 38 }}"/>
+{% for cle, lib, col in series %}{% set h = (haut - 14) * it[cle] / maxi.v %}{% set x = i * pas + 7 + loop.index0 * bw %}
+<rect class="col" style="fill:var({{ col }});animation-delay:{{ i * 0.06 }}s" x="{{ '%.1f'|format(x) }}" y="{{ '%.1f'|format(haut - h) }}" width="{{ '%.1f'|format(bw - 3) }}" height="{{ '%.1f'|format(h) }}" rx="4"><title>{{ it.jour }} · {{ lib }} : {{ it[cle] }}</title></rect>
+{% if it[cle] %}<text class="py-val" x="{{ '%.1f'|format(x + (bw - 3) / 2) }}" y="{{ '%.1f'|format(haut - h - 4) }}" text-anchor="middle">{{ it[cle] }}</text>{% endif %}{% endfor %}
+<text class="py-txt col-lib" x="{{ '%.1f'|format(i * pas + pas / 2) }}" y="{{ haut + 18 }}" text-anchor="middle">{{ it.jour }}</text></g>{% endfor %}
+</svg>
+{% endmacro %}
+
+{% macro niveaux(items) %}
+{% set maxi = items|map(attribute='total')|max if items else 1 %}
+<div class="legende"><span class="leg-m"><i class="sw sw-m"></i> Garçons</span><span class="leg-f"><i class="sw sw-f"></i> Filles</span></div>
+<div class="barres-niv">{% for n in items %}<div class="bn-ligne"><span class="bn-nom">{{ n.nom }}</span>
+<div class="bn-piste" title="{{ n.nom }} : {{ n.m }} garçons, {{ n.f }} filles{{ ', ' ~ n.nr ~ ' non précisé' if n.nr }}"><div class="bn-barre" style="width:{{ (n.total * 100 / maxi)|round(1) }}%;animation-delay:{{ loop.index0 * 0.08 }}s"><i class="bn-m" style="flex:{{ n.m }}"></i><i class="bn-f" style="flex:{{ n.f }}"></i>{% if n.nr %}<i class="bn-nr" style="flex:{{ n.nr }}"></i>{% endif %}</div></div><b class="bn-val">{{ n.total }}</b></div>{% endfor %}</div>
+{% endmacro %}
+
+{% macro classement(items, couleur) %}
+{% set maxi = items|map(attribute='n')|max if items else 1 %}
+<div class="barres-niv">{% for n in items %}<div class="bn-ligne"><span class="bn-nom">{{ n.nom }}</span>
+<div class="bn-piste" title="{{ n.nom }} : {{ n.n }}"><div class="bn-barre" style="width:{{ (n.n * 100 / maxi)|round(1) }}%;animation-delay:{{ loop.index0 * 0.08 }}s"><i style="flex:1;background:var({{ couleur }})"></i></div></div><b class="bn-val">{{ n.n }}</b></div>{% else %}<p class="mute">Aucune absence sur la période.</p>{% endfor %}</div>
+{% endmacro %}
