@@ -186,6 +186,26 @@ function pastille(slide, ico, x, y, nom, couleur = C.text2) {
     ["Professeurs libres proposés, même matière d'abord", "Conflit signalé et refusé, sauf décision explicite", "Pourvoi automatique en un clic, remplaçants prévenus", "Suivi : pourvus, à pourvoir, annulés"],
     "remplacements", "Organisation des remplacements", "Pour chaque cours, les professeurs libres sont proposés (même matière d'abord, puis le moins sollicité). Un menu permet aussi de choisir un autre professeur avec sa disponibilité.");
 
+  // 9 bis. Remplacements : les règles en détail
+  s = pres.addSlide({ masterName: "CONTENU" });
+  s.addText("Remplacements : comment le logiciel choisit", { placeholder: "title" });
+  carte(s, 0.5, 1.2, 4.45, 3.75, "Étapes du remplacement");
+  s.addText("De l'absence au remplaçant", { x: 0.7, y: 1.3, w: 4.1, h: 0.35, fontSize: 15, bold: true, color: C.text1, margin: 0, isTextBox: true });
+  s.addText([
+    { text: "Absence déclarée : un remplacement « à pourvoir » est créé pour chaque cours, chaque jour ouvré", options: { bullet: { type: "number" }, breakLine: true, paraSpaceAfter: 5 } },
+    { text: "Suggestions : professeurs libres, même matière d'abord, puis le moins sollicité sur 30 jours", options: { bullet: { type: "number" }, breakLine: true, paraSpaceAfter: 5 } },
+    { text: "Désignation à la main, ou « Pourvoir automatiquement » pour tous les cours à venir", options: { bullet: { type: "number" }, breakLine: true, paraSpaceAfter: 5 } },
+    { text: "Remplaçant prévenu par message automatique", options: { bullet: { type: "number" }, breakLine: true, paraSpaceAfter: 5 } },
+    { text: "Suivi : à pourvoir, assigné, effectué ou annulé ; visible dans les emplois du temps, le comptage des heures et les rapports", options: { bullet: { type: "number" } } },
+  ], { x: 0.7, y: 1.7, w: 4.1, h: 3.2, fontSize: 12, color: C.text1, valign: "top", margin: 0, isTextBox: true });
+  carte(s, 5.1, 1.2, 4.4, 1.95, "Professeur non proposé");
+  s.addText("Un professeur n'est pas proposé si…", { x: 5.3, y: 1.3, w: 4.0, h: 0.35, fontSize: 15, bold: true, color: C.text1, margin: 0, isTextBox: true });
+  s.addText(puces(["c'est le professeur absent", "il est lui-même absent ou indisponible ce jour-là", "il a cours avec une autre classe à cet horaire", "il remplace déjà quelqu'un à cet horaire"]), { x: 5.3, y: 1.7, w: 4.0, h: 1.4, fontSize: 12, color: C.text1, valign: "top", margin: 0, isTextBox: true });
+  s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 5.1, y: 3.3, w: 4.4, h: 1.65, rectRadius: 0.08, fill: { color: "FFFFFF" }, line: { color: C.accent1, width: 1.25 }, objectName: "Carte limites" });
+  s.addText("À savoir", { x: 5.3, y: 3.38, w: 4.0, h: 0.3, fontSize: 14, bold: true, color: C.text1, margin: 0, isTextBox: true });
+  s.addText(puces(["Conflit : refusé avec la raison, ou forcé avec « malgré le conflit »", "Régénérer l'emploi du temps supprime les remplacements à venir rattachés aux anciens cours : sauvegarde conseillée"]), { x: 5.3, y: 3.72, w: 4.0, h: 1.15, fontSize: 11, color: C.text1, valign: "top", margin: 0, isTextBox: true });
+  s.addNotes("Détail du fonctionnement : l'absence crée un remplacement par cours et par jour ouvré. Les suggestions classent les professeurs libres : même matière d'abord, puis ceux qui ont fait le moins de remplacements sur les 30 derniers jours. Un conflit est refusé avec sa raison, sauf décision de forcer. Le pourvoi automatique désigne la meilleure suggestion pour tous les cours à venir et envoie un message récapitulatif par remplaçant.");
+
   // 10. Assiduité : appel
   await standard("Assiduité des élèves : l'appel en quelques clics",
     ["Appel par créneau de cours ou par demi-journée", "Présent, absent, retard, en un clic", "Un enseignant ne fait l'appel que de ses classes", "Justifications en lot : justifiée, non justifiée, en attente"],
@@ -332,6 +352,14 @@ function pastille(slide, ico, x, y, nom, couleur = C.text2) {
   await standard("Plusieurs établissements, des données cloisonnées",
     ["Collège, lycée ou groupe scolaire dans une même application", "Chaque établissement a ses propres données et réglages", "L'administrateur ajoute, renomme ou supprime un établissement", "Rôles : administrateur, direction, CPE, enseignant, infirmier", "Double authentification, journal d'audit, RGPD, sauvegarde"],
     "etablissements", "Gestion des établissements par l'administrateur", "Les données sont séparées par établissement : un compte rattaché à un seul établissement ne peut ni lire ni modifier les données d'un autre. La suppression d'un établissement est protégée par confirmation du nom et du mot de passe.", { tw: 3.5, h: 3.4, y: 1.35 });
+
+  // 31 bis. Aide intégrée
+  s = pres.addSlide({ masterName: "CONTENU" });
+  s.addText("Une aide intégrée pour ne jamais être perdu", { placeholder: "title" });
+  texte(s, ["Bulle « Besoin d'aide ? » sur chaque page : on écrit sa question avec ses mots", "Réponse pas à pas, avec le chemin exact dans le menu et un bouton « Ouvrir la page »", "Une fiche détaillée pour chaque page du menu, rangée par rubrique et par couleur", "Réponses adaptées au rôle : un enseignant ne voit que ce qui le concerne", "Fonctionne sans clé ; une IA peut reformuler à partir des seuls guides"], 0.5, 1.2, 3.5, 3.8, 12);
+  await capture(s, "aide_page", 4.2, 1.2, 2.75, 3.7, "Page Aide et premiers pas : le menu, page par page", "left");
+  await capture(s, "aide_chatbot", 7.05, 1.2, 2.45, 3.7, "Assistant d'aide répondant à une question", "right");
+  s.addNotes("L'aide est intégrée au logiciel : une bulle sur chaque page et une page « Aide et premiers pas » avec une fiche par page du menu. Le chatbot cherche dans plus de cent guides, tolère les fautes de frappe, tient compte du rôle de la personne et n'invente jamais : il ne répond qu'à partir des guides.");
 
   // 32. Charte graphique
   s = pres.addSlide({ masterName: "CONTENU" });

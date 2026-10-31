@@ -6400,7 +6400,8 @@ def aide_fiche(x):
         url = url_for(x["page"], **x["kw"])
     except Exception:
         url = ""
-    return {"id": x["id"], "cat": x["cat"], "titre": x["titre"], "pas": x["pas"], "url": url, "menu": aide_chemin(url) if url else ""}
+    pas = [re.sub(r"^\s*\d+\.\s+", "", t) for t in x["pas"]]      # les étapes sont numérotées par la liste : pas de double numérotation
+    return {"id": x["id"], "cat": x["cat"], "titre": x["titre"], "pas": pas, "url": url, "menu": aide_chemin(url) if url else ""}
 
 
 def aide_puces():
