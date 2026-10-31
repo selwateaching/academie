@@ -3,8 +3,12 @@
 <div class="top"><div><h1 style="margin-bottom:2px">Élèves <span class="mute" style="font-size:14px">({{ nb_affiches }} affiché{{ 's' if nb_affiches > 1 }} sur {{ total }})</span></h1>
 <span class="mute">{% for cle, lib in regimes.items() %}<span class="regime regime-{{ cle }}">{{ lib }}</span> {{ stats_regime.get(cle, 0) }}{{ ' · ' if not loop.last }}{% endfor %}{% if stats_regime.get('') %} · non renseigné {{ stats_regime.get('') }}{% endif %}</span></div>
 <span class="noprint barre-actions">
-<a class="btn" href="{{ url_for('eleves_export', **filtres) }}" title="Liste affichée (niveau, classe, régime, groupe), ouvrable dans Excel">Exporter la liste (Excel)</a>
-<a class="btn sec" href="{{ url_for('eleves_export', par_classe=1, **filtres) }}" title="Une archive avec un fichier par classe">Un fichier par classe (ZIP)</a>
+<details class="export-eleves"><summary class="btn">Exporter…</summary>
+<form method="get" action="{{ url_for('eleves_export') }}" class="export-panneau">
+{% for cle, val in filtres.items() if val %}<input type="hidden" name="{{ cle }}" value="{{ val }}">{% endfor %}
+<p class="mute" style="margin:0 0 8px">Exporte la liste affichée ({{ nb_affiches }} élève{{ 's' if nb_affiches > 1 }}). Choisissez les colonnes :</p>
+<div class="export-colonnes">{% for cle, lib in colonnes_export %}<label class="check"><input type="checkbox" name="col" value="{{ cle }}" checked> {{ lib }}</label>{% endfor %}</div>
+<p style="margin:10px 0 0"><button>Excel (CSV)</button> <button name="par_classe" value="1" class="sec">Un fichier par classe (ZIP)</button></p></form></details>
 <button class="sec" data-print>Imprimer</button>
 <a class="btn sec" href="{{ url_for('eleves_groupes') }}">Groupes</a>
 <a class="btn sec" href="{{ url_for('eleves_completer', classe=classe) }}">Compléter les fiches</a></span></div>

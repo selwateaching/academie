@@ -2015,7 +2015,7 @@ def eleves():
     stats_regime = {r["regime"]: r["n"] for r in q("SELECT regime, COUNT(*) n FROM eleves WHERE etab_id=? GROUP BY regime", (g.etab_id,))}
     return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos, soins_jour=soins_jour,
                            niveau=niveau, niveaux=niveaux_, regime=regime, regimes=REGIMES, groupe=groupe, groupes=groupes_, teinte_niveau=teinte_niveau,
-                           niveau_de=niveau_de, groupes_de=groupes_de, stats_regime=stats_regime, nb_affiches=len(rows))
+                           niveau_de=niveau_de, groupes_de=groupes_de, stats_regime=stats_regime, nb_affiches=len(rows), colonnes_export=COLONNES_EXPORT)
 
 
 def donnees_pyramide(niveau, classe, ref):
