@@ -286,6 +286,13 @@ MIGRATIONS = [
         );
         ALTER TABLE besoins ADD COLUMN source TEXT NOT NULL DEFAULT 'manuel';   -- 'volumes' : besoin produit par les volumes horaires
     """),
+    (15, """
+        CREATE TABLE IF NOT EXISTS choix_professeurs (   -- professeur imposé pour une classe et une matière (volumes horaires)
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            classe TEXT NOT NULL, matiere TEXT NOT NULL, prof_id INTEGER NOT NULL REFERENCES professeurs(id) ON DELETE CASCADE,
+            UNIQUE (etab_id, classe, matiere)
+        );
+    """),
 ]
 
 

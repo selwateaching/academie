@@ -3972,7 +3972,7 @@ def creneaux_possibles(prof_voeux, grille, reg):
     return n
 
 
-def affecter_volumes(volumes, classes, ordre_niveaux, profs, charge_initiale, grille, reg, deja_couverts=()):
+def affecter_volumes(volumes, classes, ordre_niveaux, profs, charge_initiale, grille, reg, deja_couverts=(), imposes=None):
     """Répartit les cours (classe × matière) issus des volumes horaires entre les professeurs de la matière.
     Règles : même matière ; capacité = min(service dû, 85 % des créneaux possibles d'après les vœux) ; un même professeur garde
     d'abord toutes les classes d'un niveau (continuité) puis on équilibre la charge. Retourne (affectations, non affectées, charges)."""
@@ -3994,7 +3994,17 @@ def affecter_volumes(volumes, classes, ordre_niveaux, profs, charge_initiale, gr
                 taches.append({"classe": c, "niveau": niv, "matiere": v["matiere"], "heures": v["heures"], "bloc": v["bloc"]})
     taches.sort(key=lambda t: (cle_matiere(t["matiere"]), ordre_niveaux.get(t["niveau"], 99), t["classe"]))
     affectations, non_affectes, deja = [], [], {}
-    for t in taches:
+    imposes = imposes or {}
+    restantes = []
+    for t in taches:   # choix manuels d'abord : ils comptent dans la charge avant la répartition automatique
+        pid = imposes.get((t["classe"], cle_matiere(t["matiere"])))
+        if pid in profs:
+            charge[pid] = charge.get(pid, 0) + t["heures"]
+            affectations.append(dict(t, prof_id=pid, impose=True))
+            deja.setdefault((cle_matiere(t["matiere"]), t["niveau"]), pid)
+        else:
+            restantes.append(t)
+    for t in restantes:
         cands = par_matiere.get(cle_matiere(t["matiere"]), [])
         if not cands:
             non_affectes.append(dict(t, raison="aucun professeur de cette matière"))
@@ -4028,6 +4038,10 @@ def besoins_manuels_couverts():
     return {(b["classe"], cle_matiere(b["matiere"])) for b in q("SELECT classe, matiere FROM besoins WHERE etab_id=? AND source='manuel'", (g.etab_id,))}
 
 
+def choix_imposes():
+    return {(r["classe"], cle_matiere(r["matiere"])): r["prof_id"] for r in q("SELECT classe, matiere, prof_id FROM choix_professeurs WHERE etab_id=?", (g.etab_id,))}
+
+
 def charge_manuelle():
     return {r["prof_id"]: r["h"] for r in q("SELECT prof_id, SUM(heures) h FROM besoins WHERE etab_id=? AND source='manuel' GROUP BY prof_id", (g.etab_id,))}
 
@@ -4057,9 +4071,22 @@ def volumes():
             db().commit()
             log("volumes horaires enregistrés")
             flash("Volumes horaires enregistrés.", "ok")
+        elif action == "choix":
+            run("DELETE FROM choix_professeurs WHERE etab_id=?", (g.etab_id,))
+            n = 0
+            for cle, val in f.items():
+                if not cle.startswith("c::") or not val.isdigit():
+                    continue
+                _, classe, matiere = cle.split("::", 2)
+                if one("SELECT 1 FROM professeurs WHERE id=? AND etab_id=?", (int(val), g.etab_id)) and one("SELECT 1 FROM classes WHERE nom=? AND etab_id=?", (classe, g.etab_id)):
+                    db().execute("INSERT OR REPLACE INTO choix_professeurs(etab_id,classe,matiere,prof_id) VALUES (?,?,?,?)", (g.etab_id, classe, matiere, int(val)))
+                    n += 1
+            db().commit()
+            log("professeurs imposés par classe", f"{n} choix")
+            flash(f"{n} choix de professeur enregistré(s) : ils seront respectés à la prochaine génération des besoins.", "ok")
         elif action == "appliquer":
             affect, non_aff, charge, cap = affecter_volumes(vols, classes_, ordre, profs, {} if f.get("tout") else charge_manuelle(), grille, reg,
-                                                            () if f.get("tout") else besoins_manuels_couverts())
+                                                            () if f.get("tout") else besoins_manuels_couverts(), choix_imposes())
             if f.get("tout"):
                 run("DELETE FROM besoins WHERE etab_id=?", (g.etab_id,))
             else:
@@ -4083,7 +4110,7 @@ def volumes():
                 flash(f"{n} besoins créés à partir des volumes horaires" + (f" ; {len(non_aff)} cours restent sans professeur." if non_aff else "."), "ok" if not non_aff else "err")
         return redirect(url_for("volumes"))
     # aperçu non destructif de l'affectation
-    affect, non_aff, charge, cap = affecter_volumes(vols, classes_, ordre, profs, charge_manuelle(), grille, reg, besoins_manuels_couverts())
+    affect, non_aff, charge, cap = affecter_volumes(vols, classes_, ordre, profs, charge_manuelle(), grille, reg, besoins_manuels_couverts(), choix_imposes())
     matieres = sorted({v["matiere"] for v in vols}, key=cle_matiere)
     cell = {(v["matiere"], v["niveau"]): v["heures"] for v in vols}
     bloc = {v["matiere"]: v["bloc"] for v in vols}
@@ -4093,7 +4120,19 @@ def volumes():
     lignes_profs = sorted(({"nom": profs[pid]["nom"], "matiere": profs[pid]["matiere"], "heures": charge.get(pid, 0), "cap": cap[pid],
                             "possibles": creneaux_possibles(profs[pid]["voeux"], grille, reg), "nb_voeux_non": sum(1 for v in profs[pid]["voeux"].values() if v == "non")}
                            for pid in profs), key=lambda x: (cle_matiere(x["matiere"]), x["nom"]))
-    return render_template("volumes.html", niveaux=niveaux_, matieres=matieres, cell=cell, bloc=bloc, nb_classes=nb_classes, total_niveau=total_niveau,
+    imp = choix_imposes()
+    par_mat = {}
+    for pid, p_ in profs.items():
+        par_mat.setdefault(cle_matiere(p_["matiere"]), []).append((pid, p_["nom"]))
+    blocs = []
+    for n in niveaux_:
+        cls = [c["nom"] for c in classes_ if c["niveau"] == n["nom"]]
+        mats = sorted({v["matiere"] for v in vols if v["niveau"] == n["nom"] and v["heures"] > 0}, key=cle_matiere)
+        if cls and mats:
+            blocs.append({"niveau": n["nom"], "classes": cls, "lignes": [{"matiere": m, "bons": sorted(par_mat.get(cle_matiere(m), []), key=lambda x: x[1]),
+                          "autres": sorted([(pid, p_["nom"]) for pid, p_ in profs.items() if cle_matiere(p_["matiere"]) != cle_matiere(m)], key=lambda x: x[1]),
+                          "cases": [imp.get((c, cle_matiere(m))) for c in cls]} for m in mats]})
+    return render_template("volumes.html", blocs=blocs, nb_imposes=len(imp), niveaux=niveaux_, matieres=matieres, cell=cell, bloc=bloc, nb_classes=nb_classes, total_niveau=total_niveau,
                            non_aff=non_aff, profs_lignes=lignes_profs, nb_affect=len(affect), nb_besoins_manuels=one("SELECT COUNT(*) c FROM besoins WHERE etab_id=? AND source='manuel'", (g.etab_id,))["c"],
                            nb_besoins_volumes=one("SELECT COUNT(*) c FROM besoins WHERE etab_id=? AND source='volumes'", (g.etab_id,))["c"])
 
