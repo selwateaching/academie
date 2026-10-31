@@ -217,3 +217,26 @@ nav.side .nav-outils{margin:6px 10px 2px}
 :root[data-palette=ardoise]{--noir:#1B2430;--coquille:#F5F7FA;--bisque:#DCE3EC;--mastic:#A7B8CE;--orange:#B26A00;--accent-fonce:#E8A33D;--brand:#1F3A5F;--brand-strong:#1F3A5F;--side-title:#DCE3EC;--link:#1F4FA8}
 :root[data-palette=petrole]{--noir:#16282A;--coquille:#F4F8F8;--bisque:#D6E6E6;--mastic:#9CC4C4;--orange:#9A6A00;--accent-fonce:#F2B134;--brand:#0F5E63;--brand-strong:#0F5E63;--side-title:#D6E6E6}
 }
+
+/* Classes : une couleur par niveau (--m = teinte), cartes dépliables avec résumé */
+.filtre-niveaux{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
+.filtre-niveaux button[data-niv]:not([data-niv=""]){border-color:hsl(var(--m) 42% 46%)}
+.filtre-niveaux button.on{background:var(--brand-strong);color:#fff;border-color:var(--brand-strong)}
+.filtre-niveaux button[data-niv]:not([data-niv=""]).on{background:hsl(var(--m) 42% 34%);border-color:hsl(var(--m) 42% 34%)}
+.niv-bloc{margin:18px 0}.niv-bloc[hidden]{display:none}
+.niv-titre{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;padding:9px 14px;border-radius:10px;background:hsl(var(--m) 42% 34%);color:#fff;font-size:17px}
+.niv-titre span{font-size:13px;font-weight:400;opacity:.9}
+.classes-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
+.classe-carte{background:color-mix(in srgb,hsl(var(--m) 48% 58%) 10%,var(--card));border:1px solid color-mix(in srgb,hsl(var(--m) 42% 46%) 35%,var(--line));border-left:6px solid hsl(var(--m) 42% 46%);border-radius:12px;padding:0}
+.classe-carte>summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.classe-carte>summary::-webkit-details-marker{display:none}
+.classe-carte>summary:hover{background:color-mix(in srgb,hsl(var(--m) 48% 58%) 8%,transparent)}
+.classe-nom{font-size:20px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.classe-nom::after{content:"";width:8px;height:8px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(-45deg);transition:transform .15s}
+.classe-carte[open] .classe-nom::after{transform:rotate(45deg)}
+.classe-info{display:flex;flex-wrap:wrap;gap:6px}
+.puce{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;background:color-mix(in srgb,hsl(var(--m) 48% 58%) 20%,var(--card));border:1px solid color-mix(in srgb,hsl(var(--m) 42% 46%) 40%,transparent)}
+.puce.vide{color:var(--mute);border-style:dashed;background:transparent}
+.classe-corps{padding:4px 14px 14px;border-top:1px solid var(--line)}
+.filtre-niveaux button.on .mute{color:inherit;opacity:.85}
+details.gestion>summary{cursor:pointer;padding:2px 0}details.gestion[open]>summary{margin-bottom:10px}

@@ -1218,7 +1218,8 @@ def classes():
     sans = [c for c in rows if c["niveau"] not in connus]
     if sans:
         groupes.append(("Sans niveau", sans))
-    return render_template("classes.html", groupes=[g_ for g_ in groupes if g_[1]], equipe=equipe, profs=profs, niveaux=niveaux_)
+    nb_eleves = {r["classe"]: r["n"] for r in q("SELECT classe, COUNT(*) n FROM eleves WHERE etab_id=? GROUP BY classe", (g.etab_id,))}
+    return render_template("classes.html", groupes=[g_ for g_ in groupes if g_[1]], equipe=equipe, profs=profs, niveaux=niveaux_, nb_eleves=nb_eleves)
 
 
 def prochain_nom_classe(niveau, existants):

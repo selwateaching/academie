@@ -429,3 +429,19 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     if (compte) compte.textContent = n + ' personne' + (n > 1 ? 's' : '') + (champ.value.trim() ? ' pour « ' + champ.value.trim() + ' »' : '') + '.';
   });
 })();
+
+/* Page Classes : filtre par niveau, tout déplier / replier */
+(function () {
+  var barre = document.querySelector('.filtre-niveaux');
+  if (!barre) return;
+  var blocs = document.querySelectorAll('.niv-bloc');
+  barre.querySelectorAll('button[data-niv]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      barre.querySelectorAll('button[data-niv]').forEach(function (x) { x.classList.toggle('on', x === b); });
+      blocs.forEach(function (bl) { bl.hidden = !!b.getAttribute('data-niv') && bl.getAttribute('data-niveau') !== b.getAttribute('data-niv'); });
+    });
+  });
+  var tout = function (ouvert) { document.querySelectorAll('.classe-carte').forEach(function (d) { d.open = ouvert; }); };
+  barre.querySelector('[data-ouvrir-tout]').addEventListener('click', function () { tout(true); });
+  barre.querySelector('[data-fermer-tout]').addEventListener('click', function () { tout(false); });
+})();
