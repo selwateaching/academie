@@ -3,6 +3,13 @@
 <p class="mute">Des guides pas à pas pour utiliser le logiciel, avec le chemin exact dans le menu. Vous pouvez aussi poser votre question à l'assistant : bouton <b>« Besoin d'aide ? »</b> en bas à droite de chaque page{% if ia %} (les réponses sont reformulées par une IA à partir de ces seuls guides){% endif %}.</p>
 <div class="card"><label for="aide-filtre">Chercher dans les guides</label><input id="aide-filtre" type="search" data-aide-filtre placeholder="Tapez un mot : professeur, absence, bulletin, réunion…" autocomplete="off"></div>
 {% if depart %}<div class="card aide-depart"><h2>Vous débutez ? Commencez ici</h2><p><b>{{ depart.titre }}</b></p><ol>{% for p in depart.pas %}<li>{{ p }}</li>{% endfor %}</ol></div>{% endif %}
+{% if visite %}<section class="aide-visite" data-aide-cat><h2>Le menu, page par page</h2>
+<p class="mute">Chaque page du menu expliquée pas à pas : à quoi elle sert et chacun de ses boutons. Cliquez sur une page pour lire son guide.</p>
+{% if tableau %}<details class="aide-fiche aide-tableau" data-aide-fiche data-texte="{{ ('tableau de bord accueil ' ~ tableau.pas|join(' '))|lower }}"><summary>Tableau de bord (page d'accueil)</summary><ol>{% for p in tableau.pas %}<li>{{ p }}</li>{% endfor %}</ol></details>{% endif %}
+<div class="aide-rubriques">{% for r in visite %}<div class="aide-rubrique s{{ r.n }}"><h3>{{ r.titre }}</h3>
+{% for pg in r.pages %}{% if pg.fiche %}<details class="aide-fiche" data-aide-fiche data-texte="{{ (pg.label ~ ' ' ~ pg.fiche.pas|join(' '))|lower }}"><summary>{{ pg.label }}<small>{{ pg.desc }}</small></summary>
+<ol>{% for p in pg.fiche.pas %}<li>{{ p }}</li>{% endfor %}</ol><p><a class="btn sm" href="{{ pg.url }}">Ouvrir « {{ pg.label }} »</a></p></details>{% else %}<p class="aide-sans"><a href="{{ pg.url }}">{{ pg.label }}</a></p>{% endif %}{% endfor %}</div>{% endfor %}</div></section>{% endif %}
+<h2 class="aide-titre-taches">Guides par tâche : « comment faire… »</h2>
 {% for cat, liste in par_cat %}{% if cat != 'Pour commencer' or not depart %}<section class="aide-categorie" data-aide-cat><h2>{{ cat }}</h2>
 <div class="aide-liste">{% for x in liste %}{% if not (depart and x.id == 'demarrer') %}<details class="aide-fiche" data-aide-fiche data-texte="{{ (x.titre ~ ' ' ~ x.pas|join(' '))|lower }}"><summary>{{ x.titre }}</summary>
 <ol>{% for p in x.pas %}<li>{{ p }}</li>{% endfor %}</ol>{% if x.menu %}<p class="mute">Dans le menu : {{ x.menu }}</p>{% endif %}{% if x.url %}<p><a class="btn sm" href="{{ x.url }}">Ouvrir la page</a></p>{% endif %}</details>{% endif %}{% endfor %}</div></section>{% endif %}{% endfor %}

@@ -34,7 +34,7 @@ La clé `reunions_ia` du `config.json` règle les rôles autorisés, les durées
 
 ## Assistant d'aide
 
-Les guides du chatbot se trouvent dans `viescolaire/aide.py` (liste `GUIDES` : titre, mots-clés et synonymes, écran à ouvrir, étapes, rôles autorisés, module). Après avoir ajouté une fonction, ajouter sa fiche ; les chemins de menu affichés sont calculés automatiquement. Réglages dans la clé `aide` de la configuration.
+Une fiche par page du menu se trouve dans `viescolaire/aide_pages.py` (liste `PAGES`) : **ajouter une page au menu impose d'ajouter sa fiche** (la page « Aide et premiers pas » signale les pages sans fiche). Les guides du chatbot se trouvent dans `viescolaire/aide.py` (liste `GUIDES` : titre, mots-clés et synonymes, écran à ouvrir, étapes, rôles autorisés, module). Après avoir ajouté une fonction, ajouter sa fiche ; les chemins de menu affichés sont calculés automatiquement. Réglages dans la clé `aide` de la configuration.
 
 ## Écrire une extension
 

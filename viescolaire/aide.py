@@ -96,10 +96,10 @@ GUIDES = [
       "utilisateurs", ["Dans l'annuaire des professeurs, cliquez sur « Créer le compte » (l'e-mail doit être renseigné).", "Ou ouvrez Administration → Utilisateurs → « Créer un compte ».", "Un mot de passe temporaire est donné : le professeur devra le changer à sa première connexion."]),
     G("voeux", "Professeurs et personnel", "Comment saisir les vœux et indisponibilités des professeurs ?",
       "voeux indisponibilites souhaits professeurs contraintes jours libres mercredi disponibilites emploi du temps preferences",
-      "voeux", ["Ouvrez Planification et suivi → Vœux des professeurs.", "Choisissez le professeur.", "Pour chaque demi-journée, indiquez « Impossible » (impératif) ou « Souhait ».", "Enregistrez. Les professeurs peuvent aussi saisir les leurs avec « Mes vœux »."], roles=(STAFF,)),
+      "voeux", ["Ouvrez Planification et suivi → Vœux des professeurs.", "Repérez le professeur dans le tableau.", "Pour chaque demi-journée, choisissez « ✗ impératif » ou « ~ souhait » (« libre » si vous êtes disponible).", "Enregistrez. Les professeurs peuvent aussi saisir les leurs avec « Mes vœux »."], roles=(STAFF,)),
     G("mes_voeux", "Professeurs et personnel", "Comment indiquer mes indisponibilités et souhaits d'emploi du temps ?",
       "mes voeux mes indisponibilites mes souhaits jours libres preferences horaires emploi du temps professeur",
-      "mes_voeux", ["Ouvrez Mon espace → Mes vœux.", "Pour chaque demi-journée, indiquez « Impossible » ou « Souhait ».", "Enregistrez : la direction en tient compte pour l'emploi du temps."], roles=(ENS,)),
+      "mes_voeux", ["Ouvrez Mon espace → Mes vœux.", "Pour chaque demi-journée, choisissez « ✗ impératif » ou « ~ souhait » (« libre » si vous êtes disponible).", "Enregistrez : la direction en tient compte pour l'emploi du temps."], roles=(ENS,)),
     G("heures", "Professeurs et personnel", "Comment voir les heures de chaque professeur (service dû) ?",
       "heures professeurs comptage heures service du charge heures de cours heures par classe heures supplementaires",
       "heures", ["Ouvrez Personnel → Comptage des heures.", "L'onglet Professeurs montre les heures de chaque professeur ; saisissez le service dû puis « Enregistrer les services dus ».", "Les onglets Classes et Personnel donnent les autres comptages.", "« Imprimer / PDF » et l'export Excel sont disponibles."], module="heures"),
@@ -117,6 +117,38 @@ GUIDES = [
     G("remplacer", "Absences et remplacements", "Comment trouver un remplaçant ?",
       "remplacer remplacement remplacant trouver professeur libre couvrir cours pourvoir assigner suppleance",
       "remplacements", ["Ouvrez Élèves et vie scolaire → Remplacements.", "Pour chaque cours, les professeurs libres sont proposés (même matière d'abord) : cliquez sur « Assigner ».", "Pour tout faire d'un coup : « Pourvoir automatiquement ».", "Le remplaçant est prévenu par un message automatique."]),
+    G("remplacement_detail", "Absences et remplacements", "Comment fonctionne un remplacement, de A à Z ?",
+      "fonctionnement remplacement comment ca marche expliquer remplacement en detail etapes absence cours a pourvoir remplacer un professeur absent principe suggestions systeme de remplacement",
+      "remplacements", ["1. Déclarez l'absence : Absences des professeurs → « Déclarer », type « Absence », dates et motif. Le logiciel crée alors, tout seul, un remplacement « à pourvoir » pour chaque cours du professeur, sur chaque jour ouvré de la période (lundi au vendredi).",
+                        "2. Ouvrez Remplacements : chaque cours à remplacer affiche la date, la semaine, le créneau, la classe, la matière, la salle et le motif.",
+                        "3. Choisissez un remplaçant. Les suggestions montrent d'abord les professeurs libres de la même matière, puis ceux qui ont fait le moins de remplacements sur les 30 derniers jours. Cliquez sur le nom pour assigner, ou sur « Choisir un autre professeur » pour voir tout le monde avec sa disponibilité.",
+                        "4. Pour tout faire d'un coup : « Pourvoir automatiquement ». Si personne n'est libre : « Annuler le cours ».",
+                        "5. Le remplaçant reçoit un message automatique dans sa messagerie, avec la classe, le créneau et la salle.",
+                        "6. Le suivi se voit partout : le cours apparaît « Remplacé par… » dans les emplois du temps, une alerte rouge prévient des remplacements à pourvoir dans les 48 h, et les heures sont comptées dans Comptage des heures et Rapports."]),
+    G("remplacement_auto", "Absences et remplacements", "Comment pourvoir tous les remplacements d'un coup ?",
+      "pourvoir automatiquement tous les remplacements d un coup remplacement automatique en un clic tout pourvoir auto meilleur remplacant",
+      "remplacements", ["Ouvrez Remplacements (pour une absence précise, ouvrez-la depuis Absences des professeurs → « Remplacer »).", "Cliquez sur le bouton « Pourvoir automatiquement les n cours à venir » : pour chaque cours, le logiciel désigne le meilleur remplaçant libre (même matière d'abord, puis le moins sollicité).", "Chaque remplaçant reçoit un seul message récapitulatif avec tous ses cours.", "Le logiciel indique combien de cours ont été pourvus ; ceux sans professeur libre restent « à pourvoir » : choisissez un professeur à la main ou « Annuler le cours »."]),
+    G("remplacement_conflit", "Absences et remplacements", "Pourquoi un professeur n'est pas proposé comme remplaçant ?",
+      "pourquoi pas propose remplacant professeur non libre conflit indisponible occupe n apparait pas malgre le conflit forcer remplacant refuse non assigne",
+      "remplacements", ["Un professeur n'est proposé que s'il est libre sur le créneau. Il est écarté dans quatre cas : c'est le professeur absent ; il est lui-même absent ou indisponible ce jour-là ; il a cours avec une autre classe à cet horaire ; il remplace déjà quelqu'un à cet horaire.",
+                        "Dans « Choisir un autre professeur », la raison est écrite pour chaque professeur non libre.",
+                        "Si vous assignez quand même un professeur en conflit, le logiciel refuse et explique pourquoi. Pour forcer, cochez « malgré le conflit » : le remplacement est enregistré avec une alerte.",
+                        "Le logiciel ne tient pas compte du temps de trajet entre deux salles ni du maximum d'heures par jour du remplaçant : pensez à le vérifier."]),
+    G("remplacement_statuts", "Absences et remplacements", "Que signifient les statuts d'un remplacement ?",
+      "statuts remplacement a pourvoir assigne effectue annule signification etat remplacement couleur rouge vert cours annule",
+      "remplacements", ["À pourvoir (rouge) : le cours n'a pas encore de remplaçant.",
+                        "Assigné : un remplaçant est désigné et a été prévenu par message.",
+                        "Effectué : le remplacement a eu lieu (bouton « Effectué »).",
+                        "Cours annulé : le cours n'est pas assuré (bouton « Annuler le cours »). Il compte comme heure perdue dans Cours perturbés.",
+                        "Les boutons en haut de la page filtrent par statut."]),
+    G("remplacement_change", "Absences et remplacements", "Comment changer ou retirer un remplaçant déjà désigné ?",
+      "changer remplacant retirer remplacant rouvrir remplacement modifier remplacement mauvais remplacant annuler le remplacant",
+      "remplacements", ["Ouvrez Remplacements et trouvez le cours (le filtre « Assigné » aide).", "Cliquez sur « Rouvrir » : le cours repasse « à pourvoir » et l'ancien remplaçant reçoit un message « Remplacement retiré ».", "Assignez ensuite un autre professeur : il est prévenu à son tour."]),
+    G("remplacement_regenerer", "Absences et remplacements", "Que deviennent les remplacements si je régénère l'emploi du temps ?",
+      "regenerer emploi du temps remplacements supprimes perdus appliquer proposition effacer remplacements apres nouvel emploi du temps",
+      "planification", ["Quand vous appliquez une nouvelle proposition d'emploi du temps, les anciens créneaux sont remplacés : les remplacements et perturbations à venir qui leur étaient rattachés sont supprimés.",
+                        "Le logiciel prévient avant, avec le nombre de remplacements concernés, et recalcule ceux des absences en cours.",
+                        "Faites une sauvegarde avant d'appliquer, et évitez de régénérer l'emploi du temps en pleine période d'absences."]),
     G("faire_appel", "Absences et remplacements", "Comment faire l'appel ?",
       "appel faire appel absents presents retard eleves absents pointer feuille d'appel saisir absences eleves",
       "appel", ["Ouvrez le menu, rubrique « Absences et retards des élèves » puis « Faire l'appel ».", "Choisissez la classe, la date et le créneau.", "Marquez les élèves absents ou en retard (« Tout le monde présent » si personne ne manque).", "Cliquez sur « Enregistrer l'appel »."], roles=(STAFF, ENS), module="assiduite"),
@@ -134,7 +166,7 @@ GUIDES = [
       "incidents", ["Ouvrez Élèves et vie scolaire → Incidents.", "Dans « Nouvel incident » : date, classe, élève, description.", "Cliquez sur « Enregistrer ». Le bouton « Rédiger le document » crée un rapport pré-rempli."]),
     G("soins", "Absences et remplacements", "Comment programmer un soin à l'infirmerie ?",
       "infirmerie soin programmer rendez vous infirmier traitement passage infirmerie fiche sante allergie pai",
-      "infirmerie_soins", ["Ouvrez Infirmerie → Planning des soins.", "Dans « Programmer un soin » : élève, date, heure, durée, intitulé.", "Les passages se notent dans « Passages à l'infirmerie », les allergies et PAI dans « Fiches santé »."], roles=(STAFF, INF), module="infirmerie"),
+      "infirmerie_soins", ["Ouvrez Infirmerie → Planning des soins.", "Dans « Programmer un soin » : élève, date, heure, durée, intitulé.", "Les passages se notent dans « Passages à l'infirmerie », les allergies et PAI dans « Fiches santé »."], roles=("infirmerie",), module="infirmerie"),
 
     # ───────────── Notes et bulletins
     G("saisir_notes", "Notes et bulletins", "Comment saisir les notes d'une classe ?",
@@ -230,6 +262,19 @@ GUIDES = [
       "historique journal audit qui a modifie actions tracabilite qui a supprime journal des actions",
       "historique", ["Ouvrez Planification et suivi → Historique.", "La liste donne la date, la personne et l'action pour chaque opération importante."], roles=(STAFF,)),
 ]
+
+def _fiches_de_pages():
+    """Une fiche par page du menu (voir aide_pages.py) : titre « « Page » : à quoi sert cette page et comment l'utiliser »."""
+    from .aide_pages import PAGES
+    out = []
+    for ecran, libelle, roles, module, mots, pas in PAGES:
+        out.append(G("page_" + ecran, VISITE, f"« {libelle} » : à quoi sert cette page et comment l'utiliser",
+                     f"{libelle} {mots} page ecran menu visite a quoi ca sert", ecran, pas, roles=roles, module=module))
+    return out
+
+
+VISITE = "Visite du menu"
+GUIDES += _fiches_de_pages()
 PAR_ID = {g["id"]: g for g in GUIDES}
 
 MOTS_VIDES = set("""le la les un une des du de d l et ou a au aux en dans sur pour par avec sans ce cette ces mon ma mes ton ta tes son sa ses notre nos votre vos leur leurs

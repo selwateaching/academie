@@ -494,3 +494,9 @@ nav.side .nav-accueil{margin:4px 0 2px}
 /* Accueil : chaque rubrique reprend la couleur de sa rubrique dans le menu */
 .hub-carte{--sc:var(--c-bleu)}.hub-carte.s2{--sc:var(--c-vert)}.hub-carte.s3{--sc:var(--c-or)}.hub-carte.s4{--sc:var(--c-rose)}.hub-carte.s5{--sc:var(--c-violet)}
 .hub-carte>h3{border-bottom-color:var(--sc);border-left:6px solid var(--sc)}.hub-carte .ico{color:var(--sc);opacity:1}
+.aide-rubriques{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;align-items:start;margin:10px 0 22px}
+.aide-rubrique{--sc:var(--c-gris);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 0 8px;overflow:hidden}
+.aide-rubrique.s1{--sc:var(--c-bleu)}.aide-rubrique.s2{--sc:var(--c-vert)}.aide-rubrique.s3{--sc:var(--c-or)}.aide-rubrique.s4{--sc:var(--c-rose)}.aide-rubrique.s5{--sc:var(--c-violet)}
+.aide-rubrique h3{margin:0 0 6px;padding:11px 14px;background:var(--brand-strong);color:#fff;font-size:14px;border-left:6px solid var(--sc);border-bottom:3px solid var(--sc)}
+.aide-rubrique .aide-fiche{margin:6px 10px;border-left:4px solid var(--sc)}.aide-rubrique summary small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+.aide-sans{margin:6px 14px;font-size:14px}.aide-titre-taches{margin-top:24px}.aide-tableau{margin-bottom:12px}

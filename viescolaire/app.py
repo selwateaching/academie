@@ -6372,7 +6372,10 @@ Ne demande jamais de données personnelles. Pas de mise en forme Markdown (pas d
 def aide_role():
     """Profils de la personne connectée pour filtrer les fiches : « staff » (admin, direction, CPE), son rôle précis, enseignant ou infirmier."""
     r = g.user["role"]
-    return {aide_mod.STAFF, r} if r in STAFF else {aide_mod.INF} if r == "infirmier" else {aide_mod.ENS}
+    tags = {aide_mod.STAFF, r} if r in STAFF else {aide_mod.INF} if r == "infirmier" else {aide_mod.ENS}
+    if r in roles_infirmerie():
+        tags.add("infirmerie")      # accès aux données de santé (infirmier, direction, administrateur ; le CPE seulement en démonstration)
+    return tags
 
 
 def aide_visibles():
@@ -6412,9 +6415,18 @@ def aide_puces():
 
 @app.route("/aide")
 def aide():
+    from urllib.parse import urlsplit
     visibles = [aide_fiche(x) for x in aide_visibles()]
     par_cat = [(c, [x for x in visibles if x["cat"] == c]) for c in aide_mod.CATEGORIES]
-    return render_template("aide.html", par_cat=[(c, l) for c, l in par_cat if l], depart=next((x for x in visibles if x["id"] == "demarrer"), None), ia=bool(ria.cle_redaction()) and AIDE["ia"])
+    # « Le menu, page par page » : les rubriques du menu de la personne connectée, chacune avec la fiche de ses pages
+    par_page = {urlsplit(x["url"]).path: x for x in visibles if x["cat"] == aide_mod.VISITE and x["url"]}
+    visite = []
+    for i, sec in enumerate(menu_sections(), 1):
+        pages = [{"label": it["label"], "desc": it["desc"], "url": it["url"], "fiche": par_page.get(urlsplit(it["url"]).path)} for it in sec["pages"]]
+        if pages:
+            visite.append({"titre": sec["titre"], "n": i, "pages": pages})
+    return render_template("aide.html", par_cat=[(c, l) for c, l in par_cat if l], depart=next((x for x in visibles if x["id"] == "demarrer"), None),
+                           visite=visite, tableau=par_page.get("/"), ia=bool(ria.cle_redaction()) and AIDE["ia"])
 
 
 @app.route("/aide/question", methods=["POST"])
