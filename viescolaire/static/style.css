@@ -414,3 +414,11 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-valid{margin-top:18px;font-size:13px;color:var(--mute)}.ri-sign{margin-top:14px}
 @media(prefers-reduced-motion:reduce){.ri-voyant.rec,.ri-spin{animation:none}}
 .ri-consent .liste-cases{display:flex;flex-wrap:wrap;gap:8px 22px}.ri-consent .check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.ri-hs-bloc{margin-top:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px}.ri-hs-bloc h3{margin:0 0 8px}
+.ri-lecture{white-space:pre-wrap;line-height:1.7;max-height:420px;overflow:auto;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--field)}
+.ri-hs,.ri-hs-exemple{color:#B3261E;background:color-mix(in srgb,#E5484D 16%,transparent);border-bottom:2px solid #E5484D;border-radius:3px;padding:0 2px}
+.ri-hs{cursor:pointer}.ri-hs input{margin:0 4px 0 2px;vertical-align:-1px}
+.ri-hs:has(input:not(:checked)){color:inherit;background:none;border-bottom:2px dotted var(--mute);text-decoration:none}
+.ri-ok{color:var(--ok-ink)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ri-hs,:root:not([data-theme=light]) .ri-hs-exemple{color:#FF9B9B}}
+.ri-lecture label.ri-hs{display:inline;font-size:inherit;margin:0;padding:0 3px;font-weight:400}

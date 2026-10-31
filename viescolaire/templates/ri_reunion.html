@@ -16,6 +16,8 @@
 <div><label>Date</label><input type="date" name="date" value="{{ r.date }}"></div><div><label>Heure</label><input type="time" name="heure" value="{{ r.heure }}"></div></div>
 <div class="row"><div><label>Lieu</label><input name="lieu" value="{{ r.lieu }}"></div>
 <div><label>Langue parlée</label><select name="langue">{% for k, v in langues.items() %}<option value="{{ k }}" {{ 'selected' if r.langue == k }}>{{ v }}</option>{% endfor %}</select></div></div>
+<label>Ordre du jour / sujets à traiter <span class="mute">(un par ligne ; sert à écarter automatiquement le hors-sujet)</span></label>
+<textarea name="ordre_jour" rows="4" placeholder="1. Résultats du 1er trimestre en mathématiques&#10;2. Absences et retards&#10;3. Organisation des évaluations">{{ r.ordre_jour }}</textarea>
 <label>Participants <span class="mute">(une personne par ligne : « Nom, fonction »)</span></label>
 <textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 3A&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, CPE">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
 {% endfor %}</textarea>
@@ -68,7 +70,17 @@
 {% if participants %}<p class="mute noprint">Pour indiquer qui parle : placez le curseur au début d'une intervention puis cliquez sur un nom. <span class="ri-noms">{% for p in participants %}<button type="button" class="sec sm" data-insere="{{ p.nom }} : ">{{ p.nom }}</button> {% endfor %}</span></p>{% endif %}
 <details class="noprint"><summary>Remplacer un nom d'intervenant dans tout le texte</summary><div class="row"><div><label>Remplacer</label><input name="remplacer_intervenant" placeholder="ex. Intervenant 1"></div><div><label>Par</label><input name="par_nom" placeholder="ex. Claire Besson"></div></div></details>
 <p class="mute">La transcription automatique ne reconnaît pas les voix : elle ne sait pas qui parle. L'attribution des interventions aux participants se fait à la main, avec les boutons ci-dessus.</p>
-<p><button>Enregistrer la transcription</button></p></form></div>
+<p><button>Enregistrer la transcription</button></p></form>
+{% if a_texte %}<div class="ri-hs-bloc noprint" id="hors-sujet"><h3>Repérer le hors-sujet</h3>
+{% if r.analyse_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="analyse"><span class="ri-spin"></span> Repérage en cours… (quelques dizaines de secondes)</div>{% endif %}
+{% if r.analyse_etat == 'erreur' and r.erreur %}<div class="al err">Échec du repérage : {{ r.erreur }}</div>{% endif %}
+<form method="post" action="{{ url_for('ri_analyser', rid=r.id) }}">{{ csrf() }}<button class="sec" {{ 'disabled' if r.analyse_etat == 'en_cours' or not ia }}>{{ 'Relancer le repérage' if r.analyse_etat == 'ok' else 'Repérer les passages hors sujet' }}</button>
+<span class="mute">{% if not r.ordre_jour.strip() %}Conseil : renseignez l'ordre du jour (étape 1) pour un repérage plus fiable. {% endif %}{% if not ia %}Nécessite la clé de rédaction IA. {% endif %}L'IA ne signale que ce qui est clairement étranger au sujet : vérifiez avant de supprimer.</span></form>
+{% if r.analyse_etat == 'ok' %}{% if nb_hors %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}">{{ csrf() }}
+<p><b>{{ nb_hors }} passage(s) hors sujet</b> sont <span class="ri-hs-exemple">en rouge</span> ci-dessous, déjà cochés. <b>Décochez</b> ceux que vous voulez garder, puis supprimez les autres.</p>
+<div class="ri-lecture">{% for p in passages %}{% if p.hors %}<label class="ri-hs"><input type="checkbox" name="passage" value="{{ p.i }}" checked> {{ p.texte }}</label>{% else %}<span>{{ p.texte }}</span>{% endif %}{{ p.sep }}{% endfor %}</div>
+<p><button name="action" value="supprimer" class="red">Supprimer les passages cochés de la transcription</button> <button name="action" value="effacer_marques" class="sec">Garder tout et retirer le marquage</button></p></form>
+{% else %}<p class="ri-ok">Aucun passage clairement hors sujet n'a été repéré.</p>{% endif %}{% endif %}</div>{% endif %}</div>
 
 <div class="card" id="compte-rendu"><h2>4. Compte rendu</h2>
 {% if r.redaction_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="redaction"><span class="ri-spin"></span> Rédaction du compte rendu en cours (une à deux minutes)… Vous pouvez quitter cette page.</div>{% endif %}
@@ -95,6 +107,7 @@
 <label>Conclusion générale</label><textarea name="conclusion" rows="3">{{ formulaire.conclusion }}</textarea>
 <label>Résumé d'une page <span class="mute">(120 mots environ)</span></label><textarea name="resume_court" rows="4">{{ formulaire.resume_court }}</textarea>
 <label>Informations manquantes à compléter</label><textarea name="manquants" rows="3">{{ formulaire.manquants }}</textarea>
+<label>Hors ordre du jour — non retenu <span class="mute">(mentions neutres ; n'apparaît dans aucun document imprimé ou partagé : supprimez-les si vous le souhaitez)</span></label><textarea name="hors_sujet" rows="2">{{ formulaire.hors_sujet }}</textarea>
 <p class="ri-actions"><button name="action" value="enregistrer" class="sec">Enregistrer les modifications</button> <button name="action" value="valider">Enregistrer et valider le compte rendu</button></p></form>
 {% if valide %}<form method="post" action="{{ url_for('ri_cr_enregistrer', rid=r.id) }}" class="noprint">{{ csrf() }}<input type="hidden" name="action" value="rouvrir"><button class="sec sm">Rouvrir pour modification</button></form>
 <form method="post" action="{{ url_for('ri_partager', rid=r.id) }}" class="card noprint ri-partage">{{ csrf() }}<h3>Partager par la messagerie interne</h3>

@@ -81,7 +81,7 @@ MODULE_DES_ENDPOINTS = {
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "reunions_ia": ["ri_liste", "ri_creer", "ri_reunion", "ri_preparation", "ri_audio_nouveau", "ri_audio_morceau", "ri_audio_fin", "ri_audio_lire", "ri_audio_supprimer",
-                    "ri_transcrire", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
+                    "ri_transcrire", "ri_analyser", "ri_hors_sujet", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
     "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -5666,7 +5666,7 @@ def ri_texte_cr(cr, meta, fmt):
 
 def ri_meta(r):
     return {"titre": r["titre"], "type": r["type"], "type_libelle": ria.TYPES.get(r["type"], "Autre"), "date": r["date"], "date_fr": date_longue(r["date"]),
-            "heure": r["heure"], "lieu": r["lieu"], "participants": ri_participants(r)}
+            "heure": r["heure"], "lieu": r["lieu"], "participants": ri_participants(r), "ordre_jour": r["ordre_jour"]}
 
 
 def ri_lire_cr(rid):
@@ -5749,7 +5749,8 @@ def ri_reunion(rid):
                            formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
                            consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,
                            stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, max_mo=RI["audio_max_mo"], demo=DEMO,
-                           sans_consent=[p["nom"] for p in participants if not p.get("consent")])
+                           sans_consent=[p["nom"] for p in participants if not p.get("consent")], passages=ri_passages(r),
+                           nb_hors=sum(1 for p in ri_passages(r) if p["hors"]))
 
 
 @app.route("/reunions-ia/<int:rid>/preparation", methods=["POST"])
@@ -5770,8 +5771,8 @@ def ri_preparation(rid):
         except ValueError:
             jour = r["date"]
         modif_participants = {p["nom"].lower() for p in ps} != set(anciens)
-        run("UPDATE ri_reunions SET titre=?, type=?, date=?, heure=?, lieu=?, langue=?, participants=?, consent_ok=? WHERE id=?",
-            (f.get("titre", "").strip()[:160] or r["titre"], f.get("type") if f.get("type") in ria.TYPES else r["type"], jour, heure_norm(f.get("heure", "")) or "",
+        run("UPDATE ri_reunions SET ordre_jour=?, titre=?, type=?, date=?, heure=?, lieu=?, langue=?, participants=?, consent_ok=? WHERE id=?",
+            (f.get("ordre_jour", "").strip()[:3000], f.get("titre", "").strip()[:160] or r["titre"], f.get("type") if f.get("type") in ria.TYPES else r["type"], jour, heure_norm(f.get("heure", "")) or "",
              f.get("lieu", "").strip()[:120], f.get("langue") if f.get("langue") in ria.LANGUES else r["langue"], json.dumps(ps, ensure_ascii=False),
              0 if modif_participants else r["consent_ok"], rid))
         flash("Informations enregistrées." + (" La liste des participants a changé : confirmez de nouveau les consentements." if modif_participants and r["consent_ok"] else ""), "ok")
@@ -5915,6 +5916,32 @@ def ri_tache_redaction(rid, meta, transcription):
         con.close()
 
 
+def ri_tache_analyse(rid, meta, texte):
+    con = database.connect()
+    try:
+        passages = [seg for seg, _ in ria.decouper(texte)]
+        hors = ria.signaler_hors_sujet(CFG, meta, passages)
+        marques = sorted({passages[i].strip() for i in hors if passages[i].strip()})
+        con.execute("UPDATE ri_reunions SET hors_sujet=?, analyse_etat='ok', erreur='' WHERE id=?", (json.dumps(marques, ensure_ascii=False), rid))
+    except ria.ErreurService as e:
+        con.execute("UPDATE ri_reunions SET analyse_etat='erreur', erreur=? WHERE id=?", (str(e), rid))
+    except Exception:
+        app.logger.exception("analyse hors sujet")
+        con.execute("UPDATE ri_reunions SET analyse_etat='erreur', erreur=? WHERE id=?", ("Erreur inattendue pendant le repérage du hors-sujet.", rid))
+    finally:
+        con.commit()
+        con.close()
+
+
+def ri_passages(r):
+    """Passages de la transcription avec indicateur « hors sujet » (d'après le dernier repérage)."""
+    try:
+        marques = set(json.loads(r["hors_sujet"] or "[]"))
+    except ValueError:
+        marques = set()
+    return [{"i": i, "texte": seg, "sep": sep, "hors": seg.strip() in marques and bool(seg.strip())} for i, (seg, sep) in enumerate(ria.decouper(r["transcription"]))]
+
+
 def ri_lancer(cible, *args):
     import threading
     threading.Thread(target=cible, args=args, daemon=True).start()
@@ -5945,6 +5972,44 @@ def ri_transcrire(rid):
     return retour
 
 
+@app.route("/reunions-ia/<int:rid>/analyser", methods=["POST"])
+@ri_only
+def ri_analyser(rid):
+    r = ri_reunion_ou_404(rid)
+    retour = redirect(url_for("ri_reunion", rid=rid) + "#transcription")
+    if not ria.cle_redaction():
+        flash("Le repérage du hors-sujet utilise l'IA de rédaction : aucune clé configurée (VSP_IA_API_KEY). Vous pouvez supprimer les passages à la main dans le texte.", "err")
+        return retour
+    if not (r["transcription"] or "").strip():
+        flash("Transcrivez d'abord la réunion.", "err")
+        return retour
+    run("UPDATE ri_reunions SET analyse_etat='en_cours', erreur='', maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
+    log("réunion intelligente : repérage du hors-sujet lancé", r["titre"])
+    ri_lancer(ri_tache_analyse, rid, ri_meta(r), r["transcription"])
+    return retour
+
+
+@app.route("/reunions-ia/<int:rid>/hors-sujet", methods=["POST"])
+@ri_only
+def ri_hors_sujet(rid):
+    r = ri_reunion_ou_404(rid)
+    retour = redirect(url_for("ri_reunion", rid=rid) + "#transcription")
+    action = request.form.get("action")
+    if action == "effacer_marques":
+        run("UPDATE ri_reunions SET hors_sujet='[]', analyse_etat='' WHERE id=?", (rid,))
+        flash("Marquage retiré : la transcription n'a pas été modifiée.", "ok")
+    elif action == "supprimer":
+        choisis = {int(x) for x in request.form.getlist("passage") if x.isdigit()}
+        morceaux = ria.decouper(r["transcription"])
+        gardes = [seg + sep for i, (seg, sep) in enumerate(morceaux) if i not in choisis]
+        nouveau = "".join(gardes).strip()
+        n = len([i for i in choisis if i < len(morceaux)])
+        run("UPDATE ri_reunions SET transcription=?, hors_sujet='[]', analyse_etat='' WHERE id=?", (nouveau, rid))
+        log("réunion intelligente : passages hors sujet supprimés", f"{r['titre']} ({n})")
+        flash(f"{n} passage(s) supprimé(s) de la transcription.", "ok")
+    return retour
+
+
 @app.route("/reunions-ia/<int:rid>/etat")
 @ri_only
 def ri_etat(rid):
@@ -5954,7 +6019,10 @@ def ri_etat(rid):
     perime = r["maj_travail"] and (datetime.now() - datetime.fromisoformat(r["maj_travail"])).total_seconds() > 1200
     if (tr == "en_cours" or rd == "en_cours") and perime:
         tr, rd = ("erreur" if tr == "en_cours" else tr), ("erreur" if rd == "en_cours" else rd)
-    return ri_json({"transcription": tr, "redaction": rd, "erreur": r["erreur"], "parties": len(parts), "transcrites": sum(1 for p in parts if p["transcrit"])})
+    an = r["analyse_etat"]
+    if an == "en_cours" and perime:
+        an = "erreur"
+    return ri_json({"transcription": tr, "redaction": rd, "analyse": an, "erreur": r["erreur"], "parties": len(parts), "transcrites": sum(1 for p in parts if p["transcrit"])})
 
 
 @app.route("/reunions-ia/<int:rid>/transcription", methods=["POST"])

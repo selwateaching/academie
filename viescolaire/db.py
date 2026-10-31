@@ -374,6 +374,11 @@ MIGRATIONS = [
             valide INTEGER NOT NULL DEFAULT 0, valide_par TEXT NOT NULL DEFAULT '', valide_le TEXT NOT NULL DEFAULT ''
         );
     """),   # réunions intelligentes : enregistrement par morceaux, transcription, compte rendu validé par un responsable
+    (22, """
+        ALTER TABLE ri_reunions ADD COLUMN ordre_jour TEXT NOT NULL DEFAULT '';        -- sujets à traiter : sert à écarter le hors-sujet
+        ALTER TABLE ri_reunions ADD COLUMN hors_sujet TEXT NOT NULL DEFAULT '[]';      -- passages de la transcription repérés hors sujet (JSON)
+        ALTER TABLE ri_reunions ADD COLUMN analyse_etat TEXT NOT NULL DEFAULT '';      -- '', en_cours, ok, erreur
+    """),
 ]
 
 

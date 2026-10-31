@@ -129,19 +129,20 @@ Règles impératives :
 - La transcription peut contenir des erreurs de reconnaissance vocale ; si un passage est incertain, signale-le dans "manquants" plutôt que de le deviner.
 - La transcription peut être en français, en arabe ou mélangée : rédige le compte rendu en français.
 - Reste synthétique : pas de remplissage, pas de formules creuses.
+- Si un ORDRE DU JOUR est fourni, ne retiens dans le compte rendu (points, difficultés, propositions, décisions, actions) que ce qui s'y rattache ou se rapporte clairement au thème de la réunion. Ce qui en est étranger (bavardages, conversations privées, plaisanteries, sujets sans rapport) va UNIQUEMENT dans "hors_sujet", sous forme de mentions brèves et neutres (ex. « Échange sans rapport avec l'ordre du jour »), sans reprendre de détails personnels ni de propos sur des personnes. Les salutations, l'ouverture et la clôture, les tours de table et l'organisation de la séance restent pertinents.
 Réponds UNIQUEMENT par un objet JSON valide, sans texte autour, de la forme :
 {"objet": "", "participants_presents": [""], "absents_excuses": [""], "contexte": "", "points": [{"titre": "", "resume": ""}],
  "difficultes": [""], "propositions": [""], "decisions": [""], "actions": [{"action": "", "responsable": "", "echeance": ""}],
- "echeances": [""], "conclusion": "", "resume_court": "", "manquants": [""]}
+ "echeances": [""], "conclusion": "", "resume_court": "", "manquants": [""], "hors_sujet": [""]}
 "resume_court" : cent vingt mots au maximum, pour un résumé d'une page. Les listes vides restent des listes vides."""
 
-CLES_LISTES = ["participants_presents", "absents_excuses", "difficultes", "propositions", "decisions", "echeances", "manquants"]
+CLES_LISTES = ["participants_presents", "absents_excuses", "difficultes", "propositions", "decisions", "echeances", "manquants", "hors_sujet"]
 CLES_TEXTES = ["objet", "contexte", "conclusion", "resume_court"]
 
 
 def cr_vide():
     return {"objet": "", "participants_presents": [], "absents_excuses": [], "contexte": "", "points": [], "difficultes": [], "propositions": [],
-            "decisions": [], "actions": [], "echeances": [], "conclusion": "", "resume_court": "", "manquants": []}
+            "decisions": [], "actions": [], "echeances": [], "conclusion": "", "resume_court": "", "manquants": [], "hors_sujet": []}
 
 
 def normaliser(d):
@@ -184,38 +185,81 @@ def extraire_json(texte):
 def message_utilisateur(meta, transcription):
     parts = "\n".join(f"- {p['nom']}" + (f" ({p['fonction']})" if p.get("fonction") else "") for p in meta.get("participants", [])) or "- (liste non renseignée)"
     return (f"Type de réunion : {meta.get('type_libelle', '')}\nTitre : {meta.get('titre', '')}\nDate : {meta.get('date', '')} {meta.get('heure', '')}\n"
-            f"Lieu : {meta.get('lieu', '') or 'non précisé'}\nParticipants déclarés (liste saisie, présence non vérifiée) :\n{parts}\n\n"
+            f"Lieu : {meta.get('lieu', '') or 'non précisé'}\nORDRE DU JOUR / sujets à traiter : {meta.get('ordre_jour') or '(non fourni : se référer au titre et au type de réunion)'}\nParticipants déclarés (liste saisie, présence non vérifiée) :\n{parts}\n\n"
             f"=== TRANSCRIPTION ===\n{transcription}\n=== FIN DE LA TRANSCRIPTION ===")
+
+
+def _appel_llm(cfg, systeme, message, max_tokens=None):
+    """Appel du service de rédaction (Anthropic ou compatible OpenAI) ; renvoie le texte de la réponse."""
+    cle = cle_redaction()
+    if not cle:
+        raise ErreurService("Aucune clé de rédaction configurée (variable VSP_IA_API_KEY).")
+    r = reglages(cfg)["redaction"]
+    if r["fournisseur"] == "openai":
+        corps = json.dumps({"model": r["modele"], "response_format": {"type": "json_object"},
+                            "messages": [{"role": "system", "content": systeme}, {"role": "user", "content": message}]}).encode()
+        brut = _poster(r["url"].rstrip("/") + "/chat/completions", {"Authorization": f"Bearer {cle}", "Content-Type": "application/json"}, corps, 600)
+        try:
+            return json.loads(brut)["choices"][0]["message"]["content"]
+        except (ValueError, KeyError, IndexError):
+            raise ErreurService("Réponse inattendue du service de rédaction.")
+    corps = json.dumps({"model": r["modele"], "max_tokens": int(max_tokens or r.get("max_tokens", 8000)), "system": systeme,
+                        "messages": [{"role": "user", "content": message}]}).encode()
+    brut = _poster(r["url"].rstrip("/") + "/v1/messages", {"x-api-key": cle, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}, corps, 600)
+    try:
+        return "".join(b.get("text", "") for b in json.loads(brut)["content"] if b.get("type") == "text")
+    except (ValueError, KeyError, TypeError):
+        raise ErreurService("Réponse inattendue du service de rédaction.")
 
 
 def rediger(cfg, meta, transcription):
     """Génère le compte rendu structuré (dict normalisé) à partir de la transcription. Lève ErreurService."""
-    cle = cle_redaction()
-    if not cle:
+    if not cle_redaction():
         raise ErreurService("Aucune clé de rédaction configurée (variable VSP_IA_API_KEY).")
     if not (transcription or "").strip():
         raise ErreurService("La transcription est vide : transcrivez ou saisissez d'abord le texte de la réunion.")
     if len(transcription) > MAX_TRANSCRIPTION:
         raise ErreurService("La transcription est trop longue pour une génération en une fois : scindez la réunion en plusieurs parties.")
-    r = reglages(cfg)["redaction"]
-    msg = message_utilisateur(meta, transcription)
-    if r["fournisseur"] == "openai":
-        corps = json.dumps({"model": r["modele"], "response_format": {"type": "json_object"},
-                            "messages": [{"role": "system", "content": SYSTEME}, {"role": "user", "content": msg}]}).encode()
-        brut = _poster(r["url"].rstrip("/") + "/chat/completions", {"Authorization": f"Bearer {cle}", "Content-Type": "application/json"}, corps, 600)
-        try:
-            texte = json.loads(brut)["choices"][0]["message"]["content"]
-        except (ValueError, KeyError, IndexError):
-            raise ErreurService("Réponse inattendue du service de rédaction.")
-    else:
-        corps = json.dumps({"model": r["modele"], "max_tokens": int(r.get("max_tokens", 8000)), "system": SYSTEME,
-                            "messages": [{"role": "user", "content": msg}]}).encode()
-        brut = _poster(r["url"].rstrip("/") + "/v1/messages", {"x-api-key": cle, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}, corps, 600)
-        try:
-            texte = "".join(b.get("text", "") for b in json.loads(brut)["content"] if b.get("type") == "text")
-        except (ValueError, KeyError, TypeError):
-            raise ErreurService("Réponse inattendue du service de rédaction.")
-    return normaliser(extraire_json(texte))
+    return normaliser(extraire_json(_appel_llm(cfg, SYSTEME, message_utilisateur(meta, transcription))))
+
+
+# ───────────────────────── Repérage des passages hors sujet ─────────────────────────
+SYSTEME_PERTINENCE = """Tu aides à repérer les passages hors sujet dans la transcription d'une réunion d'établissement scolaire.
+On te donne le titre, le type de réunion, éventuellement l'ordre du jour, puis des passages numérotés [n].
+Un passage est HORS SUJET s'il ne se rapporte ni à l'ordre du jour ni au thème de la réunion : conversation privée, bavardage, plaisanterie, sujet étranger, remarque personnelle sans lien.
+Sont PERTINENTS : les salutations, l'ouverture et la clôture de séance, les tours de table, l'organisation de la séance, et tout ce qui touche à la scolarité, aux élèves, aux classes, à l'établissement, aux points prévus.
+En cas de doute, considère le passage comme pertinent : ne signale que ce qui est clairement hors sujet.
+Réponds UNIQUEMENT par un objet JSON : {"hors_sujet": [numéros des passages hors sujet]}"""
+
+_SEP = re.compile(r"(\n\s*\n|(?<=[.!?؟…])\s+)")
+
+
+def decouper(texte):
+    """Découpe un texte en passages (phrases ou paragraphes) en gardant les séparateurs : ''.join(seg+sep) redonne le texte d'origine."""
+    morceaux = _SEP.split(texte or "")
+    segs, seps = morceaux[0::2], morceaux[1::2] + [""]
+    return list(zip(segs, seps))
+
+
+def signaler_hors_sujet(cfg, meta, passages, taille_lot=100):
+    """Renvoie l'ensemble des numéros (0..n-1) des passages jugés hors sujet. Lève ErreurService."""
+    hors = set()
+    entete = (f"Titre : {meta.get('titre', '')}\nType : {meta.get('type_libelle', '')}\n"
+              f"Ordre du jour : {meta.get('ordre_jour') or '(non fourni : se référer au titre et au type)'}\n\n")
+    for debut in range(0, len(passages), taille_lot):
+        lot = [(i, p) for i, p in enumerate(passages) if debut <= i < debut + taille_lot and p.strip()]
+        if not lot:
+            continue
+        msg = entete + "\n".join(f"[{i}] {p[:500]}" for i, p in lot)
+        d = extraire_json(_appel_llm(cfg, SYSTEME_PERTINENCE, msg, 1500))
+        valides = {i for i, _ in lot}
+        for n in d.get("hors_sujet", []) if isinstance(d, dict) else []:
+            try:
+                if int(n) in valides:
+                    hors.add(int(n))
+            except (TypeError, ValueError):
+                pass
+    return hors
 
 
 # ───────────────────────── Formulaire d'édition <-> compte rendu ─────────────────────────
@@ -226,14 +270,14 @@ def vers_formulaire(cr):
             "points": "\n".join(f"{p['titre']} : {p['resume']}" if p["resume"] else p["titre"] for p in cr["points"]),
             "difficultes": "\n".join(cr["difficultes"]), "propositions": "\n".join(cr["propositions"]), "decisions": "\n".join(cr["decisions"]),
             "actions": "\n".join(f"{a['action']} | {a['responsable']} | {a['echeance']}" for a in cr["actions"]),
-            "echeances": "\n".join(cr["echeances"]), "manquants": "\n".join(cr["manquants"])}
+            "echeances": "\n".join(cr["echeances"]), "manquants": "\n".join(cr["manquants"]), "hors_sujet": "\n".join(cr["hors_sujet"])}
 
 
 def depuis_formulaire(f):
     def lignes(k):
         return [x.strip() for x in (f.get(k) or "").splitlines() if x.strip()]
     d = {k: (f.get(k) or "").strip() for k in CLES_TEXTES}
-    for k in ("participants_presents", "absents_excuses", "difficultes", "propositions", "decisions", "echeances", "manquants"):
+    for k in ("participants_presents", "absents_excuses", "difficultes", "propositions", "decisions", "echeances", "manquants", "hors_sujet"):
         d[k] = lignes(k)
     d["points"] = []
     for ln in lignes("points"):
