@@ -1,9 +1,9 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Import CSV{% endblock %}{% block body %}
 <div class="top"><h1>Import CSV</h1></div><div class="card"><form method="post" enctype="multipart/form-data">{{ csrf() }}<div class="row">
 <div><label>Type de données</label><select name="kind"><option value="professeurs">Professeurs</option><option value="creneaux">Emplois du temps (créneaux)</option><option value="besoins">Besoins horaires (générateur)</option><option value="eleves">Élèves</option></select></div>
-<div><label>Fichier CSV (séparateur ; ou ,)</label><input type="file" name="fichier" accept=".csv,text/csv" required></div><div><button>Importer</button></div></div></form></div>
+<div><label>Fichier CSV (séparateur ; ou ,)</label><input type="file" name="fichier" accept=".csv,text/csv" required></div><div><label class="check"><input type="checkbox" name="maj" value="1"> Mettre à jour les élèves déjà présents</label></div><div><button>Importer</button></div></div></form></div>
 <div class="card"><h2>Format attendu (première ligne = en-têtes)</h2>
 <p><b>Professeurs</b> : <code>nom;prenom;matiere;email;telephone</code> (les e-mails déjà connus sont ignorés)</p>
-<p><b>Élèves</b> : <code>nom;prenom;classe;responsable;contact;date_naissance;sexe</code> (responsable, contact, date de naissance — AAAA-MM-JJ ou JJ/MM/AAAA — et sexe F/M facultatifs).</p>
+<p><b>Élèves</b> : <code>nom;prenom;classe;responsable;contact;date_naissance;sexe;adresse;code_postal;ville;telephone</code> (tout sauf le nom est facultatif ; date de naissance AAAA-MM-JJ ou JJ/MM/AAAA ; sexe F/M). Pour <b>compléter des élèves déjà enregistrés</b>, cochez « Mettre à jour » : un élève de même nom, prénom et classe est mis à jour (seules les colonnes remplies) au lieu d'être recréé.</p>
 <p><b>Besoins</b> : <code>email;classe;matiere;heures;bloc;salle</code> — heures = volume hebdomadaire, bloc = 1 ou 2 (séances de 2 h consécutives).</p>
 <p><b>Créneaux</b> : <code>email;classe;matiere;jour;debut;fin;salle</code> — jour = lundi…vendredi, heures au format 08:00. À défaut d'e-mail, le professeur est retrouvé par <code>nom</code> et <code>prenom</code>.</p></div>{% endblock %}

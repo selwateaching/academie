@@ -293,6 +293,12 @@ MIGRATIONS = [
             UNIQUE (etab_id, classe, matiere)
         );
     """),
+    (16, """
+        ALTER TABLE eleves ADD COLUMN adresse TEXT NOT NULL DEFAULT '';
+        ALTER TABLE eleves ADD COLUMN code_postal TEXT NOT NULL DEFAULT '';
+        ALTER TABLE eleves ADD COLUMN ville TEXT NOT NULL DEFAULT '';
+        ALTER TABLE eleves ADD COLUMN telephone TEXT NOT NULL DEFAULT '';
+    """),
 ]
 
 
@@ -742,6 +748,8 @@ def seed_demo(password="demo1234"):
                      ("SVT", 1, 1), ("Physique-Chimie", 3, 1)])
     vol(e2, "1ère", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("SVT", 2, 1), ("Physique-Chimie", 3, 1)])
     vol(e2, "Terminale", [("Philosophie", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 4, 1)])
+    # coordonnées de démonstration : environ deux élèves sur trois ont une adresse et un téléphone (les autres restent « à compléter »)
+    con.execute("UPDATE eleves SET adresse=((id*7)%97+1)||' rue des Lilas', code_postal='69003', ville='Lyon', telephone='06 '||substr('00'||((id*13)%100),-2)||' '||substr('00'||((id*29)%100),-2)||' '||substr('00'||((id*53)%100),-2)||' '||substr('00'||((id*71)%100),-2) WHERE id%3<>0")
     # service dû de la démo : volume de l'emploi du temps arrondi à l'heure (certains écarts restent visibles)
     for pid, tot in con.execute("SELECT prof_id, SUM((CAST(substr(fin,1,2) AS INTEGER)*60+CAST(substr(fin,4,2) AS INTEGER))"
                                 "-(CAST(substr(debut,1,2) AS INTEGER)*60+CAST(substr(debut,4,2) AS INTEGER))) FROM creneaux GROUP BY prof_id").fetchall():

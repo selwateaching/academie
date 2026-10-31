@@ -73,7 +73,7 @@ MODULE_DES_ENDPOINTS = {
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
     "planning_personnel": ["pers_planning", "pers_affectation_creer", "pers_affectation_modifier", "pers_affectation_supprimer", "pers_affectation_copier",
                            "pers_generer", "pers_annuler", "pers_planning_csv"],
-    "eleves": ["eleves", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
+    "eleves": ["eleves", "eleves_completer", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
     "infirmerie": ["infirmerie", "infirmerie_prevenir", "infirmerie_prevenir_jour", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
@@ -2016,14 +2016,41 @@ def eleve_fiche(eid):
                            inf=infos_infirmerie(eid))
 
 
+@app.route("/eleves/completer", methods=["GET", "POST"])
+@staff_only
+def eleves_completer():
+    """Saisie rapide : un tableau par classe pour compléter date de naissance, sexe, adresse, téléphone et e-mail de plusieurs élèves d'un coup."""
+    classe = request.values.get("classe", "")
+    if request.method == "POST":
+        n = 0
+        for e in q("SELECT id FROM eleves WHERE etab_id=?", (g.etab_id,)):
+            i = e["id"]
+            if f"date_naissance_{i}" not in request.form:
+                continue
+            f = request.form
+            run("UPDATE eleves SET date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=?, contact=?, responsable=? WHERE id=?",
+                (parse_naissance(f.get(f"date_naissance_{i}")), norm_sexe(f.get(f"sexe_{i}")), f.get(f"adresse_{i}", "").strip()[:200], f.get(f"code_postal_{i}", "").strip()[:10],
+                 f.get(f"ville_{i}", "").strip()[:80], f.get(f"telephone_{i}", "").strip()[:30], f.get(f"contact_{i}", "").strip(), f.get(f"responsable_{i}", "").strip(), i))
+            n += 1
+        log("fiches élèves complétées", f"{n} élève(s), classe {classe}")
+        flash(f"{n} fiche(s) enregistrée(s).", "ok")
+        return redirect(url_for("eleves_completer", classe=classe))
+    rows = q("SELECT * FROM eleves WHERE etab_id=? " + ("AND classe=? " if classe else "") + "ORDER BY classe, nom, prenom LIMIT 80",
+             (g.etab_id, classe) if classe else (g.etab_id,))
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    incomplets = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=? AND (date_naissance='' OR adresse='' OR sexe='')", (g.etab_id,))["c"]
+    return render_template("eleves_completer.html", rows=rows, classes=classes_, classe=classe, incomplets=incomplets)
+
+
 @app.route("/eleves/<int:eid>/modifier", methods=["POST"])
 @staff_only
 def eleve_modifier(eid):
     f = request.form
     if f.get("nom", "").strip() and one("SELECT 1 FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id)):
-        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=?, date_naissance=?, sexe=? WHERE id=?",
+        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=?, date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=? WHERE id=?",
             (f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(), f.get("responsable", "").strip(), f.get("contact", "").strip(),
-             parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe")), eid))
+             parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe")), f.get("adresse", "").strip()[:200], f.get("code_postal", "").strip()[:10],
+             f.get("ville", "").strip()[:80], f.get("telephone", "").strip()[:30], eid))
         log("fiche élève modifiée", f"{f['nom']} {f.get('prenom', '')}")
         flash("Fiche enregistrée.", "ok")
     return redirect(url_for("eleve_fiche", eid=eid))
@@ -4379,7 +4406,7 @@ def importer():
             texte = fichier.read().decode("latin-1")
         delim = ";" if texte.split("\n", 1)[0].count(";") >= texte.split("\n", 1)[0].count(",") else ","
         rows = list(csv.DictReader(io.StringIO(texte), delimiter=delim))
-        ok, ignores = 0, 0
+        ok, ignores, maj_n = 0, 0, 0
         for r in rows:
             r = {(k or "").strip().lower(): (v or "").strip() for k, v in r.items()}
             if kind == "professeurs":
@@ -4396,9 +4423,20 @@ def importer():
                 if not r.get("nom"):
                     ignores += 1
                     continue
-                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
-                             (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), r.get("responsable", ""), r.get("contact", ""),
-                              parse_naissance(r.get("date_naissance", "")), norm_sexe(r.get("sexe", ""))))
+                champs = {"responsable": r.get("responsable", ""), "contact": r.get("contact", ""), "date_naissance": parse_naissance(r.get("date_naissance", "")),
+                          "sexe": norm_sexe(r.get("sexe", "")), "adresse": r.get("adresse", "")[:200], "code_postal": r.get("code_postal", "")[:10],
+                          "ville": r.get("ville", "")[:80], "telephone": r.get("telephone", "")[:30]}
+                deja = one("SELECT id FROM eleves WHERE etab_id=? AND lower(nom)=lower(?) AND lower(prenom)=lower(?) AND lower(classe)=lower(?)",
+                           (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""))) if request.form.get("maj") else None
+                if deja:   # mise à jour : seules les colonnes renseignées dans le fichier remplacent les valeurs existantes
+                    for k, v in champs.items():
+                        if v:
+                            db().execute(f"UPDATE eleves SET {k}=? WHERE id=?", (v, deja["id"]))
+                    maj_n += 1
+                    continue
+                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe,adresse,code_postal,ville,telephone) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                             (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), champs["responsable"], champs["contact"], champs["date_naissance"],
+                              champs["sexe"], champs["adresse"], champs["code_postal"], champs["ville"], champs["telephone"]))
                 ok += 1
             elif kind == "besoins":
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",
@@ -4426,7 +4464,7 @@ def importer():
                 ok += 1
         db().commit()
         log("import CSV", f"{kind}: {ok} importés, {ignores} ignorés")
-        flash(f"Import terminé : {ok} ligne(s) importée(s), {ignores} ignorée(s).", "ok" if ok else "err")
+        flash(f"Import terminé : {ok} ligne(s) importée(s)" + (f", {maj_n} fiche(s) mise(s) à jour" if maj_n else "") + f", {ignores} ignorée(s).", "ok" if (ok or maj_n) else "err")
         return redirect(url_for("importer"))
     return render_template("import.html")
 
