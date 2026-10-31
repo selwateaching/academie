@@ -14,8 +14,9 @@
 {% if g.etabs|length > 1 %}<form method="post" class="etab" action="{{ url_for('changer_etab') }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}">
 <select name="etab" data-autosubmit aria-label="Établissement">{% for e in g.etabs %}<option value="{{ e.id }}" {{ 'selected' if e.id == g.etab_id }}>{{ e.nom }}</option>{% endfor %}</select></form>
 {% else %}<div class="mute" style="margin:0 10px 8px;font-size:13px">{{ g.etab.nom }}</div>{% endif %}
+<input type="search" class="nav-recherche" data-nav-recherche placeholder="Chercher une page…" aria-label="Chercher une page du menu" autocomplete="off">
 <a href="{{ url_for('dashboard') }}" class="nav-accueil {{ 'on' if request.endpoint == 'dashboard' }}">{{ ico('tableau') }}<span>Tableau de bord</span></a>
-{% for sec in menu %}<section class="nav-carte"><h4{% if sec.ouvert %} data-ouvert{% endif %}>{{ sec.titre }}</h4><div class="nav-groupe">{% for it in sec.pages %}<a href="{{ it.url }}" class="{{ 'on' if it.on }}">{{ ico(it.ico) }}<span class="nav-lib">{{ it.label }}</span>{% if it.badge %}<span class="badge">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div></section>{% endfor %}
+{% for sec in menu %}<section class="nav-carte s{{ loop.index }}"><h4{% if sec.ouvert %} data-ouvert{% endif %}>{{ sec.titre }}</h4><div class="nav-groupe">{% for it in sec.pages %}<a href="{{ it.url }}" class="{{ 'on' if it.on }}">{{ ico(it.ico) }}<span class="nav-lib">{{ it.label }}</span>{% if it.badge %}<span class="badge">{{ it.badge }}</span>{% endif %}</a>{% endfor %}</div></section>{% endfor %}
 {% if ext_nav %}<section class="nav-carte"><h4>Spécifique</h4><div class="nav-groupe">{% for e in ext_nav %}<a href="{{ e.url }}">{{ ico('dossier') }}<span class="nav-lib">{{ e.libelle }}</span></a>{% endfor %}</div></section>{% endif %}
 <div class="nav-pied"><b>{{ g.user.nom|sans_role }}</b><span>{{ role_libelle }}</span></div>
 </nav><main>

@@ -382,12 +382,31 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
     h.setAttribute('role', 'button'); h.tabIndex = 0;
     var regler = function (ouvert) { corps.hidden = !ouvert; carte.classList.toggle('ouverte', ouvert); h.setAttribute('aria-expanded', ouvert ? 'true' : 'false'); };
     var courant = !!corps.querySelector('a.on');
-    regler(courant || (etat[titre] === undefined ? h.hasAttribute('data-ouvert') : etat[titre] === true));
+    regler(courant || etat[titre] === true);   // repliées par défaut, sauf la rubrique de la page en cours : le menu reste court
     var bascule = function () { var ouvert = corps.hidden; regler(ouvert); etat[titre] = ouvert; sauver(); };
     h.addEventListener('click', bascule);
     h.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bascule(); } });
-    cartes.push({ carte: carte, regler: regler, titre: titre });
+    cartes.push({ carte: carte, regler: regler, titre: titre, corps: corps, courant: courant });
   });
+  // Recherche dans le menu : n'affiche que les pages qui correspondent, rubriques dépliées ; effacer rétablit l'état précédent
+  var champRech = nav.querySelector('[data-nav-recherche]');
+  if (champRech) {
+    var norm = function (t) { return (t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); };
+    var filtrer = function () {
+      var mots = norm(champRech.value).split(/\s+/).filter(Boolean);
+      cartes.forEach(function (c) {
+        var vus = 0;
+        c.corps.querySelectorAll('a').forEach(function (a) {
+          var ok = !mots.length || mots.every(function (m) { return norm(a.textContent).indexOf(m) !== -1; });
+          a.classList.toggle('nav-cache', !ok); if (ok) vus++;
+        });
+        c.carte.classList.toggle('nav-cache', !!mots.length && vus === 0);
+        if (mots.length) c.regler(vus > 0); else c.regler(c.courant || etat[c.titre] === true);
+      });
+    };
+    champRech.addEventListener('input', filtrer);
+    champRech.addEventListener('keydown', function (e) { if (e.key === 'Escape') { champRech.value = ''; filtrer(); } });
+  }
   if (cartes.length > 1) {
     var outils = document.createElement('div'); outils.className = 'nav-outils';
     [['Tout déplier', true], ['Tout replier', false]].forEach(function (o) {
