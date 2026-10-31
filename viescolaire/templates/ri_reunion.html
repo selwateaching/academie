@@ -16,7 +16,7 @@
 <div><label>Date</label><input type="date" name="date" value="{{ r.date }}"></div><div><label>Heure</label><input type="time" name="heure" value="{{ r.heure }}"></div></div>
 <div class="row"><div><label>Lieu</label><input name="lieu" value="{{ r.lieu }}"></div>
 <div><label>Langue parlée</label><select name="langue">{% for k, v in langues.items() %}<option value="{{ k }}" {{ 'selected' if r.langue == k }}>{{ v }}</option>{% endfor %}</select></div></div>
-<label>Ordre du jour / sujets à traiter <span class="mute">(un par ligne ; sert à écarter automatiquement le hors-sujet)</span></label>
+<label>Sujets à traiter <span class="mute">(facultatif : à défaut, le <b>titre</b> de la réunion sert de sujet. Un sujet par ligne pour écarter plus précisément le hors-sujet)</span></label>
 <textarea name="ordre_jour" rows="4" placeholder="1. Résultats du 1er trimestre en mathématiques&#10;2. Absences et retards&#10;3. Organisation des évaluations">{{ r.ordre_jour }}</textarea>
 <label>Participants <span class="mute">(une personne par ligne : « Nom, fonction »)</span></label>
 <textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 3A&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, CPE">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
@@ -75,7 +75,7 @@
 {% if r.analyse_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="analyse"><span class="ri-spin"></span> Repérage en cours… (quelques dizaines de secondes)</div>{% endif %}
 {% if r.analyse_etat == 'erreur' and r.erreur %}<div class="al err">Échec du repérage : {{ r.erreur }}</div>{% endif %}
 <form method="post" action="{{ url_for('ri_analyser', rid=r.id) }}">{{ csrf() }}<button class="sec" {{ 'disabled' if r.analyse_etat == 'en_cours' or not ia }}>{{ 'Relancer le repérage' if r.analyse_etat == 'ok' else 'Repérer les passages hors sujet' }}</button>
-<span class="mute">{% if not r.ordre_jour.strip() %}Conseil : renseignez l'ordre du jour (étape 1) pour un repérage plus fiable. {% endif %}{% if not ia %}Nécessite la clé de rédaction IA. {% endif %}L'IA ne signale que ce qui est clairement étranger au sujet : vérifiez avant de supprimer.</span></form>
+<span class="mute">{% if not r.ordre_jour.strip() %}Le titre « {{ r.titre }} » sert de sujet. Pour un repérage plus précis, ajoutez des sujets à l'étape 1. {% endif %}{% if not ia %}Nécessite la clé de rédaction IA. {% endif %}L'IA ne signale que ce qui est clairement étranger au sujet : vérifiez avant de supprimer.</span></form>
 {% if r.analyse_etat == 'ok' %}{% if nb_hors %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}">{{ csrf() }}
 <p><b>{{ nb_hors }} passage(s) hors sujet</b> sont <span class="ri-hs-exemple">en rouge</span> ci-dessous, déjà cochés. <b>Décochez</b> ceux que vous voulez garder, puis supprimez les autres.</p>
 <div class="ri-lecture">{% for p in passages %}{% if p.hors %}<label class="ri-hs"><input type="checkbox" name="passage" value="{{ p.i }}" checked> {{ p.texte }}</label>{% else %}<span>{{ p.texte }}</span>{% endif %}{{ p.sep }}{% endfor %}</div>
