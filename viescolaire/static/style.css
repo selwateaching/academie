@@ -283,7 +283,7 @@ table.liste-eleves tr.avec-niveau:hover{background:color-mix(in srgb,hsl(var(--m
 .niveau-mini{display:block;margin-top:3px;font-size:11px;color:var(--mute)}
 .regime{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid transparent}
 .regime-externe{background:#ECEFF1;color:#37474F;border-color:#CFD8DC}.regime-demi-pensionnaire{background:#FFF4D6;color:#6B4A00;border-color:#F0D58A}.regime-interne{background:#E8E1F5;color:#40286B;border-color:#C9BCE6}
-.puce-groupe{display:inline-block;margin:2px 4px 0 0;padding:0 8px;border-radius:99px;font-size:11px;background:color-mix(in srgb,var(--brand-strong) 12%,var(--card));color:var(--ink)}
+.puce-groupe{display:inline-block;margin:2px 4px 0 0;padding:1px 9px;border-radius:99px;font-size:11px;font-weight:600;background:color-mix(in srgb,var(--gc,var(--brand-strong)) 18%,var(--card));border:1px solid color-mix(in srgb,var(--gc,var(--brand-strong)) 55%,transparent);color:var(--ink)}
 .liste-cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin:10px 0}
 @media print{.noprint{display:none!important}table.liste-eleves tr.avec-niveau td:first-child{border-left:4px solid #888}}
 table.grille-saisie td:nth-child(4){min-width:128px}table.grille-saisie td:nth-child(n+5):nth-child(-n+9){}
@@ -368,3 +368,16 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 @media(max-width:1100px){.tuiles{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
 @media(max-width:800px){.graphiques{grid-template-columns:1fr}}
 .gc-orange{border-top-color:var(--c-orange)}.graphiques>.card:last-child:nth-child(odd){grid-column:auto}.colonnes{max-height:260px}
+
+/* ───── Groupes d'élèves colorés ───── */
+.groupes-cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:16px}
+.carte-groupe{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;color:#fff;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.12);
+  background:linear-gradient(135deg,var(--gc),color-mix(in srgb,var(--gc) 62%,#000));transition:transform .18s,box-shadow .18s;animation:monte .5s both}
+.carte-groupe:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.22);color:#fff;text-decoration:none}
+.carte-groupe h2{margin:0;color:#fff;font-size:18px}.carte-groupe p{margin:3px 0 0;opacity:.92}
+.cg-pastille{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.22);font-size:20px;font-weight:700}
+.pastilles{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}.pastille{position:relative;cursor:pointer}.pastille input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pastille i{display:block;width:30px;height:30px;border-radius:50%;background:var(--gc);box-shadow:inset 0 0 0 2px rgba(255,255,255,.55);transition:transform .12s}
+.pastille:hover i{transform:scale(1.12)}.pastille input:checked+i{outline:3px solid var(--ink);outline-offset:2px}.pastille input:focus-visible+i{outline:3px solid var(--accent);outline-offset:2px}
+.titre-groupe{display:flex;align-items:center;gap:10px}.cg-point{display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--gc)}
+@media(prefers-reduced-motion:reduce){.carte-groupe{animation:none;transition:none}}

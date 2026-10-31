@@ -26,7 +26,7 @@
 <td class="cel-classe"><span class="pastille-classe">{{ e.classe or '—' }}</span>{% if niv %}<span class="niveau-mini">{{ niv }}</span>{% endif %}</td>
 <td><a href="{{ url_for('eleve_fiche', eid=e.id) }}"><b>{{ e.nom }}</b> {{ e.prenom }}</a>{% if not e.date_naissance or not e.adresse %} <span class="tag" title="Date de naissance ou adresse manquante">à compléter</span>{% endif %}{% if soins_jour.get(e.id) %} <span class="tag warn" title="Rendez-vous à l'infirmerie aujourd'hui">Infirmerie {{ soins_jour[e.id]|join(', ') }}</span>{% endif %}
 {% if e.date_naissance or e.sexe %}<br><span class="mute">{% if e.date_naissance %}{{ e.date_naissance|age }} ans{% endif %}{% if e.date_naissance and e.sexe %} · {% endif %}{{ 'Fille' if e.sexe == 'F' else ('Garçon' if e.sexe == 'M' else '') }}</span>{% endif %}
-{% for gn in groupes_de.get(e.id, []) %}<span class="puce-groupe">{{ gn }}</span>{% endfor %}</td>
+{% for gn in groupes_de.get(e.id, []) %}<span class="puce-groupe" style="--gc:{{ gn.couleur }}">{{ gn.nom }}</span>{% endfor %}</td>
 <td>{% if e.regime %}<span class="regime regime-{{ e.regime }}">{{ regimes.get(e.regime, e.regime) }}</span>{% else %}<span class="mute">—</span>{% endif %}</td>
 <td>{% if i and i.pp %}{{ i.pp.nom }}<br><span class="mute">{{ i.pp.matiere }}</span>{% else %}<span class="mute">non renseigné</span>{% endif %}</td>
 <td>{% if i and i.profs %}<a href="{{ url_for('eleve_fiche', eid=e.id) }}" title="{{ i.profs|join(', ') }}">{{ i.profs|length }} professeur(s)</a><br><span class="mute">{{ i.profs[:3]|join(', ') }}{{ '…' if i.profs|length > 3 }}</span>{% else %}<span class="mute">aucun cours planifié</span>{% endif %}</td>

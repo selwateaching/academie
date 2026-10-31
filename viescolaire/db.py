@@ -348,6 +348,9 @@ MIGRATIONS = [
         CREATE INDEX IF NOT EXISTS idx_abs_el_date ON absences_eleves(etab_id, date);
         CREATE INDEX IF NOT EXISTS idx_abs_el_eleve ON absences_eleves(eleve_id, date);
     """),
+    (20, """
+        ALTER TABLE groupes_eleves ADD COLUMN couleur TEXT NOT NULL DEFAULT '';   -- teinte du groupe (#RRGGBB) ; vide = teinte automatique
+    """),
 ]
 
 

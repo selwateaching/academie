@@ -2021,19 +2021,40 @@ def eleves_export():
     return Response(csv_texte(rows), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=eleves_{etiquette}_{date.today()}.csv"})
 
 
+GROUPE_COULEURS = ["#1F86A8", "#D9772B", "#3E9B5F", "#7A5CB5", "#C5456B", "#C99412", "#1E9A94", "#5B6FD6", "#8A6A3C", "#D9534F", "#4F8A8B", "#A05195"]
+
+
+def couleur_groupe(grp):
+    """Teinte d'un groupe : celle choisie, sinon une teinte automatique selon son numéro."""
+    c = grp["couleur"] if "couleur" in grp.keys() else ""
+    return c if re.fullmatch(r"#[0-9A-Fa-f]{6}", c or "") else GROUPE_COULEURS[grp["id"] % len(GROUPE_COULEURS)]
+
+
+def prochaine_couleur_groupe():
+    """Première teinte pas encore utilisée dans l'établissement (puis on recommence le cycle)."""
+    prises = [couleur_groupe(r) for r in q("SELECT id, couleur FROM groupes_eleves WHERE etab_id=?", (g.etab_id,))]
+    libres = [c for c in GROUPE_COULEURS if c not in prises]
+    return libres[0] if libres else GROUPE_COULEURS[len(prises) % len(GROUPE_COULEURS)]
+
+
+def choix_couleur(valeur, defaut):
+    return valeur if re.fullmatch(r"#[0-9A-Fa-f]{6}", valeur or "") else defaut
+
+
 @app.route("/eleves/groupes", methods=["GET", "POST"])
 @staff_only
 def eleves_groupes():
     if request.method == "POST":
         nom = request.form.get("nom", "").strip()[:80]
         if nom and not one("SELECT 1 FROM groupes_eleves WHERE etab_id=? AND lower(nom)=lower(?)", (g.etab_id, nom)):
-            gid = run("INSERT INTO groupes_eleves(etab_id,nom) VALUES (?,?)", (g.etab_id, nom))
+            gid = run("INSERT INTO groupes_eleves(etab_id,nom,couleur) VALUES (?,?,?)",
+                      (g.etab_id, nom, choix_couleur(request.form.get("couleur"), prochaine_couleur_groupe())))
             log("groupe d'élèves créé", nom)
             return redirect(url_for("eleves_groupe", gid=gid))
         flash("Indiquez un nom de groupe différent de ceux qui existent.", "err")
         return redirect(url_for("eleves_groupes"))
     rows = q("SELECT g.*, (SELECT COUNT(*) FROM groupe_membres m WHERE m.groupe_id=g.id) nb FROM groupes_eleves g WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,))
-    return render_template("groupes_eleves.html", rows=rows)
+    return render_template("groupes_eleves.html", rows=[dict(r, couleur=couleur_groupe(r)) for r in rows], palette=GROUPE_COULEURS, proposee=prochaine_couleur_groupe())
 
 
 @app.route("/eleves/groupes/<int:gid>", methods=["GET", "POST"])
@@ -2067,6 +2088,8 @@ def eleves_groupe(gid):
                 flash("Ce nom est déjà utilisé.", "err")
             else:
                 run("UPDATE groupes_eleves SET nom=? WHERE id=?", (f["nom"].strip()[:80], gid))
+        elif action == "couleur":
+            run("UPDATE groupes_eleves SET couleur=? WHERE id=?", (choix_couleur(f.get("couleur"), couleur_groupe(grp)), gid))
         elif action == "supprimer":
             run("DELETE FROM groupes_eleves WHERE id=?", (gid,))
             log("groupe d'élèves supprimé", grp["nom"])
@@ -2077,7 +2100,7 @@ def eleves_groupe(gid):
     candidats = q("SELECT * FROM eleves WHERE etab_id=? AND classe=? AND id NOT IN (SELECT eleve_id FROM groupe_membres WHERE groupe_id=?) ORDER BY nom, prenom",
                   (g.etab_id, classe_choisie, gid)) if classe_choisie else []
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    return render_template("groupe_eleves.html", grp=grp, membres=membres, candidats=candidats, classes=classes_, classe=classe_choisie)
+    return render_template("groupe_eleves.html", grp=grp, couleur=couleur_groupe(grp), palette=GROUPE_COULEURS, membres=membres, candidats=candidats, classes=classes_, classe=classe_choisie)
 
 
 @app.route("/eleves", methods=["GET", "POST"])
@@ -2114,8 +2137,8 @@ def eleves():
     groupes_ = q("SELECT g.*, (SELECT COUNT(*) FROM groupe_membres m WHERE m.groupe_id=g.id) nb FROM groupes_eleves g WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,))
     groupes_de = {}
     if rows:
-        for r in q("SELECT m.eleve_id, g.nom FROM groupe_membres m JOIN groupes_eleves g ON g.id=m.groupe_id WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,)):
-            groupes_de.setdefault(r["eleve_id"], []).append(r["nom"])
+        for r in q("SELECT m.eleve_id, g.id, g.nom, g.couleur FROM groupe_membres m JOIN groupes_eleves g ON g.id=m.groupe_id WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,)):
+            groupes_de.setdefault(r["eleve_id"], []).append({"nom": r["nom"], "couleur": couleur_groupe(r)})
     stats_regime = {r["regime"]: r["n"] for r in q("SELECT regime, COUNT(*) n FROM eleves WHERE etab_id=? GROUP BY regime", (g.etab_id,))}
     return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos, soins_jour=soins_jour,
                            niveau=niveau, niveaux=niveaux_, regime=regime, regimes=REGIMES, groupe=groupe, groupes=groupes_, teinte_niveau=teinte_niveau,
