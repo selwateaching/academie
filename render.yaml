@@ -77,3 +77,8 @@ databases:
         value: "1"
       - key: VSP_SECRET_KEY
         generateValue: true
+      # Module « Réunions intelligentes » (facultatif, payant à l'usage) : clés à coller dans Render, jamais dans le dépôt
+      - key: VSP_STT_API_KEY
+        sync: false
+      - key: VSP_IA_API_KEY
+        sync: false

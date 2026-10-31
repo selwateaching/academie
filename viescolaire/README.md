@@ -79,6 +79,33 @@ Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_per
 
 Les **professeurs saisissent les notes** de leurs classes (menu *Mes notes* : une évaluation = classe, matière, titre, date, barème, coefficient, période ; note, « abs » ou « disp » par élève). La **vie scolaire** (CPE, direction) voit toutes les notes d'un élève dans sa fiche (*Notes et bulletin*), avec moyennes par matière, moyenne générale, moyenne et rang dans la classe, et peut **imprimer le relevé de notes** (trimestre ou année) ou le **bulletin** (appréciations par matière et générale, en-tête et signataires de l'établissement), élève par élève ou **pour toute une classe**. Un lien « Notes » est aussi proposé pour chaque élève convoqué dans une réunion. Les trimestres se règlent dans *Périodes*. Module `notes`, désactivable ; un enseignant ne voit et ne modifie que ses propres évaluations.
 
+## Réunions intelligentes (enregistrement, transcription, compte rendu)
+
+Menu *Documents et réunions → Réunions intelligentes* (chef d'établissement, direction, CPE : clé `roles`). Parcours en quatre étapes sur une seule page :
+
+1. **Préparation et consentement** : titre, type (conseil des enseignants, conseil de classe, pédagogique, parents, administrative, autre), date, heure, lieu, langue, participants (saisie ou annuaire). Le texte d'information à lire est fourni ; chaque participant doit être coché « consent » et le responsable atteste l'information. **Sans cela, l'enregistrement est verrouillé** (côté serveur aussi).
+2. **Enregistrement** depuis le micro de l'ordinateur ou du téléphone : démarrer, pause, reprise, arrêt, chronomètre, voyant et niveau sonore du micro, alerte si aucun son pendant 10 s. L'audio est envoyé et sauvegardé **toutes les 5 secondes** : si la page se ferme ou si la connexion saute, ce qui a été reçu est conservé et l'on reprend dans une nouvelle partie ; l'envoi reprend seul au retour du réseau. Erreurs gérées : micro refusé, absent ou occupé, navigateur non compatible, HTTP non sécurisé, coupure, fichier trop gros (limite `audio_max_mo`).
+3. **Transcription** automatique (français, arabe, anglais, espagnol ou détection automatique) en tâche de fond, par partie (reprise possible après un échec), puis **texte librement corrigeable**. Le service ne reconnaît pas les voix : les interventions s'attribuent aux participants à la main (boutons d'insertion de noms, remplacement « Intervenant 1 » → nom).
+4. **Compte rendu** généré par IA à partir de la transcription (objet, participants, contexte, points abordés, difficultés, propositions, décisions, actions avec responsable et échéance, conclusion, **informations manquantes signalées**). Consigne stricte : rien d'inventé, « Non précisé » si absent. Le brouillon se **relit, se corrige rubrique par rubrique, puis se valide**. Cinq présentations : détaillé, résumé d'une page, liste des décisions, tableau des actions, procès-verbal ; impression / PDF (navigateur), Word, partage par la messagerie interne (après validation).
+
+**Historique** : recherche par titre, participant, texte, type, dates ; écoute des enregistrements, transcriptions, comptes rendus. **RGPD** : accès limité aux rôles autorisés, consultations journalisées, suppression à tout moment (audio seul, ou réunion entière), **conservation configurable** (audio 30 jours et réunion 1095 jours par défaut, `0` = sans limite), purge automatique.
+
+### Services et clés (rien n'est appelé, ni facturé, tant qu'aucune clé n'est configurée)
+
+| Rôle | Variable d'environnement (jamais dans le dépôt) | Service par défaut |
+|---|---|---|
+| Transcription | `VSP_STT_API_KEY` (à défaut `OPENAI_API_KEY`) | OpenAI `/audio/transcriptions`, modèle `whisper-1` (tout service compatible convient : changer `url` et `modele`) |
+| Rédaction | `VSP_IA_API_KEY` (à défaut `ANTHROPIC_API_KEY`) | Anthropic Messages, modèle `claude-sonnet-5-5` (ou service compatible OpenAI : `"fournisseur": "openai"`) |
+
+Réglages dans `config.json`, clé `reunions_ia` (tous facultatifs) :
+```json
+"reunions_ia": {"roles": ["admin","direction","cpe"], "conservation_audio_jours": 30, "conservation_jours": 1095, "audio_max_mo": 400,
+  "transcription": {"url": "https://api.openai.com/v1", "modele": "whisper-1", "langue_defaut": "fr"},
+  "redaction": {"fournisseur": "anthropic", "url": "https://api.anthropic.com", "modele": "claude-sonnet-5-5"}}
+```
+Sans clé, le module reste utilisable : enregistrement, archivage, saisie de la transcription, compte rendu vierge à remplir, formats, impression, partage.
+Prévoir un **disque persistant** (`VSP_DATA`) : les enregistrements sont stockés dans `VSP_DATA/uploads/ri/` et inclus dans la sauvegarde.
+
 ## Comptage des heures
 
 Menu *Personnel → Comptage des heures* : heures hebdomadaires de chaque **professeur** (avec service dû saisissable, écart, nombre de cours et de classes,
@@ -98,6 +125,7 @@ Les photos d'élèves sont des données personnelles : recueillir le consentemen
   salles spécialisées au-delà d'une salle imposée par besoin, pas de groupes d'élèves ni de cours partagés entre classes.
 
 - L'« assistant intelligent » repose sur des règles locales (disponibilités, matière, charge) et non sur un modèle de langage.
+- Réunions intelligentes : pas de reconnaissance des voix (attribution des interventions à la main) ; PDF par l'impression du navigateur ; la transcription et la rédaction exigent des services externes payants et une connexion Internet ; l'audio d'une réunion est limité à `audio_max_mo`.
 - Pas d'envoi d'e-mails ni de notifications push : les alertes s'affichent dans l'application (l'envoi d'e-mails se branche par extension, voir `clients/exemple`).
 - Exports : CSV (ouvrable dans Excel) et impression PDF depuis le navigateur ; pas de fichiers .xlsx/.pdf générés côté serveur.
 - Pas d'API publique pour des intégrations tierces.

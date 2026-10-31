@@ -1,0 +1,23 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% from '_icones.html' import ico %}{% block title %}Réunions intelligentes{% endblock %}{% block body %}
+<div class="top"><h1>Réunions intelligentes</h1><span class="noprint"><a class="btn" href="#nouvelle" data-ouvrir="nouvelle">{{ ico('micro') }} Nouvelle réunion</a></span></div>
+<p class="mute">Enregistrez une réunion, obtenez sa transcription puis un compte rendu structuré que vous relisez et validez. Les enregistrements sont conservés {{ reglages.conservation_audio_jours }} jours{% if not reglages.conservation_audio_jours %} (sans limite){% endif %} ; la réunion entière {{ reglages.conservation_jours }} jours.</p>
+<div class="ri-services">
+<span class="ri-svc {{ 'ok' if stt else 'off' }}">{{ 'Transcription automatique active' if stt else 'Transcription automatique non configurée' }}</span>
+<span class="ri-svc {{ 'ok' if ia else 'off' }}">{{ 'Rédaction par IA active' if ia else 'Rédaction par IA non configurée' }}</span>
+{% if not stt or not ia %}<span class="mute">Sans clé de service, l'enregistrement, la saisie de la transcription, le compte rendu manuel et l'archivage fonctionnent déjà ; la transcription et la rédaction automatiques s'activent en configurant les clés (voir README).</span>{% endif %}</div>
+<details class="card" id="nouvelle" {{ 'open' if not rows }}><summary><b>Nouvelle réunion</b></summary><form method="post" action="{{ url_for('ri_creer') }}" class="row" style="margin-top:10px">{{ csrf() }}
+<div style="flex:2"><label>Titre</label><input name="titre" required placeholder="ex. Conseil des enseignants – 1er trimestre"></div>
+<div><label>Type</label><select name="type">{% for k, v in types.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div>
+<div><label>Date</label><input type="date" name="date" value="{{ today }}" required></div><div><label>Heure</label><input type="time" name="heure"></div>
+<div><label>Lieu</label><input name="lieu" placeholder="Salle des professeurs"></div>
+<div><label>Langue parlée</label><select name="langue">{% for k, v in langues.items() %}<option value="{{ k }}" {{ 'selected' if k == 'fr' }}>{{ v }}</option>{% endfor %}</select></div>
+<div style="flex:0 0 auto"><button>Créer et préparer</button></div></form></details>
+<div class="card"><h2>Historique</h2>
+<form method="get" class="row noprint"><div style="flex:2"><label>Recherche (titre, participant, texte)</label><input name="q" value="{{ terme }}"></div>
+<div><label>Type</label><select name="type"><option value="">Tous</option>{% for k, v in types.items() %}<option value="{{ k }}" {{ 'selected' if t == k }}>{{ v }}</option>{% endfor %}</select></div>
+<div><label>Du</label><input type="date" name="du" value="{{ du }}"></div><div><label>Au</label><input type="date" name="au" value="{{ au }}"></div>
+<div style="flex:0 0 auto"><button class="sec">Filtrer</button></div></form>
+<div class="scroll"><table><tr><th>Date</th><th>Réunion</th><th>Type</th><th>Participants</th><th>État</th><th></th></tr>
+{% for r in rows %}<tr><td>{{ r.date|fr_date }}{% if r.heure %}<br><span class="mute">{{ r.heure }}</span>{% endif %}</td><td><a href="{{ url_for('ri_reunion', rid=r.id) }}"><b>{{ r.titre }}</b></a></td><td>{{ r.type_libelle }}</td><td>{{ r.nb_part }}</td>
+<td><span class="tag {{ r.statut[1] }}">{{ r.statut[0] }}</span>{% if r.nb_audio %} <span class="mute" title="Enregistrement audio conservé">🎙</span>{% endif %}</td><td><a class="btn sec sm" href="{{ url_for('ri_reunion', rid=r.id) }}">Ouvrir</a></td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucune réunion pour l'instant : cliquez sur « Nouvelle réunion ».</td></tr>{% endfor %}</table></div></div><script src="{{ url_for('static', filename='reunions_ia.js') }}"></script>{% endblock %}

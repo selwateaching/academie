@@ -7,7 +7,7 @@ import json
 import os
 
 MODULES = ["professeurs", "emplois_du_temps", "absences", "remplacements", "cours", "classes", "incidents",
-           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel", "heures", "trombinoscope", "notes", "assiduite"]
+           "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel", "heures", "trombinoscope", "notes", "assiduite", "reunions_ia"]
 
 DEFAUTS = {
     "palette": "",   # "" (Sapin et ambre, par défaut), "actuel" (ancienne palette), "ardoise" ou "petrole" (voir static/style.css)
@@ -34,6 +34,7 @@ DEFAUTS = {
     "infirmerie_roles": ["infirmier", "direction", "admin"],   # rôles ayant accès aux données de santé (le CPE n'y a pas accès par défaut)
     "categories_personnel": ["Assistant pédagogique", "AESH (accompagnant)", "Agent d'accueil", "Personnel administratif", "Agent technique", "Autre"],
     "grille_personnel": ["07:00", "18:30"],   # bornes affichées dans le planning du personnel
+    "reunions_ia": {},                # réglages du module Réunions intelligentes (voir reunions_ia.py : conservation, rôles, services)
     "creneaux": [],                   # grille horaire proposée à la saisie, ex. ["08:00-09:00", "09:00-10:00"]
 }
 

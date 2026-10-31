@@ -351,6 +351,29 @@ MIGRATIONS = [
     (20, """
         ALTER TABLE groupes_eleves ADD COLUMN couleur TEXT NOT NULL DEFAULT '';   -- teinte du groupe (#RRGGBB) ; vide = teinte automatique
     """),
+    (21, """
+        CREATE TABLE IF NOT EXISTS ri_reunions (   -- « Réunions intelligentes » : réunion enregistrée, transcrite puis résumée
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            titre TEXT NOT NULL, type TEXT NOT NULL DEFAULT 'autre', date TEXT NOT NULL, heure TEXT NOT NULL DEFAULT '', lieu TEXT NOT NULL DEFAULT '',
+            langue TEXT NOT NULL DEFAULT 'fr', participants TEXT NOT NULL DEFAULT '[]',   -- JSON : [{nom, fonction, consent}]
+            consent_ok INTEGER NOT NULL DEFAULT 0, consent_par TEXT NOT NULL DEFAULT '', consent_le TEXT NOT NULL DEFAULT '',
+            transcription TEXT NOT NULL DEFAULT '', transcription_etat TEXT NOT NULL DEFAULT '',   -- '', en_cours, ok, erreur
+            transcription_source TEXT NOT NULL DEFAULT '', redaction_etat TEXT NOT NULL DEFAULT '', erreur TEXT NOT NULL DEFAULT '',
+            maj_travail TEXT NOT NULL DEFAULT '', cree_par TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL, audio_supprime_le TEXT NOT NULL DEFAULT ''
+        );
+        CREATE INDEX IF NOT EXISTS idx_ri_reunions ON ri_reunions(etab_id, date);
+        CREATE TABLE IF NOT EXISTS ri_audio (      -- une partie = une session d'enregistrement ; envoyée par morceaux pendant la réunion
+            id INTEGER PRIMARY KEY, reunion_id INTEGER NOT NULL REFERENCES ri_reunions(id) ON DELETE CASCADE,
+            ordre INTEGER NOT NULL DEFAULT 1, stored TEXT NOT NULL, mime TEXT NOT NULL DEFAULT 'audio/webm', taille INTEGER NOT NULL DEFAULT 0,
+            morceaux INTEGER NOT NULL DEFAULT 0, duree_s INTEGER NOT NULL DEFAULT 0, termine INTEGER NOT NULL DEFAULT 0,
+            texte TEXT NOT NULL DEFAULT '', transcrit INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS ri_comptes_rendus (
+            reunion_id INTEGER PRIMARY KEY REFERENCES ri_reunions(id) ON DELETE CASCADE, contenu TEXT NOT NULL, genere_par_ia INTEGER NOT NULL DEFAULT 0,
+            genere_le TEXT NOT NULL DEFAULT '', modifie_le TEXT NOT NULL DEFAULT '', modifie_par TEXT NOT NULL DEFAULT '',
+            valide INTEGER NOT NULL DEFAULT 0, valide_par TEXT NOT NULL DEFAULT '', valide_le TEXT NOT NULL DEFAULT ''
+        );
+    """),   # réunions intelligentes : enregistrement par morceaux, transcription, compte rendu validé par un responsable
 ]
 
 

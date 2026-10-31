@@ -23,6 +23,8 @@ et les variables ci-dessous.
 | `VSP_SECRET_KEY` | chaîne aléatoire | Clé de signature des sessions |
 | `VSP_DATA` | ex. `/data` | Dossier de la base et des fichiers (monter un disque persistant dessus) |
 | `VSP_CONFIG` | chemin du `config.json` | Configuration d'un client (voir EVOLUTION.md) |
+| `VSP_STT_API_KEY` | clé du service de transcription | Module *Réunions intelligentes* : transcription audio → texte (facultatif, payant à l'usage) |
+| `VSP_IA_API_KEY` | clé du service de rédaction | Module *Réunions intelligentes* : compte rendu par IA (facultatif, payant à l'usage) |
 
 **Le plan gratuit de Render efface les fichiers à chaque redéploiement et met le service en veille** : parfait pour une
 démo (elle se recharge toute seule), pas pour de vraies données. Pour un client, prenez un plan payant avec un *disque

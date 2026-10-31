@@ -28,6 +28,10 @@ Lancer un client : `VSP_CONFIG=viescolaire/clients/<client>/config.json python -
 | Nouvelle page, table, export, bloc de tableau de bord | extension (`ajouter_menu`, `ajouter_widget`, `ajouter_export`, `ajouter_schema`) | heures–jours |
 | Fonction utile à **tous** les clients | modifier le socle (voir plus bas) | jours |
 
+## Réglages du module « Réunions intelligentes »
+
+La clé `reunions_ia` du `config.json` règle les rôles autorisés, les durées de conservation (audio, réunion), la taille maximale d'audio et les services de transcription et de rédaction (adresse, modèle, fournisseur). Les clés d'accès restent dans les variables d'environnement `VSP_STT_API_KEY` et `VSP_IA_API_KEY`. Voir README, section « Réunions intelligentes ». Pour brancher un autre fournisseur, modifier uniquement `viescolaire/reunions_ia.py` (fonctions `transcrire_fichier` et `rediger`).
+
 ## Écrire une extension
 
 Un fichier Python dans `extensions/`, listé dans `config.json` (`"extensions": ["mon_extension"]`) :

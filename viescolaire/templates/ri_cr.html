@@ -1,0 +1,41 @@
+{% extends 'base.html' %}{% block title %}{{ formats[fmt] }} — {{ r.titre }}{% endblock %}{% block body %}
+<div class="top noprint"><h1>{{ formats[fmt] }}</h1><span><button class="sec" data-print>Imprimer / Enregistrer en PDF</button> <a class="btn sec" href="{{ url_for('ri_cr_docx', rid=r.id, fmt=fmt) }}">Télécharger Word</a>
+<a class="btn sec" href="{{ url_for('ri_reunion', rid=r.id) }}#compte-rendu">← Réunion</a></span></div>
+<p class="mute noprint">Autres formats : {% for k, v in formats.items() %}{% if k != fmt %}<a href="{{ url_for('ri_cr_voir', rid=r.id, fmt=k) }}">{{ v }}</a>{{ ' · ' if not loop.last }}{% endif %}{% endfor %}</p>
+{% if not row.valide %}<div class="al warn noprint">Brouillon : ce compte rendu n'est pas encore validé par un responsable.</div>{% endif %}
+<div class="card paper ri-papier">{% include '_entete.html' %}
+<h2 class="paper-titre">{{ 'PROCÈS-VERBAL' if fmt == 'pv' else 'COMPTE RENDU' }} — {{ r.titre }}</h2>
+<p class="ri-meta"><b>{{ meta.type_libelle }}</b> · {{ meta.date_fr }}{% if r.heure %} à {{ r.heure }}{% endif %}{% if r.lieu %} · {{ r.lieu }}{% endif %}</p>
+{% macro liste(titre, items, vide='Aucun élément mentionné.') %}<h3>{{ titre }}</h3>{% if items %}<ul>{% for x in items %}<li>{{ x }}</li>{% endfor %}</ul>{% else %}<p class="mute">{{ vide }}</p>{% endif %}{% endmacro %}
+{% macro tableau_actions() %}<h3>Actions à entreprendre</h3>{% if cr.actions %}<table class="ri-table"><tr><th>Action</th><th>Responsable</th><th>Échéance</th></tr>{% for a in cr.actions %}<tr><td>{{ a.action }}</td><td>{{ a.responsable }}</td><td>{{ a.echeance }}</td></tr>{% endfor %}</table>{% else %}<p class="mute">Aucune action mentionnée.</p>{% endif %}{% endmacro %}
+{% set presents = cr.participants_presents or (meta.participants|map(attribute='nom')|list) %}
+{% if fmt == 'decisions' %}
+{{ liste('Décisions prises', cr.decisions, 'Aucune décision mentionnée pendant la réunion.') }}
+{% elif fmt == 'actions' %}
+{{ tableau_actions() }}
+{% elif fmt == 'synthese' %}
+{% if cr.objet %}<h3>Objet</h3><p>{{ cr.objet }}</p>{% endif %}
+<h3>Participants</h3><p>{{ presents|join(', ') or 'Non renseignés' }}</p>
+<h3>Résumé</h3><p>{{ cr.resume_court or 'Non renseigné.' }}</p>
+{{ liste('Décisions prises', cr.decisions) }}{{ tableau_actions() }}
+{% elif fmt == 'pv' %}
+<h3>Ouverture de la séance</h3><p>Le {{ meta.date_fr }}{% if r.heure %}, à {{ r.heure }}{% endif %}{% if r.lieu %}, à {{ r.lieu }}{% endif %}, s'est tenue la réunion intitulée « {{ r.titre }} » ({{ meta.type_libelle|lower }}).</p>
+{{ liste('Présents', presents, 'Non renseignés.') }}{% if cr.absents_excuses %}{{ liste('Absents excusés', cr.absents_excuses) }}{% endif %}
+{% if cr.objet %}<h3>Ordre du jour</h3><p>{{ cr.objet }}</p>{% endif %}
+<h3>Délibérations</h3>{% if cr.points %}<ol>{% for p in cr.points %}<li><b>{{ p.titre }}</b>{% if p.resume %} — {{ p.resume }}{% endif %}</li>{% endfor %}</ol>{% else %}<p class="mute">Aucun point enregistré.</p>{% endif %}
+{{ liste('Décisions', cr.decisions) }}{{ tableau_actions() }}
+{% if cr.conclusion %}<h3>Clôture</h3><p>{{ cr.conclusion }}</p>{% endif %}
+<p class="ri-sign">Le procès-verbal est établi pour servir et valoir ce que de droit.</p>
+<div class="paper-signes"><div><b>Le/la président(e) de séance</b><span class="paper-case"></span></div><div><b>Le/la secrétaire de séance</b><span class="paper-case"></span></div></div>
+{% else %}
+{% if cr.objet %}<h3>Objet de la réunion</h3><p>{{ cr.objet }}</p>{% endif %}
+<h3>Participants</h3><p>{{ presents|join(', ') or 'Non renseignés' }}{% if cr.absents_excuses %}<br><span class="mute">Absents excusés : {{ cr.absents_excuses|join(', ') }}</span>{% endif %}</p>
+{% if cr.contexte %}<h3>Contexte et objectifs</h3><p>{{ cr.contexte }}</p>{% endif %}
+<h3>Points abordés</h3>{% if cr.points %}<ol>{% for p in cr.points %}<li><b>{{ p.titre }}</b>{% if p.resume %} — {{ p.resume }}{% endif %}</li>{% endfor %}</ol>{% else %}<p class="mute">Aucun élément mentionné.</p>{% endif %}
+{{ liste('Problèmes et difficultés soulevés', cr.difficultes) }}{{ liste('Propositions et solutions envisagées', cr.propositions) }}{{ liste('Décisions prises', cr.decisions) }}{{ tableau_actions() }}
+{% if cr.echeances %}{{ liste('Échéances mentionnées', cr.echeances) }}{% endif %}
+{% if cr.conclusion %}<h3>Conclusion générale</h3><p>{{ cr.conclusion }}</p>{% endif %}
+{% if cr.manquants %}<div class="ri-manquants"><b>Informations manquantes à compléter</b><ul>{% for x in cr.manquants %}<li>{{ x }}</li>{% endfor %}</ul></div>{% endif %}
+{% endif %}
+<p class="ri-valid">{% if row.valide %}Document validé par {{ row.valide_par }} le {{ row.valide_le.replace('T', ' ') }}.{% else %}Brouillon non validé.{% endif %}{% if row.genere_par_ia %} Rédigé avec l'aide d'une intelligence artificielle à partir de la transcription, puis relu par un responsable.{% endif %}</p>
+{% if e.pied %}<p class="paper-pied">{{ e.pied }}</p>{% endif %}</div>{% endblock %}

@@ -80,6 +80,8 @@ MODULE_DES_ENDPOINTS = {
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
+    "reunions_ia": ["ri_liste", "ri_creer", "ri_reunion", "ri_preparation", "ri_audio_nouveau", "ri_audio_morceau", "ri_audio_fin", "ri_audio_lire", "ri_audio_supprimer",
+                    "ri_transcrire", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
     "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -274,7 +276,7 @@ def entetes(resp):
 
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
-PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
+PAGE_PARENTE = {"ri_reunion": "ri_liste", "ri_cr_voir": "ri_liste", "proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
                 "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "etat_assiduite": "assiduite", "appel": "appel", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
@@ -347,6 +349,7 @@ def menu_sections():
                 item("historique", "Historique", "historique", "Journal des actions")]),
             section("4. Documents et réunions", [
                 item("reunions", "Réunions", "reunion", "Convocations, réponses", "reunions"),
+                item("ri_liste", "Réunions intelligentes", "micro", "Enregistrer, transcrire, compte rendu", "reunions_ia") if u["role"] in RI["roles"] else None,
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapports, convocations…", "redaction"),
                 item("documents", "Bibliothèque de documents", "dossier", "Archive classée par date et niveau", "documents"),
                 item("modeles_documents", "Modèles et types d'incident", "redaction", "Textes types des documents", "redaction"),
@@ -4594,6 +4597,11 @@ def admin_only(f):
 
 def purger_etablissement(con, eid):
     """Supprime l'établissement et TOUT ce qui en dépend (tables à etab_id et leurs tables liées par clé étrangère)."""
+    for a in con.execute("SELECT stored FROM ri_audio WHERE reunion_id IN (SELECT id FROM ri_reunions WHERE etab_id=?)", (eid,)).fetchall():   # fichiers audio des réunions
+        try:
+            os.remove(os.path.join(RI_DIR, os.path.basename(a["stored"])))
+        except OSError:
+            pass
     tables = [r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
     enfants = {}   # parent -> [(table enfant, colonne enfant, colonne parent)]
     for t in tables:
@@ -5499,6 +5507,585 @@ database.init_db(ext.SCHEMAS)
 DEMO = os.environ.get("VSP_DEMO") == "1"
 if DEMO:
     database.demo_si_vide()
+
+
+# ───────────────────────── Réunions intelligentes (enregistrement, transcription, compte rendu) ─────────────────────────
+from . import reunions_ia as ria
+
+RI = ria.reglages(CFG)
+if DEMO:   # démonstration publique : on limite l'audio pour ne pas saturer le disque
+    RI["audio_max_mo"] = min(RI["audio_max_mo"], 20)
+RI_DIR = os.path.join(UPLOAD_DIR, "ri")
+RI_CHUNK_MAX = 6 * 1024 * 1024
+
+
+def ri_only(f):
+    @wraps(f)
+    def wrapper(*a, **kw):
+        if g.user["role"] not in RI["roles"]:
+            abort(403)
+        return f(*a, **kw)
+    return wrapper
+
+
+def ri_json(data, code=200):
+    return Response(json.dumps(data), status=code, mimetype="application/json")
+
+
+def ri_reunion_ou_404(rid):
+    r = one("SELECT * FROM ri_reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    return r
+
+
+def ri_participants(r):
+    try:
+        return json.loads(r["participants"] or "[]")
+    except ValueError:
+        return []
+
+
+def ri_consentement_complet(r):
+    """L'enregistrement n'est possible que si le responsable atteste l'information ET que chaque participant listé a consenti."""
+    ps = ri_participants(r)
+    return bool(r["consent_ok"]) and all(p.get("consent") for p in ps)
+
+
+def ri_chemin(stored):
+    return os.path.join(RI_DIR, os.path.basename(stored))
+
+
+def ri_supprimer_audio(rid):
+    parts = q("SELECT * FROM ri_audio WHERE reunion_id=?", (rid,))
+    for p in parts:
+        try:
+            os.remove(ri_chemin(p["stored"]))
+        except OSError:
+            pass
+    db().execute("DELETE FROM ri_audio WHERE reunion_id=?", (rid,))
+    db().execute("UPDATE ri_reunions SET audio_supprime_le=? WHERE id=?", (date.today().isoformat(), rid))
+    db().commit()
+    return len(parts)
+
+
+def ri_supprimer_reunion(rid):
+    ri_supprimer_audio(rid)
+    db().execute("DELETE FROM ri_reunions WHERE id=?", (rid,))
+    db().commit()
+
+
+def ri_purge_automatique():
+    """Conservation limitée (RGPD) : supprime l'audio et les réunions dont la durée de conservation est dépassée."""
+    j_audio, j_tout = int(RI["conservation_audio_jours"] or 0), int(RI["conservation_jours"] or 0)
+    n_audio = n_tout = 0
+    if j_audio > 0:
+        limite = (datetime.now() - timedelta(days=j_audio)).isoformat(timespec="minutes")
+        for r in q("SELECT DISTINCT reunion_id FROM ri_audio WHERE created_at<? AND reunion_id IN (SELECT id FROM ri_reunions WHERE etab_id=?)", (limite, g.etab_id)):
+            ri_supprimer_audio(r["reunion_id"])
+            n_audio += 1
+    if j_tout > 0:
+        limite = (date.today() - timedelta(days=j_tout)).isoformat()
+        for r in q("SELECT id FROM ri_reunions WHERE etab_id=? AND date<?", (g.etab_id, limite)):
+            ri_supprimer_reunion(r["id"])
+            n_tout += 1
+    if n_audio or n_tout:
+        log("réunions intelligentes : purge automatique", f"{n_audio} enregistrement(s), {n_tout} réunion(s)")
+
+
+def ri_statut(r, nb_audio, a_cr, valide):
+    if valide:
+        return ("Validé", "ok")
+    if a_cr:
+        return ("Compte rendu à relire", "warn")
+    if (r["transcription"] or "").strip():
+        return ("Transcrit", "")
+    if nb_audio:
+        return ("Enregistré", "")
+    return ("Préparée", "")
+
+
+def ri_texte_cr(cr, meta, fmt):
+    """Version texte brut d'un compte rendu (messagerie, export Word)."""
+    L = []
+
+    def liste(titre, items):
+        L.append(titre.upper())
+        if items:
+            L.extend(f"- {x}" for x in items)
+        else:
+            L.append("- (aucun élément mentionné)")
+        L.append("")
+
+    def actions(prefixe=""):
+        L.append(prefixe)
+        if cr["actions"]:
+            L.extend(f"- {a['action']} — responsable : {a['responsable']} — échéance : {a['echeance']}" for a in cr["actions"])
+        else:
+            L.append("- (aucune action mentionnée)")
+        L.append("")
+    if fmt == "actions":
+        actions("ACTIONS À RÉALISER")
+        return "\n".join(L).strip()
+    if fmt == "decisions":
+        liste("Décisions prises", cr["decisions"])
+        return "\n".join(L).strip()
+    L.append(f"Réunion : {meta['titre']} — {meta['type_libelle']}")
+    L.append(f"Date : {meta['date_fr']}{(' à ' + meta['heure']) if meta['heure'] else ''}{(' — ' + meta['lieu']) if meta['lieu'] else ''}")
+    L.append("")
+    if cr["objet"]:
+        L += ["OBJET", cr["objet"], ""]
+    liste("Participants", cr["participants_presents"] or [p["nom"] for p in meta["participants"]])
+    if fmt == "synthese":
+        L += ["RÉSUMÉ", cr["resume_court"] or "(non renseigné)", ""]
+        liste("Décisions prises", cr["decisions"])
+        actions("ACTIONS")
+        return "\n".join(L).strip()
+    if cr["absents_excuses"]:
+        liste("Absents excusés", cr["absents_excuses"])
+    if cr["contexte"]:
+        L += ["CONTEXTE ET OBJECTIFS", cr["contexte"], ""]
+    L.append("POINTS ABORDÉS")
+    if cr["points"]:
+        L.extend(f"- {p['titre']}" + (f" : {p['resume']}" if p["resume"] else "") for p in cr["points"])
+    else:
+        L.append("- (aucun élément mentionné)")
+    L.append("")
+    liste("Difficultés soulevées", cr["difficultes"])
+    liste("Propositions et solutions envisagées", cr["propositions"])
+    liste("Décisions prises", cr["decisions"])
+    actions("ACTIONS À ENTREPRENDRE")
+    if cr["echeances"]:
+        liste("Échéances mentionnées", cr["echeances"])
+    if cr["conclusion"]:
+        L += ["CONCLUSION", cr["conclusion"], ""]
+    if cr["manquants"]:
+        liste("Informations manquantes à compléter", cr["manquants"])
+    return "\n".join(L).strip()
+
+
+def ri_meta(r):
+    return {"titre": r["titre"], "type": r["type"], "type_libelle": ria.TYPES.get(r["type"], "Autre"), "date": r["date"], "date_fr": date_longue(r["date"]),
+            "heure": r["heure"], "lieu": r["lieu"], "participants": ri_participants(r)}
+
+
+def ri_lire_cr(rid):
+    row = one("SELECT * FROM ri_comptes_rendus WHERE reunion_id=?", (rid,))
+    if not row:
+        return None, None
+    try:
+        return ria.normaliser(json.loads(row["contenu"])), row
+    except ValueError:
+        return ria.cr_vide(), row
+
+
+@app.route("/reunions-ia")
+@ri_only
+def ri_liste():
+    ri_purge_automatique()
+    terme, typ, debut, fin = (request.args.get(k, "").strip() for k in ("q", "type", "du", "au"))
+    sql = ("SELECT r.*, (SELECT COUNT(*) FROM ri_audio a WHERE a.reunion_id=r.id) nb_audio, (SELECT valide FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) valide, "
+           "(SELECT COUNT(*) FROM ri_comptes_rendus c WHERE c.reunion_id=r.id) a_cr FROM ri_reunions r WHERE r.etab_id=?")
+    args = [g.etab_id]
+    if terme:
+        sql += " AND (r.titre LIKE ? OR r.participants LIKE ? OR r.transcription LIKE ?)"
+        args += [f"%{terme}%"] * 3
+    if typ in ria.TYPES:
+        sql += " AND r.type=?"
+        args.append(typ)
+    if debut:
+        sql += " AND r.date>=?"
+        args.append(debut)
+    if fin:
+        sql += " AND r.date<=?"
+        args.append(fin)
+    rows = [dict(r, statut=ri_statut(r, r["nb_audio"], r["a_cr"], r["valide"]), nb_part=len(ri_participants(r)), type_libelle=ria.TYPES.get(r["type"], "Autre"))
+            for r in q(sql + " ORDER BY r.date DESC, r.heure DESC, r.id DESC LIMIT 300", args)]
+    return render_template("ri_liste.html", rows=rows, types=ria.TYPES, langues=ria.LANGUES, t=typ, terme=terme, du=debut, au=fin, today=date.today().isoformat(),
+                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI)
+
+
+@app.route("/reunions-ia/nouvelle", methods=["POST"])
+@ri_only
+def ri_creer():
+    f = request.form
+    titre = f.get("titre", "").strip()[:160]
+    if not titre:
+        flash("Donnez un titre à la réunion.", "err")
+        return redirect(url_for("ri_liste"))
+    jour = f.get("date", "")
+    try:
+        datetime.strptime(jour, "%Y-%m-%d")
+    except ValueError:
+        jour = date.today().isoformat()
+    rid = run("INSERT INTO ri_reunions(etab_id,titre,type,date,heure,lieu,langue,cree_par,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+              (g.etab_id, titre, f.get("type") if f.get("type") in ria.TYPES else "autre", jour, heure_norm(f.get("heure", "")) or "", f.get("lieu", "").strip()[:120],
+               f.get("langue") if f.get("langue") in ria.LANGUES else RI["transcription"].get("langue_defaut", "fr"), g.user["nom"], datetime.now().isoformat(timespec="minutes")))
+    log("réunion intelligente créée", titre)
+    return redirect(url_for("ri_reunion", rid=rid))
+
+
+@app.route("/reunions-ia/<int:rid>")
+@ri_only
+def ri_reunion(rid):
+    ri_purge_automatique()
+    r = one("SELECT * FROM ri_reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    parts = q("SELECT * FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,))
+    cr, cr_row = ri_lire_cr(rid)
+    participants = ri_participants(r)
+    annuaire = q("SELECT nom, prenom, matiere FROM professeurs WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,))
+    deja = {p["nom"].lower() for p in participants}
+    annuaire = [{"nom_complet": f"{a['prenom']} {a['nom']}".strip(), "matiere": a["matiere"]} for a in annuaire if f"{a['prenom']} {a['nom']}".strip().lower() not in deja]
+    duree = sum(p["duree_s"] for p in parts)
+    taille = sum(p["taille"] for p in parts)
+    audio_expire = ""
+    if parts and RI["conservation_audio_jours"]:
+        audio_expire = (datetime.fromisoformat(max(p["created_at"] for p in parts)) + timedelta(days=int(RI["conservation_audio_jours"]))).date().isoformat()
+    users = q("SELECT u.id, u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? ORDER BY u.nom", (g.etab_id, g.user["id"]))
+    return render_template("ri_reunion.html", r=r, meta=ri_meta(r), participants=participants, parts=parts, cr=cr, cr_row=cr_row,
+                           formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
+                           consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,
+                           stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, max_mo=RI["audio_max_mo"],
+                           sans_consent=[p["nom"] for p in participants if not p.get("consent")])
+
+
+@app.route("/reunions-ia/<int:rid>/preparation", methods=["POST"])
+@ri_only
+def ri_preparation(rid):
+    r = ri_reunion_ou_404(rid)
+    f, action = request.form, request.form.get("action")
+    if action == "infos":
+        anciens = {p["nom"].lower(): p.get("consent", False) for p in ri_participants(r)}
+        noms = ria.parse_participants(f.get("participants", ""))
+        for nom in f.getlist("annuaire"):
+            if nom.strip() and nom.strip().lower() not in {p["nom"].lower() for p in noms}:
+                noms.append({"nom": nom.strip()[:80], "fonction": "Enseignant"})
+        ps = [{"nom": p["nom"], "fonction": p["fonction"], "consent": anciens.get(p["nom"].lower(), False)} for p in noms]
+        jour = f.get("date", r["date"])
+        try:
+            datetime.strptime(jour, "%Y-%m-%d")
+        except ValueError:
+            jour = r["date"]
+        modif_participants = {p["nom"].lower() for p in ps} != set(anciens)
+        run("UPDATE ri_reunions SET titre=?, type=?, date=?, heure=?, lieu=?, langue=?, participants=?, consent_ok=? WHERE id=?",
+            (f.get("titre", "").strip()[:160] or r["titre"], f.get("type") if f.get("type") in ria.TYPES else r["type"], jour, heure_norm(f.get("heure", "")) or "",
+             f.get("lieu", "").strip()[:120], f.get("langue") if f.get("langue") in ria.LANGUES else r["langue"], json.dumps(ps, ensure_ascii=False),
+             0 if modif_participants else r["consent_ok"], rid))
+        flash("Informations enregistrées." + (" La liste des participants a changé : confirmez de nouveau les consentements." if modif_participants and r["consent_ok"] else ""), "ok")
+    elif action == "consentement":
+        ps = ri_participants(r)
+        for i, p in enumerate(ps):
+            p["consent"] = f.get(f"consent_{i}") == "1"
+        attest = f.get("attestation") == "1"
+        run("UPDATE ri_reunions SET participants=?, consent_ok=?, consent_par=?, consent_le=? WHERE id=?",
+            (json.dumps(ps, ensure_ascii=False), 1 if attest else 0, g.user["nom"] if attest else "", datetime.now().isoformat(timespec="minutes") if attest else "", rid))
+        log("réunion intelligente : consentements", f"{r['titre']} ({sum(1 for p in ps if p['consent'])}/{len(ps)})")
+        flash("Consentements enregistrés." if attest else "Consentements enregistrés, mais l'attestation n'est pas cochée : l'enregistrement reste bloqué.", "ok" if attest else "err")
+    return redirect(url_for("ri_reunion", rid=rid) + "#preparation")
+
+
+# ── Enregistrement : l'audio est envoyé par morceaux pendant la réunion (reprise possible après un incident) ──
+@app.route("/reunions-ia/<int:rid>/audio/nouveau", methods=["POST"])
+@ri_only
+def ri_audio_nouveau(rid):
+    r = ri_reunion_ou_404(rid)
+    if not ri_consentement_complet(r):
+        return ri_json({"erreur": "Consentement manquant : confirmez l'information et le consentement des participants avant d'enregistrer."}, 403)
+    mime = request.form.get("mime", "audio/webm")
+    mime = mime if mime.split(";")[0] in ("audio/webm", "audio/ogg", "audio/mp4", "audio/mpeg", "audio/wav") else "audio/webm"
+    ext = "mp4" if "mp4" in mime else "ogg" if "ogg" in mime else "webm"
+    os.makedirs(RI_DIR, exist_ok=True)
+    ordre = one("SELECT COALESCE(MAX(ordre),0)+1 n FROM ri_audio WHERE reunion_id=?", (rid,))["n"]
+    stored = f"{rid}_{ordre}_{secrets.token_hex(6)}.{ext}"
+    open(ri_chemin(stored), "wb").close()
+    pid = run("INSERT INTO ri_audio(reunion_id,ordre,stored,mime,created_at) VALUES (?,?,?,?,?)", (rid, ordre, stored, mime, datetime.now().isoformat(timespec="minutes")))
+    db().execute("UPDATE ri_audio SET termine=1 WHERE reunion_id=? AND termine=0 AND id<>?", (rid, pid))   # partie interrompue par un incident : on la clôt
+    db().commit()
+    log("réunion intelligente : enregistrement démarré", r["titre"])
+    return ri_json({"id": pid, "ordre": ordre})
+
+
+@app.route("/reunions-ia/<int:rid>/audio/<int:pid>/morceau", methods=["POST"])
+@ri_only
+def ri_audio_morceau(rid, pid):
+    ri_reunion_ou_404(rid)
+    p = one("SELECT * FROM ri_audio WHERE id=? AND reunion_id=?", (pid, rid))
+    if not p:
+        return ri_json({"erreur": "Partie inconnue."}, 404)
+    if p["termine"]:
+        return ri_json({"erreur": "Cette partie est terminée."}, 409)
+    try:
+        seq = int(request.form.get("seq", ""))
+    except ValueError:
+        return ri_json({"erreur": "Numéro de morceau invalide."}, 400)
+    if seq < p["morceaux"]:
+        return ri_json({"ok": True, "morceaux": p["morceaux"]})      # doublon (renvoi après coupure) : déjà reçu
+    if seq > p["morceaux"]:
+        return ri_json({"erreur": "Morceau manquant", "attendu": p["morceaux"]}, 409)
+    f = request.files.get("morceau")
+    data = f.read(RI_CHUNK_MAX + 1) if f else b""
+    if not data or len(data) > RI_CHUNK_MAX:
+        return ri_json({"erreur": "Morceau vide ou trop volumineux."}, 400)
+    total = one("SELECT COALESCE(SUM(taille),0) t FROM ri_audio WHERE reunion_id=?", (rid,))["t"] + len(data)
+    if total > RI["audio_max_mo"] * 1048576:
+        return ri_json({"erreur": f"Limite de {RI['audio_max_mo']} Mo d'audio par réunion atteinte."}, 413)
+    with open(ri_chemin(p["stored"]), "ab") as fh:
+        fh.write(data)
+    run("UPDATE ri_audio SET taille=taille+?, morceaux=morceaux+1 WHERE id=?", (len(data), pid))
+    return ri_json({"ok": True, "morceaux": seq + 1})
+
+
+@app.route("/reunions-ia/<int:rid>/audio/<int:pid>/fin", methods=["POST"])
+@ri_only
+def ri_audio_fin(rid, pid):
+    ri_reunion_ou_404(rid)
+    p = one("SELECT * FROM ri_audio WHERE id=? AND reunion_id=?", (pid, rid))
+    if not p:
+        return ri_json({"erreur": "Partie inconnue."}, 404)
+    duree = request.form.get("duree", type=int) or 0
+    run("UPDATE ri_audio SET termine=1, duree_s=? WHERE id=?", (max(0, min(duree, 86400)), pid))
+    return ri_json({"ok": True, "taille": p["taille"]})
+
+
+@app.route("/reunions-ia/<int:rid>/audio/<int:pid>")
+@ri_only
+def ri_audio_lire(rid, pid):
+    ri_reunion_ou_404(rid)
+    p = one("SELECT * FROM ri_audio WHERE id=? AND reunion_id=?", (pid, rid))
+    if not p or not os.path.exists(ri_chemin(p["stored"])):
+        abort(404)
+    log("réunion intelligente : écoute de l'enregistrement", f"réunion {rid}")
+    return send_from_directory(RI_DIR, os.path.basename(p["stored"]), mimetype=p["mime"].split(";")[0])
+
+
+@app.route("/reunions-ia/<int:rid>/audio/supprimer", methods=["POST"])
+@ri_only
+def ri_audio_supprimer(rid):
+    r = ri_reunion_ou_404(rid)
+    n = ri_supprimer_audio(rid)
+    log("réunion intelligente : enregistrements supprimés", f"{r['titre']} ({n})")
+    flash(f"{n} enregistrement(s) audio supprimé(s). La transcription et le compte rendu sont conservés.", "ok")
+    return redirect(url_for("ri_reunion", rid=rid))
+
+
+# ── Transcription et rédaction : tâches de fond (le navigateur interroge l'avancement) ──
+def ri_tache_transcription(rid, langue, vocabulaire):
+    con = database.connect()
+    try:
+        for p in con.execute("SELECT * FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,)).fetchall():
+            if p["transcrit"] or p["taille"] == 0:
+                continue
+            texte = ria.transcrire_fichier(ri_chemin(p["stored"]), p["mime"], CFG, langue, vocabulaire)
+            con.execute("UPDATE ri_audio SET texte=?, transcrit=1 WHERE id=?", (texte, p["id"]))
+            con.execute("UPDATE ri_reunions SET maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
+            con.commit()
+        textes = [t["texte"] for t in con.execute("SELECT texte FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,)).fetchall() if t["texte"]]
+        if not textes:
+            raise ria.ErreurService("Aucune parole n'a été reconnue dans l'enregistrement (silence ou micro trop faible ?).")
+        con.execute("UPDATE ri_reunions SET transcription=?, transcription_etat='ok', transcription_source='ia', erreur='' WHERE id=?", ("\n\n".join(textes), rid))
+    except ria.ErreurService as e:
+        con.execute("UPDATE ri_reunions SET transcription_etat='erreur', erreur=? WHERE id=?", (str(e), rid))
+    except Exception:
+        app.logger.exception("transcription")
+        con.execute("UPDATE ri_reunions SET transcription_etat='erreur', erreur=? WHERE id=?", ("Erreur inattendue pendant la transcription.", rid))
+    finally:
+        con.commit()
+        con.close()
+
+
+def ri_tache_redaction(rid, meta, transcription):
+    con = database.connect()
+    try:
+        cr = ria.rediger(CFG, meta, transcription)
+        maintenant = datetime.now().isoformat(timespec="minutes")
+        con.execute("INSERT INTO ri_comptes_rendus(reunion_id,contenu,genere_par_ia,genere_le) VALUES (?,?,1,?) "
+                    "ON CONFLICT(reunion_id) DO UPDATE SET contenu=excluded.contenu, genere_par_ia=1, genere_le=excluded.genere_le, valide=0, valide_par='', valide_le=''",
+                    (rid, json.dumps(cr, ensure_ascii=False), maintenant))
+        con.execute("UPDATE ri_reunions SET redaction_etat='ok', erreur='' WHERE id=?", (rid,))
+    except ria.ErreurService as e:
+        con.execute("UPDATE ri_reunions SET redaction_etat='erreur', erreur=? WHERE id=?", (str(e), rid))
+    except Exception:
+        app.logger.exception("rédaction")
+        con.execute("UPDATE ri_reunions SET redaction_etat='erreur', erreur=? WHERE id=?", ("Erreur inattendue pendant la rédaction.", rid))
+    finally:
+        con.commit()
+        con.close()
+
+
+def ri_lancer(cible, *args):
+    import threading
+    threading.Thread(target=cible, args=args, daemon=True).start()
+
+
+@app.route("/reunions-ia/<int:rid>/transcrire", methods=["POST"])
+@ri_only
+def ri_transcrire(rid):
+    r = ri_reunion_ou_404(rid)
+    retour = redirect(url_for("ri_reunion", rid=rid) + "#transcription")
+    if not ria.cle_transcription():
+        flash("La transcription automatique n'est pas activée : aucune clé de service configurée. Vous pouvez saisir ou coller la transcription à la main.", "err")
+        return retour
+    if not q("SELECT 1 FROM ri_audio WHERE reunion_id=? AND taille>0", (rid,)):
+        flash("Aucun enregistrement audio à transcrire.", "err")
+        return retour
+    if r["transcription_etat"] == "en_cours" and (datetime.now() - datetime.fromisoformat(r["maj_travail"] or "2000-01-01T00:00:00")).total_seconds() < 1200:
+        flash("Une transcription est déjà en cours.", "err")
+        return retour
+    if request.form.get("recommencer"):
+        run("UPDATE ri_audio SET transcrit=0, texte='' WHERE reunion_id=?", (rid,))
+    run("UPDATE ri_reunions SET transcription_etat='en_cours', erreur='', maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
+    langue = request.form.get("langue", r["langue"])
+    ps = ri_participants(r)
+    vocab = ("Participants : " + ", ".join(p["nom"] for p in ps)) if ps else ""
+    log("réunion intelligente : transcription lancée", r["titre"])
+    ri_lancer(ri_tache_transcription, rid, langue if langue in ria.LANGUES else "", vocab)
+    return retour
+
+
+@app.route("/reunions-ia/<int:rid>/etat")
+@ri_only
+def ri_etat(rid):
+    r = ri_reunion_ou_404(rid)
+    parts = q("SELECT transcrit FROM ri_audio WHERE reunion_id=?", (rid,))
+    tr, rd = r["transcription_etat"], r["redaction_etat"]
+    perime = r["maj_travail"] and (datetime.now() - datetime.fromisoformat(r["maj_travail"])).total_seconds() > 1200
+    if (tr == "en_cours" or rd == "en_cours") and perime:
+        tr, rd = ("erreur" if tr == "en_cours" else tr), ("erreur" if rd == "en_cours" else rd)
+    return ri_json({"transcription": tr, "redaction": rd, "erreur": r["erreur"], "parties": len(parts), "transcrites": sum(1 for p in parts if p["transcrit"])})
+
+
+@app.route("/reunions-ia/<int:rid>/transcription", methods=["POST"])
+@ri_only
+def ri_transcription_enregistrer(rid):
+    r = ri_reunion_ou_404(rid)
+    texte = request.form.get("transcription", "").strip()[:ria.MAX_TRANSCRIPTION]
+    source = r["transcription_source"] or "manuelle"
+    ancien, nouveau = request.form.get("remplacer_intervenant", "").strip(), request.form.get("par_nom", "").strip()
+    if ancien and nouveau:
+        texte = texte.replace(ancien, nouveau)
+    run("UPDATE ri_reunions SET transcription=?, transcription_etat=?, transcription_source=? WHERE id=?", (texte, "ok" if texte else "", source if texte else "", rid))
+    log("réunion intelligente : transcription modifiée", r["titre"])
+    flash("Transcription enregistrée.", "ok")
+    return redirect(url_for("ri_reunion", rid=rid) + "#transcription")
+
+
+@app.route("/reunions-ia/<int:rid>/rediger", methods=["POST"])
+@ri_only
+def ri_rediger(rid):
+    r = ri_reunion_ou_404(rid)
+    retour = redirect(url_for("ri_reunion", rid=rid) + "#compte-rendu")
+    cr, row = ri_lire_cr(rid)
+    if request.form.get("mode") == "vide":
+        if cr:
+            flash("Un compte rendu existe déjà.", "err")
+        else:
+            c = ria.cr_vide()
+            c["participants_presents"] = [p["nom"] for p in ri_participants(r)]
+            run("INSERT INTO ri_comptes_rendus(reunion_id,contenu,genere_par_ia,genere_le) VALUES (?,?,0,?)", (rid, json.dumps(c, ensure_ascii=False), datetime.now().isoformat(timespec="minutes")))
+            flash("Compte rendu vierge créé : remplissez les rubriques ci-dessous.", "ok")
+        return retour
+    if not ria.cle_redaction():
+        flash("La rédaction par intelligence artificielle n'est pas activée : aucune clé de service configurée. Vous pouvez créer un compte rendu vierge et le remplir à la main.", "err")
+        return retour
+    if not (r["transcription"] or "").strip():
+        flash("Transcrivez d'abord la réunion (ou saisissez le texte des échanges).", "err")
+        return redirect(url_for("ri_reunion", rid=rid) + "#transcription")
+    if cr and row["valide"] and not request.form.get("confirme"):
+        flash("Ce compte rendu est validé : cochez la confirmation pour le remplacer.", "err")
+        return retour
+    run("UPDATE ri_reunions SET redaction_etat='en_cours', erreur='', maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
+    log("réunion intelligente : rédaction du compte rendu lancée", r["titre"])
+    ri_lancer(ri_tache_redaction, rid, ri_meta(r), r["transcription"])
+    return retour
+
+
+@app.route("/reunions-ia/<int:rid>/cr", methods=["POST"])
+@ri_only
+def ri_cr_enregistrer(rid):
+    r = ri_reunion_ou_404(rid)
+    cr, row = ri_lire_cr(rid)
+    if not row:
+        abort(404)
+    action = request.form.get("action", "enregistrer")
+    maintenant = datetime.now().isoformat(timespec="minutes")
+    if action in ("enregistrer", "valider"):
+        nouveau = ria.depuis_formulaire(request.form)
+        run("UPDATE ri_comptes_rendus SET contenu=?, modifie_le=?, modifie_par=?, valide=0, valide_par='', valide_le='' WHERE reunion_id=?",
+            (json.dumps(nouveau, ensure_ascii=False), maintenant, g.user["nom"], rid))
+        flash("Compte rendu enregistré.", "ok")
+    if action == "valider":
+        run("UPDATE ri_comptes_rendus SET valide=1, valide_par=?, valide_le=? WHERE reunion_id=?", (g.user["nom"], maintenant, rid))
+        log("réunion intelligente : compte rendu validé", r["titre"])
+        flash("Compte rendu validé : vous pouvez le télécharger, l'imprimer ou le partager.", "ok")
+    elif action == "rouvrir":
+        run("UPDATE ri_comptes_rendus SET valide=0, valide_par='', valide_le='' WHERE reunion_id=?", (rid,))
+        flash("Compte rendu rouvert pour modification.", "ok")
+    elif action == "supprimer":
+        run("DELETE FROM ri_comptes_rendus WHERE reunion_id=?", (rid,))
+        run("UPDATE ri_reunions SET redaction_etat='' WHERE id=?", (rid,))
+        log("réunion intelligente : compte rendu supprimé", r["titre"])
+        flash("Compte rendu supprimé.", "ok")
+    return redirect(url_for("ri_reunion", rid=rid) + "#compte-rendu")
+
+
+@app.route("/reunions-ia/<int:rid>/cr/<fmt>")
+@ri_only
+def ri_cr_voir(rid, fmt):
+    r = ri_reunion_ou_404(rid)
+    cr, row = ri_lire_cr(rid)
+    if not row or fmt not in ria.FORMATS:
+        abort(404)
+    log("réunion intelligente : compte rendu consulté", f"{r['titre']} ({fmt})")
+    return render_template("ri_cr.html", r=r, meta=ri_meta(r), cr=cr, row=row, fmt=fmt, formats=ria.FORMATS, e=entete_documents())
+
+
+@app.route("/reunions-ia/<int:rid>/cr/<fmt>.docx")
+@ri_only
+def ri_cr_docx(rid, fmt):
+    r = ri_reunion_ou_404(rid)
+    cr, row = ri_lire_cr(rid)
+    if not row or fmt not in ria.FORMATS:
+        abort(404)
+    ent = entete_documents()
+    lg = one("SELECT logo_mime, logo FROM entete_documents WHERE etab_id=?", (g.etab_id,))
+    logo = (lg["logo_mime"], lg["logo"]) if lg and lg["logo"] else None
+    titre = f"{ria.FORMATS[fmt]} — {r['titre']}"
+    nom = re.sub(r"[^\w-]+", "_", titre).strip("_")[:60] or "compte_rendu"
+    log("réunion intelligente : compte rendu exporté (Word)", titre)
+    return Response(fabriquer_docx(titre, ri_texte_cr(cr, ri_meta(r), fmt), g.etab["nom"], ent, [], logo, ""),
+                    mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers={"Content-Disposition": f"attachment; filename={nom}.docx"})
+
+
+@app.route("/reunions-ia/<int:rid>/partager", methods=["POST"])
+@ri_only
+def ri_partager(rid):
+    r = ri_reunion_ou_404(rid)
+    cr, row = ri_lire_cr(rid)
+    retour = redirect(url_for("ri_reunion", rid=rid) + "#compte-rendu")
+    if not row or not row["valide"]:
+        flash("Validez le compte rendu avant de le partager.", "err")
+        return retour
+    fmt = request.form.get("format") if request.form.get("format") in ria.FORMATS else "detaille"
+    ids = [int(x) for x in request.form.getlist("destinataire") if x.isdigit() and one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (int(x), g.etab_id))]
+    if not ids:
+        flash("Choisissez au moins un destinataire.", "err")
+    else:
+        n = notifier(ids, f"Compte rendu : {r['titre']} ({date_longue(r['date'])})", ri_texte_cr(cr, ri_meta(r), fmt))
+        log("réunion intelligente : compte rendu partagé", f"{r['titre']} → {n} personne(s)")
+        flash(f"Compte rendu envoyé par la messagerie interne à {n} personne(s).", "ok")
+    return retour
+
+
+@app.route("/reunions-ia/<int:rid>/supprimer", methods=["POST"])
+@ri_only
+def ri_supprimer(rid):
+    r = ri_reunion_ou_404(rid)
+    ri_supprimer_reunion(rid)
+    log("réunion intelligente : réunion supprimée", r["titre"])
+    flash("Réunion, enregistrements, transcription et compte rendu supprimés.", "ok")
+    return redirect(url_for("ri_liste"))
 
 
 # ───────────────────────── Commandes CLI ─────────────────────────

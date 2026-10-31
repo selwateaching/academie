@@ -1,0 +1,110 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% from '_icones.html' import ico %}{% block title %}{{ r.titre }}{% endblock %}{% block body %}
+{% set a_audio = parts|length > 0 %}{% set a_texte = r.transcription|trim|length > 0 %}{% set valide = cr_row and cr_row.valide %}
+<div class="top"><h1>{{ r.titre }}</h1><span class="noprint"><a class="btn sec" href="{{ url_for('ri_liste') }}">← Réunions intelligentes</a></span></div>
+<p class="mute">{{ meta.type_libelle }} · {{ meta.date_fr }}{% if r.heure %} à {{ r.heure }}{% endif %}{% if r.lieu %} · {{ r.lieu }}{% endif %} · créée par {{ r.cree_par }}</p>
+<ol class="ri-etapes noprint">
+<li class="{{ 'fait' if consent_complet }}"><a href="#preparation"><b>1</b> Préparation et consentement</a></li>
+<li class="{{ 'fait' if a_audio }}"><a href="#enregistrement"><b>2</b> Enregistrement</a></li>
+<li class="{{ 'fait' if a_texte }}"><a href="#transcription"><b>3</b> Transcription</a></li>
+<li class="{{ 'fait' if valide }}"><a href="#compte-rendu"><b>4</b> Compte rendu</a></li></ol>
+
+<div class="card" id="preparation"><h2>1. Préparation et consentement</h2>
+<form method="post" action="{{ url_for('ri_preparation', rid=r.id) }}">{{ csrf() }}<input type="hidden" name="action" value="infos">
+<div class="row"><div style="flex:2"><label>Titre</label><input name="titre" value="{{ r.titre }}" required></div>
+<div><label>Type</label><select name="type">{% for k, v in types.items() %}<option value="{{ k }}" {{ 'selected' if r.type == k }}>{{ v }}</option>{% endfor %}</select></div>
+<div><label>Date</label><input type="date" name="date" value="{{ r.date }}"></div><div><label>Heure</label><input type="time" name="heure" value="{{ r.heure }}"></div></div>
+<div class="row"><div><label>Lieu</label><input name="lieu" value="{{ r.lieu }}"></div>
+<div><label>Langue parlée</label><select name="langue">{% for k, v in langues.items() %}<option value="{{ k }}" {{ 'selected' if r.langue == k }}>{{ v }}</option>{% endfor %}</select></div></div>
+<label>Participants <span class="mute">(une personne par ligne : « Nom, fonction »)</span></label>
+<textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 3A&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, CPE">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
+{% endfor %}</textarea>
+{% if annuaire %}<details><summary>Ajouter des professeurs de l'annuaire ({{ annuaire|length }})</summary><div class="liste-cases">{% for a in annuaire %}<label class="check"><input type="checkbox" name="annuaire" value="{{ a.nom_complet }}"> {{ a.nom_complet }}{% if a.matiere %} <span class="mute">· {{ a.matiere }}</span>{% endif %}</label>{% endfor %}</div></details>{% endif %}
+<p><button>Enregistrer les informations</button></p></form>
+
+<div class="ri-consent {{ 'ok' if consent_complet }}"><h3>Information et consentement des participants</h3>
+<p><b>Texte à lire aux participants avant de commencer :</b> « Cette réunion va être enregistrée afin d'en établir le compte rendu. L'enregistrement audio et sa transcription seront accessibles uniquement aux personnes habilitées de l'établissement, conservés {{ reglages.conservation_audio_jours }} jours pour l'audio, et vous pouvez demander leur suppression ou refuser d'être enregistré(e). »</p>
+{% if participants %}<form method="post" action="{{ url_for('ri_preparation', rid=r.id) }}">{{ csrf() }}<input type="hidden" name="action" value="consentement">
+<div class="liste-cases">{% for p in participants %}<label class="check"><input type="checkbox" name="consent_{{ loop.index0 }}" value="1" {{ 'checked' if p.consent }}> <b>{{ p.nom }}</b> consent à l'enregistrement</label>{% endfor %}</div>
+<label class="check" style="margin-top:8px"><input type="checkbox" name="attestation" value="1" {{ 'checked' if r.consent_ok }}> <b>J'atteste que les participants ont été informés</b> de l'enregistrement et que ceux cochés ci-dessus y ont consenti.</label>
+<p><button class="sec">Enregistrer les consentements</button>{% if r.consent_ok %} <span class="tag ok">Attesté par {{ r.consent_par }} le {{ r.consent_le.replace('T', ' ') }}</span>{% endif %}</p></form>
+{% if sans_consent %}<div class="al err">Sans le consentement de {{ sans_consent|join(', ') }}, l'enregistrement est bloqué : cette personne doit accepter, ou ne pas participer à la réunion enregistrée (vous pouvez alors la retirer de la liste et rédiger le compte rendu à la main).</div>{% endif %}
+{% else %}<p class="mute">Ajoutez d'abord les participants ci-dessus, puis confirmez leur consentement.</p>{% endif %}</div></div>
+
+<div class="card ri-rec" id="enregistrement" data-ri-enregistreur data-pret="{{ 1 if consent_complet else 0 }}" data-max-mo="{{ max_mo }}" data-csrf="{{ csrf_token() }}"
+ data-url-nouveau="{{ url_for('ri_audio_nouveau', rid=r.id) }}" data-url-morceau="{{ url_for('ri_audio_morceau', rid=r.id, pid=0) }}" data-url-fin="{{ url_for('ri_audio_fin', rid=r.id, pid=0) }}">
+<h2>2. Enregistrement</h2>
+{% if not consent_complet %}<div class="al warn">L'enregistrement est verrouillé tant que le consentement de tous les participants n'est pas confirmé (étape 1).</div>{% endif %}
+{% for p in parts if not p.termine %}<div class="al warn">Une partie de l'enregistrement a été interrompue (incident, fermeture de la page ou coupure). Ce qui a été reçu est conservé ({{ (p.taille / 1024)|round|int }} Ko). Cliquez sur « Démarrer l'enregistrement » pour reprendre : une nouvelle partie s'ajoutera à la suite.</div>{% endfor %}
+<div class="ri-console">
+<div class="ri-chrono" data-chrono role="timer" aria-live="off">00:00:00</div>
+<div class="ri-etat-ligne"><span class="ri-voyant" data-voyant></span><b data-etat-texte>Prêt à enregistrer</b></div>
+<div class="ri-micro" aria-hidden="true"><i data-niveau></i></div><div class="mute" data-micro-texte>Micro inactif</div>
+<div class="ri-boutons noprint">
+<button type="button" class="ri-btn ri-start" data-act="demarrer" {{ 'disabled' if not consent_complet }}>{{ ico('micro') }} Démarrer l'enregistrement</button>
+<button type="button" class="sec" data-act="pause" hidden>Pause</button><button type="button" class="sec" data-act="reprendre" hidden>Reprendre</button>
+<button type="button" class="red" data-act="arreter" hidden>Arrêter</button></div>
+<p class="ri-msg" data-msg role="status" aria-live="polite"></p></div>
+{% if parts %}<h3>Enregistrements de cette réunion</h3>
+<div class="ri-parties">{% for p in parts %}<div class="ri-partie"><b>Partie {{ p.ordre }}</b> <span class="mute">· {{ ('%d min %02d s'|format(p.duree_s // 60, p.duree_s % 60)) if p.duree_s else 'durée inconnue' }} · {{ ((p.taille / 1048576)|round(1) ~ ' Mo') if p.taille >= 1048576 else ((p.taille / 1024)|round|int ~ ' Ko') }}{% if not p.termine %} · interrompue{% endif %}</span>
+{% if p.taille %}<audio controls preload="none" src="{{ url_for('ri_audio_lire', rid=r.id, pid=p.id) }}"></audio>{% endif %}</div>{% endfor %}</div>
+<p class="mute">Total : {{ taille_mo if taille_mo else '< 0,1' }} Mo{% if audio_expire %} · suppression automatique de l'audio le {{ audio_expire|fr_date }}{% endif %}.</p>
+{{ post(url_for('ri_audio_supprimer', rid=r.id), 'Supprimer les enregistrements audio', 'red sm', 'Supprimer définitivement tous les enregistrements audio de cette réunion ? La transcription et le compte rendu sont conservés.') }}{% endif %}
+<details class="mute" style="margin-top:10px"><summary>Conseils pour un bon enregistrement</summary><ul><li>Posez le téléphone ou l'ordinateur au centre de la table ; un micro de réunion est préférable si les participants sont éloignés.</li>
+<li>Gardez cette page ouverte et l'écran allumé pendant toute la réunion. L'audio est envoyé et sauvegardé toutes les 5 secondes : en cas de coupure, ce qui a été reçu est conservé.</li><li>Il faut une connexion Internet. Si elle saute, l'envoi reprend tout seul au retour du réseau tant que la page reste ouverte.</li></ul></details></div>
+
+<div class="card" id="transcription"><h2>3. Transcription</h2>
+{% if r.transcription_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="transcription"><span class="ri-spin"></span> Transcription en cours… <span data-progres></span> Vous pouvez quitter cette page : le travail continue.</div>{% endif %}
+{% if r.transcription_etat == 'erreur' and r.erreur %}<div class="al err">Échec de la transcription : {{ r.erreur }} (les parties déjà transcrites sont conservées ; relancez pour reprendre.)</div>{% endif %}
+{% if a_audio %}<form method="post" action="{{ url_for('ri_transcrire', rid=r.id) }}" class="row noprint">{{ csrf() }}
+<div><label>Langue de la réunion</label><select name="langue">{% for k, v in langues.items() %}<option value="{{ k }}" {{ 'selected' if r.langue == k }}>{{ v }}</option>{% endfor %}</select></div>
+<div style="flex:0 0 auto"><button {{ 'disabled' if r.transcription_etat == 'en_cours' }}>{{ 'Transcrire l\'enregistrement' if not a_texte else 'Relancer la transcription' }}</button></div>
+{% if a_texte %}<label class="check" style="align-self:end"><input type="checkbox" name="recommencer" value="1"> Tout retranscrire depuis le début (remplace le texte)</label>{% endif %}</form>
+{% if not stt %}<p class="mute">La transcription automatique n'est pas configurée sur ce serveur (clé <code>VSP_STT_API_KEY</code> absente). Vous pouvez écouter l'enregistrement et saisir le texte ci-dessous.</p>{% endif %}
+{% else %}<p class="mute">Aucun enregistrement : vous pouvez aussi coller ou saisir ici le texte des échanges (notes, transcription faite ailleurs).</p>{% endif %}
+<form method="post" action="{{ url_for('ri_transcription_enregistrer', rid=r.id) }}">{{ csrf() }}
+<label>Texte de la réunion {% if r.transcription_source == 'ia' %}<span class="tag">Transcrit automatiquement</span>{% elif a_texte %}<span class="tag">Saisi à la main</span>{% endif %}</label>
+<textarea name="transcription" rows="16" data-ri-texte style="font-family:inherit;line-height:1.5" placeholder="Le texte de la réunion apparaît ici. Corrigez-le librement avant de générer le compte rendu.">{{ r.transcription }}</textarea>
+{% if participants %}<p class="mute noprint">Pour indiquer qui parle : placez le curseur au début d'une intervention puis cliquez sur un nom. <span class="ri-noms">{% for p in participants %}<button type="button" class="sec sm" data-insere="{{ p.nom }} : ">{{ p.nom }}</button> {% endfor %}</span></p>{% endif %}
+<details class="noprint"><summary>Remplacer un nom d'intervenant dans tout le texte</summary><div class="row"><div><label>Remplacer</label><input name="remplacer_intervenant" placeholder="ex. Intervenant 1"></div><div><label>Par</label><input name="par_nom" placeholder="ex. Claire Besson"></div></div></details>
+<p class="mute">La transcription automatique ne reconnaît pas les voix : elle ne sait pas qui parle. L'attribution des interventions aux participants se fait à la main, avec les boutons ci-dessus.</p>
+<p><button>Enregistrer la transcription</button></p></form></div>
+
+<div class="card" id="compte-rendu"><h2>4. Compte rendu</h2>
+{% if r.redaction_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="redaction"><span class="ri-spin"></span> Rédaction du compte rendu en cours (une à deux minutes)… Vous pouvez quitter cette page.</div>{% endif %}
+{% if r.redaction_etat == 'erreur' and r.erreur %}<div class="al err">Échec de la rédaction : {{ r.erreur }}</div>{% endif %}
+{% if not cr %}
+<div class="row noprint"><form method="post" action="{{ url_for('ri_rediger', rid=r.id) }}">{{ csrf() }}<button {{ 'disabled' if r.redaction_etat == 'en_cours' or not a_texte or not ia }}>{{ ico('generer') }} Générer le compte rendu IA</button></form>
+<form method="post" action="{{ url_for('ri_rediger', rid=r.id) }}">{{ csrf() }}<input type="hidden" name="mode" value="vide"><button class="sec">Créer un compte rendu vierge (rédaction manuelle)</button></form></div>
+{% if not a_texte %}<p class="mute">La génération IA s'appuie sur la transcription : complétez d'abord l'étape 3.</p>{% elif not ia %}<p class="mute">La rédaction par IA n'est pas configurée sur ce serveur (clé <code>VSP_IA_API_KEY</code> absente). Créez un compte rendu vierge pour le rédiger à la main.</p>{% endif %}
+<p class="mute">L'IA ne remplace pas le responsable : elle propose un brouillon fidèle à la transcription, que vous relisez, corrigez et validez. Elle n'invente ni décision ni responsable ; ce qui manque est signalé.</p>
+{% else %}
+{% if valide %}<div class="al ok">Compte rendu <b>validé</b> par {{ cr_row.valide_par }} le {{ cr_row.valide_le.replace('T', ' ') }}.</div>{% else %}<div class="al warn">{% if cr_row.genere_par_ia %}Brouillon généré par l'IA : <b>relisez-le attentivement</b> et comparez-le à la transcription avant de le valider.{% else %}Compte rendu en cours de rédaction.{% endif %}</div>{% endif %}
+{% if cr.manquants %}<div class="ri-manquants"><b>Informations manquantes signalées</b><ul>{% for x in cr.manquants %}<li>{{ x }}</li>{% endfor %}</ul></div>{% endif %}
+<div class="ri-sorties noprint"><b>Consulter / imprimer / Word :</b> {% for k, v in formats.items() %}<span class="ri-fmt"><a class="btn sec sm" href="{{ url_for('ri_cr_voir', rid=r.id, fmt=k) }}">{{ v }}</a><a class="mute" href="{{ url_for('ri_cr_docx', rid=r.id, fmt=k) }}" title="Télécharger en Word">.docx</a></span>{% endfor %}</div>
+<form method="post" action="{{ url_for('ri_cr_enregistrer', rid=r.id) }}" class="ri-edition">{{ csrf() }}
+<label>Objet de la réunion</label><textarea name="objet" rows="2">{{ formulaire.objet }}</textarea>
+<div class="row"><div><label>Participants présents <span class="mute">(un par ligne)</span></label><textarea name="participants_presents" rows="5">{{ formulaire.participants_presents }}</textarea></div>
+<div><label>Absents excusés</label><textarea name="absents_excuses" rows="5">{{ formulaire.absents_excuses }}</textarea></div></div>
+<label>Contexte et objectifs</label><textarea name="contexte" rows="3">{{ formulaire.contexte }}</textarea>
+<label>Points abordés <span class="mute">(un par ligne : « Titre : résumé »)</span></label><textarea name="points" rows="6">{{ formulaire.points }}</textarea>
+<div class="row"><div><label>Problèmes et difficultés soulevés</label><textarea name="difficultes" rows="5">{{ formulaire.difficultes }}</textarea></div><div><label>Propositions et solutions envisagées</label><textarea name="propositions" rows="5">{{ formulaire.propositions }}</textarea></div></div>
+<label>Décisions prises <span class="mute">(uniquement ce qui a été décidé)</span></label><textarea name="decisions" rows="5">{{ formulaire.decisions }}</textarea>
+<label>Actions à entreprendre <span class="mute">(un par ligne : « Action | Responsable | Échéance »)</span></label><textarea name="actions" rows="6">{{ formulaire.actions }}</textarea>
+<label>Échéances mentionnées</label><textarea name="echeances" rows="3">{{ formulaire.echeances }}</textarea>
+<label>Conclusion générale</label><textarea name="conclusion" rows="3">{{ formulaire.conclusion }}</textarea>
+<label>Résumé d'une page <span class="mute">(120 mots environ)</span></label><textarea name="resume_court" rows="4">{{ formulaire.resume_court }}</textarea>
+<label>Informations manquantes à compléter</label><textarea name="manquants" rows="3">{{ formulaire.manquants }}</textarea>
+<p class="ri-actions"><button name="action" value="enregistrer" class="sec">Enregistrer les modifications</button> <button name="action" value="valider">Enregistrer et valider le compte rendu</button></p></form>
+{% if valide %}<form method="post" action="{{ url_for('ri_cr_enregistrer', rid=r.id) }}" class="noprint">{{ csrf() }}<input type="hidden" name="action" value="rouvrir"><button class="sec sm">Rouvrir pour modification</button></form>
+<form method="post" action="{{ url_for('ri_partager', rid=r.id) }}" class="card noprint ri-partage">{{ csrf() }}<h3>Partager par la messagerie interne</h3>
+<div class="row"><div><label>Format</label><select name="format">{% for k, v in formats.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></div></div>
+<div class="liste-cases">{% for u in users %}<label class="check"><input type="checkbox" name="destinataire" value="{{ u.id }}"> {{ u.nom }} <span class="mute">· {{ u.role }}</span></label>{% endfor %}</div>
+<p><button class="sec">Envoyer</button></p></form>{% endif %}
+<details class="noprint"><summary>Regénérer ou supprimer le compte rendu</summary>
+{% if ia and a_texte %}<form method="post" action="{{ url_for('ri_rediger', rid=r.id) }}">{{ csrf() }}<label class="check"><input type="checkbox" name="confirme" value="1"> Je confirme remplacer le compte rendu actuel (mes corrections seront perdues)</label> <button class="sec sm">Regénérer avec l'IA</button></form>{% endif %}
+<form method="post" action="{{ url_for('ri_cr_enregistrer', rid=r.id) }}" data-confirm="Supprimer ce compte rendu ?">{{ csrf() }}<input type="hidden" name="action" value="supprimer"><button class="red sm">Supprimer le compte rendu</button></form></details>
+{% endif %}</div>
+
+<div class="card noprint"><h2>Données et suppression</h2>
+<p class="mute">Cette réunion, ses enregistrements, sa transcription et son compte rendu ne sont visibles que par les rôles autorisés ({{ reglages.roles|join(', ') }}). Conservation : audio {{ reglages.conservation_audio_jours }} jours, réunion {{ reglages.conservation_jours }} jours (réglable dans la configuration de l'établissement).</p>
+{{ post(url_for('ri_supprimer', rid=r.id), 'Supprimer toute la réunion', 'red', 'Supprimer définitivement la réunion, ses enregistrements, sa transcription et son compte rendu ?') }}</div><script src="{{ url_for('static', filename='reunions_ia.js') }}"></script>{% endblock %}
