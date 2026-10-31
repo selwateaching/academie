@@ -24,6 +24,7 @@ from werkzeug.utils import secure_filename
 
 from . import db as database
 from . import ext
+from . import aide as aide_mod
 from . import planning
 from . import planning_personnel as planpers
 from .modeles_defaut import VARIABLES, installer as installer_modeles
@@ -82,6 +83,7 @@ MODULE_DES_ENDPOINTS = {
                   "modeles_documents", "modele_edit", "modele_supprimer", "type_incident_ajouter", "type_incident_modifier", "type_incident_supprimer"],
     "reunions_ia": ["ri_liste", "ri_creer", "ri_reunion", "ri_preparation", "ri_audio_nouveau", "ri_audio_morceau", "ri_audio_fin", "ri_audio_lire", "ri_audio_supprimer",
                     "reunion_enregistrer", "ri_transcrire", "ri_analyser", "ri_hors_sujet", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
+    "aide": ["aide", "aide_question"],
     "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -330,7 +332,7 @@ def menu_sections():
         items = [i for i in items if i]
         return {"titre": titre, "pages": items, "ouvert": ouvert} if items else None
 
-    compte = [item("compte", "Sécurité", "securite", "Mot de passe, double authentification"), item("rgpd", "RGPD", "rgpd", "Mes données personnelles")]
+    compte = [item("aide", "Aide et premiers pas", "assistant", "Guides pas à pas et assistant", "aide"), item("compte", "Sécurité", "securite", "Mot de passe, double authentification"), item("rgpd", "RGPD", "rgpd", "Mes données personnelles")]
     sortie = item("logout", "Déconnexion", "sortie")
     if staff:
         sections = [
@@ -417,7 +419,7 @@ def contexte():
     pal = session.get("palette") if "palette" in session else CFG.get("palette", "")
     ctx = {"palette": pal if pal in PALETTES else "", "STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
            "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": [],
-           "infirmerie_ok": bool(g.get("user")) and g.user["role"] in roles_infirmerie()}
+           "infirmerie_ok": bool(g.get("user")) and g.user["role"] in roles_infirmerie(), "aide_puces": aide_puces}
     if g.get("user"):
         for item in ext.NAV:
             if g.user["role"] in item["roles"]:
@@ -6356,6 +6358,97 @@ def ri_supprimer(rid):
     log("réunion intelligente : réunion supprimée", r["titre"])
     flash("Réunion, enregistrements, transcription et compte rendu supprimés.", "ok")
     return redirect(url_for("ri_liste"))
+
+
+# ───────────────────────── Assistant d'aide (chatbot pas à pas) ─────────────────────────
+AIDE = {"ia": True, "questions_par_heure": 40, **(CFG.get("aide") or {})}
+_aide_compteur = {}
+SYSTEME_AIDE = """Tu es l'assistant d'aide du logiciel de vie scolaire VieScolairePro. Tu aides des débutants à utiliser le logiciel.
+Règles : réponds uniquement à partir des FICHES fournies ; n'invente aucun bouton, menu ni fonction. Si les fiches ne répondent pas à la question, dis-le simplement et propose de contacter l'administrateur.
+Réponds en français simple, avec le vouvoiement, en 6 phrases au plus. Pour une procédure, donne des étapes numérotées courtes reprenant les noms exacts des menus et boutons des fiches.
+Ne demande jamais de données personnelles. Pas de mise en forme Markdown (pas d'astérisques ni de titres)."""
+
+
+def aide_role():
+    """Profils de la personne connectée pour filtrer les fiches : « staff » (admin, direction, CPE), son rôle précis, enseignant ou infirmier."""
+    r = g.user["role"]
+    return {aide_mod.STAFF, r} if r in STAFF else {aide_mod.INF} if r == "infirmier" else {aide_mod.ENS}
+
+
+def aide_visibles():
+    """Fiches utilisables par la personne connectée : son rôle, les modules actifs, un écran existant."""
+    tags = aide_role()
+    return [x for x in aide_mod.GUIDES if (tags & set(x["roles"]) or aide_mod.TOUS in x["roles"]) and (not x["module"] or module_actif(x["module"]))]
+
+
+def aide_chemin(url):
+    """« Planification et suivi → Matières et heures par niveau » : l'emplacement de la page dans le menu de la personne connectée."""
+    from urllib.parse import urlsplit
+    chemin = urlsplit(url).path
+    for sec in menu_sections():
+        for it in sec["pages"]:
+            if urlsplit(it["url"]).path == chemin:
+                return f"{sec['titre'].split('. ', 1)[-1]} → {it['label']}"
+    return ""
+
+
+def aide_fiche(x):
+    try:
+        url = url_for(x["page"], **x["kw"])
+    except Exception:
+        url = ""
+    return {"id": x["id"], "cat": x["cat"], "titre": x["titre"], "pas": x["pas"], "url": url, "menu": aide_chemin(url) if url else ""}
+
+
+def aide_puces():
+    """Suggestions du chatbot : l'aide de la page en cours, puis quelques questions fréquentes."""
+    if not g.get("user"):
+        return []
+    visibles = aide_visibles()
+    ici = [x["titre"] for x in visibles if x["page"] == request.endpoint][:2]
+    freq = [x["titre"] for x in visibles if x["id"] in ("demarrer", "liste_profs", "ajouter_matiere", "voir_edt", "faire_appel", "creer_reunion", "mot_de_passe")]
+    return (ici + [t for t in freq if t not in ici])[:5]
+
+
+@app.route("/aide")
+def aide():
+    visibles = [aide_fiche(x) for x in aide_visibles()]
+    par_cat = [(c, [x for x in visibles if x["cat"] == c]) for c in aide_mod.CATEGORIES]
+    return render_template("aide.html", par_cat=[(c, l) for c, l in par_cat if l], depart=next((x for x in visibles if x["id"] == "demarrer"), None), ia=bool(ria.cle_redaction()) and AIDE["ia"])
+
+
+@app.route("/aide/question", methods=["POST"])
+def aide_question():
+    question = request.form.get("q", "").strip()[:300]
+    if not question:
+        return ri_json({"erreur": "Posez votre question."}, 400)
+    maintenant = time.time()
+    essais = [t for t in _aide_compteur.get(g.user["id"], []) if maintenant - t < 3600]
+    if len(essais) >= int(AIDE["questions_par_heure"]):
+        return ri_json({"texte": "Vous avez posé beaucoup de questions : réessayez dans un moment, ou parcourez les guides de la page « Aide et premiers pas ».", "fiches": [], "ia": False})
+    _aide_compteur[g.user["id"]] = essais + [maintenant]
+    visibles = aide_visibles()
+    trouvees = aide_mod.chercher(question, visibles)
+    note_visible, _ = aide_mod.meilleur(question, visibles)
+    note_toutes, fiche_toutes = aide_mod.meilleur(question, aide_mod.GUIDES)
+    if note_toutes >= 4.0 and note_visible < note_toutes * 0.75:      # la question porte sur une fonction que son rôle n'a pas
+        log("aide : question posée")
+        return ri_json({"texte": "Cette fonction n'est pas disponible avec votre compte : elle est réservée à un autre profil (direction, vie scolaire ou administrateur selon le cas). Adressez-vous à eux, ou posez-moi une autre question.",
+                        "fiches": [], "ia": False, "themes": [x["titre"] for x in visibles if x["id"] in ("liste_profs", "voir_edt", "faire_appel", "saisir_notes", "mot_de_passe")]})
+    texte, par_ia = "", False
+    if trouvees and AIDE["ia"] and ria.cle_redaction():
+        fiches = "\n\n".join(f"FICHE « {x['titre']} » :\n" + "\n".join(f"{i}. {p}" for i, p in enumerate(x["pas"], 1)) for x in trouvees)
+        try:
+            texte = ria._appel_llm(CFG, SYSTEME_AIDE, f"Rôle de la personne : {g.user['role']}\n\nFICHES :\n{fiches}\n\nQUESTION : {question}", 500, json_mode=False, delai=20).strip()
+            par_ia = bool(texte)
+        except ria.ErreurService:
+            texte = ""
+    if not texte:
+        texte = ("Voici ce que j'ai trouvé pour vous aider :" if len(trouvees) > 1 else "Voici comment faire :") if trouvees else \
+                "Je n'ai pas trouvé de réponse précise. Essayez avec d'autres mots (par exemple « ajouter un professeur »), ou choisissez un thème ci-dessous."
+    log("aide : question posée")   # le texte n'est pas conservé : il pourrait contenir des données personnelles
+    return ri_json({"texte": texte, "fiches": [aide_fiche(x) for x in trouvees], "ia": par_ia,
+                    "themes": [] if trouvees else [x["titre"] for x in aide_visibles() if x["id"] in ("demarrer", "liste_profs", "voir_edt", "faire_appel", "creer_reunion", "mot_de_passe")]})
 
 
 # ───────────────────────── Commandes CLI ─────────────────────────

@@ -57,7 +57,7 @@ def cle_redaction():
 
 
 # ───────────────────────── HTTP ─────────────────────────
-def _poster(url, entetes, corps, delai):
+def _poster(url, entetes, corps, delai=600):
     req = urllib.request.Request(url, data=corps, headers=entetes, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=delai) as rep:
@@ -189,23 +189,25 @@ def message_utilisateur(meta, transcription):
             f"=== TRANSCRIPTION ===\n{transcription}\n=== FIN DE LA TRANSCRIPTION ===")
 
 
-def _appel_llm(cfg, systeme, message, max_tokens=None):
+def _appel_llm(cfg, systeme, message, max_tokens=None, json_mode=True, delai=600):
     """Appel du service de rédaction (Anthropic ou compatible OpenAI) ; renvoie le texte de la réponse."""
     cle = cle_redaction()
     if not cle:
         raise ErreurService("Aucune clé de rédaction configurée (variable VSP_IA_API_KEY).")
     r = reglages(cfg)["redaction"]
     if r["fournisseur"] == "openai":
-        corps = json.dumps({"model": r["modele"], "response_format": {"type": "json_object"},
-                            "messages": [{"role": "system", "content": systeme}, {"role": "user", "content": message}]}).encode()
-        brut = _poster(r["url"].rstrip("/") + "/chat/completions", {"Authorization": f"Bearer {cle}", "Content-Type": "application/json"}, corps, 600)
+        donnees = {"model": r["modele"], "messages": [{"role": "system", "content": systeme}, {"role": "user", "content": message}]}
+        if json_mode:
+            donnees["response_format"] = {"type": "json_object"}
+        corps = json.dumps(donnees).encode()
+        brut = _poster(r["url"].rstrip("/") + "/chat/completions", {"Authorization": f"Bearer {cle}", "Content-Type": "application/json"}, corps, delai)
         try:
             return json.loads(brut)["choices"][0]["message"]["content"]
         except (ValueError, KeyError, IndexError):
             raise ErreurService("Réponse inattendue du service de rédaction.")
     corps = json.dumps({"model": r["modele"], "max_tokens": int(max_tokens or r.get("max_tokens", 8000)), "system": systeme,
                         "messages": [{"role": "user", "content": message}]}).encode()
-    brut = _poster(r["url"].rstrip("/") + "/v1/messages", {"x-api-key": cle, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}, corps, 600)
+    brut = _poster(r["url"].rstrip("/") + "/v1/messages", {"x-api-key": cle, "anthropic-version": "2023-06-01", "Content-Type": "application/json"}, corps, delai)
     try:
         return "".join(b.get("text", "") for b in json.loads(brut)["content"] if b.get("type") == "text")
     except (ValueError, KeyError, TypeError):

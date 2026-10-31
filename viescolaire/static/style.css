@@ -452,3 +452,26 @@ main :is(p,td,li,.mute,.al,h2,h3):not(.ri-etapes li):not(.hub-carte *) a:not([cl
 /* Mobile : le contenu ne doit jamais élargir la page (les tableaux défilent dans leur cadre) */
 main{min-width:0}.scroll{max-width:100%}form{min-width:0}
 @media(max-width:700px){.row>div[style*="flex:0 0 auto"]{flex:1 1 100%!important}table.etat{display:block;overflow-x:auto;max-width:100%}}
+
+/* ───── Assistant d'aide ───── */
+.aide{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.aide-bouton{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:99px;background:var(--accent);color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.aide-bouton span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.25);font-weight:700}
+.aide-bouton:hover{background:color-mix(in srgb,var(--accent) 85%,#000)}.aide.ouvert .aide-bouton{display:none}
+.aide-panneau{width:min(400px,calc(100vw - 24px));height:min(560px,calc(100vh - 40px));display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 34px rgba(0,0,0,.3);overflow:hidden}
+.aide-panneau[hidden]{display:none}
+.aide-tete{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--brand-strong);color:#fff}.aide-tete a{color:#fff;font-size:12px;margin-left:auto;text-decoration:underline}
+.aide-fermer{background:none;color:#fff;padding:2px 8px;font-size:16px;border-radius:6px}.aide-fermer:hover{background:rgba(255,255,255,.2)}
+.aide-fil{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.aide-bulle{max-width:88%;padding:8px 12px;border-radius:14px;font-size:14px;line-height:1.45;white-space:pre-wrap}
+.aide-bot{background:color-mix(in srgb,var(--brand) 10%,var(--card));align-self:flex-start;border-bottom-left-radius:4px}.aide-moi{background:var(--brand-strong);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.aide-attente{opacity:.7;font-style:italic}
+.aide-carte{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--field);font-size:14px}.aide-carte ol{margin:6px 0;padding-left:20px;display:grid;gap:4px}.aide-carte p{margin:4px 0}
+.aide-puces{display:flex;gap:6px;flex-wrap:wrap;padding:6px 12px;max-height:96px;overflow:auto;border-top:1px solid var(--line)}.aide-puces:empty{display:none}.aide-puces button{text-align:left;font-size:12px}
+.aide-saisie{display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}.aide-saisie input{flex:1;min-width:0}
+.aide-note{margin:0;padding:0 12px 10px;font-size:11px;color:var(--mute)}
+.aide-depart{border-left:5px solid var(--accent)}.aide-depart ol{padding-left:22px;display:grid;gap:6px}
+.aide-liste{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px;margin-bottom:14px;align-items:start}
+.aide-fiche{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px 14px}.aide-fiche summary{cursor:pointer;font-weight:600}.aide-fiche ol{padding-left:20px;display:grid;gap:4px}
+@media(max-width:700px){.aide{right:10px;bottom:10px}.aide-panneau{height:min(78vh,560px)}}
+@media(prefers-reduced-motion:reduce){.aide-bouton{transition:none}}

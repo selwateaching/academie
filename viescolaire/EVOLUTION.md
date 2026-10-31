@@ -32,6 +32,10 @@ Lancer un client : `VSP_CONFIG=viescolaire/clients/<client>/config.json python -
 
 La clé `reunions_ia` du `config.json` règle les rôles autorisés, les durées de conservation (audio, réunion), la taille maximale d'audio et les services de transcription et de rédaction (adresse, modèle, fournisseur). Les clés d'accès restent dans les variables d'environnement `VSP_STT_API_KEY` et `VSP_IA_API_KEY`. Voir README, section « Réunions intelligentes ». Pour brancher un autre fournisseur, modifier uniquement `viescolaire/reunions_ia.py` (fonctions `transcrire_fichier` et `rediger`).
 
+## Assistant d'aide
+
+Les guides du chatbot se trouvent dans `viescolaire/aide.py` (liste `GUIDES` : titre, mots-clés et synonymes, écran à ouvrir, étapes, rôles autorisés, module). Après avoir ajouté une fonction, ajouter sa fiche ; les chemins de menu affichés sont calculés automatiquement. Réglages dans la clé `aide` de la configuration.
+
 ## Écrire une extension
 
 Un fichier Python dans `extensions/`, listé dans `config.json` (`"extensions": ["mon_extension"]`) :

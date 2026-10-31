@@ -110,6 +110,11 @@ Réglages dans `config.json`, clé `reunions_ia` (tous facultatifs) :
 Sans clé, le module reste utilisable : enregistrement, archivage, saisie de la transcription, compte rendu vierge à remplir, formats, impression, partage.
 Prévoir un **disque persistant** (`VSP_DATA`) : les enregistrements sont stockés dans `VSP_DATA/uploads/ri/`. Ils ne sont **pas** inclus dans la sauvegarde téléchargeable (volumineux et sensibles) : sauvegarder le disque lui-même si nécessaire.
 
+## Assistant d'aide (chatbot pour débutants)
+
+Bouton **« Besoin d'aide ? »** en bas à droite de chaque page, et page *Mon compte → Aide et premiers pas*. L'assistant répond aux questions posées avec des mots simples (« comment ajouter un professeur ? », « où voir l'emploi du temps d'une classe ? », « le micro ne marche pas ») par des **guides pas à pas** : étapes numérotées, chemin exact dans le menu et bouton « Ouvrir la page ». Une cinquantaine de guides couvrent le démarrage, les élèves, les professeurs, les absences, les notes, les emplois du temps, les documents, les réunions et l'administration. Les réponses dépendent du rôle (un enseignant ne voit que les guides qui le concernent ; pour une fonction réservée à la vie scolaire, l'assistant l'indique) et des modules actifs. La conversation est conservée pendant la navigation (dans l'onglet seulement).
+**Sans clé, tout fonctionne** (recherche dans les guides, tolérante aux fautes de frappe). Avec la clé de rédaction (`VSP_IA_API_KEY`), une IA reformule la réponse **à partir de ces seuls guides** (jamais en dehors, jamais de données personnelles envoyées : seul le texte de la question part) ; le coût est de l'ordre de un à deux centimes par question. Réglages : clé `aide` du fichier de configuration (`{"ia": true, "questions_par_heure": 40}`) ; module `aide` désactivable. Le texte des questions n'est pas conservé. Pour ajouter ou corriger un guide : `viescolaire/aide.py` (liste `GUIDES`).
+
 ## Comptage des heures
 
 Menu *Personnel → Comptage des heures* : heures hebdomadaires de chaque **professeur** (avec service dû saisissable, écart, nombre de cours et de classes,

@@ -22,4 +22,5 @@
 {% else %}<main>{% endif %}
 {% with msgs = get_flashed_messages(with_categories=true) %}{% for c, m in msgs %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endwith %}
 {% block body %}{% endblock %}
-</main>{% if g.user %}</div>{% endif %}<script src="{{ asset('app.js') }}"></script></body></html>
+</main>{% if g.user %}</div>{% if module_actif('aide') %}<div class="aide noprint" data-aide data-url="{{ url_for('aide_question') }}" data-page="{{ url_for('aide') }}" data-csrf="{{ csrf_token() }}" data-puces="{{ aide_puces()|tojson|forceescape }}">
+<button type="button" class="aide-bouton" data-aide-ouvrir aria-expanded="false" aria-controls="aide-panneau"><span aria-hidden="true">?</span> Besoin d'aide ?</button></div><script src="{{ asset('aide.js') }}"></script>{% endif %}{% endif %}<script src="{{ asset('app.js') }}"></script></body></html>

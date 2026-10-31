@@ -1,0 +1,9 @@
+{% extends 'base.html' %}{% block title %}Aide et premiers pas{% endblock %}{% block body %}
+<div class="top"><h1>Aide et premiers pas</h1></div>
+<p class="mute">Des guides pas à pas pour utiliser le logiciel, avec le chemin exact dans le menu. Vous pouvez aussi poser votre question à l'assistant : bouton <b>« Besoin d'aide ? »</b> en bas à droite de chaque page{% if ia %} (les réponses sont reformulées par une IA à partir de ces seuls guides){% endif %}.</p>
+<div class="card"><label for="aide-filtre">Chercher dans les guides</label><input id="aide-filtre" type="search" data-aide-filtre placeholder="Tapez un mot : professeur, absence, bulletin, réunion…" autocomplete="off"></div>
+{% if depart %}<div class="card aide-depart"><h2>Vous débutez ? Commencez ici</h2><p><b>{{ depart.titre }}</b></p><ol>{% for p in depart.pas %}<li>{{ p }}</li>{% endfor %}</ol></div>{% endif %}
+{% for cat, liste in par_cat %}{% if cat != 'Pour commencer' or not depart %}<section class="aide-categorie" data-aide-cat><h2>{{ cat }}</h2>
+<div class="aide-liste">{% for x in liste %}{% if not (depart and x.id == 'demarrer') %}<details class="aide-fiche" data-aide-fiche data-texte="{{ (x.titre ~ ' ' ~ x.pas|join(' '))|lower }}"><summary>{{ x.titre }}</summary>
+<ol>{% for p in x.pas %}<li>{{ p }}</li>{% endfor %}</ol>{% if x.menu %}<p class="mute">Dans le menu : {{ x.menu }}</p>{% endif %}{% if x.url %}<p><a class="btn sm" href="{{ x.url }}">Ouvrir la page</a></p>{% endif %}</details>{% endif %}{% endfor %}</div></section>{% endif %}{% endfor %}
+<p class="mute" data-aide-vide hidden>Aucun guide ne correspond : essayez un autre mot, ou posez la question à l'assistant.</p>{% endblock %}
