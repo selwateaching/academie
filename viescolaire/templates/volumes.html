@@ -1,5 +1,6 @@
-{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Volumes horaires par niveau{% endblock %}{% block body %}
-<div class="top"><h1>Volumes horaires par niveau</h1><a class="btn sec" href="{{ url_for('planification') }}">← Génération des emplois du temps</a></div>
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Matières et heures par niveau{% endblock %}{% block body %}
+<div class="top"><h1>Matières et heures par niveau</h1><a class="btn sec" href="{{ url_for('planification') }}">← Génération des emplois du temps</a></div>
+<div class="al ok"><b>Ajouter une matière :</b> tapez son nom sur une ligne « Nouvelle matière… » du tableau 1, indiquez les heures par niveau, puis cliquez sur « Enregistrer les volumes horaires ». <b>Modifier ou retirer une matière :</b> corrigez son nom ou mettez ses heures à 0 dans ce même tableau.</div>
 <p class="mute">Saisissez une seule fois les heures hebdomadaires de chaque matière pour chaque niveau (par exemple 6e : Mathématiques 4 h). L'application en déduit les besoins de <b>toutes les classes</b> du niveau, répartit les professeurs de chaque matière selon leur charge et leurs <b>vœux</b>, puis génère un emploi du temps cohérent avec les deux.</p>
 {% if not niveaux %}<div class="al warn">Aucun niveau défini : créez d'abord vos niveaux dans <a href="{{ url_for('classes') }}">Classes et niveaux</a>.</div>{% else %}
 <form method="post">{{ csrf() }}<input type="hidden" name="action" value="enregistrer">
