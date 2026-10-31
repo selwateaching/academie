@@ -6,7 +6,8 @@
   var bouton = zone.querySelector('[data-aide-ouvrir]');
   var url = zone.getAttribute('data-url'), pageAide = zone.getAttribute('data-page'), csrf = zone.getAttribute('data-csrf');
   var puces = []; try { puces = JSON.parse(zone.getAttribute('data-puces') || '[]'); } catch (e) {}
-  var CLE = 'vsp-aide-conversation';
+  var CLE = 'vsp-aide-conversation-' + (zone.getAttribute('data-uid') || '');   // une conversation par compte : jamais visible par la personne suivante
+  try { Object.keys(sessionStorage).forEach(function (k) { if (k.indexOf('vsp-aide-conversation') === 0 && k !== CLE) sessionStorage.removeItem(k); }); } catch (e) {}
   var historique = [];
   try { historique = JSON.parse(sessionStorage.getItem(CLE) || '[]'); } catch (e) {}
 
@@ -15,8 +16,9 @@
   var tete = document.createElement('header'); tete.className = 'aide-tete';
   var titre = document.createElement('b'); titre.textContent = 'Assistant d\'aide';
   var guide = document.createElement('a'); guide.href = pageAide; guide.textContent = 'Tous les guides'; guide.className = 'aide-lien-guides';
+  var effacerBtn = document.createElement('button'); effacerBtn.type = 'button'; effacerBtn.className = 'aide-effacer'; effacerBtn.textContent = 'Effacer'; effacerBtn.title = 'Effacer la conversation'; effacerBtn.setAttribute('aria-label', 'Effacer la conversation');
   var fermer = document.createElement('button'); fermer.type = 'button'; fermer.className = 'aide-fermer'; fermer.textContent = '✕'; fermer.setAttribute('aria-label', 'Fermer l\'aide');
-  tete.appendChild(titre); tete.appendChild(guide); tete.appendChild(fermer);
+  tete.appendChild(titre); tete.appendChild(guide); tete.appendChild(effacerBtn); tete.appendChild(fermer);
   var fil = document.createElement('div'); fil.className = 'aide-fil'; fil.setAttribute('aria-live', 'polite');
   var suggestions = document.createElement('div'); suggestions.className = 'aide-puces';
   var form = document.createElement('form'); form.className = 'aide-saisie'; form.autocomplete = 'off';
@@ -66,6 +68,17 @@
         historique.push(m); rendre(m); sauver(); defiler();
       }).catch(function () { attente.remove(); var m = { qui: 'bot', texte: 'Connexion impossible pour le moment. Vérifiez votre connexion et réessayez.', fiches: [] }; historique.push(m); rendre(m); sauver(); });
   }
+  function accueil() {
+    historique = [{ qui: 'bot', texte: 'Bonjour ! Je suis l\'assistant d\'aide. Dites-moi avec vos mots ce que vous voulez faire, par exemple « comment ajouter un professeur ? ». Je vous guide pas à pas.', fiches: [] }];
+    fil.textContent = ''; historique.forEach(rendre); poserPuces(puces); champ.value = ''; champ.focus();
+  }
+  function effacer() {
+    try { sessionStorage.removeItem(CLE); } catch (e) {}
+    accueil();
+  }
+  effacerBtn.addEventListener('click', effacer);
+  // À la déconnexion, la conversation est effacée
+  document.querySelectorAll('a[href*="logout"]').forEach(function (a) { a.addEventListener('click', function () { try { sessionStorage.removeItem(CLE); } catch (e) {} }); });
   function ouvrir(oui) {
     panneau.hidden = !oui; bouton.setAttribute('aria-expanded', oui ? 'true' : 'false');
     zone.classList.toggle('ouvert', oui);

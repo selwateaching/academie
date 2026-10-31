@@ -509,3 +509,4 @@ nav.side .nav-accueil{margin:4px 0 2px}
 .edt-classes a:not([style]).on{background:var(--brand-strong);border-color:var(--brand-strong)}
 .classe-edt{margin:6px 14px 0}
 .top form.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.top form.row select,.top form.row input[type=date]{width:auto;min-width:150px;flex:0 1 auto}
+.aide-effacer{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);padding:3px 10px;font-size:12px;border-radius:99px}.aide-effacer:hover{background:rgba(255,255,255,.32)}
