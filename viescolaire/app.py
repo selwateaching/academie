@@ -60,7 +60,7 @@ FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
 # Quels endpoints appartiennent à quel module (un module désactivé répond 404).
 MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
-    "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action", "etat_absences_profs", "etat_absences_profs_csv"],
+    "emplois_du_temps": ["emploi_du_temps", "edt_classes"], "absences": ["absences", "absence_action", "etat_absences_profs", "etat_absences_profs_csv"],
     "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
     "classes": ["classes", "classe_pp", "classe_renommer", "classe_supprimer", "niveaux_nombre", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
@@ -322,10 +322,12 @@ def menu_sections():
         nb["absents_eleves"] = one("SELECT COUNT(DISTINCT eleve_id) c FROM absences_eleves WHERE etab_id=? AND date=? AND type='absence'", (g.etab_id, today.isoformat()))["c"]
     infirmerie_ok = u["role"] in roles_infirmerie() and ma("infirmerie")
 
-    def item(ep, label, ico, desc="", mod=None, badge=None, **kw):
+    def item(ep, label, ico, desc="", mod=None, badge=None, actif=None, **kw):
         if mod and not ma(mod):
             return None
         on = request.endpoint == ep or PAGE_PARENTE.get(request.endpoint) == ep
+        if actif is not None:
+            on = actif
         return {"label": label, "ico": ico, "desc": desc, "url": url_for(ep, **kw), "badge": badge or None, "on": on}
 
     def section(titre, items, ouvert=True):
@@ -343,6 +345,7 @@ def menu_sections():
                 item("bulletins_classe", "Bulletins de classe", "redaction", "Bulletins à imprimer par classe", "notes"),
                 item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
+                item("edt_classes", "Emplois du temps des classes", "calendrier", "Une classe en un clic", "emplois_du_temps", actif=request.endpoint == "emploi_du_temps" and bool(request.args.get("classe"))),
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
                 item("absences", "Absences des professeurs", "absence", "Déclarer et suivre les absences", "absences", nb["absences"]),
                 item("assiduite", "Absences et retards des élèves", "absence", "Appel, justifications, états", "assiduite", nb["absents_eleves"]),
@@ -357,7 +360,7 @@ def menu_sections():
             section("2. Personnel", [
                 item("professeurs", "Annuaire des professeurs", "profs", "Coordonnées, cours, comptes", "professeurs"),
                 item("pers_liste", "Annuaire du personnel de vie scolaire", "personnel", "Assistants et rôles", "personnel"),
-                item("emploi_du_temps", "Emplois du temps", "calendrier", "Jour, semaine, mois", "emplois_du_temps"),
+                item("emploi_du_temps", "Emplois du temps", "calendrier", "Par professeur ; jour, semaine, mois", "emplois_du_temps", actif=request.endpoint == "emploi_du_temps" and not request.args.get("classe")),
                 item("pers_planning", "Planning du personnel", "horloge", "Planning automatique", "planning_personnel"),
                 item("heures", "Comptage des heures", "barres", "Heures par professeur, classe, agent", "heures"),
                 item("pers_postes", "Postes et besoins", "postes", "Rôles, couleurs, besoins", "personnel")]),
@@ -864,7 +867,14 @@ def emploi_du_temps():
         prof_id, classe = g.prof["id"], None
     profs = q("SELECT id,nom,prenom FROM professeurs WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
-    ctx = dict(vue=vue, jour=jour, prof_id=prof_id, classe=classe, profs=profs, classes=classes_)
+    chips = []
+    if g.user["role"] in STAFF:   # une pastille par classe, colorée par niveau : un clic affiche l'emploi du temps de la classe
+        niv = [n["nom"] for n in q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))]
+        for c in q("SELECT nom, niveau FROM classes WHERE etab_id=?", (g.etab_id,)):
+            i = niv.index(c["niveau"]) if c["niveau"] in niv else len(niv)
+            chips.append({"nom": c["nom"], "teinte": TEINTES_NIVEAUX[i % len(TEINTES_NIVEAUX)], "ordre": (i, c["nom"])})
+        chips.sort(key=lambda x: x["ordre"])
+    ctx = dict(vue=vue, jour=jour, prof_id=prof_id, classe=classe, profs=profs, classes=classes_, chips=chips)
     if vue == "jour":
         return render_template("edt.html", cours=cours_du_jour(jour, prof_id, classe), **ctx)
     if vue == "mois":
@@ -889,6 +899,17 @@ def emploi_du_temps():
     grille = {j.isoformat(): cours_du_jour(j, prof_id, classe) for j in semaine}
     matieres_vues = sorted({c["matiere"] for cs in grille.values() for c in cs if c["matiere"]})
     return render_template("edt.html", semaine=semaine, grille=grille, lundi=lundi, matieres_vues=matieres_vues, **ctx)
+
+
+@app.route("/classes/emplois-du-temps")
+@staff_only
+def edt_classes():
+    """Raccourci : ouvre directement l'emploi du temps de la première classe (les autres sont à un clic, en pastilles)."""
+    premiere = one("SELECT c.nom FROM classes c LEFT JOIN niveaux n ON n.etab_id=c.etab_id AND n.nom=c.niveau WHERE c.etab_id=? ORDER BY COALESCE(n.ordre, 999), c.nom", (g.etab_id,))
+    if not premiere:
+        flash("Créez d'abord les classes (Classes et niveaux) : leurs emplois du temps s'afficheront ici.", "err")
+        return redirect(url_for("classes"))
+    return redirect(url_for("emploi_du_temps", classe=premiere["nom"], vue="semaine"))
 
 
 # ───────────────────────── Absences, indisponibilités, remplacements ─────────────────────────

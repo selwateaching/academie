@@ -500,3 +500,12 @@ nav.side .nav-accueil{margin:4px 0 2px}
 .aide-rubrique h3{margin:0 0 6px;padding:11px 14px;background:var(--brand-strong);color:#fff;font-size:14px;border-left:6px solid var(--sc);border-bottom:3px solid var(--sc)}
 .aide-rubrique .aide-fiche{margin:6px 10px;border-left:4px solid var(--sc)}.aide-rubrique summary small{display:block;font-weight:400;color:var(--mute);font-size:12px}
 .aide-sans{margin:6px 14px;font-size:14px}.aide-titre-taches{margin-top:24px}.aide-tableau{margin-bottom:12px}
+/* Emplois du temps : une pastille par classe, colorée par niveau */
+.edt-classes{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}.edt-classes b{margin-right:4px}
+.edt-classes a{padding:6px 13px;border-radius:99px;border:2px solid hsl(var(--m,0) 42% 46%);background:color-mix(in srgb,hsl(var(--m,0) 48% 58%) 14%,var(--card));color:var(--ink);font-weight:600;font-size:14px}
+.edt-classes a:not([style]){--m:150;border-color:var(--line);background:var(--card)}
+.edt-classes a:hover{text-decoration:none;background:color-mix(in srgb,hsl(var(--m,150) 48% 58%) 28%,var(--card))}
+.edt-classes a.on{background:hsl(var(--m,150) 42% 30%);border-color:hsl(var(--m,150) 42% 30%);color:#fff}
+.edt-classes a:not([style]).on{background:var(--brand-strong);border-color:var(--brand-strong)}
+.classe-edt{margin:6px 14px 0}
+.top form.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.top form.row select,.top form.row input[type=date]{width:auto;min-width:150px;flex:0 1 auto}

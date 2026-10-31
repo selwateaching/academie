@@ -8,6 +8,7 @@
 {% set tot = namespace(n=0) %}{% for c in classes %}{% set tot.n = tot.n + nb_eleves.get(c.nom, 0) %}{% endfor %}<h2 class="niv-titre">{{ nom_niveau }} <span>{{ classes|length }} classe{{ 's' if classes|length > 1 }} · {{ tot.n }} élève{{ 's' if tot.n > 1 }}</span></h2>
 <div class="classes-grille">{% for c in classes %}<details class="classe-carte"><summary><span class="classe-nom">{{ c.nom }}</span>
 <span class="classe-info"><span class="puce">{{ nb_eleves.get(c.nom, 0) }} élève{{ 's' if nb_eleves.get(c.nom, 0) > 1 }}</span>{% if c.pnom %}<span class="puce">PP : {{ c.pprenom }} {{ c.pnom }}</span>{% else %}<span class="puce vide">pas de prof. principal</span>{% endif %}<span class="puce">{{ equipe.get(c.nom, [])|length }} professeur{{ 's' if equipe.get(c.nom, [])|length > 1 }}</span></span></summary>
+<p class="classe-edt"><a class="btn sm" href="{{ url_for('emploi_du_temps', classe=c.nom, vue='semaine') }}">Voir l'emploi du temps de {{ c.nom }}</a></p>
 <div class="classe-corps">
 <form method="post" action="{{ url_for('classe_pp', cid=c.id) }}" class="row">{{ csrf() }}
 <div><label>Niveau</label><input name="niveau" value="{{ c.niveau }}" list="liste-niveaux"></div>

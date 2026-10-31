@@ -1,9 +1,10 @@
 {% extends 'base.html' %}{% from '_macros.html' import cours_table %}{% block title %}Emplois du temps{% endblock %}{% block body %}
 <div class="top"><h1>Emplois du temps</h1>
 <form method="get" class="row noprint"><input type="hidden" name="vue" value="{{ vue }}">
-{% if g.user.role in STAFF %}<select name="prof"><option value="">Tous les professeurs</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == prof_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select>
-<select name="classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select>{% endif %}
+{% if g.user.role in STAFF %}<select name="prof" data-autosubmit aria-label="Professeur"><option value="">Tous les professeurs</option>{% for p in profs %}<option value="{{ p.id }}" {{ 'selected' if p.id == prof_id }}>{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select>
+<select name="classe" data-autosubmit aria-label="Classe"><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select>{% endif %}
 <input type="date" name="date" value="{{ jour.isoformat() }}"><button class="sec">Afficher</button></form></div>
+{% if chips %}<div class="edt-classes noprint" aria-label="Choisir une classe"><b>Classes :</b>{% for c in chips %}<a class="{{ 'on' if c.nom == classe }}" style="--m:{{ c.teinte }}" href="{{ url_for('emploi_du_temps', vue=vue, date=jour.isoformat(), classe=c.nom) }}">{{ c.nom }}</a>{% endfor %}<a class="{{ 'on' if not classe and not prof_id }}" href="{{ url_for('emploi_du_temps', vue=vue, date=jour.isoformat()) }}">Toutes</a></div>{% endif %}
 <p class="noprint">{% for v, l in [('jour','Jour'),('semaine','Semaine'),('mois','Mois')] %}<a class="btn {{ '' if vue == v else 'sec' }} sm" href="{{ url_for('emploi_du_temps', vue=v, date=jour.isoformat(), prof=prof_id, classe=classe) }}">{{ l }}</a> {% endfor %}
 <button class="sec sm" data-print>Imprimer / PDF</button></p>
 {% if vue == 'jour' %}<div class="card"><h2>{{ jour|string|fr_date }}</h2>{{ cours_table(cours) }}</div>

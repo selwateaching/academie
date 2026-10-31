@@ -185,7 +185,7 @@ GUIDES = [
     # ───────────── Emplois du temps
     G("voir_edt", "Emplois du temps", "Où voir l'emploi du temps d'une classe ou d'un professeur ?",
       "emploi du temps classe voir edt horaires cours semaine professeur planning cours imprimer emploi du temps quand mes eleves ont cours",
-      "emploi_du_temps", ["Ouvrez Personnel → Emplois du temps.", "Choisissez la classe (ou le professeur) dans les listes en haut.", "Utilisez Jour, Semaine ou Mois, puis « Imprimer / PDF » si besoin."], roles=(STAFF, ENS)),
+      "emploi_du_temps", ["Pour une classe : ouvrez Élèves et vie scolaire → Emplois du temps des classes, puis cliquez sur la pastille de la classe.", "Pour un professeur : Personnel → Emplois du temps, choisissez le professeur dans la liste.", "Utilisez Jour, Semaine ou Mois, puis « Imprimer / PDF » si besoin."], roles=(STAFF, ENS)),
     G("generer_edt", "Emplois du temps", "Comment générer l'emploi du temps ?",
       "generer emploi du temps creer edt proposition automatique faire emploi du temps construire planning classes appliquer proposition",
       "planification", ["Saisissez les matières et heures par niveau (Planification et suivi → Matières et heures par niveau).", "Recueillez les vœux des professeurs (Vœux des professeurs).", "Cliquez sur « Générer les besoins et l'emploi du temps » (ou « Générer une proposition » dans Génération des emplois du temps).", "Relisez la proposition par classe ou par professeur : les trous sont en rouge.", "Cochez la confirmation puis « Appliquer » pour remplacer l'emploi du temps actuel."]),
