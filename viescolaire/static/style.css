@@ -273,3 +273,18 @@ table.grille-saisie .c-adresse{min-width:150px}table.grille-saisie .c-eleve{min-
 table.grille-saisie input[type=date]{min-width:120px}table.grille-saisie td:nth-child(3){width:72px;min-width:72px}table.grille-saisie .c-adresse{min-width:140px}
 table.grille-saisie .c-eleve{min-width:145px}table.grille-saisie .c-mail{min-width:205px}.c-statut{width:88px}
 table.grille-saisie .c-mail{min-width:178px}table.grille-saisie td:nth-child(7){min-width:118px}
+
+/* Liste des élèves : couleur par niveau (même palette que Classes), régime, groupes */
+.barre-actions{display:flex;flex-wrap:wrap;gap:8px}
+.filtres-eleves{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin:12px 0}.filtres-eleves select,.filtres-eleves input{min-width:130px}
+table.liste-eleves tr.avec-niveau td:first-child{border-left:6px solid hsl(var(--m) 42% 46%)}
+table.liste-eleves tr.avec-niveau:hover{background:color-mix(in srgb,hsl(var(--m) 48% 58%) 8%,transparent)}
+.cel-classe{white-space:nowrap}.pastille-classe{display:inline-block;padding:2px 10px;border-radius:8px;font-weight:700;background:hsl(var(--m) 42% 34%);color:#fff}
+.niveau-mini{display:block;margin-top:3px;font-size:11px;color:var(--mute)}
+.regime{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid transparent}
+.regime-externe{background:#ECEFF1;color:#37474F;border-color:#CFD8DC}.regime-demi-pensionnaire{background:#FFF4D6;color:#6B4A00;border-color:#F0D58A}.regime-interne{background:#E8E1F5;color:#40286B;border-color:#C9BCE6}
+.puce-groupe{display:inline-block;margin:2px 4px 0 0;padding:0 8px;border-radius:99px;font-size:11px;background:color-mix(in srgb,var(--brand-strong) 12%,var(--card));color:var(--ink)}
+.liste-cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin:10px 0}
+@media print{.noprint{display:none!important}table.liste-eleves tr.avec-niveau td:first-child{border-left:4px solid #888}}
+table.grille-saisie td:nth-child(4){min-width:128px}table.grille-saisie td:nth-child(n+5):nth-child(-n+9){}
+.regime{white-space:nowrap}

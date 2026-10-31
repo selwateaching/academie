@@ -299,6 +299,17 @@ MIGRATIONS = [
         ALTER TABLE eleves ADD COLUMN ville TEXT NOT NULL DEFAULT '';
         ALTER TABLE eleves ADD COLUMN telephone TEXT NOT NULL DEFAULT '';
     """),
+    (17, """
+        ALTER TABLE eleves ADD COLUMN regime TEXT NOT NULL DEFAULT '';   -- 'externe', 'demi-pensionnaire' ou 'interne' ('' = non renseigné)
+        CREATE TABLE IF NOT EXISTS groupes_eleves (   -- groupes libres d'élèves (LV2, atelier, aide aux devoirs…), à travers les classes
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE, nom TEXT NOT NULL,
+            UNIQUE (etab_id, nom)
+        );
+        CREATE TABLE IF NOT EXISTS groupe_membres (
+            groupe_id INTEGER NOT NULL REFERENCES groupes_eleves(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE, PRIMARY KEY (groupe_id, eleve_id)
+        );
+    """),
 ]
 
 
@@ -750,6 +761,12 @@ def seed_demo(password="demo1234"):
     vol(e2, "Terminale", [("Philosophie", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 4, 1)])
     # coordonnées de démonstration : environ deux élèves sur trois ont une adresse et un téléphone (les autres restent « à compléter »)
     con.execute("UPDATE eleves SET adresse=((id*7)%97+1)||' rue des Lilas', code_postal='69003', ville='Lyon', telephone='06 '||substr('00'||((id*13)%100),-2)||' '||substr('00'||((id*29)%100),-2)||' '||substr('00'||((id*53)%100),-2)||' '||substr('00'||((id*71)%100),-2) WHERE id%3<>0")
+    # régimes de démonstration : environ 55 % demi-pensionnaires, 8 % internes, le reste externes
+    con.execute("UPDATE eleves SET regime=CASE WHEN id%12=0 THEN 'interne' WHEN id%12 IN (1,2,3,4,5,6,7) THEN 'demi-pensionnaire' ELSE 'externe' END")
+    # groupes de démonstration
+    for eid_, nom_g, cond in ((e1, 'Aide aux devoirs', "classe IN ('6A','6B') AND id%3=0"), (e1, 'Atelier théâtre', "classe IN ('4A','3A','3B') AND id%5=0")):
+        gid_ = con.execute("INSERT INTO groupes_eleves(etab_id,nom) VALUES (?,?)", (eid_, nom_g)).lastrowid
+        con.execute(f"INSERT INTO groupe_membres(groupe_id,eleve_id) SELECT ?, id FROM eleves WHERE etab_id=? AND {cond}", (gid_, eid_))
     # service dû de la démo : volume de l'emploi du temps arrondi à l'heure (certains écarts restent visibles)
     for pid, tot in con.execute("SELECT prof_id, SUM((CAST(substr(fin,1,2) AS INTEGER)*60+CAST(substr(fin,4,2) AS INTEGER))"
                                 "-(CAST(substr(debut,1,2) AS INTEGER)*60+CAST(substr(debut,4,2) AS INTEGER))) FROM creneaux GROUP BY prof_id").fetchall():

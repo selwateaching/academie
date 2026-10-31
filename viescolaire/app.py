@@ -73,7 +73,7 @@ MODULE_DES_ENDPOINTS = {
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
     "planning_personnel": ["pers_planning", "pers_affectation_creer", "pers_affectation_modifier", "pers_affectation_supprimer", "pers_affectation_copier",
                            "pers_generer", "pers_annuler", "pers_planning_csv"],
-    "eleves": ["eleves", "eleves_completer", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
+    "eleves": ["eleves", "eleves_export", "eleves_groupes", "eleves_groupe", "eleves_completer", "eleve_supprimer", "eleve_fiche", "eleve_modifier", "pyramide", "pyramide_csv"],
     "infirmerie": ["infirmerie", "infirmerie_prevenir", "infirmerie_prevenir_jour", "infirmerie_realise", "infirmerie_soins", "infirmerie_soin_action", "infirmerie_passages",
                    "infirmerie_passage_supprimer", "infirmerie_passages_csv", "infirmerie_eleves", "infirmerie_fiche"],
     "redaction": ["documents_parametres", "logo_entete", "document_nouveau", "document_genere", "document_genere_docx", "document_genere_modifier", "document_genere_supprimer",
@@ -273,7 +273,7 @@ def entetes(resp):
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
 PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
-                "document_genere": "documents", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
+                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
 
@@ -308,6 +308,7 @@ def menu_sections():
         sections = [
             section("1. Élèves et vie scolaire", [
                 item("eleves", "Liste des élèves", "eleve", "Fiches, responsables, import", "eleves"),
+                item("eleves_groupes", "Groupes d'élèves", "reunion", "LV2, ateliers, aide aux devoirs…", "eleves"),
                 item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
@@ -1820,6 +1821,20 @@ def parse_naissance(texte):
     return ""
 
 
+REGIMES = {"externe": "Externe", "demi-pensionnaire": "Demi-pensionnaire", "interne": "Pensionnaire"}
+
+
+def norm_regime(texte):
+    t = (texte or "").strip().lower().replace("é", "e")
+    if t in ("externe", "ext", "e"):
+        return "externe"
+    if t in ("demi-pensionnaire", "demi pensionnaire", "demi-pension", "demi", "dp", "d.p.", "1/2 pension", "demi pension", "demi-pensionnaire "):
+        return "demi-pensionnaire"
+    if t in ("interne", "pensionnaire", "int", "i", "pension"):
+        return "interne"
+    return ""
+
+
 def norm_sexe(texte):
     t = (texte or "").strip().lower()
     if t in ("f", "fille", "féminin", "feminin", "femme", "girl"):
@@ -1834,20 +1849,10 @@ def age_au(naissance_iso, ref):
     return ref.year - d.year - ((ref.month, ref.day) < (d.month, d.day))
 
 
-@app.route("/eleves", methods=["GET", "POST"])
-@staff_only
-def eleves():
-    if request.method == "POST":
-        f = request.form
-        if not f.get("nom", "").strip():
-            flash("Le nom est obligatoire.", "err")
-        else:
-            run("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe) VALUES (?,?,?,?,?,?,?,?)",
-                (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(),
-                 f.get("responsable", "").strip(), f.get("contact", "").strip(), parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe"))))
-            log("élève ajouté", f"{f['nom']} {f.get('classe', '')}")
-        return redirect(url_for("eleves"))
-    terme, classe, niveau = request.args.get("q", "").strip(), request.args.get("classe", ""), request.args.get("niveau", "")
+TEINTES_NIVEAUX = [150, 210, 35, 280, 355, 85, 320, 185]   # même palette que la page Classes
+
+
+def filtrer_eleves(terme="", classe="", niveau="", regime="", groupe=None, limite=500):
     like = f"%{terme}%"
     sql = "SELECT * FROM eleves WHERE etab_id=? AND (nom LIKE ? OR prenom LIKE ? OR responsable LIKE ?)"
     args = [g.etab_id, like, like, like]
@@ -1857,7 +1862,136 @@ def eleves():
     if niveau:
         sql += " AND classe IN (SELECT nom FROM classes WHERE etab_id=? AND niveau=?)"
         args += [g.etab_id, niveau]
-    rows = q(sql + " ORDER BY classe, nom, prenom LIMIT 500", args)
+    if regime in REGIMES:
+        sql += " AND regime=?"
+        args.append(regime)
+    elif regime == "non-renseigne":
+        sql += " AND regime=''"
+    if groupe:
+        sql += " AND id IN (SELECT m.eleve_id FROM groupe_membres m JOIN groupes_eleves g ON g.id=m.groupe_id WHERE g.id=? AND g.etab_id=?)"
+        args += [groupe, g.etab_id]
+    return q(sql + " ORDER BY classe, nom, prenom" + (f" LIMIT {int(limite)}" if limite else ""), args)
+
+
+COLONNES_EXPORT = [("classe", "Classe"), ("niveau", "Niveau"), ("nom", "Nom"), ("prenom", "Prénom"), ("sexe", "Sexe"), ("date_naissance", "Date de naissance"),
+                   ("regime", "Régime"), ("responsable", "Responsable légal"), ("contact", "E-mail"), ("telephone", "Téléphone"),
+                   ("adresse", "Adresse"), ("code_postal", "Code postal"), ("ville", "Ville"), ("groupes", "Groupes")]
+
+
+def lignes_export(rows):
+    niveau_de = {c["nom"]: c["niveau"] for c in q("SELECT nom, niveau FROM classes WHERE etab_id=?", (g.etab_id,))}
+    groupes_de = {}
+    for r in q("SELECT m.eleve_id, g.nom FROM groupe_membres m JOIN groupes_eleves g ON g.id=m.groupe_id WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,)):
+        groupes_de.setdefault(r["eleve_id"], []).append(r["nom"])
+    for e in rows:
+        yield [cellule_csv({"niveau": niveau_de.get(e["classe"], ""), "sexe": {"F": "F", "M": "M"}.get(e["sexe"], ""), "regime": REGIMES.get(e["regime"], ""),
+                            "groupes": ", ".join(groupes_de.get(e["id"], []))}.get(k, e[k] if k in e.keys() else "")) for k, _ in COLONNES_EXPORT]
+
+
+@app.route("/eleves/export.csv")
+@staff_only
+def eleves_export():
+    """Liste des élèves au format Excel (CSV), selon les filtres : niveau, classe, régime, groupe ; ?par_classe=1 donne une archive ZIP avec un fichier par classe."""
+    terme, classe, niveau = request.args.get("q", "").strip(), request.args.get("classe", ""), request.args.get("niveau", "")
+    regime, groupe = request.args.get("regime", ""), request.args.get("groupe", type=int)
+    rows = filtrer_eleves(terme, classe, niveau, regime, groupe, limite=0)
+    cols = [k for k, _ in COLONNES_EXPORT if k in request.args.getlist("col")] or [k for k, _ in COLONNES_EXPORT]
+    idx = [i for i, (k, _) in enumerate(COLONNES_EXPORT) if k in cols]
+    entete = [COLONNES_EXPORT[i][1] for i in idx]
+
+    def csv_texte(sous):
+        buf = io.StringIO()
+        w = csv.writer(buf, delimiter=";")
+        w.writerow(entete)
+        for ligne in lignes_export(sous):
+            w.writerow([ligne[i] for i in idx])
+        return "\ufeff" + buf.getvalue()
+    etiquette = re.sub(r"[^\w-]+", "_", classe or niveau or "eleves").strip("_") or "eleves"
+    log("export élèves", f"{len(rows)} élève(s) {classe or niveau or 'tous'}")
+    if request.args.get("par_classe"):
+        mem = io.BytesIO()
+        with zipfile.ZipFile(mem, "w", zipfile.ZIP_DEFLATED) as z:
+            for cl in sorted({e["classe"] or "sans_classe" for e in rows}):
+                z.writestr(f"{re.sub(r'[^\w-]+', '_', cl)}.csv", csv_texte([e for e in rows if (e["classe"] or "sans_classe") == cl]))
+        return Response(mem.getvalue(), mimetype="application/zip", headers={"Content-Disposition": f"attachment; filename=eleves_par_classe_{date.today()}.zip"})
+    return Response(csv_texte(rows), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=eleves_{etiquette}_{date.today()}.csv"})
+
+
+@app.route("/eleves/groupes", methods=["GET", "POST"])
+@staff_only
+def eleves_groupes():
+    if request.method == "POST":
+        nom = request.form.get("nom", "").strip()[:80]
+        if nom and not one("SELECT 1 FROM groupes_eleves WHERE etab_id=? AND lower(nom)=lower(?)", (g.etab_id, nom)):
+            gid = run("INSERT INTO groupes_eleves(etab_id,nom) VALUES (?,?)", (g.etab_id, nom))
+            log("groupe d'élèves créé", nom)
+            return redirect(url_for("eleves_groupe", gid=gid))
+        flash("Indiquez un nom de groupe différent de ceux qui existent.", "err")
+        return redirect(url_for("eleves_groupes"))
+    rows = q("SELECT g.*, (SELECT COUNT(*) FROM groupe_membres m WHERE m.groupe_id=g.id) nb FROM groupes_eleves g WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,))
+    return render_template("groupes_eleves.html", rows=rows)
+
+
+@app.route("/eleves/groupes/<int:gid>", methods=["GET", "POST"])
+@staff_only
+def eleves_groupe(gid):
+    grp = one("SELECT * FROM groupes_eleves WHERE id=? AND etab_id=?", (gid, g.etab_id))
+    if not grp:
+        abort(404)
+    f = request.form
+    if request.method == "POST":
+        action = f.get("action")
+        if action == "ajouter":
+            ids = [int(x) for x in f.getlist("eleve") if x.isdigit()]
+            if f.get("toute_la_classe"):
+                ids += [r["id"] for r in q("SELECT id FROM eleves WHERE etab_id=? AND classe=?", (g.etab_id, f["toute_la_classe"]))]
+            n = 0
+            for i in set(ids):
+                if one("SELECT 1 FROM eleves WHERE id=? AND etab_id=?", (i, g.etab_id)):
+                    cur = db().execute("INSERT OR IGNORE INTO groupe_membres(groupe_id,eleve_id) VALUES (?,?)", (gid, i))
+                    n += cur.rowcount
+            db().commit()
+            flash(f"{n} élève(s) ajouté(s) au groupe.", "ok")
+        elif action == "retirer":
+            for i in f.getlist("eleve"):
+                if i.isdigit():
+                    db().execute("DELETE FROM groupe_membres WHERE groupe_id=? AND eleve_id=?", (gid, int(i)))
+            db().commit()
+            flash("Élève(s) retiré(s) du groupe.", "ok")
+        elif action == "renommer" and f.get("nom", "").strip():
+            if one("SELECT 1 FROM groupes_eleves WHERE etab_id=? AND lower(nom)=lower(?) AND id<>?", (g.etab_id, f["nom"].strip(), gid)):
+                flash("Ce nom est déjà utilisé.", "err")
+            else:
+                run("UPDATE groupes_eleves SET nom=? WHERE id=?", (f["nom"].strip()[:80], gid))
+        elif action == "supprimer":
+            run("DELETE FROM groupes_eleves WHERE id=?", (gid,))
+            log("groupe d'élèves supprimé", grp["nom"])
+            return redirect(url_for("eleves_groupes"))
+        return redirect(url_for("eleves_groupe", gid=gid, classe=request.args.get("classe", "")))
+    classe_choisie = request.args.get("classe", "")
+    membres = q("SELECT e.* FROM groupe_membres m JOIN eleves e ON e.id=m.eleve_id WHERE m.groupe_id=? ORDER BY e.classe, e.nom, e.prenom", (gid,))
+    candidats = q("SELECT * FROM eleves WHERE etab_id=? AND classe=? AND id NOT IN (SELECT eleve_id FROM groupe_membres WHERE groupe_id=?) ORDER BY nom, prenom",
+                  (g.etab_id, classe_choisie, gid)) if classe_choisie else []
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    return render_template("groupe_eleves.html", grp=grp, membres=membres, candidats=candidats, classes=classes_, classe=classe_choisie)
+
+
+@app.route("/eleves", methods=["GET", "POST"])
+@staff_only
+def eleves():
+    if request.method == "POST":
+        f = request.form
+        if not f.get("nom", "").strip():
+            flash("Le nom est obligatoire.", "err")
+        else:
+            run("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe,regime) VALUES (?,?,?,?,?,?,?,?,?)",
+                (g.etab_id, f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(),
+                 f.get("responsable", "").strip(), f.get("contact", "").strip(), parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe")), norm_regime(f.get("regime"))))
+            log("élève ajouté", f"{f['nom']} {f.get('classe', '')}")
+        return redirect(url_for("eleves"))
+    terme, classe, niveau = request.args.get("q", "").strip(), request.args.get("classe", ""), request.args.get("niveau", "")
+    regime, groupe = request.args.get("regime", ""), request.args.get("groupe", type=int)
+    rows = filtrer_eleves(terme, classe, niveau, regime, groupe, limite=500)
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     total = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=?", (g.etab_id,))["c"]
     # professeur principal et équipe de chaque classe affichée (calculés une fois par classe)
@@ -1870,8 +2004,18 @@ def eleves():
         for o in occurrences_soins(date.today()):
             if o["statut"] == "a_faire":
                 soins_jour.setdefault(o["eleve_id"], []).append(o["heure"])
+    niveaux_ = q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))
+    teinte_niveau = {n["nom"]: TEINTES_NIVEAUX[i % len(TEINTES_NIVEAUX)] for i, n in enumerate(niveaux_)}
+    niveau_de = {c["nom"]: c["niveau"] for c in q("SELECT nom, niveau FROM classes WHERE etab_id=?", (g.etab_id,))}
+    groupes_ = q("SELECT g.*, (SELECT COUNT(*) FROM groupe_membres m WHERE m.groupe_id=g.id) nb FROM groupes_eleves g WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,))
+    groupes_de = {}
+    if rows:
+        for r in q("SELECT m.eleve_id, g.nom FROM groupe_membres m JOIN groupes_eleves g ON g.id=m.groupe_id WHERE g.etab_id=? ORDER BY g.nom", (g.etab_id,)):
+            groupes_de.setdefault(r["eleve_id"], []).append(r["nom"])
+    stats_regime = {r["regime"]: r["n"] for r in q("SELECT regime, COUNT(*) n FROM eleves WHERE etab_id=? GROUP BY regime", (g.etab_id,))}
     return render_template("eleves.html", rows=rows, terme=terme, classe=classe, classes=classes_, total=total, infos=infos, soins_jour=soins_jour,
-                           niveau=niveau, niveaux=q("SELECT nom FROM niveaux WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,)))
+                           niveau=niveau, niveaux=niveaux_, regime=regime, regimes=REGIMES, groupe=groupe, groupes=groupes_, teinte_niveau=teinte_niveau,
+                           niveau_de=niveau_de, groupes_de=groupes_de, stats_regime=stats_regime, nb_affiches=len(rows))
 
 
 def donnees_pyramide(niveau, classe, ref):
@@ -2013,7 +2157,7 @@ def eleve_fiche(eid):
     documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
     reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
     return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_,
-                           inf=infos_infirmerie(eid))
+                           inf=infos_infirmerie(eid), regimes=REGIMES)
 
 
 @app.route("/eleves/completer", methods=["GET", "POST"])
@@ -2028,9 +2172,9 @@ def eleves_completer():
             if f"date_naissance_{i}" not in request.form:
                 continue
             f = request.form
-            run("UPDATE eleves SET date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=?, contact=?, responsable=? WHERE id=?",
+            run("UPDATE eleves SET date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=?, contact=?, responsable=?, regime=? WHERE id=?",
                 (parse_naissance(f.get(f"date_naissance_{i}")), norm_sexe(f.get(f"sexe_{i}")), f.get(f"adresse_{i}", "").strip()[:200], f.get(f"code_postal_{i}", "").strip()[:10],
-                 f.get(f"ville_{i}", "").strip()[:80], f.get(f"telephone_{i}", "").strip()[:30], f.get(f"contact_{i}", "").strip(), f.get(f"responsable_{i}", "").strip(), i))
+                 f.get(f"ville_{i}", "").strip()[:80], f.get(f"telephone_{i}", "").strip()[:30], f.get(f"contact_{i}", "").strip(), f.get(f"responsable_{i}", "").strip(), norm_regime(f.get(f"regime_{i}")), i))
             n += 1
         log("fiches élèves complétées", f"{n} élève(s), classe {classe}")
         flash(f"{n} fiche(s) enregistrée(s).", "ok")
@@ -2048,10 +2192,10 @@ def eleves_completer():
 def eleve_modifier(eid):
     f = request.form
     if f.get("nom", "").strip() and one("SELECT 1 FROM eleves WHERE id=? AND etab_id=?", (eid, g.etab_id)):
-        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=?, date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=? WHERE id=?",
+        run("UPDATE eleves SET nom=?, prenom=?, classe=?, responsable=?, contact=?, date_naissance=?, sexe=?, adresse=?, code_postal=?, ville=?, telephone=?, regime=? WHERE id=?",
             (f["nom"].strip(), f.get("prenom", "").strip(), f.get("classe", "").strip(), f.get("responsable", "").strip(), f.get("contact", "").strip(),
              parse_naissance(f.get("date_naissance")), norm_sexe(f.get("sexe")), f.get("adresse", "").strip()[:200], f.get("code_postal", "").strip()[:10],
-             f.get("ville", "").strip()[:80], f.get("telephone", "").strip()[:30], eid))
+             f.get("ville", "").strip()[:80], f.get("telephone", "").strip()[:30], norm_regime(f.get("regime")), eid))
         log("fiche élève modifiée", f"{f['nom']} {f.get('prenom', '')}")
         flash("Fiche enregistrée.", "ok")
     return redirect(url_for("eleve_fiche", eid=eid))
@@ -4426,7 +4570,7 @@ def importer():
                     continue
                 champs = {"responsable": r.get("responsable", ""), "contact": r.get("contact", ""), "date_naissance": parse_naissance(r.get("date_naissance", "")),
                           "sexe": norm_sexe(r.get("sexe", "")), "adresse": r.get("adresse", "")[:200], "code_postal": r.get("code_postal", "")[:10],
-                          "ville": r.get("ville", "")[:80], "telephone": r.get("telephone", "")[:30]}
+                          "ville": r.get("ville", "")[:80], "telephone": r.get("telephone", "")[:30], "regime": norm_regime(r.get("regime", ""))}
                 deja = one("SELECT id FROM eleves WHERE etab_id=? AND lower(nom)=lower(?) AND lower(prenom)=lower(?) AND lower(classe)=lower(?)",
                            (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""))) if request.form.get("maj") else None
                 if deja:   # mise à jour : seules les colonnes renseignées dans le fichier remplacent les valeurs existantes
@@ -4435,9 +4579,9 @@ def importer():
                             db().execute(f"UPDATE eleves SET {k}=? WHERE id=?", (v, deja["id"]))
                     maj_n += 1
                     continue
-                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe,adresse,code_postal,ville,telephone) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                db().execute("INSERT INTO eleves(etab_id,nom,prenom,classe,responsable,contact,date_naissance,sexe,adresse,code_postal,ville,telephone,regime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                              (g.etab_id, r["nom"], r.get("prenom", ""), r.get("classe", ""), champs["responsable"], champs["contact"], champs["date_naissance"],
-                              champs["sexe"], champs["adresse"], champs["code_postal"], champs["ville"], champs["telephone"]))
+                              champs["sexe"], champs["adresse"], champs["code_postal"], champs["ville"], champs["telephone"], champs["regime"]))
                 ok += 1
             elif kind == "besoins":
                 p = one("SELECT * FROM professeurs WHERE etab_id=? AND (email=? OR (nom=? AND prenom=?))",

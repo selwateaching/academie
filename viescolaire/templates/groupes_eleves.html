@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Groupes d'élèves{% endblock %}{% block body %}
+<div class="top"><h1>Groupes d'élèves</h1><a class="btn sec" href="{{ url_for('eleves') }}">← Liste des élèves</a></div>
+<p class="mute">Un groupe réunit des élèves de plusieurs classes (LV2, atelier, aide aux devoirs, sortie…). Vous pouvez ensuite filtrer et exporter la liste d'un groupe depuis la liste des élèves.</p>
+<div class="grid g2">{% for r in rows %}<a class="card" href="{{ url_for('eleves_groupe', gid=r.id) }}" style="text-decoration:none;color:inherit"><h2 style="margin:0">{{ r.nom }}</h2><p class="mute" style="margin:4px 0 0">{{ r.nb }} élève{{ 's' if r.nb > 1 }}</p></a>
+{% else %}<div class="card mute">Aucun groupe pour l'instant.</div>{% endfor %}</div>
+<div class="card"><h2>Nouveau groupe</h2><form method="post" class="row">{{ csrf() }}<div><label>Nom du groupe</label><input name="nom" required placeholder="ex. Espagnol LV2"></div><div style="flex:0 0 auto"><button>Créer le groupe</button></div></form></div>{% endblock %}

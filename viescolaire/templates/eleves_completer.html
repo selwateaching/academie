@@ -11,16 +11,17 @@
 
 <form method="post" data-saisie>{{ csrf() }}<input type="hidden" name="classe" value="{{ classe }}">
 <div class="card saisie-carte"><div class="saisie-defile"><table class="grille-saisie">
-<thead><tr><th class="c-eleve">Élève</th><th>Naissance</th><th>Sexe</th><th class="c-adresse">Adresse</th><th>CP</th><th>Ville</th><th>Téléphone</th><th class="c-mail">E-mail du responsable</th><th>Statut</th></tr></thead><tbody>
+<thead><tr><th class="c-eleve">Élève</th><th>Naissance</th><th>Sexe</th><th>Régime</th><th class="c-adresse">Adresse</th><th>CP</th><th>Ville</th><th>Téléphone</th><th class="c-mail">E-mail du responsable</th><th>Statut</th></tr></thead><tbody>
 {% for e in rows %}{% set ok = e.date_naissance and e.sexe and e.adresse %}<tr data-ligne data-complet="{{ 1 if ok else 0 }}">
 <td class="c-eleve"><b>{{ e.nom }}</b> {{ e.prenom }}<span class="classe-mini">{{ e.classe }}</span><input type="hidden" name="responsable_{{ e.id }}" value="{{ e.responsable }}"></td>
 <td><input type="date" name="date_naissance_{{ e.id }}" value="{{ e.date_naissance }}" data-req aria-label="Date de naissance de {{ e.prenom }} {{ e.nom }}"></td>
 <td><select name="sexe_{{ e.id }}" data-req aria-label="Sexe de {{ e.prenom }} {{ e.nom }}"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>F</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>M</option></select></td>
+<td><select name="regime_{{ e.id }}" aria-label="Régime de {{ e.prenom }} {{ e.nom }}"><option value="">—</option><option value="externe" {{ 'selected' if e.regime == 'externe' }}>Externe</option><option value="demi-pensionnaire" {{ 'selected' if e.regime == 'demi-pensionnaire' }}>Demi-pens.</option><option value="interne" {{ 'selected' if e.regime == 'interne' }}>Pensionnaire</option></select></td>
 <td class="c-adresse"><input name="adresse_{{ e.id }}" value="{{ e.adresse }}" data-req placeholder="N° et rue" autocomplete="street-address" aria-label="Adresse de {{ e.prenom }} {{ e.nom }}"></td>
 <td><input name="code_postal_{{ e.id }}" value="{{ e.code_postal }}" inputmode="numeric" maxlength="10" placeholder="CP" aria-label="Code postal" style="width:72px"></td>
 <td><input name="ville_{{ e.id }}" value="{{ e.ville }}" placeholder="Ville" aria-label="Ville"></td>
 <td><input name="telephone_{{ e.id }}" value="{{ e.telephone }}" type="tel" placeholder="Téléphone" aria-label="Téléphone"></td>
 <td class="c-mail"><input name="contact_{{ e.id }}" value="{{ e.contact }}" type="email" placeholder="E-mail" aria-label="E-mail du responsable"></td>
 <td class="c-statut"><span class="statut {{ 'ok' if ok else 'a-faire' }}" data-statut>{{ 'Complète' if ok else 'À faire' }}</span></td></tr>
-{% else %}<tr><td colspan="9" class="mute" style="padding:18px">Aucun élève.</td></tr>{% endfor %}</tbody></table></div></div>
+{% else %}<tr><td colspan="10" class="mute" style="padding:18px">Aucun élève.</td></tr>{% endfor %}</tbody></table></div></div>
 <div class="barre-enreg noprint"><button>Enregistrer les modifications</button><span class="mute" data-etat>Aucune modification.</span></div></form>{% endblock %}

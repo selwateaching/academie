@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}{{ grp.nom }}{% endblock %}{% block body %}
+<div class="top"><h1>{{ grp.nom }} <span class="mute" style="font-size:14px">({{ membres|length }} élève{{ 's' if membres|length > 1 }})</span></h1><span class="noprint">
+<a class="btn" href="{{ url_for('eleves_export', groupe=grp.id) }}">Exporter le groupe (Excel)</a> <a class="btn sec" href="{{ url_for('eleves', groupe=grp.id) }}">Voir dans la liste</a> <a class="btn sec" href="{{ url_for('eleves_groupes') }}">← Groupes</a></span></div>
+<div class="card scroll"><h2>Membres</h2>
+<form method="post">{{ csrf() }}<input type="hidden" name="action" value="retirer"><table><tr><th></th><th>Classe</th><th>Élève</th><th>Régime</th></tr>
+{% for e in membres %}<tr><td><input type="checkbox" name="eleve" value="{{ e.id }}" aria-label="Retirer {{ e.prenom }} {{ e.nom }}"></td><td>{{ e.classe }}</td><td><a href="{{ url_for('eleve_fiche', eid=e.id) }}"><b>{{ e.nom }}</b> {{ e.prenom }}</a></td><td>{% if e.regime %}<span class="regime regime-{{ e.regime }}">{{ {'externe':'Externe','demi-pensionnaire':'Demi-pensionnaire','interne':'Pensionnaire'}.get(e.regime) }}</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun membre : ajoutez des élèves ci-dessous.</td></tr>{% endfor %}</table>
+{% if membres %}<p><button class="red sm">Retirer les élèves cochés</button></p>{% endif %}</form></div>
+<div class="card"><h2>Ajouter des élèves</h2>
+<form method="get" class="row noprint"><div style="max-width:260px"><label>Choisir une classe</label><select name="classe" data-autosubmit><option value="">—</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div></form>
+{% if classe %}<form method="post" action="{{ url_for('eleves_groupe', gid=grp.id, classe=classe) }}">{{ csrf() }}<input type="hidden" name="action" value="ajouter">
+<div class="liste-cases">{% for e in candidats %}<label class="check"><input type="checkbox" name="eleve" value="{{ e.id }}"> {{ e.nom }} {{ e.prenom }}</label>{% else %}<span class="mute">Tous les élèves de cette classe sont déjà dans le groupe.</span>{% endfor %}</div>
+<p><button>Ajouter les élèves cochés</button> {% if candidats %}<button name="toute_la_classe" value="{{ classe }}" class="sec">Ajouter toute la classe {{ classe }}</button>{% endif %}</p></form>{% else %}<p class="mute">Sélectionnez une classe pour cocher les élèves à ajouter.</p>{% endif %}</div>
+<div class="card noprint"><h2>Gérer le groupe</h2><form method="post" class="row">{{ csrf() }}<input type="hidden" name="action" value="renommer"><div><label>Nom</label><input name="nom" value="{{ grp.nom }}" required></div><div style="flex:0 0 auto"><button class="sec">Renommer</button></div></form>
+<form method="post" style="margin-top:10px" data-confirm="Supprimer ce groupe ? Les élèves ne sont pas supprimés.">{{ csrf() }}<input type="hidden" name="action" value="supprimer"><button class="red sm">Supprimer le groupe</button></form></div>{% endblock %}
