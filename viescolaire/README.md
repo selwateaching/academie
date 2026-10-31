@@ -108,7 +108,7 @@ Réglages dans `config.json`, clé `reunions_ia` (tous facultatifs) :
   "redaction": {"fournisseur": "anthropic", "url": "https://api.anthropic.com", "modele": "claude-sonnet-5-5"}}
 ```
 Sans clé, le module reste utilisable : enregistrement, archivage, saisie de la transcription, compte rendu vierge à remplir, formats, impression, partage.
-Prévoir un **disque persistant** (`VSP_DATA`) : les enregistrements sont stockés dans `VSP_DATA/uploads/ri/` et inclus dans la sauvegarde.
+Prévoir un **disque persistant** (`VSP_DATA`) : les enregistrements sont stockés dans `VSP_DATA/uploads/ri/`. Ils ne sont **pas** inclus dans la sauvegarde téléchargeable (volumineux et sensibles) : sauvegarder le disque lui-même si nécessaire.
 
 ## Comptage des heures
 

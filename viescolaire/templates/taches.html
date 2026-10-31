@@ -5,7 +5,7 @@
 <div><label>Assignée à</label><select name="assigne_id">{% for u in users %}<option value="{{ u.id }}" {{ 'selected' if u.id == g.user.id }}>{{ u.nom }}</option>{% endfor %}</select></div><div><button>Ajouter</button></div></div>
 <label>Description</label><input name="description" style="width:100%"></form></div>
 <div class="card scroll"><table><tr><th>Tâche</th><th>Échéance</th><th>Priorité</th><th>Assignée</th><th></th></tr>
-{% for t in taches %}<tr><td {% if t.statut == 'faite' %}style="text-decoration:line-through;opacity:.6"{% endif %}><b>{{ t.titre }}</b><br><span class="mute">{{ t.description }}</span></td>
+{% for t in taches %}<tr><td {% if t.statut == 'faite' %}style="text-decoration:line-through;opacity:.78"{% endif %}><b>{{ t.titre }}</b><br><span class="mute">{{ t.description }}</span></td>
 <td>{% if t.echeance %}<span class="tag {{ 'err' if t.echeance < today and t.statut != 'faite' else '' }}">{{ t.echeance|fr_date }}</span>{% endif %}</td><td>{{ t.priorite }}</td><td>{{ t.assigne }}</td>
 <td>{% if t.statut != 'faite' %}{{ post(url_for('tache_action', tid=t.id, action='faite'), 'Terminée', 'sm') }}{% else %}{{ post(url_for('tache_action', tid=t.id, action='rouvrir'), 'Rouvrir', 'sec sm') }}{% endif %} {{ post(url_for('tache_action', tid=t.id, action='supprimer'), '✕', 'sec sm', 'Supprimer ?') }}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucune tâche.</td></tr>{% endfor %}</table></div>{% endblock %}

@@ -21,4 +21,4 @@
 <div class="scroll"><table><tr><th>Date</th><th>Réunion</th><th>Type</th><th>Participants</th><th>État</th><th></th></tr>
 {% for r in rows %}<tr><td>{{ r.date|fr_date }}{% if r.heure %}<br><span class="mute">{{ r.heure }}</span>{% endif %}</td><td><a href="{{ url_for('ri_reunion', rid=r.id) }}"><b>{{ r.titre }}</b></a></td><td>{{ r.type_libelle }}</td><td>{{ r.nb_part }}</td>
 <td><span class="tag {{ r.statut[1] }}">{{ r.statut[0] }}</span>{% if r.nb_audio %} <span class="mute" title="Enregistrement audio conservé">🎙</span>{% endif %}</td><td><a class="btn sec sm" href="{{ url_for('ri_reunion', rid=r.id) }}">Ouvrir</a></td></tr>
-{% else %}<tr><td colspan="6" class="mute">Aucune réunion pour l'instant : cliquez sur « Nouvelle réunion ».</td></tr>{% endfor %}</table></div></div><script src="{{ url_for('static', filename='reunions_ia.js') }}"></script>{% endblock %}
+{% else %}<tr><td colspan="6" class="mute">Aucune réunion pour l'instant : cliquez sur « Nouvelle réunion ».</td></tr>{% endfor %}</table></div></div><script src="{{ asset('reunions_ia.js') }}"></script>{% endblock %}

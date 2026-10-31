@@ -8,9 +8,9 @@
 <table class="vol"><tr><th>Matière</th>{% for n in niveaux %}<th>{{ n.nom }}<br><span class="mute" style="font-weight:400;font-size:12px">{{ nb_classes[n.nom] }} classe{{ 's' if nb_classes[n.nom] > 1 }}</span></th>{% endfor %}<th title="Séances de 2 heures consécutives">Séances de 2 h</th></tr>
 {% for m in matieres %}{% set i = loop.index0 %}<tr><td><input name="matiere" value="{{ m }}" aria-label="Matière"></td>
 {% for n in niveaux %}<td><input type="number" min="0" max="30" name="h_{{ i }}_{{ loop.index0 }}" value="{{ cell.get((m, n.nom), '') }}" aria-label="{{ m }} en {{ n.nom }}" style="width:64px"></td>{% endfor %}
-<td><input type="checkbox" name="bloc_{{ i }}" value="1" {{ 'checked' if bloc.get(m) == 2 }}></td></tr>{% endfor %}
+<td><input type="checkbox" name="bloc_{{ i }}" value="1" {{ 'checked' if bloc.get(m) == 2 }} aria-label="Séances de 2 h pour {{ m }}"></td></tr>{% endfor %}
 {% for k in range(3) %}{% set i = matieres|length + k %}<tr><td><input name="matiere" placeholder="Nouvelle matière…" aria-label="Nouvelle matière"></td>
-{% for n in niveaux %}<td><input type="number" min="0" max="30" name="h_{{ i }}_{{ loop.index0 }}" style="width:64px" aria-label="Heures"></td>{% endfor %}<td><input type="checkbox" name="bloc_{{ i }}" value="1"></td></tr>{% endfor %}
+{% for n in niveaux %}<td><input type="number" min="0" max="30" name="h_{{ i }}_{{ loop.index0 }}" style="width:64px" aria-label="Heures"></td>{% endfor %}<td><input type="checkbox" name="bloc_{{ i }}" value="1" aria-label="Séances de 2 h pour la nouvelle matière"></td></tr>{% endfor %}
 <tr><th>Total par classe</th>{% for n in niveaux %}<th>{{ total_niveau[n.nom] }} h</th>{% endfor %}<th></th></tr></table>
 <p class="mute">Heures entières par semaine. Pour retirer une matière d'un niveau, laissez la case vide ou à 0. La case « 2 h » demande des séances de 2 heures consécutives (ex. EPS, sciences en laboratoire).</p>
 <p><button>Enregistrer les volumes horaires</button></p></div></form>

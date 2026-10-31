@@ -645,3 +645,35 @@ document.addEventListener('change', function (e) {
     form.addEventListener('submit', effacerStock);
   });
 })();
+
+/* Accessibilité : associe chaque étiquette à son champ, nomme les champs sans étiquette, rend les tableaux défilants accessibles au clavier */
+(function () {
+  var n = 0;
+  function champ(el) { return /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName) && el.type !== 'hidden'; }
+  document.querySelectorAll('label:not([for])').forEach(function (l) {
+    if (l.querySelector('input,select,textarea')) return;
+    var c = l.nextElementSibling, pas = 0;
+    while (c && pas < 3 && !champ(c)) {
+      if (c.tagName === 'LABEL') { c = null; break; }
+      var dedans = c.querySelector && c.querySelector('input:not([type=hidden]),select,textarea');
+      if (dedans) { c = dedans; break; }
+      c = c.nextElementSibling; pas++;
+    }
+    if (!c || !champ(c)) return;
+    if (!c.id) c.id = 'vsp-champ-' + (++n);
+    if (document.querySelectorAll('label[for="' + c.id + '"]').length === 0) l.htmlFor = c.id;
+  });
+  document.querySelectorAll('input,select,textarea').forEach(function (c) {
+    if (c.type === 'hidden' || c.type === 'submit' || c.type === 'button' || c.type === 'checkbox' || c.type === 'radio') return;
+    if (c.labels && c.labels.length) return;
+    if (c.getAttribute('aria-label') || c.getAttribute('aria-labelledby')) return;
+    var nom = c.getAttribute('placeholder') || c.getAttribute('title') || c.getAttribute('name');
+    if (nom) c.setAttribute('aria-label', nom.replace(/[_-]+/g, ' '));
+  });
+  function defilants() {
+    document.querySelectorAll('.scroll').forEach(function (z) {
+      if (z.scrollWidth > z.clientWidth + 1 || z.scrollHeight > z.clientHeight + 1) { z.setAttribute('tabindex', '0'); if (!z.getAttribute('role')) { z.setAttribute('role', 'region'); z.setAttribute('aria-label', 'Tableau défilant'); } }
+    });
+  }
+  defilants(); window.addEventListener('resize', defilants);
+})();

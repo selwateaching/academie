@@ -127,4 +127,4 @@
 
 <div class="card noprint"><h2>Données et suppression</h2>
 <p class="mute">Cette réunion, ses enregistrements, sa transcription et son compte rendu ne sont visibles que par les rôles autorisés ({{ reglages.roles|join(', ') }}). Conservation : audio {{ reglages.conservation_audio_jours }} jours, réunion {{ reglages.conservation_jours }} jours (réglable dans la configuration de l'établissement).</p>
-{{ post(url_for('ri_supprimer', rid=r.id), 'Supprimer toute la réunion', 'red', 'Supprimer définitivement la réunion, ses enregistrements, sa transcription et son compte rendu ?') }}</div><script src="{{ url_for('static', filename='reunions_ia.js') }}"></script>{% endblock %}
+{{ post(url_for('ri_supprimer', rid=r.id), 'Supprimer toute la réunion', 'red', 'Supprimer définitivement la réunion, ses enregistrements, sa transcription et son compte rendu ?') }}</div><script src="{{ asset('reunions_ia.js') }}"></script>{% endblock %}

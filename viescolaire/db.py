@@ -103,9 +103,14 @@ CREATE INDEX IF NOT EXISTS idx_abs_dates ON absences(etab_id, date_debut, date_f
 
 def connect():
     os.makedirs(DATA_DIR, exist_ok=True)
-    con = sqlite3.connect(DB_PATH)
+    con = sqlite3.connect(DB_PATH, timeout=20)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
+    con.execute("PRAGMA busy_timeout = 20000")     # attend un verrou au lieu d'échouer (tâches de fond de transcription en parallèle des requêtes)
+    try:
+        con.execute("PRAGMA journal_mode = WAL")   # lectures et écritures simultanées ; sans effet si le système de fichiers ne le permet pas
+    except sqlite3.DatabaseError:
+        pass
     return con
 
 

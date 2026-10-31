@@ -27,7 +27,7 @@ from . import ext
 from . import planning
 from . import planning_personnel as planpers
 from .modeles_defaut import VARIABLES, installer as installer_modeles
-from .config import CFG, MODULES
+from .config import CFG
 
 app = Flask(__name__)
 os.makedirs(database.DATA_DIR, exist_ok=True)
@@ -188,6 +188,18 @@ def csrf_token():
 app.jinja_env.globals["csrf_token"] = csrf_token
 
 
+def asset(nom):
+    """Adresse d'un fichier statique avec sa date de modification : le navigateur recharge le fichier dès qu'il change (plus de Ctrl+F5 après une mise à jour)."""
+    try:
+        v = int(os.path.getmtime(os.path.join(app.static_folder, nom)))
+    except OSError:
+        v = 0
+    return url_for("static", filename=nom, v=v)
+
+
+app.jinja_env.globals["asset"] = asset
+
+
 def totp_code(secret, t=None, step=30):
     key = base64.b32decode(secret + "=" * (-len(secret) % 8), casefold=True)
     counter = int((t or time.time()) // step)
@@ -276,7 +288,10 @@ def entetes(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "same-origin"
-    resp.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:"
+    resp.headers["Content-Security-Policy"] = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    resp.headers["Permissions-Policy"] = "microphone=(self), camera=(), geolocation=(), payment=()"
+    if os.environ.get("VSP_HTTPS") == "1":
+        resp.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     if g.get("user"):
         resp.headers["Cache-Control"] = "no-store"
     return resp
@@ -4950,7 +4965,9 @@ def sauvegarde():
             with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
                 z.write(copie, "viescolaire.db")
                 for nom in os.listdir(UPLOAD_DIR):
-                    z.write(os.path.join(UPLOAD_DIR, nom), f"uploads/{nom}")
+                    chemin = os.path.join(UPLOAD_DIR, nom)
+                    if os.path.isfile(chemin):      # le sous-dossier ri/ (enregistrements audio) n'est volontairement pas inclus : volumineux et sensible
+                        z.write(chemin, f"uploads/{nom}")
         log("sauvegarde téléchargée")
         return Response(buf.getvalue(), mimetype="application/zip", headers={
             "Content-Disposition": f"attachment; filename=sauvegarde_{datetime.now():%Y%m%d_%H%M}.zip"})

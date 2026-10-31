@@ -222,9 +222,9 @@ nav.side .nav-outils{margin:6px 10px 2px}
 .filtre-niveaux{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 4px}
 .filtre-niveaux button[data-niv]:not([data-niv=""]){border-color:hsl(var(--m) 42% 46%)}
 .filtre-niveaux button.on{background:var(--brand-strong);color:#fff;border-color:var(--brand-strong)}
-.filtre-niveaux button[data-niv]:not([data-niv=""]).on{background:hsl(var(--m) 42% 34%);border-color:hsl(var(--m) 42% 34%)}
+.filtre-niveaux button[data-niv]:not([data-niv=""]).on{background:hsl(var(--m) 42% 30%);border-color:hsl(var(--m) 42% 30%)}
 .niv-bloc{margin:18px 0}.niv-bloc[hidden]{display:none}
-.niv-titre{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;padding:9px 14px;border-radius:10px;background:hsl(var(--m) 42% 34%);color:#fff;font-size:17px}
+.niv-titre{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;padding:9px 14px;border-radius:10px;background:hsl(var(--m) 42% 30%);color:#fff;font-size:17px}
 .niv-titre span{font-size:13px;font-weight:400;opacity:.9}
 .classes-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-items:start}
 .classe-carte{background:color-mix(in srgb,hsl(var(--m) 48% 58%) 10%,var(--card));border:1px solid color-mix(in srgb,hsl(var(--m) 42% 46%) 35%,var(--line));border-left:6px solid hsl(var(--m) 42% 46%);border-radius:12px;padding:0}
@@ -328,9 +328,8 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .tuile:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.2);text-decoration:none;color:#fff}
 .tuile .ico{width:26px;height:26px;opacity:.9;margin-bottom:4px}.tuile b{font-size:34px;line-height:1.05}.tuile span{font-size:13px;opacity:.95}
 .tuile::after{content:"";position:absolute;right:-18px;top:-18px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.14)}
-.t-bleu{background:linear-gradient(135deg,#1F86A8,#16607A)}.t-vert{background:linear-gradient(135deg,#3E9B5F,#2A6E43)}.t-orange{background:linear-gradient(135deg,#D9772B,#A9561A)}
-.t-rose{background:linear-gradient(135deg,#C5456B,#8F2D4C)}.t-violet{background:linear-gradient(135deg,#7A5CB5,#563C8A)}.t-or{background:linear-gradient(135deg,#C99412,#94700A)}
-.t-sarcelle{background:linear-gradient(135deg,#1E9A94,#146C68)}.t-gris{background:linear-gradient(135deg,#6F7B75,#4B5651)}
+.t-bleu{--t:#1F86A8}.t-vert{--t:#3E9B5F}.t-orange{--t:#D9772B}.t-rose{--t:#C5456B}.t-violet{--t:#7A5CB5}.t-or{--t:#C99412}.t-sarcelle{--t:#1E9A94}.t-gris{--t:#6F7B75}
+.tuile{background:linear-gradient(135deg,color-mix(in srgb,var(--t) 70%,#000),color-mix(in srgb,var(--t) 48%,#000))}   /* texte blanc : contraste >= 4,5 sur tout le dégradé */
 .tuile:nth-child(2){animation-delay:.05s}.tuile:nth-child(3){animation-delay:.1s}.tuile:nth-child(4){animation-delay:.15s}.tuile:nth-child(5){animation-delay:.2s}.tuile:nth-child(6){animation-delay:.25s}.tuile:nth-child(7){animation-delay:.3s}
 @keyframes monte{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .graphiques .card{animation:monte .5s both}
@@ -372,7 +371,7 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 /* ───── Groupes d'élèves colorés ───── */
 .groupes-cartes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:16px}
 .carte-groupe{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;color:#fff;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.12);
-  background:linear-gradient(135deg,var(--gc),color-mix(in srgb,var(--gc) 62%,#000));transition:transform .18s,box-shadow .18s;animation:monte .5s both}
+  background:linear-gradient(135deg,color-mix(in srgb,var(--gc) 70%,#000),color-mix(in srgb,var(--gc) 48%,#000));transition:transform .18s,box-shadow .18s;animation:monte .5s both}
 .carte-groupe:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.22);color:#fff;text-decoration:none}
 .carte-groupe h2{margin:0;color:#fff;font-size:18px}.carte-groupe p{margin:3px 0 0;opacity:.92}
 .cg-pastille{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.22);font-size:20px;font-weight:700}
@@ -388,7 +387,7 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-etapes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;list-style:none;margin:0 0 14px;padding:0}
 .ri-etapes a{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--ink);font-size:14px}
 .ri-etapes a:hover{text-decoration:none;border-color:var(--brand)}.ri-etapes b{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--line);flex:none}
-.ri-etapes .fait a{border-color:var(--c-vert)}.ri-etapes .fait b{background:var(--c-vert);color:#fff}
+.ri-etapes .fait a{border-color:var(--c-vert)}.ri-etapes .fait b{background:color-mix(in srgb,var(--c-vert) 62%,#000);color:#fff}
 @media(max-width:700px){.ri-etapes{grid-template-columns:1fr 1fr}}
 .ri-consent{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed var(--c-or);background:color-mix(in srgb,var(--c-or) 8%,var(--card))}.ri-consent.ok{border-color:var(--c-vert);background:color-mix(in srgb,var(--c-vert) 8%,var(--card))}
 .ri-consent h3{margin-top:0}
@@ -445,4 +444,11 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-pills{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.ri-pills .on{background:var(--brand-strong);color:#fff;border-color:var(--brand-strong)}
 .ri-resultats{list-style:none;margin:6px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:6px;max-height:260px;overflow:auto}
 .ri-resultats li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card)}
-.ri-rtag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;color:#fff}.ri-rtag-E{background:var(--c-bleu)}.ri-rtag-P{background:var(--c-vert)}.ri-rtag-S{background:var(--c-violet)}
+.ri-rtag{font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;color:#fff}.ri-rtag-E{background:color-mix(in srgb,var(--c-bleu) 68%,#000)}.ri-rtag-P{background:color-mix(in srgb,var(--c-vert) 62%,#000)}.ri-rtag-S{background:color-mix(in srgb,var(--c-violet) 78%,#000)}
+
+/* ───── Accessibilité : liens reconnaissables sans la couleur seule (WCAG 1.4.1) ───── */
+main :is(p,td,li,.mute,.al,h2,h3):not(.ri-etapes li):not(.hub-carte *) a:not([class]){text-decoration:underline;text-underline-offset:2px}
+.ri-etapes a,.hub-carte a{text-decoration:none}
+/* Mobile : le contenu ne doit jamais élargir la page (les tableaux défilent dans leur cadre) */
+main{min-width:0}.scroll{max-width:100%}form{min-width:0}
+@media(max-width:700px){.row>div[style*="flex:0 0 auto"]{flex:1 1 100%!important}table.etat{display:block;overflow-x:auto;max-width:100%}}
