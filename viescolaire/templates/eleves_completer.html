@@ -3,12 +3,11 @@
 <p class="mute">Une classe à la fois : renseignez la date de naissance, le sexe, l'adresse, le téléphone et l'e-mail de chaque élève, puis enregistrez toute la page. {{ incomplets }} élève(s) ont encore une fiche incomplète (date de naissance, sexe ou adresse manquants). Pour de gros volumes, utilisez l'<a href="{{ url_for('importer') }}">import CSV</a> avec « Mettre à jour ».</p>
 <form method="get" class="row noprint" style="margin-bottom:12px"><div><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes (80 premiers)</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div></form>
 <form method="post">{{ csrf() }}<input type="hidden" name="classe" value="{{ classe }}">
-<div class="card scroll"><table class="saisie"><tr><th>Élève</th><th>Naissance</th><th>Sexe</th><th>Adresse</th><th>CP</th><th>Ville</th><th>Téléphone</th><th>E-mail du responsable</th></tr>
-{% for e in rows %}<tr><td style="white-space:nowrap"><b>{{ e.nom }}</b> {{ e.prenom }}<br><span class="mute">{{ e.classe }}</span><input type="hidden" name="responsable_{{ e.id }}" value="{{ e.responsable }}"></td>
-<td><input type="date" name="date_naissance_{{ e.id }}" value="{{ e.date_naissance }}" aria-label="Date de naissance de {{ e.prenom }} {{ e.nom }}"></td>
-<td><select name="sexe_{{ e.id }}" aria-label="Sexe"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>F</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>M</option></select></td>
-<td><input name="adresse_{{ e.id }}" value="{{ e.adresse }}" style="min-width:200px" aria-label="Adresse"></td><td><input name="code_postal_{{ e.id }}" value="{{ e.code_postal }}" style="width:80px" aria-label="Code postal"></td>
-<td><input name="ville_{{ e.id }}" value="{{ e.ville }}" style="min-width:110px" aria-label="Ville"></td><td><input name="telephone_{{ e.id }}" value="{{ e.telephone }}" style="width:120px" aria-label="Téléphone"></td>
-<td><input type="email" name="contact_{{ e.id }}" value="{{ e.contact }}" style="min-width:200px" aria-label="E-mail du responsable"></td></tr>
-{% else %}<tr><td colspan="8" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>
+<div class="card scroll"><table class="saisie"><tr><th>Élève</th><th>Naissance · sexe</th><th>Adresse · code postal · ville</th><th>Téléphone · e-mail du responsable</th></tr>
+{% for e in rows %}<tr><td class="col-eleve"><b>{{ e.nom }}</b> {{ e.prenom }}<br><span class="mute">{{ e.classe }}</span><input type="hidden" name="responsable_{{ e.id }}" value="{{ e.responsable }}"></td>
+<td><div class="duo"><input type="date" name="date_naissance_{{ e.id }}" value="{{ e.date_naissance }}" aria-label="Date de naissance de {{ e.prenom }} {{ e.nom }}">
+<select name="sexe_{{ e.id }}" aria-label="Sexe"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>F</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>M</option></select></div></td>
+<td><input name="adresse_{{ e.id }}" value="{{ e.adresse }}" placeholder="N° et rue" aria-label="Adresse" style="width:100%"><div class="duo" style="margin-top:4px"><input name="code_postal_{{ e.id }}" value="{{ e.code_postal }}" placeholder="CP" style="width:90px" aria-label="Code postal"><input name="ville_{{ e.id }}" value="{{ e.ville }}" placeholder="Ville" aria-label="Ville" style="flex:1"></div></td>
+<td><input name="telephone_{{ e.id }}" value="{{ e.telephone }}" placeholder="Téléphone" aria-label="Téléphone" style="width:100%"><input type="email" name="contact_{{ e.id }}" value="{{ e.contact }}" placeholder="E-mail" aria-label="E-mail du responsable" style="width:100%;margin-top:4px"></td></tr>
+{% else %}<tr><td colspan="4" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>
 <p><button>Enregistrer toute la page</button></p></form>{% endblock %}
