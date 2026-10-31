@@ -208,7 +208,7 @@ def trop_de_tentatives(cle):
     return len(essais) >= 8
 
 
-PALETTES = ("sapin", "ardoise", "petrole")
+PALETTES = ("actuel", "ardoise", "petrole")
 
 
 @app.before_request
@@ -217,7 +217,7 @@ def choix_palette():
     p = request.args.get("palette")
     if p in PALETTES:
         session["palette"] = p
-    elif p == "actuel":
+    elif p in ("sapin", "defaut"):   # retour à la palette par défaut
         session["palette"] = ""
 
 

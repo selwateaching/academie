@@ -35,6 +35,10 @@ Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variab
 | 5. Avancé | **Génération automatique de l'emploi du temps** (besoins horaires + vœux des professeurs → proposition à relire puis appliquer), assistant (résumé du jour, suggestions), import CSV (professeurs, créneaux), interface adaptée au mobile et installable (PWA) |
 | 6. Sécurité | Gestion des comptes (création, mot de passe temporaire à changer, réinitialisation, désactivation), sauvegarde téléchargeable, rôles (CPE, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (RGPD), plusieurs établissements cloisonnés |
 
+## Charte graphique
+
+Palette par défaut « Sapin et ambre » (vert sapin, fond clair neutre, accent orange brûlé ; contrastes ≥ 4,5 ; couleurs d'état fixes), avec mode sombre. Alternatives : `"palette": "actuel"` (ancienne palette vert-gris et beige), `"ardoise"` ou `"petrole"` dans la configuration du client, ou à l'essai avec `?palette=…` dans l'adresse. La couleur principale se règle aussi par client (`"couleur"`).
+
 ## Un socle commun, une configuration par client
 
 Chaque client a un fichier `config.json` (nom, logo, couleur, modules activés, règles de sécurité, extensions)

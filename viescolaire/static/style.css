@@ -2,7 +2,7 @@
    Principale : vert-de-gris · Secondaires : bisque, vert mastic, coquille d'œuf · Contraste : orange brûlée · Texte : noir.
    Les teintes marquées « dérivé » sont calculées depuis la palette pour garantir la lisibilité (contraste ≥ 4,5). */
 :root{
-  --vert-de-gris:#777F67; --mastic:#B0B18C; --noir:#26211E; --orange:#D3803C; --bisque:#EDC59D; --coquille:#F4EBD7;
+  --vert-de-gris:#3B6256; --mastic:#A9C2B4; --noir:#1F2A24; --orange:#B4571B; --bisque:#DDE5E0; --coquille:#F6F7F5; --accent-fonce:#F2B36B;
   --brand:var(--vert-de-gris);                                          /* surchargé par la config client (clé "couleur") */
   --brand-strong:color-mix(in srgb,var(--brand) 72%,var(--noir));       /* dérivé : boutons, barre latérale, liens */
   --accent:var(--orange);
@@ -11,12 +11,13 @@
   --line:color-mix(in srgb,var(--bisque) 55%,var(--coquille));
   --field:color-mix(in srgb,var(--coquille) 70%,#fff);
   --link:var(--brand-strong); --on-strong:#fff; --side-title:var(--bisque);
-  --ok-bg:color-mix(in srgb,var(--mastic) 40%,var(--coquille)); --ok-ink:var(--noir);
-  --warn-bg:color-mix(in srgb,var(--bisque) 70%,var(--coquille)); --warn-ink:var(--noir);
-  --err:#A8432A;                                                         /* dérivé de l'orange brûlée, assombri */
+  --ok-bg:#E3F1E5; --ok-ink:#1B4D20;
+  --warn-bg:#FBEBD0; --warn-ink:#5C3A00;
+  --err:#C62828;                                                         /* dérivé de l'orange brûlée, assombri */
   --err-bg:color-mix(in srgb,var(--err) 14%,var(--coquille)); --err-ink:color-mix(in srgb,var(--err) 50%,var(--noir));
 }
 @media(prefers-color-scheme:dark){:root{
+  --orange:#E8935A;
   --bg:var(--noir); --card:color-mix(in srgb,var(--coquille) 8%,var(--noir)); --ink:var(--coquille);
   --mute:color-mix(in srgb,var(--coquille) 68%,var(--noir)); --line:color-mix(in srgb,var(--coquille) 18%,var(--noir));
   --field:color-mix(in srgb,var(--coquille) 5%,var(--noir)); --link:var(--bisque);
@@ -70,8 +71,8 @@ label.check{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:1
 code{background:var(--field);padding:1px 5px;border-radius:4px}
 .cal td{height:78px;width:20%;font-size:13px}.cal .n{font-weight:600}
 .edt-col{vertical-align:top}.slot{border-left:4px solid var(--brand);background:var(--field);padding:4px 8px;border-radius:6px;margin-bottom:6px;font-size:13px}
-.slot[style]{border-left-color:hsl(var(--m) 60% 45%);background:color-mix(in srgb,hsl(var(--m) 70% 55%) 24%,var(--field))}
-.puce-matiere{display:inline-block;padding:2px 10px;margin:0 4px 4px 0;border-radius:999px;font-size:12px;border:1px solid hsl(var(--m) 60% 45%);background:color-mix(in srgb,hsl(var(--m) 70% 55%) 24%,var(--field))}
+.slot[style]{border-left-color:hsl(var(--m) 42% 46%);background:color-mix(in srgb,hsl(var(--m) 48% 58%) 17%,var(--field))}
+.puce-matiere{display:inline-block;padding:2px 10px;margin:0 4px 4px 0;border-radius:999px;font-size:12px;border:1px solid hsl(var(--m) 42% 46%);background:color-mix(in srgb,hsl(var(--m) 48% 58%) 17%,var(--field))}
 .slot.a_pourvoir,.slot.annule{border-color:var(--err)}.slot.remplace{border-color:var(--brand-strong)}.slot.perturbe,.slot.indispo{border-color:var(--orange)}
 .v-non{background:var(--err-bg)!important}.v-souhait{background:var(--warn-bg)!important}
 .login{max-width:380px;margin:9vh auto}
@@ -167,7 +168,7 @@ svg.pyramide{width:100%;height:auto;display:block;max-width:900px}
   .layout{display:block}
   nav.side{width:auto;height:auto;max-height:100vh;position:sticky;top:0;z-index:40;padding:8px 12px;display:block!important}
   nav.side .logo{display:inline-block;margin:4px 0;font-size:17px}
-  .menu-btn{display:inline-block;float:right;margin:2px 0;background:var(--orange);color:var(--noir);font-weight:600;padding:8px 14px}
+  .menu-btn{display:inline-block;float:right;margin:2px 0;background:var(--accent-fonce);color:#1F2A24;font-weight:600;padding:8px 14px}
   nav.side:not(.ouvert)>*:not(.logo):not(.menu-btn){display:none}
   nav.side.ouvert{height:100vh;overflow:auto;-webkit-overflow-scrolling:touch}
   nav.side a{padding:11px 10px}nav.side h4[role=button]{padding:12px 10px}
@@ -181,9 +182,9 @@ nav.side{display:flex;flex-direction:column;gap:2px;padding:14px 10px 10px;font-
 nav.side .logo{font-size:17px;font-weight:700;letter-spacing:.01em;padding:2px 10px 8px}
 nav.side a{display:flex;justify-content:flex-start;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--coquille);font-size:14px;line-height:1.3;border-left:3px solid transparent}
 nav.side a:hover{background:color-mix(in srgb,var(--coquille) 12%,transparent);text-decoration:none}
-nav.side a:focus-visible,nav.side h4:focus-visible{outline:2px solid var(--orange);outline-offset:1px}
-nav.side a.on{background:color-mix(in srgb,var(--orange) 22%,transparent);border-left-color:var(--orange);color:#fff;font-weight:600}
-nav.side a .ico{flex:none;opacity:.85}nav.side a.on .ico{color:var(--orange);opacity:1}
+nav.side a:focus-visible,nav.side h4:focus-visible{outline:2px solid var(--accent-fonce);outline-offset:1px}
+nav.side a.on{background:color-mix(in srgb,var(--accent-fonce) 22%,transparent);border-left-color:var(--accent-fonce);color:#fff;font-weight:600}
+nav.side a .ico{flex:none;opacity:.85}nav.side a.on .ico{color:var(--accent-fonce);opacity:1}
 nav.side .nav-lib{flex:1;min-width:0}
 nav.side .nav-accueil{margin:2px 0 6px}
 nav.side .nav-carte{margin:0;border:0;background:none;border-top:1px solid color-mix(in srgb,var(--coquille) 14%,transparent);padding-top:4px}
@@ -191,31 +192,28 @@ nav.side .nav-carte h4{display:flex;justify-content:space-between;align-items:ce
 nav.side .nav-carte h4::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform .15s}
 nav.side .nav-carte.ouverte h4::after{transform:rotate(45deg)}
 nav.side .nav-carte.ouverte h4{color:var(--coquille)}
-nav.side .nav-carte:has(a.on) h4{color:var(--orange);border-left-color:var(--orange)}
+nav.side .nav-carte:has(a.on) h4{color:var(--accent-fonce);border-left-color:var(--accent-fonce)}
 nav.side .nav-groupe{padding:0 0 6px}
-nav.side .badge{margin-left:auto;background:var(--orange);color:var(--noir);border-radius:99px;padding:0 7px;font-size:12px;font-weight:700;min-width:20px;text-align:center}
+nav.side .badge{margin-left:auto;background:var(--accent-fonce);color:#1F2A24;border-radius:99px;padding:0 7px;font-size:12px;font-weight:700;min-width:20px;text-align:center}
 .nav-pied{margin-top:auto;padding:12px 10px 4px;border-top:1px solid color-mix(in srgb,var(--coquille) 14%,transparent);display:flex;flex-direction:column;gap:1px;font-size:13px}
 .nav-pied b{color:var(--coquille);font-weight:600}.nav-pied span{color:color-mix(in srgb,var(--coquille) 68%,transparent);font-size:12px}
 nav.side .nav-outils{margin:6px 10px 2px}
 /* Accueil : cartes uniformes (en-tête vert-gris, accent orange) avec compteurs */
 .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin:6px 0 20px}
 .hub-carte{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-.hub-carte>h3{margin:0;padding:11px 14px;background:var(--brand-strong);color:var(--coquille);font-size:14px;letter-spacing:.02em;border-bottom:3px solid var(--orange)}
+.hub-carte>h3{margin:0;padding:11px 14px;background:var(--brand-strong);color:var(--coquille);font-size:14px;letter-spacing:.02em;border-bottom:3px solid var(--accent-fonce)}
 .hub-carte a{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);color:var(--ink);text-decoration:none}
 .hub-carte a:first-of-type{border-top:0}.hub-carte a:hover{background:color-mix(in srgb,var(--orange) 10%,var(--card))}
-.hub-carte .ico{flex:none;color:var(--brand-strong);opacity:.85}
+.hub-carte .ico{flex:none;color:var(--ink);opacity:.7}
 .hub-carte .hub-lib{flex:1;min-width:0}.hub-carte a small{display:block;color:var(--mute);font-size:12px}
-.hub-carte .badge{background:var(--orange);color:var(--noir);border-radius:99px;padding:0 8px;font-size:12px;font-weight:700}
+.hub-carte .badge{background:var(--orange);color:#fff;border-radius:99px;padding:0 8px;font-size:12px;font-weight:700}
 [data-tromb-fiche][hidden],[data-tromb-groupe][hidden]{display:none!important}
 
-/* Palettes proposées (activables par client avec la clé "palette" de la configuration, ou à l'essai avec ?palette=sapin|ardoise|petrole|actuel).
-   Tout le thème dérive de quelques couleurs : on ne redéfinit que celles-ci. Mode clair uniquement ; les couleurs d'état sont fixes et distinctes de la marque. */
+/* Palettes : la palette par défaut est « Sapin et ambre » (valeurs de :root). Alternatives : "actuel" (ancienne palette vert-gris et beige),
+   "ardoise", "petrole" — à l'essai avec ?palette=… ou par client avec la clé "palette" de la configuration. Mode clair uniquement. */
 @media(prefers-color-scheme:light){
-:root[data-palette=sapin]{--noir:#1F2A24;--coquille:#F6F7F5;--bisque:#DDE5E0;--mastic:#A9C2B4;--orange:#B4571B;--brand:#2F4F46;--brand-strong:#2F4F46;--side-title:#DDE5E0;
-  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
-:root[data-palette=ardoise]{--noir:#1B2430;--coquille:#F5F7FA;--bisque:#DCE3EC;--mastic:#A7B8CE;--orange:#E8A33D;--brand:#1F3A5F;--brand-strong:#1F3A5F;--side-title:#DCE3EC;--link:#1F4FA8;
-  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
-:root[data-palette=petrole]{--noir:#16282A;--coquille:#F4F8F8;--bisque:#D6E6E6;--mastic:#9CC4C4;--orange:#F2B134;--brand:#0F5E63;--brand-strong:#0F5E63;--side-title:#D6E6E6;
-  --err:#C62828;--ok-bg:#E3F1E5;--ok-ink:#1B4D20;--warn-bg:#FBEBD0;--warn-ink:#5C3A00}
-:root[data-palette=sapin] .btn:not(.sec):not(.red),:root[data-palette=sapin] button:not(.sec):not(.red){background:var(--brand-strong)}
+:root[data-palette=actuel]{--vert-de-gris:#777F67;--mastic:#B0B18C;--noir:#26211E;--orange:#D3803C;--bisque:#EDC59D;--coquille:#F4EBD7;--accent-fonce:#D3803C;--brand:#777F67;
+  --err:#A8432A;--ok-bg:color-mix(in srgb,var(--mastic) 40%,var(--coquille));--ok-ink:var(--noir);--warn-bg:color-mix(in srgb,var(--bisque) 70%,var(--coquille));--warn-ink:var(--noir)}
+:root[data-palette=ardoise]{--noir:#1B2430;--coquille:#F5F7FA;--bisque:#DCE3EC;--mastic:#A7B8CE;--orange:#B26A00;--accent-fonce:#E8A33D;--brand:#1F3A5F;--brand-strong:#1F3A5F;--side-title:#DCE3EC;--link:#1F4FA8}
+:root[data-palette=petrole]{--noir:#16282A;--coquille:#F4F8F8;--bisque:#D6E6E6;--mastic:#9CC4C4;--orange:#9A6A00;--accent-fonce:#F2B134;--brand:#0F5E63;--brand-strong:#0F5E63;--side-title:#D6E6E6}
 }

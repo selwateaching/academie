@@ -10,10 +10,10 @@ MODULES = ["professeurs", "emplois_du_temps", "absences", "remplacements", "cour
            "messagerie", "reunions", "documents", "taches", "rapports", "assistant", "import", "utilisateurs", "sauvegarde", "planification", "eleves", "redaction", "infirmerie", "personnel", "planning_personnel", "heures", "trombinoscope"]
 
 DEFAUTS = {
-    "palette": "",   # "", "sapin", "ardoise" ou "petrole" (voir static/style.css)
+    "palette": "",   # "" (Sapin et ambre, par défaut), "actuel" (ancienne palette), "ardoise" ou "petrole" (voir static/style.css)
     "produit": "VieScolairePro",
     "slogan": "La vie scolaire, mieux organisée.",
-    "couleur": "#777F67",          # vert-de-gris (charte) ; les teintes de boutons/menus en sont dérivées
+    "couleur": "#3B6256",          # vert sapin (charte) ; les teintes de boutons/menus en sont dérivées
     "logo": "",                       # nom d'un fichier de static_dir (ex. "logo.svg")
     "css": "",                        # feuille de style additionnelle de static_dir
     "modules": {m: True for m in MODULES},
