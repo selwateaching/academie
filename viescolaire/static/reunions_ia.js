@@ -19,6 +19,15 @@
     });
   });
 
+  // « Tout cocher » des consentements
+  document.querySelectorAll('[data-cocher-consent]').forEach(function (t) {
+    var f = t.closest('form'); if (!f) return;
+    var cases = function () { return f.querySelectorAll('input[name^="consent_"]'); };
+    t.checked = cases().length > 0 && Array.prototype.every.call(cases(), function (c) { return c.checked; });
+    t.addEventListener('change', function () { cases().forEach(function (c) { c.checked = t.checked; }); });
+    cases().forEach(function (c) { c.addEventListener('change', function () { t.checked = Array.prototype.every.call(cases(), function (x) { return x.checked; }); }); });
+  });
+
   // Insère un nom d'intervenant à la position du curseur dans la transcription
   var zone = document.querySelector('[data-ri-texte]');
   document.querySelectorAll('[data-insere]').forEach(function (b) {

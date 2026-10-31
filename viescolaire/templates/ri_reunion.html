@@ -30,6 +30,7 @@
 <div class="ri-consent {{ 'ok' if consent_complet }}"><h3>Information et consentement des participants</h3>
 <p><b>Texte à lire aux participants avant de commencer :</b> « Cette réunion va être enregistrée afin d'en établir le compte rendu. L'enregistrement audio et sa transcription seront accessibles uniquement aux personnes habilitées de l'établissement, conservés {{ reglages.conservation_audio_jours }} jours pour l'audio, et vous pouvez demander leur suppression ou refuser d'être enregistré(e). »</p>
 {% if participants %}<form method="post" action="{{ url_for('ri_preparation', rid=r.id) }}">{{ csrf() }}<input type="hidden" name="action" value="consentement">
+<label class="check ri-tout-consent"><input type="checkbox" data-cocher-consent> <b>Tout cocher</b> <span class="mute">(à utiliser seulement si chaque participant a bien donné son accord)</span></label>
 <div class="liste-cases">{% for p in participants %}<label class="check"><input type="checkbox" name="consent_{{ loop.index0 }}" value="1" {{ 'checked' if p.consent }}> <b>{{ p.nom }}</b> consent à l'enregistrement</label>{% endfor %}</div>
 <label class="check" style="margin-top:8px"><input type="checkbox" name="attestation" value="1" {{ 'checked' if r.consent_ok }}> <b>J'atteste que les participants ont été informés</b> de l'enregistrement et que ceux cochés ci-dessus y ont consenti.</label>
 <p><button class="sec">Enregistrer les consentements</button>{% if r.consent_ok %} <span class="tag ok">Attesté par {{ r.consent_par }} le {{ r.consent_le.replace('T', ' ') }}</span>{% endif %}</p></form>

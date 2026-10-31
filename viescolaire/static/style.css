@@ -425,3 +425,4 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-annuaire{margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.ri-annuaire summary{cursor:pointer}
 .ri-groupe h4{margin:12px 0 4px;display:flex;justify-content:space-between;gap:10px;align-items:center}.ri-tout{font-weight:400;font-size:13px}
 .ri-annuaire .liste-cases{display:flex;flex-wrap:wrap;gap:6px 22px}.ri-annuaire .check{display:inline-flex;align-items:center;gap:6px}
+.ri-tout-consent{display:flex;align-items:center;gap:6px;margin:6px 0 8px;padding:6px 10px;border-radius:8px;background:color-mix(in srgb,var(--c-or) 10%,transparent)}
