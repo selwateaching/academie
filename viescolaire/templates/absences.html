@@ -1,5 +1,5 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf, post %}{% block title %}Absences{% endblock %}{% block body %}
-<div class="top"><h1>Absences et indisponibilités</h1>{% if g.user.role in STAFF %}<a class="btn sec" href="{{ url_for('export_csv', nom='absences') }}">Export Excel (CSV)</a>{% endif %}</div>
+<div class="top"><h1>Absences et indisponibilités</h1><span class="noprint barre-actions">{% if g.user.role in STAFF %}<a class="btn" href="{{ url_for('etat_absences_profs') }}">État jour · semaine · mois</a>{% endif %}</span>{% if g.user.role in STAFF %}<a class="btn sec" href="{{ url_for('export_csv', nom='absences') }}">Export Excel (CSV)</a>{% endif %}</div>
 <div class="card"><h2>Déclarer</h2><form method="post">{{ csrf() }}<div class="row">
 {% if g.user.role in STAFF %}<div><label>Professeur</label><select name="prof_id" required>{% for p in profs %}<option value="{{ p.id }}">{{ p.nom }} {{ p.prenom }}</option>{% endfor %}</select></div>{% endif %}
 <div><label>Type</label><select name="type" data-type-absence><option value="absence">Absence (cours à remplacer)</option><option value="indisponibilite">Indisponibilité (pas de remplaçant)</option></select></div>

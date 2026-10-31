@@ -59,7 +59,7 @@ FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
 # Quels endpoints appartiennent à quel module (un module désactivé répond 404).
 MODULE_DES_ENDPOINTS = {
     "professeurs": ["professeurs", "professeur", "professeur_supprimer", "creneau_ajouter", "creneau_supprimer"],
-    "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action"],
+    "emplois_du_temps": ["emploi_du_temps"], "absences": ["absences", "absence_action", "etat_absences_profs", "etat_absences_profs_csv"],
     "remplacements": ["remplacements", "remplacement_action", "remplacements_auto"], "cours": ["cours", "cours_csv", "perturbation_supprimer"],
     "classes": ["classes", "classe_pp", "classe_renommer", "classe_supprimer", "niveaux_nombre", "niveaux_ajouter", "niveau_modifier", "niveau_supprimer"], "incidents": ["incidents", "incident_action"],
     "messagerie": ["messages", "message_nouveau", "message", "message_confirmer"],
@@ -68,6 +68,7 @@ MODULE_DES_ENDPOINTS = {
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
     "heures": ["heures", "heures_services", "heures_csv"],
+    "assiduite": ["assiduite", "appel", "etat_assiduite", "etat_assiduite_csv"],
     "notes": ["notes", "evaluation", "appreciations", "periodes", "eleve_notes", "releve", "releves_classe", "bulletin", "bulletins_classe"],
     "trombinoscope": ["trombinoscope", "photo", "photo_enregistrer"],
     "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
@@ -274,7 +275,7 @@ def entetes(resp):
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
 PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
-                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
+                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "etat_assiduite": "assiduite", "appel": "appel", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
 
@@ -291,6 +292,7 @@ def menu_sections():
         nb["taches"] = one("SELECT COUNT(*) c FROM taches WHERE etab_id=? AND statut<>'faite'", (g.etab_id,))["c"]
         nb["absences"] = one("SELECT COUNT(*) c FROM absences WHERE etab_id=? AND type='absence' AND date_debut<=? AND date_fin>=?",
                              (g.etab_id, today.isoformat(), today.isoformat()))["c"]
+        nb["absents_eleves"] = one("SELECT COUNT(DISTINCT eleve_id) c FROM absences_eleves WHERE etab_id=? AND date=? AND type='absence'", (g.etab_id, today.isoformat()))["c"]
     infirmerie_ok = u["role"] in roles_infirmerie() and ma("infirmerie")
 
     def item(ep, label, ico, desc="", mod=None, badge=None, **kw):
@@ -315,7 +317,8 @@ def menu_sections():
                 item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
-                item("absences", "Absences", "absence", "Déclarer et suivre les absences", "absences", nb["absences"]),
+                item("absences", "Absences des professeurs", "absence", "Déclarer et suivre les absences", "absences", nb["absences"]),
+                item("assiduite", "Absences et retards des élèves", "absence", "Appel, justifications, états", "assiduite", nb["absents_eleves"]),
                 item("remplacements", "Remplacements", "remplace", "Désigner les remplaçants", "remplacements", nb["remplacements"], statut="a_pourvoir"),
                 item("cours", "Cours perturbés", "alerte", "Analyse des cours touchés", "cours"),
                 item("incidents", "Incidents", "incident", "Signaler et rédiger les documents", "incidents", nb["incidents"]),
@@ -360,6 +363,7 @@ def menu_sections():
             section("Mon espace", [
                 item("emploi_du_temps", "Mon emploi du temps", "calendrier", "Mes cours", "emplois_du_temps"),
                 item("absences", "Mes absences", "absence", "Déclarer une absence", "absences"),
+                item("appel", "Faire l'appel", "absence", "Absents et retards de mes classes", "assiduite"),
                 item("notes", "Mes notes", "taches", "Saisir les notes de mes classes", "notes"),
                 item("appreciations", "Mes appréciations", "redaction", "Appréciations du bulletin", "notes"),
                 item("mes_voeux", "Mes vœux", "voeux", "Disponibilités pour l'emploi du temps", "planification"),
@@ -2163,7 +2167,7 @@ def eleve_fiche(eid):
     documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
     reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
     return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_,
-                           inf=infos_infirmerie(eid), regimes=REGIMES, resume_notes=resume_notes_eleve(e))
+                           inf=infos_infirmerie(eid), regimes=REGIMES, resume_notes=resume_notes_eleve(e), assiduite=resume_assiduite_eleve(e))
 
 
 @app.route("/eleves/completer", methods=["GET", "POST"])
@@ -3787,6 +3791,301 @@ def pers_planning_csv():
                     cellule_csv(a["poste"]), "automatique" if a["source"] == "auto" else "saisi à la main"])
     log("export", "planning du personnel")
     return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=planning_personnel_{date.today()}.csv"})
+
+
+# ───────────────────────── Assiduité des élèves : appel, absences, retards, états ─────────────────────────
+MOTIFS_ELEVES = ["Maladie", "Rendez-vous médical", "Raison familiale", "Transport", "Réveil", "Autre"]
+JUSTIFS = {"en_attente": "En attente", "justifiee": "Justifiée", "non_justifiee": "Non justifiée"}
+MOIS_NOMS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
+
+
+def demi_de(debut):
+    return "matin" if (debut or "08:00") < "12:30" else "apres_midi"
+
+
+def bornes_demi_journees():
+    """Début et fin du matin et de l'après-midi d'après la grille horaire de l'établissement."""
+    grille = planning.construire_grille(reglages_planning()["grille"])
+    res = {}
+    for demi, defaut in (("matin", ("08:00", "12:00")), ("apres_midi", ("14:00", "17:00"))):
+        cr = [c for c in grille if c["demi"] == demi]
+        res[demi] = (min(c["debut"] for c in cr), max(c["fin"] for c in cr)) if cr else defaut
+    return res
+
+
+def plage(vue, ref):
+    """(début, fin, libellé, précédent, suivant) pour une vue jour / semaine / mois autour de la date ref."""
+    if vue == "mois":
+        d1 = ref.replace(day=1)
+        d2 = (d1 + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        return d1, d2, f"{MOIS_NOMS[d1.month - 1].capitalize()} {d1.year}", (d1 - timedelta(days=1)).replace(day=1), d2 + timedelta(days=1)
+    if vue == "semaine":
+        d1 = ref - timedelta(days=ref.weekday())
+        d2 = d1 + timedelta(days=4)
+        return d1, d2, f"Semaine du {d1.strftime('%d/%m/%Y')} au {d2.strftime('%d/%m/%Y')}", d1 - timedelta(days=7), d1 + timedelta(days=7)
+    return ref, ref, date_longue(ref.isoformat()), ref - timedelta(days=1 if ref.weekday() else 3), ref + timedelta(days=1 if ref.weekday() < 4 else 3)
+
+
+def absences_eleves_periode(d1, d2, classe=""):
+    sql = ("SELECT a.*, e.nom, e.prenom, e.classe FROM absences_eleves a JOIN eleves e ON e.id=a.eleve_id WHERE a.etab_id=? AND a.date BETWEEN ? AND ?")
+    args = [g.etab_id, d1.isoformat(), d2.isoformat()]
+    if classe:
+        sql += " AND e.classe=?"
+        args.append(classe)
+    return q(sql + " ORDER BY e.classe, e.nom, e.prenom, a.date, a.debut", args)
+
+
+def demi_journees_par_eleve(rows):
+    """{élève: {(date, demi): meilleure justification}} pour les absences (une demi-journée comptée une seule fois)."""
+    ordre = {"justifiee": 0, "en_attente": 1, "non_justifiee": 2}
+    res = {}
+    for r in rows:
+        if r["type"] != "absence":
+            continue
+        cle = (r["date"], demi_de(r["debut"]))
+        d = res.setdefault(r["eleve_id"], {})
+        d[cle] = r["justification"] if cle not in d or ordre[r["justification"]] < ordre[d[cle]] else d[cle]
+    return res
+
+
+@app.route("/assiduite/appel", methods=["GET", "POST"])
+def appel():
+    """Appel d'une classe : présent, absent ou en retard, pour un créneau de cours ou une demi-journée."""
+    staff = g.user["role"] in STAFF
+    if not staff and not g.prof:
+        abort(403)
+    jour = parse_date(request.values.get("date"), date.today())
+    classe = request.values.get("classe", "")
+    mes_classes = sorted({c for c, _ in cours_du_prof()}) if not staff else [r["nom"] for r in q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))]
+    if classe not in mes_classes:
+        classe = ""
+    seances = []
+    if classe:
+        bornes = bornes_demi_journees()
+        if staff:
+            seances += [(f"{b[0]}-{b[1]}", f"Matinée ({b[0]}–{b[1]})") for k, b in bornes.items() if k == "matin"]
+            seances += [(f"{b[0]}-{b[1]}", f"Après-midi ({b[0]}–{b[1]})") for k, b in bornes.items() if k == "apres_midi"]
+        sql = "SELECT DISTINCT debut, fin, matiere FROM creneaux WHERE etab_id=? AND classe=? AND jour=?" + ("" if staff else " AND prof_id=?")
+        for c in q(sql + " ORDER BY debut", (g.etab_id, classe, jour.weekday()) + (() if staff else (g.prof["id"],))):
+            seances.append((f"{c['debut']}-{c['fin']}", f"{c['debut']}–{c['fin']} · {c['matiere']}"))
+    seance = request.values.get("seance", "")
+    if seance not in [x[0] for x in seances]:
+        seance = seances[0][0] if seances else ""
+    eleves_ = q("SELECT id, nom, prenom FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, classe)) if classe else []
+    if request.method == "POST" and classe and seance:
+        debut, fin = seance.split("-")
+        n_abs = n_ret = 0
+        for e in eleves_:
+            st = request.form.get(f"st_{e['id']}", "present")
+            db().execute("DELETE FROM absences_eleves WHERE etab_id=? AND eleve_id=? AND date=? AND debut=? AND fin=? AND source='appel'", (g.etab_id, e["id"], jour.isoformat(), debut, fin))
+            if st in ("absent", "retard"):
+                minutes = request.form.get(f"min_{e['id']}", type=int) or 0
+                db().execute("INSERT INTO absences_eleves(etab_id,eleve_id,date,debut,fin,type,retard_min,motif,justification,saisi_par,source,cree_le) VALUES (?,?,?,?,?,?,?,?,'en_attente',?,'appel',?)",
+                             (g.etab_id, e["id"], jour.isoformat(), debut, fin, "absence" if st == "absent" else "retard", min(max(minutes, 0), 120) if st == "retard" else 0,
+                              request.form.get(f"mo_{e['id']}", "").strip()[:100], g.user["nom"], datetime.now().isoformat(timespec="minutes")))
+                n_abs += st == "absent"
+                n_ret += st == "retard"
+        db().commit()
+        log("appel effectué", f"{classe} {jour} {seance} : {n_abs} absent(s), {n_ret} retard(s)")
+        flash(f"Appel enregistré : {n_abs} absent(s), {n_ret} retard(s) sur {len(eleves_)} élèves.", "ok")
+        return redirect(url_for("appel", date=jour.isoformat(), classe=classe, seance=seance))
+    deja = {}
+    if classe and seance:
+        debut, fin = seance.split("-")
+        deja = {r["eleve_id"]: r for r in q("SELECT * FROM absences_eleves WHERE etab_id=? AND date=? AND debut=? AND fin=? AND source='appel'", (g.etab_id, jour.isoformat(), debut, fin))}
+        # les absences déjà saisies par la vie scolaire sur la journée sont signalées (non modifiées par l'appel)
+        autres = {r["eleve_id"] for r in q("SELECT eleve_id FROM absences_eleves WHERE etab_id=? AND date=? AND source<>'appel' AND type='absence' AND debut<=? AND fin>=?", (g.etab_id, jour.isoformat(), fin, debut))}
+    else:
+        autres = set()
+    return render_template("appel.html", jour=jour, classe=classe, classes=mes_classes, seances=seances, seance=seance, eleves=eleves_, deja=deja, autres=autres, motifs=MOTIFS_ELEVES)
+
+
+@app.route("/assiduite", methods=["GET", "POST"])
+@staff_only
+def assiduite():
+    """Liste des absences et retards des élèves : filtres, saisie sur plusieurs jours, justification."""
+    f = request.values
+    jour_ref = parse_date(f.get("du"), date.today().replace(day=1))
+    d1 = jour_ref
+    d2 = parse_date(f.get("au"), date.today())
+    classe, justif, typ = f.get("classe", ""), f.get("justification", ""), f.get("type", "")
+    if request.method == "POST":
+        action = request.form.get("action")
+        retour = redirect(url_for("assiduite", du=d1.isoformat(), au=d2.isoformat(), classe=classe, justification=justif, type=typ))
+        if action == "ajouter":
+            e = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (request.form.get("eleve_id", type=int), g.etab_id))
+            du, au = parse_date(request.form.get("date_debut")), parse_date(request.form.get("date_fin"), parse_date(request.form.get("date_debut")))
+            if not e or au < du or (au - du).days > 90:
+                flash("Élève et dates valides requis (90 jours au plus).", "err")
+                return retour
+            partie, bornes, n = request.form.get("partie", "journee"), bornes_demi_journees(), 0
+            for jr in jours_ouvres(du, au):
+                for demi in (("matin", "apres_midi") if partie == "journee" else (partie,)):
+                    if (jr.weekday(), demi) in reglages_planning()["classe_fermee"]:
+                        continue
+                    d_, f_ = bornes[demi]
+                    if not one("SELECT 1 FROM absences_eleves WHERE eleve_id=? AND date=? AND type='absence' AND debut=? AND fin=?", (e["id"], jr.isoformat(), d_, f_)):
+                        db().execute("INSERT INTO absences_eleves(etab_id,eleve_id,date,debut,fin,type,motif,justification,saisi_par,source,cree_le) VALUES (?,?,?,?,?,'absence',?,?,?,'vie_scolaire',?)",
+                                     (g.etab_id, e["id"], jr.isoformat(), d_, f_, request.form.get("motif", "").strip()[:100],
+                                      request.form.get("justification_saisie") if request.form.get("justification_saisie") in JUSTIFS else "en_attente", g.user["nom"], datetime.now().isoformat(timespec="minutes")))
+                        n += 1
+            db().commit()
+            log("absence d'élève saisie", f"{e['nom']} {e['prenom']} {du} → {au} ({n} demi-journée(s))")
+            flash(f"{n} demi-journée(s) d'absence enregistrée(s) pour {e['prenom']} {e['nom']}.", "ok")
+        elif action in ("justifier", "non_justifier", "attente", "supprimer"):
+            ids = [int(x) for x in request.form.getlist("sel") if x.isdigit()]
+            for i in ids:
+                if action == "supprimer":
+                    db().execute("DELETE FROM absences_eleves WHERE id=? AND etab_id=?", (i, g.etab_id))
+                else:
+                    db().execute("UPDATE absences_eleves SET justification=?, motif=CASE WHEN ?<>'' THEN ? ELSE motif END WHERE id=? AND etab_id=?",
+                                 ({"justifier": "justifiee", "non_justifier": "non_justifiee", "attente": "en_attente"}[action], request.form.get("motif_just", ""), request.form.get("motif_just", "")[:100], i, g.etab_id))
+            db().commit()
+            log("absences d'élèves modifiées", f"{action} : {len(ids)}")
+            flash(f"{len(ids)} ligne(s) mise(s) à jour.", "ok")
+        return retour
+    rows = absences_eleves_periode(d1, d2, classe)
+    if justif in JUSTIFS:
+        rows = [r for r in rows if r["justification"] == justif]
+    if typ in ("absence", "retard"):
+        rows = [r for r in rows if r["type"] == typ]
+    dj = demi_journees_par_eleve(rows)
+    stats = {"demi": sum(len(v) for v in dj.values()), "non_just": sum(1 for v in dj.values() for j in v.values() if j == "non_justifiee"),
+             "en_attente": sum(1 for v in dj.values() for j in v.values() if j == "en_attente"),
+             "retards": sum(1 for r in rows if r["type"] == "retard"), "eleves": len({r["eleve_id"] for r in rows})}
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    eleves_liste = q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=? ORDER BY classe, nom, prenom", (g.etab_id,))
+    return render_template("assiduite.html", rows=rows[:400], nb=len(rows), stats=stats, d1=d1, d2=d2, classe=classe, justif=justif, typ=typ, classes=classes_,
+                           eleves_liste=eleves_liste, justifs=JUSTIFS, motifs=MOTIFS_ELEVES)
+
+
+def donnees_etat_eleves(vue, ref, classe):
+    d1, d2, libelle, prec, suiv = plage(vue, ref)
+    rows = absences_eleves_periode(d1, d2, classe)
+    dj = demi_journees_par_eleve(rows)
+    reg = reglages_planning()
+    jours = list(jours_ouvres(d1, d2))
+    demis_possibles = sum(1 for j in jours for demi in ("matin", "apres_midi") if (j.weekday(), demi) not in reg["classe_fermee"])
+    eleves_cl = {}
+    for e in q("SELECT id, nom, prenom, classe FROM eleves WHERE etab_id=?" + (" AND classe=?" if classe else ""), (g.etab_id, classe) if classe else (g.etab_id,)):
+        eleves_cl.setdefault(e["classe"], []).append(e)
+    par_eleve = {}
+    for r in rows:
+        x = par_eleve.setdefault(r["eleve_id"], {"id": r["eleve_id"], "nom": r["nom"], "prenom": r["prenom"], "classe": r["classe"], "retards": 0, "minutes": 0, "lignes": []})
+        x["lignes"].append(r)
+        if r["type"] == "retard":
+            x["retards"] += 1
+            x["minutes"] += r["retard_min"]
+    for eid_, x in par_eleve.items():
+        d = dj.get(eid_, {})
+        x["demi"] = len(d)
+        x["just"] = sum(1 for v in d.values() if v == "justifiee")
+        x["non_just"] = sum(1 for v in d.values() if v == "non_justifiee")
+        x["attente"] = sum(1 for v in d.values() if v == "en_attente")
+        x["cases"] = {(j, dm): v for (j, dm), v in d.items()}
+    liste = sorted(par_eleve.values(), key=lambda x: (x["classe"], -x["non_just"], x["nom"], x["prenom"]))
+    resume_classes = []
+    for cl in sorted(eleves_cl):
+        dem = sum(x["demi"] for x in liste if x["classe"] == cl)
+        possible = demis_possibles * len(eleves_cl[cl])
+        resume_classes.append({"classe": cl, "effectif": len(eleves_cl[cl]), "demi": dem, "non_just": sum(x["non_just"] for x in liste if x["classe"] == cl),
+                               "retards": sum(x["retards"] for x in liste if x["classe"] == cl), "concernes": sum(1 for x in liste if x["classe"] == cl and x["demi"]),
+                               "taux": (100 * dem / possible) if possible else 0})
+    return {"d1": d1, "d2": d2, "libelle": libelle, "prec": prec, "suiv": suiv, "jours": jours, "liste": liste, "resume": resume_classes, "rows": rows,
+            "total_demi": sum(x["demi"] for x in liste), "total_non_just": sum(x["non_just"] for x in liste), "total_retards": sum(x["retards"] for x in liste),
+            "concernes": sum(1 for x in liste if x["demi"] or x["retards"])}
+
+
+@app.route("/assiduite/etat")
+@staff_only
+def etat_assiduite():
+    vue = request.args.get("vue", "jour")
+    vue = vue if vue in ("jour", "semaine", "mois") else "jour"
+    ref = parse_date(request.args.get("date"), date.today())
+    classe = request.args.get("classe", "")
+    d = donnees_etat_eleves(vue, ref, classe)
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    log("état des absences d'élèves consulté", f"{vue} {d['libelle']} {classe}")
+    return render_template("etat_assiduite.html", vue=vue, ref=ref, classe=classe, classes=classes_, ent=entete_documents(), justifs=JUSTIFS, aujourdhui=date.today().isoformat(), **d)
+
+
+@app.route("/assiduite/etat.csv")
+@staff_only
+def etat_assiduite_csv():
+    vue = request.args.get("vue", "jour")
+    vue = vue if vue in ("jour", "semaine", "mois") else "jour"
+    d = donnees_etat_eleves(vue, parse_date(request.args.get("date"), date.today()), request.args.get("classe", ""))
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    if request.args.get("mode") == "detail" or vue == "jour":
+        w.writerow(["Date", "Classe", "Nom", "Prénom", "Type", "Début", "Fin", "Minutes de retard", "Motif", "Justification"])
+        for r in d["rows"]:
+            w.writerow([r["date"], r["classe"], cellule_csv(r["nom"]), cellule_csv(r["prenom"]), "Retard" if r["type"] == "retard" else "Absence", r["debut"], r["fin"], r["retard_min"] or "",
+                        cellule_csv(r["motif"]), JUSTIFS[r["justification"]]])
+    else:
+        w.writerow(["Classe", "Nom", "Prénom", "Demi-journées d'absence", "Justifiées", "Non justifiées", "En attente", "Retards", "Minutes de retard"])
+        for x in d["liste"]:
+            w.writerow([x["classe"], cellule_csv(x["nom"]), cellule_csv(x["prenom"]), x["demi"], x["just"], x["non_just"], x["attente"], x["retards"], x["minutes"]])
+    log("export", f"absences d'élèves {vue}")
+    return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=absences_eleves_{vue}_{d['d1']}.csv"})
+
+
+def donnees_etat_profs(vue, ref):
+    d1, d2, libelle, prec, suiv = plage(vue, ref)
+    absents = {}
+    for a in q("SELECT a.*, p.nom, p.prenom, p.matiere FROM absences a JOIN professeurs p ON p.id=a.prof_id WHERE a.etab_id=? AND a.type='absence' AND a.date_debut<=? AND a.date_fin>=? ORDER BY p.nom, p.prenom",
+               (g.etab_id, d2.isoformat(), d1.isoformat())):
+        x = absents.setdefault(a["prof_id"], {"nom": a["nom"], "prenom": a["prenom"], "matiere": a["matiere"], "jours": {}, "motifs": set(), "cours": 0, "remplaces": 0, "a_pourvoir": 0, "annules": 0})
+        x["motifs"].add(a["motif"] or "motif non précisé")
+        for jr in jours_ouvres(max(d1, date.fromisoformat(a["date_debut"])), min(d2, date.fromisoformat(a["date_fin"]))):
+            x["jours"][jr.isoformat()] = a["motif"] or ""
+    for pid, x in absents.items():
+        for jr in x["jours"]:
+            x["cours"] += one("SELECT COUNT(*) c FROM creneaux WHERE prof_id=? AND jour=?", (pid, date.fromisoformat(jr).weekday()))["c"]
+        for r in q("SELECT r.statut FROM remplacements r JOIN creneaux c ON c.id=r.creneau_id WHERE r.etab_id=? AND c.prof_id=? AND r.date BETWEEN ? AND ?", (g.etab_id, pid, d1.isoformat(), d2.isoformat())):
+            x["remplaces"] += r["statut"] in ("assigne", "effectue")
+            x["a_pourvoir"] += r["statut"] == "a_pourvoir"
+            x["annules"] += r["statut"] == "annule"
+        x["nb_jours"] = len(x["jours"])
+    liste = sorted(absents.values(), key=lambda x: (-x["nb_jours"], x["nom"]))
+    return {"d1": d1, "d2": d2, "libelle": libelle, "prec": prec, "suiv": suiv, "jours": list(jours_ouvres(d1, d2)), "liste": liste,
+            "total_jours": sum(x["nb_jours"] for x in liste), "total_cours": sum(x["cours"] for x in liste)}
+
+
+@app.route("/absences/etat")
+@staff_only
+def etat_absences_profs():
+    vue = request.args.get("vue", "jour")
+    vue = vue if vue in ("jour", "semaine", "mois") else "jour"
+    ref = parse_date(request.args.get("date"), date.today())
+    d = donnees_etat_profs(vue, ref)
+    return render_template("etat_absences_profs.html", vue=vue, ref=ref, ent=entete_documents(), aujourdhui=date.today().isoformat(), **d)
+
+
+@app.route("/absences/etat.csv")
+@staff_only
+def etat_absences_profs_csv():
+    vue = request.args.get("vue", "jour")
+    vue = vue if vue in ("jour", "semaine", "mois") else "jour"
+    d = donnees_etat_profs(vue, parse_date(request.args.get("date"), date.today()))
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(["Professeur", "Matière", "Jours d'absence", "Motif", "Cours concernés", "Remplacés", "À pourvoir", "Annulés"])
+    for x in d["liste"]:
+        w.writerow([cellule_csv(f"{x['prenom']} {x['nom']}"), cellule_csv(x["matiere"]), x["nb_jours"], cellule_csv(", ".join(sorted(x["motifs"]))), x["cours"], x["remplaces"], x["a_pourvoir"], x["annules"]])
+    log("export", f"absences des professeurs {vue}")
+    return Response("﻿" + buf.getvalue(), mimetype="text/csv", headers={"Content-Disposition": f"attachment; filename=absences_professeurs_{vue}_{d['d1']}.csv"})
+
+
+def resume_assiduite_eleve(e):
+    """Totaux d'assiduité d'un élève depuis la rentrée (pour la fiche élève)."""
+    if not module_actif("assiduite"):
+        return None
+    aujourd = date.today()
+    rentree = date(aujourd.year if aujourd.month >= 8 else aujourd.year - 1, 9, 1)
+    rows = q("SELECT * FROM absences_eleves WHERE eleve_id=? AND date>=? ORDER BY date DESC, debut DESC", (e["id"], rentree.isoformat()))
+    dj = demi_journees_par_eleve([dict(r) for r in rows]).get(e["id"], {})
+    return {"demi": len(dj), "non_just": sum(1 for v in dj.values() if v == "non_justifiee"), "retards": sum(1 for r in rows if r["type"] == "retard"), "recentes": rows[:6]}
 
 
 # ───────────────────────── Notes, relevés de notes et bulletins ─────────────────────────

@@ -71,6 +71,10 @@ rôles, indisponibilités, maxima journaliers et contrats ; il explique les cré
 *compléter*, *tout régénérer*, avec annulation. Clic sur une plage = modifier / supprimer / copier vers d'autres jours ou un autre agent.
 Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_personnel` désactivables par client.
 
+## Assiduité des élèves et états des absences
+
+*Absences et retards des élèves* : **appel** par les enseignants ou la vie scolaire (présent / absent / retard, par créneau de cours ou demi-journée), saisie d'une absence sur plusieurs jours, **justifications** (justifiée, non justifiée, en attente, motif) en lot, historique. **États imprimables et exportables en Excel** : **journalier** (liste des absents et retardataires par classe), **hebdomadaire** (grille lundi–vendredi, matin / après-midi) et **mensuel** (par classe avec taux d'absentéisme, et par élève). Résumé d'assiduité dans la fiche de l'élève. Pour les **professeurs**, la page *Absences* offre le même état jour / semaine / mois (jours d'absence, cours concernés, remplacés, à pourvoir, annulés). Module `assiduite`, désactivable ; un enseignant ne fait l'appel que de ses classes.
+
 ## Notes, relevés de notes et bulletins
 
 Les **professeurs saisissent les notes** de leurs classes (menu *Mes notes* : une évaluation = classe, matière, titre, date, barème, coefficient, période ; note, « abs » ou « disp » par élève). La **vie scolaire** (CPE, direction) voit toutes les notes d'un élève dans sa fiche (*Notes et bulletin*), avec moyennes par matière, moyenne générale, moyenne et rang dans la classe, et peut **imprimer le relevé de notes** (trimestre ou année) ou le **bulletin** (appréciations par matière et générale, en-tête et signataires de l'établissement), élève par élève ou **pour toute une classe**. Un lien « Notes » est aussi proposé pour chaque élève convoqué dans une réunion. Les trimestres se règlent dans *Périodes*. Module `notes`, désactivable ; un enseignant ne voit et ne modifie que ses propres évaluations.

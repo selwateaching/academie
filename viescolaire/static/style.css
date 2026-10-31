@@ -299,3 +299,18 @@ table.releve{width:100%;border-collapse:collapse;font-size:14px}table.releve th,
 table.releve th{background:#eef1ee;color:#1f2a24}table.releve .rel-mat{width:150px}table.releve .rel-moy td{background:#f4f6f4}
 .appreciation-generale{margin:14px 0;border:1px solid #cfd4d0;border-radius:8px;padding:8px 12px}.appreciation-generale p{margin:4px 0 0;white-space:pre-wrap}
 @media print{.bulletin-page{page-break-after:always;break-after:page}.bulletin-page:last-of-type{page-break-after:auto}table.releve th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* Assiduité : appel, justifications, états */
+table.appel td{padding:6px 8px;vertical-align:middle}.choix-appel{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.choix-appel .rp{margin:0;cursor:pointer}.choix-appel .rp input{position:absolute;opacity:0;pointer-events:none}.choix-appel .rp span{display:block;padding:6px 14px;font-size:14px;background:var(--card);border-right:1px solid var(--line)}
+.choix-appel .rp:last-child span{border-right:0}.choix-appel .rp input:focus-visible+span{outline:2px solid var(--brand-strong);outline-offset:-2px}
+.choix-appel .rp input:checked+span{background:var(--ok-bg);color:var(--ok-ink);font-weight:700}.choix-appel .ra input:checked+span{background:var(--err-bg);color:var(--err-ink)}.choix-appel .rr input:checked+span{background:var(--warn-bg);color:var(--warn-ink)}
+table.appel tr.ligne-absent{background:color-mix(in srgb,var(--err) 6%,transparent)}table.appel tr.ligne-retard{background:color-mix(in srgb,var(--orange) 6%,transparent)}
+.just{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600}.just-justifiee{background:var(--ok-bg);color:var(--ok-ink)}.just-non_justifiee{background:var(--err-bg);color:var(--err-ink)}.just-en_attente{background:var(--warn-bg);color:var(--warn-ink)}
+table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}table.etat .nombre{text-align:center;white-space:nowrap}
+.case-j{display:inline-block;min-width:22px;padding:0 5px;border-radius:5px;font-size:12px;font-weight:700;text-align:center;margin-right:2px}
+.case-justifiee{background:var(--ok-bg);color:var(--ok-ink)}.case-non_justifiee{background:var(--err-bg);color:var(--err-ink)}.case-en_attente{background:var(--warn-bg);color:var(--warn-ink)}
+.nav-periode{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}.nav-periode .titre{font-weight:700;font-size:17px;margin:0 8px}
+@media print{.bulletin-page{break-inside:avoid}table.etat th{background:#eee!important}}
+.btn-seg{padding:7px 16px;background:var(--card);color:var(--ink);text-decoration:none;border-right:1px solid var(--line);font-size:14px}.btn-seg:last-child{border-right:0}.btn-seg.on{background:var(--brand-strong);color:#fff}
+.row>.saisie-filtres{flex:0 0 auto;align-self:flex-end}

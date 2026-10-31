@@ -336,6 +336,18 @@ MIGRATIONS = [
             UNIQUE (eleve_id, periode_id, matiere)
         );
     """),
+    (19, """
+        CREATE TABLE IF NOT EXISTS absences_eleves (   -- absences et retards des élèves (une ligne par séance : créneau, demi-journée…)
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE, date TEXT NOT NULL,
+            debut TEXT NOT NULL DEFAULT '', fin TEXT NOT NULL DEFAULT '', type TEXT NOT NULL DEFAULT 'absence' CHECK (type IN ('absence','retard')),
+            retard_min INTEGER NOT NULL DEFAULT 0, motif TEXT NOT NULL DEFAULT '',
+            justification TEXT NOT NULL DEFAULT 'en_attente' CHECK (justification IN ('en_attente','justifiee','non_justifiee')),
+            note TEXT NOT NULL DEFAULT '', saisi_par TEXT NOT NULL DEFAULT '', source TEXT NOT NULL DEFAULT 'appel', cree_le TEXT NOT NULL DEFAULT ''
+        );
+        CREATE INDEX IF NOT EXISTS idx_abs_el_date ON absences_eleves(etab_id, date);
+        CREATE INDEX IF NOT EXISTS idx_abs_el_eleve ON absences_eleves(eleve_id, date);
+    """),
 ]
 
 
@@ -819,6 +831,35 @@ def seed_demo(password="demo1234"):
         con.execute("UPDATE entete_documents SET ligne_haut=?, adresse=?, telephone=?, email=?, ville=?, pied=? WHERE etab_id=?",
                     ("République française — Ministère de l'Éducation nationale", adr, "04 00 00 00 00", "vie-scolaire@demo.fr", ville,
                      "Établissement fictif de démonstration", eid))
+    con.commit()
+    # absences et retards d'élèves de démonstration : environ 2 % des demi-journées, 1 % de retards, depuis la rentrée
+    import random as _r
+    rg = _r.Random(77)
+    from datetime import date as _d, timedelta as _td
+    auj = _d.today()
+    rentree = _d(auj.year if auj.month >= 8 else auj.year - 1, 9, 1)
+    motifs_ = ["Maladie", "Maladie", "Rendez-vous médical", "Raison familiale", "Transport", ""]
+    for eid in (e1, e2):
+        eleves_ = [r[0] for r in con.execute("SELECT id FROM eleves WHERE etab_id=?", (eid,))]
+        fragiles = set(rg.sample(eleves_, max(1, len(eleves_) // 14)))   # quelques élèves nettement plus absents
+        j = rentree
+        while j < auj:
+            if j.weekday() < 5:
+                for el in eleves_:
+                    p_abs = 0.12 if el in fragiles else 0.018
+                    for demi, (d1, f1) in (("matin", ("08:00", "12:00")), ("apres_midi", ("14:00", "17:00"))):
+                        if demi == "apres_midi" and j.weekday() == 2:
+                            continue   # mercredi après-midi fermé dans la démo
+                        if rg.random() < p_abs:
+                            motif = rg.choice(motifs_)
+                            just = "justifiee" if motif and rg.random() < 0.8 else ("non_justifiee" if rg.random() < 0.4 else "en_attente")
+                            con.execute("INSERT INTO absences_eleves(etab_id,eleve_id,date,debut,fin,type,motif,justification,saisi_par,source,cree_le) VALUES (?,?,?,?,?,'absence',?,?,?,?,?)",
+                                        (eid, el, j.isoformat(), d1, f1, motif, just, "Vie scolaire (démo)", "vie_scolaire", j.isoformat() + "T09:00"))
+                    if rg.random() < 0.01:
+                        con.execute("INSERT INTO absences_eleves(etab_id,eleve_id,date,debut,fin,type,retard_min,motif,justification,saisi_par,source,cree_le) VALUES (?,?,?,?,?,'retard',?,?,?,?,?,?)",
+                                    (eid, el, j.isoformat(), "08:00", "09:00", rg.choice((5, 10, 15, 20)), rg.choice(("Transport", "Réveil", "")), rg.choice(("justifiee", "non_justifiee")),
+                                     "Vie scolaire (démo)", "vie_scolaire", j.isoformat() + "T08:10"))
+            j += _td(days=1)
     con.commit()
     # notes de démonstration : deux évaluations par matière et par classe au 1er trimestre, élèves de niveaux variés, quelques absences
     import random

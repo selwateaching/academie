@@ -504,3 +504,27 @@ document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('button[data-confirm-btn]');
   if (b && !confirm('Supprimer cet élément ?')) e.preventDefault();
 });
+
+/* Appel : tout le monde présent, compteur, saisie du retard */
+(function () {
+  var f = document.querySelector('form[data-appel]');
+  if (!f) return;
+  var cpt = f.querySelector('[data-compte-appel]');
+  var maj = function () {
+    var a = 0, r = 0;
+    f.querySelectorAll('tr[data-ligne]').forEach(function (tr) {
+      var v = (tr.querySelector('input[type=radio]:checked') || {}).value;
+      tr.className = 'ligne-' + (v || 'present'); if (v === 'absent') a++; if (v === 'retard') r++;
+    });
+    if (cpt) cpt.textContent = a + ' absent(s), ' + r + ' retard(s)';
+  };
+  f.addEventListener('change', maj); maj();
+  var b = f.querySelector('[data-tous-presents]');
+  if (b) b.addEventListener('click', function () { f.querySelectorAll('input[type=radio][value=present]').forEach(function (x) { x.checked = true; }); maj(); });
+})();
+/* Liste des absences : tout cocher */
+document.addEventListener('change', function (e) {
+  if (e.target.hasAttribute && e.target.hasAttribute('data-tout-cocher')) {
+    var t = e.target.closest('table'); t.querySelectorAll('input[name=sel]').forEach(function (c) { c.checked = e.target.checked; });
+  }
+});

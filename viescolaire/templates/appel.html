@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Appel{% endblock %}{% block body %}
+<div class="top"><h1>Faire l'appel</h1></div>{% include '_assiduite_tabs.html' %}
+<form method="get" class="row noprint" style="margin-bottom:12px"><div style="max-width:180px"><label>Date</label><input type="date" name="date" value="{{ jour.isoformat() }}" data-autosubmit></div>
+<div style="max-width:200px"><label>Classe</label><select name="classe" data-autosubmit><option value="">— choisir —</option>{% for c in classes %}<option {{ 'selected' if c == classe }}>{{ c }}</option>{% endfor %}</select></div>
+<div style="max-width:340px"><label>Séance</label><select name="seance" data-autosubmit>{% for v, l in seances %}<option value="{{ v }}" {{ 'selected' if v == seance }}>{{ l }}</option>{% endfor %}</select></div></form>
+{% if classe and not seances %}<div class="card mute">Aucun cours de cette classe ce jour-là dans votre emploi du temps.</div>
+{% elif eleves %}<form method="post" data-appel>{{ csrf() }}<input type="hidden" name="date" value="{{ jour.isoformat() }}"><input type="hidden" name="classe" value="{{ classe }}"><input type="hidden" name="seance" value="{{ seance }}">
+<div class="card scroll"><table class="appel"><tr><th>Élève</th><th>Présence</th><th>Retard (min)</th><th>Motif</th></tr>
+{% for e in eleves %}{% set d = deja.get(e.id) %}{% set st = ('absent' if d.type == 'absence' else 'retard') if d else 'present' %}<tr data-ligne class="{{ 'ligne-' ~ st }}"><td><b>{{ e.nom }}</b> {{ e.prenom }}{% if e.id in autres %} <span class="tag warn" title="Absence déjà saisie par la vie scolaire sur cette période">déjà signalé absent</span>{% endif %}</td>
+<td><div class="choix-appel" role="radiogroup" aria-label="Présence de {{ e.prenom }} {{ e.nom }}"><label class="rp"><input type="radio" name="st_{{ e.id }}" value="present" {{ 'checked' if st == 'present' }}><span>Présent</span></label><label class="rp ra"><input type="radio" name="st_{{ e.id }}" value="absent" {{ 'checked' if st == 'absent' }}><span>Absent</span></label><label class="rp rr"><input type="radio" name="st_{{ e.id }}" value="retard" {{ 'checked' if st == 'retard' }}><span>Retard</span></label></div></td>
+<td><input type="number" name="min_{{ e.id }}" min="1" max="120" value="{{ d.retard_min if d and d.type == 'retard' and d.retard_min }}" style="width:80px" aria-label="Minutes de retard"></td>
+<td><input name="mo_{{ e.id }}" list="motifs-appel" value="{{ d.motif if d else '' }}" placeholder="Facultatif" aria-label="Motif" style="width:100%"></td></tr>{% endfor %}</table></div>
+<datalist id="motifs-appel">{% for m in motifs %}<option value="{{ m }}">{% endfor %}</datalist>
+<div class="barre-enreg noprint"><button>Enregistrer l'appel</button><button type="button" class="sec" data-tous-presents>Tout le monde présent</button><span class="mute" data-compte-appel></span></div></form>
+{% else %}<div class="card mute">{{ 'Choisissez une classe pour faire l\'appel.' if not classe else 'Aucun élève dans cette classe.' }}</div>{% endif %}{% endblock %}

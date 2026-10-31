@@ -1,0 +1,3 @@
+<p class="noprint onglets-notes"><a class="btn {{ '' if request.endpoint == 'appel' else 'sec' }} sm" href="{{ url_for('appel') }}">Faire l'appel</a>
+{% if g.user.role in STAFF %}<a class="btn {{ '' if request.endpoint == 'assiduite' else 'sec' }} sm" href="{{ url_for('assiduite') }}">Absences et retards</a>
+<a class="btn {{ '' if request.endpoint == 'etat_assiduite' else 'sec' }} sm" href="{{ url_for('etat_assiduite') }}">État jour · semaine · mois</a>{% endif %}</p>

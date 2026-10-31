@@ -1,0 +1,34 @@
+{% extends 'base.html' %}{% block title %}État des absences des élèves{% endblock %}{% block body %}
+<div class="top noprint"><h1>État des absences des élèves</h1><span class="barre-actions"><button data-print>Imprimer / PDF</button>
+<a class="btn sec" href="{{ url_for('etat_assiduite_csv', vue=vue, date=ref.isoformat(), classe=classe) }}">Export Excel (synthèse)</a><a class="btn sec" href="{{ url_for('etat_assiduite_csv', vue=vue, date=ref.isoformat(), classe=classe, mode='detail') }}">Export détaillé</a></span></div>{% include '_assiduite_tabs.html' %}
+<form method="get" class="row noprint" style="margin-bottom:6px"><input type="hidden" name="date" value="{{ ref.isoformat() }}">
+<div class="saisie-filtres" role="group">{% for v, l in [('jour', 'Jour'), ('semaine', 'Semaine'), ('mois', 'Mois')] %}<a class="btn-seg {{ 'on' if vue == v }}" href="{{ url_for('etat_assiduite', vue=v, date=ref.isoformat(), classe=classe) }}">{{ l }}</a>{% endfor %}</div>
+<input type="hidden" name="vue" value="{{ vue }}"><div style="max-width:200px"><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div></form>
+{% set endpoint = 'etat_assiduite' %}{% include '_nav_periode.html' %}
+<div class="card paper bulletin-page">{% set e_ent = ent %}{% include '_entete_ent.html' %}
+<h2 class="paper-titre">État des absences — {{ {'jour': 'journalier', 'semaine': 'hebdomadaire', 'mois': 'mensuel'}[vue] }}</h2>
+<p style="text-align:center;margin-top:-8px"><b>{{ libelle }}</b>{% if classe %} · classe {{ classe }}{% endif %}</p>
+<div class="stats"><div class="stat"><b>{{ concernes }}</b><span>Élève(s) concerné(s)</span></div><div class="stat"><b>{{ total_demi }}</b><span>Demi-journées d'absence</span></div><div class="stat"><b>{{ total_non_just }}</b><span>dont non justifiées</span></div><div class="stat"><b>{{ total_retards }}</b><span>Retards</span></div></div>
+
+{% if vue == 'jour' %}
+{% set classes_du_jour = liste|map(attribute='classe')|unique|list %}
+<table class="etat"><tr><th>Classe</th><th>Élève</th><th>Séance</th><th>Type</th><th>Motif</th><th>Justification</th></tr>
+{% for r in rows %}<tr><td>{{ r.classe }}</td><td><b>{{ r.nom }}</b> {{ r.prenom }}</td><td>{{ r.debut }}–{{ r.fin }}</td><td>{{ 'Retard ' ~ r.retard_min ~ ' min' if r.type == 'retard' else 'Absence' }}</td><td>{{ r.motif }}</td><td><span class="just just-{{ r.justification }}">{{ justifs[r.justification] }}</span></td></tr>
+{% else %}<tr><td colspan="6" class="mute">Aucune absence ni retard ce jour-là.</td></tr>{% endfor %}</table>
+
+{% elif vue == 'semaine' %}
+<table class="etat"><tr><th>Classe</th><th>Élève</th>{% for j in jours %}<th class="nombre">{{ ['Lun','Mar','Mer','Jeu','Ven'][j.weekday()] }} {{ j.strftime('%d/%m') }}</th>{% endfor %}<th class="nombre">Demi-j.</th><th class="nombre">Retards</th></tr>
+{% for x in liste %}<tr><td>{{ x.classe }}</td><td><b>{{ x.nom }}</b> {{ x.prenom }}</td>
+{% for j in jours %}<td class="nombre">{% for dm, lib in (('matin', 'M'), ('apres_midi', 'A')) %}{% set v = x.cases.get((j.isoformat(), dm)) %}{% if v %}<span class="case-j case-{{ v }}" title="{{ justifs[v] }}">{{ lib }}</span>{% endif %}{% endfor %}{% for l in x.lignes if l.type == 'retard' and l.date == j.isoformat() %}<span class="case-j case-en_attente" title="Retard {{ l.retard_min }} min">R</span>{% endfor %}</td>{% endfor %}
+<td class="nombre"><b>{{ x.demi }}</b></td><td class="nombre">{{ x.retards }}</td></tr>
+{% else %}<tr><td colspan="{{ jours|length + 4 }}" class="mute">Aucune absence ni retard cette semaine.</td></tr>{% endfor %}</table>
+<p class="mute" style="margin-top:6px">M = matin, A = après-midi, R = retard. Vert : justifiée · rouge : non justifiée · jaune : en attente.</p>
+
+{% else %}
+<h3>Par classe</h3><table class="etat"><tr><th>Classe</th><th class="nombre">Effectif</th><th class="nombre">Élèves concernés</th><th class="nombre">Demi-journées</th><th class="nombre">Non justifiées</th><th class="nombre">Retards</th><th class="nombre">Taux d'absentéisme</th></tr>
+{% for c in resume %}<tr><td><b>{{ c.classe }}</b></td><td class="nombre">{{ c.effectif }}</td><td class="nombre">{{ c.concernes }}</td><td class="nombre">{{ c.demi }}</td><td class="nombre">{{ c.non_just }}</td><td class="nombre">{{ c.retards }}</td><td class="nombre">{{ ('%.1f' % c.taux)|replace('.', ',') }} %</td></tr>{% endfor %}</table>
+<h3>Par élève</h3><table class="etat"><tr><th>Classe</th><th>Élève</th><th class="nombre">Demi-journées</th><th class="nombre">Justifiées</th><th class="nombre">Non justifiées</th><th class="nombre">En attente</th><th class="nombre">Retards</th></tr>
+{% for x in liste %}<tr><td>{{ x.classe }}</td><td><a href="{{ url_for('eleve_fiche', eid=x.id) }}"><b>{{ x.nom }}</b> {{ x.prenom }}</a></td><td class="nombre"><b>{{ x.demi }}</b></td><td class="nombre">{{ x.just }}</td><td class="nombre">{% if x.non_just %}<span class="just just-non_justifiee">{{ x.non_just }}</span>{% else %}0{% endif %}</td><td class="nombre">{{ x.attente }}</td><td class="nombre">{{ x.retards }}{% if x.minutes %} <span class="mute">({{ x.minutes }} min)</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="7" class="mute">Aucune absence ni retard ce mois-ci.</td></tr>{% endfor %}</table>
+{% endif %}
+<p class="paper-fait">Édité le {{ aujourdhui|fr_date }}</p>{% if ent.pied %}<p class="paper-pied">{{ ent.pied }}</p>{% endif %}</div>{% endblock %}
