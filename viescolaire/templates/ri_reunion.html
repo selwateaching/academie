@@ -21,7 +21,10 @@
 <label>Participants <span class="mute">(une personne par ligne : « Nom, fonction »)</span></label>
 <textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 3A&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, CPE">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
 {% endfor %}</textarea>
-{% if annuaire %}<details><summary>Ajouter des professeurs de l'annuaire ({{ annuaire|length }})</summary><div class="liste-cases">{% for a in annuaire %}<label class="check"><input type="checkbox" name="annuaire" value="{{ a.nom_complet }}"> {{ a.nom_complet }}{% if a.matiere %} <span class="mute">· {{ a.matiere }}</span>{% endif %}</label>{% endfor %}</div></details>{% endif %}
+{% if annuaire %}<details class="ri-annuaire" open><summary><b>Cocher les participants</b> dans l'annuaire de l'établissement ({{ nb_annuaire }} personnes) : rien à saisir</summary>
+{% for gr in annuaire %}<div class="ri-groupe"><h4>{{ gr.titre }} <label class="check ri-tout"><input type="checkbox" data-cocher-groupe> Tout cocher</label></h4>
+<div class="liste-cases">{% for a in gr["items"] %}<label class="check"><input type="checkbox" name="annuaire" value="{{ a.valeur }}"> {{ a.nom }}{% if a.detail %} <span class="mute">· {{ a.detail }}</span>{% endif %}</label>{% endfor %}</div></div>{% endfor %}
+<p class="mute">Cochez puis cliquez sur « Enregistrer les informations » : les personnes cochées sont ajoutées à la liste ci-dessus. Les personnes extérieures à l'établissement se saisissent dans la zone de texte.</p></details>{% endif %}
 <p><button>Enregistrer les informations</button></p></form>
 
 <div class="ri-consent {{ 'ok' if consent_complet }}"><h3>Information et consentement des participants</h3>

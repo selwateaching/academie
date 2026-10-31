@@ -422,3 +422,6 @@ table.etat td,table.etat th{padding:6px 8px;border-bottom:1px solid var(--line);
 .ri-ok{color:var(--ok-ink)}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) .ri-hs,:root:not([data-theme=light]) .ri-hs-exemple{color:#FF9B9B}}
 .ri-lecture label.ri-hs{display:inline;font-size:inherit;margin:0;padding:0 3px;font-weight:400}
+.ri-annuaire{margin:10px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.ri-annuaire summary{cursor:pointer}
+.ri-groupe h4{margin:12px 0 4px;display:flex;justify-content:space-between;gap:10px;align-items:center}.ri-tout{font-weight:400;font-size:13px}
+.ri-annuaire .liste-cases{display:flex;flex-wrap:wrap;gap:6px 22px}.ri-annuaire .check{display:inline-flex;align-items:center;gap:6px}

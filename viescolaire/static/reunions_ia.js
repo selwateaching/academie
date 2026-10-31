@@ -11,6 +11,14 @@
     });
   });
 
+  // « Tout cocher » d'un groupe de l'annuaire
+  document.querySelectorAll('[data-cocher-groupe]').forEach(function (t) {
+    t.addEventListener('change', function () {
+      var g = t.closest('.ri-groupe'); if (!g) return;
+      g.querySelectorAll('input[name="annuaire"]').forEach(function (c) { c.checked = t.checked; });
+    });
+  });
+
   // Insère un nom d'intervenant à la position du curseur dans la transcription
   var zone = document.querySelector('[data-ri-texte]');
   document.querySelectorAll('[data-insere]').forEach(function (b) {

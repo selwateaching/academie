@@ -5672,6 +5672,30 @@ def ri_meta(r):
             "heure": r["heure"], "lieu": r["lieu"], "participants": ri_participants(r), "ordre_jour": r["ordre_jour"]}
 
 
+def ri_annuaire(deja):
+    """Personnes proposées à cocher comme participants : professeurs, personnel de vie scolaire et administratif, direction et comptes de l'établissement."""
+    vus, groupes = set(deja), []
+
+    def groupe(titre, lignes):
+        items = []
+        for nom, detail in lignes:
+            nom = re.sub(r"\s*\([^)]*\)\s*$", "", (nom or "").strip())   # « Camille Durand (CPE) » -> « Camille Durand »
+            if nom and nom.lower() not in vus:
+                vus.add(nom.lower())
+                items.append({"valeur": f"{nom}||{detail}", "nom": nom, "detail": detail})
+        if items:
+            groupes.append({"titre": titre, "items": items})
+    groupe("Professeurs", [(f"{p['prenom']} {p['nom']}".strip(), p["matiere"] or "Enseignant") for p in
+                           q("SELECT nom, prenom, matiere FROM professeurs WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,))])
+    roles = {"admin": "Administrateur", "direction": "Direction", "cpe": "CPE", "infirmier": "Infirmerie"}
+    groupe("Direction et administration", [(u["nom"], roles.get(u["role"], u["role"])) for u in
+                                          q("SELECT u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 "
+                                            "AND u.role IN ('admin','direction','cpe','infirmier') ORDER BY u.nom", (g.etab_id,))])
+    groupe("Personnel de vie scolaire et administratif", [(f"{p['prenom']} {p['nom']}".strip(), p["fonction"] or p["categorie"]) for p in
+                                                         q("SELECT nom, prenom, categorie, fonction FROM personnel WHERE etab_id=? AND actif=1 ORDER BY nom, prenom", (g.etab_id,))])
+    return groupes
+
+
 def ri_lire_cr(rid):
     row = one("SELECT * FROM ri_comptes_rendus WHERE reunion_id=?", (rid,))
     if not row:
@@ -5739,9 +5763,7 @@ def ri_reunion(rid):
     parts = q("SELECT * FROM ri_audio WHERE reunion_id=? ORDER BY ordre", (rid,))
     cr, cr_row = ri_lire_cr(rid)
     participants = ri_participants(r)
-    annuaire = q("SELECT nom, prenom, matiere FROM professeurs WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,))
-    deja = {p["nom"].lower() for p in participants}
-    annuaire = [{"nom_complet": f"{a['prenom']} {a['nom']}".strip(), "matiere": a["matiere"]} for a in annuaire if f"{a['prenom']} {a['nom']}".strip().lower() not in deja]
+    annuaire = ri_annuaire({p["nom"].lower() for p in participants})
     duree = sum(p["duree_s"] for p in parts)
     taille = sum(p["taille"] for p in parts)
     audio_expire = ""
@@ -5750,6 +5772,7 @@ def ri_reunion(rid):
     users = q("SELECT u.id, u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.id<>? ORDER BY u.nom", (g.etab_id, g.user["id"]))
     return render_template("ri_reunion.html", r=r, meta=ri_meta(r), participants=participants, parts=parts, cr=cr, cr_row=cr_row,
                            formulaire=ria.vers_formulaire(cr) if cr else None, types=ria.TYPES, langues=ria.LANGUES, formats=ria.FORMATS, annuaire=annuaire,
+                           nb_annuaire=sum(len(gr["items"]) for gr in annuaire),
                            consent_complet=ri_consentement_complet(r), duree=duree, taille_mo=round(taille / 1048576, 1), audio_expire=audio_expire, users=users,
                            stt=bool(ria.cle_transcription()), ia=bool(ria.cle_redaction()), reglages=RI, max_mo=RI["audio_max_mo"], demo=DEMO,
                            sans_consent=[p["nom"] for p in participants if not p.get("consent")], passages=ri_passages(r),
@@ -5764,9 +5787,10 @@ def ri_preparation(rid):
     if action == "infos":
         anciens = {p["nom"].lower(): p.get("consent", False) for p in ri_participants(r)}
         noms = ria.parse_participants(f.get("participants", ""))
-        for nom in f.getlist("annuaire"):
+        for valeur in f.getlist("annuaire"):
+            nom, _, fonction = valeur.partition("||")
             if nom.strip() and nom.strip().lower() not in {p["nom"].lower() for p in noms}:
-                noms.append({"nom": nom.strip()[:80], "fonction": "Enseignant"})
+                noms.append({"nom": nom.strip()[:80], "fonction": fonction.strip()[:80]})
         ps = [{"nom": p["nom"], "fonction": p["fonction"], "consent": anciens.get(p["nom"].lower(), False)} for p in noms]
         jour = f.get("date", r["date"])
         try:
