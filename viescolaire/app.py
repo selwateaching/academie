@@ -5535,7 +5535,10 @@ def ri_json(data, code=200):
 def ri_reunion_ou_404(rid):
     r = one("SELECT * FROM ri_reunions WHERE id=? AND etab_id=?", (rid, g.etab_id))
     if not r:
-        abort(404)
+        if "/audio" in request.path or request.path.endswith("/etat") or request.method == "POST" and "/audio" in request.path:
+            abort(404)      # appels du script d'enregistrement : il affiche lui-même un message clair
+        flash("Cette réunion n'existe plus sur le serveur" + (" : la démonstration est réinitialisée à chaque mise à jour et après une période d'inactivité." if DEMO else "."), "err")
+        abort(redirect(url_for("ri_liste")))
     return r
 
 
