@@ -68,7 +68,7 @@ MODULE_DES_ENDPOINTS = {
     "taches": ["taches", "tache_action"], "rapports": ["rapports"], "assistant": ["assistant"], "import": ["importer"],
     "utilisateurs": ["utilisateurs", "utilisateur_action", "professeur_compte"], "sauvegarde": ["sauvegarde"],
     "heures": ["heures", "heures_services", "heures_csv"],
-    "notes": ["notes", "evaluation", "appreciations", "periodes", "eleve_notes", "releve", "bulletin", "bulletins_classe"],
+    "notes": ["notes", "evaluation", "appreciations", "periodes", "eleve_notes", "releve", "releves_classe", "bulletin", "bulletins_classe"],
     "trombinoscope": ["trombinoscope", "photo", "photo_enregistrer"],
     "personnel": ["pers_liste", "pers_fiche", "pers_supprimer", "pers_dispo_ajouter", "pers_dispo_supprimer", "pers_postes", "pers_poste_modifier",
                   "pers_poste_supprimer", "pers_besoin_ajouter", "pers_besoin_supprimer"],
@@ -274,7 +274,7 @@ def entetes(resp):
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
 PAGE_PARENTE = {"proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
-                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "eleve_notes": "notes", "releve": "notes", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
+                "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
 
@@ -3823,7 +3823,7 @@ def moyenne_ponderee(valeurs):
     return sum(v * c for v, c in valeurs) / tot if tot else None
 
 
-def notes_eleve(eid, periode_id=None):
+def notes_eleve(eid, periode_id=None, jusqu_au=None):
     """Notes d'un élève par matière : liste des évaluations, moyenne de la matière, moyenne générale (matières à coefficients égaux)."""
     sql = ("SELECT n.valeur, n.statut, n.commentaire, ev.id evid, ev.matiere, ev.titre, ev.date, ev.bareme, ev.coef, ev.prof_id, p.nom pnom, p.prenom pprenom "
            "FROM notes n JOIN evaluations ev ON ev.id=n.evaluation_id LEFT JOIN professeurs p ON p.id=ev.prof_id WHERE n.eleve_id=? AND ev.etab_id=?")
@@ -3831,6 +3831,9 @@ def notes_eleve(eid, periode_id=None):
     if periode_id:
         sql += " AND ev.periode_id=?"
         args.append(periode_id)
+    if jusqu_au:
+        sql += " AND ev.date<=?"
+        args.append(jusqu_au)
     matieres = {}
     for r in q(sql + " ORDER BY ev.matiere, ev.date, ev.id", args):
         m = matieres.setdefault(r["matiere"], {"matiere": r["matiere"], "prof": f"{r['pprenom'] or ''} {r['pnom'] or ''}".strip(), "notes": [], "moyenne": None})
@@ -3843,11 +3846,12 @@ def notes_eleve(eid, periode_id=None):
     return liste, (sum(gen) / len(gen) if gen else None)
 
 
-def moyennes_classe(classe, periode_id):
+def moyennes_classe(classe, periode_id, jusqu_au=None):
     """{élève: {matière: moyenne}} pour une classe et une période + moyennes générales {élève: moyenne}."""
     par = {}
     for r in q("SELECT n.eleve_id, n.valeur, ev.matiere, ev.bareme, ev.coef FROM notes n JOIN evaluations ev ON ev.id=n.evaluation_id "
-               "WHERE ev.etab_id=? AND ev.classe=? AND ev.periode_id=? AND n.valeur IS NOT NULL", (g.etab_id, classe, periode_id)):
+               "WHERE ev.etab_id=? AND ev.classe=? AND ev.periode_id=? AND n.valeur IS NOT NULL" + (" AND ev.date<=?" if jusqu_au else ""),
+               (g.etab_id, classe, periode_id) + ((jusqu_au,) if jusqu_au else ())):
         par.setdefault(r["eleve_id"], {}).setdefault(r["matiere"], []).append((r["valeur"] * 20 / r["bareme"], r["coef"]))
     moy = {e: {m: moyenne_ponderee(v) for m, v in ms.items()} for e, ms in par.items()}
     gen = {e: sum(ms.values()) / len(ms) for e, ms in moy.items() if ms}
@@ -4070,16 +4074,51 @@ def eleve_notes(eid):
     return render_template("eleve_notes.html", e=e, periode=periode, periodes=periodes_, matieres=liste, moyenne=moy_gen, bulletin=donnees_bulletin(e, periode) if periode else None)
 
 
+def donnees_releve(e, periode, annee=False, jusqu_au=None):
+    """Relevé de notes d'un élève : ses notes par matière, sa moyenne et, à titre indicatif, la moyenne de la classe (sans rang ni appréciation)."""
+    liste, moy_gen = notes_eleve(e["id"], None if annee else (periode["id"] if periode else None), jusqu_au)
+    moy_cl = {}
+    if periode and not annee and e["classe"]:
+        moy_cl, gen_cl = moyennes_classe(e["classe"], periode["id"], jusqu_au)
+    for m in liste:
+        vals = [mm[m["matiere"]] for mm in moy_cl.values() if m["matiere"] in mm] if moy_cl else []
+        m["moy_classe"] = (sum(vals) / len(vals)) if vals else None
+    return {"e": e, "matieres": liste, "moyenne": moy_gen,
+            "moyenne_classe": (sum(gen_cl.values()) / len(gen_cl)) if (moy_cl and gen_cl) else None}
+
+
+def parametres_releve():
+    """Période, mode (année entière / mi-parcours) et date d'arrêt demandés dans l'adresse."""
+    periode, periodes_ = periode_choisie(request.args.get("periode") if request.args.get("periode") != "annee" else None)
+    annee = request.args.get("periode") == "annee"
+    mi = bool(request.args.get("mi"))
+    au = parse_date(request.args.get("au"), date.today()).isoformat() if mi else None
+    return periode, periodes_, annee, mi, au
+
+
 @app.route("/eleves/<int:eid>/releve")
 @staff_only
 def releve(eid):
     e = eleve_ou_404(eid)
-    periode, periodes_ = periode_choisie(request.args.get("periode") if request.args.get("periode") != "annee" else None)
-    annee = request.args.get("periode") == "annee"
-    liste, moy_gen = notes_eleve(eid, None if annee else (periode["id"] if periode else None))
-    log("relevé de notes consulté", f"{e['nom']} {e['prenom']}")
-    return render_template("releve.html", e=e, periode=None if annee else periode, periodes=periodes_, matieres=liste, moyenne=moy_gen, ent=entete_documents(),
-                           signataires=signataires_actifs(), aujourdhui=date.today().isoformat())
+    periode, periodes_, annee, mi, au = parametres_releve()
+    log("relevé de notes consulté", f"{e['nom']} {e['prenom']}" + (" (mi-parcours)" if mi else ""))
+    return render_template("releve.html", releves=[donnees_releve(e, periode, annee, au)], periode=None if annee else periode, periodes=periodes_, annee=annee, mi=mi, au=au,
+                           ent=entete_documents(), aujourdhui=date.today().isoformat(), eid=eid, seul=True, classe="", classes=[])
+
+
+@app.route("/notes/releves")
+@staff_only
+def releves_classe():
+    """Relevés de notes de toute une classe, prêts à imprimer (à mi-parcours ou sur la période entière)."""
+    periode, periodes_, annee, mi, au = parametres_releve()
+    classe = request.args.get("classe", "")
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    releves = []
+    if classe and periode:
+        releves = [donnees_releve(e, periode, False, au) for e in q("SELECT * FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, classe))]
+        log("relevés de classe consultés", f"{classe}" + (" (mi-parcours)" if mi else ""))
+    return render_template("releve.html", releves=releves, periode=periode, periodes=periodes_, annee=False, mi=mi, au=au, ent=entete_documents(),
+                           aujourdhui=date.today().isoformat(), eid=None, seul=False, classe=classe, classes=classes_)
 
 
 @app.route("/eleves/<int:eid>/bulletin", methods=["GET", "POST"])

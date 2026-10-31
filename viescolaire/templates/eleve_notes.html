@@ -1,7 +1,8 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Notes de {{ e.prenom }} {{ e.nom }}{% endblock %}{% block body %}
 <div class="top"><div><h1 style="margin-bottom:2px">Notes de {{ e.prenom }} {{ e.nom }}</h1><span class="mute">{{ e.classe }}{% if periode %} · {{ periode.nom }}{% endif %}</span></div>
 <span class="noprint barre-actions"><a class="btn" href="{{ url_for('bulletin', eid=e.id, periode=periode.id if periode else '') }}">Bulletin</a>
-<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode=periode.id if periode else '') }}">Relevé de notes</a>
+<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode=periode.id if periode else '', mi=1) }}" title="Notes à ce jour, sans rang ni appréciation : pour faire le point avec la famille">Relevé à mi-parcours</a>
+<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode=periode.id if periode else '') }}">Relevé de la période</a>
 <a class="btn sec" href="{{ url_for('releve', eid=e.id, periode='annee') }}">Relevé de l'année</a>
 <a class="btn sec" href="{{ url_for('eleve_fiche', eid=e.id) }}">← Fiche</a></span></div>
 <form method="get" class="row noprint" style="margin-bottom:10px"><div style="max-width:240px"><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div></form>

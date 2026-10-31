@@ -1,4 +1,5 @@
 <p class="noprint onglets-notes"><a class="btn {{ '' if request.endpoint == 'notes' else 'sec' }} sm" href="{{ url_for('notes') }}">Évaluations</a>
 <a class="btn {{ '' if request.endpoint == 'appreciations' else 'sec' }} sm" href="{{ url_for('appreciations') }}">Appréciations</a>
 {% if g.user.role in STAFF %}<a class="btn {{ '' if request.endpoint == 'bulletins_classe' else 'sec' }} sm" href="{{ url_for('bulletins_classe') }}">Bulletins de classe</a>
+<a class="btn {{ '' if request.endpoint == 'releves_classe' else 'sec' }} sm" href="{{ url_for('releves_classe', mi=1) }}">Relevés de classe</a>
 <a class="btn {{ '' if request.endpoint == 'periodes' else 'sec' }} sm" href="{{ url_for('periodes') }}">Périodes</a>{% endif %}</p>

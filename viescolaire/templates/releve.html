@@ -1,15 +1,21 @@
-{% extends 'base.html' %}{% block title %}Relevé de notes — {{ e.prenom }} {{ e.nom }}{% endblock %}{% block body %}
-<div class="top noprint"><h1>Relevé de notes</h1><span class="barre-actions"><button data-print>Imprimer / PDF</button>
-<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode='annee') }}">Année entière</a>
-{% for p in periodes %}<a class="btn sec" href="{{ url_for('releve', eid=e.id, periode=p.id) }}">{{ p.nom }}</a>{% endfor %}<a class="btn sec" href="{{ url_for('eleve_notes', eid=e.id) }}">← Notes</a></span></div>
-<div class="card paper">{% set e_ent = ent %}{% include '_entete_ent.html' %}
-<h2 class="paper-titre">Relevé de notes — {{ periode.nom if periode else 'année scolaire' }}</h2>
+{% extends 'base.html' %}{% block title %}{{ 'Relevé de notes à mi-parcours' if mi else 'Relevé de notes' }}{% endblock %}{% block body %}
+<div class="top noprint"><h1>{{ 'Relevé à mi-parcours' if mi else 'Relevé de notes' }}{% if not seul %} — classe{% endif %}</h1><span class="barre-actions">{% if releves %}<button data-print>Imprimer / PDF{% if not seul %} ({{ releves|length }} relevés){% endif %}</button>{% endif %}
+{% if seul %}<a class="btn sec" href="{{ url_for('eleve_notes', eid=eid) }}">← Notes de l'élève</a>{% endif %}</span></div>
+<form method="get" class="row noprint" style="margin-bottom:12px">
+{% if not seul %}<div style="max-width:200px"><label>Classe</label><select name="classe" data-autosubmit><option value="">— choisir —</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>{% endif %}
+<div style="max-width:220px"><label>Période</label><select name="periode" data-autosubmit>{% if seul %}<option value="annee" {{ 'selected' if annee }}>Année entière</option>{% endif %}{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id and not annee }}>{{ p.nom }}</option>{% endfor %}</select></div>
+<div style="max-width:240px"><label>Type de relevé</label><select name="mi" data-autosubmit><option value="">Période entière</option><option value="1" {{ 'selected' if mi }}>À mi-parcours (notes à ce jour)</option></select></div>
+{% if mi %}<div style="max-width:200px"><label>Situation arrêtée au</label><input type="date" name="au" value="{{ au }}" data-autosubmit></div>{% endif %}</form>
+{% for r in releves %}{% set e = r.e %}<div class="card paper bulletin-page">{% set e_ent = ent %}{% include '_entete_ent.html' %}
+<h2 class="paper-titre">{% if mi %}Relevé de notes à mi-parcours{% else %}Relevé de notes{% endif %} — {{ periode.nom if periode and not annee else 'année scolaire' }}</h2>
+{% if mi %}<p class="mute" style="text-align:center;margin-top:-8px">Situation arrêtée au {{ au|fr_date }} — document de suivi du travail, il ne remplace pas le bulletin trimestriel.</p>{% endif %}
 <p><b>{{ e.prenom }} {{ e.nom }}</b> · classe {{ e.classe }}{% if e.date_naissance %} · né(e) le {{ e.date_naissance|fr_date }}{% endif %}</p>
 <table class="releve"><tr><th>Matière</th><th>Date</th><th>Évaluation</th><th>Note</th><th>Coef.</th></tr>
-{% for m in matieres %}{% for n in m.notes %}<tr>{% if loop.first %}<td rowspan="{{ m.notes|length + 1 }}" class="rel-mat"><b>{{ m.matiere }}</b><br><span class="mute">{{ m.prof }}</span></td>{% endif %}
+{% for m in r.matieres %}{% for n in m.notes %}<tr>{% if loop.first %}<td rowspan="{{ m.notes|length + 1 }}" class="rel-mat"><b>{{ m.matiere }}</b><br><span class="mute">{{ m.prof }}</span></td>{% endif %}
 <td>{{ n.date|fr_date }}</td><td>{{ n.titre }}</td><td>{% if n.valeur is not none %}{{ n.valeur|fnote1 }} / {{ n.bareme|fb }}{% elif n.statut == 'absent' %}Absent{% elif n.statut == 'dispense' %}Dispensé{% else %}—{% endif %}</td><td>{{ n.coef|fnote1 }}</td></tr>{% endfor %}
-<tr class="rel-moy"><td colspan="2" style="text-align:right">Moyenne {{ m.matiere }}</td><td colspan="2"><b>{{ m.moyenne|fnote }} / 20</b></td></tr>
-{% else %}<tr><td colspan="5" class="mute">Aucune note.</td></tr>{% endfor %}</table>
-<p style="margin-top:14px"><b>Moyenne générale : {{ moyenne|fnote }} / 20</b></p>
+<tr class="rel-moy"><td colspan="2" style="text-align:right">Moyenne {{ 'provisoire ' if mi }}{{ m.matiere }}</td><td colspan="2"><b>{{ m.moyenne|fnote }} / 20</b>{% if m.moy_classe is not none %} <span class="mute">· classe {{ m.moy_classe|fnote }}</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="5" class="mute">Aucune note à cette date.</td></tr>{% endfor %}</table>
+<p style="margin-top:14px"><b>Moyenne générale{{ ' provisoire' if mi }} : {{ r.moyenne|fnote }} / 20</b>{% if r.moyenne_classe is not none %} <span class="mute">· moyenne de la classe {{ r.moyenne_classe|fnote }}</span>{% endif %}</p>
 <p class="paper-fait">Édité le {{ aujourdhui|fr_date }}</p>
-{% if ent.pied %}<p class="paper-pied">{{ ent.pied }}</p>{% endif %}</div>{% endblock %}
+{% if ent.pied %}<p class="paper-pied">{{ ent.pied }}</p>{% endif %}</div>
+{% else %}{% if not seul %}<div class="card mute">Choisissez une classe pour afficher tous ses relevés, prêts à imprimer.</div>{% endif %}{% endfor %}{% endblock %}
