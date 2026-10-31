@@ -163,7 +163,9 @@
         ctx = new (window.AudioContext || window.webkitAudioContext)();
         var src = ctx.createMediaStreamSource(flux); analyseur = ctx.createAnalyser(); analyseur.fftSize = 512; src.connect(analyseur);
         donnees = new Uint8Array(analyseur.fftSize);
+        if (ctx.state === 'suspended') ctx.resume();
       } catch (e) { analyseur = null; }
+      microTxt.textContent = analyseur ? 'Micro connecté : parlez, la barre doit bouger' : 'Micro connecté (niveau sonore indisponible sur ce navigateur)'; microTxt.className = 'mute';
       lancerEnregistreur();
       cumul = 0; debutSegment = Date.now(); dernierSon = Date.now(); etat = 'enregistre'; majBoutons(); dire('Enregistrement en cours : laissez cette page ouverte.', 'ok');
       tick = setInterval(function () { chrono.textContent = format(dureeS()); }, 500);
