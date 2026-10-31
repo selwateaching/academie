@@ -71,6 +71,19 @@
     return '';
   }
   function post(url, formData) { return fetch(url, { method: 'POST', body: formData, credentials: 'same-origin' }); }
+  // Lit la réponse du serveur même si ce n'est pas du JSON (page d'erreur, session expirée, réunion supprimée) et en tire un message clair
+  function lire(r) {
+    return r.text().then(function (t) {
+      var j = null; try { j = JSON.parse(t); } catch (e) {}
+      if (j) return { ok: r.ok, status: r.status, j: j };
+      var m = 'Réponse inattendue du serveur (code ' + r.status + ').';
+      if (r.redirected && /\/login/.test(r.url)) m = 'Votre session a expiré : reconnectez-vous, puis rouvrez la réunion.';
+      else if (r.status === 404) m = 'Cette réunion n\'existe plus sur le serveur (la démonstration est réinitialisée à chaque mise à jour). Retournez à la liste des réunions et recréez-la.';
+      else if (r.status === 400) m = 'Votre page n\'est plus à jour (jeton de sécurité périmé). Rechargez la page (Ctrl+F5) et recommencez.';
+      else if (r.status >= 500) m = 'Erreur interne du serveur. Réessayez dans un instant ; si cela continue, prévenez l\'administrateur.';
+      return { ok: false, status: r.status, j: { erreur: m } };
+    });
+  }
   function urlPartie(base) { return base.replace('/audio/0/', '/audio/' + partieId + '/'); }
 
   // ── Envoi des morceaux (file d'attente avec reprise automatique) ──
@@ -80,16 +93,14 @@
     envoiEnCours = true;
     var m = file[0], fd = new FormData();
     fd.append('_csrf', csrf); fd.append('seq', m.seq); fd.append('morceau', m.blob, 'morceau');
-    post(urlPartie(urlMorceau), fd).then(function (r) {
-      return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
-    }).then(function (res) {
+    post(urlPartie(urlMorceau), fd).then(lire).then(function (res) {
       envoiEnCours = false;
       if (res.ok || (res.status === 409 && res.j.attendu !== undefined && res.j.attendu > m.seq)) {
         file.shift(); if (hors) { hors = false; dire('Connexion rétablie : envoi en cours.', 'ok'); }
         pomper();
       } else if (res.status === 409 && res.j.attendu !== undefined) {
         dire('Incohérence d\'envoi (morceau ' + res.j.attendu + ' attendu). Arrêtez puis redémarrez : une nouvelle partie sera créée.', 'err');
-      } else if (res.status === 413 || res.status === 403 || res.status === 404 || res.status === 400) {
+      } else if (res.status === 413 || res.status === 403 || res.status === 404 || res.status === 400 || res.j.erreur) {
         dire(res.j.erreur || 'Le serveur a refusé l\'enregistrement.', 'err'); arreter(true);
       } else { reessayer(); }
     }).catch(reessayer);
@@ -136,7 +147,7 @@
 
   function nouvelleSession() {
     return post(urlNouveau, (function () { var fd = new FormData(); fd.append('_csrf', csrf); fd.append('mime', mime); return fd; })())
-      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.erreur || 'Refus du serveur'); return j; }); })
+      .then(lire).then(function (res) { if (!res.ok) throw new Error(res.j.erreur || 'Refus du serveur'); return res.j; })
       .then(function (j) { partieId = j.id; seq = 0; file = []; termineEnvoye = false; });
   }
 
