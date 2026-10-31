@@ -1,13 +1,26 @@
 {% extends 'base.html' %}{% from '_macros.html' import csrf %}{% block title %}Compléter les fiches élèves{% endblock %}{% block body %}
-<div class="top"><h1>Compléter les fiches élèves</h1><a class="btn sec" href="{{ url_for('eleves', classe=classe) }}">← Liste des élèves</a></div>
-<p class="mute">Une classe à la fois : renseignez la date de naissance, le sexe, l'adresse, le téléphone et l'e-mail de chaque élève, puis enregistrez toute la page. {{ incomplets }} élève(s) ont encore une fiche incomplète (date de naissance, sexe ou adresse manquants). Pour de gros volumes, utilisez l'<a href="{{ url_for('importer') }}">import CSV</a> avec « Mettre à jour ».</p>
-<form method="get" class="row noprint" style="margin-bottom:12px"><div><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes (80 premiers)</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div></form>
-<form method="post">{{ csrf() }}<input type="hidden" name="classe" value="{{ classe }}">
-<div class="card scroll"><table class="saisie"><tr><th>Élève</th><th>Naissance · sexe</th><th>Adresse · code postal · ville</th><th>Téléphone · e-mail du responsable</th></tr>
-{% for e in rows %}<tr><td class="col-eleve"><b>{{ e.nom }}</b> {{ e.prenom }}<br><span class="mute">{{ e.classe }}</span><input type="hidden" name="responsable_{{ e.id }}" value="{{ e.responsable }}"></td>
-<td><div class="duo"><input type="date" name="date_naissance_{{ e.id }}" value="{{ e.date_naissance }}" aria-label="Date de naissance de {{ e.prenom }} {{ e.nom }}">
-<select name="sexe_{{ e.id }}" aria-label="Sexe"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>F</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>M</option></select></div></td>
-<td><input name="adresse_{{ e.id }}" value="{{ e.adresse }}" placeholder="N° et rue" aria-label="Adresse" style="width:100%"><div class="duo" style="margin-top:4px"><input name="code_postal_{{ e.id }}" value="{{ e.code_postal }}" placeholder="CP" style="width:90px" aria-label="Code postal"><input name="ville_{{ e.id }}" value="{{ e.ville }}" placeholder="Ville" aria-label="Ville" style="flex:1"></div></td>
-<td><input name="telephone_{{ e.id }}" value="{{ e.telephone }}" placeholder="Téléphone" aria-label="Téléphone" style="width:100%"><input type="email" name="contact_{{ e.id }}" value="{{ e.contact }}" placeholder="E-mail" aria-label="E-mail du responsable" style="width:100%;margin-top:4px"></td></tr>
-{% else %}<tr><td colspan="4" class="mute">Aucun élève.</td></tr>{% endfor %}</table></div>
-<p><button>Enregistrer toute la page</button></p></form>{% endblock %}
+<div class="top"><div><h1 style="margin-bottom:2px">Compléter les fiches élèves</h1>
+<span class="mute">Une fiche est complète lorsque la date de naissance, le sexe et l'adresse sont renseignés.</span></div>
+<span class="noprint"><a class="btn sec" href="{{ url_for('importer') }}">Import CSV</a> <a class="btn sec" href="{{ url_for('eleves', classe=classe) }}">← Liste des élèves</a></span></div>
+
+<form method="get" class="saisie-barre noprint" data-filtre>
+<div><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes (80 premiers élèves)</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>
+<div class="saisie-progres" aria-live="polite"><div class="saisie-progres-texte"><b data-complets>{{ complets }}</b> / {{ rows|length }} fiches complètes<span class="mute"> · {{ incomplets }} à compléter dans l'établissement</span></div>
+<div class="saisie-jauge" role="progressbar" aria-valuemin="0" aria-valuemax="{{ rows|length }}" aria-valuenow="{{ complets }}"><span data-jauge style="width:{{ (100 * complets / rows|length)|round|int if rows else 0 }}%"></span></div></div>
+<div class="saisie-filtres" role="group" aria-label="Affichage"><button type="button" class="on" data-vue="tous">Toutes</button><button type="button" data-vue="incomplets">À compléter</button></div></form>
+
+<form method="post" data-saisie>{{ csrf() }}<input type="hidden" name="classe" value="{{ classe }}">
+<div class="card saisie-carte"><div class="saisie-defile"><table class="grille-saisie">
+<thead><tr><th class="c-eleve">Élève</th><th>Naissance</th><th>Sexe</th><th class="c-adresse">Adresse</th><th>CP</th><th>Ville</th><th>Téléphone</th><th class="c-mail">E-mail du responsable</th><th>Statut</th></tr></thead><tbody>
+{% for e in rows %}{% set ok = e.date_naissance and e.sexe and e.adresse %}<tr data-ligne data-complet="{{ 1 if ok else 0 }}">
+<td class="c-eleve"><b>{{ e.nom }}</b> {{ e.prenom }}<span class="classe-mini">{{ e.classe }}</span><input type="hidden" name="responsable_{{ e.id }}" value="{{ e.responsable }}"></td>
+<td><input type="date" name="date_naissance_{{ e.id }}" value="{{ e.date_naissance }}" data-req aria-label="Date de naissance de {{ e.prenom }} {{ e.nom }}"></td>
+<td><select name="sexe_{{ e.id }}" data-req aria-label="Sexe de {{ e.prenom }} {{ e.nom }}"><option value="">—</option><option value="F" {{ 'selected' if e.sexe == 'F' }}>F</option><option value="M" {{ 'selected' if e.sexe == 'M' }}>M</option></select></td>
+<td class="c-adresse"><input name="adresse_{{ e.id }}" value="{{ e.adresse }}" data-req placeholder="N° et rue" autocomplete="street-address" aria-label="Adresse de {{ e.prenom }} {{ e.nom }}"></td>
+<td><input name="code_postal_{{ e.id }}" value="{{ e.code_postal }}" inputmode="numeric" maxlength="10" placeholder="CP" aria-label="Code postal" style="width:72px"></td>
+<td><input name="ville_{{ e.id }}" value="{{ e.ville }}" placeholder="Ville" aria-label="Ville"></td>
+<td><input name="telephone_{{ e.id }}" value="{{ e.telephone }}" type="tel" placeholder="Téléphone" aria-label="Téléphone"></td>
+<td class="c-mail"><input name="contact_{{ e.id }}" value="{{ e.contact }}" type="email" placeholder="E-mail" aria-label="E-mail du responsable"></td>
+<td class="c-statut"><span class="statut {{ 'ok' if ok else 'a-faire' }}" data-statut>{{ 'Complète' if ok else 'À faire' }}</span></td></tr>
+{% else %}<tr><td colspan="9" class="mute" style="padding:18px">Aucun élève.</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="barre-enreg noprint"><button>Enregistrer les modifications</button><span class="mute" data-etat>Aucune modification.</span></div></form>{% endblock %}

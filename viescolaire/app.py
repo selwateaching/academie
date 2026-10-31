@@ -2039,7 +2039,8 @@ def eleves_completer():
              (g.etab_id, classe) if classe else (g.etab_id,))
     classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
     incomplets = one("SELECT COUNT(*) c FROM eleves WHERE etab_id=? AND (date_naissance='' OR adresse='' OR sexe='')", (g.etab_id,))["c"]
-    return render_template("eleves_completer.html", rows=rows, classes=classes_, classe=classe, incomplets=incomplets)
+    complets = sum(1 for e in rows if e["date_naissance"] and e["sexe"] and e["adresse"])
+    return render_template("eleves_completer.html", rows=rows, classes=classes_, classe=classe, incomplets=incomplets, complets=complets)
 
 
 @app.route("/eleves/<int:eid>/modifier", methods=["POST"])

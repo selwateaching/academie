@@ -445,3 +445,57 @@ document.querySelectorAll('input[data-photo]').forEach(function (inp) {
   barre.querySelector('[data-ouvrir-tout]').addEventListener('click', function () { tout(true); });
   barre.querySelector('[data-fermer-tout]').addEventListener('click', function () { tout(false); });
 })();
+/* Saisie des fiches élèves : champs vides repérés, statut et jauge en direct, filtre « à compléter », contrôles de saisie, alerte avant de perdre des modifications */
+(function () {
+  var form = document.querySelector('form[data-saisie]');
+  if (!form) return;
+  var modifie = false, etat = form.querySelector('[data-etat]');
+  var lignes = Array.prototype.slice.call(form.querySelectorAll('tr[data-ligne]'));
+  var jauge = document.querySelector('[data-jauge]'), nb = document.querySelector('[data-complets]');
+  var req = function (tr) { return Array.prototype.slice.call(tr.querySelectorAll('[data-req]')); };
+  var vue = 'tous';
+  function majLigne(tr) {
+    var champs = req(tr), vides = 0;
+    champs.forEach(function (c) { var v = !String(c.value).trim(); c.classList.toggle('vide', v); if (v) vides++; });
+    var ok = vides === 0, st = tr.querySelector('[data-statut]');
+    tr.setAttribute('data-complet', ok ? '1' : '0');
+    if (st) { st.textContent = ok ? 'Complète' : 'À faire'; st.className = 'statut ' + (ok ? 'ok' : 'a-faire'); }
+    return ok;
+  }
+  function compter() {
+    var n = lignes.filter(function (tr) { return tr.getAttribute('data-complet') === '1'; }).length;
+    if (nb) nb.textContent = n;
+    if (jauge && lignes.length) jauge.style.width = Math.round(100 * n / lignes.length) + '%';
+  }
+  function filtrer() { lignes.forEach(function (tr) { tr.hidden = vue === 'incomplets' && tr.getAttribute('data-complet') === '1'; }); }
+  lignes.forEach(majLigne); compter();
+  var valide = function (c) {
+    var v = c.value.trim(), ko = false;
+    if (c.type === 'email' && v) ko = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v);
+    if (c.type === 'tel' && v) ko = !/^[0-9 +().-]{6,20}$/.test(v);
+    if (c.name && c.name.indexOf('code_postal_') === 0 && v) ko = !/^[0-9A-Za-z -]{3,10}$/.test(v);
+    c.classList.toggle('invalide', ko);
+  };
+  var change = function (e) {
+    modifie = true; if (etat) etat.textContent = 'Modifications non enregistrées.';
+    var tr = e.target.closest && e.target.closest('tr[data-ligne]'); if (tr) majLigne(tr);
+    valide(e.target); compter();
+  };
+  form.addEventListener('input', change); form.addEventListener('change', change);
+  form.addEventListener('submit', function (e) {
+    if (form.querySelector('.invalide')) { e.preventDefault(); alert('Corrigez les champs en rouge (e-mail, téléphone ou code postal) avant d\'enregistrer.'); return; }
+    modifie = false;
+  });
+  window.addEventListener('beforeunload', function (e) { if (modifie) { e.preventDefault(); e.returnValue = ''; } });
+  document.querySelectorAll('.saisie-filtres button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      vue = b.getAttribute('data-vue');
+      document.querySelectorAll('.saisie-filtres button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      filtrer();
+    });
+  });
+  var choix = document.querySelector('select[data-autosubmit]');
+  if (choix) choix.addEventListener('change', function (e) {
+    if (modifie && !confirm('Des modifications ne sont pas enregistrées. Changer de classe les perdra. Continuer ?')) { e.stopImmediatePropagation(); choix.value = new URLSearchParams(location.search).get('classe') || ''; }
+  }, true);
+})();
