@@ -272,3 +272,4 @@ table.grille-saisie td:nth-child(7){min-width:124px}table.grille-saisie .c-mail{
 table.grille-saisie .c-adresse{min-width:150px}table.grille-saisie .c-eleve{min-width:150px}.c-statut{width:92px}.statut{padding:2px 8px}
 table.grille-saisie input[type=date]{min-width:120px}table.grille-saisie td:nth-child(3){width:72px;min-width:72px}table.grille-saisie .c-adresse{min-width:140px}
 table.grille-saisie .c-eleve{min-width:145px}table.grille-saisie .c-mail{min-width:205px}.c-statut{width:88px}
+table.grille-saisie .c-mail{min-width:178px}table.grille-saisie td:nth-child(7){min-width:118px}
