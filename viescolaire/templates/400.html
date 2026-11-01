@@ -1,0 +1,6 @@
+{% extends 'base.html' %}{% block title %}Page à recharger{% endblock %}{% block body %}
+<div class="top"><h1>Votre page doit être rechargée</h1></div>
+<div class="card"><p>Pour votre sécurité, la page que vous avez validée était restée ouverte trop longtemps, ou votre session a expiré (par exemple après une nuit, une mise à jour du site ou une connexion dans un autre onglet).</p>
+<p><b>Ce que vous pouvez faire :</b></p>
+<ol><li>Cliquez sur « Recharger la page » (ou appuyez sur Ctrl + F5).</li><li>Si on vous demande de vous connecter, reconnectez-vous.</li><li>Recommencez votre saisie : ce qui n'avait pas été enregistré n'a pas été conservé.</li></ol>
+<p><a class="btn" href="{{ url_for('dashboard') }}">Recharger / retour à l'accueil</a> <button type="button" class="sec" data-retour>Page précédente</button></p></div>{% endblock %}

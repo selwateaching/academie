@@ -277,6 +277,14 @@ def staff_only(f):
     return wrapper
 
 
+@app.errorhandler(400)
+def requete_invalide(e):
+    """Jeton de sécurité périmé (page restée ouverte, session expirée, connexion dans un autre onglet) : message clair au lieu de « Bad Request »."""
+    if "Jeton de sécurité" in str(getattr(e, "description", "")):
+        return render_template("400.html"), 400
+    return Response(str(getattr(e, "description", "Requête invalide.")), status=400)
+
+
 @app.errorhandler(404)
 def page_introuvable(_e):
     """Page « introuvable » lisible : le plus souvent un lien resté ouvert vers un élément supprimé ou une démonstration réinitialisée."""
