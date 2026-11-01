@@ -397,7 +397,20 @@ function emailVerifLabel(p) {
 
 function renderTable(rows, cols) {
   var head = '<tr>' + cols.map(function(c) { return '<th>' + c.label + '</th>'; }).join('') + '</tr>';
-  var body = rows.map(function(p) { return '<tr>' + cols.map(function(c) { return '<td>' + c.render(p) + '</td>'; }).join('') + '</tr>'; }).join('');
+  /* Chaque cellule est rendue dans un try/catch : un seul compte avec une donnée inattendue
+     (date/plan/champ manquant...) ne doit JAMAIS faire échouer le rendu de TOUTE la table — y
+     compris la colonne de case à cocher, dont dépend la sélection par plage. Sans ce filet, une
+     exception sur une seule ligne pouvait laisser le tableau non rafraîchi après une sélection
+     (le compteur se met à jour car il ne dépend pas du rendu, mais aucune case ne s'affiche
+     cochée) sans aucune erreur visible pour l'utilisatrice. */
+  var body = rows.map(function(p) {
+    return '<tr>' + cols.map(function(c) {
+      var cell;
+      try { cell = c.render(p); }
+      catch (e) { cell = '<span style="color:var(--r);font-size:.72rem;">⚠️ erreur</span>'; console.error('Erreur de rendu pour', p && p.id, e); }
+      return '<td>' + cell + '</td>';
+    }).join('') + '</tr>';
+  }).join('');
   return '<table><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
 }
 
