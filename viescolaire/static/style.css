@@ -528,3 +528,10 @@ nav.side .nav-accueil{margin:4px 0 2px}
 .certificat{text-align:center;border:6px double var(--rc);padding:30px}.certificat-corps h2{font-size:38px;margin:6px 0;color:var(--rc)}.certificat-sur,.certificat-a{font-size:18px;margin:8px 0}.certificat-nom{font-size:34px;font-weight:700;margin:6px 0}.certificat-classe{font-size:16px}.certificat-comm{font-style:italic;font-size:18px}.certificat-fait{margin-top:26px}
 @media(max-width:700px){.affiche-noms{columns:1}.affiche-titre h2{font-size:26px}}
 @media print{.medailles{background:none}.affiche-recompenses,.certificat{break-inside:avoid}}
+
+/* Hors-sujet : revue passage par passage */
+.ri-hs-liste{margin:8px 0;padding-left:22px}.ri-hs-liste li{margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.ri-hs-ctx{font-size:.85em;line-height:1.4}.ri-hs-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.ri-hs-actions details.inline{flex:1 1 260px}.ri-hs-actions details.inline input{width:100%;margin:6px 0}
+.ri-hs-liste label.ri-hs{display:block;padding:4px 6px;font-size:inherit;margin:2px 0;font-weight:400}
+.ri-auto{display:block;margin:0 0 8px;font-weight:400}

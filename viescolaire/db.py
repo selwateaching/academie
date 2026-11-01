@@ -396,6 +396,10 @@ MIGRATIONS = [
         );
         CREATE INDEX IF NOT EXISTS idx_recompenses ON recompenses(etab_id, periode_id);
     """),
+    (25, """
+        ALTER TABLE ri_reunions ADD COLUMN transcription_origine TEXT NOT NULL DEFAULT '';   -- texte avant le premier nettoyage du hors-sujet (effacé à la validation du compte rendu)
+        ALTER TABLE ri_reunions ADD COLUMN transcription_avant TEXT NOT NULL DEFAULT '';     -- texte avant la dernière suppression (pour « Annuler »)
+    """),
 ]
 
 

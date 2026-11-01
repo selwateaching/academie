@@ -80,13 +80,23 @@
 {% if a_texte %}<div class="ri-hs-bloc noprint" id="hors-sujet"><h3>Repérer le hors-sujet</h3>
 {% if r.analyse_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="analyse"><span class="ri-spin"></span> Repérage en cours… (quelques dizaines de secondes)</div>{% endif %}
 {% if r.analyse_etat == 'erreur' and r.erreur %}<div class="al err">Échec du repérage : {{ r.erreur }}</div>{% endif %}
-<form method="post" action="{{ url_for('ri_analyser', rid=r.id) }}">{{ csrf() }}<button class="sec" {{ 'disabled' if r.analyse_etat == 'en_cours' or not ia }}>{{ 'Relancer le repérage' if r.analyse_etat == 'ok' else 'Repérer les passages hors sujet' }}</button>
+<form method="post" action="{{ url_for('ri_analyser', rid=r.id) }}">{{ csrf() }}<label class="ri-auto"><input type="checkbox" name="auto" value="1"> Supprimer automatiquement le hors-sujet repéré <span class="mute">(non recommandé : l'IA peut se tromper ; le texte d'avant reste rétablissable)</span></label>
+<button class="sec" {{ 'disabled' if r.analyse_etat == 'en_cours' or not ia }}>{{ 'Relancer le repérage' if r.analyse_etat == 'ok' else 'Repérer les passages hors sujet' }}</button>
 <span class="mute">{% if not r.ordre_jour.strip() %}Le titre « {{ r.titre }} » sert de sujet. Pour un repérage plus précis, ajoutez des sujets à l'étape 1. {% endif %}{% if not ia %}Nécessite la clé de rédaction IA. {% endif %}L'IA ne signale que ce qui est clairement étranger au sujet : vérifiez avant de supprimer.</span></form>
 {% if nb_hors %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}">{{ csrf() }}
-<p><b>{{ nb_hors }} passage(s) hors sujet</b> sont <span class="ri-hs-exemple">en rouge</span> ci-dessous, déjà cochés. <b>Décochez</b> ceux que vous voulez garder, puis supprimez les autres.</p>
-<div class="ri-lecture">{% for p in passages %}{% if p.hors %}<label class="ri-hs"><input type="checkbox" name="passage" value="{{ p.i }}" checked> {{ p.texte }}</label>{% else %}<span>{{ p.texte }}</span>{% endif %}{{ p.sep }}{% endfor %}</div>
-<p><button name="action" value="supprimer" class="red">Supprimer les passages cochés de la transcription</button> <button name="action" value="effacer_marques" class="sec">Garder tout et retirer le marquage</button></p></form>
-{% elif r.analyse_etat == 'ok' %}<p class="ri-ok">Aucun passage clairement hors sujet n'a été repéré.</p>{% endif %}</div>{% endif %}</div>
+<p><b>{{ nb_hors }} passage(s) hors sujet</b> repéré(s), <span class="ri-hs-exemple">en rouge</span>. Pour chacun : <b>Garder</b>, <b>Supprimer</b> ou <b>Corriger</b> le texte. Vous pouvez aussi cocher plusieurs passages puis utiliser les boutons du bas.</p>
+<ol class="ri-hs-liste">{% for p in passages if p.hors %}<li>
+<div class="ri-hs-ctx mute">{% if p.i > 0 %}…{{ passages[p.i - 1].texte[-90:] }}{% endif %}</div>
+<label class="ri-hs"><input type="checkbox" name="passage" value="{{ p.i }}" checked> {{ p.texte }}</label>
+<div class="ri-hs-ctx mute">{% if p.i + 1 < passages|length %}{{ passages[p.i + 1].texte[:90] }}…{% endif %}</div>
+<div class="ri-hs-actions"><button name="un" value="supprimer:{{ p.i }}" class="red sm">Supprimer</button> <button name="un" value="garder:{{ p.i }}" class="sec sm">Garder</button>
+<details class="inline"><summary>Corriger</summary><input name="edit_{{ p.i }}" value="{{ p.texte|trim }}" maxlength="2000" aria-label="Texte corrigé du passage {{ loop.index }}"> <button name="un" value="editer:{{ p.i }}" class="sec sm">Enregistrer la correction</button></details></div></li>{% endfor %}</ol>
+<p><button name="action" value="supprimer" class="red">Supprimer les passages cochés</button> <button name="action" value="tout_supprimer" class="red">Tout supprimer ({{ nb_hors }})</button> <button name="action" value="effacer_marques" class="sec">Tout garder</button></p>
+<div class="ri-lecture" aria-label="Texte complet avec les passages hors sujet en rouge">{% for p in passages %}{% if p.hors %}<span class="ri-hs">{{ p.texte }}</span>{% else %}<span>{{ p.texte }}</span>{% endif %}{{ p.sep }}{% endfor %}</div></form>
+{% elif r.analyse_etat == 'ok' %}<p class="ri-ok">Aucun passage clairement hors sujet n'a été repéré.</p>{% endif %}
+{% if r.transcription_avant or r.transcription_origine %}<div class="noprint"><p class="mute">Des passages ont été retirés. Le texte d'avant est gardé jusqu'à la validation du compte rendu.</p>
+{% if r.transcription_avant %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}" style="display:inline">{{ csrf() }}<button name="action" value="annuler" class="sec sm">Annuler la dernière suppression</button></form> {% endif %}
+{% if r.transcription_origine %}<form method="post" action="{{ url_for('ri_hors_sujet', rid=r.id) }}" style="display:inline" data-confirm="Rétablir la transcription d'origine, avant tout nettoyage ? Le texte actuel sera remplacé.">{{ csrf() }}<button name="action" value="restaurer" class="sec sm">Restaurer la transcription d'origine</button></form>{% endif %}</div>{% endif %}</div>{% endif %}</div>
 
 <div class="card" id="compte-rendu"><h2>4. Compte rendu</h2>
 {% if r.redaction_etat == 'en_cours' %}<div class="al warn" data-ri-suivi data-url="{{ url_for('ri_etat', rid=r.id) }}" data-attend="redaction"><span class="ri-spin"></span> Rédaction du compte rendu en cours (une à deux minutes)… Vous pouvez quitter cette page.</div>{% endif %}

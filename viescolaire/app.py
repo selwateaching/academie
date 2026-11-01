@@ -6161,13 +6161,26 @@ def ri_tache_redaction(rid, meta, transcription):
         con.close()
 
 
-def ri_tache_analyse(rid, meta, texte):
+def ri_retirer_passages(con, rid, texte, numeros):
+    """Retire des passages de la transcription en gardant l'ancien texte (annulation possible) et le texte d'origine."""
+    morceaux = ria.decouper(texte)
+    nouveau = "".join(seg + sep for i, (seg, sep) in enumerate(morceaux) if i not in numeros).strip()
+    n = len([i for i in numeros if i < len(morceaux)])
+    con.execute("UPDATE ri_reunions SET transcription=?, transcription_avant=?, transcription_origine=CASE WHEN transcription_origine='' THEN ? ELSE transcription_origine END, "
+                "hors_sujet='[]', analyse_etat='' WHERE id=?", (nouveau, texte, texte, rid))
+    return n
+
+
+def ri_tache_analyse(rid, meta, texte, auto=False):
     con = database.connect()
     try:
         passages = [seg for seg, _ in ria.decouper(texte)]
         hors = ria.signaler_hors_sujet(CFG, meta, passages)
         marques = sorted({passages[i].strip() for i in hors if passages[i].strip()})
         con.execute("UPDATE ri_reunions SET hors_sujet=?, analyse_etat='ok', erreur='' WHERE id=?", (json.dumps(marques, ensure_ascii=False), rid))
+        if auto and marques:      # suppression automatique demandée : le texte d'origine reste restaurable
+            ms = set(marques)
+            ri_retirer_passages(con, rid, texte, {i for i, (seg, _) in enumerate(ria.decouper(texte)) if seg.strip() in ms})
     except ria.ErreurService as e:
         con.execute("UPDATE ri_reunions SET analyse_etat='erreur', erreur=? WHERE id=?", (str(e), rid))
     except Exception:
@@ -6230,7 +6243,7 @@ def ri_analyser(rid):
         return retour
     run("UPDATE ri_reunions SET analyse_etat='en_cours', erreur='', maj_travail=? WHERE id=?", (datetime.now().isoformat(timespec="seconds"), rid))
     log("réunion intelligente : repérage du hors-sujet lancé", r["titre"])
-    ri_lancer(ri_tache_analyse, rid, ri_meta(r), r["transcription"])
+    ri_lancer(ri_tache_analyse, rid, ri_meta(r), r["transcription"], bool(request.form.get("auto")))
     return retour
 
 
@@ -6239,19 +6252,53 @@ def ri_analyser(rid):
 def ri_hors_sujet(rid):
     r = ri_reunion_ou_404(rid)
     retour = redirect(url_for("ri_reunion", rid=rid) + "#transcription")
-    action = request.form.get("action")
-    if action == "effacer_marques":
-        run("UPDATE ri_reunions SET hors_sujet='[]', analyse_etat='' WHERE id=?", (rid,))
-        flash("Marquage retiré : la transcription n'a pas été modifiée.", "ok")
-    elif action == "supprimer":
-        choisis = {int(x) for x in request.form.getlist("passage") if x.isdigit()}
-        morceaux = ria.decouper(r["transcription"])
-        gardes = [seg + sep for i, (seg, sep) in enumerate(morceaux) if i not in choisis]
-        nouveau = "".join(gardes).strip()
-        n = len([i for i in choisis if i < len(morceaux)])
-        run("UPDATE ri_reunions SET transcription=?, hors_sujet='[]', analyse_etat='' WHERE id=?", (nouveau, rid))
+    action = request.form.get("action") or ""
+    f = request.form
+    morceaux = ria.decouper(r["transcription"])
+    try:
+        marques = set(json.loads(r["hors_sujet"] or "[]"))
+    except ValueError:
+        marques = set()
+    rouges = {i for i, (seg, _) in enumerate(morceaux) if seg.strip() and (seg.strip() in marques or ria.est_artefact(seg))}
+    unique, _, cible = (f.get("un") or "").partition(":")
+    cible = int(cible) if cible.isdigit() else -1
+    con = db()
+    if action == "effacer_marques" or (unique == "garder" and cible in rouges):
+        if unique == "garder":
+            marques.discard(morceaux[cible][0].strip())
+            run("UPDATE ri_reunions SET hors_sujet=? WHERE id=?", (json.dumps(sorted(marques), ensure_ascii=False), rid))
+            flash("Passage conservé.", "ok")
+        else:
+            run("UPDATE ri_reunions SET hors_sujet='[]', analyse_etat='' WHERE id=?", (rid,))
+            flash("Marquage retiré : la transcription n'a pas été modifiée.", "ok")
+    elif unique == "supprimer" and cible in rouges or action in ("supprimer", "tout_supprimer"):
+        if unique == "supprimer":
+            choisis = {cible}
+        elif action == "tout_supprimer":
+            choisis = rouges
+        else:
+            choisis = {int(x) for x in f.getlist("passage") if x.isdigit()}
+        n = ri_retirer_passages(con, rid, r["transcription"], choisis)
+        con.commit()
         log("réunion intelligente : passages hors sujet supprimés", f"{r['titre']} ({n})")
-        flash(f"{n} passage(s) supprimé(s) de la transcription.", "ok")
+        flash(f"{n} passage(s) supprimé(s). Le texte d'avant est conservé : « Annuler la dernière suppression » le rétablit jusqu'à la validation du compte rendu."
+              + (" Relancez la rédaction du compte rendu pour qu'il tienne compte du texte nettoyé." if one("SELECT 1 FROM ri_comptes_rendus WHERE reunion_id=?", (rid,)) else ""), "ok")
+    elif unique == "editer" and 0 <= cible < len(morceaux):
+        texte = f.get(f"edit_{cible}", "").strip()[:2000]
+        seg, sep = morceaux[cible]
+        if texte and texte != seg.strip():
+            nouveau = "".join((texte + sep if i == cible else s_ + sep) for i, (s_, sep) in enumerate(morceaux)).strip()
+            run("UPDATE ri_reunions SET transcription=?, transcription_avant=?, transcription_origine=CASE WHEN transcription_origine='' THEN ? ELSE transcription_origine END, "
+                "hors_sujet='[]', analyse_etat='' WHERE id=?", (nouveau, r["transcription"], r["transcription"], rid))
+            flash("Passage corrigé. Relancez le repérage si besoin.", "ok")
+    elif action == "annuler" and r["transcription_avant"]:
+        run("UPDATE ri_reunions SET transcription=?, transcription_avant='', hors_sujet='[]', analyse_etat='' WHERE id=?", (r["transcription_avant"], rid))
+        log("réunion intelligente : dernière suppression annulée", r["titre"])
+        flash("Dernière suppression annulée : le texte précédent est rétabli.", "ok")
+    elif action == "restaurer" and r["transcription_origine"]:
+        run("UPDATE ri_reunions SET transcription=?, transcription_avant='', transcription_origine='', hors_sujet='[]', analyse_etat='' WHERE id=?", (r["transcription_origine"], rid))
+        log("réunion intelligente : transcription d'origine rétablie", r["titre"])
+        flash("Transcription d'origine rétablie.", "ok")
     return retour
 
 
@@ -6331,6 +6378,7 @@ def ri_cr_enregistrer(rid):
         flash("Compte rendu enregistré.", "ok")
     if action == "valider":
         run("UPDATE ri_comptes_rendus SET valide=1, valide_par=?, valide_le=? WHERE reunion_id=?", (g.user["nom"], maintenant, rid))
+        run("UPDATE ri_reunions SET transcription_origine='', transcription_avant='' WHERE id=?", (rid,))   # les passages retirés sont effacés définitivement à la validation
         log("réunion intelligente : compte rendu validé", r["titre"])
         flash("Compte rendu validé : vous pouvez le télécharger, l'imprimer ou le partager.", "ok")
     elif action == "rouvrir":
