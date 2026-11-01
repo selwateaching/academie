@@ -141,12 +141,13 @@ input[type="checkbox"]{accent-color:var(--t);}
       <div style="padding:.8rem 1.4rem;border-bottom:1px solid var(--br);display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aComptesSelectAll" onchange="window.aToggleSelectAll(this.checked)"> Tout sélectionner</label>
         <span style="display:flex;align-items:center;gap:6px;font-size:.78rem;">
-          Sélectionner les
-          <input id="aComptesSelectN" type="number" min="1" value="50" style="width:64px;padding:4px 6px;border:1px solid var(--br);border-radius:6px;font-family:'Inter',sans-serif;font-size:.78rem;">
-          premiers
-          <button class="btn bo bxs" onclick="window.aSelectFirstN()">Sélectionner</button>
+          Sélectionner de
+          <input id="aComptesSelectFrom" type="number" min="1" value="1" style="width:60px;padding:4px 6px;border:1px solid var(--br);border-radius:6px;font-family:'Inter',sans-serif;font-size:.78rem;">
+          à
+          <input id="aComptesSelectTo" type="number" min="1" value="100" style="width:60px;padding:4px 6px;border:1px solid var(--br);border-radius:6px;font-family:'Inter',sans-serif;font-size:.78rem;">
+          <button class="btn bo bxs" onclick="window.aSelectRange()">Sélectionner</button>
         </span>
-        <span style="font-size:.76rem;color:var(--ink3);">(remplace la sélection actuelle)</span>
+        <span style="font-size:.76rem;color:var(--ink3);">(ex: 1 à 100, puis 101 à 200 pour le lot suivant — remplace la sélection actuelle)</span>
         <span style="font-size:.78rem;color:var(--ink3);" id="aComptesSelCount">0 sélectionné(s)</span>
         <button class="btn bt" id="aComptesEmailBtn" disabled onclick="window.aEmailGroup()">✉️ Envoyer un email au groupe</button>
       </div>
@@ -449,15 +450,17 @@ window.aToggleSelectAll = function(checked) {
   LAST_COMPTES_ROWS.forEach(function(p) { if (checked) COMPTE_SEL[p.id] = true; else delete COMPTE_SEL[p.id]; });
   window.aRenderComptes();
 };
-/* Sélectionne les N premiers comptes actuellement affichés (après recherche/filtre), dans
-   l'ordre où ils apparaissent dans le tableau — pour envoyer un email groupé par lots (les 100
-   premiers, puis les 100 suivants...) sans devoir cocher chaque ligne une par une. Remplace la
+/* Sélectionne une plage de comptes (positions "de" à "à", 1-indexé) parmi ceux actuellement
+   affichés (après recherche/filtre), dans l'ordre du tableau — pour envoyer un email groupé par
+   lots (1 à 100, puis 101 à 200, etc.) sans devoir cocher chaque ligne une par une. Remplace la
    sélection en cours plutôt que de s'y ajouter, pour rester prévisible. */
-window.aSelectFirstN = function() {
-  var n = parseInt(document.getElementById('aComptesSelectN').value, 10);
-  if (!n || n <= 0) { alert('Indique un nombre valide.'); return; }
+window.aSelectRange = function() {
+  var from = parseInt(document.getElementById('aComptesSelectFrom').value, 10);
+  var to = parseInt(document.getElementById('aComptesSelectTo').value, 10);
+  if (!from || !to || from <= 0 || to <= 0) { alert('Indique des numéros valides.'); return; }
+  if (from > to) { var tmp = from; from = to; to = tmp; }
   COMPTE_SEL = {};
-  LAST_COMPTES_ROWS.slice(0, n).forEach(function(p) { COMPTE_SEL[p.id] = true; });
+  LAST_COMPTES_ROWS.slice(from - 1, to).forEach(function(p) { COMPTE_SEL[p.id] = true; });
   window.aRenderComptes();
 };
 window.aUpdateSelCount = function() {
