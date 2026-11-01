@@ -1,0 +1,373 @@
+import csv
+import io
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from pathlib import Path
+
+from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from . import models
+from .agent import mailer, prospector, qualifier, writer
+from .agent.targets import CATEGORIES
+from .config import get_settings
+from .db import Base, SessionLocal, engine, get_db
+from .security import hash_password, make_token, read_token, verify_password
+
+STATIC = Path(__file__).resolve().parent.parent / "static"
+
+
+@asynccontextmanager
+async def lifespan(_app):
+    startup()
+    yield
+
+
+app = FastAPI(title="GARAGE CRM AI", lifespan=lifespan)
+
+
+def startup():
+    Base.metadata.create_all(engine)
+    s = get_settings()
+    with SessionLocal() as db:
+        if not db.scalar(select(func.count(models.User.id))) and s.admin_password:
+            db.add(models.User(email=s.admin_email.lower(), name="Administrateur", role="admin",
+                               password_hash=hash_password(s.admin_password)))
+            db.commit()
+
+
+# ---------- Authentification et rôles ----------
+def current_user(authorization: str = Header(default=""), db: Session = Depends(get_db)) -> models.User:
+    uid = read_token(authorization.removeprefix("Bearer ").strip())
+    user = db.get(models.User, uid) if uid else None
+    if not user or not user.active:
+        raise HTTPException(401, "Non authentifié")
+    return user
+
+
+def require(*roles: str):
+    def dep(user: models.User = Depends(current_user)):
+        if user.role not in roles:
+            raise HTTPException(403, "Droits insuffisants")
+        return user
+    return dep
+
+
+ANY = require("admin", "manager", "commercial")
+MANAGER = require("admin", "manager")
+ADMIN = require("admin")
+
+
+class LoginIn(BaseModel):
+    email: str
+    password: str
+
+
+@app.post("/api/auth/login")
+def login(data: LoginIn, db: Session = Depends(get_db)):
+    user = db.scalar(select(models.User).where(models.User.email == data.email.lower().strip()))
+    if not user or not user.active or not verify_password(data.password, user.password_hash):
+        raise HTTPException(401, "Identifiants invalides")
+    return {"token": make_token(user.id), "name": user.name, "role": user.role}
+
+
+@app.get("/api/me")
+def me(user: models.User = Depends(ANY)):
+    return {"email": user.email, "name": user.name, "role": user.role}
+
+
+class UserIn(BaseModel):
+    email: str
+    name: str = ""
+    role: str = "commercial"
+    password: str
+
+
+@app.get("/api/users")
+def list_users(db: Session = Depends(get_db), _=Depends(ADMIN)):
+    return [{"id": u.id, "email": u.email, "name": u.name, "role": u.role, "active": u.active}
+            for u in db.scalars(select(models.User).order_by(models.User.id))]
+
+
+@app.post("/api/users", status_code=201)
+def create_user(data: UserIn, db: Session = Depends(get_db), _=Depends(ADMIN)):
+    if data.role not in models.ROLES:
+        raise HTTPException(422, "Rôle invalide")
+    if len(data.password) < 8:
+        raise HTTPException(422, "Mot de passe : 8 caractères minimum")
+    if db.scalar(select(models.User).where(models.User.email == data.email.lower())):
+        raise HTTPException(409, "Email déjà utilisé")
+    u = models.User(email=data.email.lower().strip(), name=data.name, role=data.role,
+                    password_hash=hash_password(data.password))
+    db.add(u); db.commit()
+    return {"id": u.id}
+
+
+# ---------- Entreprises ----------
+def company_out(c: models.Company) -> dict:
+    return {k: getattr(c, k) for k in (
+        "id", "name", "category", "city", "address", "phone", "website", "email", "contact_name", "source",
+        "rating", "rating_count", "score", "score_reason", "status", "next_action", "notes", "do_not_contact")
+    } | {"last_contact": c.last_contact.isoformat() if c.last_contact else None}
+
+
+class CompanyIn(BaseModel):
+    name: str
+    category: str = ""
+    city: str = ""
+    address: str = ""
+    phone: str = ""
+    website: str = ""
+    email: str = ""
+    contact_name: str = ""
+    notes: str = ""
+
+
+class CompanyPatch(BaseModel):
+    name: str | None = None
+    category: str | None = None
+    city: str | None = None
+    phone: str | None = None
+    website: str | None = None
+    email: str | None = None
+    contact_name: str | None = None
+    notes: str | None = None
+    status: str | None = None
+    next_action: str | None = None
+    do_not_contact: bool | None = None
+
+
+@app.get("/api/categories")
+def categories(_=Depends(ANY)):
+    return [{"key": k, "label": v[0]} for k, v in CATEGORIES.items()]
+
+
+@app.get("/api/companies")
+def list_companies(status: str | None = None, category: str | None = None, min_score: int | None = None,
+                   q: str | None = None, db: Session = Depends(get_db), _=Depends(ANY)):
+    stmt = select(models.Company).order_by(models.Company.score.desc().nulls_last(), models.Company.id.desc())
+    if status:
+        stmt = stmt.where(models.Company.status == status)
+    if category:
+        stmt = stmt.where(models.Company.category == category)
+    if min_score is not None:
+        stmt = stmt.where(models.Company.score >= min_score)
+    if q:
+        stmt = stmt.where(models.Company.name.ilike(f"%{q}%"))
+    return [company_out(c) for c in db.scalars(stmt.limit(500))]
+
+
+@app.post("/api/companies", status_code=201)
+def create_company(data: CompanyIn, db: Session = Depends(get_db), _=Depends(ANY)):
+    c = models.Company(**data.model_dump(), source="manuel")
+    c.score, c.score_reason, c.next_action = qualifier.qualify(c)
+    db.add(c); db.commit()
+    return company_out(c)
+
+
+@app.patch("/api/companies/{cid}")
+def patch_company(cid: int, data: CompanyPatch, db: Session = Depends(get_db), _=Depends(ANY)):
+    c = db.get(models.Company, cid) or _404()
+    changes = data.model_dump(exclude_unset=True)
+    if "status" in changes and changes["status"] not in models.STATUSES:
+        raise HTTPException(422, "Statut invalide")
+    for k, v in changes.items():
+        setattr(c, k, v)
+    if changes.get("status") in ("contacte", "rdv"):
+        c.last_contact = datetime.now(timezone.utc)
+    db.commit()
+    return company_out(c)
+
+
+@app.delete("/api/companies/{cid}", status_code=204)
+def delete_company(cid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    db.delete(db.get(models.Company, cid) or _404()); db.commit()
+
+
+@app.post("/api/companies/{cid}/qualify")
+def requalify(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
+    c = db.get(models.Company, cid) or _404()
+    c.score, c.score_reason, c.next_action = qualifier.qualify(c)
+    db.commit()
+    return company_out(c)
+
+
+def _404():
+    raise HTTPException(404, "Introuvable")
+
+
+# ---------- Agent IA : recherche + qualification ----------
+class SearchIn(BaseModel):
+    category: str
+    city: str
+    limit: int = 20
+
+
+def _ingest(db: Session, rows: list[dict], min_score: int = 0) -> dict:
+    added = skipped = 0
+    for r in rows:
+        ref = r.get("source_ref")
+        if ref and db.scalar(select(models.Company.id).where(models.Company.source_ref == ref)):
+            skipped += 1
+            continue
+        c = models.Company(**{k: v for k, v in r.items() if hasattr(models.Company, k)})
+        c.score, c.score_reason, c.next_action = qualifier.qualify(c)
+        if c.score < min_score:
+            c.status = "ecarte"
+        db.add(c)
+        added += 1
+    db.commit()
+    return {"added": added, "duplicates": skipped}
+
+
+@app.post("/api/agent/search")
+def agent_search(data: SearchIn, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    try:
+        rows = prospector.search_places(data.category, data.city.strip(), max(1, min(data.limit, 60)))
+    except prospector.ProspectorError as e:
+        raise HTTPException(400, str(e))
+    return {"found": len(rows)} | _ingest(db, rows)
+
+
+@app.post("/api/agent/import-csv")
+async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """Colonnes acceptées : name, category, city, address, phone, website, email, contact_name."""
+    text = (await file.read()).decode("utf-8-sig", errors="replace")
+    rows = []
+    for rec in csv.DictReader(io.StringIO(text), delimiter=";" if ";" in text.split("\n")[0] else ","):
+        rec = {k.strip().lower(): (v or "").strip() for k, v in rec.items() if k}
+        if rec.get("name"):
+            rows.append({k: rec.get(k, "") for k in ("name", "category", "city", "address", "phone", "website",
+                                                    "email", "contact_name")} | {"source": "import_csv"})
+    return {"found": len(rows)} | _ingest(db, rows)
+
+
+# ---------- Messages (brouillon -> validation humaine -> envoi) ----------
+def message_out(m: models.Message) -> dict:
+    return {"id": m.id, "company_id": m.company_id, "company": m.company.name, "to": m.company.email,
+            "kind": m.kind, "subject": m.subject, "body": m.body, "status": m.status,
+            "approved_by": m.approved_by, "created_at": m.created_at.isoformat()}
+
+
+class DraftIn(BaseModel):
+    kind: str = "email"
+
+
+class MessagePatch(BaseModel):
+    subject: str | None = None
+    body: str | None = None
+
+
+@app.post("/api/companies/{cid}/draft", status_code=201)
+def make_draft(cid: int, data: DraftIn, db: Session = Depends(get_db), _=Depends(ANY)):
+    c = db.get(models.Company, cid) or _404()
+    if c.do_not_contact:
+        raise HTTPException(409, "Ce prospect s'est opposé à la prospection")
+    subject, body = writer.draft(c, data.kind)
+    m = models.Message(company_id=c.id, kind=data.kind, subject=subject, body=body)
+    db.add(m); db.commit()
+    return message_out(m)
+
+
+@app.get("/api/messages")
+def list_messages(status: str | None = None, db: Session = Depends(get_db), _=Depends(ANY)):
+    stmt = select(models.Message).order_by(models.Message.id.desc())
+    if status:
+        stmt = stmt.where(models.Message.status == status)
+    return [message_out(m) for m in db.scalars(stmt.limit(200))]
+
+
+def _msg(db: Session, mid: int) -> models.Message:
+    return db.get(models.Message, mid) or _404()
+
+
+@app.patch("/api/messages/{mid}")
+def edit_message(mid: int, data: MessagePatch, db: Session = Depends(get_db), _=Depends(ANY)):
+    m = _msg(db, mid)
+    if m.status not in ("brouillon", "valide"):
+        raise HTTPException(409, "Message déjà traité")
+    for k, v in data.model_dump(exclude_unset=True).items():
+        setattr(m, k, v)
+    m.status, m.approved_by = "brouillon", ""  # toute modification annule la validation
+    db.commit()
+    return message_out(m)
+
+
+@app.post("/api/messages/{mid}/approve")
+def approve(mid: int, db: Session = Depends(get_db), user=Depends(MANAGER)):
+    m = _msg(db, mid)
+    if m.status != "brouillon":
+        raise HTTPException(409, "Seul un brouillon peut être validé")
+    m.status, m.approved_by = "valide", user.email
+    db.commit()
+    return message_out(m)
+
+
+@app.post("/api/messages/{mid}/reject")
+def reject(mid: int, db: Session = Depends(get_db), _=Depends(ANY)):
+    m = _msg(db, mid)
+    m.status = "rejete"
+    db.commit()
+    return message_out(m)
+
+
+@app.post("/api/messages/{mid}/send")
+def send(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """N'envoie que les messages VALIDÉS par un humain, jamais à un prospect opposé."""
+    m = _msg(db, mid)
+    if m.status != "valide":
+        raise HTTPException(409, "Le message doit d'abord être validé")
+    c = m.company
+    if c.do_not_contact:
+        raise HTTPException(409, "Ce prospect s'est opposé à la prospection")
+    if m.kind != "script_appel":
+        if not c.email:
+            raise HTTPException(422, "Aucune adresse email pour ce prospect")
+        if not mailer.smtp_configured():
+            raise HTTPException(400, "SMTP non configuré : copiez le message et envoyez-le depuis votre messagerie, "
+                                     "puis utilisez « Marquer comme envoyé ».")
+        mailer.send_email(c.email, m.subject, m.body)
+    m.status, m.sent_at = "envoye", datetime.now(timezone.utc)
+    c.last_contact = m.sent_at
+    if c.status == "a_contacter":
+        c.status = "contacte"
+    db.commit()
+    return message_out(m)
+
+
+@app.post("/api/messages/{mid}/mark-sent")
+def mark_sent(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    m = _msg(db, mid)
+    if m.status != "valide":
+        raise HTTPException(409, "Le message doit d'abord être validé")
+    m.status, m.sent_at = "envoye", datetime.now(timezone.utc)
+    m.company.last_contact = m.sent_at
+    if m.company.status == "a_contacter":
+        m.company.status = "contacte"
+    db.commit()
+    return message_out(m)
+
+
+# ---------- Tableau de bord ----------
+@app.get("/api/stats")
+def stats(db: Session = Depends(get_db), _=Depends(ANY)):
+    by_status = dict(db.execute(select(models.Company.status, func.count()).group_by(models.Company.status)).all())
+    by_cat = dict(db.execute(select(models.Company.category, func.count()).group_by(models.Company.category)).all())
+    msgs = dict(db.execute(select(models.Message.status, func.count()).group_by(models.Message.status)).all())
+    return {"companies": sum(by_status.values()), "by_status": by_status, "by_category": by_cat,
+            "messages": msgs, "avg_score": db.scalar(select(func.avg(models.Company.score))),
+            "capabilities": {"places": bool(get_settings().places_api_key),
+                             "openai": bool(get_settings().openai_api_key),
+                             "smtp": mailer.smtp_configured()}}
+
+
+@app.get("/")
+def index():
+    return FileResponse(STATIC / "index.html")
+
+
+app.mount("/static", StaticFiles(directory=STATIC), name="static")

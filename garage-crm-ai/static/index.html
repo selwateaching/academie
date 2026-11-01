@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage CRM AI</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--ink:#1c2230;--mute:#667085;--line:#e4e7ec;--brand:#c2410c;--ok:#15803d}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1b2030;--ink:#eef0f5;--mute:#9aa3b5;--line:#2a3045;--brand:#fb923c;--ok:#4ade80}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;gap:16px;align-items:center;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:17px;margin:0;color:var(--brand)}nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+nav button,.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on,.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+main{max-width:1100px;margin:20px auto;padding:0 16px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.kpi b{display:block;font-size:26px}.kpi span,.mute{color:var(--mute);font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;color:var(--mute);text-transform:uppercase}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);max-width:100%}
+textarea{width:100%;min-height:180px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.score{font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line)}.hi{background:var(--ok);color:#fff}
+.hidden{display:none}.tbl{overflow-x:auto}.warn{border-left:4px solid var(--brand)}
+</style>
+</head>
+<body>
+<div id="login" class="card" style="max-width:360px;margin:12vh auto">
+  <h1 style="color:var(--brand);margin-top:0">Garage CRM AI</h1>
+  <div class="row"><input id="em" type="email" placeholder="Email" style="width:100%"></div>
+  <div class="row"><input id="pw" type="password" placeholder="Mot de passe" style="width:100%"></div>
+  <button class="btn pri" id="go">Se connecter</button> <span id="lerr" class="mute"></span>
+</div>
+<div id="app" class="hidden">
+<header><h1>Garage CRM AI</h1>
+<nav><button data-t="dash" class="on">Tableau de bord</button><button data-t="pros">Prospects</button>
+<button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button></nav>
+<span class="mute" id="who"></span><button class="btn" id="out">Déconnexion</button></header>
+<main>
+<section id="t-dash"></section>
+<section id="t-pros" class="hidden"></section>
+<section id="t-agent" class="hidden"></section>
+<section id="t-msgs" class="hidden"></section>
+</main></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let token=sessionStorage.getItem("tk")||"",role="",cats=[];
+const STAT={a_contacter:"À contacter",contacte:"Contacté",rdv:"Rendez-vous",partenaire:"Partenaire",refuse:"Refusé",ecarte:"Écarté"};
+async function api(path,opt={}){
+  const h={Authorization:"Bearer "+token};
+  if(opt.json){h["Content-Type"]="application/json";opt.body=JSON.stringify(opt.json)}
+  const r=await fetch("/api"+path,{method:opt.method||"GET",headers:h,body:opt.body});
+  if(r.status===401){logout();throw new Error("Session expirée")}
+  if(r.status===204)return null;
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(d.detail||"Erreur "+r.status);
+  return d;
+}
+function logout(){sessionStorage.removeItem("tk");token="";$("#app").classList.add("hidden");$("#login").classList.remove("hidden")}
+async function boot(){
+  try{const m=await api("/me");role=m.role;$("#who").textContent=m.name+" ("+m.role+")";
+    cats=await api("/categories");$("#login").classList.add("hidden");$("#app").classList.remove("hidden");show("dash")}
+  catch(e){logout()}
+}
+$("#go").onclick=async()=>{
+  try{const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email:$("#em").value,password:$("#pw").value})});
+    const d=await r.json();if(!r.ok)throw new Error(d.detail);
+    token=d.token;sessionStorage.setItem("tk",token);boot()}catch(e){$("#lerr").textContent=e.message}
+};
+$("#out").onclick=logout;
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));
+function show(t){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
+  ({dash,pros,agent,msgs})[t]();
+}
+const catOpts=sel=>cats.map(c=>`<option value="${esc(c.key)}" ${c.key===sel?"selected":""}>${esc(c.label)}</option>`).join("");
+
+async function dash(){
+  const s=await api("/stats");const st=s.by_status,m=s.messages;
+  const k=(v,l)=>`<div class="card kpi"><b>${v??0}</b><span>${l}</span></div>`;
+  $("#t-dash").innerHTML=`<div class="grid">${k(s.companies,"Prospects")}${k(st.a_contacter,"À contacter")}${k(st.contacte,"Contactés")}
+  ${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(m.brouillon,"Messages à valider")}${k(s.avg_score?Math.round(s.avg_score):"–","Score moyen")}</div>
+  <div class="card"><b>Capacités de l'agent</b><p class="mute">Recherche Google Places : ${s.capabilities.places?"✅ active":"❌ non configurée (import CSV possible)"}<br>
+  IA OpenAI : ${s.capabilities.openai?"✅ active":"❌ non configurée (scoring et emails par règles)"}<br>
+  Envoi email SMTP : ${s.capabilities.smtp?"✅ actif":"❌ non configuré (envoi manuel)"}</p></div>`;
+}
+async function pros(){
+  const el=$("#t-pros");
+  el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">Tous statuts</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
+  <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
+  <button class="btn pri" id="add">+ Ajouter</button></div><div class="tbl" id="tb"></div></div>`;
+  const load=async()=>{
+    const p=new URLSearchParams();[["q","#q"],["status","#fs"],["category","#fc"]].forEach(([k,s])=>{if($(s).value)p.set(k,$(s).value)});
+    const rows=await api("/companies?"+p);
+    $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
+      <td><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
+      <td><b>${esc(c.name)}</b><br><span class="mute">${esc(c.category)} · ${esc(c.city)}</span></td>
+      <td>${esc(c.phone)}<br><span class="mute">${esc(c.email)} ${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site</a>`:""}</span></td>
+      <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
+        <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label></td>
+      <td><button class="btn" data-d="${c.id}" data-k="email">Email</button> <button class="btn" data-d="${c.id}" data-k="script_appel">Script appel</button>
+      <br><span class="mute">${esc(c.next_action)}</span></td></tr>`).join("")+`</table>`;
+    document.querySelectorAll(".st").forEach(s=>s.onchange=()=>api("/companies/"+s.dataset.id,{method:"PATCH",json:{status:s.value}}).catch(e=>alert(e.message)));
+    document.querySelectorAll(".dnc").forEach(s=>s.onchange=()=>api("/companies/"+s.dataset.id,{method:"PATCH",json:{do_not_contact:s.checked}}));
+    document.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{
+      try{await api(`/companies/${b.dataset.d}/draft`,{method:"POST",json:{kind:b.dataset.k}});show("msgs")}catch(e){alert(e.message)}});
+  };
+  $("#fl").onclick=load;
+  $("#add").onclick=async()=>{const name=prompt("Nom de l'entreprise ?");if(!name)return;
+    const category=prompt("Catégorie ("+cats.map(c=>c.key).join(", ")+") ?")||"";
+    await api("/companies",{method:"POST",json:{name,category,city:prompt("Ville ?")||"",phone:prompt("Téléphone ?")||"",email:prompt("Email professionnel ?")||""}});load()};
+  load();
+}
+function agent(){
+  $("#t-agent").innerHTML=`<div class="card"><h3 style="margin-top:0">Lancer une recherche de prospects</h3>
+  <p class="mute">L'agent cherche des entreprises (Google Places), les enregistre sans doublon et leur attribue un score. Aucun message n'est envoyé.</p>
+  <div class="row"><select id="ac">${catOpts()}</select><input id="ay" placeholder="Ville (ex. Toulouse)"><input id="an" type="number" value="20" min="1" max="60" style="width:80px">
+  <button class="btn pri" id="ar" ${role==="commercial"?"disabled":""}>Lancer</button></div><div id="ao" class="mute"></div></div>
+  <div class="card"><h3 style="margin-top:0">Importer un fichier CSV</h3>
+  <p class="mute">Colonnes : name, category, city, address, phone, website, email, contact_name. Catégories : ${cats.map(c=>c.key).join(", ")}.</p>
+  <div class="row"><input id="af" type="file" accept=".csv"><button class="btn" id="ai" ${role==="commercial"?"disabled":""}>Importer</button></div></div>
+  <div class="card warn"><b>Règles de prospection</b><p class="mute">Coordonnées professionnelles uniquement · source tracée pour chaque fiche · tout message est validé par un humain avant envoi · case « opposition » = plus aucun contact · chaque email contient un moyen de désinscription.</p></div>`;
+  $("#ar").onclick=async()=>{$("#ao").textContent="Recherche en cours…";
+    try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value}});
+      $("#ao").textContent=`${r.found} trouvées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés`}catch(e){$("#ao").textContent=e.message}};
+  $("#ai").onclick=async()=>{const f=$("#af").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);
+    try{const r=await api("/agent/import-csv",{method:"POST",body:fd});$("#ao").textContent=`${r.found} lignes · ${r.added} ajoutées · ${r.duplicates} doublons`}catch(e){$("#ao").textContent=e.message}};
+}
+async function msgs(){
+  const rows=await api("/messages");const el=$("#t-msgs");
+  const lab={brouillon:"À valider",valide:"Validé",envoye:"Envoyé",rejete:"Rejeté"};
+  el.innerHTML=rows.length?rows.map(m=>`<div class="card"><div class="row"><b>${esc(m.company)}</b><span class="mute">${esc(m.kind)} · ${lab[m.status]||m.status} ${m.approved_by?"par "+esc(m.approved_by):""}</span></div>
+  <input data-s="${m.id}" value="${esc(m.subject)}" style="width:100%;margin-bottom:8px" ${["envoye","rejete"].includes(m.status)?"disabled":""}>
+  <textarea data-b="${m.id}" ${["envoye","rejete"].includes(m.status)?"disabled":""}>${esc(m.body)}</textarea>
+  <div class="row" style="margin-top:8px">${m.status==="brouillon"?`<button class="btn" data-a="save" data-i="${m.id}">Enregistrer</button><button class="btn pri" data-a="approve" data-i="${m.id}">Valider</button><button class="btn" data-a="reject" data-i="${m.id}">Rejeter</button>`:""}
+  ${m.status==="valide"?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer (SMTP)</button><button class="btn" data-a="mark-sent" data-i="${m.id}">Marquer comme envoyé</button>`:""}</div></div>`).join(""):`<div class="card mute">Aucun message. Générez-en depuis l'onglet Prospects.</div>`;
+  el.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const id=b.dataset.i,a=b.dataset.a;
+    try{if(a==="approve")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
+      if(a==="save")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
+      else await api(`/messages/${id}/${a}`,{method:"POST"});msgs()}catch(e){alert(e.message)}});
+}
+if(token)boot();
+</script>
+</body></html>
