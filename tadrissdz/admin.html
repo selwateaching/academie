@@ -459,8 +459,19 @@ window.aSelectRange = function() {
   var to = parseInt(document.getElementById('aComptesSelectTo').value, 10);
   if (!from || !to || from <= 0 || to <= 0) { alert('Indique des numéros valides.'); return; }
   if (from > to) { var tmp = from; from = to; to = tmp; }
+  var total = LAST_COMPTES_ROWS.length;
+  var selectedInRange = LAST_COMPTES_ROWS.slice(from - 1, to);
   COMPTE_SEL = {};
-  LAST_COMPTES_ROWS.slice(from - 1, to).forEach(function(p) { COMPTE_SEL[p.id] = true; });
+  selectedInRange.forEach(function(p) { COMPTE_SEL[p.id] = true; });
+  /* Message explicite plutôt qu'un échec silencieux : la plage porte sur la liste ACTUELLEMENT
+     affichée (après recherche/filtre), qui peut être plus courte que le nombre total de comptes
+     — "de 101 à 200" ne sélectionne rien si une recherche/filtre réduit la liste à moins de 101
+     lignes, sans que ce soit visible autrement que par le compteur. */
+  if (selectedInRange.length === 0) {
+    alert('Aucun compte sélectionné : la liste affichée ne contient que ' + total + ' compte(s) en ce moment (après recherche/filtre éventuel). Vérifie que le champ de recherche est vide et que le filtre email est sur "Tous les emails", puis réessaie.');
+  } else {
+    alert(selectedInRange.length + ' compte(s) sélectionné(s) (positions ' + from + ' à ' + Math.min(to, total) + ' sur ' + total + ' affiché(s) au total).');
+  }
   window.aRenderComptes();
 };
 window.aUpdateSelCount = function() {
