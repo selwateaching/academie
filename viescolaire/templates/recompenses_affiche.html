@@ -1,0 +1,13 @@
+{% extends 'base.html' %}{% block title %}{{ info.libelle }}{% endblock %}{% block body %}
+<div class="top noprint"><h1>Affiche : {{ info.court }}</h1><span class="barre-actions"><button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('recompenses', periode=periode.id if periode, classe=classe) }}">← Récompenses</a></span></div>
+<form method="get" class="row noprint"><div><label>Période</label><select name="periode" data-autosubmit>{% for p in periodes %}<option value="{{ p.id }}" {{ 'selected' if periode and p.id == periode.id }}>{{ p.nom }}</option>{% endfor %}</select></div>
+<div><label>Distinction</label><select name="type" data-autosubmit>{% for k, i in TYPES_RECOMPENSE.items() %}<option value="{{ k }}" {{ 'selected' if k == type_ }}>{{ i.court }}</option>{% endfor %}</select></div>
+<div><label class="check" style="margin-top:26px"><input type="checkbox" name="photos" value="1" {{ 'checked' if photos_on }} data-autosubmit> Avec les photos</label></div>
+<div style="flex:0 0 auto"><label class="check" style="margin-top:26px"><input type="checkbox" name="classe" value="{{ classe }}" disabled style="display:none"></label></div></form>
+<div class="card paper affiche-recompenses" style="--rc:{{ info.couleur }}">{% include '_entete.html' %}
+<div class="affiche-titre"><i class="medaille enorme" style="--mc:{{ info.couleur }}"></i><h2>{{ info.libelle }}</h2><p>{{ periode.nom if periode }}{% if classe %} · {{ classe }}{% endif %}</p></div>
+{% for cl, liste in par_classe.items() %}<h3 class="affiche-classe">{{ cl }}</h3>
+{% if photos_on %}<div class="affiche-photos">{% for r in liste %}<figure><img src="{{ url_for('photo', kind='eleve', rid=r.eid, v=r.photo or 'initiales') }}" alt="" width="90" height="112"><figcaption>{{ r.prenom }} {{ r.nom }}</figcaption></figure>{% endfor %}</div>
+{% else %}<ul class="affiche-noms">{% for r in liste %}<li>{{ r.prenom }} {{ r.nom }}</li>{% endfor %}</ul>{% endif %}
+{% else %}<p class="mute">Aucune distinction de ce type pour cette période.</p>{% endfor %}
+<p class="affiche-felicitations">Bravo à tous les élèves distingués !</p></div>{% endblock %}

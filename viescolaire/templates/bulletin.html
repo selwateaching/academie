@@ -11,6 +11,7 @@
 {% else %}<tr><td colspan="5" class="mute">Aucune note pour cette période.</td></tr>{% endfor %}
 <tr class="rel-moy"><td><b>Moyenne générale</b></td><td><b>{{ b.moyenne|fnote }}</b></td><td>{{ b.moyenne_classe|fnote }}</td><td>{{ b.min|fnote1 }} – {{ b.max|fnote1 }}</td><td>{% if b.rang %}Rang {{ b.rang }} / {{ b.effectif }}{% endif %}</td></tr></table>
 <div class="appreciation-generale"><b>Appréciation générale</b><p>{{ b.appreciation or '—' }}</p></div>
+{% if b.distinctions %}<div class="appreciation-generale decision-conseil"><b>Décision du conseil de classe</b><p>{{ b.distinctions|join(' · ') }}</p></div>{% endif %}
 {% if seul %}<form method="post" class="noprint">{{ csrf() }}<input type="hidden" name="periode" value="{{ periode.id }}"><label>Modifier l'appréciation générale</label><textarea name="appreciation" rows="3" maxlength="800" style="width:100%">{{ b.appreciation }}</textarea><p><button class="sm">Enregistrer l'appréciation</button></p></form>{% endif %}
 <p class="paper-fait">Édité le {{ aujourdhui|fr_date }}</p>
 <div class="paper-signes">{% for s in signataires if s.par_defaut %}<div><b>{{ s.fonction }}</b><span class="paper-case"></span>{{ s.nom }}</div>{% endfor %}</div>

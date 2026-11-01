@@ -128,6 +128,15 @@ professeur principal) et personnel de vie scolaire (postes). Photos envoyées pa
 400 Ko maximum, stockées en base) ; sans photo, des initiales s'affichent. Impression par classe. Module `trombinoscope`, désactivable par client.
 Les photos d'élèves sont des données personnelles : recueillir le consentement des familles.
 
+
+## Récompenses du conseil de classe
+
+Menu *Élèves et vie scolaire → Récompenses* : félicitations, compliments, encouragements (une seule mention par élève et par période), tableau d'honneur et mérite.
+Saisie après le conseil de classe (vie scolaire pour toutes les classes ; professeur principal pour sa classe), avec une proposition optionnelle d'après les moyennes
+(seuils modifiables, ne remplace jamais une décision enregistrée). Palmarès par période/classe/type, affiche imprimable du tableau d'honneur, certificat individuel.
+Les distinctions apparaissent aussi en médailles sur le trombinoscope (filtre « Élèves récompensés seulement »), sur la fiche élève et sur le bulletin.
+Table `recompenses` (migration 24), module `recompenses`, désactivable par client.
+
 ## Limites connues
 
 - Planification : semaine du lundi au vendredi uniquement (pas encore de semaines Dim.–Jeu. ou avec samedi), pas d'alternance de semaines A/B, pas de gestion des

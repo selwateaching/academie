@@ -84,6 +84,7 @@ MODULE_DES_ENDPOINTS = {
     "reunions_ia": ["ri_liste", "ri_creer", "ri_reunion", "ri_preparation", "ri_audio_nouveau", "ri_audio_morceau", "ri_audio_fin", "ri_audio_lire", "ri_audio_supprimer",
                     "reunion_enregistrer", "ri_transcrire", "ri_analyser", "ri_hors_sujet", "ri_etat", "ri_transcription_enregistrer", "ri_rediger", "ri_cr_enregistrer", "ri_cr_voir", "ri_cr_docx", "ri_partager", "ri_supprimer"],
     "aide": ["aide", "aide_question"],
+    "recompenses": ["recompenses", "recompenses_saisie", "recompenses_affiche", "recompense_certificat", "recompense_supprimer"],
     "planification": ["planification", "volumes", "planification_parametres", "besoins", "besoin_supprimer", "besoins_depuis_edt", "voeux", "mes_voeux",
                       "generer_edt", "proposition", "proposition_appliquer", "proposition_supprimer"],
 }
@@ -309,7 +310,7 @@ def entetes(resp):
 
 # ───────────────────────── Menu : une seule définition pour la barre latérale ET les cartes de l'accueil ─────────────────────────
 # Pages de détail ou de suite : elles marquent comme active la page du menu dont elles dépendent
-PAGE_PARENTE = {"ri_reunion": "reunions", "ri_liste": "reunions", "ri_cr_voir": "reunions", "proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
+PAGE_PARENTE = {"recompenses_saisie": "recompenses", "recompenses_affiche": "recompenses", "recompense_certificat": "recompenses", "ri_reunion": "reunions", "ri_liste": "reunions", "ri_cr_voir": "reunions", "proposition": "planification", "professeur": "professeurs", "eleve_fiche": "eleves", "reunion_detail": "reunions",
                 "document_genere": "documents", "eleves_groupe": "eleves_groupes", "evaluation": "notes", "etat_assiduite": "assiduite", "appel": "appel", "eleve_notes": "notes", "releve": "notes", "releves_classe": "bulletins_classe", "bulletin": "bulletins_classe", "modele_edit": "modeles_documents", "message": "messages", "message_nouveau": "messages",
                 "pers_fiche": "pers_liste", "infirmerie_fiche": "infirmerie_eleves", "document_telecharger": "documents", "pers_planning_csv": "pers_planning"}
 
@@ -351,6 +352,7 @@ def menu_sections():
                 item("eleves_groupes", "Groupes d'élèves", "reunion", "LV2, ateliers, aide aux devoirs…", "eleves"),
                 item("notes", "Notes et évaluations", "taches", "Notes saisies par les professeurs", "notes"),
                 item("bulletins_classe", "Bulletins de classe", "redaction", "Bulletins à imprimer par classe", "notes"),
+                item("recompenses", "Récompenses", "trophee", "Félicitations, tableau d'honneur", "recompenses"),
                 item("pyramide", "Pyramide des âges", "barres", "Répartition par âge et par sexe", "eleves"),
                 item("classes", "Classes et niveaux", "classes", "Professeur principal, niveaux", "classes"),
                 item("edt_classes", "Emplois du temps des classes", "calendrier", "Une classe en un clic", "emplois_du_temps", actif=request.endpoint == "emploi_du_temps" and bool(request.args.get("classe"))),
@@ -408,6 +410,7 @@ def menu_sections():
                 item("messages", "Messagerie", "message", "Messages internes", "messagerie", nb["messages"])], True),
             section("Classes et documents", [
                 item("trombinoscope", "Trombinoscope", "photo", "Photos par classe", "trombinoscope"),
+                item("recompenses", "Récompenses", "trophee", "Félicitations, tableau d'honneur", "recompenses"),
                 item("document_nouveau", "Rédiger un document", "redaction", "Rapport d'incident…", "redaction"),
                 item("reunions", "Réunions", "reunion", "Convocations", "reunions"),
                 item("documents", "Bibliothèque de documents", "dossier", "Archive classée par date et niveau", "documents")]),
@@ -2455,7 +2458,8 @@ def eleve_fiche(eid):
     incidents_ = q("SELECT * FROM incidents WHERE etab_id=? AND eleve_id=? ORDER BY date DESC", (g.etab_id, eid))
     documents_ = q("SELECT id, titre, created_at FROM documents_generes WHERE etab_id=? AND eleve_id=? ORDER BY id DESC", (g.etab_id, eid))
     reunions_ = q("SELECT r.id, r.titre, r.date, r.heure FROM reunion_eleves re JOIN reunions r ON r.id=re.reunion_id WHERE re.eleve_id=? ORDER BY r.date DESC", (eid,))
-    return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_,
+    recompenses_ = q("SELECT r.id, r.type, r.commentaire, pe.nom periode FROM recompenses r JOIN periodes pe ON pe.id=r.periode_id WHERE r.eleve_id=? AND r.etab_id=? ORDER BY pe.ordre, r.id", (eid, g.etab_id)) if module_actif("recompenses") else []
+    return render_template("eleve.html", e=e, pp=pp, equipe=equipe_liste, incidents=incidents_, documents=documents_, reunions=reunions_, recompenses=recompenses_,
                            inf=infos_infirmerie(eid), regimes=REGIMES, resume_notes=resume_notes_eleve(e), assiduite=resume_assiduite_eleve(e))
 
 
@@ -3933,11 +3937,18 @@ def trombinoscope():
             par.setdefault(p["categorie"], []).append({"kind": "perso", "id": p["id"], "nom": p["nom"], "prenom": p["prenom"],
                                                        "ligne": p["fonction"], "roles": roles.get(p["id"], [])})
         groupes = [(c, "", l) for c, l in par.items()]
+    distinctions, periode_dist = distinctions_recentes() if vue == "eleves" else ({}, None)
+    seulement = vue == "eleves" and bool(request.args.get("recompenses")) and bool(distinctions)
     for _, _, lst in groupes:
         for x in lst:
             x["photo"] = avec_photo.get((x["kind"], x["id"]), "")
+            x["distinctions"] = [t for t in TYPES_RECOMPENSE if t in distinctions.get(x["id"], [])] if x["kind"] == "eleve" else []
+    if seulement:       # filtre « récompensés seulement »
+        groupes = [(t, s_, [x for x in lst if x["distinctions"]]) for t, s_, lst in groupes]
+        groupes = [gr for gr in groupes if gr[2]]
     return render_template("trombinoscope.html", vue=vue, classe=classe, classes=classes_, groupes=groupes, staff=staff, terme=terme,
-                           tri=tri if tri in ("nom", "prenom") else "nom", total=sum(len(l) for _, _, l in groupes))
+                           tri=tri if tri in ("nom", "prenom") else "nom", total=sum(len(l) for _, _, l in groupes),
+                           periode_dist=periode_dist, seulement=seulement, a_distinctions=bool(distinctions))
 
 
 @app.route("/trombinoscope/photo/<kind>/<int:rid>", methods=["POST"])
@@ -4459,7 +4470,9 @@ def donnees_bulletin(eleve, periode):
     classement = sorted(gen_cl.values(), reverse=True)
     rang = (classement.index(gen_cl[eleve["id"]]) + 1) if eleve["id"] in gen_cl else None
     gen_app = one("SELECT texte FROM appreciations WHERE eleve_id=? AND periode_id=? AND matiere=''", (eleve["id"], periode["id"]))
-    return {"lignes": lignes, "moyenne": moy_gen, "moyenne_classe": (sum(gen_cl.values()) / len(gen_cl)) if gen_cl else None, "rang": rang, "effectif": len(gen_cl),
+    dist = [TYPES_RECOMPENSE[r["type"]]["libelle"] for r in q("SELECT type FROM recompenses WHERE eleve_id=? AND periode_id=? AND etab_id=?", (eleve["id"], periode["id"], g.etab_id))
+            if r["type"] in TYPES_RECOMPENSE] if module_actif("recompenses") else []
+    return {"lignes": lignes, "moyenne": moy_gen, "moyenne_classe": (sum(gen_cl.values()) / len(gen_cl)) if gen_cl else None, "rang": rang, "effectif": len(gen_cl), "distinctions": dist,
             "appreciation": gen_app["texte"] if gen_app else "", "min": min(gen_cl.values()) if gen_cl else None, "max": max(gen_cl.values()) if gen_cl else None}
 
 
@@ -6387,6 +6400,215 @@ def ri_supprimer(rid):
     log("réunion intelligente : réunion supprimée", r["titre"])
     flash("Réunion, enregistrements, transcription et compte rendu supprimés.", "ok")
     return redirect(url_for("ri_liste"))
+
+
+# ───────────────────────── Récompenses du conseil de classe (félicitations, tableau d'honneur…) ─────────────────────────
+TYPES_RECOMPENSE = {
+    "felicitations": {"libelle": "Félicitations du conseil de classe", "court": "Félicitations", "couleur": "#C99412", "mention": True},
+    "compliments": {"libelle": "Compliments du conseil de classe", "court": "Compliments", "couleur": "#6B7C89", "mention": True},
+    "encouragements": {"libelle": "Encouragements du conseil de classe", "court": "Encouragements", "couleur": "#B0703A", "mention": True},
+    "tableau_honneur": {"libelle": "Tableau d'honneur", "court": "Tableau d'honneur", "couleur": "#2E8B57", "mention": False},
+    "merite": {"libelle": "Mérite et engagement", "court": "Mérite", "couleur": "#1F86A8", "mention": False},
+}
+MENTIONS_RECOMPENSE = [k for k, v in TYPES_RECOMPENSE.items() if v["mention"]]
+SEUILS_RECOMPENSE = {"felicitations": 15.0, "compliments": 14.0, "encouragements": 13.0, "tableau_honneur": 14.0}
+app.jinja_env.globals["TYPES_RECOMPENSE"] = TYPES_RECOMPENSE
+
+
+def recompenses_acces(f):
+    @wraps(f)
+    def wrapper(*a, **kw):
+        if g.user["role"] not in STAFF and not g.prof:
+            abort(403)
+        return f(*a, **kw)
+    return wrapper
+
+
+def recompenses_classes_saisie():
+    """Classes dont la personne connectée peut saisir les récompenses : toutes pour la vie scolaire, les siennes (professeur principal) pour un enseignant."""
+    if g.user["role"] in STAFF:
+        return [r["nom"] for r in q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))]
+    if g.prof:
+        return [r["nom"] for r in q("SELECT nom FROM classes WHERE etab_id=? AND prof_principal_id=? ORDER BY nom", (g.etab_id, g.prof["id"]))]
+    return []
+
+
+def recompenses_periode(valeur=None):
+    """Période demandée ; sinon la plus récente qui a des récompenses ; sinon la période en cours."""
+    lst = periodes_etab()
+    if valeur:
+        p = next((x for x in lst if str(x["id"]) == str(valeur)), None)
+        if p:
+            return p, lst
+    avec = {r["periode_id"] for r in q("SELECT DISTINCT periode_id FROM recompenses WHERE etab_id=?", (g.etab_id,))}
+    for p in sorted(lst, key=lambda x: (x["ordre"], x["id"]), reverse=True):
+        if p["id"] in avec:
+            return p, lst
+    return periode_choisie(None)
+
+
+def distinctions_recentes():
+    """({élève: [types]}, période) pour la période la plus récente qui a des récompenses (repères du trombinoscope)."""
+    if not module_actif("recompenses"):
+        return {}, None
+    p, _ = recompenses_periode()
+    if not p:
+        return {}, None
+    par = {}
+    for r in q("SELECT eleve_id, type FROM recompenses WHERE etab_id=? AND periode_id=?", (g.etab_id, p["id"])):
+        par.setdefault(r["eleve_id"], []).append(r["type"])
+    return par, p
+
+
+@app.route("/recompenses")
+@recompenses_acces
+def recompenses():
+    p, lst = recompenses_periode(request.args.get("periode"))
+    classe = request.args.get("classe", "")
+    type_ = request.args.get("type", "")
+    rows = []
+    if p:
+        sql = ("SELECT r.id, r.type, r.commentaire, e.id eid, e.nom, e.prenom, e.classe FROM recompenses r JOIN eleves e ON e.id=r.eleve_id "
+               "WHERE r.etab_id=? AND r.periode_id=?")
+        args = [g.etab_id, p["id"]]
+        if classe:
+            sql += " AND e.classe=?"
+            args.append(classe)
+        rows = q(sql + " ORDER BY e.classe, e.nom, e.prenom", args)
+    photos = {r["ref_id"]: r["at"] for r in q("SELECT ref_id, at FROM photos WHERE etab_id=? AND kind='eleve'", (g.etab_id,))}
+    groupes = []
+    for cle, info in TYPES_RECOMPENSE.items():
+        if type_ and type_ != cle:
+            continue
+        lis = [dict(r, photo=photos.get(r["eid"], "")) for r in rows if r["type"] == cle]
+        groupes.append({"cle": cle, **info, "liste": lis})
+    total_eleves = len({r["eid"] for r in rows})
+    classes_ = q("SELECT nom FROM classes WHERE etab_id=? ORDER BY nom", (g.etab_id,))
+    peut = bool(recompenses_classes_saisie())
+    return render_template("recompenses.html", periode=p, periodes=lst, classe=classe, classes=classes_, type_=type_, groupes=groupes, total=len(rows), total_eleves=total_eleves,
+                           peut_saisir=peut, staff=g.user["role"] in STAFF)
+
+
+@app.route("/recompenses/saisie", methods=["GET", "POST"])
+@recompenses_acces
+def recompenses_saisie():
+    permises = recompenses_classes_saisie()
+    if not permises:
+        flash("La saisie des récompenses est réservée à la vie scolaire et aux professeurs principaux.", "err")
+        return redirect(url_for("recompenses"))
+    p, lst = recompenses_periode(request.values.get("periode"))
+    classe = request.values.get("classe", "")
+    if classe not in permises:
+        classe = ""
+    if not p:
+        flash("Aucune période : réglez d'abord les trimestres (Administration → Périodes).", "err")
+        return redirect(url_for("recompenses"))
+    eleves_ = q("SELECT id, nom, prenom FROM eleves WHERE etab_id=? AND classe=? ORDER BY nom, prenom", (g.etab_id, classe)) if classe else []
+    if request.method == "POST" and classe and request.form.get("action") == "enregistrer":
+        f, n, maintenant = request.form, 0, datetime.now().isoformat(timespec="minutes")
+        for e in eleves_:
+            run("DELETE FROM recompenses WHERE eleve_id=? AND periode_id=? AND etab_id=?", (e["id"], p["id"], g.etab_id))
+            choix = []
+            mention = f.get(f"m_{e['id']}", "")
+            if mention in MENTIONS_RECOMPENSE:
+                choix.append(mention)
+            if f.get(f"th_{e['id']}"):
+                choix.append("tableau_honneur")
+            if f.get(f"me_{e['id']}"):
+                choix.append("merite")
+            for t in choix:
+                db().execute("INSERT INTO recompenses(etab_id,eleve_id,periode_id,type,commentaire,saisi_par,created_at) VALUES (?,?,?,?,?,?,?)",
+                             (g.etab_id, e["id"], p["id"], t, f.get(f"c_{e['id']}", "").strip()[:200], g.user["nom"], maintenant))
+                n += 1
+        db().commit()
+        log("récompenses enregistrées", f"{classe} {p['nom']} ({n})")
+        flash(f"Récompenses de la {classe} enregistrées pour la période « {p['nom']} » : {n} distinction(s).", "ok")
+        return redirect(url_for("recompenses", periode=p["id"], classe=classe))
+    existantes = {}
+    for r in q("SELECT eleve_id, type, commentaire FROM recompenses WHERE etab_id=? AND periode_id=?", (g.etab_id, p["id"])):
+        existantes.setdefault(r["eleve_id"], {"types": set(), "comm": ""})
+        existantes[r["eleve_id"]]["types"].add(r["type"])
+        existantes[r["eleve_id"]]["comm"] = existantes[r["eleve_id"]]["comm"] or r["commentaire"]
+    moy, gen = moyennes_classe(classe, p["id"]) if classe else ({}, {})
+    classement = sorted(gen.values(), reverse=True)
+    seuils = {}
+    for k, defaut in SEUILS_RECOMPENSE.items():
+        try:
+            seuils[k] = float(str(request.args.get(f"s_{k}", defaut)).replace(",", "."))
+        except ValueError:
+            seuils[k] = defaut
+    proposer = bool(request.args.get("proposer"))
+    lignes = []
+    for e in eleves_:
+        m = gen.get(e["id"])
+        types = set(existantes.get(e["id"], {}).get("types", set()))
+        prop = False
+        if proposer and m is not None and not types:     # la proposition ne remplace jamais une décision déjà enregistrée
+            for t in MENTIONS_RECOMPENSE:
+                if m >= seuils[t]:
+                    types.add(t)
+                    break
+            if m >= seuils["tableau_honneur"]:
+                types.add("tableau_honneur")
+            prop = bool(types)
+        lignes.append({"id": e["id"], "nom": e["nom"], "prenom": e["prenom"], "moyenne": m, "rang": (classement.index(m) + 1) if m is not None else None,
+                       "mention": next((t for t in MENTIONS_RECOMPENSE if t in types), ""), "th": "tableau_honneur" in types, "me": "merite" in types,
+                       "comm": existantes.get(e["id"], {}).get("comm", ""), "propose": prop})
+    return render_template("recompenses_saisie.html", periode=p, periodes=lst, classe=classe, classes=permises, lignes=lignes, seuils=seuils, proposer=proposer)
+
+
+@app.route("/recompenses/affiche")
+@recompenses_acces
+def recompenses_affiche():
+    p, _ = recompenses_periode(request.args.get("periode"))
+    type_ = request.args.get("type") if request.args.get("type") in TYPES_RECOMPENSE else "tableau_honneur"
+    classe = request.args.get("classe", "")
+    photos_on = bool(request.args.get("photos"))
+    rows = []
+    if p:
+        sql = ("SELECT e.id eid, e.nom, e.prenom, e.classe FROM recompenses r JOIN eleves e ON e.id=r.eleve_id WHERE r.etab_id=? AND r.periode_id=? AND r.type=?")
+        args = [g.etab_id, p["id"], type_]
+        if classe:
+            sql += " AND e.classe=?"
+            args.append(classe)
+        rows = q(sql + " ORDER BY e.classe, e.nom, e.prenom", args)
+    photos = {r["ref_id"]: r["at"] for r in q("SELECT ref_id, at FROM photos WHERE etab_id=? AND kind='eleve'", (g.etab_id,))}
+    par_classe = {}
+    for r in rows:
+        par_classe.setdefault(r["classe"] or "Sans classe", []).append(dict(r, photo=photos.get(r["eid"], "")))
+    log("récompenses : affichage de l'affiche", f"{type_} {p['nom'] if p else ''}")
+    return render_template("recompenses_affiche.html", periode=p, type_=type_, info=TYPES_RECOMPENSE[type_], par_classe=par_classe, total=len(rows), classe=classe,
+                           photos_on=photos_on, e=entete_documents(), staff=g.user["role"] in STAFF,
+                           periodes=periodes_etab())
+
+
+@app.route("/recompenses/<int:rid>/certificat")
+@recompenses_acces
+def recompense_certificat(rid):
+    r = one("SELECT r.*, e.nom, e.prenom, e.classe, pe.nom pnom, pe.debut pdebut FROM recompenses r JOIN eleves e ON e.id=r.eleve_id JOIN periodes pe ON pe.id=r.periode_id "
+            "WHERE r.id=? AND r.etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    if g.user["role"] not in STAFF and r["classe"] not in recompenses_classes_saisie():
+        abort(403)
+    annee = r["pdebut"][:4] if r["pdebut"] else str(date.today().year)
+    log("récompenses : certificat imprimé", f"{r['nom']} {r['prenom']} {r['type']}")
+    return render_template("recompense_certificat.html", r=r, info=TYPES_RECOMPENSE.get(r["type"], TYPES_RECOMPENSE["merite"]), e=entete_documents(), signes=signataires_actifs()[:3],
+                           annee=annee, ville=entete_documents().get("ville", ""))
+
+
+@app.route("/recompenses/<int:rid>/supprimer", methods=["POST"])
+@recompenses_acces
+def recompense_supprimer(rid):
+    r = one("SELECT r.*, e.classe FROM recompenses r JOIN eleves e ON e.id=r.eleve_id WHERE r.id=? AND r.etab_id=?", (rid, g.etab_id))
+    if not r:
+        abort(404)
+    if g.user["role"] not in STAFF and r["classe"] not in recompenses_classes_saisie():
+        abort(403)
+    run("DELETE FROM recompenses WHERE id=?", (rid,))
+    log("récompense retirée", f"élève {r['eleve_id']} {r['type']}")
+    flash("Distinction retirée.", "ok")
+    return redirect(request.referrer or url_for("recompenses"))
 
 
 # ───────────────────────── Assistant d'aide (chatbot pas à pas) ─────────────────────────

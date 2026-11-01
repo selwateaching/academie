@@ -387,6 +387,15 @@ MIGRATIONS = [
     (23, """
         ALTER TABLE ri_reunions ADD COLUMN reunion_id INTEGER REFERENCES reunions(id) ON DELETE SET NULL;   -- convocation (module Réunions) à laquelle l'enregistrement est rattaché
     """),
+    (24, """
+        CREATE TABLE IF NOT EXISTS recompenses (   -- distinctions décernées par le conseil de classe (félicitations, tableau d'honneur…)
+            id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
+            eleve_id INTEGER NOT NULL REFERENCES eleves(id) ON DELETE CASCADE, periode_id INTEGER NOT NULL REFERENCES periodes(id) ON DELETE CASCADE,
+            type TEXT NOT NULL, commentaire TEXT NOT NULL DEFAULT '', saisi_par TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
+            UNIQUE (eleve_id, periode_id, type)
+        );
+        CREATE INDEX IF NOT EXISTS idx_recompenses ON recompenses(etab_id, periode_id);
+    """),
 ]
 
 
@@ -928,6 +937,25 @@ def seed_demo(password="demo1234"):
             texte = ("Excellent trimestre, félicitations." if moy >= 15 else "Bon travail, résultats solides." if moy >= 12 else
                      "Résultats corrects mais irréguliers : à consolider." if moy >= 9 else "Des difficultés : un soutien et plus de régularité sont nécessaires.")
             con.execute("INSERT INTO appreciations(etab_id,eleve_id,periode_id,matiere,texte) VALUES (?,?,?,'',?)", (eid, el, per[0], texte))
+        # récompenses du conseil de classe (démonstration) : d'après les moyennes du 1er trimestre
+        for el, in con.execute("SELECT id FROM eleves WHERE etab_id=?", (eid,)).fetchall():
+            moy = con.execute("SELECT AVG(n.valeur) FROM notes n JOIN evaluations ev ON ev.id=n.evaluation_id WHERE n.eleve_id=? AND ev.periode_id=? AND n.valeur IS NOT NULL", (el, per[0])).fetchone()[0]
+            if moy is None:
+                continue
+            types = []
+            if moy >= 15:
+                types.append("felicitations")
+            elif moy >= 14:
+                types.append("compliments")
+            elif moy >= 13:
+                types.append("encouragements")
+            if moy >= 14:
+                types.append("tableau_honneur")
+            if el % 17 == 0 and moy >= 10:
+                types.append("merite")
+            for t in types:
+                con.execute("INSERT OR IGNORE INTO recompenses(etab_id,eleve_id,periode_id,type,saisi_par,created_at) VALUES (?,?,?,?,?,?)",
+                            (eid, el, per[0], t, "Conseil de classe (démo)", per[1] + "T17:00"))
     con.commit()
     con.close()
     return cpe

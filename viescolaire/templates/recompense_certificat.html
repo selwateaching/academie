@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block title %}Certificat{% endblock %}{% block body %}
+<div class="top noprint"><h1>Certificat de distinction</h1><span class="barre-actions"><button class="sec" data-print>Imprimer / PDF</button> <a class="btn sec" href="{{ url_for('recompenses') }}">← Récompenses</a></span></div>
+<div class="card paper certificat" style="--rc:{{ info.couleur }}">{% include '_entete.html' %}
+<div class="certificat-corps"><i class="medaille enorme" style="--mc:{{ info.couleur }}"></i><p class="certificat-sur">Le conseil de classe décerne</p><h2>{{ info.libelle }}</h2><p class="certificat-a">à</p><p class="certificat-nom">{{ r.prenom }} {{ r.nom }}</p>
+<p class="certificat-classe">classe de {{ r.classe }} · {{ r.pnom }} · année scolaire {{ annee }}–{{ annee|int + 1 }}</p>{% if r.commentaire %}<p class="certificat-comm">« {{ r.commentaire }} »</p>{% endif %}
+<p class="certificat-fait">{{ ('Fait à ' ~ ville ~ ', le ') if ville else 'Fait le ' }}{{ r.created_at[:10]|fr_date }}</p>
+<div class="paper-signes">{% for s in signes %}<div><b>{{ s.fonction }}</b><span class="paper-case"></span>{{ s.nom }}</div>{% else %}<div><b>Le chef d'établissement</b><span class="paper-case"></span></div><div><b>Le professeur principal</b><span class="paper-case"></span></div>{% endfor %}</div></div></div>{% endblock %}

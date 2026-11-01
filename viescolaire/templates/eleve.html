@@ -8,6 +8,7 @@
 <div class="stats" style="margin-bottom:0"><div class="stat"><b>{{ resume_notes.moyenne|fnote }}</b><span>Moyenne générale /20</span></div><div class="stat"><b>{{ resume_notes.classe|fnote }}</b><span>Moyenne de la classe</span></div>
 {% for m in resume_notes.matieres[:6] %}<div class="stat"><b>{{ m.moyenne|fnote1 }}</b><span>{{ m.matiere }}</span></div>{% endfor %}</div></div>{% endif %}
 <div class="grid g2">
+{% if recompenses %}<div class="card"><h2>Récompenses</h2><ul class="liste-recompenses">{% for r in recompenses %}<li><i class="medaille" style="--mc:{{ TYPES_RECOMPENSE[r.type].couleur }}"></i> <b>{{ TYPES_RECOMPENSE[r.type].libelle }}</b> <span class="mute">· {{ r.periode }}{% if r.commentaire %} · {{ r.commentaire }}{% endif %}</span>{% if g.user.role in STAFF %} <a class="btn sec sm" href="{{ url_for('recompense_certificat', rid=r.id) }}">Certificat</a>{% endif %}</li>{% endfor %}</ul></div>{% endif %}
 <div class="card"><h2>Professeur principal</h2>{% if pp %}<p style="font-size:17px;margin:0"><b>{{ pp.nom }}</b></p><p class="mute" style="margin:2px 0 0">{{ pp.matiere }}</p>
 {% for p in equipe if p.principal %}<p style="margin:6px 0 0">{% if p.email %}{{ p.email }}{% endif %}{% if p.telephone %} · {{ p.telephone }}{% endif %}</p>{% endfor %}
 {% else %}<p class="mute">Aucun professeur principal pour cette classe. Vous pouvez le renseigner dans <a href="{{ url_for('classes') }}">Classes</a>.</p>{% endif %}</div>

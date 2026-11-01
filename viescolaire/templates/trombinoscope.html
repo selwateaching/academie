@@ -5,12 +5,14 @@
 <div style="flex:2"><label>Rechercher</label><input type="search" name="q" value="{{ terme }}" placeholder="Nom, prénom{{ ', classe' if vue == 'eleves' else ', matière' }}…" autocomplete="off" data-tromb-recherche></div>
 {% if vue == 'eleves' %}<div><label>Classe</label><select name="classe" data-autosubmit><option value="">Toutes les classes</option>{% for c in classes %}<option {{ 'selected' if c.nom == classe }}>{{ c.nom }}</option>{% endfor %}</select></div>{% endif %}
 <div><label>Trier par</label><select name="tri" data-autosubmit><option value="nom" {{ 'selected' if tri == 'nom' }}>Nom (A → Z)</option><option value="prenom" {{ 'selected' if tri == 'prenom' }}>Prénom (A → Z)</option></select></div>
+{% if vue == 'eleves' and a_distinctions %}<div style="flex:0 0 auto"><label class="check" style="margin-top:26px"><input type="checkbox" name="recompenses" value="1" {{ 'checked' if seulement }} data-autosubmit> Élèves récompensés seulement</label></div>{% endif %}
 <div style="flex:0 0 auto"><button class="sec">Rechercher</button></div></form>
+{% if vue == 'eleves' and a_distinctions %}<p class="legende-recompenses noprint">Repères « {{ periode_dist.nom }} » : {% for k, i in TYPES_RECOMPENSE.items() %}<span class="medaille-leg"><i class="medaille" style="--mc:{{ i.couleur }}"></i> {{ i.court }}</span>{% endfor %}</p>{% endif %}
 <p class="mute noprint" data-tromb-compte>{{ total }} personne{{ 's' if total > 1 }}{% if terme %} pour « {{ terme }} »{% endif %}.</p>
 {% for titre, sous, liste in groupes %}
 <div class="card tromb" data-tromb-groupe><h2>{{ titre }} <span class="mute" style="font-size:14px;font-weight:400">· {{ liste|length }}{% if sous %} · {{ sous }}{% endif %}</span></h2>
 <div class="tromb-grille">
-{% for x in liste %}<figure class="tromb-fiche" data-tromb-fiche><img src="{{ url_for('photo', kind=x.kind, rid=x.id, v=x.photo or 'initiales') }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
+{% for x in liste %}<figure class="tromb-fiche" data-tromb-fiche>{% if x.distinctions %}<span class="medailles" title="{% for t in x.distinctions %}{{ TYPES_RECOMPENSE[t].libelle }}{{ ' · ' if not loop.last }}{% endfor %}">{% for t in x.distinctions %}<i class="medaille" style="--mc:{{ TYPES_RECOMPENSE[t].couleur }}"></i>{% endfor %}</span>{% endif %}<img src="{{ url_for('photo', kind=x.kind, rid=x.id, v=x.photo or 'initiales') }}" alt="{{ x.prenom }} {{ x.nom }}" width="120" height="150" loading="lazy">
 <figcaption><b>{{ x.nom }}</b> {{ x.prenom }}{% if x.ligne %}<br><span class="mute">{{ x.ligne }}</span>{% endif %}
 {% if x.roles %}<br>{% for n, c in x.roles %}<span class="chip-poste" style="background:{{ c }};color:{{ c|couleur_texte }}">{{ n }}</span> {% endfor %}{% endif %}</figcaption>
 {% if staff %}<form method="post" action="{{ url_for('photo_enregistrer', kind=x.kind, rid=x.id) }}" enctype="multipart/form-data" class="noprint tromb-actions">{{ csrf() }}
