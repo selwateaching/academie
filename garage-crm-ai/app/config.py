@@ -41,6 +41,7 @@ class Settings:
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = ""
+    relance_days: int = 5
 
 
 def get_settings() -> Settings:
@@ -62,4 +63,5 @@ def get_settings() -> Settings:
         smtp_user=_env("SMTP_USER"),
         smtp_password=_env("SMTP_PASSWORD"),
         smtp_from=_env("SMTP_FROM"),
+        relance_days=int(_env("RELANCE_DAYS", "5") or 5),
     )

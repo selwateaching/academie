@@ -151,3 +151,48 @@ def test_city_typed_as_department_still_matches_via_address():
     assert enrichment.commune_from_address(addr) == "Toulouse"
     assert enrichment.pick_manager(fake, "Ucar - Location de voitures Toulouse", "31", addr)["contact_name"] == "Anne Leroy"
     assert enrichment.pick_manager(fake, "Ucar - Location de voitures Toulouse", "31", "1 rue A, 69000 Lyon, France") is None
+
+
+# ---------- Relances et rapport ----------
+def _age_company(cid, days):
+    from datetime import datetime, timedelta, timezone
+    from app import models
+    from app.db import SessionLocal
+    with SessionLocal() as db:
+        db.get(models.Company, cid).last_contact = datetime.now(timezone.utc) - timedelta(days=days)
+        db.commit()
+
+
+def test_relances_flow(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Relance SARL", "category": "flotte", "city": "Toulouse", "phone": "0561"}).json()
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"status": "contacte"})
+    ids = lambda: [x["id"] for x in client.get("/api/relances", headers=h).json()["items"]]
+    assert c["id"] not in ids()                      # contacté à l'instant : trop tôt
+    _age_company(c["id"], 6)
+    assert c["id"] in ids()                          # 6 jours > 5 jours
+    r = client.post("/api/relances/draft-all", headers=h).json()
+    assert r["created"] >= 1
+    assert c["id"] not in ids()                      # brouillon en attente : pas de doublon
+    assert client.post("/api/relances/draft-all", headers=h).json()["created"] == 0
+    msgs = [m for m in client.get("/api/messages", headers=h).json() if m["company_id"] == c["id"] and m["kind"] == "relance"]
+    assert len(msgs) == 1 and msgs[0]["status"] == "brouillon"
+    # jamais d'envoi sans validation
+    assert client.post(f"/api/messages/{msgs[0]['id']}/send", headers=h).status_code == 409
+
+
+def test_relance_skips_opt_out_and_caps_at_two(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Opposé SA", "category": "taxi", "city": "Toulouse"}).json()
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"status": "contacte", "do_not_contact": True})
+    _age_company(c["id"], 30)
+    assert c["id"] not in [x["id"] for x in client.get("/api/relances", headers=h).json()["items"]]
+
+
+def test_report_and_dashboard(client):
+    h = auth(client)
+    r = client.get("/api/report?days=7", headers=h).json()
+    for key in ("new_prospects", "messages_sent", "to_relance", "by_status", "top_to_contact", "garage"):
+        assert key in r
+    assert r["new_prospects"] >= 1 and len(r["top_to_contact"]) <= 5
+    assert "to_relance" in client.get("/api/stats", headers=h).json()

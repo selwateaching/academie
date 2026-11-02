@@ -1,7 +1,7 @@
 import csv
 import io
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
@@ -385,6 +385,76 @@ def mark_sent(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
     return message_out(m)
 
 
+# ---------- Relances ----------
+MAX_RELANCES = 2
+
+
+def _aware(dt):
+    return dt.replace(tzinfo=timezone.utc) if dt is not None and dt.tzinfo is None else dt
+
+
+def due_relances(db: Session) -> list[dict]:
+    """Prospects contactés, sans réponse depuis RELANCE_DAYS jours, sans relance déjà en préparation."""
+    limit = datetime.now(timezone.utc) - timedelta(days=get_settings().relance_days)
+    out = []
+    for c in db.scalars(select(models.Company).where(models.Company.status == "contacte")):
+        last = _aware(c.last_contact)
+        if c.do_not_contact or not last or last > limit:
+            continue
+        relances = [m for m in c.messages if m.kind == "relance"]
+        if any(m.status in ("brouillon", "valide") for m in relances):
+            continue
+        sent = sum(1 for m in relances if m.status == "envoye")
+        if sent >= MAX_RELANCES:
+            continue
+        out.append(company_out(c) | {"days": (datetime.now(timezone.utc) - last).days, "relances_sent": sent})
+    return sorted(out, key=lambda x: -x["days"])
+
+
+@app.get("/api/relances")
+def relances(db: Session = Depends(get_db), _=Depends(ANY)):
+    return {"after_days": get_settings().relance_days, "items": due_relances(db)}
+
+
+@app.post("/api/relances/draft-all")
+def draft_all_relances(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """Prépare un brouillon de relance (jamais envoyé automatiquement) pour chaque prospect à relancer."""
+    created = 0
+    for item in due_relances(db)[:20]:
+        c = db.get(models.Company, item["id"])
+        subject, body = writer.draft(c, "relance")
+        db.add(models.Message(company_id=c.id, kind="relance", subject=subject, body=body))
+        created += 1
+    db.commit()
+    return {"created": created}
+
+
+# ---------- Rapport ----------
+@app.get("/api/report")
+def report(days: int = 7, db: Session = Depends(get_db), _=Depends(ANY)):
+    days = max(1, min(days, 90))
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    companies = list(db.scalars(select(models.Company)))
+    messages = list(db.scalars(select(models.Message)))
+    by_status: dict[str, int] = {}
+    for c in companies:
+        by_status[c.status] = by_status.get(c.status, 0) + 1
+    new = [c for c in companies if _aware(c.created_at) >= since]
+    sent = [m for m in messages if m.sent_at and _aware(m.sent_at) >= since and m.status == "envoye"]
+    top = sorted((c for c in companies if c.status == "a_contacter" and not c.do_not_contact),
+                 key=lambda c: -(c.score or 0))[:5]
+    return {
+        "days": days, "since": since.isoformat(), "garage": get_settings().garage_name,
+        "new_prospects": len(new),
+        "new_by_category": {k: sum(1 for c in new if c.category == k) for k in {c.category for c in new}},
+        "messages_sent": len(sent), "relances_sent": sum(1 for m in sent if m.kind == "relance"),
+        "drafts_pending": sum(1 for m in messages if m.status in ("brouillon", "valide")),
+        "by_status": by_status, "total": len(companies),
+        "to_relance": len(due_relances(db)),
+        "top_to_contact": [company_out(c) for c in top],
+    }
+
+
 # ---------- Tableau de bord ----------
 @app.get("/api/stats")
 def stats(db: Session = Depends(get_db), _=Depends(ANY)):
@@ -392,7 +462,7 @@ def stats(db: Session = Depends(get_db), _=Depends(ANY)):
     by_cat = dict(db.execute(select(models.Company.category, func.count()).group_by(models.Company.category)).all())
     msgs = dict(db.execute(select(models.Message.status, func.count()).group_by(models.Message.status)).all())
     return {"companies": sum(by_status.values()), "by_status": by_status, "by_category": by_cat,
-            "messages": msgs, "avg_score": db.scalar(select(func.avg(models.Company.score))),
+            "messages": msgs, "to_relance": len(due_relances(db)), "avg_score": db.scalar(select(func.avg(models.Company.score))),
             "capabilities": {"places": bool(get_settings().places_api_key),
                              "openai": bool(get_settings().openai_api_key),
                              "smtp": mailer.smtp_configured()}}

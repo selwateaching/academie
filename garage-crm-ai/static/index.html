@@ -24,6 +24,8 @@ background:hsl(var(--h) var(--s) 50%/.16);color:hsl(var(--h) var(--s) 30%);borde
 td.cb{box-shadow:inset 4px 0 0 hsl(var(--h) var(--s,65%) 50%)}
 a{color:var(--brand)}
 .legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.legend .cat{cursor:pointer;opacity:.9}.legend .cat:hover{opacity:1;outline:2px solid var(--line)}
+.big{font-size:28px;font-weight:700}
+@media print{header,.noprint{display:none!important}body{background:#fff;color:#000}.card{border:1px solid #ccc;break-inside:avoid}}
 .hidden{display:none}.tbl{overflow-x:auto}.warn{border-left:4px solid var(--brand)}
 </style>
 </head>
@@ -37,13 +39,15 @@ a{color:var(--brand)}
 <div id="app" class="hidden">
 <header><h1>Garage CRM AI</h1>
 <nav><button data-t="dash" class="on">Tableau de bord</button><button data-t="pros">Prospects</button>
-<button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button></nav>
+<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button></nav>
 <span class="mute" id="who"></span><button class="btn" id="out">Déconnexion</button></header>
 <main>
 <section id="t-dash"></section>
 <section id="t-pros" class="hidden"></section>
+<section id="t-rel" class="hidden"></section>
 <section id="t-agent" class="hidden"></section>
 <section id="t-msgs" class="hidden"></section>
+<section id="t-rep" class="hidden"></section>
 </main></div>
 <script>
 const $=s=>document.querySelector(s);
@@ -77,7 +81,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 function show(t){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
-  ({dash,pros,agent,msgs})[t]();
+  ({dash,pros,rel,agent,msgs,rep})[t]();
 }
 const HUES={location:210,concession:280,vo:30,flotte:140,assurance:330,taxi:48,btp:0,transport:175,autoecole:95};
 const catStyle=k=>k in HUES?`--h:${HUES[k]}`:"--h:220;--s:8%";
@@ -89,7 +93,7 @@ async function dash(){
   const s=await api("/stats");const st=s.by_status,m=s.messages;
   const k=(v,l)=>`<div class="card kpi"><b>${v??0}</b><span>${l}</span></div>`;
   $("#t-dash").innerHTML=`<div class="grid">${k(s.companies,"Prospects")}${k(st.a_contacter,"À contacter")}${k(st.contacte,"Contactés")}
-  ${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(m.brouillon,"Messages à valider")}${k(s.avg_score?Math.round(s.avg_score):"–","Score moyen")}</div>
+  ${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(m.brouillon,"Messages à valider")}${k(s.to_relance,"À relancer")}${k(s.avg_score?Math.round(s.avg_score):"–","Score moyen")}</div>
   <div class="card"><b>Capacités de l'agent</b><p class="mute">Recherche Google Places : ${s.capabilities.places?"✅ active":"❌ non configurée (import CSV possible)"}<br>
   IA OpenAI : ${s.capabilities.openai?"✅ active":"❌ non configurée (scoring et emails par règles)"}<br>
   Envoi email SMTP : ${s.capabilities.smtp?"✅ actif":"❌ non configuré (envoi manuel)"}</p></div>`;
@@ -130,6 +134,35 @@ async function pros(){
     const category=prompt("Catégorie ("+cats.map(c=>c.key).join(", ")+") ?")||"";
     await api("/companies",{method:"POST",json:{name,category,city:prompt("Ville ?")||"",phone:prompt("Téléphone ?")||"",email:prompt("Email professionnel ?")||""}});load()};
   load();
+}
+async function rel(){
+  const d=await api("/relances"),el=$("#t-rel");
+  el.innerHTML=`<div class="card"><h3 style="margin-top:0">Prospects à relancer</h3>
+  <p class="mute">Contactés depuis plus de ${d.after_days} jours sans suite (2 relances maximum par prospect). Les relances sont préparées en brouillon : vous les validez dans l'onglet Messages.</p>
+  <div class="row"><button class="btn pri" id="rall" ${!d.items.length||role==="commercial"?"disabled":""}>Préparer toutes les relances (${d.items.length})</button><span id="ro" class="mute"></span></div></div>
+  ${d.items.length?`<div class="card tbl"><table><tr><th>Entreprise</th><th>Contact</th><th>Dernier contact</th><th>Action</th></tr>${d.items.map(c=>`<tr>
+  <td style="box-shadow:inset 4px 0 0 hsl(${HUES[c.category]??220} 65% 50%)"><b>${esc(c.name)}</b><br>${catBadge(c.category)}</td>
+  <td>${esc(c.phone)}<br><span class="mute">${esc(c.email)}</span></td>
+  <td>il y a ${c.days} jours<br><span class="mute">${c.relances_sent} relance(s) envoyée(s)</span></td>
+  <td><button class="btn" data-r="${c.id}">Préparer la relance</button> <button class="btn" data-c="${c.id}">Script appel</button></td></tr>`).join("")}</table></div>`
+  :`<div class="card mute">Aucune relance à faire pour le moment. 👍</div>`}`;
+  el.querySelectorAll("[data-r],[data-c]").forEach(b=>b.onclick=async()=>{
+    try{await api(`/companies/${b.dataset.r||b.dataset.c}/draft`,{method:"POST",json:{kind:b.dataset.r?"relance":"script_appel"}});show("msgs")}catch(e){alert(e.message)}});
+  const ra=$("#rall");if(ra)ra.onclick=async()=>{try{const r=await api("/relances/draft-all",{method:"POST"});$("#ro").textContent=`${r.created} relances préparées → onglet Messages`;rel()}catch(e){$("#ro").textContent=e.message}};
+}
+async function rep(){
+  const sel=+(sessionStorage.getItem("rd")||7);
+  const r=await api("/report?days="+sel);const el=$("#t-rep");
+  const k=(v,l)=>`<div class="card kpi"><b>${v??0}</b><span>${l}</span></div>`;
+  const st=r.by_status;
+  el.innerHTML=`<div class="row noprint"><select id="rdays">${[7,14,30].map(n=>`<option value="${n}" ${n===sel?"selected":""}>${n} derniers jours</option>`).join("")}</select>
+  <button class="btn" onclick="window.print()">Imprimer / PDF</button></div>
+  <div class="card"><h2 style="margin:0">Rapport commercial – ${esc(r.garage)}</h2><span class="mute">Période : ${r.days} derniers jours (depuis le ${new Date(r.since).toLocaleDateString("fr-FR")})</span></div>
+  <div class="grid">${k(r.new_prospects,"Nouveaux prospects")}${k(r.messages_sent,"Messages envoyés")}${k(r.relances_sent,"dont relances")}${k(r.to_relance,"À relancer")}${k(r.drafts_pending,"Brouillons à traiter")}</div>
+  <div class="grid" style="margin-top:12px">${k(st.contacte,"En cours de contact")}${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(st.refuse,"Refus")}${k(r.total,"Total en base")}</div>
+  <div class="card" style="margin-top:12px"><b>Nouveaux prospects par catégorie</b><div class="row" style="margin-top:8px">${Object.keys(r.new_by_category).length?Object.entries(r.new_by_category).map(([c,n])=>`${catBadge(c)} <b>${n}</b>`).join(" "):'<span class="mute">Aucun nouveau prospect sur la période.</span>'}</div></div>
+  <div class="card"><b>Les 5 meilleurs prospects à contacter</b>${r.top_to_contact.length?`<table style="margin-top:8px">${r.top_to_contact.map(c=>`<tr><td><span class="score hi">${c.score??"–"}</span></td><td><b>${esc(c.name)}</b><br>${catBadge(c.category)}</td><td>${esc(c.phone)}</td><td class="mute">${esc(c.next_action)}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect en attente.</p>'}</div>`;
+  $("#rdays").onchange=e=>{sessionStorage.setItem("rd",e.target.value);rep()};
 }
 function agent(){
   $("#t-agent").innerHTML=`<div class="card"><h3 style="margin-top:0">Lancer une recherche de prospects</h3>

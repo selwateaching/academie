@@ -11,6 +11,10 @@ loueurs, concessionnaires, marchands VO, flottes d'entreprise, assureurs/experts
 
 Rôles : `admin` (utilisateurs), `manager` (lance l'agent, valide et envoie), `commercial` (fiches, brouillons).
 
+## Relances et rapport
+- Onglet **Relances** : prospects « Contactés » sans suite depuis `RELANCE_DAYS` jours (5 par défaut), 2 relances maximum chacun. Le bouton prépare des **brouillons**, validés ensuite dans Messages. Les prospects en opposition sont exclus.
+- Onglet **Rapport** : synthèse sur 7, 14 ou 30 jours (nouveaux prospects, messages et relances envoyés, rendez-vous, partenaires, 5 meilleurs prospects à contacter), imprimable en PDF.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 
