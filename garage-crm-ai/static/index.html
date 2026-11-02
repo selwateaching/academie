@@ -134,9 +134,25 @@ async function pros(){
     a.href=u;a.download="prospects-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(u)}catch(e){alert(e.message)}};
   $("#fl").onclick=load;
   document.querySelectorAll("[data-lg]").forEach(b=>b.onclick=()=>{$("#fc").value=$("#fc").value===b.dataset.lg?"":b.dataset.lg;load()});
-  $("#add").onclick=async()=>{const name=prompt("Nom de l'entreprise ?");if(!name)return;
-    const category=prompt("Catégorie ("+cats.map(c=>c.key).join(", ")+") ?")||"";
-    await api("/companies",{method:"POST",json:{name,category,city:prompt("Ville ?")||"",phone:prompt("Téléphone ?")||"",email:prompt("Email professionnel ?")||""}});load()};
+  $("#add").onclick=()=>{
+    if($("#addf")){$("#addf").remove();return}
+    const f=document.createElement("div");f.id="addf";f.className="card";
+    f.innerHTML=`<h3 style="margin-top:0">Nouveau prospect</h3><div class="row">
+    <input id="an1" placeholder="Nom de l'entreprise *" style="flex:2;min-width:200px">
+    <select id="an2"><option value="">Catégorie…</option>${catOpts()}</select>
+    <input id="an3" placeholder="Ville"></div><div class="row">
+    <input id="an4" placeholder="Téléphone"><input id="an5" type="email" placeholder="Email professionnel">
+    <input id="an6" placeholder="Nom du gérant / contact"></div>
+    <div class="row"><button class="btn pri" id="ans">Enregistrer</button><button class="btn" id="anc">Annuler</button><span id="ane" class="mute"></span></div>`;
+    $("#tb").before(f);$("#an1").focus();
+    $("#anc").onclick=()=>f.remove();
+    $("#ans").onclick=async()=>{
+      const name=$("#an1").value.trim();if(!name){$("#ane").textContent="Le nom de l'entreprise est obligatoire.";return}
+      try{await api("/companies",{method:"POST",json:{name,category:$("#an2").value,city:$("#an3").value.trim(),phone:$("#an4").value.trim(),
+        email:$("#an5").value.trim(),contact_name:$("#an6").value.trim()}});
+        $("#q").value=name;f.remove();await load()}
+      catch(e){$("#ane").textContent="Erreur : "+e.message}};
+  };
   load();
 }
 async function rel(){
