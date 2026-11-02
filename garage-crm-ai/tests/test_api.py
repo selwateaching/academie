@@ -82,3 +82,17 @@ def test_opt_out_blocks_contact(client):
 def test_stats_and_index(client):
     assert client.get("/api/stats", headers=auth(client)).json()["companies"] == 2
     assert client.get("/").status_code == 200
+
+
+def test_dotenv_is_loaded(tmp_path, monkeypatch):
+    from app import config
+    env = config.Path(config.__file__).resolve().parent.parent / ".env"
+    assert not env.exists()
+    env.write_text("# c\nZZ_TEST_VAR=\"valeur\"\n", encoding="utf-8")
+    try:
+        monkeypatch.delenv("ZZ_TEST_VAR", raising=False)
+        config._load_dotenv()
+        assert os.environ["ZZ_TEST_VAR"] == "valeur"
+    finally:
+        env.unlink()
+        os.environ.pop("ZZ_TEST_VAR", None)

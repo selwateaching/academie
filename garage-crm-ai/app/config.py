@@ -1,5 +1,22 @@
 import os
 from dataclasses import dataclass
+from pathlib import Path
+
+
+def _load_dotenv() -> None:
+    """Charge le fichier .env (à la racine du projet) sans écraser les variables déjà définies."""
+    path = Path(__file__).resolve().parent.parent / ".env"
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8-sig").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_dotenv()
 
 
 def _env(name: str, default: str = "") -> str:
