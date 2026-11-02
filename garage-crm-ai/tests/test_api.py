@@ -272,3 +272,7 @@ def test_production_refuses_default_secrets(monkeypatch):
     monkeypatch.setenv("SECRET_KEY", "change-me-long-random-string")
     with pytest.raises(RuntimeError):
         m.startup()
+
+
+def test_stats_exposes_sender_empty_without_smtp(client):
+    assert client.get("/api/stats", headers=auth(client)).json()["sender"] == ""

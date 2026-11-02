@@ -524,6 +524,7 @@ def stats(db: Session = Depends(get_db), _=Depends(ANY)):
     msgs = dict(db.execute(select(models.Message.status, func.count()).group_by(models.Message.status)).all())
     return {"companies": sum(by_status.values()), "by_status": by_status, "by_category": by_cat,
             "messages": msgs, "to_relance": len(due_relances(db)), "avg_score": db.scalar(select(func.avg(models.Company.score))),
+            "sender": get_settings().smtp_from if mailer.smtp_configured() else "",
             "capabilities": {"places": bool(get_settings().places_api_key),
                              "openai": bool(get_settings().openai_api_key),
                              "smtp": mailer.smtp_configured()}}
