@@ -96,3 +96,48 @@ def test_dotenv_is_loaded(tmp_path, monkeypatch):
     finally:
         env.unlink()
         os.environ.pop("ZZ_TEST_VAR", None)
+
+
+# ---------- Gérant (registre public, simulé) ----------
+FAKE = [
+    {"nom_complet": "GARAGE DU MIDI SARL", "siren": "123456789", "siege": {"libelle_commune": "TOULOUSE"},
+     "dirigeants": [
+         {"type_dirigeant": "personne morale", "denomination": "HOLDING X"},
+         {"type_dirigeant": "personne physique", "nom": "DURAND", "prenoms": "Marie, Claire", "qualite": "Associé"},
+         {"type_dirigeant": "personne physique", "nom": "MARTIN", "prenoms": "Paul", "qualite": "Gérant"},
+     ]},
+]
+
+
+def test_pick_manager_prefers_gerant_and_formats_name():
+    from app.agent import enrichment
+    r = enrichment.pick_manager(FAKE, "Garage du Midi", "Toulouse")
+    assert r["contact_name"] == "Paul Martin" and r["siren"] == "123456789"
+
+
+def test_pick_manager_refuses_wrong_company_or_city():
+    from app.agent import enrichment
+    assert enrichment.pick_manager(FAKE, "Carrosserie Lopez", "Toulouse") is None
+    assert enrichment.pick_manager(FAKE, "Garage du Midi", "Lyon") is None
+
+
+def test_find_manager_endpoint_and_greeting(client, monkeypatch):
+    from app.agent import enrichment
+    monkeypatch.setattr(enrichment, "find_manager", lambda name, city: enrichment.pick_manager(FAKE, name, city))
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Garage du Midi", "category": "garage", "city": "Toulouse"}).json()
+    r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
+    assert r["found"] is True and r["contact_name"] == "Paul Martin" and "à vérifier" in r["notes"]
+    # le brouillon s'adresse au gérant
+    m = client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"}).json()
+    assert "Paul Martin" in m["body"]
+
+
+def test_manual_contact_name_never_overwritten(client, monkeypatch):
+    from app.agent import enrichment
+    monkeypatch.setattr(enrichment, "find_manager", lambda n, c: {"contact_name": "Autre", "qualite": "", "siren": "1"})
+    h = auth(client)
+    c = next(x for x in client.get("/api/companies", headers=h).json() if x["name"] == "Loc Auto 31")
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"contact_name": "Sophie Bernard"})
+    r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
+    assert r["found"] is False and r["contact_name"] == "Sophie Bernard"

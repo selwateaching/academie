@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import models
-from .agent import mailer, prospector, qualifier, writer
+from .agent import enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
 from .db import Base, SessionLocal, engine, get_db
@@ -198,6 +198,39 @@ def requalify(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
 
 def _404():
     raise HTTPException(404, "Introuvable")
+
+
+def _enrich_one(c: models.Company) -> bool:
+    """Renseigne le gérant s'il est vide et trouvé de façon fiable. Retourne True si trouvé."""
+    if c.contact_name:
+        return False
+    found = enrichment.find_manager(c.name, c.city)
+    if not found:
+        return False
+    c.contact_name = found["contact_name"]
+    note = f"Gérant : {found['contact_name']} ({found['qualite'] or 'dirigeant'}) – registre public, SIREN {found['siren']} – à vérifier"
+    c.notes = (c.notes + "\n" if c.notes else "") + note
+    return True
+
+
+@app.post("/api/companies/{cid}/find-manager")
+def find_manager(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
+    c = db.get(models.Company, cid) or _404()
+    if c.contact_name:
+        return company_out(c) | {"found": False, "reason": "Un contact est déjà renseigné"}
+    found = _enrich_one(c)
+    db.commit()
+    return company_out(c) | {"found": found, "reason": "" if found else "Aucun dirigeant fiable trouvé : saisissez-le à la main"}
+
+
+@app.post("/api/agent/enrich")
+def enrich_all(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """Cherche le gérant des prospects qui n'en ont pas (max 30 par appel)."""
+    todo = list(db.scalars(select(models.Company).where(models.Company.contact_name == "")
+                           .order_by(models.Company.score.desc().nulls_last()).limit(30)))
+    found = sum(1 for c in todo if _enrich_one(c))
+    db.commit()
+    return {"checked": len(todo), "found": found}
 
 
 # ---------- Agent IA : recherche + qualification ----------

@@ -28,6 +28,11 @@ def optout() -> str:
             "répondez simplement « STOP » : votre demande sera prise en compte immédiatement.")
 
 
+def greeting(c: Company) -> str:
+    # Nom complet sans « Madame/Monsieur » : on ne devine pas le genre
+    return f"Bonjour {c.contact_name}," if c.contact_name else "Bonjour,"
+
+
 def _fallback(c: Company, kind: str) -> tuple[str, str]:
     s = get_settings()
     hook = CATEGORIES.get(c.category, ("", "", 0, "un entretien et des réparations rapides pour vos véhicules"))[3]
@@ -38,10 +43,10 @@ def _fallback(c: Company, kind: str) -> tuple[str, str]:
                 f"Je peux passer 15 minutes vous présenter notre offre cette semaine ? »")
     if kind == "relance":
         return (f"Re : collaboration {s.garage_name}",
-                f"Bonjour,\n\nJe me permets de revenir vers vous suite à mon précédent message. "
+                f"{greeting(c)}\n\nJe me permets de revenir vers vous suite à mon précédent message. "
                 f"Seriez-vous disponible 15 minutes cette semaine pour échanger sur vos besoins en carrosserie et mécanique ?")
     return (f"{s.garage_name} – carrosserie et mécanique pour {c.name}",
-            f"Bonjour,\n\nNous sommes {s.garage_name}, garage-carrosserie à {s.garage_city} ({s.garage_services}). "
+            f"{greeting(c)}\n\nNous sommes {s.garage_name}, garage-carrosserie à {s.garage_city} ({s.garage_services}). "
             f"Nous accompagnons les professionnels comme {c.name} : {hook}.\n\n"
             f"Pourrions-nous convenir de 15 minutes cette semaine pour vous présenter notre offre ?")
 
@@ -51,6 +56,8 @@ def draft(c: Company, kind: str = "email") -> tuple[str, str]:
     kind = kind if kind in KINDS else "email"
     hook = CATEGORIES.get(c.category, ("", "", 0, ""))[3]
     prompt = (f"{KINDS[kind]}\nDestinataire : {c.name} ({label(c.category)}, {c.city}). Site : {c.website or '-'}\n"
+              f"Interlocuteur : {c.contact_name or 'inconnu (commence par « Bonjour, »)'}"
+              f"{' (commence par « Bonjour ' + c.contact_name + ', » sans Madame ni Monsieur)' if c.contact_name else ''}\n"
               f"Argument pertinent : {hook}\nExpéditeur : {s.garage_name} à {s.garage_city}. Services : {s.garage_services}.")
     out = chat_json(SYSTEM, prompt)
     if out and out.get("subject") and out.get("body"):
