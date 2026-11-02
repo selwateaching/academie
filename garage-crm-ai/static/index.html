@@ -18,6 +18,12 @@ table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;bord
 input,select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);max-width:100%}
 textarea{width:100%;min-height:180px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
 .score{font-weight:700;padding:2px 8px;border-radius:99px;background:var(--line)}.hi{background:var(--ok);color:#fff}
+.cat{--h:0;--s:65%;display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap;
+background:hsl(var(--h) var(--s) 50%/.16);color:hsl(var(--h) var(--s) 30%);border:1px solid hsl(var(--h) var(--s) 50%/.35)}
+@media(prefers-color-scheme:dark){.cat{color:hsl(var(--h) var(--s) 75%)}}
+td.cb{box-shadow:inset 4px 0 0 hsl(var(--h) var(--s,65%) 50%)}
+a{color:var(--brand)}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.legend .cat{cursor:pointer;opacity:.9}.legend .cat:hover{opacity:1;outline:2px solid var(--line)}
 .hidden{display:none}.tbl{overflow-x:auto}.warn{border-left:4px solid var(--brand)}
 </style>
 </head>
@@ -73,6 +79,10 @@ function show(t){
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
   ({dash,pros,agent,msgs})[t]();
 }
+const HUES={location:210,concession:280,vo:30,flotte:140,assurance:330,taxi:48,btp:0,transport:175,autoecole:95};
+const catStyle=k=>k in HUES?`--h:${HUES[k]}`:"--h:220;--s:8%";
+const catLabel=k=>(cats.find(c=>c.key===k)||{}).label||k||"Sans catégorie";
+const catBadge=k=>`<span class="cat" style="${catStyle(k)}">${esc(catLabel(k))}</span>`;
 const catOpts=sel=>cats.map(c=>`<option value="${esc(c.key)}" ${c.key===sel?"selected":""}>${esc(c.label)}</option>`).join("");
 
 async function dash(){
@@ -88,13 +98,14 @@ async function pros(){
   const el=$("#t-pros");
   el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">Tous statuts</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
   <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
-  <button class="btn pri" id="add">+ Ajouter</button></div><div class="tbl" id="tb"></div></div>`;
+  <button class="btn pri" id="add">+ Ajouter</button></div>
+  <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
   const load=async()=>{
     const p=new URLSearchParams();[["q","#q"],["status","#fs"],["category","#fc"]].forEach(([k,s])=>{if($(s).value)p.set(k,$(s).value)});
     const rows=await api("/companies?"+p);
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
-      <td><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
-      <td><b>${esc(c.name)}</b><br><span class="mute">${esc(c.category)} · ${esc(c.city)}</span>
+      <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
+      <td><b>${esc(c.name)}</b><br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name?"":`<a href="#" data-f="${c.id}" class="fnd">· trouver</a>`}</td>
@@ -114,6 +125,7 @@ async function pros(){
       try{await api(`/companies/${b.dataset.d}/draft`,{method:"POST",json:{kind:b.dataset.k}});show("msgs")}catch(e){alert(e.message)}});
   };
   $("#fl").onclick=load;
+  document.querySelectorAll("[data-lg]").forEach(b=>b.onclick=()=>{$("#fc").value=$("#fc").value===b.dataset.lg?"":b.dataset.lg;load()});
   $("#add").onclick=async()=>{const name=prompt("Nom de l'entreprise ?");if(!name)return;
     const category=prompt("Catégorie ("+cats.map(c=>c.key).join(", ")+") ?")||"";
     await api("/companies",{method:"POST",json:{name,category,city:prompt("Ville ?")||"",phone:prompt("Téléphone ?")||"",email:prompt("Email professionnel ?")||""}});load()};
