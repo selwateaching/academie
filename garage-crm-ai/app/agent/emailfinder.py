@@ -20,8 +20,9 @@ GENERIC = ("contact", "info", "accueil", "commercial", "agence", "direction", "g
            "bonjour", "hello", "devis", "location", "reservation", "carrosserie", "service")
 FREEMAIL = ("gmail.", "yahoo.", "hotmail.", "outlook.", "live.", "orange.", "wanadoo.", "free.", "sfr.", "laposte.", "icloud.")
 LINK_HINT = re.compile(r"contact|mention|legal|propos|joindre|equipe|societe", re.I)
-DEFAULT_PATHS = ("/contact", "/nous-contacter", "/mentions-legales", "/contactez-nous")
-MAX_PAGES, MAX_BYTES, TIMEOUT = 5, 400_000, 8
+DEFAULT_PATHS = ("/contact", "/nous-contacter", "/mentions-legales", "/contactez-nous", "/contact/", "/mentions-legales/",
+                 "/a-propos", "/qui-sommes-nous", "/contact.html", "/mentions-legales.html")
+MAX_PAGES, MAX_BYTES, TIMEOUT = 7, 400_000, 8
 
 
 def _is_public_host(host: str) -> bool:

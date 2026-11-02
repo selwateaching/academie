@@ -42,11 +42,12 @@ a{color:var(--brand)}
 <div id="app" class="hidden">
 <header><h1>Garage CRM AI</h1>
 <nav><button data-t="dash" class="on">Tableau de bord</button><button data-t="pros">Prospects</button>
-<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button><button data-t="pil" id="tabpil" class="hidden">Pilote auto</button><button data-t="usr" id="tabusr" class="hidden">Utilisateurs</button></nav>
+<button data-t="call">À appeler</button><button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button><button data-t="pil" id="tabpil" class="hidden">Pilote auto</button><button data-t="usr" id="tabusr" class="hidden">Utilisateurs</button></nav>
 <span class="mute" id="who"></span><button class="btn" id="out">Déconnexion</button></header>
 <main>
 <section id="t-dash"></section>
 <section id="t-pros" class="hidden"></section>
+<section id="t-call" class="hidden"></section>
 <section id="t-rel" class="hidden"></section>
 <section id="t-agent" class="hidden"></section>
 <section id="t-msgs" class="hidden"></section>
@@ -86,7 +87,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 function show(t){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
-  ({dash,pros,rel,agent,msgs,rep,pil,usr})[t]();
+  ({dash,pros,call,rel,agent,msgs,rep,pil,usr})[t]();
 }
 const HUES={location:210,concession:280,vo:30,flotte:140,assurance:330,taxi:48,btp:0,transport:175,autoecole:95};
 const catStyle=k=>k in HUES?`--h:${HUES[k]}`:"--h:220;--s:8%";
@@ -100,6 +101,7 @@ function emailHtml(cid,email,edit,href,mid){
   if(email&&!edit)return `<span class="em">✉ <a href="${href||mailTo(email)}" ${mid?`data-gmid="${mid}"`:""} target="_blank" rel="noopener noreferrer" title="Cliquer pour préparer un e-mail à ce prospect"><b>${esc(email)}</b></a> <a href="#" class="eedit" data-cid="${cid}" data-v="${esc(email)}">modifier</a></span>`;
   return `<span class="em">${email?"✉":'<b class="bad">⚠ E-mail manquant</b>'} <input type="email" class="einp" data-cid="${cid}" value="${esc(email||"")}" placeholder="adresse@entreprise.fr"> <button class="btn eok" data-cid="${cid}" style="padding:2px 10px">Enregistrer</button><span class="emsg bad"></span></span>`;
 }
+const noMailHint=c=>c.email?"":(c.website?"adresse non publiée sur son site":"pas de site web")+" → appelez-le";
 function wireEmail(root,after){
   root.querySelectorAll(".eedit").forEach(a=>a.onclick=e=>{e.preventDefault();const box=a.closest(".em");
     box.outerHTML=emailHtml(a.dataset.cid,a.dataset.v,true);wireEmail(root,after);root.querySelector(`.einp[data-cid="${a.dataset.cid}"]`).focus()});
@@ -130,7 +132,7 @@ async function pros(){
     const rows=await api("/companies?"+p);
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
       <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
-      <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}<br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
+      <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}${c.email?"":`<br><span class="mute" style="font-size:12px">${noMailHint(c)}</span>`}<br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
@@ -179,6 +181,23 @@ async function pros(){
       catch(e){$("#ane").textContent="Erreur : "+e.message}};
   };
   load();
+}
+async function call(){
+  const rows=await api("/calls"),el=$("#t-call");
+  const OUT=[["no_answer","Pas de réponse"],["callback","À rappeler"],["interested","Intéressé → RDV"],["not_interested","Pas intéressé"],["wrong_number","N° erroné"]];
+  el.innerHTML=`<div class="card"><h3 style="margin-top:0">Liste d'appels du jour</h3>
+  <p class="mute" style="margin:0">Les prospects ont presque tous un téléphone, même sans email. Appelez dans l'ordre : ceux qui ont répondu, puis les mieux notés. Après chaque appel, cliquez sur le résultat : le suivi se met à jour et le prospect sort de la liste pour 2 jours. Un interlocuteur qui refuse doit être respecté : cochez « opposition » sur sa fiche.</p></div>
+  ${rows.length?rows.map(c=>`<div class="card" style="box-shadow:inset 4px 0 0 hsl(${HUES[c.category]??220} 65% 50%)">
+  <div class="row"><b>${esc(c.name)}</b>${catBadge(c.category)}<span class="mute">${esc(c.city)} · ${esc(c.why)}</span><span class="score ${c.score>=70?"hi":""}">${c.score??"–"}</span></div>
+  <div class="row"><a class="big" href="tel:${esc(c.phone.replace(/[^+\d]/g,""))}" style="text-decoration:none" title="Appeler">📞 ${esc(c.phone)}</a>
+    <span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}
+    <button class="btn" data-sc="${c.id}">Voir le script</button></div>
+  <div class="row">${emailHtml(c.id,c.email)}${c.email?"":`<span class="mute" style="font-size:12px">demandez-la pendant l'appel</span>`}</div>
+  <div class="row"><input data-cn="${c.id}" placeholder="Note (facultatif) : interlocuteur, rappel jeudi…" style="flex:1;min-width:220px">
+  ${OUT.map(([k,l])=>`<button class="btn ${k==="interested"?"pri":""}" data-co="${k}" data-ci="${c.id}">${l}</button>`).join("")}</div></div>`).join(""):`<div class="card mute">Aucun prospect à appeler pour le moment. Lancez une recherche dans Agent IA.</div>`}`;
+  wireEmail(el,call);
+  el.querySelectorAll("[data-sc]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.sc}/draft`,{method:"POST",json:{kind:"script_appel"}});show("msgs")}catch(e){alert(e.message)}});
+  el.querySelectorAll("[data-co]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.ci}/call`,{method:"POST",json:{outcome:b.dataset.co,note:el.querySelector(`[data-cn="${b.dataset.ci}"]`).value}});call()}catch(e){alert(e.message)}});
 }
 async function rel(){
   const d=await api("/relances"),el=$("#t-rel");

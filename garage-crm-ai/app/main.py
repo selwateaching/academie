@@ -572,6 +572,57 @@ def export_companies(db: Session = Depends(get_db), _=Depends(MANAGER)):
                     headers={"Content-Disposition": 'attachment; filename="prospects.csv"'})
 
 
+# ---------- Appels : la liste du jour et le suivi ----------
+CALL_OUTCOMES = {                       # résultat -> (libellé, nouveau statut, prochaine action)
+    "no_answer": ("Pas de réponse", None, "Rappeler"),
+    "callback": ("À rappeler", None, "Rappeler"),
+    "interested": ("Intéressé", "rdv", "Rendez-vous à fixer"),
+    "not_interested": ("Pas intéressé", "refuse", ""),
+    "wrong_number": ("Numéro erroné", None, "Vérifier le numéro"),
+}
+
+
+class CallIn(BaseModel):
+    outcome: str
+    note: str = ""
+
+
+@app.get("/api/calls")
+def call_list(db: Session = Depends(get_db), _=Depends(ANY)):
+    """Prospects à appeler : ceux qui ont répondu d'abord, puis jamais contactés (les mieux notés), puis à relancer."""
+    now = datetime.now(timezone.utc)
+    recent = now - timedelta(days=2)
+    out = []
+    cands = db.scalars(select(models.Company).where(models.Company.phone != "", models.Company.do_not_contact.is_(False),
+                                                    models.Company.status.in_(("a_contacter", "contacte", "repondu"))))
+    for c in cands:
+        last = aware(c.last_contact)
+        if c.status == "contacte" and last and last > recent:
+            continue                                             # déjà appelé ou contacté depuis moins de 2 jours
+        prio, why = ((0, "A répondu : à rappeler") if c.status == "repondu"
+                     else (1, "Jamais contacté") if c.status == "a_contacter"
+                     else (2, f"Contacté il y a {(now - last).days} jours" if last else "À relancer"))
+        out.append((prio, -(c.score or 0), company_out(c) | {"why": why}))
+    return [x[2] for x in sorted(out, key=lambda t: (t[0], t[1]))[:50]]
+
+
+@app.post("/api/companies/{cid}/call")
+def log_call(cid: int, data: CallIn, db: Session = Depends(get_db), user=Depends(ANY)):
+    c = db.get(models.Company, cid) or _404()
+    if data.outcome not in CALL_OUTCOMES:
+        raise HTTPException(422, "Résultat d'appel inconnu")
+    label, status, nxt = CALL_OUTCOMES[data.outcome]
+    now = datetime.now(timezone.utc)
+    _note(c, f"Appel du {now:%d/%m/%Y %H:%M} ({user.name or user.email}) : {label}" + (f" – {data.note.strip()}" if data.note.strip() else ""))
+    c.last_contact, c.next_action = now, nxt
+    if status:
+        c.status = status
+    elif c.status == "a_contacter":
+        c.status = "contacte"
+    db.commit()
+    return company_out(c)
+
+
 # ---------- Relances ----------
 def due_relances(db: Session) -> list[dict]:
     return [company_out(c) | {"days": d, "relances_sent": n} for c, d, n in due_companies(db)]

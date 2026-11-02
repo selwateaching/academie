@@ -585,3 +585,33 @@ def test_invalid_email_is_rejected(client):
     for bad in ("sans-arobase", "a@b", "a b@c.fr"):
         assert client.patch(f"/api/companies/{c['id']}", headers=h, json={"email": bad}).status_code == 422
     assert client.patch(f"/api/companies/{c['id']}", headers=h, json={"email": ""}).status_code == 200   # on peut l'effacer
+
+
+# ---------- Liste d'appels ----------
+def test_call_list_priorities_and_outcomes(client):
+    h = auth(client)
+    mk = lambda n, **kw: client.post("/api/companies", headers=h, json={"name": n, "category": "garage", "city": "Toulouse", **kw}).json()
+    new_hi = mk("Appel Neuf Haut", phone="0561111111", website="https://x.fr")
+    sans_tel = mk("Appel Sans Tel")
+    opp = mk("Appel Oppose", phone="0561222222")
+    client.patch(f"/api/companies/{opp['id']}", headers=h, json={"do_not_contact": True})
+    repondu = mk("Appel Repondu", phone="0561333333")
+    client.patch(f"/api/companies/{repondu['id']}", headers=h, json={"status": "repondu"})
+    recent = mk("Appel Recent", phone="0561444444")
+    client.patch(f"/api/companies/{recent['id']}", headers=h, json={"status": "contacte"})          # contacté à l'instant
+    old = mk("Appel Ancien", phone="0561555555")
+    client.patch(f"/api/companies/{old['id']}", headers=h, json={"status": "contacte"})
+    _age_company(old["id"], 4)
+    names = [x["name"] for x in client.get("/api/calls", headers=h).json()]
+    assert "Appel Sans Tel" not in names and "Appel Oppose" not in names and "Appel Recent" not in names
+    assert names.index("Appel Repondu") < names.index("Appel Neuf Haut") < names.index("Appel Ancien")   # répondu, neuf, à relancer
+    # pas de réponse : sort de la liste, statut Contacté, note datée
+    r = client.post(f"/api/companies/{new_hi['id']}/call", headers=h, json={"outcome": "no_answer", "note": "répondeur"}).json()
+    assert r["status"] == "contacte" and r["next_action"] == "Rappeler" and "Pas de réponse – répondeur" in r["notes"]
+    assert "Appel Neuf Haut" not in [x["name"] for x in client.get("/api/calls", headers=h).json()]
+    # intéressé -> rendez-vous ; pas intéressé -> refusé ; résultat inconnu -> erreur
+    assert client.post(f"/api/companies/{old['id']}/call", headers=h, json={"outcome": "interested"}).json()["status"] == "rdv"
+    assert client.post(f"/api/companies/{repondu['id']}/call", headers=h, json={"outcome": "not_interested"}).json()["status"] == "refuse"
+    assert client.post(f"/api/companies/{old['id']}/call", headers=h, json={"outcome": "n_importe_quoi"}).status_code == 422
+    after = [x["name"] for x in client.get("/api/calls", headers=h).json()]
+    assert "Appel Ancien" not in after and "Appel Repondu" not in after
