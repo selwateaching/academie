@@ -457,3 +457,98 @@ def test_autopilot_relances_only_when_enabled(client):
         assert c["id"] not in [x.id for x, k in autopilot.candidates(db, autopilot.get_cfg(db), 50)]
         autopilot.set_cfg(db, auto_relances=True)
         assert (c["id"], "relance") in [(x.id, k) for x, k in autopilot.candidates(db, autopilot.get_cfg(db), 50)]
+
+
+# ---------- Réponses des prospects, STOP et archivage ----------
+def test_classify_replies():
+    from app.replies import classify, clean_body
+    assert classify("Re: Proposition", "STOP") == "stop"
+    assert classify("Re: Proposition", "Bonjour, merci de ne plus me contacter.") == "stop"
+    assert classify("Re: Proposition", "Merci de nous désinscrire de votre liste") == "stop"
+    assert classify("Re: Proposition", "Nous ne souhaitons plus recevoir vos messages") == "stop"
+    assert classify("Re: Proposition", "Bonjour, nous ne sommes pas intéressés, merci.") == "refus"
+    assert classify("Re: Proposition", "Oui, rappelez-moi demain à 10h") == "reponse"
+    assert classify("Réponse automatique : absence", "Je suis en congés") == "auto"
+    assert classify("Re:", "ok", auto_header=True) == "auto"
+    quoted = "STOP\n\nLe lun. 2 nov. 2026, Garage a écrit :\n> Bonjour, nous avons identifié votre établissement"
+    assert clean_body(quoted) == "STOP"
+    assert classify("Re:", clean_body("Intéressant, appelez-moi.\n> Si vous ne souhaitez plus être contacté, répondez STOP")) == "reponse"
+
+
+def test_stop_button_archives_and_prepares_confirmation(client, monkeypatch):
+    from app.agent import mailer
+    monkeypatch.setattr(mailer, "smtp_configured", lambda: False)
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Stoppé SARL", "category": "taxi", "city": "Toulouse",
+                                                       "email": "boss@stoppe.fr", "contact_name": "Léa Martin"}).json()
+    client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"})       # un brouillon en attente
+    r = client.post(f"/api/companies/{c['id']}/stop", headers=h).json()
+    assert r["status"] == "archive" and r["do_not_contact"] is True and r["confirmation"] == "à envoyer à la main"
+    # sorti de la liste en cours, visible dans les archives
+    assert c["id"] not in [x["id"] for x in client.get("/api/companies", headers=h).json()]
+    assert c["id"] in [x["id"] for x in client.get("/api/companies?status=archive", headers=h).json()]
+    msgs = [m for m in client.get("/api/messages", headers=h).json() if m["company_id"] == c["id"]]
+    kinds = {m["kind"]: m for m in msgs}
+    assert kinds["email"]["status"] == "rejete"                                       # brouillon annulé
+    conf = kinds["confirmation_stop"]
+    assert conf["status"] == "valide" and conf["body"].startswith("Bonjour Léa Martin,") and "plus aucun message" in conf["body"]
+    assert "STOP" not in conf["body"] and "partenariat" not in conf["body"].lower()  # aucun contenu commercial
+    # plus aucun nouveau brouillon commercial, mais la confirmation peut partir
+    assert client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"}).status_code == 409
+    assert client.post(f"/api/messages/{conf['id']}/mark-sent", headers=h).json()["status"] == "envoye"
+    # une seule confirmation, même si on clique deux fois
+    client.post(f"/api/companies/{c['id']}/stop", headers=h)
+    assert len([m for m in client.get("/api/messages", headers=h).json()
+                if m["company_id"] == c["id"] and m["kind"] == "confirmation_stop"]) == 1
+
+
+def test_stop_sends_confirmation_when_smtp_configured(client, monkeypatch):
+    from app.agent import mailer
+    sent = []
+    monkeypatch.setattr(mailer, "smtp_configured", lambda: True)
+    monkeypatch.setattr(mailer, "send_email", lambda to, subject, body: sent.append((to, subject)))
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Stop Auto", "category": "vo", "city": "Toulouse", "email": "a@stopauto.fr"}).json()
+    assert client.post(f"/api/companies/{c['id']}/stop", headers=h).json()["confirmation"] == "envoyée"
+    assert sent == [("a@stopauto.fr", "Votre demande est prise en compte")]
+
+
+def test_check_inbox_handles_stop_refusal_reply_auto_and_dedup(client):
+    from app import replies
+    h = auth(client)
+    mk = lambda n, e: client.post("/api/companies", headers=h, json={"name": n, "category": "flotte", "city": "Toulouse", "email": e}).json()
+    a, b, c, d = mk("Inbox A", "a@inbox-a.fr"), mk("Inbox B", "b@inbox-b.fr"), mk("Inbox C", "c@inbox-c.fr"), mk("Inbox D", "d@inbox-d.fr")
+    for x in (a, b, c, d):
+        client.patch(f"/api/companies/{x['id']}", headers=h, json={"status": "contacte"})
+    items = [
+        {"message_id": "<1>", "from": "a@inbox-a.fr", "subject": "Re: Proposition", "body": "STOP", "auto": False},
+        {"message_id": "<2>", "from": "b@inbox-b.fr", "subject": "Re: Proposition", "body": "Pas intéressés, merci", "auto": False},
+        {"message_id": "<3>", "from": "c@inbox-c.fr", "subject": "Re: Proposition", "body": "Bonjour, appelez-moi jeudi", "auto": False},
+        {"message_id": "<4>", "from": "d@inbox-d.fr", "subject": "Réponse automatique : absence", "body": "Je reviens lundi", "auto": False},
+        {"message_id": "<5>", "from": "inconnu@ailleurs.fr", "subject": "Hello", "body": "STOP", "auto": False},
+    ]
+    from app.db import SessionLocal
+    sent = []
+    with SessionLocal() as db:
+        r = replies.check_inbox(db, fetch=lambda emails, domains: items, send=lambda *a: sent.append(a[0]))
+        assert r["processed"] == {"stop": 1, "refus": 1, "reponse": 1, "auto": 1}
+        assert replies.check_inbox(db, fetch=lambda e, d: items, send=lambda *a: sent.append(a[0]))["processed"] == {}   # déjà traités
+    st = {x: client.get(f"/api/companies?q={x}", headers=h).json() for x in ("Inbox B", "Inbox C", "Inbox D")}
+    assert st["Inbox B"][0]["status"] == "refuse"
+    assert st["Inbox C"][0]["status"] == "repondu" and "appelez-moi jeudi" in st["Inbox C"][0]["notes"]
+    assert st["Inbox D"][0]["status"] == "contacte"                                 # réponse automatique : ignorée
+    assert client.get("/api/companies?q=Inbox A", headers=h).json() == []           # archivé
+    arch = client.get("/api/companies?status=archive&q=Inbox A", headers=h).json()[0]
+    assert arch["do_not_contact"] is True
+    assert sent == ["a@inbox-a.fr"]                                                  # une seule confirmation, au bon prospect
+    # un prospect qui a répondu n'est plus relancé
+    _age_company(c["id"], 30)
+    assert c["id"] not in [x["id"] for x in client.get("/api/relances", headers=h).json()["items"]]
+
+
+def test_check_inbox_not_configured(client):
+    from app import replies
+    from app.db import SessionLocal
+    with SessionLocal() as db:
+        assert replies.check_inbox(db)["configured"] is False
+    assert client.get("/api/replies", headers=auth(client)).json()["configured"] is False

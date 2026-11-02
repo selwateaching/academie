@@ -11,7 +11,7 @@ def now():
 
 
 ROLES = ("admin", "manager", "commercial")
-STATUSES = ("a_contacter", "contacte", "rdv", "partenaire", "refuse", "ecarte")
+STATUSES = ("a_contacter", "contacte", "repondu", "rdv", "partenaire", "refuse", "ecarte", "archive")
 
 
 class User(Base):
@@ -72,3 +72,14 @@ class AppSetting(Base):
     __tablename__ = "app_settings"
     key: Mapped[str] = mapped_column(String(60), primary_key=True)
     value: Mapped[str] = mapped_column(String(300), default="")
+
+
+class InboxEvent(Base):
+    """Réponses de prospects déjà traitées (évite de les traiter deux fois)."""
+    __tablename__ = "inbox_events"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    message_id: Mapped[str] = mapped_column(String(300), unique=True, index=True)
+    company_id: Mapped[int | None] = mapped_column(ForeignKey("companies.id"), nullable=True)
+    kind: Mapped[str] = mapped_column(String(20))          # stop | refus | reponse | auto
+    summary: Mapped[str] = mapped_column(String(300), default="")
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

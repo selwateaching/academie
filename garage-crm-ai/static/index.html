@@ -55,7 +55,7 @@ a{color:var(--brand)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let token=sessionStorage.getItem("tk")||"",role="",cats=[];
-const STAT={a_contacter:"À contacter",contacte:"Contacté",rdv:"Rendez-vous",partenaire:"Partenaire",refuse:"Refusé",ecarte:"Écarté"};
+const STAT={a_contacter:"À contacter",contacte:"Contacté",repondu:"A répondu",rdv:"Rendez-vous",partenaire:"Partenaire",refuse:"Refusé",ecarte:"Écarté",archive:"Archivé"};
 async function api(path,opt={}){
   const h={Authorization:"Bearer "+token};
   if(opt.json){h["Content-Type"]="application/json";opt.body=JSON.stringify(opt.json)}
@@ -97,14 +97,14 @@ async function dash(){
   const s=await api("/stats");const st=s.by_status,m=s.messages;
   const k=(v,l)=>`<div class="card kpi"><b>${v??0}</b><span>${l}</span></div>`;
   $("#t-dash").innerHTML=`<div class="grid">${k(s.companies,"Prospects")}${k(st.a_contacter,"À contacter")}${k(st.contacte,"Contactés")}
-  ${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(m.brouillon,"Messages à valider")}${k(s.to_relance,"À relancer")}${k(s.avg_score?Math.round(s.avg_score):"–","Score moyen")}</div>
+  ${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(st.repondu,"Ont répondu")}${k(m.brouillon,"Messages à valider")}${k(s.to_relance,"À relancer")}${k(s.avg_score?Math.round(s.avg_score):"–","Score moyen")}</div>
   <div class="card"><b>Capacités de l'agent</b><p class="mute">Recherche Google Places : ${s.capabilities.places?"✅ active":"❌ non configurée (import CSV possible)"}<br>
   IA OpenAI : ${s.capabilities.openai?"✅ active":"❌ non configurée (scoring et emails par règles)"}<br>
   Envoi email SMTP : ${s.capabilities.smtp?"✅ actif":"❌ non configuré (envoi manuel)"}</p></div>`;
 }
 async function pros(){
   const el=$("#t-pros");
-  el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">Tous statuts</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
+  el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">En cours (hors archivés)</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
   <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
   <button class="btn pri" id="add">+ Ajouter</button>${role!=="commercial"?'<button class="btn" id="exp" title="Fichier Excel de tous les prospects">Exporter (Excel)</button>':""}</div>
   <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
@@ -119,7 +119,8 @@ async function pros(){
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
       <td>${esc(c.phone)}<br><span class="mute">${esc(c.email)} ${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site</a>`:""}</span></td>
       <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
-        <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label></td>
+        <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label>
+        ${c.status==="archive"?"":`<br><a href="#" data-stop="${c.id}" data-n="${esc(c.name)}" class="mute stp" title="Le prospect a répondu STOP : archiver et envoyer la confirmation">a dit STOP</a>`}</td>
       <td><button class="btn" data-d="${c.id}" data-k="email">Email</button> <button class="btn" data-d="${c.id}" data-k="script_appel">Script appel</button>
       <br><span class="mute">${esc(c.next_action)}</span></td></tr>`).join("")+`</table>`;
     document.querySelectorAll(".st").forEach(s=>s.onchange=()=>api("/companies/"+s.dataset.id,{method:"PATCH",json:{status:s.value}}).catch(e=>alert(e.message)));
@@ -128,6 +129,9 @@ async function pros(){
       await api("/companies/"+a.dataset.m,{method:"PATCH",json:{contact_name:v.trim()}});load()});
     document.querySelectorAll(".fnd").forEach(a=>a.onclick=async e=>{e.preventDefault();a.textContent="· recherche…";
       try{const r=await api(`/companies/${a.dataset.f}/find-manager`,{method:"POST"});if(!r.found)alert(r.reason);load()}catch(x){alert(x.message)}});
+    document.querySelectorAll(".stp").forEach(a=>a.onclick=async e=>{e.preventDefault();
+      if(!confirm(`« ${a.dataset.n} » a demandé à ne plus être contacté ?\n\nIl sera archivé (retiré de la liste en cours), ses messages en attente seront annulés et un message de confirmation sera préparé.`))return;
+      try{const r=await api(`/companies/${a.dataset.stop}/stop`,{method:"POST"});alert(`Archivé. Message de confirmation : ${r.confirmation}.`);load()}catch(x){alert(x.message)}});
     document.querySelectorAll(".dnc").forEach(s=>s.onchange=()=>api("/companies/"+s.dataset.id,{method:"PATCH",json:{do_not_contact:s.checked}}));
     document.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{
       try{await api(`/companies/${b.dataset.d}/draft`,{method:"POST",json:{kind:b.dataset.k}});show("msgs")}catch(e){alert(e.message)}});
@@ -188,7 +192,7 @@ async function rep(){
   $("#rdays").onchange=e=>{sessionStorage.setItem("rd",e.target.value);rep()};
 }
 async function pil(){
-  const d=await api("/autopilot"),c=d.config,el=$("#t-pil"),adm=role==="admin";
+  const [d,rp]=await Promise.all([api("/autopilot"),api("/replies")]),c=d.config,el=$("#t-pil"),adm=role==="admin";
   const dis=adm?"":"disabled";
   el.innerHTML=`<div class="card ${c.enabled?"":"warn"}"><div class="row"><span class="big">${c.enabled?"🟢 Pilote en marche":"⚪ Pilote arrêté"}</span>
     <span class="mute">${d.sent_today} / ${c.daily_cap} emails envoyés aujourd'hui</span></div>
@@ -205,7 +209,13 @@ async function pil(){
     <div class="row"><button class="btn pri" id="psave" ${dis}>Enregistrer</button><span id="pmsg" class="mute"></span></div></div>
   <div class="card"><h3 style="margin-top:0">Prochains envois prévus</h3>${d.next.length?`<table>${d.next.map(n=>`<tr><td><span class="score hi">${n.score??"–"}</span></td><td><b>${esc(n.name)}</b></td><td>${esc(n.email)}</td><td class="mute">${n.kind==="relance"?"relance":"premier email"}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect éligible (statut « À contacter », avec email, note suffisante, sans opposition).</p>'}</div>
   <div class="card"><h3 style="margin-top:0">Derniers envois automatiques</h3>${d.recent.length?`<table>${d.recent.map(r=>`<tr><td><b>${esc(r.company)}</b></td><td>${esc(r.kind)}</td><td>${r.status==="envoye"?"✅ envoyé":"⚠️ "+esc(r.status)}</td><td class="mute">${r.at?new Date(r.at).toLocaleString("fr-FR"):""}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun envoi automatique pour l\'instant.</p>'}</div>
+  <div class="card"><h3 style="margin-top:0">Réponses des prospects</h3>
+    <p class="mute" style="margin:0 0 8px">${rp.configured?`Boîte mail lue automatiquement toutes les 10 minutes (${esc(rp.host)}). Un prospect qui répond <b>STOP</b> est archivé et reçoit une confirmation ; un refus ou une réponse arrête les relances.`:"⚠️ Lecture des réponses non configurée : elle utilise les mêmes identifiants que l'envoi (SMTP_HOST, SMTP_USER, SMTP_PASSWORD du fichier .env). En attendant, utilisez « a dit STOP » dans Prospects."}</p>
+    <div class="row"><button class="btn" id="pchk" ${rp.configured?"":"disabled"}>Vérifier les réponses maintenant</button><span id="pchkm" class="mute"></span></div>
+    ${rp.events.length?`<table style="margin-top:8px">${rp.events.map(e=>`<tr><td><b>${esc(e.company)}</b></td><td>${({stop:"🛑 STOP",refus:"❌ refus",reponse:"💬 réponse",auto:"↩️ réponse automatique"})[e.kind]||esc(e.kind)}</td><td class="mute">${esc(e.summary)}</td></tr>`).join("")}</table>`:""}</div>
   <div class="card warn"><b>Garde-fous</b><p class="mute" style="margin:6px 0 0">Un envoi toutes les ~10 minutes au plus · jamais hors des horaires · jamais à un prospect en « opposition » · jamais deux premiers emails au même prospect · arrêt automatique après 3 échecs d'envoi · chaque message contient la désinscription. Le pilote ne travaille que tant que l'application tourne (PC allumé ou serveur en ligne). Les prospects <b>sans email</b> restent à appeler avec le script.</p></div>`;
+  const pc=$("#pchk");if(pc)pc.onclick=async()=>{$("#pchkm").textContent="Lecture de la boîte mail…";
+    try{const r=await api("/replies/check",{method:"POST"});$("#pchkm").textContent=r.error?"⚠️ "+r.error:Object.keys(r.processed).length?"Traité : "+Object.entries(r.processed).map(([k,n])=>n+" "+k).join(", "):"Aucune nouvelle réponse.";if(!r.error&&Object.keys(r.processed).length)setTimeout(pil,1500)}catch(e){$("#pchkm").textContent="⚠️ "+e.message}};
   const sv=$("#psave");if(sv)sv.onclick=async()=>{
     try{await api("/autopilot",{method:"PUT",json:{enabled:$("#pe").checked,daily_cap:+$("#pc").value,min_score:+$("#ps").value,
       hour_start:+$("#ph1").value,hour_end:+$("#ph2").value,weekdays_only:$("#pwk").checked,auto_relances:$("#pr").checked}});pil()}
@@ -255,8 +265,8 @@ async function msgs(){
   const lab={brouillon:"À valider",valide:"Validé",envoye:"Envoyé",rejete:"Rejeté"};
   const sender=st.sender?esc(st.sender):'<span class="mute">non configuré → envoi manuel depuis votre messagerie</span>';
   const done=m=>["envoye","rejete","valide"].includes(m.status);
-  el.innerHTML=(rows.length?rows.map(m=>{const isMail=m.kind!=="script_appel";return `<div class="card"><div class="row"><b>${esc(m.company)}</b><span class="mute">${esc(m.kind)} · ${lab[m.status]||m.status} ${m.approved_by?"par "+esc(m.approved_by):""}</span></div>
-  ${isMail?`<div class="mute" style="margin-bottom:8px">De : ${sender}<br>À : ${m.to?`<b>${esc(m.to)}</b>`:"⚠️ aucune adresse email pour ce prospect – ajoutez-la dans Prospects ou appelez"}</div>`:""}
+  el.innerHTML=(rows.length?rows.map(m=>{const isMail=m.kind!=="script_appel";return `<div class="card"><div class="row"><b>${esc(m.company)}</b><span class="mute">${({email:"email",relance:"relance",script_appel:"script d'appel",confirmation_stop:"confirmation de désinscription"})[m.kind]||esc(m.kind)} · ${lab[m.status]||m.status} ${m.approved_by?"par "+esc(m.approved_by):""}</span></div>
+  ${isMail?`<div class="mute" style="margin-bottom:8px">De : ${sender}<br>À : ${m.to?`<b>${esc(m.to)}</b>`:`⚠️ aucune adresse email pour ce prospect <button class="btn" data-fe="${m.company_id}" style="padding:2px 8px;margin-left:6px">Chercher l'email sur son site</button>`}</div>`:""}
   <input data-s="${m.id}" value="${esc(m.subject)}" style="width:100%;margin-bottom:8px" ${done(m)?"disabled":""}>
   <textarea data-b="${m.id}" ${done(m)?"disabled":""}>${esc(m.body)}</textarea>
   <div class="row" style="margin-top:8px">
@@ -265,6 +275,9 @@ async function msgs(){
   ${m.status==="valide"?`<button class="btn" data-a="edit" data-i="${m.id}" title="Annule la validation pour corriger le texte">Modifier</button>${st.sender?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer maintenant</button>`:""}<button class="btn ${st.sender?"":"pri"}" data-a="mark-sent" data-i="${m.id}">J'ai envoyé ce message</button>`:""}</div>
   ${m.status==="valide"&&!st.sender?'<div class="mute" style="margin-top:6px">Envoi direct non configuré : cliquez sur « Copier le message », envoyez-le depuis votre messagerie, puis sur « J\'ai envoyé ce message ».</div>':""}</div>`}).join("")
   :`<div class="card mute">Aucun message. Générez-en depuis l'onglet Prospects.</div>`);
+  el.querySelectorAll("[data-fe]").forEach(b=>b.onclick=async()=>{b.textContent="Recherche en cours…";b.disabled=true;
+    try{const r=await api(`/companies/${b.dataset.fe}/find-manager`,{method:"POST"});
+      if(r.email)msgs();else{b.textContent="Aucun email trouvé sur son site : appelez-le (script d'appel)";}}catch(e){b.textContent=e.message}});
   el.querySelectorAll("[data-gm]").forEach(a=>a.addEventListener("click",async()=>{
     const ta=el.querySelector(`[data-b="${a.dataset.gm}"]`);
     try{await navigator.clipboard.writeText(ta.value)}catch(e){ta.removeAttribute("disabled");ta.select();document.execCommand("copy")}

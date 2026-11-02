@@ -129,6 +129,8 @@ def start_scheduler(interval: int = 600) -> None:
             time.sleep(interval)
             try:
                 with SessionLocal() as db:
+                    from . import replies
+                    replies.check_inbox(db)          # les STOP sont pris en compte avant tout nouvel envoi
                     r = tick(db)
                     if r["sent"]:
                         log.info("Pilote : %s", r["reason"])

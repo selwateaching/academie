@@ -76,6 +76,25 @@ def from_template(c: Company) -> tuple[str, str] | None:
     return subject, body
 
 
+STOP_MODELE = Path(__file__).resolve().parent.parent / "modeles" / "confirmation_stop.txt"
+
+
+def confirmation_stop(c: Company) -> tuple[str, str]:
+    """Message envoyé UNE fois à un prospect qui demande à ne plus être contacté (aucun contenu commercial)."""
+    s = get_settings()
+    try:
+        raw = STOP_MODELE.read_text(encoding="utf-8-sig").strip().splitlines()
+        subject = raw[0].split(":", 1)[1].strip()
+        body = "\n".join(raw[1:]).strip()
+    except (OSError, IndexError):
+        subject = "Votre demande est prise en compte"
+        body = ("Bonjour,\n\nNous avons bien reçu votre demande : vous ne recevrez plus aucun message de notre part.\n"
+                f"Nous vous prions de nous excuser pour le dérangement.\n\nCordialement,\n{s.garage_name}")
+    if body.startswith("Bonjour,"):
+        body = greeting(c) + body[len("Bonjour,"):]
+    return subject, body
+
+
 SCRIPT = Path(__file__).resolve().parent.parent / "modeles" / "script_appel.txt"
 
 

@@ -21,6 +21,12 @@ Désactivé par défaut. Il exige l'envoi SMTP configuré (adresse du garage dan
 Les relances automatiques sont une option à part : **les réponses ne sont pas encore détectées**, il faut surveiller la boîte mail.
 L'application doit tourner en continu (PC allumé ou serveur en ligne).
 
+## Réponses des prospects, STOP et archivage
+- Si l'envoi SMTP est configuré, l'application **lit la boîte mail du garage** (IMAP, lecture seule) toutes les 10 minutes.
+- **STOP / désinscription** : opposition enregistrée, prospect **archivé** (retiré de la liste en cours, visible via le filtre « Archivé »), messages en attente annulés, **message de confirmation** envoyé une fois (modèle : `app/modeles/confirmation_stop.txt`).
+- **Refus** : statut « Refusé ». **Autre réponse** : statut « A répondu ». Dans les deux cas, plus de relance. Les réponses automatiques (absence…) sont ignorées.
+- Sans lecture de la boîte mail : bouton **« a dit STOP »** sur la fiche du prospect, même effet.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 

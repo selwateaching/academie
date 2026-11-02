@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import autopilot, models
+from . import autopilot, models, replies
 from .relances import aware, due_companies
 from .agent import emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
@@ -201,6 +201,8 @@ def list_companies(status: str | None = None, category: str | None = None, min_s
     stmt = select(models.Company).order_by(models.Company.score.desc().nulls_last(), models.Company.id.desc())
     if status:
         stmt = stmt.where(models.Company.status == status)
+    else:
+        stmt = stmt.where(models.Company.status != "archive")      # les archivés sortent de la liste en cours
     if category:
         stmt = stmt.where(models.Company.category == category)
     if min_score is not None:
@@ -365,6 +367,27 @@ async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
     return {"found": len(rows)} | _ingest(db, rows)
 
 
+@app.post("/api/companies/{cid}/stop")
+def company_stop(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
+    """Le prospect a demandé à ne plus être contacté : opposition, archivage, message de confirmation."""
+    c = db.get(models.Company, cid) or _404()
+    result = replies.handle_stop(db, c, reason="signalé manuellement")      # d'abord l'action, puis l'état à jour
+    return company_out(c) | result
+
+
+@app.get("/api/replies")
+def get_replies(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    ev = db.scalars(select(models.InboxEvent).order_by(models.InboxEvent.id.desc()).limit(15))
+    return {"configured": replies.imap_settings() is not None, "host": get_settings().imap_host,
+            "events": [{"company": (db.get(models.Company, e.company_id).name if e.company_id else ""), "kind": e.kind,
+                        "summary": e.summary, "at": e.at.isoformat()} for e in ev]}
+
+
+@app.post("/api/replies/check")
+def check_replies(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    return replies.check_inbox(db)
+
+
 # ---------- Messages (brouillon -> validation humaine -> envoi) ----------
 def message_out(m: models.Message) -> dict:
     return {"id": m.id, "company_id": m.company_id, "company": m.company.name, "to": m.company.email,
@@ -441,7 +464,7 @@ def send(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
     if m.status != "valide":
         raise HTTPException(409, "Le message doit d'abord être validé")
     c = m.company
-    if c.do_not_contact:
+    if c.do_not_contact and m.kind != "confirmation_stop":
         raise HTTPException(409, "Ce prospect s'est opposé à la prospection")
     if m.kind != "script_appel":
         if not c.email:
@@ -588,7 +611,8 @@ def stats(db: Session = Depends(get_db), _=Depends(ANY)):
     by_status = dict(db.execute(select(models.Company.status, func.count()).group_by(models.Company.status)).all())
     by_cat = dict(db.execute(select(models.Company.category, func.count()).group_by(models.Company.category)).all())
     msgs = dict(db.execute(select(models.Message.status, func.count()).group_by(models.Message.status)).all())
-    return {"companies": sum(by_status.values()), "by_status": by_status, "by_category": by_cat,
+    return {"companies": sum(v for k, v in by_status.items() if k != "archive"), "archived": by_status.get("archive", 0),
+            "by_status": by_status, "by_category": by_cat,
             "messages": msgs, "to_relance": len(due_relances(db)), "avg_score": db.scalar(select(func.avg(models.Company.score))),
             "sender": get_settings().smtp_from if mailer.smtp_configured() else "",
             "capabilities": {"places": bool(get_settings().places_api_key),
