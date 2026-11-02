@@ -15,6 +15,14 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 
+@pytest.fixture(autouse=True)
+def no_network(monkeypatch):
+    """Les tests ne sortent jamais sur Internet : recherche de gérant/email désactivée par défaut."""
+    from app.agent import emailfinder, enrichment
+    monkeypatch.setattr(enrichment, "find_manager", lambda name, city, address="": None)
+    monkeypatch.setattr(emailfinder, "fetch", lambda url: "")
+
+
 @pytest.fixture(scope="module")
 def client():
     with TestClient(app) as c:
@@ -276,3 +284,73 @@ def test_production_refuses_default_secrets(monkeypatch):
 
 def test_stats_exposes_sender_empty_without_smtp(client):
     assert client.get("/api/stats", headers=auth(client)).json()["sender"] == ""
+
+
+# ---------- Recherche automatique de l'email sur le site ----------
+PAGES = {
+    "https://garage-dupont.fr": '<html><a href="/nos-services">Services</a><a href="/contact-us">Contact</a><img src="logo@2x.png"></html>',
+    "https://garage-dupont.fr/contact-us": """<p>Écrivez-nous : <a href="mailto:Contact@Garage-Dupont.fr?subject=x">ici</a></p>
+        <p>noreply@garage-dupont.fr — webmaster@garage-dupont.fr — dupont [at] gmail.com</p>""",
+}
+
+
+def _fake_fetch(url):
+    return PAGES.get(url.rstrip("/"), "")
+
+
+def test_find_email_reads_contact_page_and_filters_junk():
+    from app.agent import emailfinder
+    r = emailfinder.find_email("garage-dupont.fr", fetcher=_fake_fetch)
+    assert r == {"email": "contact@garage-dupont.fr", "source": "https://garage-dupont.fr/contact-us"}
+
+
+def test_find_email_decodes_cloudflare_protection_and_ignores_images():
+    from app.agent import emailfinder
+    key, addr = 0x2A, "info@atelier.fr"
+    cf = f"{key:02x}" + "".join(f"{ord(ch) ^ key:02x}" for ch in addr)
+    page = f'<a class="__cf_email__" data-cfemail="{cf}">[email protected]</a> <img src="banner@3x.jpg">'
+    assert emailfinder.find_email("https://atelier.fr", fetcher=lambda u: page)["email"] == addr
+
+
+def test_find_email_returns_none_when_nothing_public():
+    from app.agent import emailfinder
+    assert emailfinder.find_email("https://vide.fr", fetcher=lambda u: "<html>formulaire seulement</html>") is None
+    assert emailfinder.find_email("", fetcher=lambda u: "x") is None
+
+
+def test_ssrf_guard_refuses_private_hosts():
+    from app.agent import emailfinder
+    for host in ("localhost", "127.0.0.1", "10.0.0.5", "192.168.1.10", "169.254.169.254"):
+        assert emailfinder._is_public_host(host) is False
+    assert emailfinder.fetch("http://127.0.0.1:8000/") == ""
+
+
+def test_agent_search_enriches_new_prospects_automatically(client, monkeypatch):
+    from app.agent import emailfinder, enrichment, prospector
+    h = auth(client)
+    monkeypatch.setattr(prospector, "search_places", lambda cat, city, limit: [
+        {"name": "Garage Dupont", "category": "garage", "city": "Toulouse", "address": "1 rue A, 31000 Toulouse, France",
+         "website": "https://garage-dupont.fr", "phone": "0561", "source": "google_places", "source_ref": "gp:AUTO1"},
+        {"name": "Sans Site SARL", "category": "garage", "city": "Toulouse", "address": "2 rue B, 31000 Toulouse, France",
+         "phone": "0562", "source": "google_places", "source_ref": "gp:AUTO2"}])
+    monkeypatch.setattr(emailfinder, "fetch", _fake_fetch)
+    monkeypatch.setattr(enrichment, "find_manager", lambda n, c, a="": {"contact_name": "Marc Dupont", "qualite": "Gérant", "siren": "1"}
+                        if "Dupont" in n else None)
+    r = client.post("/api/agent/search", headers=h, json={"category": "garage", "city": "Toulouse", "limit": 5}).json()
+    assert r["added"] == 2 and r["emails_found"] == 1 and r["managers_found"] == 1
+    rows = {c["name"]: c for c in client.get("/api/companies?q=Dupont", headers=h).json()}
+    d = rows["Garage Dupont"]
+    assert d["email"] == "contact@garage-dupont.fr" and d["contact_name"] == "Marc Dupont" and "à vérifier" in d["notes"]
+    sans = client.get("/api/companies?q=Sans Site", headers=h).json()[0]
+    assert sans["email"] == ""                                    # rien d'inventé quand il n'y a pas de site
+
+
+def test_enrich_never_overwrites_existing_email(client, monkeypatch):
+    from app.agent import emailfinder
+    monkeypatch.setattr(emailfinder, "fetch", _fake_fetch)
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Déjà Rempli", "category": "garage", "city": "Toulouse",
+                                                       "website": "https://garage-dupont.fr", "email": "perso@saisi.fr",
+                                                       "contact_name": "Moi Même"}).json()
+    r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
+    assert r["email"] == "perso@saisi.fr" and r["contact_name"] == "Moi Même" and r["found"] is False

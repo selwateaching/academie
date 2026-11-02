@@ -2,6 +2,7 @@ import csv
 import io
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor, wait
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -14,7 +15,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import models
-from .agent import enrichment, mailer, prospector, qualifier, writer
+from .agent import emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
 from .db import Base, SessionLocal, engine, get_db
@@ -246,37 +247,70 @@ def _404():
     raise HTTPException(404, "Introuvable")
 
 
-def _enrich_one(c: models.Company) -> bool:
-    """Renseigne le gérant s'il est vide et trouvé de façon fiable. Retourne True si trouvé."""
-    if c.contact_name:
-        return False
-    found = enrichment.find_manager(c.name, c.city, c.address)
-    if not found:
-        return False
-    c.contact_name = found["contact_name"]
-    note = f"Gérant : {found['contact_name']} ({found['qualite'] or 'dirigeant'}) – registre public, SIREN {found['siren']} – à vérifier"
-    c.notes = (c.notes + "\n" if c.notes else "") + note
-    return True
+def _lookup(snap: dict) -> dict:
+    """Exécuté en parallèle : ne touche PAS à la base, seulement au réseau."""
+    out: dict = {}
+    try:
+        if snap["need_email"]:
+            out["email"] = emailfinder.find_email(snap["website"])
+        if snap["need_manager"]:
+            out["manager"] = enrichment.find_manager(snap["name"], snap["city"], snap["address"])
+    except Exception:
+        pass
+    return out
+
+
+def _note(c: models.Company, text: str):
+    c.notes = (c.notes + "\n" if c.notes else "") + text
+
+
+def enrich_companies(db: Session, companies: list[models.Company], budget: int = 75) -> dict:
+    """Trouve email (site web de l'entreprise) et gérant (registre public) des prospects, en parallèle.
+
+    Ne remplace jamais une valeur déjà saisie. Tout ce qui est trouvé est noté « à vérifier »."""
+    jobs = []
+    for c in companies:
+        snap = {"name": c.name, "city": c.city, "address": c.address, "website": c.website,
+                "need_email": not c.email and bool(c.website), "need_manager": not c.contact_name}
+        if snap["need_email"] or snap["need_manager"]:
+            jobs.append((c, snap))
+    emails = managers = 0
+    if jobs:
+        ex = ThreadPoolExecutor(max_workers=8)
+        futs = {ex.submit(_lookup, snap): c for c, snap in jobs}
+        done, _ = wait(futs, timeout=budget)
+        ex.shutdown(wait=False, cancel_futures=True)
+        for f in done:
+            c, res = futs[f], f.result()
+            e, m = res.get("email"), res.get("manager")
+            if e and not c.email:
+                c.email = e["email"]
+                _note(c, f"Email trouvé sur {e['source']} – à vérifier")
+                emails += 1
+            if m and not c.contact_name:
+                c.contact_name = m["contact_name"]
+                _note(c, f"Gérant : {m['contact_name']} ({m['qualite'] or 'dirigeant'}) – registre public, SIREN {m['siren']} – à vérifier")
+                managers += 1
+        db.commit()
+    return {"checked": len(jobs), "emails": emails, "managers": managers, "found": emails + managers}
 
 
 @app.post("/api/companies/{cid}/find-manager")
 def find_manager(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
+    """« trouver » : cherche l'email (site web) et le gérant (registre public) de ce prospect."""
     c = db.get(models.Company, cid) or _404()
-    if c.contact_name:
-        return company_out(c) | {"found": False, "reason": "Un contact est déjà renseigné"}
-    found = _enrich_one(c)
-    db.commit()
-    return company_out(c) | {"found": found, "reason": "" if found else "Aucun dirigeant fiable trouvé : saisissez-le à la main"}
+    res = enrich_companies(db, [c])
+    return company_out(c) | res | {"found": res["found"] > 0,
+                                   "reason": "" if res["found"] else "Rien de fiable trouvé : saisissez-le à la main"}
 
 
 @app.post("/api/agent/enrich")
 def enrich_all(db: Session = Depends(get_db), _=Depends(MANAGER)):
-    """Cherche le gérant des prospects qui n'en ont pas (max 30 par appel)."""
-    todo = list(db.scalars(select(models.Company).where(models.Company.contact_name == "")
-                           .order_by(models.Company.score.desc().nulls_last()).limit(30)))
-    found = sum(1 for c in todo if _enrich_one(c))
-    db.commit()
-    return {"checked": len(todo), "found": found}
+    """Complète emails et gérants manquants (30 prospects à la fois, les mieux notés d'abord)."""
+    todo = list(db.scalars(select(models.Company).where(
+        (models.Company.contact_name == "") | ((models.Company.email == "") & (models.Company.website != "")))
+        .order_by(models.Company.score.desc().nulls_last()).limit(30)))
+    return enrich_companies(db, todo)
 
 
 # ---------- Agent IA : recherche + qualification ----------
@@ -288,6 +322,7 @@ class SearchIn(BaseModel):
 
 def _ingest(db: Session, rows: list[dict], min_score: int = 0) -> dict:
     added = skipped = 0
+    new: list[models.Company] = []
     for r in rows:
         ref = r.get("source_ref")
         if ref and db.scalar(select(models.Company.id).where(models.Company.source_ref == ref)):
@@ -298,9 +333,12 @@ def _ingest(db: Session, rows: list[dict], min_score: int = 0) -> dict:
         if c.score < min_score:
             c.status = "ecarte"
         db.add(c)
+        new.append(c)
         added += 1
     db.commit()
-    return {"added": added, "duplicates": skipped}
+    # l'agent complète tout seul emails et gérants des nouveaux prospects
+    found = enrich_companies(db, new) if new else {"emails": 0, "managers": 0}
+    return {"added": added, "duplicates": skipped, "emails_found": found["emails"], "managers_found": found["managers"]}
 
 
 @app.post("/api/agent/search")

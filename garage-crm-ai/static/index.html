@@ -115,7 +115,7 @@ async function pros(){
       <td><b>${esc(c.name)}</b><br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
-        ${c.contact_name?"":`<a href="#" data-f="${c.id}" class="fnd">· trouver</a>`}</td>
+        ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
       <td>${esc(c.phone)}<br><span class="mute">${esc(c.email)} ${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site</a>`:""}</span></td>
       <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
         <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label></td>
@@ -210,20 +210,20 @@ function agent(){
   <p class="mute">L'agent cherche des entreprises (Google Places), les enregistre sans doublon et leur attribue un score. Aucun message n'est envoyé.</p>
   <div class="row"><select id="ac">${catOpts()}</select><input id="ay" placeholder="Ville (ex. Toulouse)"><input id="an" type="number" value="20" min="1" max="60" style="width:80px">
   <button class="btn pri" id="ar" ${role==="commercial"?"disabled":""}>Lancer</button></div><div id="ao" class="mute"></div></div>
-  <div class="card"><h3 style="margin-top:0">Trouver les gérants</h3>
-  <p class="mute">Cherche le dirigeant des prospects sans contact dans le registre public des entreprises (30 à la fois). Les noms trouvés sont à vérifier.</p>
-  <div class="row"><button class="btn" id="ae" ${role==="commercial"?"disabled":""}>Compléter les gérants</button></div></div>
+  <div class="card"><h3 style="margin-top:0">Compléter emails et gérants</h3>
+  <p class="mute">L'agent le fait déjà tout seul après chaque recherche. Ce bouton reprend les prospects restés incomplets (30 à la fois, les mieux notés d'abord) : il lit le site web de l'entreprise pour l'email, et le registre public pour le gérant. Tout est à vérifier avant l'envoi.</p>
+  <div class="row"><button class="btn" id="ae" ${role==="commercial"?"disabled":""}>Compléter les prospects</button></div></div>
   <div class="card"><h3 style="margin-top:0">Importer un fichier CSV</h3>
   <p class="mute">Colonnes : name, category, city, address, phone, website, email, contact_name. Catégories : ${cats.map(c=>c.key).join(", ")}.</p>
   <div class="row"><input id="af" type="file" accept=".csv"><button class="btn" id="ai" ${role==="commercial"?"disabled":""}>Importer</button></div></div>
   <div class="card warn"><b>Règles de prospection</b><p class="mute">Coordonnées professionnelles uniquement · source tracée pour chaque fiche · tout message est validé par un humain avant envoi · case « opposition » = plus aucun contact · chaque email contient un moyen de désinscription.</p></div>`;
-  $("#ar").onclick=async()=>{$("#ao").textContent="Recherche en cours…";
+  $("#ar").onclick=async()=>{$("#ao").textContent="Recherche en cours… (l'agent lit aussi les sites web pour trouver les emails : jusqu'à 1 minute)";
     try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value}});
-      $("#ao").textContent=`${r.found} trouvées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés`}catch(e){$("#ao").textContent=e.message}};
-  $("#ae").onclick=async()=>{$("#ao").textContent="Recherche des gérants…";
-    try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.found} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
+      $("#ao").textContent=`${r.found} trouvées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
+  $("#ae").onclick=async()=>{$("#ao").textContent="Lecture des sites web et du registre… (jusqu'à 1 minute)";
+    try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.emails} emails et ${r.managers} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
   $("#ai").onclick=async()=>{const f=$("#af").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);
-    try{const r=await api("/agent/import-csv",{method:"POST",body:fd});$("#ao").textContent=`${r.found} lignes · ${r.added} ajoutées · ${r.duplicates} doublons`}catch(e){$("#ao").textContent=e.message}};
+    try{const r=await api("/agent/import-csv",{method:"POST",body:fd});$("#ao").textContent=`${r.found} lignes · ${r.added} ajoutées · ${r.duplicates} doublons · ${r.emails_found} emails et ${r.managers_found} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
 }
 async function msgs(){
   const [rows,st]=await Promise.all([api("/messages"),api("/stats")]);const el=$("#t-msgs");
