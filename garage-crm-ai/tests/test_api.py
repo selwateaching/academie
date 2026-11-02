@@ -196,3 +196,22 @@ def test_report_and_dashboard(client):
         assert key in r
     assert r["new_prospects"] >= 1 and len(r["top_to_contact"]) <= 5
     assert "to_relance" in client.get("/api/stats", headers=h).json()
+
+
+def test_first_email_uses_garage_template_verbatim(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Modèle Auto", "category": "concession", "city": "Toulouse",
+                                                       "contact_name": "Julie Roux"}).json()
+    m = client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"}).json()
+    assert m["subject"].startswith("Proposition de partenariat carrosserie et peinture")
+    assert m["body"].startswith("Bonjour Julie Roux,")
+    assert "Nous avons identifié votre établissement" in m["body"]
+    assert "05 32 00 22 13 / 06 52 92 24 04" in m["body"]
+    assert m["body"].count("STOP") == 1            # pas de mention en double
+    # sans gérant connu : formule neutre
+    c2 = client.post("/api/companies", headers=h, json={"name": "Sans Nom", "category": "vo", "city": "Toulouse"}).json()
+    m2 = client.post(f"/api/companies/{c2['id']}/draft", headers=h, json={"kind": "email"}).json()
+    assert m2["body"].startswith("Bonjour,\n")
+    # la relance, elle, n'utilise pas ce modèle
+    r = client.post(f"/api/companies/{c2['id']}/draft", headers=h, json={"kind": "relance"}).json()
+    assert "Nous avons identifié votre établissement" not in r["body"]

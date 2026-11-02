@@ -1,4 +1,6 @@
 """Agent 3 – Commercial : rédige emails, relances et scripts d'appel (toujours en brouillon)."""
+from pathlib import Path
+
 from ..config import get_settings
 from ..models import Company
 from .llm import chat_json
@@ -51,9 +53,36 @@ def _fallback(c: Company, kind: str) -> tuple[str, str]:
             f"Pourrions-nous convenir de 15 minutes cette semaine pour vous présenter notre offre ?")
 
 
+MODELE = Path(__file__).resolve().parent.parent / "modeles" / "email_premier_contact.txt"
+
+
+def from_template(c: Company) -> tuple[str, str] | None:
+    """Premier email = modèle du garage (fichier texte), texte repris tel quel.
+
+    1re ligne : « Objet : … ». Seule la formule « Bonjour, » est personnalisée si le gérant est connu.
+    Supprimez le fichier pour revenir à la rédaction par l'IA.
+    """
+    try:
+        raw = MODELE.read_text(encoding="utf-8-sig").strip()
+    except OSError:
+        return None
+    lines = raw.splitlines()
+    if not lines or not lines[0].lower().startswith("objet"):
+        return None
+    subject = lines[0].split(":", 1)[1].strip()
+    body = "\n".join(lines[1:]).strip()
+    if body.startswith("Bonjour,"):
+        body = greeting(c) + body[len("Bonjour,"):]
+    return subject, body
+
+
 def draft(c: Company, kind: str = "email") -> tuple[str, str]:
     s = get_settings()
     kind = kind if kind in KINDS else "email"
+    if kind == "email":
+        tpl = from_template(c)
+        if tpl:
+            return tpl  # signature et mention STOP déjà dans le modèle
     hook = CATEGORIES.get(c.category, ("", "", 0, ""))[3]
     prompt = (f"{KINDS[kind]}\nDestinataire : {c.name} ({label(c.category)}, {c.city}). Site : {c.website or '-'}\n"
               f"Interlocuteur : {c.contact_name or 'inconnu (commence par « Bonjour, »)'}"
