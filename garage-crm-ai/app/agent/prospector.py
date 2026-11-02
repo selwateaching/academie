@@ -6,6 +6,7 @@ Sans clé API, on utilise l'import CSV (voir main.py).
 import httpx
 
 from ..config import get_settings
+from .enrichment import commune_from_address
 from .targets import CATEGORIES
 
 PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
@@ -45,10 +46,12 @@ def search_places(category: str, city: str, limit: int = 20) -> list[dict]:
             for p in data.get("places", []):
                 if p.get("businessStatus") not in (None, "OPERATIONAL"):
                     continue
+                address = p.get("formattedAddress", "")
                 results.append({
                     "name": p.get("displayName", {}).get("text", ""),
-                    "address": p.get("formattedAddress", ""),
-                    "city": city,
+                    "address": address,
+                    # vraie commune lue dans l'adresse ; sinon ce qui a été saisi
+                    "city": commune_from_address(address) or city,
                     "phone": p.get("nationalPhoneNumber", ""),
                     "website": p.get("websiteUri", ""),
                     "rating": p.get("rating"),

@@ -30,14 +30,26 @@ def _name_matches(wanted: str, found: str) -> bool:
     return len(w & f) / len(w) >= 0.5
 
 
-def _city_matches(city: str, result: dict) -> bool:
+def commune_from_address(address: str) -> str:
+    """« 12 rue X, 31100 Toulouse, France » -> « Toulouse »."""
+    m = re.search(r"\b\d{5}\s+([^,]+)", address or "")
+    return m.group(1).strip() if m else ""
+
+
+def _city_matches(city: str, result: dict, address: str = "") -> bool:
     c = _norm(city).strip()
-    if not c:
+    addr = _norm(address)
+    if not c and not addr:
         return True
-    communes = {_norm(result.get("siege", {}).get("libelle_commune", ""))}
-    for e in result.get("matching_etablissements", []) or []:
-        communes.add(_norm(e.get("libelle_commune", "")))
-    return any(c in x or x in c for x in communes if x.strip())
+    places = [result.get("siege", {})] + list(result.get("matching_etablissements", []) or [])
+    for e in places:
+        commune = _norm(e.get("libelle_commune", "")).strip()
+        cp = (e.get("code_postal") or "").strip()
+        if commune and (commune in c or c in commune or (addr and commune in addr)):
+            return True
+        if cp and addr and cp in addr:
+            return True
+    return False
 
 
 def _format_person(d: dict) -> str:
@@ -46,10 +58,10 @@ def _format_person(d: dict) -> str:
     return f"{prenoms.title()} {nom.title()}".strip()
 
 
-def pick_manager(results: list[dict], name: str, city: str) -> dict | None:
+def pick_manager(results: list[dict], name: str, city: str, address: str = "") -> dict | None:
     """Choisit le dirigeant dans les résultats de l'API. Retourne {contact_name, qualite, siren, nom_complet}."""
     for r in results:
-        if not _name_matches(name, r.get("nom_complet", "")) or not _city_matches(city, r):
+        if not _name_matches(name, r.get("nom_complet", "")) or not _city_matches(city, r, address):
             continue
         people = [d for d in r.get("dirigeants", []) or []
                   if "physique" in (d.get("type_dirigeant") or "").lower() and d.get("nom")]
@@ -62,11 +74,12 @@ def pick_manager(results: list[dict], name: str, city: str) -> dict | None:
     return None
 
 
-def find_manager(name: str, city: str) -> dict | None:
+def find_manager(name: str, city: str, address: str = "") -> dict | None:
+    place = commune_from_address(address) or (city if not city.strip().isdigit() else "")
     try:
-        r = httpx.get(URL, params={"q": f"{name} {city}".strip(), "per_page": 5}, timeout=15)
+        r = httpx.get(URL, params={"q": f"{name} {place}".strip(), "per_page": 5}, timeout=15)
         if r.status_code != 200:
             return None
-        return pick_manager(r.json().get("results", []), name, city)
+        return pick_manager(r.json().get("results", []), name, city, address)
     except Exception:
         return None

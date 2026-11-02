@@ -204,7 +204,7 @@ def _enrich_one(c: models.Company) -> bool:
     """Renseigne le gérant s'il est vide et trouvé de façon fiable. Retourne True si trouvé."""
     if c.contact_name:
         return False
-    found = enrichment.find_manager(c.name, c.city)
+    found = enrichment.find_manager(c.name, c.city, c.address)
     if not found:
         return False
     c.contact_name = found["contact_name"]

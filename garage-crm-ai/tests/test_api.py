@@ -123,7 +123,7 @@ def test_pick_manager_refuses_wrong_company_or_city():
 
 def test_find_manager_endpoint_and_greeting(client, monkeypatch):
     from app.agent import enrichment
-    monkeypatch.setattr(enrichment, "find_manager", lambda name, city: enrichment.pick_manager(FAKE, name, city))
+    monkeypatch.setattr(enrichment, "find_manager", lambda name, city, address="": enrichment.pick_manager(FAKE, name, city, address))
     h = auth(client)
     c = client.post("/api/companies", headers=h, json={"name": "Garage du Midi", "category": "garage", "city": "Toulouse"}).json()
     r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
@@ -135,9 +135,19 @@ def test_find_manager_endpoint_and_greeting(client, monkeypatch):
 
 def test_manual_contact_name_never_overwritten(client, monkeypatch):
     from app.agent import enrichment
-    monkeypatch.setattr(enrichment, "find_manager", lambda n, c: {"contact_name": "Autre", "qualite": "", "siren": "1"})
+    monkeypatch.setattr(enrichment, "find_manager", lambda n, c, a="": {"contact_name": "Autre", "qualite": "", "siren": "1"})
     h = auth(client)
     c = next(x for x in client.get("/api/companies", headers=h).json() if x["name"] == "Loc Auto 31")
     client.patch(f"/api/companies/{c['id']}", headers=h, json={"contact_name": "Sophie Bernard"})
     r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
     assert r["found"] is False and r["contact_name"] == "Sophie Bernard"
+
+
+def test_city_typed_as_department_still_matches_via_address():
+    from app.agent import enrichment
+    fake = [{"nom_complet": "UCAR TOULOUSE SAS", "siren": "9", "siege": {"libelle_commune": "TOULOUSE", "code_postal": "31200"},
+             "dirigeants": [{"type_dirigeant": "personne physique", "nom": "LEROY", "prenoms": "Anne", "qualite": "Présidente"}]}]
+    addr = "5 Rue des Fleurs, 31200 Toulouse, France"
+    assert enrichment.commune_from_address(addr) == "Toulouse"
+    assert enrichment.pick_manager(fake, "Ucar - Location de voitures Toulouse", "31", addr)["contact_name"] == "Anne Leroy"
+    assert enrichment.pick_manager(fake, "Ucar - Location de voitures Toulouse", "31", "1 rue A, 69000 Lyon, France") is None
