@@ -233,11 +233,15 @@ async function msgs(){
   <input data-s="${m.id}" value="${esc(m.subject)}" style="width:100%;margin-bottom:8px" ${done(m)?"disabled":""}>
   <textarea data-b="${m.id}" ${done(m)?"disabled":""}>${esc(m.body)}</textarea>
   <div class="row" style="margin-top:8px">
-  <button class="btn" data-cp="${m.id}">Copier le message</button>${isMail&&m.to?`<a class="btn" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(m.to)}&su=${encodeURIComponent(m.subject)}">Ouvrir Gmail</a>`:""}
+  <button class="btn" data-cp="${m.id}">Copier le message</button>${isMail&&m.to?`<a class="btn pri" data-gm="${m.id}" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(m.to)}&su=${encodeURIComponent(m.subject)}">Ouvrir Gmail (copie le texte)</a>`:""}
   ${m.status==="brouillon"?`<button class="btn" data-a="save" data-i="${m.id}">Enregistrer</button><button class="btn pri" data-a="approve" data-i="${m.id}">Valider</button><button class="btn" data-a="reject" data-i="${m.id}">Rejeter</button>`:""}
   ${m.status==="valide"?`<button class="btn" data-a="edit" data-i="${m.id}" title="Annule la validation pour corriger le texte">Modifier</button>${st.sender?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer maintenant</button>`:""}<button class="btn ${st.sender?"":"pri"}" data-a="mark-sent" data-i="${m.id}">J'ai envoyé ce message</button>`:""}</div>
   ${m.status==="valide"&&!st.sender?'<div class="mute" style="margin-top:6px">Envoi direct non configuré : cliquez sur « Copier le message », envoyez-le depuis votre messagerie, puis sur « J\'ai envoyé ce message ».</div>':""}</div>`}).join("")
   :`<div class="card mute">Aucun message. Générez-en depuis l'onglet Prospects.</div>`);
+  el.querySelectorAll("[data-gm]").forEach(a=>a.addEventListener("click",async()=>{
+    const ta=el.querySelector(`[data-b="${a.dataset.gm}"]`);
+    try{await navigator.clipboard.writeText(ta.value)}catch(e){ta.removeAttribute("disabled");ta.select();document.execCommand("copy")}
+    a.textContent="Texte copié → dans Gmail, cliquez dans le message et faites Ctrl+V"}));
   el.querySelectorAll("[data-cp]").forEach(b=>b.onclick=async()=>{const id=b.dataset.cp;
     const t=el.querySelector(`[data-s="${id}"]`).value+"\n\n"+el.querySelector(`[data-b="${id}"]`).value;
     try{await navigator.clipboard.writeText(t);b.textContent="Copié ✓"}catch(e){el.querySelector(`[data-b="${id}"]`).select();document.execCommand("copy");b.textContent="Copié ✓"}});
