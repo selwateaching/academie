@@ -211,7 +211,7 @@ async function msgs(){
   const [rows,st]=await Promise.all([api("/messages"),api("/stats")]);const el=$("#t-msgs");
   const lab={brouillon:"À valider",valide:"Validé",envoye:"Envoyé",rejete:"Rejeté"};
   const sender=st.sender?esc(st.sender):'<span class="mute">non configuré → envoi manuel depuis votre messagerie</span>';
-  const done=m=>["envoye","rejete"].includes(m.status);
+  const done=m=>["envoye","rejete","valide"].includes(m.status);
   el.innerHTML=(rows.length?rows.map(m=>{const isMail=m.kind!=="script_appel";return `<div class="card"><div class="row"><b>${esc(m.company)}</b><span class="mute">${esc(m.kind)} · ${lab[m.status]||m.status} ${m.approved_by?"par "+esc(m.approved_by):""}</span></div>
   ${isMail?`<div class="mute" style="margin-bottom:8px">De : ${sender}<br>À : ${m.to?`<b>${esc(m.to)}</b>`:"⚠️ aucune adresse email pour ce prospect – ajoutez-la dans Prospects ou appelez"}</div>`:""}
   <input data-s="${m.id}" value="${esc(m.subject)}" style="width:100%;margin-bottom:8px" ${done(m)?"disabled":""}>
@@ -219,7 +219,7 @@ async function msgs(){
   <div class="row" style="margin-top:8px">
   <button class="btn" data-cp="${m.id}">Copier le message</button>${isMail&&m.to?`<a class="btn" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="https://mail.google.com/mail/?view=cm&to=${encodeURIComponent(m.to)}&su=${encodeURIComponent(m.subject)}">Ouvrir Gmail</a>`:""}
   ${m.status==="brouillon"?`<button class="btn" data-a="save" data-i="${m.id}">Enregistrer</button><button class="btn pri" data-a="approve" data-i="${m.id}">Valider</button><button class="btn" data-a="reject" data-i="${m.id}">Rejeter</button>`:""}
-  ${m.status==="valide"?`${st.sender?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer maintenant</button>`:""}<button class="btn ${st.sender?"":"pri"}" data-a="mark-sent" data-i="${m.id}">J'ai envoyé ce message</button>`:""}</div>
+  ${m.status==="valide"?`<button class="btn" data-a="edit" data-i="${m.id}" title="Annule la validation pour corriger le texte">Modifier</button>${st.sender?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer maintenant</button>`:""}<button class="btn ${st.sender?"":"pri"}" data-a="mark-sent" data-i="${m.id}">J'ai envoyé ce message</button>`:""}</div>
   ${m.status==="valide"&&!st.sender?'<div class="mute" style="margin-top:6px">Envoi direct non configuré : cliquez sur « Copier le message », envoyez-le depuis votre messagerie, puis sur « J\'ai envoyé ce message ».</div>':""}</div>`}).join("")
   :`<div class="card mute">Aucun message. Générez-en depuis l'onglet Prospects.</div>`);
   el.querySelectorAll("[data-cp]").forEach(b=>b.onclick=async()=>{const id=b.dataset.cp;
@@ -227,7 +227,7 @@ async function msgs(){
     try{await navigator.clipboard.writeText(t);b.textContent="Copié ✓"}catch(e){el.querySelector(`[data-b="${id}"]`).select();document.execCommand("copy");b.textContent="Copié ✓"}});
   el.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const id=b.dataset.i,a=b.dataset.a;
     try{if(a==="approve")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
-      if(a==="save")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
+      if(a==="save"||a==="edit")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
       else await api(`/messages/${id}/${a}`,{method:"POST"});msgs()}catch(e){alert(e.message)}});
 }
 if(token)boot();
