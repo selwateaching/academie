@@ -39,7 +39,7 @@ a{color:var(--brand)}
 <div id="app" class="hidden">
 <header><h1>Garage CRM AI</h1>
 <nav><button data-t="dash" class="on">Tableau de bord</button><button data-t="pros">Prospects</button>
-<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button><button data-t="usr" id="tabusr" class="hidden">Utilisateurs</button></nav>
+<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button><button data-t="pil" id="tabpil" class="hidden">Pilote auto</button><button data-t="usr" id="tabusr" class="hidden">Utilisateurs</button></nav>
 <span class="mute" id="who"></span><button class="btn" id="out">Déconnexion</button></header>
 <main>
 <section id="t-dash"></section>
@@ -48,6 +48,7 @@ a{color:var(--brand)}
 <section id="t-agent" class="hidden"></section>
 <section id="t-msgs" class="hidden"></section>
 <section id="t-rep" class="hidden"></section>
+<section id="t-pil" class="hidden"></section>
 <section id="t-usr" class="hidden"></section>
 </main></div>
 <script>
@@ -67,7 +68,7 @@ async function api(path,opt={}){
 }
 function logout(){sessionStorage.removeItem("tk");token="";$("#app").classList.add("hidden");$("#login").classList.remove("hidden")}
 async function boot(){
-  try{const m=await api("/me");role=m.role;$("#who").textContent=m.name+" ("+m.role+")";$("#tabusr").classList.toggle("hidden",m.role!=="admin");
+  try{const m=await api("/me");role=m.role;$("#who").textContent=m.name+" ("+m.role+")";$("#tabusr").classList.toggle("hidden",m.role!=="admin");$("#tabpil").classList.toggle("hidden",m.role==="commercial");
     cats=await api("/categories");$("#login").classList.add("hidden");$("#app").classList.remove("hidden");show("dash")}
   catch(e){logout()}
 }
@@ -82,7 +83,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 function show(t){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
-  ({dash,pros,rel,agent,msgs,rep,usr})[t]();
+  ({dash,pros,rel,agent,msgs,rep,pil,usr})[t]();
 }
 const HUES={location:210,concession:280,vo:30,flotte:140,assurance:330,taxi:48,btp:0,transport:175,autoecole:95};
 const catStyle=k=>k in HUES?`--h:${HUES[k]}`:"--h:220;--s:8%";
@@ -185,6 +186,30 @@ async function rep(){
   <div class="card" style="margin-top:12px"><b>Nouveaux prospects par catégorie</b><div class="row" style="margin-top:8px">${Object.keys(r.new_by_category).length?Object.entries(r.new_by_category).map(([c,n])=>`${catBadge(c)} <b>${n}</b>`).join(" "):'<span class="mute">Aucun nouveau prospect sur la période.</span>'}</div></div>
   <div class="card"><b>Les 5 meilleurs prospects à contacter</b>${r.top_to_contact.length?`<table style="margin-top:8px">${r.top_to_contact.map(c=>`<tr><td><span class="score hi">${c.score??"–"}</span></td><td><b>${esc(c.name)}</b><br>${catBadge(c.category)}</td><td>${esc(c.phone)}</td><td class="mute">${esc(c.next_action)}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect en attente.</p>'}</div>`;
   $("#rdays").onchange=e=>{sessionStorage.setItem("rd",e.target.value);rep()};
+}
+async function pil(){
+  const d=await api("/autopilot"),c=d.config,el=$("#t-pil"),adm=role==="admin";
+  const dis=adm?"":"disabled";
+  el.innerHTML=`<div class="card ${c.enabled?"":"warn"}"><div class="row"><span class="big">${c.enabled?"🟢 Pilote en marche":"⚪ Pilote arrêté"}</span>
+    <span class="mute">${d.sent_today} / ${c.daily_cap} emails envoyés aujourd'hui</span></div>
+    <p class="mute" style="margin:6px 0 0">${d.smtp?`Expéditeur : <b>${esc(d.sender)}</b>`:"⚠️ Envoi SMTP non configuré (adresse d'expédition dans le fichier .env) : le pilote ne peut pas être activé."}
+    ${c.last_error?`<br><b style="color:#b91c1c">Dernière erreur :</b> ${esc(c.last_error)}`:""}</p></div>
+  <div class="card"><h3 style="margin-top:0">Réglages ${adm?"":'<span class="mute">(lecture seule : réservé à l\'administrateur)</span>'}</h3>
+    <div class="row"><label><input type="checkbox" id="pe" ${c.enabled?"checked":""} ${dis}> <b>Activer le pilote automatique</b></label></div>
+    <div class="row"><label>Emails par jour (max) <input id="pc" type="number" min="1" max="50" value="${c.daily_cap}" style="width:70px" ${dis}></label>
+    <label>Note minimale <input id="ps" type="number" min="0" max="100" value="${c.min_score}" style="width:70px" ${dis}></label>
+    <label>De <input id="ph1" type="number" min="0" max="23" value="${c.hour_start}" style="width:60px" ${dis}> h à <input id="ph2" type="number" min="1" max="24" value="${c.hour_end}" style="width:60px" ${dis}> h</label>
+    <label><input type="checkbox" id="pwk" ${c.weekdays_only?"checked":""} ${dis}> Lundi au vendredi seulement</label></div>
+    <div class="row"><label><input type="checkbox" id="pr" ${c.auto_relances?"checked":""} ${dis}> Envoyer aussi les <b>relances</b> automatiquement</label></div>
+    <p class="mute" style="margin:0 0 8px">⚠️ Les réponses des prospects ne sont <b>pas détectées automatiquement</b>. N'activez les relances que si quelqu'un consulte la boîte mail du garage chaque jour et passe le prospect en « Rendez-vous » ou « opposition » dès qu'il répond.</p>
+    <div class="row"><button class="btn pri" id="psave" ${dis}>Enregistrer</button><span id="pmsg" class="mute"></span></div></div>
+  <div class="card"><h3 style="margin-top:0">Prochains envois prévus</h3>${d.next.length?`<table>${d.next.map(n=>`<tr><td><span class="score hi">${n.score??"–"}</span></td><td><b>${esc(n.name)}</b></td><td>${esc(n.email)}</td><td class="mute">${n.kind==="relance"?"relance":"premier email"}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect éligible (statut « À contacter », avec email, note suffisante, sans opposition).</p>'}</div>
+  <div class="card"><h3 style="margin-top:0">Derniers envois automatiques</h3>${d.recent.length?`<table>${d.recent.map(r=>`<tr><td><b>${esc(r.company)}</b></td><td>${esc(r.kind)}</td><td>${r.status==="envoye"?"✅ envoyé":"⚠️ "+esc(r.status)}</td><td class="mute">${r.at?new Date(r.at).toLocaleString("fr-FR"):""}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun envoi automatique pour l\'instant.</p>'}</div>
+  <div class="card warn"><b>Garde-fous</b><p class="mute" style="margin:6px 0 0">Un envoi toutes les ~10 minutes au plus · jamais hors des horaires · jamais à un prospect en « opposition » · jamais deux premiers emails au même prospect · arrêt automatique après 3 échecs d'envoi · chaque message contient la désinscription. Le pilote ne travaille que tant que l'application tourne (PC allumé ou serveur en ligne). Les prospects <b>sans email</b> restent à appeler avec le script.</p></div>`;
+  const sv=$("#psave");if(sv)sv.onclick=async()=>{
+    try{await api("/autopilot",{method:"PUT",json:{enabled:$("#pe").checked,daily_cap:+$("#pc").value,min_score:+$("#ps").value,
+      hour_start:+$("#ph1").value,hour_end:+$("#ph2").value,weekdays_only:$("#pwk").checked,auto_relances:$("#pr").checked}});pil()}
+    catch(e){$("#pmsg").textContent="⚠️ "+e.message;$("#pe").checked=false}};
 }
 async function usr(){
   const us=await api("/users"),el=$("#t-usr");

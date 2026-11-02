@@ -14,7 +14,8 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from . import models
+from . import autopilot, models
+from .relances import aware, due_companies
 from .agent import emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
@@ -27,6 +28,7 @@ STATIC = Path(__file__).resolve().parent.parent / "static"
 @asynccontextmanager
 async def lifespan(_app):
     startup()
+    autopilot.start_scheduler()
     yield
 
 
@@ -469,6 +471,53 @@ def mark_sent(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
     return message_out(m)
 
 
+# ---------- Pilote automatique ----------
+class AutopilotIn(BaseModel):
+    enabled: bool | None = None
+    daily_cap: int | None = None
+    min_score: int | None = None
+    hour_start: int | None = None
+    hour_end: int | None = None
+    weekdays_only: bool | None = None
+    auto_relances: bool | None = None
+
+
+def _autopilot_state(db: Session) -> dict:
+    cfg = autopilot.get_cfg(db)
+    now = datetime.now(timezone.utc)
+    auto_msgs = [m for m in db.scalars(select(models.Message).where(models.Message.approved_by == autopilot.AUTO)
+                                       .order_by(models.Message.id.desc()).limit(10))]
+    return {"config": cfg, "smtp": mailer.smtp_configured(), "sender": get_settings().smtp_from,
+            "sent_today": autopilot.sent_today(db, now),
+            "next": [{"id": c.id, "name": c.name, "email": c.email, "score": c.score, "kind": k}
+                     for c, k in autopilot.candidates(db, cfg, 5)],
+            "recent": [{"company": m.company.name, "kind": m.kind, "status": m.status,
+                        "at": m.sent_at.isoformat() if m.sent_at else None} for m in auto_msgs]}
+
+
+@app.get("/api/autopilot")
+def get_autopilot(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    return _autopilot_state(db)
+
+
+@app.put("/api/autopilot")
+def put_autopilot(data: AutopilotIn, db: Session = Depends(get_db), _=Depends(ADMIN)):
+    ch = data.model_dump(exclude_unset=True)
+    cur = autopilot.get_cfg(db) | ch
+    if not (1 <= cur["daily_cap"] <= 50):
+        raise HTTPException(422, "Plafond quotidien : entre 1 et 50")
+    if not (0 <= cur["min_score"] <= 100):
+        raise HTTPException(422, "Note minimale : entre 0 et 100")
+    if not (0 <= cur["hour_start"] < cur["hour_end"] <= 24):
+        raise HTTPException(422, "Horaires invalides")
+    if ch.get("enabled") and not mailer.smtp_configured():
+        raise HTTPException(409, "Configurez d'abord l'envoi SMTP (adresse d'expédition) dans le fichier .env")
+    if ch.get("enabled"):
+        ch["failures"], ch["last_error"] = 0, ""
+    autopilot.set_cfg(db, **ch)
+    return _autopilot_state(db)
+
+
 # ---------- Export (sauvegarde lisible dans Excel) ----------
 @app.get("/api/export/companies.csv")
 def export_companies(db: Session = Depends(get_db), _=Depends(MANAGER)):
@@ -485,29 +534,8 @@ def export_companies(db: Session = Depends(get_db), _=Depends(MANAGER)):
 
 
 # ---------- Relances ----------
-MAX_RELANCES = 2
-
-
-def _aware(dt):
-    return dt.replace(tzinfo=timezone.utc) if dt is not None and dt.tzinfo is None else dt
-
-
 def due_relances(db: Session) -> list[dict]:
-    """Prospects contactés, sans réponse depuis RELANCE_DAYS jours, sans relance déjà en préparation."""
-    limit = datetime.now(timezone.utc) - timedelta(days=get_settings().relance_days)
-    out = []
-    for c in db.scalars(select(models.Company).where(models.Company.status == "contacte")):
-        last = _aware(c.last_contact)
-        if c.do_not_contact or not last or last > limit:
-            continue
-        relances = [m for m in c.messages if m.kind == "relance"]
-        if any(m.status in ("brouillon", "valide") for m in relances):
-            continue
-        sent = sum(1 for m in relances if m.status == "envoye")
-        if sent >= MAX_RELANCES:
-            continue
-        out.append(company_out(c) | {"days": (datetime.now(timezone.utc) - last).days, "relances_sent": sent})
-    return sorted(out, key=lambda x: -x["days"])
+    return [company_out(c) | {"days": d, "relances_sent": n} for c, d, n in due_companies(db)]
 
 
 @app.get("/api/relances")
@@ -538,8 +566,8 @@ def report(days: int = 7, db: Session = Depends(get_db), _=Depends(ANY)):
     by_status: dict[str, int] = {}
     for c in companies:
         by_status[c.status] = by_status.get(c.status, 0) + 1
-    new = [c for c in companies if _aware(c.created_at) >= since]
-    sent = [m for m in messages if m.sent_at and _aware(m.sent_at) >= since and m.status == "envoye"]
+    new = [c for c in companies if aware(c.created_at) >= since]
+    sent = [m for m in messages if m.sent_at and aware(m.sent_at) >= since and m.status == "envoye"]
     top = sorted((c for c in companies if c.status == "a_contacter" and not c.do_not_contact),
                  key=lambda c: -(c.score or 0))[:5]
     return {

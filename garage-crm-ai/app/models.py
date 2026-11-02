@@ -65,3 +65,10 @@ class Message(Base):
     approved_by: Mapped[str] = mapped_column(String(200), default="")
     sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     company: Mapped[Company] = relationship(back_populates="messages")
+
+
+class AppSetting(Base):
+    """Réglages modifiables depuis l'interface (pilote automatique)."""
+    __tablename__ = "app_settings"
+    key: Mapped[str] = mapped_column(String(60), primary_key=True)
+    value: Mapped[str] = mapped_column(String(300), default="")

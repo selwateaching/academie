@@ -8,6 +8,7 @@ os.environ["ADMIN_PASSWORD"] = "motdepasse-test"
 os.environ["OPENAI_API_KEY"] = ""
 os.environ["GOOGLE_PLACES_API_KEY"] = ""
 os.environ["SMTP_HOST"] = ""
+os.environ["NO_SCHEDULER"] = "1"
 
 import pytest
 from fastapi.testclient import TestClient
@@ -354,3 +355,105 @@ def test_enrich_never_overwrites_existing_email(client, monkeypatch):
                                                        "contact_name": "Moi Même"}).json()
     r = client.post(f"/api/companies/{c['id']}/find-manager", headers=h).json()
     assert r["email"] == "perso@saisi.fr" and r["contact_name"] == "Moi Même" and r["found"] is False
+
+
+# ---------- Pilote automatique ----------
+def _db():
+    from app.db import SessionLocal
+    return SessionLocal()
+
+
+def _mk(client, h, name, score_email=True, **kw):
+    body = {"name": name, "category": "location", "city": "Toulouse", "phone": "0561", "website": ""} | kw
+    if score_email:
+        body.setdefault("email", f"{name.lower().replace(' ', '')}@exemple.fr")
+    return client.post("/api/companies", headers=h, json=body).json()
+
+
+def test_autopilot_cannot_be_enabled_without_smtp(client):
+    h = auth(client)
+    r = client.put("/api/autopilot", headers=h, json={"enabled": True})
+    assert r.status_code == 409 and "SMTP" in r.json()["detail"]
+    assert client.get("/api/autopilot", headers=h).json()["config"]["enabled"] is False
+    hc = auth(client, "com@test.fr", "nouveau-mdp-1")
+    assert client.get("/api/autopilot", headers=hc).status_code == 403
+
+
+def test_autopilot_validation(client):
+    h = auth(client)
+    assert client.put("/api/autopilot", headers=h, json={"daily_cap": 500}).status_code == 422
+    assert client.put("/api/autopilot", headers=h, json={"hour_start": 18, "hour_end": 9}).status_code == 422
+    assert client.put("/api/autopilot", headers=h, json={"daily_cap": 3, "min_score": 55}).json()["config"]["daily_cap"] == 3
+
+
+def test_autopilot_tick_rules(client):
+    from datetime import datetime, timedelta, timezone
+    from app import autopilot
+    h = auth(client)
+    ok = _mk(client, h, "Pilote Ok")
+    no_mail = _mk(client, h, "Pilote SansMail", score_email=False)
+    opp = _mk(client, h, "Pilote Oppose")
+    client.patch(f"/api/companies/{opp['id']}", headers=h, json={"do_not_contact": True})
+    sent = []
+    fake = lambda to, subject, body: sent.append((to, subject, body))
+    MON_10H = datetime(2030, 1, 7, 9, 0, tzinfo=timezone.utc)       # lundi 10 h à Paris (date fixe, loin d'aujourd'hui)
+    with _db() as db:
+        autopilot.set_cfg(db, enabled=False, daily_cap=2, min_score=0, hour_start=9, hour_end=17, weekdays_only=True)
+        assert autopilot.tick(db, MON_10H, fake)["reason"] == "pilote désactivé"
+        autopilot.set_cfg(db, enabled=True)
+        assert autopilot.tick(db, datetime(2030, 1, 5, 10, 0, tzinfo=timezone.utc), fake)["reason"] == "week-end"
+        assert autopilot.tick(db, datetime(2030, 1, 7, 20, 0, tzinfo=timezone.utc), fake)["reason"] == "hors des horaires d'envoi"
+        assert sent == []                                             # rien envoyé hors règles
+        expected = autopilot.candidates(db, autopilot.get_cfg(db), 1)[0][0]       # le mieux noté avec email
+        r = autopilot.tick(db, MON_10H, fake)
+        assert r["sent"] and len(sent) == 1 and sent[0][0] == expected.email
+        assert autopilot.tick(db, MON_10H + timedelta(minutes=2), fake)["reason"] == "délai minimum entre deux envois"
+    # le message est tracé, le prospect passe en « Contacté », le texte est celui du modèle du garage
+    m = next(x for x in client.get("/api/messages", headers=h).json() if x["id"] == r["sent"])
+    assert m["status"] == "envoye" and m["approved_by"] == "pilote automatique" and "STOP" in m["body"]
+    with _db() as db:
+        assert autopilot.sent_today(db, MON_10H) >= 1
+        # jamais sans adresse, ni en opposition, ni deux fois le même
+        names = [c.name for c, _k in autopilot.candidates(db, autopilot.get_cfg(db), 50)]
+        assert "Pilote SansMail" not in names and "Pilote Oppose" not in names and expected.name not in names
+
+
+def test_autopilot_daily_cap_and_failure_shutdown(client):
+    from datetime import datetime, timedelta, timezone
+    from app import autopilot
+    h = auth(client)
+    for i in range(3):
+        _mk(client, h, f"Plafond {i}")
+    MON = datetime(2030, 1, 14, 9, 0, tzinfo=timezone.utc)
+    with _db() as db:
+        used = autopilot.sent_today(db, MON)
+        autopilot.set_cfg(db, enabled=True, daily_cap=used + 1, min_score=0, failures=0)
+        assert autopilot.tick(db, MON, lambda *a: None)["sent"]
+        assert autopilot.tick(db, MON + timedelta(minutes=30), lambda *a: None)["reason"] == "plafond quotidien atteint"
+        # 3 échecs d'envoi consécutifs -> le pilote s'arrête tout seul
+        autopilot.set_cfg(db, daily_cap=50, failures=0)
+        def boom(*a):
+            raise ConnectionError("SMTP refusé")
+        t = MON + timedelta(hours=1)
+        for i in range(3):
+            r = autopilot.tick(db, t + timedelta(minutes=10 * i), boom)
+            assert r["sent"] is None
+        cfg = autopilot.get_cfg(db)
+        assert cfg["enabled"] is False and "ConnectionError" in cfg["last_error"]
+        assert "arrêté" in r["reason"]
+        # le message échoué n'est pas marqué envoyé
+        assert not [m for m in client.get("/api/messages?status=valide", headers=h).json() if m["approved_by"] == "pilote automatique"]
+
+
+def test_autopilot_relances_only_when_enabled(client):
+    from datetime import datetime, timezone
+    from app import autopilot
+    h = auth(client)
+    c = _mk(client, h, "Relance Auto")
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"status": "contacte"})
+    _age_company(c["id"], 10)
+    with _db() as db:
+        autopilot.set_cfg(db, enabled=True, min_score=100, auto_relances=False)
+        assert c["id"] not in [x.id for x, k in autopilot.candidates(db, autopilot.get_cfg(db), 50)]
+        autopilot.set_cfg(db, auto_relances=True)
+        assert (c["id"], "relance") in [(x.id, k) for x, k in autopilot.candidates(db, autopilot.get_cfg(db), 50)]

@@ -15,6 +15,12 @@ Rôles : `admin` (utilisateurs), `manager` (lance l'agent, valide et envoie), `c
 - Onglet **Relances** : prospects « Contactés » sans suite depuis `RELANCE_DAYS` jours (5 par défaut), 2 relances maximum chacun. Le bouton prépare des **brouillons**, validés ensuite dans Messages. Les prospects en opposition sont exclus.
 - Onglet **Rapport** : synthèse sur 7, 14 ou 30 jours (nouveaux prospects, messages et relances envoyés, rendez-vous, partenaires, 5 meilleurs prospects à contacter), imprimable en PDF.
 
+## Pilote automatique (onglet « Pilote auto »)
+Désactivé par défaut. Il exige l'envoi SMTP configuré (adresse du garage dans `.env`). Une fois activé par l'administrateur, il envoie le premier email aux prospects « À contacter » ayant un email et une note suffisante :
+1 envoi toutes les ~10 min au plus, plafond quotidien, horaires et jours réglables, jamais en « opposition », arrêt automatique après 3 échecs d'envoi.
+Les relances automatiques sont une option à part : **les réponses ne sont pas encore détectées**, il faut surveiller la boîte mail.
+L'application doit tourner en continu (PC allumé ou serveur en ligne).
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 
