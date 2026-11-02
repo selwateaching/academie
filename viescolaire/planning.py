@@ -16,7 +16,7 @@ import random
 import time
 from collections import Counter
 
-JOURS = 5
+JOURS_DEFAUT = [0, 1, 2, 3, 4]      # jours de cours par défaut (numéros Python : lundi = 0 … dimanche = 6) ; l'établissement peut en choisir d'autres
 GRILLE_PAR_DEFAUT = ["08:00-09:00", "09:00-10:00", "10:15-11:15", "11:15-12:15", "14:00-15:00", "15:00-16:00", "16:00-17:00"]
 
 POIDS = {"souhait": 60, "trou_prof": 12, "trou_classe": 20, "charge_classe": 3, "meme_jour": 8}
@@ -47,6 +47,7 @@ class Etat:
     def __init__(self, grille, profs, options):
         self.g, self.profs, self.o = grille, profs, options
         self.n = len(grille)
+        self.jours = list(options.get("jours") or JOURS_DEFAUT)
         self.prof_occ, self.classe_occ, self.salle_occ = set(), set(), set()   # (id, jour, idx)
         self.charge_prof, self.charge_classe, self.matiere_jour = Counter(), Counter(), Counter()
         self.placements = []
@@ -118,7 +119,7 @@ class Etat:
                                 "salle": b.get("salle", ""), "jour": j, "debut_idx": i, "longueur": L})
 
     def candidats(self, s, strict):
-        return [(j, i) for j in range(JOURS) for i in range(self.n) if self.refus(s, j, i, strict) is None]
+        return [(j, i) for j in self.jours for i in range(self.n) if self.refus(s, j, i, strict) is None]
 
 
 def un_essai(grille, profs, liste, options, rng):
@@ -137,14 +138,14 @@ def un_essai(grille, profs, liste, options, rng):
 def evaluer(etat, non_places):
     souhaits = sum(p["longueur"] for p in etat.placements
                    if etat._voeu(p["prof_id"], p["jour"], etat.g[p["debut_idx"]]["demi"]) == "souhait")
-    tp = sum(etat.trous(etat.prof_occ, pid, j, ()) for pid in {p["prof_id"] for p in etat.placements} for j in range(JOURS))
-    tc = sum(etat.trous(etat.classe_occ, c, j, ()) for c in {p["classe"] for p in etat.placements} for j in range(JOURS))
+    tp = sum(etat.trous(etat.prof_occ, pid, j, ()) for pid in {p["prof_id"] for p in etat.placements} for j in etat.jours)
+    tc = sum(etat.trous(etat.classe_occ, c, j, ()) for c in {p["classe"] for p in etat.placements} for j in etat.jours)
     score = len(non_places) * 100000 + souhaits * POIDS["souhait"] + tp * POIDS["trou_prof"] + tc * POIDS["trou_classe"]
     return {"souhaits_non_respectes": souhaits, "trous_professeurs": tp, "trous_classes": tc, "score": score}
 
 
 def raisons(etat, s):
-    c = Counter(etat.refus(s, j, i, False) or "libre" for j in range(JOURS) for i in range(etat.n))
+    c = Counter(etat.refus(s, j, i, False) or "libre" for j in etat.jours for i in range(etat.n))
     c.pop("forme", None)
     c.pop("libre", None)
     return [r for r, _ in c.most_common(2)]
@@ -154,9 +155,10 @@ def diagnostic(grille, besoins, profs, options):
     """Vérifications de faisabilité avant de lancer le calcul. Retourne [(niveau, message)]."""
     msgs = []
     n = len(grille)
-    ouverts = [(j, d) for j in range(JOURS) for d in ("matin", "apres_midi") if (j, d) not in options["classe_fermee"]]
+    jours = list(options.get("jours") or JOURS_DEFAUT)
+    ouverts = [(j, d) for j in jours for d in ("matin", "apres_midi") if (j, d) not in options["classe_fermee"]]
     cren_demi = {d: sum(1 for x in grille if x["demi"] == d) for d in ("matin", "apres_midi")}
-    capacite_classe = min(sum(cren_demi[d] for _, d in ouverts), JOURS * options["max_classe_jour"])
+    capacite_classe = min(sum(cren_demi[d] for _, d in ouverts), len(jours) * options["max_classe_jour"])
     par_prof, par_classe = Counter(), Counter()
     for b in besoins:
         par_prof[b["prof_id"]] += b["heures"]
@@ -167,7 +169,7 @@ def diagnostic(grille, besoins, profs, options):
         p = profs.get(pid)
         if not p:
             continue
-        libres = [(j, d) for j in range(JOURS) for d in ("matin", "apres_midi") if p["voeux"].get((j, d)) != "non" and (j, d) not in ()]
+        libres = [(j, d) for j in jours for d in ("matin", "apres_midi") if p["voeux"].get((j, d)) != "non" and (j, d) not in ()]
         cap = min(sum(cren_demi[d] for _, d in libres), len({j for j, _ in libres}) * p["max_jour"])
         if h > cap:
             msgs.append(("err", f"{p['nom']} : {h} h demandées pour {cap} h réellement disponibles (vœux et limite par jour)."))
@@ -181,7 +183,7 @@ def diagnostic(grille, besoins, profs, options):
 
 def generer(grille, besoins, profs, options, essais=60, temps_max=8.0, graine=None):
     """Retourne {'placements', 'non_places', 'stats'}. `profs` : {id: {'nom','max_jour','voeux':{(jour,demi):'non'|'souhait'}}}."""
-    options = {"classe_fermee": set(), "max_classe_jour": 7, **options}
+    options = {"classe_fermee": set(), "max_classe_jour": 7, "jours": JOURS_DEFAUT, **options}
     rng = random.Random(graine)
     toutes = seances(besoins)
     marge = {}

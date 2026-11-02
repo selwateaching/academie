@@ -12,7 +12,7 @@ import unicodedata
 CATEGORIES = ["Pour commencer", "Élèves et classes", "Professeurs et personnel", "Absences et remplacements", "Notes et bulletins",
               "Emplois du temps", "Documents", "Réunions", "Administration et compte"]
 
-STAFF = "staff"          # chef d'établissement, direction, CPE
+STAFF = "staff"          # chef d'établissement, direction, Surveillant général
 ENS = "enseignant"
 INF = "infirmier"
 TOUS = "tous"
@@ -101,7 +101,7 @@ GUIDES = [
       "creer compte professeur identifiant mot de passe connexion utilisateur login acces enseignant",
       "utilisateurs", ["Dans l'annuaire des professeurs, cliquez sur « Créer le compte » (l'e-mail doit être renseigné).", "Ou ouvrez Administration → Utilisateurs → « Créer un compte ».", "Un mot de passe temporaire est donné : le professeur devra le changer à sa première connexion."]),
     G("voeux", "Professeurs et personnel", "Comment saisir les vœux et indisponibilités des professeurs ?",
-      "voeux indisponibilites souhaits professeurs contraintes jours libres mercredi disponibilites emploi du temps preferences",
+      "voeux indisponibilites souhaits professeurs contraintes jours libres mardi disponibilites emploi du temps preferences",
       "voeux", ["Ouvrez Planification et suivi → Vœux des professeurs.", "Repérez le professeur dans le tableau.", "Pour chaque demi-journée, choisissez « ✗ impératif » ou « ~ souhait » (« libre » si vous êtes disponible).", "Enregistrez. Les professeurs peuvent aussi saisir les leurs avec « Mes vœux »."], roles=(STAFF,)),
     G("mes_voeux", "Professeurs et personnel", "Comment indiquer mes indisponibilités et souhaits d'emploi du temps ?",
       "mes voeux mes indisponibilites mes souhaits jours libres preferences horaires emploi du temps professeur",
@@ -198,8 +198,8 @@ GUIDES = [
     G("trous", "Emplois du temps", "Que signifient les « trous » de la proposition d'emploi du temps ?",
       "trous emploi du temps heures libres heure creuse souhait non respecte seances placees indicateurs proposition",
       "planification", ["Un trou est une heure libre entre deux cours d'une même journée.", "Les quatre cadres du haut : séances placées, heures sur un souhait non respecté, trous des professeurs, trous des classes.", "Les trous apparaissent en rouge dans la grille ; la zone « Où sont les trous ? » les liste.", "Pour en réduire : assouplissez des vœux ou le maximum d'heures par jour (Réglages de l'établissement), puis régénérez."]),
-    G("reglages_edt", "Emplois du temps", "Comment régler les horaires et les demi-journées sans cours (mercredi après-midi) ?",
-      "reglages etablissement horaires creneaux mercredi apres midi demi journee sans cours maximum heures par jour classe fermee",
+    G("reglages_edt", "Emplois du temps", "Comment régler les horaires et les demi-journées sans cours (mardi après-midi, par exemple) ?",
+      "reglages etablissement horaires creneaux mardi apres midi mercredi demi journee sans cours maximum heures par jour classe fermee",
       "planification_parametres", ["Ouvrez Planification et suivi → Réglages de l'établissement.", "Cochez les demi-journées sans cours, saisissez les horaires des créneaux et la charge maximale.", "Cliquez sur « Enregistrer »."]),
 
     # ───────────── Documents
@@ -208,7 +208,7 @@ GUIDES = [
       "document_nouveau", ["Ouvrez Documents et réunions → Rédiger un document.", "1. Choisissez le type de document et l'élève : classe, professeur principal et responsable sont remplis seuls.", "2. Complétez les informations (date, motif).", "3. Relisez et modifiez le texte, puis « Enregistrer le document ».", "Imprimez en PDF ou exportez en Word."], roles=(STAFF, ENS), module="redaction"),
     G("entete", "Documents", "Comment mettre le logo et l'en-tête de l'établissement sur les documents ?",
       "entete logo pied de page signature signataire directeur adresse documents officiel en tete etablissement",
-      "documents_parametres", ["Ouvrez Documents et réunions → En-tête et signataires.", "Renseignez la ligne officielle, le nom, l'adresse, le contact, le logo et le pied de page, puis « Enregistrer l'en-tête ».", "Ajoutez les signataires (directeur, CPE…) avec « Ajouter »."], module="redaction"),
+      "documents_parametres", ["Ouvrez Documents et réunions → En-tête et signataires.", "Renseignez la ligne officielle, le nom, l'adresse, le contact, le logo et le pied de page, puis « Enregistrer l'en-tête ».", "Ajoutez les signataires (directeur, Surveillant général…) avec « Ajouter »."], module="redaction"),
     G("bibliotheque", "Documents", "Où retrouver tous les documents rédigés ?",
       "retrouver document archive bibliotheque documents classer rechercher document ancien convocation archive classe par date niveau",
       "documents", ["Ouvrez Documents et réunions → Bibliothèque de documents.", "Filtrez par recherche, niveau, classe, type ou dates, et classez par date, niveau, élève ou type.", "La fiche d'un élève affiche aussi ses documents."], roles=(STAFF, ENS)),
@@ -254,16 +254,19 @@ GUIDES = [
       "utilisateurs", ["Demandez à l'administrateur ou à la direction de le réinitialiser : Administration → Utilisateurs.", "Un mot de passe temporaire vous est donné ; vous devrez le changer à la connexion."], roles=(STAFF,)),
     G("utilisateurs", "Administration et compte", "Comment créer ou désactiver un compte utilisateur ?",
       "creer compte utilisateur desactiver compte droits roles acces direction cpe enseignant infirmier utilisateurs",
-      "utilisateurs", ["Ouvrez Administration → Utilisateurs.", "« Créer un compte » : nom, e-mail, rôle (direction, CPE, enseignant, infirmier).", "Les actions de la ligne permettent de réinitialiser le mot de passe ou de désactiver le compte."], roles=(STAFF,), module="utilisateurs"),
+      "utilisateurs", ["Ouvrez Administration → Utilisateurs.", "« Créer un compte » : nom, e-mail, rôle (direction, Surveillant général, enseignant, infirmier).", "Les actions de la ligne permettent de réinitialiser le mot de passe ou de désactiver le compte."], roles=(STAFF,), module="utilisateurs"),
     G("etablissements", "Administration et compte", "Comment ajouter ou supprimer un établissement ?",
       "ajouter etablissement creer etablissement supprimer college lycee renommer rattacher groupe scolaire",
       "etablissements", ["Ouvrez Administration → Établissements (réservé à l'administrateur).", "« Ajouter un établissement » : saisissez le nom puis « Créer l'établissement ».", "Chaque établissement garde ses propres données."], roles=("admin",)),
+    G("semaine_scolaire", "Administration et compte", "Comment choisir les jours de cours (dimanche à jeudi, lundi à vendredi…) ?",
+      "jours de cours semaine scolaire dimanche jeudi vendredi samedi repos jours ouvres lundi week end algerie maroc tunisie type etablissement lycee cem",
+      "etablissements", ["Ouvrez Administration → Établissements (réservé à l'administrateur).", "Dans la carte « Semaine scolaire » de l'établissement, cochez les jours de cours : par défaut dimanche à jeudi, le vendredi et le samedi sont des jours de repos.", "Choisissez aussi le type d'établissement (lycée ou CEM), puis « Enregistrer la semaine ».", "Les emplois du temps, la génération, l'appel, les remplacements et les états d'absences suivent ce réglage. Après un changement, régénérez l'emploi du temps."], roles=("admin",)),
     G("sauvegarde", "Administration et compte", "Comment faire une sauvegarde des données ?",
       "sauvegarde backup copie de securite exporter toutes les donnees telecharger sauvegarde restaurer",
       "sauvegarde", ["Ouvrez Administration → Sauvegarde (direction et administrateur).", "Cliquez sur « Télécharger la sauvegarde » : un fichier ZIP contient la base et les fichiers déposés.", "Conservez-le en lieu sûr. Faites-le avant chaque mise à jour."], roles=("admin", "direction"), module="sauvegarde"),
-    G("rgpd", "Administration et compte", "Comment exporter ou supprimer mes données personnelles (RGPD) ?",
+    G("rgpd", "Administration et compte", "Comment exporter ou supprimer mes données personnelles (loi 18-07) ?",
       "rgpd donnees personnelles supprimer mon compte exporter mes donnees confidentialite vie privee",
-      "rgpd", ["Ouvrez Mon compte → RGPD.", "Vous y voyez vos données et pouvez les exporter.", "« Supprimer mon compte » est définitif."], roles=(TOUS,)),
+      "rgpd", ["Ouvrez Mon compte → Protection des données (loi 18-07).", "Vous y voyez vos données et pouvez les exporter.", "« Supprimer mon compte » est définitif."], roles=(TOUS,)),
     G("historique", "Administration et compte", "Comment savoir qui a fait quoi (historique) ?",
       "historique journal audit qui a modifie actions tracabilite qui a supprime journal des actions",
       "historique", ["Ouvrez Planification et suivi → Historique.", "La liste donne la date, la personne et l'action pour chaque opération importante."], roles=(STAFF,)),
@@ -291,7 +294,8 @@ voudrais pouvez puis il y a plus moins tres bien tout tous toute toutes si pas n
 def normaliser(texte):
     t = unicodedata.normalize("NFD", (texte or "").lower())
     t = "".join(c for c in t if unicodedata.category(c) != "Mn")
-    return re.sub(r"[^a-z0-9]+", " ", t).strip()
+    t = re.sub(r"[^a-z0-9]+", " ", t).strip()
+    return re.sub(r"\b(cpe|rgpd)\b", lambda m: {"cpe": "surveillant general", "rgpd": "protection des donnees loi 18 07"}[m.group(1)], t)   # anciens termes -> vocabulaire algérien
 
 
 def racine(mot):

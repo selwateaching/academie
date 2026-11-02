@@ -11,6 +11,6 @@
 <div class="card scroll"><h2>Créneaux hebdomadaires</h2><table><tr><th>Jour</th><th>Horaire</th><th>Classe</th><th>Matière</th><th>Salle</th><th></th></tr>
 {% for c in creneaux %}<tr><td>{{ JOURS[c.jour] }}</td><td>{{ c.debut }}–{{ c.fin }}</td><td>{{ c.classe }}</td><td>{{ c.matiere }}</td><td>{{ c.salle }}</td><td>{{ post(url_for('creneau_supprimer', cid=c.id), 'Retirer', 'sec sm', 'Retirer ce créneau ?') }}</td></tr>
 {% else %}<tr><td colspan="6" class="mute">Aucun créneau.</td></tr>{% endfor %}</table>
-<form method="post" action="{{ url_for('creneau_ajouter', pid=p.id) }}">{{ csrf() }}<div class="row"><div><label>Jour</label><select name="jour">{% for j in JOURS %}<option value="{{ loop.index0 }}">{{ j }}</option>{% endfor %}</select></div>
+<form method="post" action="{{ url_for('creneau_ajouter', pid=p.id) }}">{{ csrf() }}<div class="row"><div><label>Jour</label><select name="jour">{% for jx in JC %}{% set j = JOURS[jx] %}<option value="{{ jx }}">{{ j }}</option>{% endfor %}</select></div>
 <div><label>Début</label><input type="time" name="debut" required></div><div><label>Fin</label><input type="time" name="fin" required></div>
 <div><label>Classe</label><input name="classe" required></div><div><label>Salle</label><input name="salle"></div><div><button>Ajouter</button></div></div></form></div>{% endblock %}

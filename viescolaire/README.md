@@ -1,6 +1,6 @@
 # VieScolairePro
 
-Logiciel web de gestion de la vie scolaire pour les CPE, la direction et les enseignants
+Logiciel web de gestion de la vie scolaire pour les surveillants généraux, la direction et les enseignants
 (Flask + SQLite, aucune dépendance en plus de Flask).
 
 ## Lancer
@@ -31,9 +31,9 @@ Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variab
 | 4. Administratif | Tâches et échéances, alertes automatiques, rapports et statistiques (impression PDF, exports CSV pour Excel), historique des actions |
 | Rédaction de documents | **Saisie automatique** : choisir un modèle (rapport d'incident, convocation des parents, avertissement, compte rendu d'entretien, signalement d'absences) et un élève → classe, professeur principal, équipe pédagogique, matière et responsable légal sont remplis ; liste déroulante de types d'incident avec texte proposé ; texte entièrement modifiable ; enregistrement dans *Documents*, impression/PDF, export Word. Modèles et types modifiables par l'établissement. Fichier des élèves avec fiche détaillée (professeur principal, équipe pédagogique, incidents, documents) (saisie ou import CSV ; la démo en contient 193 au collège et 24 au lycée, avec date de naissance et sexe) |
 | Statistiques élèves | **Pyramide des âges et des sexes** (par niveau ou par classe, âge calculé à une date au choix), tableau des effectifs et export CSV |
-| Infirmerie | **Planning des soins** (jour/semaine, soins ponctuels ou récurrents, suivi fait/absent/annulé), passages à l'infirmerie (registre, export), fiches santé (PAI, allergies, traitements). Rôle « infirmier » ; accès limité aux rôles de la clé `infirmerie_roles` (infirmier, direction, administrateur ; le CPE y a accès uniquement en mode démonstration) ; consultation des fiches journalisée. **Liens soins ↔ élèves** : le planning montre le cours de l'élève pendant le soin (et le remplaçant s'il y en a un) et prévient le professeur par message automatique sans information médicale ; une rentrée à domicile ou un appel des secours prévient la vie scolaire et le professeur principal ; la fiche élève affiche les rendez-vous à l'infirmerie (détails médicaux réservés aux personnes habilitées) |
+| Infirmerie | **Planning des soins** (jour/semaine, soins ponctuels ou récurrents, suivi fait/absent/annulé), passages à l'infirmerie (registre, export), fiches santé (PAI, allergies, traitements). Rôle « infirmier » ; accès limité aux rôles de la clé `infirmerie_roles` (infirmier, direction, administrateur ; le surveillant général y a accès uniquement en mode démonstration) ; consultation des fiches journalisée. **Liens soins ↔ élèves** : le planning montre le cours de l'élève pendant le soin (et le remplaçant s'il y en a un) et prévient le professeur par message automatique sans information médicale ; une rentrée à domicile ou un appel des secours prévient la vie scolaire et le professeur principal ; la fiche élève affiche les rendez-vous à l'infirmerie (détails médicaux réservés aux personnes habilitées) |
 | 5. Avancé | **Génération automatique de l'emploi du temps** (besoins horaires + vœux des professeurs → proposition à relire puis appliquer), assistant (résumé du jour, suggestions), import CSV (professeurs, créneaux), interface adaptée au mobile et installable (PWA) |
-| 6. Sécurité | Gestion des comptes (création, mot de passe temporaire à changer, réinitialisation, désactivation), sauvegarde téléchargeable, rôles (CPE, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (RGPD), plusieurs établissements cloisonnés |
+| 6. Sécurité | Gestion des comptes (création, mot de passe temporaire à changer, réinitialisation, désactivation), sauvegarde téléchargeable, rôles (Surveillant général, direction, enseignant), MFA (TOTP), verrouillage après tentatives, CSRF, en-têtes de sécurité, journal d'audit, export et suppression des données (loi 18-07), plusieurs établissements cloisonnés |
 
 ## Charte graphique
 
@@ -59,7 +59,7 @@ La proposition se relit par classe ou par professeur avant d'être appliquée (a
 
 **Matières et heures par niveau** (*Planification → Matières et heures par niveau* : c'est ici qu'on ajoute ou modifie une matière) : on saisit une fois les heures de chaque matière pour chaque niveau (6e : Mathématiques 4 h…) ; l'application crée les besoins de toutes les classes du niveau, confie chaque cours à un professeur de la matière (capacité limitée par le service dû et par les créneaux possibles d'après ses vœux, continuité par niveau, charge équilibrée), signale les cours sans professeur, puis génère l'emploi du temps en respectant les vœux.
 
-**Rien n'est supposé par défaut** : les demi-journées sans cours (ex. mercredi après-midi), les horaires des créneaux et le maximum d'heures par classe
+**Rien n'est supposé par défaut** : les demi-journées sans cours (ex. mardi après-midi), les horaires des créneaux et le maximum d'heures par classe
 se règlent par établissement dans *Planification → Réglages de l'établissement*.
 
 ## Personnel (assistants pédagogiques / surveillants)
@@ -77,7 +77,7 @@ Export CSV. Accès réservé au personnel ; modules `personnel` et `planning_per
 
 ## Notes, relevés de notes et bulletins
 
-Les **professeurs saisissent les notes** de leurs classes (menu *Mes notes* : une évaluation = classe, matière, titre, date, barème, coefficient, période ; note, « abs » ou « disp » par élève). La **vie scolaire** (CPE, direction) voit toutes les notes d'un élève dans sa fiche (*Notes et bulletin*), avec moyennes par matière, moyenne générale, moyenne et rang dans la classe, et peut **imprimer le relevé de notes** (trimestre ou année) ou le **bulletin** (appréciations par matière et générale, en-tête et signataires de l'établissement), élève par élève ou **pour toute une classe**. Un lien « Notes » est aussi proposé pour chaque élève convoqué dans une réunion. Les trimestres se règlent dans *Périodes*. Module `notes`, désactivable ; un enseignant ne voit et ne modifie que ses propres évaluations.
+Les **professeurs saisissent les notes** de leurs classes (menu *Mes notes* : une évaluation = classe, matière, titre, date, barème, coefficient, période ; note, « abs » ou « disp » par élève). La **vie scolaire** (Surveillant général, direction) voit toutes les notes d'un élève dans sa fiche (*Notes et bulletin*), avec moyennes par matière, moyenne générale, moyenne et rang dans la classe, et peut **imprimer le relevé de notes** (trimestre ou année) ou le **bulletin** (appréciations par matière et générale, en-tête et signataires de l'établissement), élève par élève ou **pour toute une classe**. Un lien « Notes » est aussi proposé pour chaque élève convoqué dans une réunion. Les trimestres se règlent dans *Périodes*. Module `notes`, désactivable ; un enseignant ne voit et ne modifie que ses propres évaluations.
 
 ## Réunions : convocations, enregistrement et comptes rendus (un seul point d'entrée)
 
@@ -85,14 +85,14 @@ Menu *Documents et réunions → Réunions*. **Une seule création** (« Nouvell
 
 ### Enregistrement, transcription, compte rendu
 
-Réservé au chef d'établissement, à la direction et au CPE (clé `roles`). Parcours en quatre étapes sur une seule page :
+Réservé au chef d'établissement, à la direction et au surveillant général (clé `roles`). Parcours en quatre étapes sur une seule page :
 
 1. **Préparation et consentement** : titre, type (conseil des enseignants, conseil de classe, pédagogique, parents, administrative, autre), date, heure, lieu, langue, participants (saisie ou annuaire). Le texte d'information à lire est fourni ; chaque participant doit être coché « consent » et le responsable atteste l'information. **Sans cela, l'enregistrement est verrouillé** (côté serveur aussi).
 2. **Enregistrement** depuis le micro de l'ordinateur ou du téléphone : démarrer, pause, reprise, arrêt, chronomètre, voyant et niveau sonore du micro, alerte si aucun son pendant 10 s. L'audio est envoyé et sauvegardé **toutes les 5 secondes** : si la page se ferme ou si la connexion saute, ce qui a été reçu est conservé et l'on reprend dans une nouvelle partie ; l'envoi reprend seul au retour du réseau. Erreurs gérées : micro refusé, absent ou occupé, navigateur non compatible, HTTP non sécurisé, coupure, fichier trop gros (limite `audio_max_mo`).
 3. **Transcription** automatique (français, arabe, anglais, espagnol ou détection automatique) en tâche de fond, par partie (reprise possible après un échec), puis **texte librement corrigeable**. La phrase parasite « Sous-titres réalisés par la communauté d'Amara.org » (inventée par les services de transcription sur les silences) est supprimée automatiquement. Le service ne reconnaît pas les voix : les interventions s'attribuent aux participants à la main (boutons d'insertion de noms, remplacement « Intervenant 1 » → nom). **Hors-sujet** : avec l'**ordre du jour** saisi à l'étape 1, un bouton repère les passages étrangers au sujet, les **met en rouge** (cochés), et les supprime en un clic après vérification ; la rédaction du compte rendu écarte aussi le hors-sujet.
 4. **Compte rendu** généré par IA à partir de la transcription (objet, participants, contexte, points abordés, difficultés, propositions, décisions, actions avec responsable et échéance, conclusion, **informations manquantes signalées**). Consigne stricte : rien d'inventé, « Non précisé » si absent. Le brouillon se **relit, se corrige rubrique par rubrique, puis se valide**. Cinq présentations : détaillé, résumé d'une page, liste des décisions, tableau des actions, procès-verbal ; impression / PDF (navigateur), Word, partage par la messagerie interne (après validation).
 
-**Historique** : recherche par titre, participant, texte, type, dates ; écoute des enregistrements, transcriptions, comptes rendus. **RGPD** : accès limité aux rôles autorisés, consultations journalisées, suppression à tout moment (audio seul, ou réunion entière), **conservation configurable** (audio 30 jours et réunion 1095 jours par défaut, `0` = sans limite), purge automatique.
+**Historique** : recherche par titre, participant, texte, type, dates ; écoute des enregistrements, transcriptions, comptes rendus. **Protection des données (loi 18-07)** : accès limité aux rôles autorisés, consultations journalisées, suppression à tout moment (audio seul, ou réunion entière), **conservation configurable** (audio 30 jours et réunion 1095 jours par défaut, `0` = sans limite), purge automatique.
 
 ### Services et clés (rien n'est appelé, ni facturé, tant qu'aucune clé n'est configurée)
 
@@ -139,7 +139,7 @@ Table `recompenses` (migration 24), module `recompenses`, désactivable par clie
 
 ## Limites connues
 
-- Planification : semaine du lundi au vendredi uniquement (pas encore de semaines Dim.–Jeu. ou avec samedi), pas d'alternance de semaines A/B, pas de gestion des
+- Planification : les jours de cours se règlent par établissement (Administration → Établissements : par défaut dimanche à jeudi pour l'Algérie ; lundi–vendredi ou lundi–samedi possibles), pas d'alternance de semaines A/B, pas de gestion des
   salles spécialisées au-delà d'une salle imposée par besoin, pas de groupes d'élèves ni de cours partagés entre classes.
 
 - L'« assistant intelligent » repose sur des règles locales (disponibilités, matière, charge) et non sur un modèle de langage.
@@ -148,3 +148,10 @@ Table `recompenses` (migration 24), module `recompenses`, désactivable par clie
 - Exports : CSV (ouvrable dans Excel) et impression PDF depuis le navigateur ; pas de fichiers .xlsx/.pdf générés côté serveur.
 - Pas d'API publique pour des intégrations tierces.
 - Un enseignant intervenant dans plusieurs établissements a une fiche par établissement.
+
+## Version Algérie (branche `algerie`)
+
+- **Semaine scolaire réglable par établissement** (Administration → Établissements → carte « Semaine scolaire ») : par défaut dimanche à jeudi, vendredi et samedi sont des jours de repos. Modèles : Algérie dim–jeu, Maroc lun–ven, Tunisie lun–sam, ou jours libres. Emplois du temps, génération automatique, appel, remplacements, états d'absences, comptage des heures, vœux, soins et planning du personnel suivent ce réglage. Les jours sont stockés comme `date.weekday()` (lundi = 0 … dimanche = 6) : migration 26.
+- **Type d'établissement** : lycée (proviseur, censeur) ou CEM (directeur, surveillant général).
+- **Vocabulaire** : « CPE » devient « Surveillant général » ; « RGPD » devient « Protection des données (loi 18-07) » ; les titres de direction deviennent proviseur / censeur / directeur.
+- La démonstration est générée sur la semaine dimanche–jeudi (l'après-midi du mardi est libre pour les classes du premier établissement).

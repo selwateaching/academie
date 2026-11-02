@@ -1,7 +1,7 @@
 """Visite guidée du menu : une fiche par page, pas à pas (à quoi elle sert, chaque bouton, les pièges).
 
 Chaque entrée : (écran, libellé du menu, profils autorisés, module, mots-clés, étapes).
-Profils : "staff" (admin, direction, CPE), "enseignant", "infirmier", "tous", "infirmerie" (accès aux données de santé), "admin", "direction".
+Profils : "staff" (admin, direction, Surveillant général), "enseignant", "infirmier", "tous", "infirmerie" (accès aux données de santé), "admin", "direction".
 Un test vérifie que chaque page du menu de chaque profil possède sa fiche : si vous ajoutez une page au menu, ajoutez ici sa fiche.
 """
 S, E, T, INFIRM, INF = "staff", "enseignant", "tous", "infirmerie", "infirmier"
@@ -265,9 +265,9 @@ PAGES = [
       "Indiquez votre maximum d'heures par jour si besoin, puis « Enregistrer ».",
       "La direction en tient compte quand elle génère l'emploi du temps."]),
     ("planification_parametres", "Réglages de l'établissement", (S,), "planification",
-     "reglages de l etablissement horaires des creneaux demi journees sans cours mercredi apres midi charge maximale",
+     "reglages de l etablissement horaires des creneaux demi journees sans cours mardi apres midi mercredi charge maximale",
      ["À quoi sert cette page : régler les règles propres à votre établissement pour le générateur d'emploi du temps.",
-      "« Demi-journées sans cours pour les classes » : cochez par exemple le mercredi après-midi.",
+      "« Demi-journées sans cours pour les classes » : cochez par exemple le mardi après-midi.",
       "« Horaires des créneaux » : un créneau par ligne (08:00-09:00…).",
       "« Charge maximale » : nombre maximum d'heures par jour pour une classe.",
       "Cliquez sur « Enregistrer ». Rien n'est supposé par défaut."]),
@@ -348,13 +348,14 @@ PAGES = [
     ("utilisateurs", "Utilisateurs", (S,), "utilisateurs",
      "utilisateurs comptes creer un compte desactiver reinitialiser mot de passe roles droits acces enseignant direction cpe",
      ["À quoi sert cette page : gérer qui peut se connecter et avec quels droits.",
-      "« Créer un compte » : nom, e-mail, rôle (direction, CPE, enseignant, infirmier), puis « Créer ». Un mot de passe temporaire est affiché : à communiquer ; la personne devra le changer à sa première connexion.",
+      "« Créer un compte » : nom, e-mail, rôle (direction, Surveillant général, enseignant, infirmier), puis « Créer ». Un mot de passe temporaire est affiché : à communiquer ; la personne devra le changer à sa première connexion.",
       "Le tableau liste les comptes (nom, e-mail, rôle, fiche, état). Sur chaque ligne : « Réinitialiser le mot de passe » (un nouveau mot de passe temporaire est donné), « Désactiver » puis « Réactiver » pour suspendre un accès sans le supprimer, « Retirer » pour retirer l'accès à l'établissement.",
       "Un compte enseignant est lié à sa fiche professeur ; vous pouvez aussi le créer depuis l'annuaire des professeurs."]),
     ("etablissements", "Établissements", ("admin",), None,
      "etablissements ajouter renommer supprimer college lycee rattacher groupe scolaire plusieurs etablissements",
      ["À quoi sert cette page : gérer plusieurs établissements dans la même application (réservé à l'administrateur).",
       "Le tableau liste les établissements avec leurs effectifs. « Renommer » change un nom ; « Me rattacher » vous donne accès à un établissement.",
+      "Semaine scolaire : sous le tableau, une carte par établissement permet de cocher les jours de cours (par défaut dimanche à jeudi ; vendredi et samedi sont alors des jours de repos) et de choisir le type : lycée (proviseur, censeur) ou CEM (directeur, surveillant général). Emplois du temps, génération, appel, remplacements et états d'absences suivent ce réglage.",
       "« Ajouter un établissement » puis « Créer l'établissement » installe ses modèles de documents, ses postes et son en-tête par défaut.",
       "« Supprimer définitivement » efface l'établissement et toutes ses données : le logiciel demande de retaper le nom et votre mot de passe.",
       "Chaque établissement a ses propres élèves, professeurs et réglages : rien n'est partagé."]),
@@ -386,7 +387,7 @@ PAGES = [
       "« Double authentification (MFA) » : « Activer » puis « Configurer » ; scannez le code avec une application d'authentification (Google Authenticator, Microsoft Authenticator…) et saisissez le code à 6 chiffres. « Désactiver » la retire.",
       "Conseil : activez la double authentification pour les comptes de direction et d'administration.",
       "Après plusieurs mots de passe faux, la connexion est bloquée quelques minutes."]),
-    ("rgpd", "RGPD", (T,), None,
+    ("rgpd", "Protection des données (loi 18-07)", (T,), None,
      "rgpd protection des donnees donnees personnelles exporter mes donnees supprimer mon compte vie privee",
      ["À quoi sert cette page : voir et maîtriser vos données personnelles.",
       "« Vos données » résume ce que le logiciel conserve sur vous ; vous pouvez les exporter.",

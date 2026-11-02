@@ -400,6 +400,10 @@ MIGRATIONS = [
         ALTER TABLE ri_reunions ADD COLUMN transcription_origine TEXT NOT NULL DEFAULT '';   -- texte avant le premier nettoyage du hors-sujet (effacé à la validation du compte rendu)
         ALTER TABLE ri_reunions ADD COLUMN transcription_avant TEXT NOT NULL DEFAULT '';     -- texte avant la dernière suppression (pour « Annuler »)
     """),
+    (26, """
+        ALTER TABLE etablissements ADD COLUMN jours_cours TEXT NOT NULL DEFAULT '6,0,1,2,3';   -- jours de cours (numéros de date.weekday(), dimanche = 6) ; Algérie : dimanche à jeudi
+        ALTER TABLE etablissements ADD COLUMN type_etab TEXT NOT NULL DEFAULT 'lycee';         -- 'lycee' (proviseur, censeur) ou 'cem' (directeur, surveillant général)
+    """),
 ]
 
 
@@ -464,6 +468,13 @@ def create_admin(email, password, nom, etab_nom):
     con.close()
 
 
+SEMAINE_DEMO = [6, 0, 1, 2, 3]      # démonstration : semaine scolaire algérienne, dimanche à jeudi (position k de la semaine -> numéro de jour)
+
+
+def J(k):
+    return SEMAINE_DEMO[k]
+
+
 def seed_demo(password="demo1234"):
     """Jeu de données fictives (personnes imaginaires) pour démontrer l'application."""
     from datetime import datetime
@@ -483,7 +494,7 @@ def seed_demo(password="demo1234"):
             con.execute("INSERT INTO user_etabs VALUES (?,?)", (uid, e))
         return uid
 
-    cpe = user("Camille Durand (CPE)", "cpe@demo.fr", "cpe", [e1, e2])
+    cpe = user("Camille Durand (Surveillant général)", "cpe@demo.fr", "cpe", [e1, e2])
     direction = user("Dominique Leroy (Direction)", "direction@demo.fr", "direction", [e1])
     user("Alex Morel (Administrateur)", "admin@demo.fr", "admin", [e1, e2])
 
@@ -533,8 +544,8 @@ def seed_demo(password="demo1234"):
                 besoins_gen.append({"id": bid, "classe": c, "matiere": matiere, "prof_id": ids[idx_prof], "heures": heures, "bloc": bloc, "salle": salle})
 
     # Vœux des professeurs (ex. mercredi après-midi impératif pour certains)
-    voeux_demo = [(ids[0], 2, "apres_midi", "non"), (ids[1], 0, "matin", "souhait"), (ids[2], 4, "apres_midi", "souhait"),
-                  (ids[3], 3, "matin", "non"), (ids[6], 1, "matin", "souhait"), (ids[7], 2, "apres_midi", "non")]
+    voeux_demo = [(ids[0], J(2), "apres_midi", "non"), (ids[1], J(0), "matin", "souhait"), (ids[2], J(4), "apres_midi", "souhait"),
+                  (ids[3], J(3), "matin", "non"), (ids[6], J(1), "matin", "souhait"), (ids[7], J(2), "apres_midi", "non")]
     for pid, jour, demi, niveau in voeux_demo:
         con.execute("INSERT INTO voeux VALUES (?,?,?,?)", (pid, jour, demi, niveau))
 
@@ -545,8 +556,8 @@ def seed_demo(password="demo1234"):
     profs_gen = {pid: {"nom": f"{profs[k][1]} {profs[k][0]}", "max_jour": 6, "voeux": {}} for k, pid in enumerate(ids)}
     for pid, jour, demi, niveau in voeux_demo:
         profs_gen[pid]["voeux"][(jour, demi)] = niveau
-    con.execute("INSERT INTO reglages_planning(etab_id,classe_fermee,max_classe_jour,grille) VALUES (?,?,?,?)", (e1, '["2:apres_midi"]', 7, ""))
-    res1 = planning.generer(grille, besoins_gen, profs_gen, {"classe_fermee": {(2, "apres_midi")}, "max_classe_jour": 7}, essais=40, temps_max=5, graine=2026)
+    con.execute("INSERT INTO reglages_planning(etab_id,classe_fermee,max_classe_jour,grille) VALUES (?,?,?,?)", (e1, f'["{J(2)}:apres_midi"]', 7, ""))
+    res1 = planning.generer(grille, besoins_gen, profs_gen, {"classe_fermee": {(J(2), "apres_midi")}, "max_classe_jour": 7, "jours": SEMAINE_DEMO}, essais=40, temps_max=5, graine=2026)
     salle_classe = {c: f"B{10 + k}" for k, c in enumerate(classes)}
     for x in res1["placements"]:
         con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
@@ -589,7 +600,7 @@ def seed_demo(password="demo1234"):
             continue
         jour = date.fromisoformat(a["date_debut"])
         while jour <= date.fromisoformat(a["date_fin"]):
-            if jour.weekday() < 5:
+            if jour.weekday() in SEMAINE_DEMO:
                 for n, c in enumerate(con.execute("SELECT * FROM creneaux WHERE prof_id=? AND jour=? ORDER BY debut", (a["prof_id"], jour.weekday())).fetchall()):
                     remp = libre(a["prof_id"], jour, c["debut"], c["fin"], c["id"])
                     if jour < today:
@@ -606,7 +617,7 @@ def seed_demo(password="demo1234"):
                         a_notifier.append((remp, c, jour, a["prof_id"]))
             jour += timedelta(days=1)
 
-    cr = con.execute("SELECT id, classe FROM creneaux WHERE etab_id=? AND jour=? ORDER BY debut", (e1, (today + timedelta(days=1)).weekday() % 5)).fetchall()
+    cr = con.execute("SELECT id, classe FROM creneaux WHERE etab_id=? AND jour=? ORDER BY debut", (e1, (today + timedelta(days=1)).weekday() if (today + timedelta(days=1)).weekday() in SEMAINE_DEMO else SEMAINE_DEMO[0])).fetchall()
     if cr:
         con.execute("INSERT INTO perturbations(etab_id,date,creneau_id,classe,type,detail) VALUES (?,?,?,?,?,?)",
                     (e1, d(1), cr[0]["id"], cr[0]["classe"], "salle_indisponible", "Salle fermée : dégât des eaux"))
@@ -617,12 +628,12 @@ def seed_demo(password="demo1234"):
     for dt, classe, eleve, desc, suite, statut in [
         (d(0), "5A", "Élève A.", "Retards répétés en première heure (3 cette semaine).", "Entretien avec la famille prévu jeudi.", "ouvert"),
         (d(-2), "4B", "Élève B.", "Altercation dans la cour à la récréation.", "Médiation réalisée, information des familles.", "clos"),
-        (d(-1), "6A", "Élèves C. et D.", "Matériel dégradé en salle B12.", "En attente de l'avis du principal.", "ouvert"),
+        (d(-1), "6A", "Élèves C. et D.", "Matériel dégradé en salle B12.", "En attente de l'avis du directeur.", "ouvert"),
     ]:
         con.execute("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,statut) VALUES (?,?,?,?,?,?,?)",
                     (e1, dt, classe, eleve, desc, suite, statut))
 
-    # Messagerie : envois du CPE avec lectures et confirmations variées
+    # Messagerie : envois du surveillant général avec lectures et confirmations variées
     def message(sender, sujet, corps, typ, cible, dest, minutes, lus=0, confirmes=0):
         mid = con.execute("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
                           (e1, sender, sujet, corps, typ, cible, ts(minutes))).lastrowid
@@ -638,7 +649,7 @@ def seed_demo(password="demo1234"):
     message(uids[2], "Sortie au musée jeudi", "Je serai absente jeudi après-midi pour la sortie avec les 5A.", "individuel", str(cpe), [cpe], 600, 0, 0)
 
     # Messages automatiques liés aux absences et remplacements (communication entre les deux modules)
-    jours_fr = ["lun.", "mar.", "mer.", "jeu.", "ven."]
+    jours_fr = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."]
     for remp, c, jour, absent in a_notifier[:6]:
         nom_absent = next(f"{profs[k][1]} {profs[k][0]}" for k, pid in enumerate(ids) if pid == absent)
         mid = con.execute("INSERT INTO messages(etab_id,sender_id,sujet,corps,cible_type,cible,created_at) VALUES (?,?,?,?,?,?,?)",
@@ -667,7 +678,7 @@ def seed_demo(password="demo1234"):
         ("Préparer le conseil de classe 3A", "Statistiques d'absences et incidents.", d(1), "haute", "a_faire"),
         ("Mettre à jour l'emploi du temps de 4B", "Changement de salle depuis lundi.", d(4), "normale", "a_faire"),
         ("Commander les fournitures vie scolaire", "", d(10), "basse", "a_faire"),
-        ("Envoyer le bilan des retards au principal", "", d(-4), "normale", "faite"),
+        ("Envoyer le bilan des retards au directeur", "", d(-4), "normale", "faite"),
     ]:
         con.execute("INSERT INTO taches(etab_id,titre,description,echeance,priorite,statut,assigne_id) VALUES (?,?,?,?,?,?,?)",
                     (e1, titre, desc, ech, prio, statut, cpe))
@@ -687,7 +698,7 @@ def seed_demo(password="demo1234"):
                                           ("remplacement assigné", "6B 9h-10h → Laurent"), ("réunion créée", "Conseil de classe 3A"),
                                           ("message envoyé", "tous (10 destinataires)")]):
         con.execute("INSERT INTO audit(etab_id,user_id,user_nom,action,detail,created_at) VALUES (?,?,?,?,?,?)",
-                    (e1, cpe, "Camille Durand (CPE)", action, detail, ts(300 - k * 40)))
+                    (e1, cpe, "Camille Durand (Surveillant général)", action, detail, ts(300 - k * 40)))
 
     # Élèves fictifs (effectifs variables par classe) : sexe cohérent avec le prénom, âges selon le niveau
     import random
@@ -738,7 +749,7 @@ def seed_demo(password="demo1234"):
                           (e2, c, matiere, ids2[idx], heures, 1, "")).lastrowid
         besoins2_gen.append({"id": bid, "classe": c, "matiere": matiere, "prof_id": ids2[idx], "heures": heures, "bloc": 1, "salle": ""})
     profs2_gen = {pid: {"nom": f"{profs2[k][1]} {profs2[k][0]}", "max_jour": 6, "voeux": {}} for k, pid in enumerate(ids2)}
-    res2 = planning.generer(grille, besoins2_gen, profs2_gen, {"classe_fermee": set(), "max_classe_jour": 8}, essais=30, temps_max=3, graine=7)
+    res2 = planning.generer(grille, besoins2_gen, profs2_gen, {"classe_fermee": set(), "max_classe_jour": 8, "jours": SEMAINE_DEMO}, essais=30, temps_max=3, graine=7)
     for x in res2["placements"]:
         con.execute("INSERT INTO creneaux(etab_id,prof_id,classe,matiere,jour,debut,fin,salle) VALUES (?,?,?,?,?,?,?,?)",
                     (e2, x["prof_id"], x["classe"], x["matiere"], x["jour"], grille[x["debut_idx"]]["debut"],
@@ -767,9 +778,9 @@ def seed_demo(password="demo1234"):
                   ("Vidal", "Claudine", 20, ["Service", "Étude", "Foyer", "Portail"]), ("Marchal", "Daniela", 16, ["Self", "Cour", "Foyer", "Service"]),
                   ("Pons", "Ernest", 14, ["Étude", "Cour", "Portail", "Self"]), ("Benali", "Fatima", 16, ["Service", "Étude", "Foyer", "Self", "Cour"]),
                   ("Rey", "Gaspard", 14, ["Service", "Étude", "Cour", "Portail"]), ("Colin", "Hélène", 12, ["Renfort", "Étude", "Foyer", "Cour", "Bureau"])]
-    dispos_aed = [(0, 2, "12:00", "19:00", "non", "Études universitaires"), (3, 0, "07:00", "12:00", "non", "Cours à l'université"),
-                  (2, 0, "16:00", "19:00", "souhait", "Garde d'enfant"), (2, 1, "16:00", "19:00", "souhait", "Garde d'enfant"),
-                  (2, 3, "16:00", "19:00", "souhait", "Garde d'enfant"), (4, 4, "14:00", "19:00", "non", "Rendez-vous récurrent")]
+    dispos_aed = [(0, J(2), "12:00", "19:00", "non", "Études universitaires"), (3, J(0), "07:00", "12:00", "non", "Cours à l'université"),
+                  (2, J(0), "16:00", "19:00", "souhait", "Garde d'enfant"), (2, J(1), "16:00", "19:00", "souhait", "Garde d'enfant"),
+                  (2, J(3), "16:00", "19:00", "souhait", "Garde d'enfant"), (4, J(4), "14:00", "19:00", "non", "Rendez-vous récurrent")]
     ag_id = []
     for nom, prenom, contrat, roles in equipe_aed:
         pid_ = con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,telephone,contrat_min,planifie) VALUES (?,?,?,?,?,?,?,?,1)",
@@ -790,11 +801,12 @@ def seed_demo(password="demo1234"):
         for j in jours:
             bid = con.execute("INSERT INTO besoins_postes(etab_id,poste_id,jour,debut,fin,effectif) VALUES (?,?,?,?,?,?)", (e1, poste_id[poste], j, d1, d2, effectif)).lastrowid
             besoins_pp.append({"id": bid, "poste_id": poste_id[poste], "jour": j, "debut": mn(d1), "fin": mn(d2), "effectif": effectif})
-    besoin("Portail", range(5), "07:45", "08:15"); besoin("Portail", range(5), "16:00", "16:30")
-    besoin("Cour", range(5), "10:00", "10:15", 2); besoin("Cour", [0, 1, 3, 4], "12:15", "13:15", 2)
-    besoin("Self", [0, 1, 3, 4], "12:15", "13:45", 2); besoin("Foyer", [0, 1, 3, 4], "12:15", "14:00")
-    besoin("Étude", range(5), "08:00", "12:00"); besoin("Étude", [0, 1, 3, 4], "14:00", "16:00"); besoin("Étude", [0, 1, 3, 4], "16:00", "17:00", 2)
-    besoin("Service", [0, 1, 3, 4], "08:00", "17:00"); besoin("Service", [2], "08:00", "12:15")
+    QUATRE = [J(0), J(1), J(3), J(4)]      # les jours où l'après-midi est travaillé (le troisième jour de la semaine, l'après-midi est libre)
+    besoin("Portail", SEMAINE_DEMO, "07:45", "08:15"); besoin("Portail", SEMAINE_DEMO, "16:00", "16:30")
+    besoin("Cour", SEMAINE_DEMO, "10:00", "10:15", 2); besoin("Cour", QUATRE, "12:15", "13:15", 2)
+    besoin("Self", QUATRE, "12:15", "13:45", 2); besoin("Foyer", QUATRE, "12:15", "14:00")
+    besoin("Étude", SEMAINE_DEMO, "08:00", "12:00"); besoin("Étude", QUATRE, "14:00", "16:00"); besoin("Étude", QUATRE, "16:00", "17:00", 2)
+    besoin("Service", QUATRE, "08:00", "17:00"); besoin("Service", [J(2)], "08:00", "12:15")
     agents_pp = {ag_id[k]: {"nom": f"{prenom} {nom}", "contrat": contrat * 60, "max_jour": 480, "postes": {poste_id[r] for r in roles},
                             "dispos": [(j, mn(a), mn(b), n) for (i2, j, a, b, n, _) in dispos_aed if i2 == k]}
                  for k, (nom, prenom, contrat, roles) in enumerate(equipe_aed)}
@@ -824,16 +836,16 @@ def seed_demo(password="demo1234"):
                            (e1, e["id"], intitule, details, heure, duree, debut, fin, jours, "Sophie Lambert (Infirmière)")).lastrowid
     s1 = soin(pick(3), "Contrôle de glycémie", "Avant le repas ; noter la valeur dans le carnet.", "11:45", 10, d(-30), "", "0,1,2,3,4")
     s2 = soin(pick(6), "Pansement", "Genou gauche, à refaire en nettoyant la plaie.", "10:15", 15, d(-10), d(14), "0,2,4")
-    s3 = soin(pick(7), "Traitement du midi", "Comprimé fourni par la famille, à prendre après le repas.", "12:30", 5, d(-20), "", "0,1,3,4")
+    s3 = soin(pick(7), "Traitement du midi", "Comprimé fourni par la famille, à prendre après le repas.", "12:30", 5, d(-20), "", ",".join(str(J(k)) for k in (0, 1, 3, 4)))
     s4 = soin(pick(8), "Contrôle après entorse", "Vérifier la mobilité de la cheville.", "14:00", 15, d(1))
     s5 = soin(pick(9), "Pansement", "Coude droit.", "15:00", 10, d(0))
     s6 = soin(pick(10), "Rappel de vaccination (campagne)", "Autorisation parentale reçue.", "09:30", 20, d(3))
     for jour_idx in (-3, -2, -1):
         dj = today + timedelta(days=jour_idx)
-        if dj.weekday() < 5:
+        if dj.weekday() in SEMAINE_DEMO:
             for sid in (s1, s3):
                 con.execute("INSERT OR IGNORE INTO soins_realises VALUES (?,?,?,?,?,?)", (sid, dj.isoformat(), "fait", "", "Sophie Lambert (Infirmière)", ts_now))
-            if dj.weekday() in (0, 2, 4):
+            if dj.weekday() in (J(0), J(2), J(4)):
                 con.execute("INSERT OR IGNORE INTO soins_realises VALUES (?,?,?,?,?,?)", (s2, dj.isoformat(), "fait", "", "Sophie Lambert (Infirmière)", ts_now))
     motifs = [("Mal de tête", "Repos 20 min, eau", "Retour en classe"), ("Mal au ventre", "Repos, bouillotte", "Retour en classe"),
               ("Chute en cour de récréation", "Désinfection, pansement", "Retour en classe"), ("Fièvre", "Température 38,4 °C", "Rentrée à domicile"),
@@ -896,12 +908,12 @@ def seed_demo(password="demo1234"):
         fragiles = set(rg.sample(eleves_, max(1, len(eleves_) // 14)))   # quelques élèves nettement plus absents
         j = rentree
         while j < auj:
-            if j.weekday() < 5:
+            if j.weekday() in SEMAINE_DEMO:
                 for el in eleves_:
                     p_abs = 0.12 if el in fragiles else 0.018
                     for demi, (d1, f1) in (("matin", ("08:00", "12:00")), ("apres_midi", ("14:00", "17:00"))):
-                        if demi == "apres_midi" and j.weekday() == 2:
-                            continue   # mercredi après-midi fermé dans la démo
+                        if demi == "apres_midi" and j.weekday() == J(2):
+                            continue   # après-midi libre du troisième jour de la semaine (mardi) dans la démo
                         if rg.random() < p_abs:
                             motif = rg.choice(motifs_)
                             just = "justifiee" if motif and rg.random() < 0.8 else ("non_justifiee" if rg.random() < 0.4 else "en_attente")

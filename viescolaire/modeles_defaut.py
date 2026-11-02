@@ -122,17 +122,17 @@ def installer(con, etab_id):
 
 
 def entete_et_signataires_par_defaut(con, etab_id):
-    """En-tête minimal (nom de l'établissement) et signataires proposés : direction et CPE de l'établissement, à compléter dans Documents → En-tête et signataires."""
+    """En-tête minimal (nom de l'établissement) et signataires proposés : direction et surveillant général de l'établissement, à compléter dans Documents → En-tête et signataires."""
     nom = con.execute("SELECT nom FROM etablissements WHERE id=?", (etab_id,)).fetchone()
     if nom and not con.execute("SELECT 1 FROM entete_documents WHERE etab_id=?", (etab_id,)).fetchone():
         con.execute("INSERT INTO entete_documents(etab_id,nom_affiche) VALUES (?,?)", (etab_id, nom[0]))
     if not con.execute("SELECT 1 FROM signataires WHERE etab_id=?", (etab_id,)).fetchone():
-        fonctions = {"direction": "Le chef d'établissement", "cpe": "Le conseiller principal d'éducation"}
+        fonctions = {"direction": "Le proviseur / Le directeur", "cpe": "Le surveillant général"}
         vus = []
         for role, nom_u in con.execute(
                 "SELECT u.role, u.nom FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.role IN ('direction','cpe') "
                 "ORDER BY CASE u.role WHEN 'direction' THEN 0 ELSE 1 END, u.id", (etab_id,)).fetchall():
-            nom_u = re.sub(r"\s*\([^)]*\)\s*$", "", nom_u)   # « Nom (CPE) » -> « Nom »
+            nom_u = re.sub(r"\s*\([^)]*\)\s*$", "", nom_u)   # « Nom (Surveillant général) » -> « Nom »
             if nom_u not in [v[1] for v in vus]:
                 vus.append((role, nom_u))
         for i, (role, nom_u) in enumerate(vus):

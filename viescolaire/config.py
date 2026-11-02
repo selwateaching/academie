@@ -31,7 +31,7 @@ DEFAUTS = {
                        "Enfant malade", "Jury d'examen / concours", "Mission pédagogique", "Grève", "Autre (préciser)"],
     "motifs_indisponibilite": ["Sortie scolaire", "Voyage scolaire", "Garde d'enfant", "Rendez-vous médical", "Convenance personnelle",
                                "Réunion / conseil", "Formation", "Autre (préciser)"],
-    "infirmerie_roles": ["infirmier", "direction", "admin"],   # rôles ayant accès aux données de santé (le CPE n'y a pas accès par défaut)
+    "infirmerie_roles": ["infirmier", "direction", "admin"],   # rôles ayant accès aux données de santé (le surveillant général n'y a pas accès par défaut)
     "categories_personnel": ["Assistant pédagogique", "AESH (accompagnant)", "Agent d'accueil", "Personnel administratif", "Agent technique", "Autre"],
     "grille_personnel": ["07:00", "18:30"],   # bornes affichées dans le planning du personnel
     "aide": {},                       # assistant d'aide : {"ia": true, "questions_par_heure": 40}

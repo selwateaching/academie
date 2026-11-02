@@ -17,7 +17,7 @@
 {% else %}<tr><td colspan="6" class="mute">Aucune absence ni retard ce jour-là.</td></tr>{% endfor %}</table>
 
 {% elif vue == 'semaine' %}
-<table class="etat"><tr><th>Classe</th><th>Élève</th>{% for j in jours %}<th class="nombre">{{ ['Lun','Mar','Mer','Jeu','Ven'][j.weekday()] }} {{ j.strftime('%d/%m') }}</th>{% endfor %}<th class="nombre">Demi-j.</th><th class="nombre">Retards</th></tr>
+<table class="etat"><tr><th>Classe</th><th>Élève</th>{% for j in jours %}<th class="nombre">{{ ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][j.weekday()] }} {{ j.strftime('%d/%m') }}</th>{% endfor %}<th class="nombre">Demi-j.</th><th class="nombre">Retards</th></tr>
 {% for x in liste %}<tr><td>{{ x.classe }}</td><td><b>{{ x.nom }}</b> {{ x.prenom }}</td>
 {% for j in jours %}<td class="nombre">{% for dm, lib in (('matin', 'M'), ('apres_midi', 'A')) %}{% set v = x.cases.get((j.isoformat(), dm)) %}{% if v %}<span class="case-j case-{{ v }}" title="{{ justifs[v] }}">{{ lib }}</span>{% endif %}{% endfor %}{% for l in x.lignes if l.type == 'retard' and l.date == j.isoformat() %}<span class="case-j case-en_attente" title="Retard {{ l.retard_min }} min">R</span>{% endfor %}</td>{% endfor %}
 <td class="nombre"><b>{{ x.demi }}</b></td><td class="nombre">{{ x.retards }}</td></tr>

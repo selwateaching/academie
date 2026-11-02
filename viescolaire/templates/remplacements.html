@@ -18,6 +18,6 @@
 {% elif r.statut == 'assigne' %}<span class="tag ok">{{ r.rprenom }} {{ r.rnom }}</span> {{ post(url_for('remplacement_action', rid=r.id, action='effectue'), 'Effectué', 'sm') }} {{ post(url_for('remplacement_action', rid=r.id, action='reouvrir'), 'Rouvrir', 'sec sm') }}
 {% else %}<span class="tag {{ 'err' if r.statut=='annule' else 'ok' }}">{{ {'annule':'Cours annulé','effectue':'Effectué'}[r.statut] }}</span> {{ post(url_for('remplacement_action', rid=r.id, action='reouvrir'), 'Rouvrir', 'sec sm') }}{% endif %}</td></tr>
 {% else %}<tr><td colspan="4" class="mute">{% if statut and effectifs[''] %}Aucun remplacement dans cet état. Il y en a {{ effectifs[''] }} au total : <a href="{{ url_for('remplacements', absence=absence.id if absence else None) }}">tout afficher</a>.
-{% elif absence %}Aucun cours à remplacer pour cette absence : le professeur n'a pas de cours sur ces dates (week-end, jour sans cours) ou l'absence est une indisponibilité.
+{% elif absence %}Aucun cours à remplacer pour cette absence : le professeur n'a pas de cours sur ces dates (jour de repos, jour sans cours) ou l'absence est une indisponibilité.
 {% else %}Aucun remplacement.{% endif %}</td></tr>{% endfor %}</table>
 <p class="mute">★ = même matière. Les suggestions excluent les professeurs absents, en cours ou déjà mobilisés sur ce créneau, et favorisent les moins sollicités ces 30 derniers jours.</p></div>{% endblock %}

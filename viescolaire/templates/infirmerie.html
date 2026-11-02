@@ -28,7 +28,7 @@
 {% else %}<form method="post" class="inline">{{ csrf() }}<button class="sec sm" formaction="{{ url_for('infirmerie_realise', sid=o.id, jour=jour.isoformat(), statut='reset') }}">Rouvrir</button></form>{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mute">Aucun soin programmé ce jour. <a href="{{ url_for('infirmerie_soins') }}">Programmer un soin</a></td></tr>{% endfor %}</table></div>
 {% else %}
-<div class="card scroll"><table><tr>{% for d in semaine %}<th>{{ JOURS[loop.index0] }} {{ d.strftime('%d/%m') }}</th>{% endfor %}</tr><tr>
+<div class="card scroll"><table><tr>{% for d in semaine %}<th>{{ JOURS[d.weekday()] }} {{ d.strftime('%d/%m') }}</th>{% endfor %}</tr><tr>
 {% for d in semaine %}<td class="edt-col" style="width:20%">{% for o in grille[d.isoformat()] %}<a href="{{ url_for('infirmerie', date=d.isoformat()) }}" style="display:block;color:inherit;text-decoration:none">
 <div class="slot {{ 'remplace' if o.statut == 'fait' else ('a_pourvoir' if o.en_retard else ('perturbe' if o.statut in ('absent','annule') else '')) }}"><b>{{ o.heure }}</b> {{ o.enom }} {{ o.eprenom[:1] }}.<br>{{ o.intitule }}{% if o.pai %} <span class="tag err">PAI</span>{% endif %}</div></a>{% else %}<span class="mute">—</span>{% endfor %}</td>{% endfor %}</tr></table>
 <p class="mute">Vert : fait · rouge : en retard · orange : élève absent ou soin annulé.</p></div>{% endif %}{% endblock %}

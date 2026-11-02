@@ -1,4 +1,4 @@
-"""VieScolairePro : logiciel de gestion de la vie scolaire (CPE, enseignants, direction)."""
+"""VieScolairePro : logiciel de gestion de la vie scolaire (Surveillant général, enseignants, direction)."""
 import base64
 import re
 import zipfile
@@ -54,7 +54,46 @@ if CFG["templates_dir"]:  # gabarits du client prioritaires sur ceux du socle
     app.jinja_loader = ChoiceLoader([FileSystemLoader(CFG["templates_dir"]), app.jinja_loader])
 
 STAFF = ("admin", "direction", "cpe")
-JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"]
+JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]     # indexés comme date.weekday() : lundi = 0 … dimanche = 6
+SEMAINES_TYPES = {      # semaines scolaires proposées (l'établissement peut aussi choisir ses jours librement)
+    "dz": ("Algérie : dimanche à jeudi", [6, 0, 1, 2, 3]),
+    "ma": ("Maroc : lundi à vendredi", [0, 1, 2, 3, 4]),
+    "tn": ("Tunisie : lundi à samedi", [0, 1, 2, 3, 4, 5]),
+}
+JOURS_COURS_DEFAUT = [6, 0, 1, 2, 3]
+TYPES_ETAB = {"lycee": "Lycée", "cem": "CEM (collège d'enseignement moyen)"}
+
+
+def lire_jours_cours(texte):
+    """« 6,0,1,2,3 » -> [6, 0, 1, 2, 3] (jours distincts de 0 à 6, dans l'ordre d'affichage : la semaine commence le dimanche si le dimanche est un jour de cours)."""
+    try:
+        j = {int(x) for x in (texte or "").split(",") if x.strip() != "" and 0 <= int(x) <= 6}
+    except ValueError:
+        j = set()
+    return ordonner_jours(j or set(JOURS_COURS_DEFAUT))
+
+
+def ordonner_jours(jours):
+    return sorted(jours, key=lambda d: (d + 1) % 7 if 6 in jours and 0 in jours else d)
+
+
+def jours_cours():
+    """Jours de cours de l'établissement courant, dans l'ordre d'affichage (numéros de date.weekday())."""
+    try:
+        e = g.get("etab")
+    except RuntimeError:
+        e = None
+    return lire_jours_cours(e["jours_cours"] if e and "jours_cours" in e.keys() else "")
+
+
+def est_jour_cours(d):
+    return d.weekday() in jours_cours()
+
+
+def debut_semaine(d):
+    """Premier jour de la semaine contenant d : dimanche si la semaine scolaire commence le dimanche, sinon lundi."""
+    return d - timedelta(days=(d.weekday() + 1) % 7 if jours_cours()[0] == 6 else d.weekday())
+
 FICHIERS_AUTORISES = {e.lower() for e in CFG["fichiers_autorises"]}
 
 # Quels endpoints appartiennent à quel module (un module désactivé répond 404).
@@ -98,7 +137,7 @@ def module_actif(nom):
 
 
 def roles_infirmerie():
-    """Rôles ayant accès aux données de santé. En démonstration, le CPE y accède aussi pour faciliter la visite."""
+    """Rôles ayant accès aux données de santé. En démonstration, le surveillant général y accède aussi pour faciliter la visite."""
     return set(CFG["infirmerie_roles"]) | ({"cpe"} if DEMO else set())
 
 
@@ -163,8 +202,9 @@ def parse_date(s, default=None):
 
 def jours_ouvres(d1, d2):
     d = d1
+    jc = jours_cours()
     while d <= d2:
-        if d.weekday() < 5:
+        if d.weekday() in jc:
             yield d
         d += timedelta(days=1)
 
@@ -172,7 +212,7 @@ def jours_ouvres(d1, d2):
 def fr_date(s):
     try:
         d = date.fromisoformat(s)
-        return f"{JOURS[d.weekday()][:3]}. {d.strftime('%d/%m/%Y')}" if d.weekday() < 5 else d.strftime("%d/%m/%Y")
+        return f"{JOURS[d.weekday()][:3]}. {d.strftime('%d/%m/%Y')}" if 0 <= d.weekday() <= 6 else d.strftime("%d/%m/%Y")
     except (TypeError, ValueError):
         return s or ""
 
@@ -343,7 +383,7 @@ def menu_sections():
         items = [i for i in items if i]
         return {"titre": titre, "pages": items, "ouvert": ouvert} if items else None
 
-    compte = [item("aide", "Aide et premiers pas", "assistant", "Guides pas à pas et assistant", "aide"), item("compte", "Sécurité", "securite", "Mot de passe, double authentification"), item("rgpd", "RGPD", "rgpd", "Mes données personnelles")]
+    compte = [item("aide", "Aide et premiers pas", "assistant", "Guides pas à pas et assistant", "aide"), item("compte", "Sécurité", "securite", "Mot de passe, double authentification"), item("rgpd", "Protection des données (loi 18-07)", "rgpd", "Mes données personnelles")]
     sortie = item("logout", "Déconnexion", "sortie")
     if staff:
         sections = [
@@ -431,7 +471,7 @@ def menu_sections():
 @app.context_processor
 def contexte():
     pal = session.get("palette") if "palette" in session else CFG.get("palette", "")
-    ctx = {"palette": pal if pal in PALETTES else "", "STAFF": STAFF, "JOURS": JOURS, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
+    ctx = {"palette": pal if pal in PALETTES else "", "STAFF": STAFF, "JOURS": JOURS, "JC": jours_cours(), "TYPES_ETAB": TYPES_ETAB, "today": date.today().isoformat(), "TYPES_PERTURBATION": TYPES_PERTURBATION,
            "cfg": CFG, "demo": DEMO, "module_actif": module_actif, "ext_nav": [], "ext_widgets": [],
            "infirmerie_ok": bool(g.get("user")) and g.user["role"] in roles_infirmerie(), "aide_puces": aide_puces}
     if g.get("user"):
@@ -555,7 +595,7 @@ def indisponible(prof_id, jour_iso):
 def cours_du_jour(jour, prof_id=None, classe=None):
     """Cours d'une journée avec leur état (normal, absent, remplacé, annulé, salle indisponible...)."""
     iso = jour.isoformat()
-    if jour.weekday() > 4:
+    if not est_jour_cours(jour):
         return []
     sql = ("SELECT c.*, p.nom pnom, p.prenom pprenom FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
            "WHERE c.etab_id=? AND c.jour=?")
@@ -703,10 +743,10 @@ def dashboard():
 
 
 def derniers_jours_ouvres(fin, n):
-    """Les n derniers jours de semaine (lundi-vendredi) jusqu'à `fin` incluse (ou le dernier jour ouvré précédent)."""
-    jours, j = [], fin
+    """Les n derniers jours de cours de l'établissement jusqu'à `fin` incluse (ou le dernier jour de cours précédent)."""
+    jours, j, jc = [], fin, jours_cours()
     while len(jours) < n:
-        if j.weekday() < 5:
+        if j.weekday() in jc:
             jours.append(j)
         j -= timedelta(days=1)
     return list(reversed(jours))
@@ -740,7 +780,7 @@ def donnees_tableau_bord(today):
         for j in jours:
             d["assiduite"].append({"jour": JOURS[j.weekday()][:3] + ". " + str(j.day), "absences": brut.get((j.isoformat(), "absence"), 0),
                                    "retards": brut.get((j.isoformat(), "retard"), 0), "aujourdhui": j == today})
-    lundi = today - timedelta(days=today.weekday())
+    lundi = debut_semaine(today)
     rem = {r["statut"]: r["n"] for r in q("SELECT statut, COUNT(*) n FROM remplacements WHERE etab_id=? AND date BETWEEN ? AND ? GROUP BY statut",
                                          (e, lundi.isoformat(), (lundi + timedelta(days=6)).isoformat()))}
     d["remplacements"] = [("À pourvoir", rem.get("a_pourvoir", 0)), ("Pourvus", sum(v for k, v in rem.items() if k not in ("a_pourvoir", "annule"))),
@@ -838,7 +878,7 @@ def creneau_ajouter(pid):
     try:
         jour = int(f["jour"])
         debut, fin = heure_norm(f["debut"]), heure_norm(f["fin"])
-        assert 0 <= jour <= 4 and debut and fin and debut < fin and f["classe"].strip()
+        assert jour in jours_cours() and debut and fin and debut < fin and f["classe"].strip()
     except (KeyError, ValueError, AssertionError):
         flash("Créneau invalide (jour, heures au format HH:MM, début avant la fin, et classe requis).", "err")
         return redirect(url_for("professeur", pid=pid))
@@ -900,13 +940,13 @@ def emploi_du_temps():
                 "pert": one("SELECT COUNT(*) c FROM perturbations WHERE etab_id=? AND date=?", (g.etab_id, j.isoformat()))["c"],
             }
         semaines = []
-        d = debut - timedelta(days=debut.weekday())
+        d = debut_semaine(debut)
         while d <= fin:
-            semaines.append([d + timedelta(days=i) for i in range(5)])
+            semaines.append([d + timedelta(days=i) for i in range(7) if (d + timedelta(days=i)).weekday() in jours_cours()])
             d += timedelta(days=7)
         return render_template("edt.html", debut=debut, compte=compte, semaines=semaines, **ctx)
-    lundi = jour - timedelta(days=jour.weekday())
-    semaine = [lundi + timedelta(days=i) for i in range(5)]
+    lundi = debut_semaine(jour)
+    semaine = [lundi + timedelta(days=i) for i in range(7) if (lundi + timedelta(days=i)).weekday() in jours_cours()]
     grille = {j.isoformat(): cours_du_jour(j, prof_id, classe) for j in semaine}
     matieres_vues = sorted({c["matiere"] for cs in grille.values() for c in cs if c["matiere"]})
     return render_template("edt.html", semaine=semaine, grille=grille, lundi=lundi, matieres_vues=matieres_vues, **ctx)
@@ -1286,10 +1326,10 @@ def cours():
               "LEFT JOIN professeurs p ON p.id=c.prof_id WHERE pt.etab_id=? AND pt.date>=? ORDER BY pt.date, c.debut LIMIT 100",
               (g.etab_id, (date.today() - timedelta(days=3)).isoformat()))
     creneaux = q("SELECT c.id, c.classe, c.debut, c.fin, p.nom FROM creneaux c JOIN professeurs p ON p.id=c.prof_id "
-                 "WHERE c.etab_id=? AND c.jour=? ORDER BY c.debut", (g.etab_id, jour.weekday() if jour.weekday() < 5 else 0))
+                 "WHERE c.etab_id=? AND c.jour=? ORDER BY c.debut", (g.etab_id, jour.weekday() if est_jour_cours(jour) else jours_cours()[0]))
     return render_template("cours.html", perts=perts, creneaux=creneaux, jour=jour, du_jour=cours_du_jour(jour), lignes=lignes, du=du, au=au,
                            analyse=analyser_perturbations(lignes), aujourdhui=date.today(),
-                           lundi=date.today() - timedelta(days=date.today().weekday()))
+                           lundi=debut_semaine(date.today()))
 
 
 @app.route("/cours.csv")
@@ -1683,7 +1723,7 @@ def annuaire_recherche():
         out.append({"t": "P", "id": p["id"], "n": f"{p['nom']} {p['prenom']}".strip(), "d": " · ".join(x for x in (p["matiere"], ", ".join(classes_prof.get(p["id"], []))) if x)})
     for p in q("SELECT nom, prenom, categorie, fonction FROM personnel WHERE etab_id=? AND actif=1 ORDER BY nom, prenom", (g.etab_id,)):
         out.append({"t": "S", "n": f"{p['nom']} {p['prenom']}".strip(), "d": p["fonction"] or p["categorie"]})
-    roles = {"admin": "Administrateur", "direction": "Direction", "cpe": "CPE", "infirmier": "Infirmerie"}
+    roles = {"admin": "Administrateur", "direction": "Direction (proviseur, censeur ou directeur)", "cpe": "Surveillant général", "infirmier": "Infirmerie"}
     for u in q("SELECT u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 AND u.role IN ('admin','direction','cpe','infirmier') ORDER BY u.nom", (g.etab_id,)):
         out.append({"t": "S", "n": re.sub(r"\s*\([^)]*\)\s*$", "", u["nom"]), "d": roles.get(u["role"], u["role"])})
     return out
@@ -3049,7 +3089,7 @@ def infirmerie_prevenir_jour(jour):
 def resume_recurrence(s):
     if not s["jours"]:
         return f"Le {fr_date(s['date_debut'])} à {s['heure']}"
-    noms = [JOURS[int(j)] + "s" for j in s["jours"].split(",") if j.strip().isdigit() and int(j) < 5]
+    noms = [JOURS[int(j)] + "s" for j in s["jours"].split(",") if j.strip().isdigit() and int(j) <= 6]
     texte = f"Chaque {', '.join(n.lower() for n in noms)} à {s['heure']}" if noms else f"À {s['heure']}"
     return texte + f" · du {fr_date(s['date_debut'])}" + (f" au {fr_date(s['date_fin'])}" if s["date_fin"] else " (sans fin)")
 
@@ -3062,14 +3102,14 @@ app.jinja_env.globals["resume_recurrence"] = resume_recurrence
 def infirmerie():
     jour = parse_date(request.args.get("date"))
     vue = "semaine" if request.args.get("vue") == "semaine" else "jour"
-    ctx = {"jour": jour, "vue": vue, "veille": (jour - timedelta(days=1)).isoformat(), "lendemain": (jour + timedelta(days=1)).isoformat()}
+    ctx = {"jour": jour, "vue": vue, "veille": jour_de_cours(jour, -1).isoformat(), "lendemain": jour_de_cours(jour, 1).isoformat()}
     if vue == "jour":
         occ = occurrences_soins(jour)
         ctx.update(occ=occ, nb_faits=sum(1 for o in occ if o["statut"] == "fait"), nb_attente=sum(1 for o in occ if o["statut"] == "a_faire"),
                    nb_passages=one("SELECT COUNT(*) c FROM passages WHERE etab_id=? AND date=?", (g.etab_id, jour.isoformat()))["c"])
     else:
-        lundi = jour - timedelta(days=jour.weekday())
-        jours_ = [lundi + timedelta(days=i) for i in range(5)]
+        lundi = debut_semaine(jour)
+        jours_ = [lundi + timedelta(days=i) for i in range(7) if (lundi + timedelta(days=i)).weekday() in jours_cours()]
         ctx.update(semaine=jours_, grille={d.isoformat(): occurrences_soins(d) for d in jours_}, lundi=lundi,
                    veille=(lundi - timedelta(days=7)).isoformat(), lendemain=(lundi + timedelta(days=7)).isoformat())
     return render_template("infirmerie.html", **ctx)
@@ -3098,7 +3138,7 @@ def infirmerie_soins():
     if request.method == "POST":
         f = request.form
         eleve = one("SELECT * FROM eleves WHERE id=? AND etab_id=?", (f.get("eleve_id", type=int), g.etab_id)) if f.get("eleve_id") else None
-        jours_ = ",".join(str(j) for j in range(5) if f.get(f"jour_{j}")) if f.get("mode") == "recurrent" else ""
+        jours_ = ",".join(str(j) for j in jours_cours() if f.get(f"jour_{j}")) if f.get("mode") == "recurrent" else ""
         debut = parse_date(f.get("date_debut")).isoformat()
         fin = parse_date(f.get("date_fin")).isoformat() if f.get("date_fin") and jours_ else ""
         duree = f.get("duree", type=int) or 15
@@ -3447,7 +3487,7 @@ def pers_dispo_ajouter(pid):
         abort(404)
     f = request.form
     d, fin = hhmm_vers_min(f.get("debut", "")), hhmm_vers_min(f.get("fin", ""))
-    jours = [j for j in range(5) if f.get(f"jour_{j}")] or ([f.get("jour", type=int)] if f.get("jour", type=int) in range(5) else [])
+    jours = [j for j in jours_cours() if f.get(f"jour_{j}")] or ([f.get("jour", type=int)] if f.get("jour", type=int) in jours_cours() else [])
     if d is None or fin is None or d >= fin or not jours:
         flash("Indiquez au moins un jour et une plage horaire valide (début avant fin).", "err")
     else:
@@ -3531,7 +3571,7 @@ def pers_besoin_ajouter():
     f = request.form
     poste = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (f.get("poste_id", type=int), g.etab_id))
     d, fin = hhmm_vers_min(f.get("debut", "")), hhmm_vers_min(f.get("fin", ""))
-    jours = [j for j in range(5) if f.get(f"jour_{j}")]
+    jours = [j for j in jours_cours() if f.get(f"jour_{j}")]
     eff = f.get("effectif", type=int) or 1
     if not poste or d is None or fin is None or d >= fin or not jours or not 1 <= eff <= 20:
         flash("Choisissez un poste, au moins un jour, une plage horaire valide et un effectif de 1 à 20.", "err")
@@ -3607,7 +3647,8 @@ def couverture_postes(besoins, affect, jour, debut_axe, fin_axe, postes_nom):
 def pers_planning():
     aujourdhui = date.today()
     vue = request.args.get("jour", "")
-    jour = int(vue) if vue in ("0", "1", "2", "3", "4") else (aujourdhui.weekday() if aujourdhui.weekday() < 5 and vue != "semaine" else 0)
+    jc = jours_cours()
+    jour = int(vue) if vue.isdigit() and int(vue) in jc else (aujourdhui.weekday() if aujourdhui.weekday() in jc and vue != "semaine" else jc[0])
     semaine = vue == "semaine"
     postes = q("SELECT * FROM postes WHERE etab_id=? ORDER BY ordre, nom", (g.etab_id,))
     postes_nom = {p["id"]: p["nom"] for p in postes}
@@ -3618,7 +3659,7 @@ def pers_planning():
     tot = minutes_par_agent()
     # lacunes de toute la semaine (alerte) et couverture du jour affiché
     lacunes, couv_jour, axe_jour = [], [], None
-    for j in range(5):
+    for j in jc:
         d_ax, f_ax = bornes_axe([a for a in affect if a["jour"] == j], [b for b in besoins if b["jour"] == j])
         cv, lc = couverture_postes(besoins, affect, j, d_ax, f_ax, postes_nom)
         lacunes += lc
@@ -3632,7 +3673,7 @@ def pers_planning():
     for a in agents:
         solde = a["contrat_min"] - tot.get(a["id"], 0)
         ligne = {"id": a["id"], "nom": a["nom"], "prenom": a["prenom"], "contrat": a["contrat_min"], "affecte": tot.get(a["id"], 0), "solde": solde,
-                 "etat": "zero" if solde == 0 else ("reste" if solde > 0 else "depasse"), "jours": {j: [] for j in range(5)}}
+                 "etat": "zero" if solde == 0 else ("reste" if solde > 0 else "depasse"), "jours": {j: [] for j in jc}}
         for af in affect:
             if af["personnel_id"] == a["id"]:
                 p = postes_par_id.get(af["poste_id"])
@@ -3662,7 +3703,7 @@ def valider_affectation(personnel_id, poste_id, jour, debut, fin, ignorer_id=Non
     poste = one("SELECT * FROM postes WHERE id=? AND etab_id=?", (poste_id, g.etab_id))
     if not agent or not poste:
         return "Agent ou poste introuvable.", [], None
-    if jour not in range(5):
+    if jour not in jours_cours():
         return "Jour invalide.", [], None
     d, f = hhmm_vers_min(debut), hhmm_vers_min(fin)
     if d is None or f is None or d >= f:
@@ -3747,7 +3788,7 @@ def pers_affectation_copier(aid):
     if not a:
         abort(404)
     f = request.form
-    jours = [j for j in range(5) if f.get(f"copie_jour_{j}")] or [a["jour"]]
+    jours = [j for j in jours_cours() if f.get(f"copie_jour_{j}")] or [a["jour"]]
     cible = f.get("vers_agent", type=int) or a["personnel_id"]
     faits, refus = 0, []
     for j in jours:
@@ -4113,6 +4154,16 @@ def bornes_demi_journees():
     return res
 
 
+def jour_de_cours(ref, sens):
+    """Jour de cours précédent (sens = -1) ou suivant (sens = 1) la date ref."""
+    d, jc = ref + timedelta(days=sens), jours_cours()
+    for _ in range(7):
+        if d.weekday() in jc:
+            break
+        d += timedelta(days=sens)
+    return d
+
+
 def plage(vue, ref):
     """(début, fin, libellé, précédent, suivant) pour une vue jour / semaine / mois autour de la date ref."""
     if vue == "mois":
@@ -4120,10 +4171,10 @@ def plage(vue, ref):
         d2 = (d1 + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         return d1, d2, f"{MOIS_NOMS[d1.month - 1].capitalize()} {d1.year}", (d1 - timedelta(days=1)).replace(day=1), d2 + timedelta(days=1)
     if vue == "semaine":
-        d1 = ref - timedelta(days=ref.weekday())
-        d2 = d1 + timedelta(days=4)
+        d1 = debut_semaine(ref)
+        d2 = d1 + timedelta(days=max((j - d1.weekday()) % 7 for j in jours_cours()))
         return d1, d2, f"Semaine du {d1.strftime('%d/%m/%Y')} au {d2.strftime('%d/%m/%Y')}", d1 - timedelta(days=7), d1 + timedelta(days=7)
-    return ref, ref, date_longue(ref.isoformat()), ref - timedelta(days=1 if ref.weekday() else 3), ref + timedelta(days=1 if ref.weekday() < 4 else 3)
+    return ref, ref, date_longue(ref.isoformat()), jour_de_cours(ref, -1), jour_de_cours(ref, 1)
 
 
 def absences_eleves_periode(d1, d2, classe=""):
@@ -4831,6 +4882,18 @@ def etablissements():
                 flash("Établissement renommé.", "ok")
             else:
                 flash("Nom invalide ou déjà utilisé.", "err")
+        elif action == "semaine":
+            e = one("SELECT * FROM etablissements WHERE id=?", (f.get("id", type=int),))
+            if not e or not one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (g.user["id"], e["id"])):
+                abort(404)
+            jours = {j for j in range(7) if f.get(f"jour_{j}")}
+            type_ = f.get("type_etab") if f.get("type_etab") in TYPES_ETAB else "lycee"
+            if not jours:
+                flash("Cochez au moins un jour de cours.", "err")
+            else:
+                run("UPDATE etablissements SET jours_cours=?, type_etab=? WHERE id=?", (",".join(str(j) for j in ordonner_jours(jours)), type_, e["id"]))
+                log("semaine scolaire modifiée", f"{e['nom']} : {','.join(JOURS[j] for j in ordonner_jours(jours))}")
+                flash("Semaine scolaire et type d'établissement enregistrés. Les créneaux déjà placés sur un jour qui n'est plus un jour de cours restent en base mais ne s'affichent plus : régénérez l'emploi du temps si besoin.", "ok")
         elif action == "rattacher":
             e = one("SELECT * FROM etablissements WHERE id=?", (f.get("id", type=int),))
             if not e:
@@ -4879,12 +4942,12 @@ def etablissements():
         n = lambda sql: one(sql, (e["id"],))["c"]
         rows.append(dict(e, eleves=n("SELECT COUNT(*) c FROM eleves WHERE etab_id=?"), profs=n("SELECT COUNT(*) c FROM professeurs WHERE etab_id=?"),
                          classes=n("SELECT COUNT(*) c FROM classes WHERE etab_id=?"), comptes=n("SELECT COUNT(*) c FROM user_etabs WHERE etab_id=?"),
-                         protege=bool(DEMO and e["nom"] in ETABS_DEMO_PROTEGES), a_acces=bool(one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (g.user["id"], e["id"])))))
+                         jours_liste=lire_jours_cours(e["jours_cours"]), protege=bool(DEMO and e["nom"] in ETABS_DEMO_PROTEGES), a_acces=bool(one("SELECT 1 FROM user_etabs WHERE user_id=? AND etab_id=?", (g.user["id"], e["id"])))))
     return render_template("etablissements.html", rows=rows, nb=len(rows))
 
 
 # ───────────────────────── Gestion des comptes utilisateurs ─────────────────────────
-ROLES = {"enseignant": "Enseignant", "cpe": "CPE", "infirmier": "Infirmier(ère)", "direction": "Direction", "admin": "Administrateur"}
+ROLES = {"enseignant": "Enseignant", "cpe": "Surveillant général", "infirmier": "Infirmier(ère)", "direction": "Direction (proviseur, censeur ou directeur)", "admin": "Administrateur"}
 
 
 def peut_gerer(cible_role):
@@ -5030,7 +5093,7 @@ def reglages_planning():
         fermee = {(int(x.split(":")[0]), x.split(":")[1]) for x in json.loads(r["classe_fermee"])}
         maxc = r["max_classe_jour"]
         grille = [l.strip() for l in r["grille"].splitlines() if l.strip()] or None
-    return {"classe_fermee": fermee, "max_classe_jour": maxc, "grille": grille or CFG["creneaux"] or None}
+    return {"classe_fermee": fermee, "max_classe_jour": maxc, "grille": grille or CFG["creneaux"] or None, "jours": jours_cours()}
 
 
 def charger_planification():
@@ -5057,7 +5120,7 @@ def planification_parametres():
     reg = reglages_planning()
     if request.method == "POST":
         f = request.form
-        fermee = [f"{j}:{d}" for j in range(5) for d, _ in DEMIS if f.get(f"ferme_{j}_{d}")]
+        fermee = [f"{j}:{d}" for j in range(7) for d, _ in DEMIS if f.get(f"ferme_{j}_{d}")]
         maxc = f.get("max_classe_jour", type=int) or 7
         lignes = [l.strip() for l in f.get("grille", "").splitlines() if l.strip()]
         try:
@@ -5158,7 +5221,7 @@ def besoins_depuis_edt():
 def enregistrer_voeux(prof_ids, f):
     for pid in prof_ids:
         db().execute("DELETE FROM voeux WHERE prof_id=?", (pid,))
-        for j in range(5):
+        for j in range(7):
             for demi, _ in DEMIS:
                 niveau = f.get(f"v_{pid}_{j}_{demi}", "")
                 if niveau in ("non", "souhait"):
@@ -5244,7 +5307,7 @@ def cle_matiere(t):
 def creneaux_possibles(prof_voeux, grille, reg):
     """Nombre de créneaux hebdomadaires où le professeur peut enseigner : ni demi-journée fermée aux classes, ni indisponibilité impérative."""
     n = 0
-    for j in range(5):
+    for j in jours_cours():
         for c in grille:
             if (j, c["demi"]) in reg["classe_fermee"] or prof_voeux.get((j, c["demi"])) == "non":
                 continue
@@ -5634,7 +5697,7 @@ def importer():
     return render_template("import.html")
 
 
-# ───────────────────────── 6. Compte, MFA, RGPD ─────────────────────────
+# ───────────────────────── 6. Compte, MFA, Protection des données (loi 18-07) ─────────────────────────
 @app.route("/compte", methods=["GET", "POST"])
 def compte():
     nouveau = session.get("totp_pending")
@@ -5689,7 +5752,7 @@ def rgpd_export():
         "actions": [dict(r) for r in q("SELECT action,detail,created_at FROM audit WHERE user_id=?", (u["id"],))],
         "fiches_professeur": [dict(r) for r in q("SELECT nom,prenom,matiere,email,telephone FROM professeurs WHERE user_id=?", (u["id"],))],
     }
-    log("export RGPD")
+    log("export loi 18-07")
     return Response(json.dumps(data, ensure_ascii=False, indent=2), mimetype="application/json",
                     headers={"Content-Disposition": "attachment; filename=mes_donnees.json"})
 
@@ -5706,7 +5769,7 @@ def rgpd_supprimer():
     if g.user["role"] in STAFF and one("SELECT COUNT(*) c FROM users WHERE role IN ('admin','direction','cpe') AND actif=1")["c"] <= 1:
         flash("Impossible : vous êtes le dernier compte de gestion.", "err")
         return redirect(url_for("rgpd"))
-    log("compte supprimé (RGPD)", g.user["email"])
+    log("compte supprimé (loi 18-07)", g.user["email"])
     # anonymisation : les messages envoyés sont conservés sans lien nominatif
     run("UPDATE users SET nom='Compte supprimé', email=?, actif=0, totp_secret=NULL, pwd_hash='!' WHERE id=?",
         (f"supprime-{uid}@invalide.local", uid))
@@ -5795,7 +5858,7 @@ def ri_supprimer_reunion(rid):
 
 
 def ri_purge_automatique():
-    """Conservation limitée (RGPD) : supprime l'audio et les réunions dont la durée de conservation est dépassée."""
+    """Conservation limitée (loi 18-07) : supprime l'audio et les réunions dont la durée de conservation est dépassée."""
     j_audio, j_tout = int(RI["conservation_audio_jours"] or 0), int(RI["conservation_jours"] or 0)
     n_audio = n_tout = 0
     if j_audio > 0:
@@ -5895,7 +5958,7 @@ def ri_annuaire(deja):
     def groupe(titre, lignes):
         items = []
         for nom, detail in lignes:
-            nom = re.sub(r"\s*\([^)]*\)\s*$", "", (nom or "").strip())   # « Camille Durand (CPE) » -> « Camille Durand »
+            nom = re.sub(r"\s*\([^)]*\)\s*$", "", (nom or "").strip())   # « Camille Durand (Surveillant général) » -> « Camille Durand »
             if nom and nom.lower() not in vus:
                 vus.add(nom.lower())
                 items.append({"valeur": f"{nom}||{detail}", "nom": nom, "detail": detail})
@@ -5903,7 +5966,7 @@ def ri_annuaire(deja):
             groupes.append({"titre": titre, "items": items})
     groupe("Professeurs", [(f"{p['prenom']} {p['nom']}".strip(), p["matiere"] or "Enseignant") for p in
                            q("SELECT nom, prenom, matiere FROM professeurs WHERE etab_id=? ORDER BY nom, prenom", (g.etab_id,))])
-    roles = {"admin": "Administrateur", "direction": "Direction", "cpe": "CPE", "infirmier": "Infirmerie"}
+    roles = {"admin": "Administrateur", "direction": "Direction (proviseur, censeur ou directeur)", "cpe": "Surveillant général", "infirmier": "Infirmerie"}
     groupe("Direction et administration", [(u["nom"], roles.get(u["role"], u["role"])) for u in
                                           q("SELECT u.nom, u.role FROM users u JOIN user_etabs ue ON ue.user_id=u.id WHERE ue.etab_id=? AND u.actif=1 "
                                             "AND u.role IN ('admin','direction','cpe','infirmier') ORDER BY u.nom", (g.etab_id,))])
@@ -6669,11 +6732,11 @@ Ne demande jamais de données personnelles. Pas de mise en forme Markdown (pas d
 
 
 def aide_role():
-    """Profils de la personne connectée pour filtrer les fiches : « staff » (admin, direction, CPE), son rôle précis, enseignant ou infirmier."""
+    """Profils de la personne connectée pour filtrer les fiches : « staff » (admin, direction, Surveillant général), son rôle précis, enseignant ou infirmier."""
     r = g.user["role"]
     tags = {aide_mod.STAFF, r} if r in STAFF else {aide_mod.INF} if r == "infirmier" else {aide_mod.ENS}
     if r in roles_infirmerie():
-        tags.add("infirmerie")      # accès aux données de santé (infirmier, direction, administrateur ; le CPE seulement en démonstration)
+        tags.add("infirmerie")      # accès aux données de santé (infirmier, direction, administrateur ; le surveillant général seulement en démonstration)
     return tags
 
 
@@ -6766,12 +6829,12 @@ def aide_question():
 # ───────────────────────── Commandes CLI ─────────────────────────
 @app.cli.command("create-admin")
 def cli_create_admin():
-    """Crée un établissement et un compte CPE (variables VSP_EMAIL, VSP_PASSWORD, VSP_NOM, VSP_ETAB)."""
+    """Crée un établissement et un compte Surveillant général (variables VSP_EMAIL, VSP_PASSWORD, VSP_NOM, VSP_ETAB)."""
     import click
     email, pwd = os.environ.get("VSP_EMAIL"), os.environ.get("VSP_PASSWORD")
     if not email or not pwd or len(pwd) < CFG["mdp_min"]:
         raise click.UsageError(f"Définissez VSP_EMAIL et VSP_PASSWORD ({CFG['mdp_min']} caractères minimum).")
-    database.create_admin(email, pwd, os.environ.get("VSP_NOM", "CPE"), os.environ.get("VSP_ETAB", "Mon établissement"))
+    database.create_admin(email, pwd, os.environ.get("VSP_NOM", "Surveillant général"), os.environ.get("VSP_ETAB", "Mon établissement"))
     click.echo("Compte créé.")
 
 
