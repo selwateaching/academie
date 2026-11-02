@@ -1,6 +1,7 @@
 import csv
 import io
 import os
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor, wait
 from contextlib import asynccontextmanager
@@ -157,6 +158,16 @@ def create_user(data: UserIn, db: Session = Depends(get_db), _=Depends(ADMIN)):
 
 
 # ---------- Entreprises ----------
+EMAIL_OK = re.compile(r"^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$")
+
+
+def clean_email(v: str | None) -> str:
+    v = (v or "").strip().lower()
+    if v and not EMAIL_OK.match(v):
+        raise HTTPException(422, "Adresse e-mail invalide (exemple : contact@entreprise.fr)")
+    return v
+
+
 def company_out(c: models.Company) -> dict:
     return {k: getattr(c, k) for k in (
         "id", "name", "category", "city", "address", "phone", "website", "email", "contact_name", "source",
@@ -214,7 +225,8 @@ def list_companies(status: str | None = None, category: str | None = None, min_s
 
 @app.post("/api/companies", status_code=201)
 def create_company(data: CompanyIn, db: Session = Depends(get_db), _=Depends(ANY)):
-    c = models.Company(**data.model_dump(), source="manuel")
+    fields = data.model_dump() | {"email": clean_email(data.email)}
+    c = models.Company(**fields, source="manuel")
     c.score, c.score_reason, c.next_action = qualifier.qualify(c)
     db.add(c); db.commit()
     return company_out(c)
@@ -226,6 +238,8 @@ def patch_company(cid: int, data: CompanyPatch, db: Session = Depends(get_db), _
     changes = data.model_dump(exclude_unset=True)
     if "status" in changes and changes["status"] not in models.STATUSES:
         raise HTTPException(422, "Statut invalide")
+    if "email" in changes:
+        changes["email"] = clean_email(changes["email"])
     for k, v in changes.items():
         setattr(c, k, v)
     if changes.get("status") in ("contacte", "rdv"):
@@ -444,6 +458,8 @@ def approve(mid: int, db: Session = Depends(get_db), user=Depends(MANAGER)):
     m = _msg(db, mid)
     if m.status != "brouillon":
         raise HTTPException(409, "Seul un brouillon peut être validé")
+    if m.kind != "script_appel" and not (m.company.email or "").strip():
+        raise HTTPException(422, "E-mail manquant : complétez la fiche du prospect avant de valider ce message")
     m.status, m.approved_by = "valide", user.email
     db.commit()
     return message_out(m)

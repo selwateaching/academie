@@ -26,6 +26,9 @@ a{color:var(--brand)}
 .legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.legend .cat{cursor:pointer;opacity:.9}.legend .cat:hover{opacity:1;outline:2px solid var(--line)}
 .big{font-size:28px;font-weight:700}
 @media print{header,.noprint{display:none!important}body{background:#fff;color:#000}.card{border:1px solid #ccc;break-inside:avoid}}
+.bad{color:#b91c1c}@media(prefers-color-scheme:dark){.bad{color:#f87171}}
+.em{display:inline-block}.em a{text-decoration:none}.em .eedit{font-size:12px;text-decoration:underline}
+.einp{width:230px;padding:3px 8px;font-size:13px}.emsg{font-size:12px;margin-left:6px}
 .hidden{display:none}.tbl{overflow-x:auto}.warn{border-left:4px solid var(--brand)}
 </style>
 </head>
@@ -91,6 +94,20 @@ const catLabel=k=>(cats.find(c=>c.key===k)||{}).label||k||"Sans catégorie";
 const catBadge=k=>`<span class="cat" style="${catStyle(k)}">${esc(catLabel(k))}</span>`;
 const gmailUrl=m=>{const base="https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(m.to)+"&su="+encodeURIComponent(m.subject);
   const full=base+"&body="+encodeURIComponent(m.body);return full.length<7000?full:base};
+const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/;
+const mailTo=e=>"https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(e);
+function emailHtml(cid,email,edit,href,mid){
+  if(email&&!edit)return `<span class="em">✉ <a href="${href||mailTo(email)}" ${mid?`data-gmid="${mid}"`:""} target="_blank" rel="noopener noreferrer" title="Cliquer pour préparer un e-mail à ce prospect"><b>${esc(email)}</b></a> <a href="#" class="eedit" data-cid="${cid}" data-v="${esc(email)}">modifier</a></span>`;
+  return `<span class="em">${email?"✉":'<b class="bad">⚠ E-mail manquant</b>'} <input type="email" class="einp" data-cid="${cid}" value="${esc(email||"")}" placeholder="adresse@entreprise.fr"> <button class="btn eok" data-cid="${cid}" style="padding:2px 10px">Enregistrer</button><span class="emsg bad"></span></span>`;
+}
+function wireEmail(root,after){
+  root.querySelectorAll(".eedit").forEach(a=>a.onclick=e=>{e.preventDefault();const box=a.closest(".em");
+    box.outerHTML=emailHtml(a.dataset.cid,a.dataset.v,true);wireEmail(root,after);root.querySelector(`.einp[data-cid="${a.dataset.cid}"]`).focus()});
+  root.querySelectorAll(".eok").forEach(b=>{const box=b.closest(".em"),inp=box.querySelector(".einp"),msg=box.querySelector(".emsg");
+    const save=async()=>{const v=inp.value.trim();if(!EMAIL_RE.test(v)){msg.textContent="Adresse invalide (ex. contact@entreprise.fr)";inp.focus();return}
+      try{await api("/companies/"+b.dataset.cid,{method:"PATCH",json:{email:v}});after()}catch(e){msg.textContent=e.message}};
+    b.onclick=save;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();save()}}});
+}
 const catOpts=sel=>cats.map(c=>`<option value="${esc(c.key)}" ${c.key===sel?"selected":""}>${esc(c.label)}</option>`).join("");
 
 async function dash(){
@@ -113,11 +130,11 @@ async function pros(){
     const rows=await api("/companies?"+p);
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
       <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
-      <td><b>${esc(c.name)}</b><br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
+      <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}<br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
-      <td>${esc(c.phone)}<br><span class="mute">${esc(c.email)} ${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site</a>`:""}</span></td>
+      <td>${esc(c.phone)}<br><span class="mute">${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}</span></td>
       <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
         <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label>
         ${c.status==="archive"?"":`<br><a href="#" data-stop="${c.id}" data-n="${esc(c.name)}" class="mute stp" title="Le prospect a répondu STOP : archiver et envoyer la confirmation">a dit STOP</a>`}</td>
@@ -129,6 +146,7 @@ async function pros(){
       await api("/companies/"+a.dataset.m,{method:"PATCH",json:{contact_name:v.trim()}});load()});
     document.querySelectorAll(".fnd").forEach(a=>a.onclick=async e=>{e.preventDefault();a.textContent="· recherche…";
       try{const r=await api(`/companies/${a.dataset.f}/find-manager`,{method:"POST"});if(!r.found)alert(r.reason);load()}catch(x){alert(x.message)}});
+    wireEmail($("#tb"),load);
     document.querySelectorAll(".stp").forEach(a=>a.onclick=async e=>{e.preventDefault();
       if(!confirm(`« ${a.dataset.n} » a demandé à ne plus être contacté ?\n\nIl sera archivé (retiré de la liste en cours), ses messages en attente seront annulés et un message de confirmation sera préparé.`))return;
       try{const r=await api(`/companies/${a.dataset.stop}/stop`,{method:"POST"});alert(`Archivé. Message de confirmation : ${r.confirmation}.`);load()}catch(x){alert(x.message)}});
@@ -261,23 +279,32 @@ function agent(){
     try{const r=await api("/agent/import-csv",{method:"POST",body:fd});$("#ao").textContent=`${r.found} lignes · ${r.added} ajoutées · ${r.duplicates} doublons · ${r.emails_found} emails et ${r.managers_found} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
 }
 async function msgs(){
-  const [rows,st]=await Promise.all([api("/messages"),api("/stats")]);const el=$("#t-msgs");
+  const el=$("#t-msgs"),prev={};
+  el.querySelectorAll("textarea[data-b]:not([disabled])").forEach(t=>{const i=t.dataset.b;prev[i]=[el.querySelector(`[data-s="${i}"]`).value,t.value]});
+  const [rows,st]=await Promise.all([api("/messages"),api("/stats")]);
   const lab={brouillon:"À valider",valide:"Validé",envoye:"Envoyé",rejete:"Rejeté"};
   const sender=st.sender?esc(st.sender):'<span class="mute">non configuré → envoi manuel depuis votre messagerie</span>';
   const done=m=>["envoye","rejete","valide"].includes(m.status);
   el.innerHTML=(rows.length?rows.map(m=>{const isMail=m.kind!=="script_appel";return `<div class="card"><div class="row"><b>${esc(m.company)}</b><span class="mute">${({email:"email",relance:"relance",script_appel:"script d'appel",confirmation_stop:"confirmation de désinscription"})[m.kind]||esc(m.kind)} · ${lab[m.status]||m.status} ${m.approved_by?"par "+esc(m.approved_by):""}</span></div>
-  ${isMail?`<div class="mute" style="margin-bottom:8px">De : ${sender}<br>À : ${m.to?`<b>${esc(m.to)}</b>`:`⚠️ aucune adresse email pour ce prospect <button class="btn" data-fe="${m.company_id}" style="padding:2px 8px;margin-left:6px">Chercher l'email sur son site</button>`}</div>`:""}
+  ${isMail?`<div style="margin-bottom:8px">À : ${emailHtml(m.company_id,m.to,false,m.to?gmailUrl(m):"",m.id)}${m.to?"":` <button class="btn" data-fe="${m.company_id}" style="padding:2px 8px">Chercher sur son site</button>`}
+    <div class="mute" style="margin-top:2px">De : ${sender}</div></div>`:""}
   <input data-s="${m.id}" value="${esc(m.subject)}" style="width:100%;margin-bottom:8px" ${done(m)?"disabled":""}>
   <textarea data-b="${m.id}" ${done(m)?"disabled":""}>${esc(m.body)}</textarea>
   <div class="row" style="margin-top:8px">
-  <button class="btn" data-cp="${m.id}">Copier le message</button>${isMail&&m.to?`<a class="btn pri" data-gm="${m.id}" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="${gmailUrl(m)}">Ouvrir Gmail avec le message</a>`:""}
+  <button class="btn" data-cp="${m.id}">Copier le message</button>${isMail&&m.to?`<a class="btn pri" data-gm="${m.id}" data-gmid="${m.id}" style="text-decoration:none" target="_blank" rel="noopener noreferrer" href="${gmailUrl(m)}">Ouvrir Gmail avec le message</a>`:""}
   ${m.status==="brouillon"?`<button class="btn" data-a="save" data-i="${m.id}">Enregistrer</button><button class="btn pri" data-a="approve" data-i="${m.id}">Valider</button><button class="btn" data-a="reject" data-i="${m.id}">Rejeter</button>`:""}
   ${m.status==="valide"?`<button class="btn" data-a="edit" data-i="${m.id}" title="Annule la validation pour corriger le texte">Modifier</button>${st.sender?`<button class="btn pri" data-a="send" data-i="${m.id}">Envoyer maintenant</button>`:""}<button class="btn ${st.sender?"":"pri"}" data-a="mark-sent" data-i="${m.id}">J'ai envoyé ce message</button>`:""}</div>
   ${m.status==="valide"&&!st.sender?'<div class="mute" style="margin-top:6px">Envoi direct non configuré : cliquez sur « Copier le message », envoyez-le depuis votre messagerie, puis sur « J\'ai envoyé ce message ».</div>':""}</div>`}).join("")
   :`<div class="card mute">Aucun message. Générez-en depuis l'onglet Prospects.</div>`);
+  Object.entries(prev).forEach(([i,[sj,bd]])=>{const t=el.querySelector(`textarea[data-b="${i}"]:not([disabled])`);
+    if(t){t.value=bd;el.querySelector(`[data-s="${i}"]`).value=sj}});
   el.querySelectorAll("[data-fe]").forEach(b=>b.onclick=async()=>{b.textContent="Recherche en cours…";b.disabled=true;
     try{const r=await api(`/companies/${b.dataset.fe}/find-manager`,{method:"POST"});
       if(r.email)msgs();else{b.textContent="Aucun email trouvé sur son site : appelez-le (script d'appel)";}}catch(e){b.textContent=e.message}});
+  wireEmail(el,msgs);
+  el.querySelectorAll("a[data-gmid]").forEach(a=>a.addEventListener("click",()=>{
+    const id=a.dataset.gmid,m=rows.find(x=>String(x.id)===id),su=el.querySelector(`[data-s="${id}"]`),bd=el.querySelector(`[data-b="${id}"]`);
+    if(m&&su&&bd)a.href=gmailUrl({to:m.to,subject:su.value,body:bd.value})}));
   el.querySelectorAll("[data-gm]").forEach(a=>a.addEventListener("click",async()=>{
     const ta=el.querySelector(`[data-b="${a.dataset.gm}"]`);
     try{await navigator.clipboard.writeText(ta.value)}catch(e){ta.removeAttribute("disabled");ta.select();document.execCommand("copy")}
@@ -286,6 +313,11 @@ async function msgs(){
     const t=el.querySelector(`[data-s="${id}"]`).value+"\n\n"+el.querySelector(`[data-b="${id}"]`).value;
     try{await navigator.clipboard.writeText(t);b.textContent="Copié ✓"}catch(e){el.querySelector(`[data-b="${id}"]`).select();document.execCommand("copy");b.textContent="Copié ✓"}});
   el.querySelectorAll("[data-a]").forEach(b=>b.onclick=async()=>{const id=b.dataset.i,a=b.dataset.a;
+    const m=rows.find(x=>String(x.id)===String(id)),card=b.closest(".card");
+    if(a==="approve"&&m&&m.kind!=="script_appel"&&!m.to){
+      let v=card.querySelector(".vmsg");if(!v){v=document.createElement("div");v.className="vmsg bad";v.style.cssText="margin-top:8px;font-weight:600";card.appendChild(v)}
+      v.textContent="⚠ E-mail manquant : complétez la fiche du prospect (champ « À » en haut de ce message), ou cliquez sur « Chercher sur son site », puis validez.";
+      const inp=card.querySelector(".einp");if(inp)inp.focus();return}
     try{if(a==="approve")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
       if(a==="save"||a==="edit")await api("/messages/"+id,{method:"PATCH",json:{subject:el.querySelector(`[data-s="${id}"]`).value,body:el.querySelector(`[data-b="${id}"]`).value}});
       else await api(`/messages/${id}/${a}`,{method:"POST"});msgs()}catch(e){alert(e.message)}});

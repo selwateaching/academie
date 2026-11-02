@@ -552,3 +552,36 @@ def test_check_inbox_not_configured(client):
     with SessionLocal() as db:
         assert replies.check_inbox(db)["configured"] is False
     assert client.get("/api/replies", headers=auth(client)).json()["configured"] is False
+
+
+# ---------- E-mail du prospect : visible, vérifié à la validation ----------
+def test_validate_requires_prospect_email_then_works_after_completing(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Sans Mail Valid", "category": "vo", "city": "Toulouse"}).json()
+    assert c["email"] == ""
+    m = client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"}).json()
+    assert m["to"] == ""                                               # « E-mail manquant » côté écran
+    r = client.post(f"/api/messages/{m['id']}/approve", headers=h)
+    assert r.status_code == 422 and "E-mail manquant" in r.json()["detail"]
+    assert client.get("/api/messages?status=valide", headers=h).json() == [] or all(x["id"] != m["id"] for x in client.get("/api/messages?status=valide", headers=h).json())
+    # on complète la fiche du prospect, le message affiche l'adresse sans être régénéré
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"email": "  Contact@SansMail.FR "})
+    again = next(x for x in client.get("/api/messages", headers=h).json() if x["id"] == m["id"])
+    assert again["to"] == "contact@sansmail.fr"                        # nettoyée et en minuscules
+    assert client.post(f"/api/messages/{m['id']}/approve", headers=h).json()["status"] == "valide"
+
+
+def test_call_script_can_be_validated_without_email(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Appel Sans Mail", "category": "vo", "city": "Toulouse"}).json()
+    m = client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "script_appel"}).json()
+    assert client.post(f"/api/messages/{m['id']}/approve", headers=h).status_code == 200
+
+
+def test_invalid_email_is_rejected(client):
+    h = auth(client)
+    assert client.post("/api/companies", headers=h, json={"name": "Mauvais Mail", "email": "pas-un-mail"}).status_code == 422
+    c = client.post("/api/companies", headers=h, json={"name": "Bon Mail", "category": "vo", "city": "Toulouse"}).json()
+    for bad in ("sans-arobase", "a@b", "a b@c.fr"):
+        assert client.patch(f"/api/companies/{c['id']}", headers=h, json={"email": bad}).status_code == 422
+    assert client.patch(f"/api/companies/{c['id']}", headers=h, json={"email": ""}).status_code == 200   # on peut l'effacer
