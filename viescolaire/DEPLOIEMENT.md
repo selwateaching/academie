@@ -35,7 +35,7 @@ persistant* monté sur `VSP_DATA`.
 1. Retirer `VSP_DEMO` (ou le mettre à `0`).
 2. Monter un disque persistant et définir `VSP_DATA`.
 3. Créer le premier compte, depuis le *Shell* du service :
-   `VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='mot-de-passe-long' VSP_NOM='Prénom Nom' VSP_ETAB='Mon collège' flask --app viescolaire.app create-admin`
+   `VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='mot-de-passe-long' VSP_NOM='Prénom Nom' VSP_ETAB='Mon CEM' flask --app viescolaire.app create-admin`
    (lancé depuis la racine du dépôt). Les comptes enseignants se créent ensuite avec les fonctions de l'application / un import.
 4. Activer l'authentification à deux facteurs sur les comptes de gestion (menu *Sécurité*).
 5. Sauvegarder régulièrement le dossier `VSP_DATA` (fichier `viescolaire.db` et dossier `uploads/`).

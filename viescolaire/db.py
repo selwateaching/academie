@@ -179,7 +179,7 @@ MIGRATIONS = [
             UNIQUE (etab_id, nom)
         );
         INSERT OR IGNORE INTO niveaux(etab_id, nom, ordre) SELECT DISTINCT etab_id, niveau, 0 FROM classes WHERE niveau <> '';
-    """),  # niveaux de classe gérés (6e, 2nde, Terminale…) ; reprise des niveaux déjà saisis
+    """),  # niveaux de classe gérés (1AM, 2nde, Terminale…) ; reprise des niveaux déjà saisis
     (8, """
         PRAGMA foreign_keys = OFF;   -- reconstruction de la table users (nouveau rôle) sans effacer les données liées
         BEGIN;
@@ -284,7 +284,7 @@ MIGRATIONS = [
         ALTER TABLE documents_generes ADD COLUMN signataires TEXT NOT NULL DEFAULT '[]';   -- copie figée [[nom, fonction], ...]
     """),
     (14, """
-        CREATE TABLE IF NOT EXISTS volumes_horaires (   -- dotation horaire hebdomadaire d'une matière pour un niveau (6e, 2nde…)
+        CREATE TABLE IF NOT EXISTS volumes_horaires (   -- dotation horaire hebdomadaire d'une matière pour un niveau (1AM, 2nde…)
             id INTEGER PRIMARY KEY, etab_id INTEGER NOT NULL REFERENCES etablissements(id) ON DELETE CASCADE,
             niveau TEXT NOT NULL, matiere TEXT NOT NULL, heures INTEGER NOT NULL, bloc INTEGER NOT NULL DEFAULT 1,
             UNIQUE (etab_id, niveau, matiere)
@@ -485,7 +485,7 @@ def seed_demo(password="demo1234"):
     today = date.today()
     d = lambda n: (today + timedelta(days=n)).isoformat()
     ts = lambda minutes_ago: (now - timedelta(minutes=minutes_ago)).isoformat(timespec="minutes")
-    e1 = con.execute("INSERT INTO etablissements(nom) VALUES ('Collège Victor Hugo')").lastrowid
+    e1 = con.execute("INSERT INTO etablissements(nom) VALUES ('CEM Victor Hugo')").lastrowid
     e2 = con.execute("INSERT INTO etablissements(nom) VALUES ('Lycée Jean Moulin')").lastrowid
 
     def user(nom, email, role, etabs):
@@ -521,11 +521,11 @@ def seed_demo(password="demo1234"):
         uids.append(uid)
     uid_de = dict(zip(ids, uids))
 
-    classes = ["6A", "6B", "5A", "5B", "4A", "4B", "3A", "3B"]
-    for ordre, nv in enumerate(["6e", "5e", "4e", "3e"], 1):
+    classes = ["1AM1", "1AM2", "2AM1", "2AM2", "3AM1", "3AM2", "4AM1", "4AM2"]
+    for ordre, nv in enumerate(["1AM", "2AM", "3AM", "4AM"], 1):
         con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e1, nv, ordre))
     for i, c in enumerate(classes):   # professeur principal = professeur de Français de la classe
-        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e1, c, c[0] + "e", ids[1 if i < 4 else 10]))
+        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e1, c, {"1": "1AM", "2": "2AM", "3": "3AM", "4": "4AM"}[c[0]], ids[1 if i < 4 else 10]))
 
     # Besoins horaires (24 h par classe) : matière -> (heures par classe, séances de 2 h ?, salle spécialisée)
     matieres = {"Mathématiques": (4, 1, ""), "Français": (4, 1, ""), "Histoire-Géographie": (3, 1, ""), "Anglais": (3, 1, ""),
@@ -549,7 +549,7 @@ def seed_demo(password="demo1234"):
     for pid, jour, demi, niveau in voeux_demo:
         con.execute("INSERT INTO voeux VALUES (?,?,?,?)", (pid, jour, demi, niveau))
 
-    # Emploi du temps complet généré par le moteur de planification (collège : mercredi après-midi sans cours, réglage de l'établissement)
+    # Emploi du temps complet généré par le moteur de planification (CEM : mardi après-midi sans cours, réglage de l'établissement)
     from . import planning
     grille = planning.construire_grille()
     horaires = [(c["debut"], c["fin"]) for c in grille]
@@ -626,9 +626,9 @@ def seed_demo(password="demo1234"):
                     (e1, d(1), cr[3]["id"], cr[3]["classe"], "deplace", "Déplacé en salle B15"))
 
     for dt, classe, eleve, desc, suite, statut in [
-        (d(0), "5A", "Élève A.", "Retards répétés en première heure (3 cette semaine).", "Entretien avec la famille prévu jeudi.", "ouvert"),
-        (d(-2), "4B", "Élève B.", "Altercation dans la cour à la récréation.", "Médiation réalisée, information des familles.", "clos"),
-        (d(-1), "6A", "Élèves C. et D.", "Matériel dégradé en salle B12.", "En attente de l'avis du directeur.", "ouvert"),
+        (d(0), "2AM1", "Élève A.", "Retards répétés en première heure (3 cette semaine).", "Entretien avec la famille prévu jeudi.", "ouvert"),
+        (d(-2), "3AM2", "Élève B.", "Altercation dans la cour à la récréation.", "Médiation réalisée, information des familles.", "clos"),
+        (d(-1), "1AM1", "Élèves C. et D.", "Matériel dégradé en salle B12.", "En attente de l'avis du directeur.", "ouvert"),
     ]:
         con.execute("INSERT INTO incidents(etab_id,date,classe,eleve,description,suite,statut) VALUES (?,?,?,?,?,?,?)",
                     (e1, dt, classe, eleve, desc, suite, statut))
@@ -643,10 +643,10 @@ def seed_demo(password="demo1234"):
 
     message(cpe, "Rappel : remontée des absences avant 9 h",
             "Bonjour à tous,\nmerci de signaler toute absence d'élève dans le logiciel avant 9 h.\nCordialement,\nLa vie scolaire", "tous", "", uids, 3000, 7, 5)
-    message(cpe, "Conseil de classe 3A : bulletins à saisir",
-            "Les appréciations sont à saisir pour vendredi.", "classe", "3A", uids[:6], 1500, 3, 1)
-    message(cpe, "Remplacement du jour", "Pouvez-vous prendre le cours de 6B de 9 h à 10 h ? Merci.", "individuel", str(uids[7]), [uids[7]], 90, 0, 0)
-    message(uids[2], "Sortie au musée jeudi", "Je serai absente jeudi après-midi pour la sortie avec les 5A.", "individuel", str(cpe), [cpe], 600, 0, 0)
+    message(cpe, "Conseil de classe 4AM1 : bulletins à saisir",
+            "Les appréciations sont à saisir pour vendredi.", "classe", "4AM1", uids[:6], 1500, 3, 1)
+    message(cpe, "Remplacement du jour", "Pouvez-vous prendre le cours de 1AM2 de 9 h à 10 h ? Merci.", "individuel", str(uids[7]), [uids[7]], 90, 0, 0)
+    message(uids[2], "Sortie au musée jeudi", "Je serai absente jeudi après-midi pour la sortie avec les 2AM1.", "individuel", str(cpe), [cpe], 600, 0, 0)
 
     # Messages automatiques liés aux absences et remplacements (communication entre les deux modules)
     jours_fr = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."]
@@ -665,9 +665,9 @@ def seed_demo(password="demo1234"):
 
     # Réunions et convocations
     r1 = con.execute("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
-                     (e1, "Conseil de classe 3A", d(2), "17:00", "Salle des professeurs", "1. Bilan du trimestre\n2. Orientation\n3. Cas particuliers", cpe)).lastrowid
+                     (e1, "Conseil de classe 4AM1", d(2), "17:00", "Salle des professeurs", "1. Bilan du trimestre\n2. Orientation\n3. Cas particuliers", cpe)).lastrowid
     r2 = con.execute("INSERT INTO reunions(etab_id,titre,date,heure,lieu,ordre_du_jour,organisateur_id) VALUES (?,?,?,?,?,?,?)",
-                     (e1, "Réunion équipe 6A", d(6), "12:30", "Salle B10", "Harmonisation des évaluations.", cpe)).lastrowid
+                     (e1, "Réunion équipe 1AM1", d(6), "12:30", "Salle B10", "Harmonisation des évaluations.", cpe)).lastrowid
     for k, pid in enumerate(ids[:6]):
         con.execute("INSERT INTO reunion_convoques(reunion_id,prof_id,reponse) VALUES (?,?,?)", (r1, pid, ["oui", "oui", "non", "", "oui", ""][k]))
     for k, pid in enumerate(ids[2:6]):
@@ -675,8 +675,8 @@ def seed_demo(password="demo1234"):
 
     for titre, desc, ech, prio, statut in [
         ("Relancer les familles des élèves absents", "Liste fournie par le secrétariat.", d(-1), "haute", "a_faire"),
-        ("Préparer le conseil de classe 3A", "Statistiques d'absences et incidents.", d(1), "haute", "a_faire"),
-        ("Mettre à jour l'emploi du temps de 4B", "Changement de salle depuis lundi.", d(4), "normale", "a_faire"),
+        ("Préparer le conseil de classe 4AM1", "Statistiques d'absences et incidents.", d(1), "haute", "a_faire"),
+        ("Mettre à jour l'emploi du temps de 3AM2", "Changement de salle depuis lundi.", d(4), "normale", "a_faire"),
         ("Commander les fournitures vie scolaire", "", d(10), "basse", "a_faire"),
         ("Envoyer le bilan des retards au directeur", "", d(-4), "normale", "faite"),
     ]:
@@ -695,7 +695,7 @@ def seed_demo(password="demo1234"):
                     (e1, titre, nom, stored, cpe, ts(5000)))
 
     for k, (action, detail) in enumerate([("connexion", "cpe@demo.fr"), ("absence enregistrée", "Martin 2 jours (absence)"),
-                                          ("remplacement assigné", "6B 9h-10h → Laurent"), ("réunion créée", "Conseil de classe 3A"),
+                                          ("remplacement assigné", "1AM2 9h-10h → Laurent"), ("réunion créée", "Conseil de classe 4AM1"),
                                           ("message envoyé", "tous (10 destinataires)")]):
         con.execute("INSERT INTO audit(etab_id,user_id,user_nom,action,detail,created_at) VALUES (?,?,?,?,?,?)",
                     (e1, cpe, "Camille Durand (Surveillant général)", action, detail, ts(300 - k * 40)))
@@ -707,7 +707,7 @@ def seed_demo(password="demo1234"):
     garcons = ["Lucas", "Nathan", "Hugo", "Louis", "Gabriel", "Raphaël", "Tom", "Arthur", "Jules", "Adam", "Noé", "Mathis", "Paul", "Enzo", "Léo", "Maël", "Ethan", "Sacha"]
     noms = ["Dubois", "Lambert", "Fontaine", "Rousseau", "Vincent", "Muller", "Lefèvre", "Faure", "André", "Mercier", "Blanc", "Guérin", "Boyer", "Garnier",
             "Chevalier", "François", "Perrin", "Morel", "Clément", "Gauthier", "Roche", "Noël", "Meyer", "Lopez", "Colin", "Aubert", "Renard", "Marchand"]
-    age_niveau = {"6": 11, "5": 12, "4": 13, "3": 14}
+    age_niveau = {"1": 11, "2": 12, "3": 13, "4": 14}      # 1AM à 4AM
     deja, k = set(), 0
     for c, effectif, part_filles in zip(classes, [24, 26, 23, 25, 22, 24, 26, 23], [0.58, 0.46, 0.52, 0.44, 0.55, 0.5, 0.42, 0.56]):
         for _ in range(effectif):
@@ -724,7 +724,7 @@ def seed_demo(password="demo1234"):
                          naissance.isoformat(), "F" if fille else "M"))
             k += 1
 
-    for (eid,) in con.execute("SELECT id FROM eleves WHERE etab_id=? AND classe='3A' ORDER BY id LIMIT 2", (e1,)).fetchall():
+    for (eid,) in con.execute("SELECT id FROM eleves WHERE etab_id=? AND classe='4AM1' ORDER BY id LIMIT 2", (e1,)).fetchall():
         con.execute("INSERT INTO reunion_eleves VALUES (?,?)", (r1, eid))   # délégués convoqués au conseil de classe
 
     # Second établissement (lycée) : même fonctionnement, données propres (niveaux, classes, équipe, emplois du temps, élèves)
@@ -732,17 +732,17 @@ def seed_demo(password="demo1234"):
               ("Perez", "Karim", "Anglais"), ("Marchand", "Élise", "SVT"), ("Noël", "Victor", "Physique-Chimie"), ("Aubert", "Sonia", "Sciences économiques")]
     ids2 = [con.execute("INSERT INTO professeurs(etab_id,nom,prenom,matiere,email) VALUES (?,?,?,?,?)",
                         (e2, nom, prenom, mat, f"{prenom.lower().replace('é', 'e')}@demo.fr")).lastrowid for nom, prenom, mat in profs2]
-    classes2 = [("2nde1", "2nde"), ("1ère S", "1ère"), ("Term ES", "Terminale")]
+    classes2 = [("1AS1", "1AS"), ("2AS Sciences", "2AS"), ("3AS Gestion", "3AS")]
     for ordre, (c, nv) in enumerate(classes2, 1):
         con.execute("INSERT INTO niveaux(etab_id,nom,ordre) VALUES (?,?,?)", (e2, nv, ordre))
-        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e2, c, nv, ids2[0 if nv == "Terminale" else 1]))
+        con.execute("INSERT INTO classes(etab_id,nom,niveau,prof_principal_id) VALUES (?,?,?,?)", (e2, c, nv, ids2[0 if nv == "3AS" else 1]))
     # Besoins et emploi du temps du lycée (générés par le moteur, aucun réglage particulier : rien n'est supposé)
-    besoins2 = [("2nde1", "Lettres", 4, 1), ("2nde1", "Mathématiques", 4, 2), ("2nde1", "Histoire-Géographie", 3, 3), ("2nde1", "Anglais", 3, 4),
-                ("2nde1", "SVT", 2, 5), ("2nde1", "Physique-Chimie", 3, 6), ("2nde1", "Sciences économiques", 2, 7),
-                ("1ère S", "Lettres", 4, 1), ("1ère S", "Mathématiques", 5, 2), ("1ère S", "Histoire-Géographie", 3, 3), ("1ère S", "Anglais", 3, 4),
-                ("1ère S", "SVT", 3, 5), ("1ère S", "Physique-Chimie", 4, 6),
-                ("Term ES", "Philosophie", 4, 0), ("Term ES", "Mathématiques", 4, 2), ("Term ES", "Histoire-Géographie", 3, 3), ("Term ES", "Anglais", 3, 4),
-                ("Term ES", "Sciences économiques", 5, 7)]
+    besoins2 = [("1AS1", "Lettres", 4, 1), ("1AS1", "Mathématiques", 4, 2), ("1AS1", "Histoire-Géographie", 3, 3), ("1AS1", "Anglais", 3, 4),
+                ("1AS1", "SVT", 2, 5), ("1AS1", "Physique-Chimie", 3, 6), ("1AS1", "Sciences économiques", 2, 7),
+                ("2AS Sciences", "Lettres", 4, 1), ("2AS Sciences", "Mathématiques", 5, 2), ("2AS Sciences", "Histoire-Géographie", 3, 3), ("2AS Sciences", "Anglais", 3, 4),
+                ("2AS Sciences", "SVT", 3, 5), ("2AS Sciences", "Physique-Chimie", 4, 6),
+                ("3AS Gestion", "Philosophie", 4, 0), ("3AS Gestion", "Mathématiques", 4, 2), ("3AS Gestion", "Histoire-Géographie", 3, 3), ("3AS Gestion", "Anglais", 3, 4),
+                ("3AS Gestion", "Sciences économiques", 5, 7)]
     besoins2_gen = []
     for c, matiere, heures, idx in besoins2:
         bid = con.execute("INSERT INTO besoins(etab_id,classe,matiere,prof_id,heures,bloc,salle) VALUES (?,?,?,?,?,?,?)",
@@ -756,7 +756,7 @@ def seed_demo(password="demo1234"):
                      grille[x["debut_idx"] + x["longueur"] - 1]["fin"], f"L{20 + classes2.index(next(cc for cc in classes2 if cc[0] == x['classe']))}"))
     k2 = 0
     for c, nv in classes2:                   # 8 élèves par classe, 15 à 18 ans
-        base_age = {"2nde": 15, "1ère": 16, "Terminale": 17}[nv]
+        base_age = {"1AS": 15, "2AS": 16, "3AS": 17}[nv]
         for _ in range(8):
             fille2 = rng.random() < 0.55
             while True:
@@ -784,7 +784,7 @@ def seed_demo(password="demo1234"):
     ag_id = []
     for nom, prenom, contrat, roles in equipe_aed:
         pid_ = con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,telephone,contrat_min,planifie) VALUES (?,?,?,?,?,?,?,?,1)",
-                           (e1, nom, prenom, "Assistant pédagogique", "Assistant d'éducation", f"{prenom.lower().replace('é', 'e')}.{nom.lower()}@college-demo.fr",
+                           (e1, nom, prenom, "Assistant pédagogique", "Assistant d'éducation", f"{prenom.lower().replace('é', 'e')}.{nom.lower()}@cem-demo.fr",
                             f"06 20 00 00 {len(ag_id) + 1:02d}", contrat * 60)).lastrowid
         ag_id.append(pid_)
         for r in roles:
@@ -792,7 +792,7 @@ def seed_demo(password="demo1234"):
     for nom, prenom, cat, fonction in [("Gilbert", "Martine", "Agent d'accueil", "Accueil et standard"), ("Fabre", "Nadia", "Personnel administratif", "Secrétaire de direction"),
                                        ("Roche", "Patrick", "Agent technique", "Maintenance des bâtiments")]:
         con.execute("INSERT INTO personnel(etab_id,nom,prenom,categorie,fonction,email,planifie) VALUES (?,?,?,?,?,?,0)",
-                    (e1, nom, prenom, cat, fonction, f"{prenom.lower()}.{nom.lower()}@college-demo.fr"))
+                    (e1, nom, prenom, cat, fonction, f"{prenom.lower()}.{nom.lower()}@cem-demo.fr"))
     for idx, jour, d1, d2, niveau, motif in dispos_aed:
         con.execute("INSERT INTO personnel_dispos(personnel_id,jour,debut,fin,niveau,motif) VALUES (?,?,?,?,?,?)", (ag_id[idx], jour, d1, d2, niveau, motif))
     besoins_pp = []
@@ -863,23 +863,23 @@ def seed_demo(password="demo1234"):
             con.execute("INSERT OR IGNORE INTO volumes_horaires(etab_id,niveau,matiere,heures,bloc) VALUES (?,?,?,?,?)", (eid, niveau, matiere, h, bloc))
     base6 = [("Français", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1),
              ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1), ("Musique", 1, 1)]
-    vol(e1, "6e", base6)
-    vol(e1, "5e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+    vol(e1, "1AM", base6)
+    vol(e1, "2AM", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
                    ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1)])
-    vol(e1, "4e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+    vol(e1, "3AM", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
                    ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Musique", 1, 1)])
-    vol(e1, "3e", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
+    vol(e1, "4AM", [("Français", 4, 1), ("Mathématiques", 3, 1), ("Anglais", 3, 1), ("EPS", 3, 1), ("Histoire-Géographie", 3, 1), ("Espagnol", 2, 1),
                    ("Physique-Chimie", 1, 1), ("SVT", 1, 1), ("Technologie", 1, 1), ("Arts plastiques", 1, 1)])
-    vol(e2, "2nde", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 2, 1),
+    vol(e2, "1AS", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 2, 1),
                      ("SVT", 1, 1), ("Physique-Chimie", 3, 1)])
-    vol(e2, "1ère", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("SVT", 2, 1), ("Physique-Chimie", 3, 1)])
-    vol(e2, "Terminale", [("Philosophie", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 4, 1)])
+    vol(e2, "2AS", [("Lettres", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("SVT", 2, 1), ("Physique-Chimie", 3, 1)])
+    vol(e2, "3AS", [("Philosophie", 4, 1), ("Mathématiques", 4, 1), ("Anglais", 3, 1), ("Histoire-Géographie", 3, 1), ("Sciences économiques", 4, 1)])
     # coordonnées de démonstration : environ deux élèves sur trois ont une adresse et un téléphone (les autres restent « à compléter »)
     con.execute("UPDATE eleves SET adresse=((id*7)%97+1)||' rue des Lilas', code_postal='69003', ville='Lyon', telephone='06 '||substr('00'||((id*13)%100),-2)||' '||substr('00'||((id*29)%100),-2)||' '||substr('00'||((id*53)%100),-2)||' '||substr('00'||((id*71)%100),-2) WHERE id%3<>0")
     # régimes de démonstration : environ 55 % demi-pensionnaires, 8 % internes, le reste externes
     con.execute("UPDATE eleves SET regime=CASE WHEN id%12=0 THEN 'interne' WHEN id%12 IN (1,2,3,4,5,6,7) THEN 'demi-pensionnaire' ELSE 'externe' END")
     # groupes de démonstration
-    for eid_, nom_g, cond in ((e1, 'Aide aux devoirs', "classe IN ('6A','6B') AND id%3=0"), (e1, 'Atelier théâtre', "classe IN ('4A','3A','3B') AND id%5=0")):
+    for eid_, nom_g, cond in ((e1, 'Aide aux devoirs', "classe IN ('1AM1','1AM2') AND id%3=0"), (e1, 'Atelier théâtre', "classe IN ('3AM1','4AM1','4AM2') AND id%5=0")):
         gid_ = con.execute("INSERT INTO groupes_eleves(etab_id,nom) VALUES (?,?)", (eid_, nom_g)).lastrowid
         con.execute(f"INSERT INTO groupe_membres(groupe_id,eleve_id) SELECT ?, id FROM eleves WHERE etab_id=? AND {cond}", (gid_, eid_))
     # service dû de la démo : volume de l'emploi du temps arrondi à l'heure (certains écarts restent visibles)
@@ -959,13 +959,11 @@ def seed_demo(password="demo1234"):
             if moy is None:
                 continue
             types = []
-            if moy >= 15:
+            if moy >= 16:
                 types.append("felicitations")
             elif moy >= 14:
-                types.append("compliments")
-            elif moy >= 13:
                 types.append("encouragements")
-            if moy >= 14:
+            if moy >= 12:
                 types.append("tableau_honneur")
             if el % 17 == 0 and moy >= 10:
                 types.append("merite")

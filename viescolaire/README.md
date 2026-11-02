@@ -12,7 +12,7 @@ flask --app viescolaire.app seed-demo
 python -m viescolaire.app            # http://localhost:5001
 
 # Production : créer son propre compte à la place de la démo
-VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='un-mot-de-passe-long' VSP_NOM='Prénom Nom' VSP_ETAB='Mon collège' \
+VSP_EMAIL=cpe@monecole.fr VSP_PASSWORD='un-mot-de-passe-long' VSP_NOM='Prénom Nom' VSP_ETAB='Mon CEM' \
   flask --app viescolaire.app create-admin
 ```
 
@@ -27,7 +27,7 @@ Déploiement (Render, Docker…) : voir [DEPLOIEMENT.md](DEPLOIEMENT.md). Variab
 |---|---|
 | 1. Professeurs | Annuaire (matière, classes, contacts), fiches individuelles, emplois du temps jour/semaine/mois, absences et indisponibilités (**motifs en liste déroulante + saisie libre**), remplacements avec suggestions et **pourvoi automatique**. Absences, remplacements et cours perturbés sont reliés : une absence crée ses remplacements, chaque désignation prévient le remplaçant par message automatique, une absence déclarée par un enseignant prévient la vie scolaire |
 | 2. Communication | Messagerie interne (personne, classe, niveau, tous), accusés et confirmations de lecture, réunions et convocations (professeurs par classe ou à la main, **élèves par classe** avec « toute la classe », recherche et décompte ; convocations aux parents rédigées en un clic) avec réponses, documents partagés |
-| 3. Suivi des cours | **Analyse des cours perturbés** (toutes causes : absences, indisponibilités, salle, déplacement) par classe, cause, motif, professeur absent, matière et remplaçants, avec heures perdues et taux de couverture ; export CSV ; Cours perturbés (annulé, salle indisponible, déplacé, remplacé), classes et niveaux de classe gérés (6e, 2nde, Terminale… au choix de l'établissement) et professeurs principaux, tableau de bord quotidien, incidents |
+| 3. Suivi des cours | **Analyse des cours perturbés** (toutes causes : absences, indisponibilités, salle, déplacement) par classe, cause, motif, professeur absent, matière et remplaçants, avec heures perdues et taux de couverture ; export CSV ; Cours perturbés (annulé, salle indisponible, déplacé, remplacé), classes et niveaux de classe gérés (1AM, 2nde, Terminale… au choix de l'établissement) et professeurs principaux, tableau de bord quotidien, incidents |
 | 4. Administratif | Tâches et échéances, alertes automatiques, rapports et statistiques (impression PDF, exports CSV pour Excel), historique des actions |
 | Rédaction de documents | **Saisie automatique** : choisir un modèle (rapport d'incident, convocation des parents, avertissement, compte rendu d'entretien, signalement d'absences) et un élève → classe, professeur principal, équipe pédagogique, matière et responsable légal sont remplis ; liste déroulante de types d'incident avec texte proposé ; texte entièrement modifiable ; enregistrement dans *Documents*, impression/PDF, export Word. Modèles et types modifiables par l'établissement. Fichier des élèves avec fiche détaillée (professeur principal, équipe pédagogique, incidents, documents) (saisie ou import CSV ; la démo en contient 193 au collège et 24 au lycée, avec date de naissance et sexe) |
 | Statistiques élèves | **Pyramide des âges et des sexes** (par niveau ou par classe, âge calculé à une date au choix), tableau des effectifs et export CSV |
@@ -57,7 +57,7 @@ les enseignants peuvent saisir les leurs via « Mes vœux »), 3) **générer** 
 (professeur, classe, salle), respecte les vœux impératifs, minimise les souhaits non respectés et les trous, et explique les séances impossibles à placer.
 La proposition se relit par classe ou par professeur avant d'être appliquée (avec confirmation).
 
-**Matières et heures par niveau** (*Planification → Matières et heures par niveau* : c'est ici qu'on ajoute ou modifie une matière) : on saisit une fois les heures de chaque matière pour chaque niveau (6e : Mathématiques 4 h…) ; l'application crée les besoins de toutes les classes du niveau, confie chaque cours à un professeur de la matière (capacité limitée par le service dû et par les créneaux possibles d'après ses vœux, continuité par niveau, charge équilibrée), signale les cours sans professeur, puis génère l'emploi du temps en respectant les vœux.
+**Matières et heures par niveau** (*Planification → Matières et heures par niveau* : c'est ici qu'on ajoute ou modifie une matière) : on saisit une fois les heures de chaque matière pour chaque niveau (1AM : Mathématiques 4 h…) ; l'application crée les besoins de toutes les classes du niveau, confie chaque cours à un professeur de la matière (capacité limitée par le service dû et par les créneaux possibles d'après ses vœux, continuité par niveau, charge équilibrée), signale les cours sans professeur, puis génère l'emploi du temps en respectant les vœux.
 
 **Rien n'est supposé par défaut** : les demi-journées sans cours (ex. mardi après-midi), les horaires des créneaux et le maximum d'heures par classe
 se règlent par établissement dans *Planification → Réglages de l'établissement*.
@@ -131,7 +131,7 @@ Les photos d'élèves sont des données personnelles : recueillir le consentemen
 
 ## Récompenses du conseil de classe
 
-Menu *Élèves et vie scolaire → Récompenses* : félicitations, compliments, encouragements (une seule mention par élève et par période), tableau d'honneur et mérite.
+Menu *Élèves et vie scolaire → Récompenses* : encouragements, félicitations (une seule mention par élève et par période), tableau d'honneur et mérite.
 Saisie après le conseil de classe (vie scolaire pour toutes les classes ; professeur principal pour sa classe), avec une proposition optionnelle d'après les moyennes
 (seuils modifiables, ne remplace jamais une décision enregistrée). Palmarès par période/classe/type, affiche imprimable du tableau d'honneur, certificat individuel.
 Les distinctions apparaissent aussi en médailles sur le trombinoscope (filtre « Élèves récompensés seulement »), sur la fiche élève et sur le bulletin.
@@ -153,5 +153,6 @@ Table `recompenses` (migration 24), module `recompenses`, désactivable par clie
 
 - **Semaine scolaire réglable par établissement** (Administration → Établissements → carte « Semaine scolaire ») : par défaut dimanche à jeudi, vendredi et samedi sont des jours de repos. Modèles : Algérie dim–jeu, Maroc lun–ven, Tunisie lun–sam, ou jours libres. Emplois du temps, génération automatique, appel, remplacements, états d'absences, comptage des heures, vœux, soins et planning du personnel suivent ce réglage. Les jours sont stockés comme `date.weekday()` (lundi = 0 … dimanche = 6) : migration 26.
 - **Type d'établissement** : lycée (proviseur, censeur) ou CEM (directeur, surveillant général).
+- **Niveaux et vocabulaire scolaire** : CEM (1AM à 4AM) et lycée (1AS à 3AS) ; « collège » devient CEM ; « pensionnaire » devient « interne » ; les récompenses sont Tableau d'honneur (dès 12), Encouragements (dès 14), Félicitations (dès 16) et Mérite — seuils modifiables à la saisie.
 - **Vocabulaire** : « CPE » devient « Surveillant général » ; « RGPD » devient « Protection des données (loi 18-07) » ; les titres de direction deviennent proviseur / censeur / directeur.
 - La démonstration est générée sur la semaine dimanche–jeudi (l'après-midi du mardi est libre pour les classes du premier établissement).

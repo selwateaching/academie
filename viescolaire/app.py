@@ -61,7 +61,7 @@ SEMAINES_TYPES = {      # semaines scolaires proposées (l'établissement peut a
     "tn": ("Tunisie : lundi à samedi", [0, 1, 2, 3, 4, 5]),
 }
 JOURS_COURS_DEFAUT = [6, 0, 1, 2, 3]
-TYPES_ETAB = {"lycee": "Lycée", "cem": "CEM (collège d'enseignement moyen)"}
+TYPES_ETAB = {"lycee": "Lycée", "cem": "CEM (Collège d'enseignement moyen)"}
 
 
 def lire_jours_cours(texte):
@@ -1400,7 +1400,7 @@ def classes():
 
 
 def prochain_nom_classe(niveau, existants):
-    """Nom suivant d'une classe du niveau, dans le style des classes déjà créées (6A, 6B… / 2nde1, 2nde2… / 1ère S, 1ère T…)."""
+    """Nom suivant d'une classe du niveau, dans le style des classes déjà créées (1AM1, 1AM2… / 1AS1, 1AS2… / 2AS Sciences, 2AS Lettres…)."""
     noms = [n for n in existants]
     modele = re.match(r"^(.*?)([A-Za-z])$", noms[-1]) if noms else None
     if modele and noms[-1][-1].isalpha() and (modele.group(1) == "" or not modele.group(1)[-1].isalpha() or modele.group(1)[-1] == " "):
@@ -2135,7 +2135,7 @@ def parse_naissance(texte):
     return ""
 
 
-REGIMES = {"externe": "Externe", "demi-pensionnaire": "Demi-pensionnaire", "interne": "Pensionnaire"}
+REGIMES = {"externe": "Externe", "demi-pensionnaire": "Demi-pensionnaire", "interne": "Interne"}
 
 
 def norm_regime(texte):
@@ -4811,7 +4811,7 @@ def bulletins_classe():
 
 
 # ───────────────────────── Établissements (administrateur) ─────────────────────────
-ETABS_DEMO_PROTEGES = ("Lycée Jean Moulin", "Collège Victor Hugo")
+ETABS_DEMO_PROTEGES = ("Lycée Jean Moulin", "CEM Victor Hugo")
 
 
 def admin_only(f):
@@ -6516,13 +6516,12 @@ def ri_supprimer(rid):
 # ───────────────────────── Récompenses du conseil de classe (félicitations, tableau d'honneur…) ─────────────────────────
 TYPES_RECOMPENSE = {
     "felicitations": {"libelle": "Félicitations du conseil de classe", "court": "Félicitations", "couleur": "#C99412", "mention": True},
-    "compliments": {"libelle": "Compliments du conseil de classe", "court": "Compliments", "couleur": "#6B7C89", "mention": True},
     "encouragements": {"libelle": "Encouragements du conseil de classe", "court": "Encouragements", "couleur": "#B0703A", "mention": True},
     "tableau_honneur": {"libelle": "Tableau d'honneur", "court": "Tableau d'honneur", "couleur": "#2E8B57", "mention": False},
     "merite": {"libelle": "Mérite et engagement", "court": "Mérite", "couleur": "#1F86A8", "mention": False},
 }
 MENTIONS_RECOMPENSE = [k for k, v in TYPES_RECOMPENSE.items() if v["mention"]]
-SEUILS_RECOMPENSE = {"felicitations": 15.0, "compliments": 14.0, "encouragements": 13.0, "tableau_honneur": 14.0}
+SEUILS_RECOMPENSE = {"felicitations": 16.0, "encouragements": 14.0, "tableau_honneur": 12.0}
 app.jinja_env.globals["TYPES_RECOMPENSE"] = TYPES_RECOMPENSE
 
 

@@ -21,5 +21,5 @@
 <p class="mute">Modèles : <b>Algérie</b> dimanche à jeudi · <b>Maroc</b> lundi à vendredi · <b>Tunisie</b> lundi à samedi.</p>
 <p><button>Enregistrer la semaine</button></p></form></div>{% endfor %}
 <div class="card"><h2>Ajouter un établissement</h2><form method="post" class="row">{{ csrf() }}<input type="hidden" name="action" value="ajouter">
-<div><label>Nom</label><input name="nom" required placeholder="ex. Collège Jean Jaurès"></div><div style="flex:0 0 auto"><button>Créer l'établissement</button></div></form>
+<div><label>Nom</label><input name="nom" required placeholder="ex. CEM Ibn Khaldoun"></div><div style="flex:0 0 auto"><button>Créer l'établissement</button></div></form>
 <p class="mute">Le nouvel établissement démarre vide, avec les modèles de documents, types d'incident, postes du personnel et en-tête par défaut. Vous y êtes rattaché automatiquement et il est sélectionné aussitôt.</p></div>{% endblock %}

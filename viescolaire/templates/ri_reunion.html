@@ -21,7 +21,7 @@
 <label>Sujets à traiter <span class="mute">(facultatif : à défaut, le <b>titre</b> de la réunion sert de sujet. Un sujet par ligne pour écarter plus précisément le hors-sujet)</span></label>
 <textarea name="ordre_jour" rows="4" placeholder="1. Résultats du 1er trimestre en mathématiques&#10;2. Absences et retards&#10;3. Organisation des évaluations">{{ r.ordre_jour }}</textarea>
 <label>Participants <span class="mute">(une personne par ligne : « Nom, fonction »)</span></label>
-<textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 3A&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, Surveillant général">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
+<textarea name="participants" rows="5" placeholder="Claire Besson, Professeure principale 4AM1&#10;Karim Morin, Professeur d'EPS&#10;Camille Durand, Surveillant général">{% for p in participants %}{{ p.nom }}{% if p.fonction %}, {{ p.fonction }}{% endif %}
 {% endfor %}</textarea>
 {% if annuaire %}<details class="ri-annuaire" open><summary><b>Cocher les participants</b> dans l'annuaire de l'établissement ({{ nb_annuaire }} personnes) : rien à saisir</summary>
 {% for gr in annuaire %}<div class="ri-groupe"><h4>{{ gr.titre }} <label class="check ri-tout"><input type="checkbox" data-cocher-groupe> Tout cocher</label></h4>

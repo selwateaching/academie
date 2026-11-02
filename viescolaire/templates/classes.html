@@ -21,15 +21,15 @@
 <datalist id="liste-niveaux">{% for n in niveaux %}<option value="{{ n.nom }}">{% endfor %}</datalist>
 <details class="card noprint gestion" {{ 'open' if not groupes }}><summary><b>Gérer les niveaux, le nombre de classes et créer une classe</b></summary>
 <div class="card"><h2>Niveaux</h2>
-<p class="mute">Les niveaux regroupent les classes (ex. 6e, 5e… ou 2nde, 1ère, Terminale : à vous de définir ceux de votre établissement). Ils servent à filtrer les élèves et à écrire à tous les professeurs d'un niveau.</p>
+<p class="mute">Les niveaux regroupent les classes (ex. 1AM, 2AM… ou 1AS, 2AS, 3AS : à vous de définir ceux de votre établissement). Ils servent à filtrer les élèves et à écrire à tous les professeurs d'un niveau.</p>
 {% if niveaux %}<table style="max-width:640px"><tr><th>Ordre</th><th>Niveau</th><th>Classes</th><th></th></tr>
 {% for n in niveaux %}<tr><form method="post" action="{{ url_for('niveau_modifier', nid=n.id) }}">{{ csrf() }}<td><input type="number" name="ordre" value="{{ n.ordre }}" style="width:70px"></td>
 <td><input name="nom" value="{{ n.nom }}" required></td><td>{{ n.nb }}</td><td><button class="sec sm">Enregistrer</button></form>
 {% if not n.nb %}{{ post(url_for('niveau_supprimer', nid=n.id), 'Supprimer', 'sec sm', 'Supprimer ce niveau ?') }}{% endif %}</td></tr>{% endfor %}</table>{% endif %}
 <form method="post" action="{{ url_for('niveaux_ajouter') }}" style="margin-top:12px">{{ csrf() }}<label>Ajouter des niveaux (un par ligne, ou séparés par des virgules)</label>
-<textarea name="niveaux" rows="3" placeholder="6e&#10;5e&#10;4e&#10;3e" style="max-width:320px"></textarea><br><button>Ajouter</button></form></div>
+<textarea name="niveaux" rows="3" placeholder="1AM&#10;2AM&#10;3AM&#10;4AM" style="max-width:320px"></textarea><br><button>Ajouter</button></form></div>
 <div class="card"><h2>Nombre de classes par niveau</h2>
-<p class="mute">Indiquez combien de classes compte chaque niveau : l'application crée les classes manquantes (6A, 6B… ou 2nde1, 2nde2… selon vos habitudes) et supprime celles en trop si elles sont vides. Vous pouvez ensuite les renommer.</p>
+<p class="mute">Indiquez combien de classes compte chaque niveau : l'application crée les classes manquantes (1AM1, 1AM2… ou 1AS1, 1AS2… selon vos habitudes) et supprime celles en trop si elles sont vides. Vous pouvez ensuite les renommer.</p>
 <form method="post" action="{{ url_for('niveaux_nombre') }}">{{ csrf() }}<table style="max-width:520px"><tr><th>Niveau</th><th>Classes actuelles</th><th>Nouveau nombre</th></tr>
 {% for n in niveaux %}<tr><td>{{ n.nom }}</td><td>{{ n.nb }}</td><td><input type="number" name="nb_{{ n.id }}" value="{{ n.nb }}" min="0" max="30" style="width:80px" aria-label="Nombre de classes en {{ n.nom }}"></td></tr>{% endfor %}</table>
 <p><button>Appliquer</button></p></form></div>
