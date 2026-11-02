@@ -229,3 +229,46 @@ def test_call_script_uses_garage_template(client):
     c2 = client.post("/api/companies", headers=h, json={"name": "Anonyme", "category": "vo", "city": "Toulouse"}).json()
     m2 = client.post(f"/api/companies/{c2['id']}/draft", headers=h, json={"kind": "script_appel"}).json()
     assert "demander le responsable" in m2["body"]
+
+
+# ---------- Sécurité et administration ----------
+def test_login_lockout_after_5_failures(client):
+    for _ in range(5):
+        assert client.post("/api/auth/login", json={"email": "lock@test.fr", "password": "x"}).status_code == 401
+    assert client.post("/api/auth/login", json={"email": "lock@test.fr", "password": "x"}).status_code == 429
+    # un autre compte n'est pas bloqué
+    assert client.post("/api/auth/login", json={"email": "admin@test.fr", "password": "motdepasse-test"}).status_code == 200
+
+
+def test_user_admin_rules(client):
+    h = auth(client)
+    me = client.get("/api/users", headers=h).json()
+    admin = next(u for u in me if u["email"] == "admin@test.fr")
+    assert client.patch(f"/api/users/{admin['id']}", headers=h, json={"active": False}).status_code == 409
+    assert client.patch(f"/api/users/{admin['id']}", headers=h, json={"role": "commercial"}).status_code == 409
+    com = next(u for u in me if u["email"] == "com@test.fr")
+    assert client.patch(f"/api/users/{com['id']}", headers=h, json={"password": "court"}).status_code == 422
+    assert client.patch(f"/api/users/{com['id']}", headers=h, json={"password": "nouveau-mdp-1", "role": "manager"}).json()["role"] == "manager"
+    auth(client, "com@test.fr", "nouveau-mdp-1")                       # le nouveau mot de passe fonctionne
+    assert client.patch(f"/api/users/{com['id']}", headers=h, json={"active": False}).json()["active"] is False
+    assert client.post("/api/auth/login", json={"email": "com@test.fr", "password": "nouveau-mdp-1"}).status_code == 401
+    # un commercial ne peut pas administrer
+    client.patch(f"/api/users/{com['id']}", headers=h, json={"active": True, "role": "commercial"})
+    hc = auth(client, "com@test.fr", "nouveau-mdp-1")
+    assert client.patch(f"/api/users/{admin['id']}", headers=hc, json={"name": "x"}).status_code == 403
+    assert client.get("/api/export/companies.csv", headers=hc).status_code == 403
+
+
+def test_export_csv(client):
+    r = client.get("/api/export/companies.csv", headers=auth(client))
+    assert r.status_code == 200 and "attachment" in r.headers["content-disposition"]
+    first = r.content.decode("utf-8-sig").splitlines()[0]
+    assert first.startswith("name;category;city") and "Modèle Auto" in r.content.decode("utf-8-sig")
+
+
+def test_production_refuses_default_secrets(monkeypatch):
+    import app.main as m
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("SECRET_KEY", "change-me-long-random-string")
+    with pytest.raises(RuntimeError):
+        m.startup()

@@ -39,7 +39,7 @@ a{color:var(--brand)}
 <div id="app" class="hidden">
 <header><h1>Garage CRM AI</h1>
 <nav><button data-t="dash" class="on">Tableau de bord</button><button data-t="pros">Prospects</button>
-<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button></nav>
+<button data-t="rel">Relances</button><button data-t="agent">Agent IA</button><button data-t="msgs">Messages</button><button data-t="rep">Rapport</button><button data-t="usr" id="tabusr" class="hidden">Utilisateurs</button></nav>
 <span class="mute" id="who"></span><button class="btn" id="out">Déconnexion</button></header>
 <main>
 <section id="t-dash"></section>
@@ -48,6 +48,7 @@ a{color:var(--brand)}
 <section id="t-agent" class="hidden"></section>
 <section id="t-msgs" class="hidden"></section>
 <section id="t-rep" class="hidden"></section>
+<section id="t-usr" class="hidden"></section>
 </main></div>
 <script>
 const $=s=>document.querySelector(s);
@@ -66,7 +67,7 @@ async function api(path,opt={}){
 }
 function logout(){sessionStorage.removeItem("tk");token="";$("#app").classList.add("hidden");$("#login").classList.remove("hidden")}
 async function boot(){
-  try{const m=await api("/me");role=m.role;$("#who").textContent=m.name+" ("+m.role+")";
+  try{const m=await api("/me");role=m.role;$("#who").textContent=m.name+" ("+m.role+")";$("#tabusr").classList.toggle("hidden",m.role!=="admin");
     cats=await api("/categories");$("#login").classList.add("hidden");$("#app").classList.remove("hidden");show("dash")}
   catch(e){logout()}
 }
@@ -81,7 +82,7 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.
 function show(t){
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="t-"+t));
-  ({dash,pros,rel,agent,msgs,rep})[t]();
+  ({dash,pros,rel,agent,msgs,rep,usr})[t]();
 }
 const HUES={location:210,concession:280,vo:30,flotte:140,assurance:330,taxi:48,btp:0,transport:175,autoecole:95};
 const catStyle=k=>k in HUES?`--h:${HUES[k]}`:"--h:220;--s:8%";
@@ -102,7 +103,7 @@ async function pros(){
   const el=$("#t-pros");
   el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">Tous statuts</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
   <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
-  <button class="btn pri" id="add">+ Ajouter</button></div>
+  <button class="btn pri" id="add">+ Ajouter</button>${role!=="commercial"?'<button class="btn" id="exp" title="Fichier Excel de tous les prospects">Exporter (Excel)</button>':""}</div>
   <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
   const load=async()=>{
     const p=new URLSearchParams();[["q","#q"],["status","#fs"],["category","#fc"]].forEach(([k,s])=>{if($(s).value)p.set(k,$(s).value)});
@@ -128,6 +129,9 @@ async function pros(){
     document.querySelectorAll("[data-d]").forEach(b=>b.onclick=async()=>{
       try{await api(`/companies/${b.dataset.d}/draft`,{method:"POST",json:{kind:b.dataset.k}});show("msgs")}catch(e){alert(e.message)}});
   };
+  const ex=$("#exp");if(ex)ex.onclick=async()=>{try{const r=await fetch("/api/export/companies.csv",{headers:{Authorization:"Bearer "+token}});
+    if(!r.ok)throw new Error("Export refusé");const u=URL.createObjectURL(await r.blob());const a=document.createElement("a");
+    a.href=u;a.download="prospects-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(u)}catch(e){alert(e.message)}};
   $("#fl").onclick=load;
   document.querySelectorAll("[data-lg]").forEach(b=>b.onclick=()=>{$("#fc").value=$("#fc").value===b.dataset.lg?"":b.dataset.lg;load()});
   $("#add").onclick=async()=>{const name=prompt("Nom de l'entreprise ?");if(!name)return;
@@ -163,6 +167,25 @@ async function rep(){
   <div class="card" style="margin-top:12px"><b>Nouveaux prospects par catégorie</b><div class="row" style="margin-top:8px">${Object.keys(r.new_by_category).length?Object.entries(r.new_by_category).map(([c,n])=>`${catBadge(c)} <b>${n}</b>`).join(" "):'<span class="mute">Aucun nouveau prospect sur la période.</span>'}</div></div>
   <div class="card"><b>Les 5 meilleurs prospects à contacter</b>${r.top_to_contact.length?`<table style="margin-top:8px">${r.top_to_contact.map(c=>`<tr><td><span class="score hi">${c.score??"–"}</span></td><td><b>${esc(c.name)}</b><br>${catBadge(c.category)}</td><td>${esc(c.phone)}</td><td class="mute">${esc(c.next_action)}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect en attente.</p>'}</div>`;
   $("#rdays").onchange=e=>{sessionStorage.setItem("rd",e.target.value);rep()};
+}
+async function usr(){
+  const us=await api("/users"),el=$("#t-usr");
+  const ROLE={admin:"Administrateur",manager:"Responsable commercial",commercial:"Commercial"};
+  el.innerHTML=`<div class="card"><h3 style="margin-top:0">Utilisateurs du CRM</h3>
+  <p class="mute">Administrateur : tout, y compris les comptes · Responsable : lance l'agent, valide et envoie · Commercial : fiches, brouillons, relances.</p>
+  <div class="tbl"><table><tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Actif</th><th></th></tr>${us.map(u=>`<tr>
+  <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
+  <td><select data-ur="${u.id}">${Object.entries(ROLE).map(([k,v])=>`<option value="${k}" ${k===u.role?"selected":""}>${v}</option>`).join("")}</select></td>
+  <td><input type="checkbox" data-ua="${u.id}" ${u.active?"checked":""}></td>
+  <td><button class="btn" data-up="${u.id}">Nouveau mot de passe</button></td></tr>`).join("")}</table></div></div>
+  <div class="card"><h3 style="margin-top:0">Ajouter un utilisateur</h3><div class="row">
+  <input id="nn" placeholder="Nom"><input id="ne" type="email" placeholder="Email"><select id="nr">${Object.entries(ROLE).map(([k,v])=>`<option value="${k}" ${k==="commercial"?"selected":""}>${v}</option>`).join("")}</select>
+  <input id="np" type="password" placeholder="Mot de passe (8 caractères min.)"><button class="btn pri" id="nb">Créer</button></div><div id="uo" class="mute"></div></div>`;
+  const patch=async(id,json)=>{try{await api("/users/"+id,{method:"PATCH",json});usr()}catch(e){alert(e.message);usr()}};
+  el.querySelectorAll("[data-ur]").forEach(x=>x.onchange=()=>patch(x.dataset.ur,{role:x.value}));
+  el.querySelectorAll("[data-ua]").forEach(x=>x.onchange=()=>patch(x.dataset.ua,{active:x.checked}));
+  el.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>{const p=prompt("Nouveau mot de passe (8 caractères minimum) :");if(p)patch(x.dataset.up,{password:p})});
+  $("#nb").onclick=async()=>{try{await api("/users",{method:"POST",json:{name:$("#nn").value,email:$("#ne").value,role:$("#nr").value,password:$("#np").value}});usr()}catch(e){$("#uo").textContent=e.message}};
 }
 function agent(){
   $("#t-agent").innerHTML=`<div class="card"><h3 style="margin-top:0">Lancer une recherche de prospects</h3>

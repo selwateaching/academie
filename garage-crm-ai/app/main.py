@@ -1,11 +1,13 @@
 import csv
 import io
+import os
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlalchemy import func, select
@@ -31,8 +33,11 @@ app = FastAPI(title="GARAGE CRM AI", lifespan=lifespan)
 
 
 def startup():
-    Base.metadata.create_all(engine)
     s = get_settings()
+    if os.environ.get("APP_ENV") == "production" and (
+            s.secret_key in ("", "dev-secret-change-me", "change-me-long-random-string") or s.admin_password in ("", "change-me-now")):
+        raise RuntimeError("Production : définissez un SECRET_KEY aléatoire et un ADMIN_PASSWORD personnel dans l'environnement.")
+    Base.metadata.create_all(engine)
     with SessionLocal() as db:
         if not db.scalar(select(func.count(models.User.id))) and s.admin_password:
             db.add(models.User(email=s.admin_email.lower(), name="Administrateur", role="admin",
@@ -67,11 +72,27 @@ class LoginIn(BaseModel):
     password: str
 
 
+MAX_FAILS, WINDOW = 5, 15 * 60
+_fails: dict[str, list[float]] = {}
+
+
+def _recent_fails(key: str) -> list[float]:
+    now = time.time()
+    _fails[key] = [t for t in _fails.get(key, []) if now - t < WINDOW]
+    return _fails[key]
+
+
 @app.post("/api/auth/login")
-def login(data: LoginIn, db: Session = Depends(get_db)):
-    user = db.scalar(select(models.User).where(models.User.email == data.email.lower().strip()))
+def login(data: LoginIn, request: Request, db: Session = Depends(get_db)):
+    email = data.email.lower().strip()
+    key = f"{email}|{request.client.host if request.client else '?'}"
+    if len(_recent_fails(key)) >= MAX_FAILS:
+        raise HTTPException(429, "Trop de tentatives. Réessayez dans 15 minutes.")
+    user = db.scalar(select(models.User).where(models.User.email == email))
     if not user or not user.active or not verify_password(data.password, user.password_hash):
+        _fails.setdefault(key, []).append(time.time())
         raise HTTPException(401, "Identifiants invalides")
+    _fails.pop(key, None)
     return {"token": make_token(user.id), "name": user.name, "role": user.role}
 
 
@@ -85,6 +106,31 @@ class UserIn(BaseModel):
     name: str = ""
     role: str = "commercial"
     password: str
+
+
+class UserPatch(BaseModel):
+    name: str | None = None
+    role: str | None = None
+    active: bool | None = None
+    password: str | None = None
+
+
+@app.patch("/api/users/{uid}")
+def patch_user(uid: int, data: UserPatch, db: Session = Depends(get_db), admin=Depends(ADMIN)):
+    u = db.get(models.User, uid) or _404()
+    ch = data.model_dump(exclude_unset=True)
+    if "role" in ch and ch["role"] not in models.ROLES:
+        raise HTTPException(422, "Rôle invalide")
+    if u.id == admin.id and (ch.get("active") is False or ("role" in ch and ch["role"] != "admin")):
+        raise HTTPException(409, "Vous ne pouvez pas désactiver ou rétrograder votre propre compte")
+    if "password" in ch:
+        if len(ch["password"] or "") < 8:
+            raise HTTPException(422, "Mot de passe : 8 caractères minimum")
+        u.password_hash = hash_password(ch.pop("password"))
+    for k, v in ch.items():
+        setattr(u, k, v)
+    db.commit()
+    return {"id": u.id, "email": u.email, "name": u.name, "role": u.role, "active": u.active}
 
 
 @app.get("/api/users")
@@ -383,6 +429,21 @@ def mark_sent(mid: int, db: Session = Depends(get_db), _=Depends(MANAGER)):
         m.company.status = "contacte"
     db.commit()
     return message_out(m)
+
+
+# ---------- Export (sauvegarde lisible dans Excel) ----------
+@app.get("/api/export/companies.csv")
+def export_companies(db: Session = Depends(get_db), _=Depends(MANAGER)):
+    cols = ["name", "category", "city", "address", "phone", "email", "website", "contact_name", "score", "status",
+            "next_action", "last_contact", "do_not_contact", "source", "notes"]
+    buf = io.StringIO()
+    w = csv.writer(buf, delimiter=";")
+    w.writerow(cols)
+    for c in db.scalars(select(models.Company).order_by(models.Company.id)):
+        row = company_out(c) | {"address": c.address}
+        w.writerow([str(row.get(k, "") if row.get(k) is not None else "").replace("\n", " ") for k in cols])
+    return Response(("\ufeff" + buf.getvalue()).encode("utf-8"), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": 'attachment; filename="prospects.csv"'})
 
 
 # ---------- Relances ----------
