@@ -1,5 +1,7 @@
 """Agent 3 – Commercial : rédige emails, relances et scripts d'appel (toujours en brouillon)."""
+import re
 from pathlib import Path
+from urllib.parse import quote
 
 from ..config import get_settings
 from ..models import Company
@@ -74,6 +76,37 @@ def from_template(c: Company) -> tuple[str, str] | None:
     if body.startswith("Bonjour,"):
         body = greeting(c) + body[len("Bonjour,"):]
     return subject, body
+
+
+WHATSAPP = Path(__file__).resolve().parent.parent / "modeles" / "whatsapp.txt"
+
+
+def whatsapp_number(phone: str) -> str:
+    """Numéro de MOBILE français au format international sans « + » (33612345678), sinon chaîne vide.
+
+    Les fixes (01 à 05, 09) ne peuvent pas utiliser WhatsApp : aucun bouton n'est proposé."""
+    d = re.sub(r"\D", "", phone or "")
+    if d.startswith("00"):
+        d = d[2:]
+    if d.startswith("330"):
+        d = "33" + d[3:]
+    elif d.startswith("0") and len(d) == 10:
+        d = "33" + d[1:]
+    return d if re.fullmatch(r"33[67]\d{8}", d) else ""
+
+
+def whatsapp_text(c: Company) -> str:
+    try:
+        text = WHATSAPP.read_text(encoding="utf-8-sig").strip()
+    except OSError:
+        s = get_settings()
+        text = f"Bonjour,\n\nJe vous écris de la part de {s.garage_name} ({s.garage_city}). Seriez-vous disponible pour un court échange ?\n\nPour ne plus recevoir de message, répondez « STOP »."
+    return greeting(c) + text[len("Bonjour,"):] if text.startswith("Bonjour,") else text
+
+
+def whatsapp_url(c: Company) -> str:
+    num = whatsapp_number(c.phone)
+    return f"https://wa.me/{num}?text={quote(whatsapp_text(c))}" if num else ""
 
 
 STOP_MODELE = Path(__file__).resolve().parent.parent / "modeles" / "confirmation_stop.txt"

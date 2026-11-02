@@ -615,3 +615,31 @@ def test_call_list_priorities_and_outcomes(client):
     assert client.post(f"/api/companies/{old['id']}/call", headers=h, json={"outcome": "n_importe_quoi"}).status_code == 422
     after = [x["name"] for x in client.get("/api/calls", headers=h).json()]
     assert "Appel Ancien" not in after and "Appel Repondu" not in after
+
+
+# ---------- WhatsApp ----------
+def test_whatsapp_number_only_for_french_mobiles():
+    from app.agent.writer import whatsapp_number as wa
+    assert wa("06 12 34 56 78") == "33612345678"
+    assert wa("07.12.34.56.78") == "33712345678"
+    assert wa("+33 6 12 34 56 78") == "33612345678"
+    assert wa("+33 (0)6 12 34 56 78") == "33612345678"
+    assert wa("0033712345678") == "33712345678"
+    for fixe in ("05 61 39 56 30", "0561395630", "09 72 00 00 00", "0 892 05 28 28", "", "06 12 34", "+44 7911 123456"):
+        assert wa(fixe) == "", fixe
+
+
+def test_whatsapp_link_prefilled_and_logged(client):
+    from urllib.parse import parse_qs, urlparse
+    h = auth(client)
+    mob = client.post("/api/companies", headers=h, json={"name": "Mobile SARL", "category": "taxi", "city": "Toulouse",
+                                                         "phone": "06 52 92 24 04", "contact_name": "Yanis Benali"}).json()
+    fixe = client.post("/api/companies", headers=h, json={"name": "Fixe SARL", "category": "taxi", "city": "Toulouse", "phone": "05 61 39 56 30"}).json()
+    assert fixe["whatsapp_url"] == ""                                     # pas de bouton sur un fixe
+    u = urlparse(mob["whatsapp_url"])
+    assert u.netloc == "wa.me" and u.path == "/33652922404"
+    text = parse_qs(u.query)["text"][0]
+    assert text.startswith("Bonjour Yanis Benali,") and "STOP" in text and "Garage & Impulsion" in text
+    # un clic est tracé : note datée, prospect « Contacté »
+    r = client.post(f"/api/companies/{mob['id']}/call", headers=h, json={"outcome": "whatsapp"}).json()
+    assert r["status"] == "contacte" and "WhatsApp" in r["notes"] and r["next_action"] == "Attendre la réponse"

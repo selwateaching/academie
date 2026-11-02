@@ -29,6 +29,7 @@ a{color:var(--brand)}
 .bad{color:#b91c1c}@media(prefers-color-scheme:dark){.bad{color:#f87171}}
 .em{display:inline-block}.em a{text-decoration:none}.em .eedit{font-size:12px;text-decoration:underline}
 .einp{width:230px;padding:3px 8px;font-size:13px}.emsg{font-size:12px;margin-left:6px}
+.wa{background:#25d366!important;border-color:#25d366!important;color:#fff!important;text-decoration:none;font-weight:600;padding:3px 10px;font-size:13px}
 .hidden{display:none}.tbl{overflow-x:auto}.warn{border-left:4px solid var(--brand)}
 </style>
 </head>
@@ -110,6 +111,10 @@ function wireEmail(root,after){
       try{await api("/companies/"+b.dataset.cid,{method:"PATCH",json:{email:v}});after()}catch(e){msg.textContent=e.message}};
     b.onclick=save;inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();save()}}});
 }
+function wireWhatsapp(root,after){
+  root.querySelectorAll("a[data-wa]").forEach(a=>a.addEventListener("click",()=>{
+    api(`/companies/${a.dataset.wa}/call`,{method:"POST",json:{outcome:"whatsapp"}}).then(()=>setTimeout(after,1200)).catch(()=>{})}));
+}
 const catOpts=sel=>cats.map(c=>`<option value="${esc(c.key)}" ${c.key===sel?"selected":""}>${esc(c.label)}</option>`).join("");
 
 async function dash(){
@@ -136,7 +141,7 @@ async function pros(){
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
-      <td>${esc(c.phone)}<br><span class="mute">${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}</span></td>
+      <td>${esc(c.phone)}${c.whatsapp_url?`<br><a class="btn wa" href="${esc(c.whatsapp_url)}" data-wa="${c.id}" target="_blank" rel="noopener noreferrer" title="Ouvre WhatsApp avec le message déjà écrit">💬 WhatsApp</a>`:""}<br><span class="mute">${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}</span></td>
       <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
         <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label>
         ${c.status==="archive"?"":`<br><a href="#" data-stop="${c.id}" data-n="${esc(c.name)}" class="mute stp" title="Le prospect a répondu STOP : archiver et envoyer la confirmation">a dit STOP</a>`}</td>
@@ -149,6 +154,7 @@ async function pros(){
     document.querySelectorAll(".fnd").forEach(a=>a.onclick=async e=>{e.preventDefault();a.textContent="· recherche…";
       try{const r=await api(`/companies/${a.dataset.f}/find-manager`,{method:"POST"});if(!r.found)alert(r.reason);load()}catch(x){alert(x.message)}});
     wireEmail($("#tb"),load);
+    wireWhatsapp($("#tb"),load);
     document.querySelectorAll(".stp").forEach(a=>a.onclick=async e=>{e.preventDefault();
       if(!confirm(`« ${a.dataset.n} » a demandé à ne plus être contacté ?\n\nIl sera archivé (retiré de la liste en cours), ses messages en attente seront annulés et un message de confirmation sera préparé.`))return;
       try{const r=await api(`/companies/${a.dataset.stop}/stop`,{method:"POST"});alert(`Archivé. Message de confirmation : ${r.confirmation}.`);load()}catch(x){alert(x.message)}});
@@ -190,12 +196,14 @@ async function call(){
   ${rows.length?rows.map(c=>`<div class="card" style="box-shadow:inset 4px 0 0 hsl(${HUES[c.category]??220} 65% 50%)">
   <div class="row"><b>${esc(c.name)}</b>${catBadge(c.category)}<span class="mute">${esc(c.city)} · ${esc(c.why)}</span><span class="score ${c.score>=70?"hi":""}">${c.score??"–"}</span></div>
   <div class="row"><a class="big" href="tel:${esc(c.phone.replace(/[^+\d]/g,""))}" style="text-decoration:none" title="Appeler">📞 ${esc(c.phone)}</a>
+    ${c.whatsapp_url?`<a class="btn wa" href="${esc(c.whatsapp_url)}" data-wa="${c.id}" target="_blank" rel="noopener noreferrer" title="Ouvre WhatsApp avec le message déjà écrit">💬 Ouvrir WhatsApp</a>`:""}
     <span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}
     <button class="btn" data-sc="${c.id}">Voir le script</button></div>
   <div class="row">${emailHtml(c.id,c.email)}${c.email?"":`<span class="mute" style="font-size:12px">demandez-la pendant l'appel</span>`}</div>
   <div class="row"><input data-cn="${c.id}" placeholder="Note (facultatif) : interlocuteur, rappel jeudi…" style="flex:1;min-width:220px">
   ${OUT.map(([k,l])=>`<button class="btn ${k==="interested"?"pri":""}" data-co="${k}" data-ci="${c.id}">${l}</button>`).join("")}</div></div>`).join(""):`<div class="card mute">Aucun prospect à appeler pour le moment. Lancez une recherche dans Agent IA.</div>`}`;
   wireEmail(el,call);
+  wireWhatsapp(el,call);
   el.querySelectorAll("[data-sc]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.sc}/draft`,{method:"POST",json:{kind:"script_appel"}});show("msgs")}catch(e){alert(e.message)}});
   el.querySelectorAll("[data-co]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.ci}/call`,{method:"POST",json:{outcome:b.dataset.co,note:el.querySelector(`[data-cn="${b.dataset.ci}"]`).value}});call()}catch(e){alert(e.message)}});
 }

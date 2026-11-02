@@ -172,7 +172,8 @@ def company_out(c: models.Company) -> dict:
     return {k: getattr(c, k) for k in (
         "id", "name", "category", "city", "address", "phone", "website", "email", "contact_name", "source",
         "rating", "rating_count", "score", "score_reason", "status", "next_action", "notes", "do_not_contact")
-    } | {"last_contact": c.last_contact.isoformat() if c.last_contact else None}
+    } | {"last_contact": c.last_contact.isoformat() if c.last_contact else None,
+         "whatsapp_url": writer.whatsapp_url(c)}
 
 
 class CompanyIn(BaseModel):
@@ -579,6 +580,7 @@ CALL_OUTCOMES = {                       # résultat -> (libellé, nouveau statut
     "interested": ("Intéressé", "rdv", "Rendez-vous à fixer"),
     "not_interested": ("Pas intéressé", "refuse", ""),
     "wrong_number": ("Numéro erroné", None, "Vérifier le numéro"),
+    "whatsapp": ("Message WhatsApp ouvert", None, "Attendre la réponse"),
 }
 
 
