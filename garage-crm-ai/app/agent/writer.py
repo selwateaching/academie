@@ -76,11 +76,28 @@ def from_template(c: Company) -> tuple[str, str] | None:
     return subject, body
 
 
+SCRIPT = Path(__file__).resolve().parent.parent / "modeles" / "script_appel.txt"
+
+
+def script_from_template(c: Company) -> tuple[str, str] | None:
+    """Script d'appel = modèle du garage (fichier texte), repris tel quel, précédé d'un rappel pour l'appelant."""
+    try:
+        text = SCRIPT.read_text(encoding="utf-8-sig").strip()
+    except OSError:
+        return None
+    if not text:
+        return None
+    who = c.contact_name or "à identifier – demander le responsable ou le gérant"
+    header = (f"À appeler : {c.name}" + (f" – {c.phone}" if c.phone else "") + f"\nInterlocuteur : {who}\n"
+              + "—" * 20 + "\n\n")
+    return f"Script d'appel – {c.name}", header + text
+
+
 def draft(c: Company, kind: str = "email") -> tuple[str, str]:
     s = get_settings()
     kind = kind if kind in KINDS else "email"
-    if kind == "email":
-        tpl = from_template(c)
+    if kind in ("email", "script_appel"):
+        tpl = from_template(c) if kind == "email" else script_from_template(c)
         if tpl:
             return tpl  # signature et mention STOP déjà dans le modèle
     hook = CATEGORIES.get(c.category, ("", "", 0, ""))[3]

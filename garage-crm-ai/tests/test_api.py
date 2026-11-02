@@ -215,3 +215,17 @@ def test_first_email_uses_garage_template_verbatim(client):
     # la relance, elle, n'utilise pas ce modèle
     r = client.post(f"/api/companies/{c2['id']}/draft", headers=h, json={"kind": "relance"}).json()
     assert "Nous avons identifié votre établissement" not in r["body"]
+
+
+def test_call_script_uses_garage_template(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Appel SARL", "category": "vo", "city": "Toulouse",
+                                                       "phone": "0561999999", "contact_name": "Karim Haddad"}).json()
+    m = client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "script_appel"}).json()
+    assert m["subject"] == "Script d'appel – Appel SARL"
+    assert "À appeler : Appel SARL – 0561999999" in m["body"] and "Interlocuteur : Karim Haddad" in m["body"]
+    assert "1. Accroche et présentation" in m["body"] and "5. Conclusion" in m["body"]
+    assert "STOP" not in m["body"] and "Cordialement" not in m["body"]      # pas de signature ni mention email
+    c2 = client.post("/api/companies", headers=h, json={"name": "Anonyme", "category": "vo", "city": "Toulouse"}).json()
+    m2 = client.post(f"/api/companies/{c2['id']}/draft", headers=h, json={"kind": "script_appel"}).json()
+    assert "demander le responsable" in m2["body"]
