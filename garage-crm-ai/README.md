@@ -32,6 +32,13 @@ Analyse les chiffres de la période (prospects, envois, réponses, appels, rende
 - L'IA ne reçoit **que des chiffres agrégés** (aucun nom, email ou téléphone de prospect) et ne doit citer aucun chiffre absent des données. Sans clé OpenAI, ou si sa réponse est inutilisable, une analyse par règles prend le relais.
 - Génération automatique **chaque lundi** (à partir de 8 h, application en marche) ; envoi par email au responsable si `REPORT_EMAIL` et l'envoi SMTP sont configurés.
 
+## Règle de fin : « Sans suite »
+Pour ne jamais harceler un prospect, la prospection s'arrête d'elle-même :
+- **1 premier email**, puis **2 relances maximum**, espacées de `RELANCE_DAYS` jours (5 par défaut) ;
+- **3 appels « Pas de réponse » de suite** (`MAX_NO_ANSWER`) -> « Sans suite » (un vrai échange remet le compteur à zéro, un message WhatsApp est neutre) ;
+- **2 relances sans réaction depuis 7 jours** (`SANS_SUITE_DAYS`) -> « Sans suite ».
+Un prospect « Sans suite » sort de la liste en cours et de la liste d'appels ; il reste retrouvable avec le filtre de statut et peut être repris à la main (le compteur repart de zéro).
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 

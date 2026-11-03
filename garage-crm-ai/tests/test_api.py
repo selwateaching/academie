@@ -713,3 +713,58 @@ def test_weekly_report_job_runs_monday_only_once_and_emails(client, monkeypatch)
     with _db() as db:
         assert autopilot.weekly_report_job(db, MONDAY + timedelta(days=14), send) == {"done": True, "emailed": False}   # analyse faite, pas d'email
     assert len(sent) == 2
+
+
+# ---------- Règle de fin : « Sans suite » ----------
+def test_no_answer_streak_parsing():
+    from app.relances import no_answer_streak as st
+    L = lambda out: f"Appel du 02/11/2026 10:00 (Marc) : {out}"
+    assert st("\n".join([L("Pas de réponse"), L("Pas de réponse – répondeur")])) == 2
+    assert st("\n".join([L("Pas de réponse"), L("À rappeler"), L("Pas de réponse")])) == 1          # un échange remet à zéro
+    assert st("\n".join([L("Pas de réponse"), L("Message WhatsApp ouvert"), L("Pas de réponse")])) == 2   # WhatsApp neutre
+    assert st("\n".join([L("Pas de réponse")] * 3 + ["Repris en prospection le 03/11/2026"] + [L("Pas de réponse")])) == 1
+    assert st("") == 0
+
+
+def test_three_unanswered_calls_close_the_prospect(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Jamais Joignable", "category": "taxi", "city": "Toulouse", "phone": "0561888888"}).json()
+    call = lambda o: client.post(f"/api/companies/{c['id']}/call", headers=h, json={"outcome": o}).json()
+    assert call("no_answer")["status"] == "contacte"
+    assert call("no_answer")["status"] == "contacte"
+    r = call("no_answer")
+    assert r["status"] == "sans_suite" and "3 appels sans réponse" in r["notes"]
+    assert c["id"] not in [x["id"] for x in client.get("/api/companies", headers=h).json()]                 # hors liste en cours
+    assert c["id"] in [x["id"] for x in client.get("/api/companies?status=sans_suite", headers=h).json()]    # retrouvable
+    assert c["id"] not in [x["id"] for x in client.get("/api/calls", headers=h).json()]                      # hors liste d'appels
+    # reprise manuelle : repart de zéro, un seul nouvel appel sans réponse ne reclôture pas
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"status": "a_contacter"})
+    assert call("no_answer")["status"] == "contacte"
+
+
+def test_a_real_conversation_resets_the_count(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Parfois Joignable", "category": "taxi", "city": "Toulouse", "phone": "0561999999"}).json()
+    call = lambda o: client.post(f"/api/companies/{c['id']}/call", headers=h, json={"outcome": o}).json()
+    call("no_answer"); call("no_answer"); call("callback")            # on a parlé à quelqu'un
+    assert call("no_answer")["status"] == "contacte" and call("no_answer")["status"] == "contacte"
+
+
+def test_two_relances_without_reply_close_after_seven_days(client):
+    from datetime import datetime, timedelta, timezone
+    from app import models
+    from app.relances import close_stale
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Silence Radio", "category": "flotte", "city": "Toulouse", "email": "x@silence.fr"}).json()
+    d = client.post("/api/companies", headers=h, json={"name": "Une Seule Relance", "category": "flotte", "city": "Toulouse", "email": "y@une.fr"}).json()
+    with _db() as db:
+        for cid, n in ((c["id"], 2), (d["id"], 1)):
+            co = db.get(models.Company, cid)
+            co.status, co.last_contact = "contacte", datetime.now(timezone.utc) - timedelta(days=10)
+            for _ in range(n):
+                db.add(models.Message(company_id=cid, kind="relance", subject="r", body="r", status="envoye", sent_at=co.last_contact))
+        db.commit()
+        assert close_stale(db) >= 1
+    got = {x["name"]: x["status"] for x in client.get("/api/companies?q=Silence", headers=h).json()}
+    assert client.get(f"/api/companies?status=sans_suite&q=Silence", headers=h).json()[0]["notes"].count("2 relances restées sans réponse") == 1
+    assert client.get("/api/companies?q=Une Seule", headers=h).json()[0]["status"] == "contacte"            # 1 relance : on attend encore

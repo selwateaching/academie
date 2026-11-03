@@ -11,7 +11,7 @@ def now():
 
 
 ROLES = ("admin", "manager", "commercial")
-STATUSES = ("a_contacter", "contacte", "repondu", "rdv", "partenaire", "refuse", "ecarte", "archive")
+STATUSES = ("a_contacter", "contacte", "repondu", "rdv", "partenaire", "refuse", "ecarte", "sans_suite", "archive")
 
 
 class User(Base):

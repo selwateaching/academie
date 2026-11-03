@@ -60,7 +60,7 @@ a{color:var(--brand)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 let token=sessionStorage.getItem("tk")||"",role="",cats=[];
-const STAT={a_contacter:"À contacter",contacte:"Contacté",repondu:"A répondu",rdv:"Rendez-vous",partenaire:"Partenaire",refuse:"Refusé",ecarte:"Écarté",archive:"Archivé"};
+const STAT={a_contacter:"À contacter",contacte:"Contacté",repondu:"A répondu",rdv:"Rendez-vous",partenaire:"Partenaire",refuse:"Refusé",ecarte:"Écarté",sans_suite:"Sans suite",archive:"Archivé"};
 async function api(path,opt={}){
   const h={Authorization:"Bearer "+token};
   if(opt.json){h["Content-Type"]="application/json";opt.body=JSON.stringify(opt.json)}
@@ -128,7 +128,7 @@ async function dash(){
 }
 async function pros(){
   const el=$("#t-pros");
-  el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">En cours (hors archivés)</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
+  el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">En cours (hors archivés et sans suite)</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
   <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
   <button class="btn pri" id="add">+ Ajouter</button>${role!=="commercial"?'<button class="btn" id="exp" title="Fichier Excel de tous les prospects">Exporter (Excel)</button>':""}</div>
   <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
@@ -205,7 +205,8 @@ async function call(){
   wireEmail(el,call);
   wireWhatsapp(el,call);
   el.querySelectorAll("[data-sc]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.sc}/draft`,{method:"POST",json:{kind:"script_appel"}});show("msgs")}catch(e){alert(e.message)}});
-  el.querySelectorAll("[data-co]").forEach(b=>b.onclick=async()=>{try{await api(`/companies/${b.dataset.ci}/call`,{method:"POST",json:{outcome:b.dataset.co,note:el.querySelector(`[data-cn="${b.dataset.ci}"]`).value}});call()}catch(e){alert(e.message)}});
+  el.querySelectorAll("[data-co]").forEach(b=>b.onclick=async()=>{try{const r=await api(`/companies/${b.dataset.ci}/call`,{method:"POST",json:{outcome:b.dataset.co,note:el.querySelector(`[data-cn="${b.dataset.ci}"]`).value}});
+      if(r.status==="sans_suite")alert("Ce prospect n'a pas répondu à plusieurs appels : il passe en « Sans suite » et sort de la liste. Vous pourrez le reprendre depuis Prospects (filtre « Sans suite »).");call()}catch(e){alert(e.message)}});
 }
 async function rel(){
   const d=await api("/relances"),el=$("#t-rel");

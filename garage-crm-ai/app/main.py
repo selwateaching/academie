@@ -16,7 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import autopilot, models, replies
-from .relances import aware, due_companies
+from .relances import aware, close_company, close_stale, due_companies, no_answer_streak
 from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
@@ -214,7 +214,7 @@ def list_companies(status: str | None = None, category: str | None = None, min_s
     if status:
         stmt = stmt.where(models.Company.status == status)
     else:
-        stmt = stmt.where(models.Company.status != "archive")      # les archivés sortent de la liste en cours
+        stmt = stmt.where(models.Company.status.not_in(("archive", "sans_suite")))   # archivés et « sans suite » : hors liste en cours
     if category:
         stmt = stmt.where(models.Company.category == category)
     if min_score is not None:
@@ -241,6 +241,9 @@ def patch_company(cid: int, data: CompanyPatch, db: Session = Depends(get_db), _
         raise HTTPException(422, "Statut invalide")
     if "email" in changes:
         changes["email"] = clean_email(changes["email"])
+    if c.status == "sans_suite" and changes.get("status", "sans_suite") != "sans_suite":
+        _note(c, f"Repris en prospection le {datetime.now(timezone.utc):%d/%m/%Y}")
+        c.last_contact = datetime.now(timezone.utc)                  # repart de zéro : pas de re-clôture immédiate
     for k, v in changes.items():
         setattr(c, k, v)
     if changes.get("status") in ("contacte", "rdv"):
@@ -602,6 +605,7 @@ class CallIn(BaseModel):
 
 @app.get("/api/calls")
 def call_list(db: Session = Depends(get_db), _=Depends(ANY)):
+    close_stale(db)
     """Prospects à appeler : ceux qui ont répondu d'abord, puis jamais contactés (les mieux notés), puis à relancer."""
     now = datetime.now(timezone.utc)
     recent = now - timedelta(days=2)
@@ -632,6 +636,9 @@ def log_call(cid: int, data: CallIn, db: Session = Depends(get_db), user=Depends
         c.status = status
     elif c.status == "a_contacter":
         c.status = "contacte"
+    limit = get_settings().max_no_answer
+    if data.outcome == "no_answer" and no_answer_streak(c.notes) >= limit:
+        close_company(c, f"{limit} appels sans réponse")
     db.commit()
     return company_out(c)
 
@@ -643,6 +650,7 @@ def due_relances(db: Session) -> list[dict]:
 
 @app.get("/api/relances")
 def relances(db: Session = Depends(get_db), _=Depends(ANY)):
+    close_stale(db)
     return {"after_days": get_settings().relance_days, "items": due_relances(db)}
 
 

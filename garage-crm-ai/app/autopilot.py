@@ -166,6 +166,8 @@ def start_scheduler(interval: int = 600) -> None:
                 with SessionLocal() as db:
                     from . import replies
                     replies.check_inbox(db)          # les STOP sont pris en compte avant tout nouvel envoi
+                    from .relances import close_stale
+                    close_stale(db)
                     weekly_report_job(db)
                     r = tick(db)
                     if r["sent"]:

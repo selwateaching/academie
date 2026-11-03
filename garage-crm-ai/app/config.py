@@ -43,6 +43,8 @@ class Settings:
     smtp_from: str = ""
     relance_days: int = 5
     imap_host: str = ""
+    max_no_answer: int = 3
+    sans_suite_days: int = 7
     report_email: str = ""
 
 
@@ -66,6 +68,8 @@ def get_settings() -> Settings:
         smtp_password=_env("SMTP_PASSWORD"),
         smtp_from=_env("SMTP_FROM"),
         relance_days=int(_env("RELANCE_DAYS", "5") or 5),
+        max_no_answer=int(_env("MAX_NO_ANSWER", "3") or 3),
+        sans_suite_days=int(_env("SANS_SUITE_DAYS", "7") or 7),
         report_email=_env("REPORT_EMAIL").strip(),
         imap_host=_env("IMAP_HOST") or (_env("SMTP_HOST").replace("smtp.", "imap.", 1) if _env("SMTP_HOST") else ""),
     )
