@@ -55,6 +55,35 @@ def _fallback(c: Company, kind: str) -> tuple[str, str]:
             f"Pourrions-nous convenir de 15 minutes cette semaine pour vous présenter notre offre ?")
 
 
+def google_reviews(kind: str) -> str:
+    """Phrase sur la note Google du garage de mécanique, ou '' si les chiffres ne sont pas renseignés / invalides.
+
+    kind : email | script | whatsapp. Jamais de chiffre inventé : tout vient de GARAGE_REVIEW_* dans .env."""
+    s = get_settings()
+    try:
+        note = float(s.review_note.replace(",", "."))
+        count = int(re.sub(r"\D", "", s.review_count) or 0)
+    except ValueError:
+        return ""
+    if not (1 <= note <= 5) or count < 1:
+        return ""
+    n = f"{note:.1f}".replace(".", ",").replace(",0", "") if note != 5 else "5"
+    url = s.review_url if s.review_url.startswith("https://") else ""
+    if kind == "script":
+        return (f"Notre garage de mécanique est noté {n} sur 5 sur Google, avec {count} avis. "
+                "Les mêmes patrons viennent d'ouvrir une carrosserie, avec la même exigence de qualité.")
+    base = f"Notre garage de mécanique est noté {n}/5 sur Google ({count} avis)" + (f" : {url}" if url else ".")
+    return base + "\nLes mêmes patrons ont ouvert cette carrosserie, avec la même exigence de qualité."
+
+
+def fill_reviews(text: str, kind: str) -> str:
+    """Remplace {avis_google} par la phrase, ou supprime le paragraphe s'il n'y a rien à afficher."""
+    line = google_reviews(kind)
+    if line:
+        return text.replace("{avis_google}", line)
+    return re.sub(r"\{avis_google\}[ \t]*\n\s*\n", "", text).replace("{avis_google}", "").strip()
+
+
 MODELE = Path(__file__).resolve().parent.parent / "modeles" / "email_premier_contact.txt"
 
 
@@ -72,7 +101,7 @@ def from_template(c: Company) -> tuple[str, str] | None:
     if not lines or not lines[0].lower().startswith("objet"):
         return None
     subject = lines[0].split(":", 1)[1].strip()
-    body = "\n".join(lines[1:]).strip()
+    body = fill_reviews("\n".join(lines[1:]).strip(), "email")
     if body.startswith("Bonjour,"):
         body = greeting(c) + body[len("Bonjour,"):]
     return subject, body
@@ -101,6 +130,7 @@ def whatsapp_text(c: Company) -> str:
     except OSError:
         s = get_settings()
         text = f"Bonjour,\n\nJe vous écris de la part de {s.garage_name} ({s.garage_city}). Seriez-vous disponible pour un court échange ?\n\nPour ne plus recevoir de message, répondez « STOP »."
+    text = fill_reviews(text, "whatsapp")
     return greeting(c) + text[len("Bonjour,"):] if text.startswith("Bonjour,") else text
 
 
@@ -139,6 +169,7 @@ def script_from_template(c: Company) -> tuple[str, str] | None:
         return None
     if not text:
         return None
+    text = fill_reviews(text, "script")
     who = c.contact_name or "à identifier – demander le responsable ou le gérant"
     header = (f"À appeler : {c.name}" + (f" – {c.phone}" if c.phone else "") + f"\nInterlocuteur : {who}\n"
               + "—" * 20 + "\n\n")

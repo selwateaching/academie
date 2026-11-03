@@ -4,6 +4,8 @@ Bonjour, je me permets de vous appeler au nom du Garage & Impulsion-Carrosserie,
 
 Nous sommes spécialisés en carrosserie, peinture et mécanique, et nous développons actuellement des partenariats avec des professionnels de l'automobile de la région.
 
+{avis_google}
+
 2. Présentation de l'intérêt du partenariat
 
 L'idée est simple : nous pouvons prendre en charge vos travaux de carrosserie et de peinture en sous-traitance, lorsque vous manquez de temps, de personnel ou lorsque vous ne disposez pas de ces prestations en interne.

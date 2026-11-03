@@ -768,3 +768,44 @@ def test_two_relances_without_reply_close_after_seven_days(client):
     got = {x["name"]: x["status"] for x in client.get("/api/companies?q=Silence", headers=h).json()}
     assert client.get(f"/api/companies?status=sans_suite&q=Silence", headers=h).json()[0]["notes"].count("2 relances restées sans réponse") == 1
     assert client.get("/api/companies?q=Une Seule", headers=h).json()[0]["status"] == "contacte"            # 1 relance : on attend encore
+
+
+# ---------- Note Google du garage de mécanique ----------
+def _draft(client, h, name, kind, **kw):
+    c = client.post("/api/companies", headers=h, json={"name": name, "category": "vo", "city": "Toulouse", **kw}).json()
+    return client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": kind}).json()["body"]
+
+
+def test_google_reviews_absent_by_default_without_leftovers(client):
+    h = auth(client)
+    for kind in ("email", "script_appel"):
+        body = _draft(client, h, f"Sans Avis {kind}", kind)
+        assert "Google" not in body and "{avis_google}" not in body and "\n\n\n" not in body
+    assert "{avis_google}" not in client.post("/api/companies", headers=h, json={"name": "WA", "phone": "0652922404"}).json()["whatsapp_url"]
+
+
+def test_google_reviews_inserted_only_with_real_figures(client, monkeypatch):
+    from urllib.parse import parse_qs, urlparse
+    monkeypatch.setenv("GARAGE_REVIEW_NOTE", "4,9")
+    monkeypatch.setenv("GARAGE_REVIEW_COUNT", "120")
+    monkeypatch.setenv("GARAGE_REVIEW_URL", "https://maps.app.goo.gl/abc")
+    h = auth(client)
+    mail = _draft(client, h, "Avec Avis Mail", "email")
+    assert "noté 4,9/5 sur Google (120 avis) : https://maps.app.goo.gl/abc" in mail
+    assert "Les mêmes patrons ont ouvert cette carrosserie" in mail and mail.index("noté 4,9") < mail.index("Concrètement")
+    assert mail.count("STOP") == 1 and "\n\n\n" not in mail
+    script = _draft(client, h, "Avec Avis Script", "script_appel")
+    assert "noté 4,9 sur 5 sur Google, avec 120 avis" in script and "https://" not in script    # à l'oral : pas de lien
+    wa = client.post("/api/companies", headers=h, json={"name": "Avec Avis WA", "phone": "0652922404"}).json()["whatsapp_url"]
+    wtext = parse_qs(urlparse(wa).query)["text"][0]
+    assert "noté 4,9/5 sur Google (120 avis)" in wtext and "https://maps.app.goo.gl/abc" in wtext
+    monkeypatch.setenv("GARAGE_REVIEW_NOTE", "4.5")                                                  # le point décimal fonctionne aussi
+    assert "noté 4,5/5" in _draft(client, h, "Point Decimal", "email")
+
+
+def test_google_reviews_ignores_invalid_values(client, monkeypatch):
+    h = auth(client)
+    for note, count in (("7", "120"), ("abc", "120"), ("4,9", "0"), ("4,9", ""), ("0", "10")):
+        monkeypatch.setenv("GARAGE_REVIEW_NOTE", note)
+        monkeypatch.setenv("GARAGE_REVIEW_COUNT", count)
+        assert "Google" not in _draft(client, h, f"Invalide {note}{count}", "email"), (note, count)
