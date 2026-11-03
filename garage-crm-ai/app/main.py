@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from . import autopilot, models, replies
 from .relances import aware, close_company, close_stale, due_companies, no_answer_streak
 from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
-from .agent.targets import CATEGORIES, is_competitor
+from .agent.targets import CATEGORIES, is_competitor, is_own_business
 from .config import get_settings
 from .departments import department_of
 from .db import Base, SessionLocal, engine, get_db
@@ -275,7 +275,8 @@ def _lookup(snap: dict) -> dict:
     out: dict = {}
     try:
         if snap["need_email"]:
-            out["email"] = emailfinder.find_email(snap["website"])
+            scan = emailfinder.scan_website(snap["website"])
+            out["email"], out["bodywork"] = scan["email"], scan["bodywork"]
         if snap["need_manager"]:
             out["manager"] = enrichment.find_manager(snap["name"], snap["city"], snap["address"])
     except Exception:
@@ -297,7 +298,7 @@ def enrich_companies(db: Session, companies: list[models.Company], budget: int =
                 "need_email": not c.email and bool(c.website), "need_manager": not c.contact_name}
         if snap["need_email"] or snap["need_manager"]:
             jobs.append((c, snap))
-    emails = managers = 0
+    emails = managers = competitors = 0
     if jobs:
         ex = ThreadPoolExecutor(max_workers=8)
         futs = {ex.submit(_lookup, snap): c for c, snap in jobs}
@@ -306,6 +307,13 @@ def enrich_companies(db: Session, companies: list[models.Company], budget: int =
         for f in done:
             c, res = futs[f], f.result()
             e, m = res.get("email"), res.get("manager")
+            if res.get("bodywork"):
+                if c.category == "garage":                      # cette catégorie = garages SANS carrosserie
+                    c.status = "archive"
+                    _note(c, "Archivé : fait de la carrosserie d'après son site web (concurrent)")
+                else:
+                    _note(c, "⚠ Carrosserie détectée sur son site web : concurrent probable, à vérifier avant d'appeler")
+                competitors += 1
             if e and not c.email:
                 c.email = e["email"]
                 _note(c, f"Email trouvé sur {e['source']} – à vérifier")
@@ -315,7 +323,7 @@ def enrich_companies(db: Session, companies: list[models.Company], budget: int =
                 _note(c, f"Gérant : {m['contact_name']} ({m['qualite'] or 'dirigeant'}) – registre public, SIREN {m['siren']} – à vérifier")
                 managers += 1
         db.commit()
-    return {"checked": len(jobs), "emails": emails, "managers": managers, "found": emails + managers}
+    return {"checked": len(jobs), "emails": emails, "managers": managers, "competitors": competitors, "found": emails + managers}
 
 
 @app.post("/api/companies/{cid}/find-manager")
@@ -371,7 +379,7 @@ def agent_search(data: SearchIn, db: Session = Depends(get_db), _=Depends(MANAGE
         rows = prospector.search_places(data.category, data.city.strip(), max(1, min(data.limit, 60)), data.radius_km)
     except prospector.ProspectorError as e:
         raise HTTPException(400, str(e))
-    return {"found": len(rows), "out_of_zone": getattr(rows, "dropped", 0), "competitors": getattr(rows, "competitors", 0),
+    return {"found": len(rows), "out_of_zone": getattr(rows, "dropped", 0), "competitors": getattr(rows, "competitors", 0), "own_skipped": getattr(rows, "own", 0),
             "zone": getattr(rows, "zone", data.city)} | _ingest(db, rows)
 
 
@@ -393,6 +401,8 @@ def purge_out_of_zone(data: PurgeIn, db: Session = Depends(get_db), _=Depends(MA
         m = re.search(r"\b(\d{5})\b", c.address or "")
         if m and not any(m[1].startswith(d) for d in keep):
             hits.append((c, m[1], f"hors zone (code postal {m[1]}, départements conservés : {', '.join(sorted(keep))})"))
+        elif is_own_business(c.name):
+            hits.append((c, "votre garage", "c'est l'un de vos propres établissements, pas un prospect"))
         elif data.competitors and is_competitor(c.name):
             hits.append((c, "concurrent", "concurrent (carrosserie), pas un prospect"))
     if not data.dry_run:

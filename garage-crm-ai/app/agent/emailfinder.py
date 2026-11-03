@@ -11,6 +11,8 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 
+from .targets import COMPETITOR_RE
+
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}")
 BAD_TLD = {"png", "jpg", "jpeg", "gif", "svg", "webp", "css", "js", "ico", "woff", "woff2", "pdf"}
 BAD_DOMAINS = ("sentry", "wixpress", "example.", "exemple.", "domain.", "email.com", "votre", "yourdomain", "test.com")
@@ -127,16 +129,23 @@ def candidate_pages(home_url: str, home_html: str) -> list[str]:
     return urls[: MAX_PAGES - 1]
 
 
-def find_email(website: str, fetcher=None) -> dict | None:
-    """Retourne {'email', 'source'} ou None. `fetcher` permet de tester sans réseau."""
+def visible_text(page: str) -> str:
+    page = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", page or "")
+    return htmllib.unescape(re.sub(r"<[^>]+>", " ", page))
+
+
+def scan_website(website: str, fetcher=None) -> dict:
+    """Lit le site de l'entreprise : {'email': {'email','source'} | None, 'bodywork': bool}.
+
+    `bodywork` = le site parle de carrosserie / peinture / débosselage : c'est un concurrent probable."""
     fetcher = fetcher or fetch
     home = normalize_url(website)
     if not home:
-        return None
+        return {"email": None, "bodywork": False}
     host = urlparse(home).hostname or ""
     home_html = fetcher(home)
-    pages = {home: home_html}
     best: tuple[int, str, str] | None = None
+    bodywork = bool(COMPETITOR_RE.search(visible_text(home_html)))
 
     def consider(url: str, page: str):
         nonlocal best
@@ -146,11 +155,16 @@ def find_email(website: str, fetcher=None) -> dict | None:
                 best = (sc, e, url)
 
     consider(home, home_html)
-    if best and best[0] >= 5:           # adresse générique du même domaine : inutile d'aller plus loin
-        return {"email": best[1], "source": best[2]}
-    for u in candidate_pages(home, home_html):
-        pages[u] = fetcher(u)
-        consider(u, pages[u])
-        if best and best[0] >= 5:
-            break
-    return {"email": best[1], "source": best[2]} if best else None
+    if not (best and best[0] >= 5):
+        for u in candidate_pages(home, home_html):
+            page = fetcher(u)
+            bodywork = bodywork or bool(COMPETITOR_RE.search(visible_text(page)))
+            consider(u, page)
+            if best and best[0] >= 5:
+                break
+    return {"email": {"email": best[1], "source": best[2]} if best else None, "bodywork": bodywork}
+
+
+def find_email(website: str, fetcher=None) -> dict | None:
+    """Retourne {'email', 'source'} ou None. `fetcher` permet de tester sans réseau."""
+    return scan_website(website, fetcher)["email"]

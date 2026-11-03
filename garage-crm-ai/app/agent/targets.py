@@ -39,5 +39,27 @@ def is_competitor(name: str) -> bool:
     return bool(COMPETITOR_RE.search(name or ""))
 
 
+import unicodedata
+
+
+def normalize_name(s: str) -> str:
+    """« Méca-Pulse Garage » -> « mecapulsegarage » (sans accents, espaces ni ponctuation)."""
+    s = unicodedata.normalize("NFKD", s or "").encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+def own_names() -> list[str]:
+    """Noms de VOS établissements (garage + EXCLUDE_NAMES) : jamais proposés comme prospects."""
+    from ..config import get_settings
+    s = get_settings()
+    names = [s.garage_name] + [x for x in s.exclude_names.split(",")]
+    return [n for n in (normalize_name(x) for x in names) if len(n) >= 5]
+
+
+def is_own_business(name: str) -> bool:
+    n = normalize_name(name)
+    return bool(n) and any(o in n or (len(n) >= 8 and n in o) for o in own_names())
+
+
 def label(key: str) -> str:
     return CATEGORIES.get(key, (key,))[0]

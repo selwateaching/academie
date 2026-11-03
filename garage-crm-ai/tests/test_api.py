@@ -955,3 +955,63 @@ def test_purge_also_archives_existing_competitor_bodyshops(client):
     assert left == ["Concur Garage Neutre"]
     off = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True, "competitors": False}).json()
     assert off["count"] == 0
+
+
+# ---------- Vos propres garages et carrosserie détectée sur le site ----------
+def test_own_business_matching(monkeypatch):
+    from app.agent.targets import is_own_business as own, normalize_name
+    monkeypatch.setenv("GARAGE_NAME", "Garage & impulsion-carrosserie")
+    monkeypatch.setenv("EXCLUDE_NAMES", "Méca Pulse, ab")
+    assert normalize_name("Méca-Pulse Garage") == "mecapulsegarage"
+    for name in ("Meca Pulse Garage Mécanique et Carrosserie à Toulouse Nord", "MECA PULSE", "Garage & Impulsion – Carrosserie", "méca-pulse"):
+        assert own(name), name
+    for name in ("Garage Dupont", "Pulse Fitness", "Rent A Car", "Abc Transports", ""):                 # « ab » est trop court : ignoré
+        assert not own(name), name
+
+
+def test_search_skips_own_garages(monkeypatch):
+    from app.agent import prospector
+    monkeypatch.setenv("GOOGLE_PLACES_API_KEY", "fake")
+    monkeypatch.setenv("EXCLUDE_NAMES", "Méca Pulse")
+    def post(url, body, headers):
+        if "locationRestriction" not in body:
+            return 200, {"places": [{"location": {"latitude": 43.6045, "longitude": 1.4442}}]}, ""
+        mk = lambda i, n: {"id": i, "displayName": {"text": n}, "formattedAddress": "1 rue A, 31000 Toulouse", "location": {"latitude": 43.61, "longitude": 1.45}}
+        return 200, {"places": [mk("1", "Garage Dupont"), mk("2", "Meca Pulse Garage Mécanique"), mk("3", "Transports Vidal")]}, ""
+    rows = prospector.search_places("garage", "Toulouse", 20, 15, post=post)
+    assert [r["name"] for r in rows] == ["Garage Dupont", "Transports Vidal"] and rows.own == 1
+
+
+def test_scan_website_detects_bodywork_even_without_email():
+    from app.agent import emailfinder
+    pages = {"https://garage-a.fr": "<html><nav>Mécanique · Pneus · <a href='/contact'>Contact</a></nav><p>Atelier de carrosserie et peinture</p></html>",
+             "https://garage-b.fr": "<html><script>var x='carrosserie'</script><p>Vidange, freins, climatisation</p></html>"}
+    fetch = lambda u: pages.get(u.rstrip("/"), "")
+    assert emailfinder.scan_website("garage-a.fr", fetch)["bodywork"] is True
+    assert emailfinder.scan_website("garage-b.fr", fetch)["bodywork"] is False          # un script n'est pas du texte visible
+    assert emailfinder.scan_website("garage-b.fr", fetch)["email"] is None
+
+
+def test_enrichment_archives_bodywork_garages_and_flags_other_categories(client, monkeypatch):
+    from app.agent import emailfinder
+    pages = {"https://atelier-x.fr": "<html>Mécanique, carrosserie, peinture. Écrire à contact@atelier-x.fr</html>"}
+    monkeypatch.setattr(emailfinder, "fetch", lambda u: pages.get(u.rstrip("/"), ""))
+    h = auth(client)
+    g = client.post("/api/companies", headers=h, json={"name": "Atelier X", "category": "garage", "city": "Toulouse", "website": "https://atelier-x.fr"}).json()
+    f = client.post("/api/companies", headers=h, json={"name": "Flotte Y", "category": "flotte", "city": "Toulouse", "website": "https://atelier-x.fr"}).json()
+    r = client.post(f"/api/companies/{g['id']}/find-manager", headers=h).json()
+    assert r["status"] == "archive" and "fait de la carrosserie" in r["notes"] and r["competitors"] == 1
+    r = client.post(f"/api/companies/{f['id']}/find-manager", headers=h).json()
+    assert r["status"] == "a_contacter" and "Carrosserie détectée" in r["notes"]       # signalé, pas archivé
+
+
+def test_purge_archives_own_garage(client, monkeypatch):
+    from app import models
+    monkeypatch.setenv("EXCLUDE_NAMES", "Méca Pulse")
+    h = auth(client)
+    with _db() as db:
+        db.add(models.Company(name="Meca Pulse Garage Mécanique", address="5 rue A, 31140 Launaguet", source="google_places",
+                              category="garage", city="Launaguet", status="a_contacter"))
+        db.commit()
+    dry = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True}).json()
+    assert any("Meca Pulse" in e and "votre garage" in e for e in dry["examples"])

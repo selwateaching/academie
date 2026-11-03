@@ -141,6 +141,7 @@ async function pros(){
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
       <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
       <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}${c.email?"":`<br><span class="mute" style="font-size:12px">${noMailHint(c)}</span>`}<br>${catBadge(c.category)} <span class="mute">📍 ${esc(c.city)}${c.department?` · <b>${esc(c.department)}</b> ${esc(c.department_name)}`:""}</span>
+        ${(c.notes||"").includes("Carrosserie détectée")?`<br><b class="bad" style="font-size:12px">⚠ fait de la carrosserie (son site) : concurrent probable</b>`:""}
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
@@ -323,12 +324,12 @@ async function agent(){
   $("#ar").onclick=async()=>{if(!$("#ay").value.trim()||/^\d+$/.test($("#ay").value.trim())){$("#ao").textContent="Indiquez le nom d'une ville (ex. Toulouse), pas un numéro de département.";return}
     $("#ao").textContent="Recherche en cours… (l'agent lit aussi les sites web pour trouver les emails : jusqu'à 1 minute)";
     try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value,radius_km:+$("#arad").value}});
-      $("#ao").textContent=`Zone : ${esc(r.zone)} · ${r.found} trouvées · ${r.out_of_zone} hors zone et ${r.competitors} concurrents (carrosseries) écartés · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
+      $("#ao").textContent=`Zone : ${esc(r.zone)} · ${r.found} trouvées · ${r.out_of_zone} hors zone, ${r.competitors} carrosseries et ${r.own_skipped} de vos propres garages écartés · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
   const pzCall=dry=>api("/agent/purge-out-of-zone",{method:"POST",json:{departments:$("#pz").value,dry_run:dry}});
   $("#pzv").onclick=async()=>{try{const r=await pzCall(true);$("#pzm").textContent=r.count?`${r.count} à archiver, par exemple : ${r.examples.join(", ")}`:"Rien à archiver.";$("#pza").classList.toggle("hidden",!r.count)}catch(e){$("#pzm").textContent=e.message}};
   $("#pza").onclick=async()=>{if(!confirm("Archiver tous les prospects hors zone ?"))return;try{const r=await pzCall(false);$("#pzm").textContent=r.count===1?"1 prospect archivé.":`${r.count} prospects archivés.`;$("#pza").classList.add("hidden")}catch(e){$("#pzm").textContent=e.message}};
   $("#ae").onclick=async()=>{$("#ao").textContent="Lecture des sites web et du registre… (jusqu'à 1 minute)";
-    try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.emails} emails et ${r.managers} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
+    try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.emails} emails et ${r.managers} gérants trouvés${r.competitors?` · ${r.competitors} concurrent(s) repéré(s) sur leur site`:""}`}catch(e){$("#ao").textContent=e.message}};
   $("#ai").onclick=async()=>{const f=$("#af").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);
     try{const r=await api("/agent/import-csv",{method:"POST",body:fd});$("#ao").textContent=`${r.found} lignes · ${r.added} ajoutées · ${r.duplicates} doublons · ${r.emails_found} emails et ${r.managers_found} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
 }
