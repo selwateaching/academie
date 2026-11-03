@@ -27,6 +27,11 @@ L'application doit tourner en continu (PC allumé ou serveur en ligne).
 - **Refus** : statut « Refusé ». **Autre réponse** : statut « A répondu ». Dans les deux cas, plus de relance. Les réponses automatiques (absence…) sont ignorées.
 - Sans lecture de la boîte mail : bouton **« a dit STOP »** sur la fiche du prospect, même effet.
 
+## Agent 5 : responsable commercial IA (onglet Rapport)
+Analyse les chiffres de la période (prospects, envois, réponses, appels, rendez-vous, taux par catégorie) et rédige un résumé, des **recommandations d'actions** et des points de vigilance.
+- L'IA ne reçoit **que des chiffres agrégés** (aucun nom, email ou téléphone de prospect) et ne doit citer aucun chiffre absent des données. Sans clé OpenAI, ou si sa réponse est inutilisable, une analyse par règles prend le relais.
+- Génération automatique **chaque lundi** (à partir de 8 h, application en marche) ; envoi par email au responsable si `REPORT_EMAIL` et l'envoi SMTP sont configurés.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 

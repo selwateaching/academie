@@ -119,6 +119,41 @@ def tick(db: Session, now: datetime | None = None, send=None) -> dict:
     return {"sent": m.id, "reason": f"{kind} envoyé à {c.name}"}
 
 
+def weekly_report_job(db: Session, now: datetime | None = None, send=None) -> dict:
+    """Chaque lundi à partir de 8 h : génère l'analyse (agent 5) et l'envoie par email si REPORT_EMAIL est configuré."""
+    from .agent import manager
+    from .config import get_settings
+    now = now or datetime.now(timezone.utc)
+    local = now.astimezone(TZ)
+    if local.weekday() != 0 or local.hour < 8:
+        return {"done": False, "reason": "pas le moment"}
+    row = db.get(models.AppSetting, "last_report")
+    if row and now - datetime.fromisoformat(row.value) < timedelta(days=5):
+        return {"done": False, "reason": "déjà fait cette semaine"}
+    a = manager.analyse(db, 7)
+    set_cfg_raw(db, "last_report", now.isoformat())
+    s = get_settings()
+    emailed = False
+    send = send or (mailer.send_email if mailer.smtp_configured() else None)
+    if s.report_email and send:
+        try:
+            subject, body = manager.email_text(a, s.garage_name)
+            send(s.report_email, subject, body)
+            emailed = True
+        except Exception as e:
+            log.warning("Rapport hebdomadaire non envoyé : %s", e)
+    return {"done": True, "emailed": emailed}
+
+
+def set_cfg_raw(db: Session, key: str, value: str) -> None:
+    row = db.get(models.AppSetting, key)
+    if row:
+        row.value = value
+    else:
+        db.add(models.AppSetting(key=key, value=value))
+    db.commit()
+
+
 def start_scheduler(interval: int = 600) -> None:
     """Lance la boucle de fond (un passage toutes les 10 minutes). Désactivable avec NO_SCHEDULER=1."""
     if os.environ.get("NO_SCHEDULER"):
@@ -131,6 +166,7 @@ def start_scheduler(interval: int = 600) -> None:
                 with SessionLocal() as db:
                     from . import replies
                     replies.check_inbox(db)          # les STOP sont pris en compte avant tout nouvel envoi
+                    weekly_report_job(db)
                     r = tick(db)
                     if r["sent"]:
                         log.info("Pilote : %s", r["reason"])

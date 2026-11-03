@@ -643,3 +643,73 @@ def test_whatsapp_link_prefilled_and_logged(client):
     # un clic est tracé : note datée, prospect « Contacté »
     r = client.post(f"/api/companies/{mob['id']}/call", headers=h, json={"outcome": "whatsapp"}).json()
     assert r["status"] == "contacte" and "WhatsApp" in r["notes"] and r["next_action"] == "Attendre la réponse"
+
+
+# ---------- Agent 5 : responsable commercial IA ----------
+def test_manager_facts_contain_no_personal_data_and_rules_work_without_ai(client):
+    import json
+    from app.agent import manager
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Chaud SARL", "category": "transport", "city": "Toulouse",
+                                                       "phone": "0561777777", "email": "secret@chaud.fr", "contact_name": "Paul Secret"}).json()
+    client.patch(f"/api/companies/{c['id']}", headers=h, json={"status": "repondu"})
+    with _db() as db:
+        facts = manager.gather_facts(db, 7)
+        dump = json.dumps(facts, ensure_ascii=False)
+        assert "@" not in dump and "secret" not in dump.lower() and "0561777777" not in dump and "Chaud SARL" not in dump
+        assert facts["a_traiter"]["ont_repondu_a_rappeler"] >= 1
+        res = manager.analyse(db, 7)                                   # pas de clé OpenAI : règles
+    assert res["source"] == "regles" and res["summary"]
+    assert any(r["action"].startswith("Rappeler") for r in res["recommendations"]) and len(res["recommendations"]) <= 5
+
+
+def test_manager_uses_ai_when_valid_and_falls_back_when_not(client, monkeypatch):
+    from app.agent import llm, manager
+    seen = {}
+    good = {"summary": "Semaine calme.", "recommendations": [{"action": "Appeler les transporteurs", "why": "3 réponses sur 4"}], "alerts": []}
+    def fake_ok(system, user):
+        seen["user"] = user
+        return good
+    monkeypatch.setattr(llm, "chat_json", fake_ok)
+    with _db() as db:
+        r = manager.analyse(db, 7)
+    assert r["source"] == "ia" and r["recommendations"][0]["action"] == "Appeler les transporteurs"
+    assert "@" not in seen["user"]                                     # seuls des chiffres partent vers l'IA
+    for bad in ({"summary": "x"}, {"summary": "", "recommendations": []}, {"recommendations": "n'importe quoi"}, None):
+        monkeypatch.setattr(llm, "chat_json", lambda s, u, b=bad: b)
+        with _db() as db:
+            assert manager.analyse(db, 7)["source"] == "regles"        # réponse inutilisable -> règles
+
+
+def test_analysis_endpoints_and_permissions(client):
+    h = auth(client)
+    r = client.post("/api/report/analysis?days=14", headers=h).json()
+    assert r["days"] == 14 and r["recommendations"]
+    got = client.get("/api/report/analysis", headers=h).json()
+    assert got["id"] == r["id"] and got["summary"] == r["summary"]
+    hc = auth(client, "com@test.fr", "nouveau-mdp-1")
+    assert client.get("/api/report/analysis", headers=hc).status_code == 200      # lecture : tous
+    assert client.post("/api/report/analysis", headers=hc).status_code == 403     # génération : responsables
+
+
+def test_weekly_report_job_runs_monday_only_once_and_emails(client, monkeypatch):
+    from datetime import datetime, timedelta, timezone
+    from app import autopilot
+    from app.config import get_settings
+    monkeypatch.setenv("REPORT_EMAIL", "dirigeant@garage.fr")
+    sent = []
+    send = lambda to, subject, body: sent.append((to, subject, body))
+    MONDAY = datetime(2031, 1, 6, 8, 30, tzinfo=timezone.utc)           # lundi 9 h 30 à Paris
+    with _db() as db:
+        assert autopilot.weekly_report_job(db, datetime(2031, 1, 7, 9, 0, tzinfo=timezone.utc), send)["done"] is False   # mardi
+        assert autopilot.weekly_report_job(db, datetime(2031, 1, 6, 5, 0, tzinfo=timezone.utc), send)["done"] is False   # lundi 6 h
+        r = autopilot.weekly_report_job(db, MONDAY, send)
+        assert r == {"done": True, "emailed": True}
+        assert autopilot.weekly_report_job(db, MONDAY + timedelta(hours=2), send)["done"] is False                       # déjà fait
+        assert autopilot.weekly_report_job(db, MONDAY + timedelta(days=7), send)["done"] is True                          # lundi suivant
+    assert len(sent) == 2 and sent[0][0] == "dirigeant@garage.fr"
+    assert "Actions recommandées" in sent[0][2] and "@" not in sent[0][2].replace("dirigeant@garage.fr", "")
+    monkeypatch.delenv("REPORT_EMAIL")
+    with _db() as db:
+        assert autopilot.weekly_report_job(db, MONDAY + timedelta(days=14), send) == {"done": True, "emailed": False}   # analyse faite, pas d'email
+    assert len(sent) == 2

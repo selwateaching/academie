@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from . import autopilot, models, replies
 from .relances import aware, due_companies
-from .agent import emailfinder, enrichment, mailer, prospector, qualifier, writer
+from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
 from .db import Base, SessionLocal, engine, get_db
@@ -556,6 +556,17 @@ def put_autopilot(data: AutopilotIn, db: Session = Depends(get_db), _=Depends(AD
         ch["failures"], ch["last_error"] = 0, ""
     autopilot.set_cfg(db, **ch)
     return _autopilot_state(db)
+
+
+# ---------- Agent 5 : analyse du responsable commercial IA ----------
+@app.get("/api/report/analysis")
+def get_analysis(db: Session = Depends(get_db), _=Depends(ANY)):
+    return manager.latest(db) or {}
+
+
+@app.post("/api/report/analysis")
+def make_analysis(days: int = 7, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    return manager.analyse(db, max(1, min(days, 90)))
 
 
 # ---------- Export (sauvegarde lisible dans Excel) ----------

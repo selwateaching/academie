@@ -83,3 +83,13 @@ class InboxEvent(Base):
     kind: Mapped[str] = mapped_column(String(20))          # stop | refus | reponse | auto
     summary: Mapped[str] = mapped_column(String(300), default="")
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class WeeklyAnalysis(Base):
+    """Analyse du « responsable commercial IA » (agent 5), conservée pour l'historique."""
+    __tablename__ = "weekly_analyses"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    days: Mapped[int] = mapped_column(Integer, default=7)
+    source: Mapped[str] = mapped_column(String(20), default="regles")     # ia | regles
+    content: Mapped[str] = mapped_column(Text, default="{}")              # JSON : summary, recommendations, alerts, facts

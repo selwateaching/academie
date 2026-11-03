@@ -224,16 +224,25 @@ async function rel(){
 }
 async function rep(){
   const sel=+(sessionStorage.getItem("rd")||7);
-  const r=await api("/report?days="+sel);const el=$("#t-rep");
+  const [r,an]=await Promise.all([api("/report?days="+sel),api("/report/analysis")]);const el=$("#t-rep");
   const k=(v,l)=>`<div class="card kpi"><b>${v??0}</b><span>${l}</span></div>`;
   const st=r.by_status;
   el.innerHTML=`<div class="row noprint"><select id="rdays">${[7,14,30].map(n=>`<option value="${n}" ${n===sel?"selected":""}>${n} derniers jours</option>`).join("")}</select>
   <button class="btn" onclick="window.print()">Imprimer / PDF</button></div>
   <div class="card"><h2 style="margin:0">Rapport commercial – ${esc(r.garage)}</h2><span class="mute">Période : ${r.days} derniers jours (depuis le ${new Date(r.since).toLocaleDateString("fr-FR")})</span></div>
+  <div class="card"><div class="row"><h3 style="margin:0">🧠 Analyse du responsable commercial IA</h3>
+    ${role!=="commercial"?'<button class="btn pri noprint" id="ana">'+(an.summary?"Actualiser l'analyse":"Générer l'analyse")+'</button>':""}<span id="anm" class="mute noprint"></span></div>
+    ${an.summary?`<p style="margin:10px 0 6px">${esc(an.summary)}</p>
+      ${an.alerts.length?an.alerts.map(a=>`<p class="bad" style="margin:4px 0">⚠ ${esc(a)}</p>`).join(""):""}
+      <b>Actions recommandées</b><ol style="margin:6px 0 0 18px;padding:0">${an.recommendations.map(x=>`<li style="margin-bottom:6px"><b>${esc(x.action)}</b>${x.why?`<br><span class="mute">${esc(x.why)}</span>`:""}</li>`).join("")}</ol>
+      <p class="mute" style="margin:8px 0 0;font-size:12px">${an.source==="ia"?"Rédigée par l'IA":"Produite par des règles simples (clé OpenAI absente ou réponse inutilisable)"} à partir des chiffres du CRM · ${new Date(an.created_at).toLocaleString("fr-FR")} · sur ${an.days} jours. L'IA ne reçoit ni noms, ni emails, ni téléphones de prospects.</p>`
+    :'<p class="mute" style="margin:8px 0 0">Aucune analyse pour l\'instant. Elle se génère automatiquement chaque lundi, ou en cliquant sur le bouton.</p>'}</div>
   <div class="grid">${k(r.new_prospects,"Nouveaux prospects")}${k(r.messages_sent,"Messages envoyés")}${k(r.relances_sent,"dont relances")}${k(r.to_relance,"À relancer")}${k(r.drafts_pending,"Brouillons à traiter")}</div>
   <div class="grid" style="margin-top:12px">${k(st.contacte,"En cours de contact")}${k(st.rdv,"Rendez-vous")}${k(st.partenaire,"Partenaires")}${k(st.refuse,"Refus")}${k(r.total,"Total en base")}</div>
   <div class="card" style="margin-top:12px"><b>Nouveaux prospects par catégorie</b><div class="row" style="margin-top:8px">${Object.keys(r.new_by_category).length?Object.entries(r.new_by_category).map(([c,n])=>`${catBadge(c)} <b>${n}</b>`).join(" "):'<span class="mute">Aucun nouveau prospect sur la période.</span>'}</div></div>
   <div class="card"><b>Les 5 meilleurs prospects à contacter</b>${r.top_to_contact.length?`<table style="margin-top:8px">${r.top_to_contact.map(c=>`<tr><td><span class="score hi">${c.score??"–"}</span></td><td><b>${esc(c.name)}</b><br>${catBadge(c.category)}</td><td>${esc(c.phone)}</td><td class="mute">${esc(c.next_action)}</td></tr>`).join("")}</table>`:'<p class="mute">Aucun prospect en attente.</p>'}</div>`;
+  const ab=$("#ana");if(ab)ab.onclick=async()=>{ab.disabled=true;$("#anm").textContent="Analyse en cours…";
+    try{await api("/report/analysis?days="+sel,{method:"POST"});rep()}catch(e){$("#anm").textContent="⚠️ "+e.message;ab.disabled=false}};
   $("#rdays").onchange=e=>{sessionStorage.setItem("rd",e.target.value);rep()};
 }
 async function pil(){
