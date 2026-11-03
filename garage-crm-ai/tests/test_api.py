@@ -809,3 +809,20 @@ def test_google_reviews_ignores_invalid_values(client, monkeypatch):
         monkeypatch.setenv("GARAGE_REVIEW_NOTE", note)
         monkeypatch.setenv("GARAGE_REVIEW_COUNT", count)
         assert "Google" not in _draft(client, h, f"Invalide {note}{count}", "email"), (note, count)
+
+
+# ---------- Réinitialisation du mot de passe ----------
+def test_reset_password_tool(client):
+    from app.reset_password import reset
+    assert reset("admin@test.fr", "court").startswith("ERREUR") and "8 caractères" in reset("admin@test.fr", "court")
+    msg = reset("inconnu@test.fr", "unmotdepasse-long")
+    assert msg.startswith("ERREUR") and "admin@test.fr" in msg                      # liste les comptes existants
+    # désactivé + oublié -> réinitialisé et réactivé
+    h = auth(client)
+    com = next(u for u in client.get("/api/users", headers=h).json() if u["email"] == "com@test.fr")
+    client.patch(f"/api/users/{com['id']}", headers=h, json={"active": False})
+    assert client.post("/api/auth/login", json={"email": "com@test.fr", "password": "nouveau-mdp-1"}).status_code == 401
+    assert reset("  COM@test.fr ", "mot-de-passe-neuf").startswith("OK")
+    auth(client, "com@test.fr", "mot-de-passe-neuf")
+    assert client.post("/api/auth/login", json={"email": "com@test.fr", "password": "nouveau-mdp-1"}).status_code == 401   # l'ancien ne marche plus
+    assert len(client.get("/api/companies", headers=h).json()) > 0                                                           # les prospects sont intacts
