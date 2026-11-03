@@ -1015,3 +1015,33 @@ def test_purge_archives_own_garage(client, monkeypatch):
         db.commit()
     dry = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True}).json()
     assert any("Meca Pulse" in e and "votre garage" in e for e in dry["examples"])
+
+
+# ---------- Suppression définitive d'un département ----------
+def test_delete_department_with_safeguards(client):
+    from app import models
+    h = auth(client)
+    base = client.post("/api/companies/delete-department", headers=h, json={"department": "23"}).json()["count"]   # restes d'autres tests
+    with _db() as db:
+        mk = lambda n, addr, st="a_contacter": models.Company(name=n, address=addr, source="google_places", category="garage", city="X", status=st)
+        gu1, gu2 = mk("Del Gueret 1", "1 place C, 23000 Guéret"), mk("Del Gueret 2", "2 rue D, 23200 Aubusson")
+        gu_rdv = mk("Del Gueret RDV", "3 rue E, 23000 Guéret", "rdv")
+        tls, noaddr = mk("Del Toulouse", "5 rue A, 31000 Toulouse"), mk("Del SansAdresse", "")
+        db.add_all([gu1, gu2, gu_rdv, tls, noaddr]); db.commit()
+        db.add(models.Message(company_id=gu1.id, kind="email", subject="s", body="b")); db.commit()
+        db.add(models.InboxEvent(message_id="<del-1>", company_id=gu1.id, kind="reponse", summary="x")); db.commit()
+    call = lambda **kw: client.post("/api/companies/delete-department", headers=h, json=kw)
+    assert call(department="99").status_code == 422 and call(department="abc").status_code == 422
+    dry = call(department="23").json()
+    assert dry["count"] == base + 2 and dry["protected"] >= 1 and dry["deleted"] is False and dry["name"] == "Creuse"
+    assert len(client.get("/api/companies?q=Del Gueret", headers=h).json()) == 3                     # simulation : rien supprimé
+    assert call(department="23", dry_run=False).status_code == 409                                    # sans confirmation
+    assert call(department="23", dry_run=False, confirm_name="Tarn").status_code == 409               # mauvais nom
+    done = call(department="23", dry_run=False, confirm_name="  creuse ").json()                      # casse et espaces tolérés
+    assert done["deleted"] is True and done["count"] == base + 2
+    assert call(department="23").json()["count"] == 0                                                 # plus rien à supprimer
+    left = {c["name"] for c in client.get("/api/companies?q=Del ", headers=h).json()}
+    assert left == {"Del Gueret RDV", "Del Toulouse", "Del SansAdresse"}                              # RDV protégé, Toulouse intact, sans adresse intact
+    assert all(m["company"] != "Del Gueret 1" for m in client.get("/api/messages", headers=h).json())   # messages supprimés avec lui
+    hc = auth(client, "com@test.fr", "mot-de-passe-neuf")
+    assert client.post("/api/companies/delete-department", headers=hc, json={"department": "23"}).status_code == 403

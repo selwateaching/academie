@@ -20,7 +20,7 @@ from .relances import aware, close_company, close_stale, due_companies, no_answe
 from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES, is_competitor, is_own_business
 from .config import get_settings
-from .departments import department_of
+from .departments import DEPARTMENTS, department_of
 from .db import Base, SessionLocal, engine, get_db
 from .security import hash_password, make_token, read_token, verify_password
 
@@ -433,6 +433,44 @@ def company_stop(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
     c = db.get(models.Company, cid) or _404()
     result = replies.handle_stop(db, c, reason="signalé manuellement")      # d'abord l'action, puis l'état à jour
     return company_out(c) | result
+
+
+class DeleteDeptIn(BaseModel):
+    department: str
+    dry_run: bool = True
+    confirm_name: str = ""
+
+
+@app.post("/api/companies/delete-department")
+def delete_department(data: DeleteDeptIn, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """Supprime DÉFINITIVEMENT les prospects dont l'adresse est dans un département.
+
+    Garde-fous : simulation d'abord ; confirmation en tapant le nom du département ; les prospects en
+    « Rendez-vous » ou « Partenaire » ne sont jamais supprimés ; ceux sans adresse ne sont pas concernés."""
+    code = data.department.strip().upper()
+    if code not in DEPARTMENTS:
+        raise HTTPException(422, "Département inconnu : indiquez son numéro (ex. 23)")
+    name = DEPARTMENTS[code]
+    hits, protected = [], 0
+    for c in db.scalars(select(models.Company)):
+        if department_of(c.address)[0] != code:
+            continue
+        if c.status in ("rdv", "partenaire"):
+            protected += 1
+        else:
+            hits.append(c)
+    if not data.dry_run:
+        if data.confirm_name.strip().lower() != name.lower():
+            raise HTTPException(409, f"Pour confirmer, tapez le nom du département : {name}")
+        ids = [c.id for c in hits]
+        if ids:
+            for ev in db.scalars(select(models.InboxEvent).where(models.InboxEvent.company_id.in_(ids))):
+                ev.company_id = None
+        for c in hits:
+            db.delete(c)                                   # ses messages sont supprimés avec lui
+        db.commit()
+    return {"department": code, "name": name, "count": len(hits), "protected": protected, "deleted": not data.dry_run,
+            "examples": [c.name for c in hits[:8]]}
 
 
 @app.post("/api/companies/{cid}/competitor")

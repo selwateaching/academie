@@ -45,6 +45,9 @@ La recherche Google exige une **ville** (jamais vide, jamais un numéro de dépa
 ## Concurrents
 Une entreprise dont le **nom annonce de la carrosserie** (carrosserie, carrossier, débosselage, body shop, tôlerie, smart repair…) est un concurrent : l'agent ne l'enregistre jamais. Les établissements **du garage lui-même** (`GARAGE_NAME` + `EXCLUDE_NAMES` dans `.env`, par exemple `EXCLUDE_NAMES=Méca Pulse`) ne sont jamais proposés. L'agent lit aussi le site de chaque nouveau prospect : s'il parle de carrosserie, un prospect de la catégorie « Garages sans carrosserie » est archivé comme concurrent, et un prospect d'une autre catégorie est signalé « ⚠ fait de la carrosserie ». Pour les autres cas, un lien « concurrent » (Prospects) et un bouton « Concurrent » (À appeler) archivent l'entreprise sans aucun message. Le bloc « Nettoyer » (Agent IA) archive aussi les concurrents déjà présents.
 
+## Supprimer un département
+Dans Prospects, quand un département est sélectionné dans le filtre, le bouton « 🗑 Supprimer les prospects de … » supprime **définitivement** ses prospects (et leurs messages). Garde-fous : simulation d'abord avec le nombre et des exemples, confirmation en tapant le nom du département, prospects « Rendez-vous » et « Partenaire » jamais supprimés, prospects sans adresse non concernés.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 

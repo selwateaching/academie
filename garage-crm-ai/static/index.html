@@ -129,7 +129,7 @@ async function dash(){
 async function pros(){
   const el=$("#t-pros");
   el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">En cours (hors archivés et sans suite)</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
-  <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><select id="fd"><option value="">Tous départements</option></select><button class="btn" id="fl">Filtrer</button>
+  <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><select id="fd"><option value="">Tous départements</option></select><button class="btn" id="fl">Filtrer</button><button class="btn hidden bad" id="fdel" title="Supprime définitivement les prospects de ce département"></button>
   <button class="btn pri" id="add">+ Ajouter</button>${role!=="commercial"?'<button class="btn" id="exp" title="Fichier Excel de tous les prospects">Exporter (Excel)</button>':""}</div>
   <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
   const load=async()=>{
@@ -138,6 +138,8 @@ async function pros(){
     const fd=$("#fd"),cur=fd.value,deps=[...new Map(all.filter(c=>c.department).map(c=>[c.department,c.department_name])).entries()].sort();
     fd.innerHTML='<option value="">Tous départements</option>'+deps.map(([k,n])=>`<option value="${k}" ${k===cur?"selected":""}>${k} · ${esc(n)}</option>`).join("");
     const rows=cur?all.filter(c=>c.department===cur):all;
+    const fdel=$("#fdel");fdel.classList.toggle("hidden",!cur||role==="commercial");
+    if(cur){const nm=(deps.find(([k])=>k===cur)||[cur,cur])[1];fdel.textContent=`🗑 Supprimer les prospects de ${nm} (${cur})`;fdel.dataset.dep=cur;fdel.dataset.nm=nm}
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
       <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
       <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}${c.email?"":`<br><span class="mute" style="font-size:12px">${noMailHint(c)}</span>`}<br>${catBadge(c.category)} <span class="mute">📍 ${esc(c.city)}${c.department?` · <b>${esc(c.department)}</b> ${esc(c.department_name)}`:""}</span>
@@ -173,6 +175,13 @@ async function pros(){
     if(!r.ok)throw new Error("Export refusé");const u=URL.createObjectURL(await r.blob());const a=document.createElement("a");
     a.href=u;a.download="prospects-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(u)}catch(e){alert(e.message)}};
   $("#fl").onclick=load;$("#fd").onchange=load;
+  $("#fdel").onclick=async()=>{const dep=$("#fdel").dataset.dep,nm=$("#fdel").dataset.nm;
+    try{const d=await api("/companies/delete-department",{method:"POST",json:{department:dep,dry_run:true}});
+      if(!d.count){alert(d.protected?`Aucun prospect à supprimer : ${d.protected} sont en Rendez-vous ou Partenaire et sont protégés.`:"Aucun prospect à supprimer.");return}
+      if(!confirm(`Supprimer DÉFINITIVEMENT ${d.count} prospect(s) de ${d.name} (${dep}) ?\n\nPar exemple : ${d.examples.join(", ")}\n\nLeurs messages seront supprimés aussi. Cette action est irréversible.${d.protected?`\n\n${d.protected} prospect(s) en Rendez-vous/Partenaire sont conservés.`:""}`))return;
+      const typed=prompt(`Pour confirmer, tapez le nom du département : ${d.name}`);if(typed===null)return;
+      const r=await api("/companies/delete-department",{method:"POST",json:{department:dep,dry_run:false,confirm_name:typed}});
+      alert(`${r.count} prospect(s) supprimé(s).`);$("#fd").value="";load()}catch(e){alert(e.message)}};
   document.querySelectorAll("[data-lg]").forEach(b=>b.onclick=()=>{$("#fc").value=$("#fc").value===b.dataset.lg?"":b.dataset.lg;load()});
   $("#add").onclick=()=>{
     if($("#addf")){$("#addf").remove();return}
