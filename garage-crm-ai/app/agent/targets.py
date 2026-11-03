@@ -29,5 +29,15 @@ CATEGORIES = {
 }
 
 
+import re
+
+# Entreprises dont le nom annonce de la carrosserie / peinture : ce sont des CONCURRENTS, pas des prospects.
+COMPETITOR_RE = re.compile(r"carrosseri|carrossier|d[ée]bosselage|body\s?shop|peinture\s+auto|smart\s?repair|t[ôo]lerie|redressage|collision", re.I)
+
+
+def is_competitor(name: str) -> bool:
+    return bool(COMPETITOR_RE.search(name or ""))
+
+
 def label(key: str) -> str:
     return CATEGORIES.get(key, (key,))[0]

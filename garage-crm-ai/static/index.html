@@ -147,7 +147,7 @@ async function pros(){
       <td>${esc(c.phone)}${c.whatsapp_url?`<br><a class="btn wa" href="${esc(c.whatsapp_url)}" data-wa="${c.id}" target="_blank" rel="noopener noreferrer" title="Ouvre WhatsApp avec le message déjà écrit">💬 WhatsApp</a>`:""}<br><span class="mute">${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}</span></td>
       <td><select data-id="${c.id}" class="st">${Object.entries(STAT).map(([k,v])=>`<option value="${k}" ${k===c.status?"selected":""}>${v}</option>`).join("")}</select>
         <br><label class="mute"><input type="checkbox" data-id="${c.id}" class="dnc" ${c.do_not_contact?"checked":""}> opposition</label>
-        ${c.status==="archive"?"":`<br><a href="#" data-stop="${c.id}" data-n="${esc(c.name)}" class="mute stp" title="Le prospect a répondu STOP : archiver et envoyer la confirmation">a dit STOP</a>`}</td>
+        ${c.status==="archive"?"":`<br><a href="#" data-comp="${c.id}" data-n="${esc(c.name)}" class="mute cmp" title="Une autre carrosserie ou une entreprise qui n'est pas une cible : archiver sans message">concurrent</a> · <a href="#" data-stop="${c.id}" data-n="${esc(c.name)}" class="mute stp" title="Le prospect a répondu STOP : archiver et envoyer la confirmation">a dit STOP</a>`}</td>
       <td><button class="btn" data-d="${c.id}" data-k="email">Email</button> <button class="btn" data-d="${c.id}" data-k="script_appel">Script appel</button>
       <br><span class="mute">${esc(c.next_action)}</span></td></tr>`).join("")+`</table>`;
     document.querySelectorAll(".st").forEach(s=>s.onchange=()=>api("/companies/"+s.dataset.id,{method:"PATCH",json:{status:s.value}}).catch(e=>alert(e.message)));
@@ -158,6 +158,9 @@ async function pros(){
       try{const r=await api(`/companies/${a.dataset.f}/find-manager`,{method:"POST"});if(!r.found)alert(r.reason);load()}catch(x){alert(x.message)}});
     wireEmail($("#tb"),load);
     wireWhatsapp($("#tb"),load);
+    document.querySelectorAll(".cmp").forEach(a=>a.onclick=async e=>{e.preventDefault();
+      if(!confirm(`« ${a.dataset.n} » est un concurrent ou n'est pas une cible ?\n\nIl sera archivé, sans aucun message.`))return;
+      try{await api(`/companies/${a.dataset.comp}/competitor`,{method:"POST"});load()}catch(x){alert(x.message)}});
     document.querySelectorAll(".stp").forEach(a=>a.onclick=async e=>{e.preventDefault();
       if(!confirm(`« ${a.dataset.n} » a demandé à ne plus être contacté ?\n\nIl sera archivé (retiré de la liste en cours), ses messages en attente seront annulés et un message de confirmation sera préparé.`))return;
       try{const r=await api(`/companies/${a.dataset.stop}/stop`,{method:"POST"});alert(`Archivé. Message de confirmation : ${r.confirmation}.`);load()}catch(x){alert(x.message)}});
@@ -193,7 +196,7 @@ async function pros(){
 }
 async function call(){
   const rows=await api("/calls"),el=$("#t-call");
-  const OUT=[["no_answer","Pas de réponse"],["callback","À rappeler"],["interested","Intéressé → RDV"],["not_interested","Pas intéressé"],["wrong_number","N° erroné"]];
+  const OUT=[["no_answer","Pas de réponse"],["callback","À rappeler"],["interested","Intéressé → RDV"],["not_interested","Pas intéressé"],["wrong_number","N° erroné"],["competitor","Concurrent"]];
   el.innerHTML=`<div class="card"><h3 style="margin-top:0">Liste d'appels du jour</h3>
   <p class="mute" style="margin:0">Les prospects ont presque tous un téléphone, même sans email. Appelez dans l'ordre : ceux qui ont répondu, puis les mieux notés. Après chaque appel, cliquez sur le résultat : le suivi se met à jour et le prospect sort de la liste pour 2 jours. Un interlocuteur qui refuse doit être respecté : cochez « opposition » sur sa fiche.</p></div>
   ${rows.length?rows.map(c=>`<div class="card" style="box-shadow:inset 4px 0 0 hsl(${HUES[c.category]??220} 65% 50%)">
@@ -306,10 +309,10 @@ async function agent(){
   <select id="arad" title="Distance maximale autour de la ville">${[5,10,15,25,40].map(k=>`<option value="${k}" ${k===15?"selected":""}>${k} km</option>`).join("")}</select>
   <input id="an" type="number" value="20" min="1" max="60" style="width:80px" title="Nombre de résultats">
   <button class="btn pri" id="ar" ${role==="commercial"?"disabled":""}>Lancer</button></div><div id="ao" class="mute"></div></div>
-  <div class="card"><h3 style="margin-top:0">Nettoyer les prospects hors zone</h3>
-  <p class="mute">Archive les prospects trouvés par Google dont le code postal n'est pas dans votre zone. Vous pouvez les retrouver avec le filtre « Archivé ».</p>
+  <div class="card"><h3 style="margin-top:0">Nettoyer : prospects hors zone et concurrents</h3>
+  <p class="mute">Archive les prospects trouvés par Google dont le code postal n'est pas dans votre zone, ainsi que les <b>carrosseries</b> (vos concurrents). Vous pouvez les retrouver avec le filtre « Archivé ».</p>
   <div class="row"><input id="pz" value="31" style="width:120px" title="Numéros de département à conserver, séparés par des virgules (ex. 31,82)"><span class="mute">département(s) à conserver</span>
-  <button class="btn" id="pzv" ${role==="commercial"?"disabled":""}>Voir les prospects hors zone</button><button class="btn pri hidden" id="pza">Archiver</button><span id="pzm" class="mute"></span></div></div>
+  <button class="btn" id="pzv" ${role==="commercial"?"disabled":""}>Voir ce qui sera archivé</button><button class="btn pri hidden" id="pza">Archiver</button><span id="pzm" class="mute"></span></div></div>
   <div class="card"><h3 style="margin-top:0">Compléter emails et gérants</h3>
   <p class="mute">L'agent le fait déjà tout seul après chaque recherche. Ce bouton reprend les prospects restés incomplets (30 à la fois, les mieux notés d'abord) : il lit le site web de l'entreprise pour l'email, et le registre public pour le gérant. Tout est à vérifier avant l'envoi.</p>
   <div class="row"><button class="btn" id="ae" ${role==="commercial"?"disabled":""}>Compléter les prospects</button></div></div>
@@ -320,9 +323,9 @@ async function agent(){
   $("#ar").onclick=async()=>{if(!$("#ay").value.trim()||/^\d+$/.test($("#ay").value.trim())){$("#ao").textContent="Indiquez le nom d'une ville (ex. Toulouse), pas un numéro de département.";return}
     $("#ao").textContent="Recherche en cours… (l'agent lit aussi les sites web pour trouver les emails : jusqu'à 1 minute)";
     try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value,radius_km:+$("#arad").value}});
-      $("#ao").textContent=`Zone : ${esc(r.zone)} · ${r.found} trouvées · ${r.out_of_zone} hors zone écartées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
+      $("#ao").textContent=`Zone : ${esc(r.zone)} · ${r.found} trouvées · ${r.out_of_zone} hors zone et ${r.competitors} concurrents (carrosseries) écartés · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
   const pzCall=dry=>api("/agent/purge-out-of-zone",{method:"POST",json:{departments:$("#pz").value,dry_run:dry}});
-  $("#pzv").onclick=async()=>{try{const r=await pzCall(true);$("#pzm").textContent=r.count?`${r.count} hors zone, par exemple : ${r.examples.join(", ")}`:"Aucun prospect hors zone.";$("#pza").classList.toggle("hidden",!r.count)}catch(e){$("#pzm").textContent=e.message}};
+  $("#pzv").onclick=async()=>{try{const r=await pzCall(true);$("#pzm").textContent=r.count?`${r.count} à archiver, par exemple : ${r.examples.join(", ")}`:"Rien à archiver.";$("#pza").classList.toggle("hidden",!r.count)}catch(e){$("#pzm").textContent=e.message}};
   $("#pza").onclick=async()=>{if(!confirm("Archiver tous les prospects hors zone ?"))return;try{const r=await pzCall(false);$("#pzm").textContent=r.count===1?"1 prospect archivé.":`${r.count} prospects archivés.`;$("#pza").classList.add("hidden")}catch(e){$("#pzm").textContent=e.message}};
   $("#ae").onclick=async()=>{$("#ao").textContent="Lecture des sites web et du registre… (jusqu'à 1 minute)";
     try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.emails} emails et ${r.managers} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};

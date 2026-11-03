@@ -42,6 +42,9 @@ Un prospect « Sans suite » sort de la liste en cours et de la liste d'appels ;
 ## Recherche limitée à votre zone
 La recherche Google exige une **ville** (jamais vide, jamais un numéro de département). La ville est localisée, la recherche est restreinte à un carré autour d'elle, puis tout résultat à plus de N km (5 à 40, 15 par défaut) est écarté. Chaque prospect affiche son **département** (déduit du code postal), filtrable dans la liste. Le bouton « Nettoyer les prospects hors zone » (Agent IA) archive les prospects Google d'un autre département.
 
+## Concurrents
+Une entreprise dont le **nom annonce de la carrosserie** (carrosserie, carrossier, débosselage, body shop, tôlerie, smart repair…) est un concurrent : l'agent ne l'enregistre jamais. Pour les autres cas, un lien « concurrent » (Prospects) et un bouton « Concurrent » (À appeler) archivent l'entreprise sans aucun message. Le bloc « Nettoyer » (Agent IA) archive aussi les concurrents déjà présents.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 

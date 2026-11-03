@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 from . import autopilot, models, replies
 from .relances import aware, close_company, close_stale, due_companies, no_answer_streak
 from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
-from .agent.targets import CATEGORIES
+from .agent.targets import CATEGORIES, is_competitor
 from .config import get_settings
 from .departments import department_of
 from .db import Base, SessionLocal, engine, get_db
@@ -371,13 +371,14 @@ def agent_search(data: SearchIn, db: Session = Depends(get_db), _=Depends(MANAGE
         rows = prospector.search_places(data.category, data.city.strip(), max(1, min(data.limit, 60)), data.radius_km)
     except prospector.ProspectorError as e:
         raise HTTPException(400, str(e))
-    return {"found": len(rows), "out_of_zone": getattr(rows, "dropped", 0),
+    return {"found": len(rows), "out_of_zone": getattr(rows, "dropped", 0), "competitors": getattr(rows, "competitors", 0),
             "zone": getattr(rows, "zone", data.city)} | _ingest(db, rows)
 
 
 class PurgeIn(BaseModel):
     departments: str = "31"           # codes départements à conserver, séparés par des virgules
     dry_run: bool = True
+    competitors: bool = True          # archive aussi les carrosseries (concurrents) trouvées par Google
 
 
 @app.post("/api/agent/purge-out-of-zone")
@@ -391,12 +392,15 @@ def purge_out_of_zone(data: PurgeIn, db: Session = Depends(get_db), _=Depends(MA
                                                     models.Company.status != "archive")):
         m = re.search(r"\b(\d{5})\b", c.address or "")
         if m and not any(m[1].startswith(d) for d in keep):
-            hits.append((c, m[1]))
+            hits.append((c, m[1], f"hors zone (code postal {m[1]}, départements conservés : {', '.join(sorted(keep))})"))
+        elif data.competitors and is_competitor(c.name):
+            hits.append((c, "concurrent", "concurrent (carrosserie), pas un prospect"))
     if not data.dry_run:
-        for c, cp in hits:
+        for c, _tag, why in hits:
             c.status = "archive"
-            _note(c, f"Archivé : hors zone (code postal {cp}, départements conservés : {', '.join(sorted(keep))})")
+            _note(c, f"Archivé : {why}")
         db.commit()
+    hits = [(c, tag) for c, tag, _why in hits]
     return {"count": len(hits), "archived": not data.dry_run, "examples": [f"{c.name} ({cp})" for c, cp in hits[:8]]}
 
 
@@ -419,6 +423,19 @@ def company_stop(cid: int, db: Session = Depends(get_db), _=Depends(ANY)):
     c = db.get(models.Company, cid) or _404()
     result = replies.handle_stop(db, c, reason="signalé manuellement")      # d'abord l'action, puis l'état à jour
     return company_out(c) | result
+
+
+@app.post("/api/companies/{cid}/competitor")
+def company_competitor(cid: int, db: Session = Depends(get_db), user=Depends(ANY)):
+    """Cette entreprise est un concurrent (ou n'est pas une cible) : archivée, sans message ni opposition."""
+    c = db.get(models.Company, cid) or _404()
+    c.status, c.next_action = "archive", ""
+    for m in c.messages:
+        if m.status in ("brouillon", "valide"):
+            m.status = "rejete"
+    _note(c, f"Archivé : concurrent / pas une cible ({user.name or user.email}, {datetime.now(timezone.utc):%d/%m/%Y})")
+    db.commit()
+    return company_out(c)
 
 
 @app.get("/api/replies")
@@ -623,6 +640,7 @@ CALL_OUTCOMES = {                       # résultat -> (libellé, nouveau statut
     "not_interested": ("Pas intéressé", "refuse", ""),
     "wrong_number": ("Numéro erroné", None, "Vérifier le numéro"),
     "whatsapp": ("Message WhatsApp ouvert", None, "Attendre la réponse"),
+    "competitor": ("Concurrent / pas une cible", "archive", ""),
 }
 
 

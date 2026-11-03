@@ -902,3 +902,56 @@ def test_prospects_show_department_and_purge_archives_only_out_of_zone(client):
     assert "hors zone" in arch["notes"] and arch["do_not_contact"] is False
     assert client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "abc"}).status_code == 422
     assert client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31,82", "dry_run": True}).json()["count"] == 0
+
+
+# ---------- Concurrents (carrosseries) ----------
+def test_competitor_detection_by_name():
+    from app.agent.targets import is_competitor as c
+    for name in ("Carrosserie Martin", "SARL Toulouse CARROSSIER", "AB Body Shop", "Débosselage Express 31", "Smart Repair Occitanie",
+                 "Garage Dupont Mécanique & Carrosserie", "Tôlerie Peinture Auto du Midi"):
+        assert c(name), name
+    for name in ("Rent A Car", "Transports Dupont", "Taxis Capitole", "Auto-école de la gare", "Garage Méca Pulse", ""):
+        assert not c(name), name
+
+
+def test_search_never_returns_competitor_bodyshops(monkeypatch):
+    from app.agent import prospector
+    monkeypatch.setenv("GOOGLE_PLACES_API_KEY", "fake")
+    def post(url, body, headers):
+        if "locationRestriction" not in body:
+            return 200, {"places": [{"location": {"latitude": 43.6045, "longitude": 1.4442}}]}, ""
+        mk = lambda i, n: {"id": i, "displayName": {"text": n}, "formattedAddress": "1 rue A, 31000 Toulouse",
+                           "location": {"latitude": 43.61, "longitude": 1.45}}
+        return 200, {"places": [mk("1", "Garage Dupont"), mk("2", "Carrosserie Martin"), mk("3", "Toulouse Body Shop"), mk("4", "Loc Auto 31")]}, ""
+    rows = prospector.search_places("garage", "Toulouse", 20, 15, post=post)
+    assert [r["name"] for r in rows] == ["Garage Dupont", "Loc Auto 31"] and rows.competitors == 2
+
+
+def test_competitor_button_and_call_outcome_archive_without_message(client):
+    h = auth(client)
+    c = client.post("/api/companies", headers=h, json={"name": "Autre Atelier", "category": "garage", "city": "Toulouse",
+                                                       "phone": "0561234500", "email": "x@autre.fr"}).json()
+    client.post(f"/api/companies/{c['id']}/draft", headers=h, json={"kind": "email"})
+    r = client.post(f"/api/companies/{c['id']}/competitor", headers=h).json()
+    assert r["status"] == "archive" and r["do_not_contact"] is False and "concurrent" in r["notes"]
+    assert c["id"] not in [x["id"] for x in client.get("/api/companies", headers=h).json()]
+    assert c["id"] not in [x["id"] for x in client.get("/api/calls", headers=h).json()]
+    assert not [m for m in client.get("/api/messages", headers=h).json() if m["company_id"] == c["id"] and m["status"] in ("brouillon", "valide")]
+    d = client.post("/api/companies", headers=h, json={"name": "Aussi Concurrent", "category": "garage", "city": "Toulouse", "phone": "0561234501"}).json()
+    assert client.post(f"/api/companies/{d['id']}/call", headers=h, json={"outcome": "competitor"}).json()["status"] == "archive"
+
+
+def test_purge_also_archives_existing_competitor_bodyshops(client):
+    from app import models
+    h = auth(client)
+    with _db() as db:
+        for n in ("Concur Carrosserie Rapide", "Concur Garage Neutre"):
+            db.add(models.Company(name=n, address="5 rue A, 31000 Toulouse", source="google_places", category="garage", city="Toulouse", status="a_contacter"))
+        db.commit()
+    dry = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True}).json()
+    assert "Concur Carrosserie Rapide (concurrent)" in dry["examples"] and not any("Neutre" in e for e in dry["examples"])
+    client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": False})
+    left = [c["name"] for c in client.get("/api/companies?q=Concur", headers=h).json()]
+    assert left == ["Concur Garage Neutre"]
+    off = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True, "competitors": False}).json()
+    assert off["count"] == 0

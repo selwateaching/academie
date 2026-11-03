@@ -9,7 +9,7 @@ import httpx
 
 from ..config import get_settings
 from .enrichment import commune_from_address
-from .targets import CATEGORIES
+from .targets import CATEGORIES, is_competitor
 
 PLACES_URL = "https://places.googleapis.com/v1/places:searchText"
 FIELDS = ",".join(
@@ -26,6 +26,7 @@ class ProspectorError(Exception):
 class PlaceList(list):
     """Liste de résultats avec le nombre de résultats écartés car hors zone."""
     dropped = 0
+    competitors = 0
     zone = ""
 
 
@@ -90,6 +91,9 @@ def search_places(category: str, city: str, limit: int = 20, radius_km: int = 15
         for p in data.get("places", []):
             if p.get("businessStatus") not in (None, "OPERATIONAL"):
                 continue
+            if is_competitor(p.get("displayName", {}).get("text", "")):
+                results.competitors += 1                  # une autre carrosserie : concurrent, jamais proposé
+                continue
             loc = p.get("location")
             if not loc or distance_km(lat, lng, loc["latitude"], loc["longitude"]) > radius_km * 1.15:
                 results.dropped += 1                      # hors zone : jamais enregistré
@@ -111,5 +115,5 @@ def search_places(category: str, city: str, limit: int = 20, radius_km: int = 15
         if not page_token:
             break
     out = PlaceList(results[:limit])
-    out.dropped, out.zone = results.dropped, results.zone
+    out.dropped, out.zone, out.competitors = results.dropped, results.zone, results.competitors
     return out
