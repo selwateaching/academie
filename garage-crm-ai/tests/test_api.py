@@ -329,7 +329,7 @@ def test_ssrf_guard_refuses_private_hosts():
 def test_agent_search_enriches_new_prospects_automatically(client, monkeypatch):
     from app.agent import emailfinder, enrichment, prospector
     h = auth(client)
-    monkeypatch.setattr(prospector, "search_places", lambda cat, city, limit: [
+    monkeypatch.setattr(prospector, "search_places", lambda cat, city, limit, radius=15: [
         {"name": "Garage Dupont", "category": "garage", "city": "Toulouse", "address": "1 rue A, 31000 Toulouse, France",
          "website": "https://garage-dupont.fr", "phone": "0561", "source": "google_places", "source_ref": "gp:AUTO1"},
         {"name": "Sans Site SARL", "category": "garage", "city": "Toulouse", "address": "2 rue B, 31000 Toulouse, France",
@@ -826,3 +826,79 @@ def test_reset_password_tool(client):
     auth(client, "com@test.fr", "mot-de-passe-neuf")
     assert client.post("/api/auth/login", json={"email": "com@test.fr", "password": "nouveau-mdp-1"}).status_code == 401   # l'ancien ne marche plus
     assert len(client.get("/api/companies", headers=h).json()) > 0                                                           # les prospects sont intacts
+
+
+# ---------- Recherche verrouillée sur la zone + département ----------
+def test_department_from_address():
+    from app.departments import department_of as d
+    assert d("12 rue X, 31200 Toulouse, France") == ("31", "Haute-Garonne", "31200")
+    assert d("Place de la Mairie, 23000 Guéret") == ("23", "Creuse", "23000")
+    assert d("1 rue A, 20090 Ajaccio")[:2] == ("2A", "Corse-du-Sud") and d("1 rue B, 20200 Bastia")[:2] == ("2B", "Haute-Corse")
+    assert d("1 rue C, 97400 Saint-Denis")[:2] == ("974", "La Réunion")
+    assert d("sans code postal") == ("", "", "") and d("") == ("", "", "")
+
+
+def _fake_google(calls):
+    def post(url, body, headers):
+        calls.append(body)
+        if "locationRestriction" not in body:                                   # 1) localisation de la ville
+            return 200, {"places": [{"location": {"latitude": 43.6045, "longitude": 1.4442}}]}, ""
+        return 200, {"places": [                                                # 2) recherche
+            {"id": "A", "displayName": {"text": "Loc Toulouse"}, "formattedAddress": "5 rue A, 31000 Toulouse", "location": {"latitude": 43.61, "longitude": 1.45}},
+            {"id": "B", "displayName": {"text": "Loc Blagnac"}, "formattedAddress": "2 rue B, 31700 Blagnac", "location": {"latitude": 43.64, "longitude": 1.39}},
+            {"id": "C", "displayName": {"text": "Loc Gueret"}, "formattedAddress": "1 place C, 23000 Guéret", "location": {"latitude": 46.17, "longitude": 1.87}},
+            {"id": "D", "displayName": {"text": "Fermée"}, "businessStatus": "CLOSED_PERMANENTLY", "location": {"latitude": 43.6, "longitude": 1.44}},
+        ]}, ""
+    return post
+
+
+def test_search_is_locked_to_the_city_and_drops_out_of_zone_results(monkeypatch):
+    from app.agent import prospector
+    monkeypatch.setenv("GOOGLE_PLACES_API_KEY", "fake")
+    calls = []
+    rows = prospector.search_places("location", "Toulouse", 20, 15, post=_fake_google(calls))
+    assert [r["name"] for r in rows] == ["Loc Toulouse", "Loc Blagnac"]            # la Creuse est écartée
+    assert rows.dropped == 1 and "Toulouse" in rows.zone and "15 km" in rows.zone
+    assert "Toulouse, France" in calls[0]["textQuery"]
+    rect = calls[1]["locationRestriction"]["rectangle"]
+    assert rect["low"]["latitude"] < 43.6045 < rect["high"]["latitude"] and "Toulouse" in calls[1]["textQuery"]
+    assert rows[0]["city"] == "Toulouse" and rows[1]["city"] == "Blagnac"             # vraie commune lue dans l'adresse
+    # rayon trop petit : Blagnac (~5 km) reste hors d'un rayon de 2 km
+    assert [r["name"] for r in prospector.search_places("location", "Toulouse", 20, 2, post=_fake_google([]))] == ["Loc Toulouse"]
+
+
+def test_search_refuses_empty_or_numeric_city_and_unknown_city(client, monkeypatch):
+    from app.agent import prospector
+    monkeypatch.setenv("GOOGLE_PLACES_API_KEY", "fake")
+    h = auth(client)
+    for bad in ("", "  ", "31"):
+        r = client.post("/api/agent/search", headers=h, json={"category": "location", "city": bad})
+        assert r.status_code == 400 and "nom d'une ville" in r.json()["detail"], bad
+    with pytest.raises(prospector.ProspectorError, match="Ville introuvable"):
+        prospector.search_places("location", "Xyzzyville", 5, post=lambda *a: (200, {"places": []}, ""))
+
+
+def test_prospects_show_department_and_purge_archives_only_out_of_zone(client):
+    h = auth(client)
+    from app import models
+    with _db() as db:
+        for name, addr in (("Zone Toulouse", "5 rue A, 31000 Toulouse"), ("Zone Creuse", "1 place C, 23000 Guéret"),
+                           ("Zone SansAdresse", "")):
+            db.add(models.Company(name=name, address=addr, source="google_places", category="location", city="X", status="a_contacter"))
+        db.add(models.Company(name="Zone Manuel Creuse", address="9 rue Z, 23000 Guéret", source="manuel", category="location", city="X"))
+        db.commit()
+    rows = {c["name"]: c for c in client.get("/api/companies?q=Zone", headers=h).json()}
+    assert rows["Zone Toulouse"]["department"] == "31" and rows["Zone Toulouse"]["department_name"] == "Haute-Garonne"
+    assert rows["Zone Creuse"]["department"] == "23" and rows["Zone Creuse"]["department_name"] == "Creuse"
+    assert rows["Zone SansAdresse"]["department"] == ""
+    dry = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": True}).json()
+    assert dry["count"] == 1 and dry["archived"] is False and "Zone Creuse (23000)" in dry["examples"]
+    assert "Zone Creuse" in [c["name"] for c in client.get("/api/companies?q=Zone", headers=h).json()]          # rien changé en simulation
+    done = client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31", "dry_run": False}).json()
+    assert done["count"] == 1 and done["archived"] is True
+    left = [c["name"] for c in client.get("/api/companies?q=Zone", headers=h).json()]
+    assert "Zone Creuse" not in left and {"Zone Toulouse", "Zone SansAdresse", "Zone Manuel Creuse"} <= set(left)  # ni le manuel ni le sans adresse
+    arch = client.get("/api/companies?status=archive&q=Zone Creuse", headers=h).json()[0]
+    assert "hors zone" in arch["notes"] and arch["do_not_contact"] is False
+    assert client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "abc"}).status_code == 422
+    assert client.post("/api/agent/purge-out-of-zone", headers=h, json={"departments": "31,82", "dry_run": True}).json()["count"] == 0

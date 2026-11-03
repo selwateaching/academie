@@ -20,6 +20,7 @@ from .relances import aware, close_company, close_stale, due_companies, no_answe
 from .agent import manager, emailfinder, enrichment, mailer, prospector, qualifier, writer
 from .agent.targets import CATEGORIES
 from .config import get_settings
+from .departments import department_of
 from .db import Base, SessionLocal, engine, get_db
 from .security import hash_password, make_token, read_token, verify_password
 
@@ -173,7 +174,7 @@ def company_out(c: models.Company) -> dict:
         "id", "name", "category", "city", "address", "phone", "website", "email", "contact_name", "source",
         "rating", "rating_count", "score", "score_reason", "status", "next_action", "notes", "do_not_contact")
     } | {"last_contact": c.last_contact.isoformat() if c.last_contact else None,
-         "whatsapp_url": writer.whatsapp_url(c)}
+         "whatsapp_url": writer.whatsapp_url(c)} | dict(zip(("department", "department_name", "postal_code"), department_of(c.address)))
 
 
 class CompanyIn(BaseModel):
@@ -340,6 +341,7 @@ class SearchIn(BaseModel):
     category: str
     city: str
     limit: int = 20
+    radius_km: int = 15
 
 
 def _ingest(db: Session, rows: list[dict], min_score: int = 0) -> dict:
@@ -366,10 +368,36 @@ def _ingest(db: Session, rows: list[dict], min_score: int = 0) -> dict:
 @app.post("/api/agent/search")
 def agent_search(data: SearchIn, db: Session = Depends(get_db), _=Depends(MANAGER)):
     try:
-        rows = prospector.search_places(data.category, data.city.strip(), max(1, min(data.limit, 60)))
+        rows = prospector.search_places(data.category, data.city.strip(), max(1, min(data.limit, 60)), data.radius_km)
     except prospector.ProspectorError as e:
         raise HTTPException(400, str(e))
-    return {"found": len(rows)} | _ingest(db, rows)
+    return {"found": len(rows), "out_of_zone": getattr(rows, "dropped", 0),
+            "zone": getattr(rows, "zone", data.city)} | _ingest(db, rows)
+
+
+class PurgeIn(BaseModel):
+    departments: str = "31"           # codes départements à conserver, séparés par des virgules
+    dry_run: bool = True
+
+
+@app.post("/api/agent/purge-out-of-zone")
+def purge_out_of_zone(data: PurgeIn, db: Session = Depends(get_db), _=Depends(MANAGER)):
+    """Archive les prospects Google dont le code postal n'est pas dans les départements à conserver."""
+    keep = {d.strip() for d in data.departments.split(",") if d.strip()}
+    if not keep or not all(d.isdigit() and len(d) in (2, 3) for d in keep):
+        raise HTTPException(422, "Indiquez un ou plusieurs numéros de département (ex. 31 ou 31,82)")
+    hits = []
+    for c in db.scalars(select(models.Company).where(models.Company.source == "google_places",
+                                                    models.Company.status != "archive")):
+        m = re.search(r"\b(\d{5})\b", c.address or "")
+        if m and not any(m[1].startswith(d) for d in keep):
+            hits.append((c, m[1]))
+    if not data.dry_run:
+        for c, cp in hits:
+            c.status = "archive"
+            _note(c, f"Archivé : hors zone (code postal {cp}, départements conservés : {', '.join(sorted(keep))})")
+        db.commit()
+    return {"count": len(hits), "archived": not data.dry_run, "examples": [f"{c.name} ({cp})" for c, cp in hits[:8]]}
 
 
 @app.post("/api/agent/import-csv")
@@ -703,6 +731,7 @@ def stats(db: Session = Depends(get_db), _=Depends(ANY)):
             "by_status": by_status, "by_category": by_cat,
             "messages": msgs, "to_relance": len(due_relances(db)), "avg_score": db.scalar(select(func.avg(models.Company.score))),
             "sender": get_settings().smtp_from if mailer.smtp_configured() else "",
+            "garage_city": get_settings().garage_city,
             "capabilities": {"places": bool(get_settings().places_api_key),
                              "openai": bool(get_settings().openai_api_key),
                              "smtp": mailer.smtp_configured()}}

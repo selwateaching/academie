@@ -129,15 +129,18 @@ async function dash(){
 async function pros(){
   const el=$("#t-pros");
   el.innerHTML=`<div class="card"><div class="row"><input id="q" placeholder="Rechercher…"><select id="fs"><option value="">En cours (hors archivés et sans suite)</option>${Object.entries(STAT).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
-  <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><button class="btn" id="fl">Filtrer</button>
+  <select id="fc"><option value="">Toutes catégories</option>${catOpts()}</select><select id="fd"><option value="">Tous départements</option></select><button class="btn" id="fl">Filtrer</button>
   <button class="btn pri" id="add">+ Ajouter</button>${role!=="commercial"?'<button class="btn" id="exp" title="Fichier Excel de tous les prospects">Exporter (Excel)</button>':""}</div>
   <div class="legend">${cats.map(c=>`<span class="cat" data-lg="${esc(c.key)}" style="${catStyle(c.key)}" title="Filtrer">${esc(c.label)}</span>`).join("")}</div><div class="tbl" id="tb"></div></div>`;
   const load=async()=>{
     const p=new URLSearchParams();[["q","#q"],["status","#fs"],["category","#fc"]].forEach(([k,s])=>{if($(s).value)p.set(k,$(s).value)});
-    const rows=await api("/companies?"+p);
+    const all=await api("/companies?"+p);
+    const fd=$("#fd"),cur=fd.value,deps=[...new Map(all.filter(c=>c.department).map(c=>[c.department,c.department_name])).entries()].sort();
+    fd.innerHTML='<option value="">Tous départements</option>'+deps.map(([k,n])=>`<option value="${k}" ${k===cur?"selected":""}>${k} · ${esc(n)}</option>`).join("");
+    const rows=cur?all.filter(c=>c.department===cur):all;
     $("#tb").innerHTML=`<table><tr><th>Score</th><th>Entreprise</th><th>Contact</th><th>Statut</th><th>Action</th></tr>`+rows.map(c=>`<tr>
       <td class="cb" style="${catStyle(c.category)}"><span class="score ${c.score>=70?"hi":""}" title="${esc(c.score_reason)}">${c.score??"–"}</span></td>
-      <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}${c.email?"":`<br><span class="mute" style="font-size:12px">${noMailHint(c)}</span>`}<br>${catBadge(c.category)} <span class="mute">${esc(c.city)}</span>
+      <td><b>${esc(c.name)}</b><br>${emailHtml(c.id,c.email)}${c.email?"":`<br><span class="mute" style="font-size:12px">${noMailHint(c)}</span>`}<br>${catBadge(c.category)} <span class="mute">📍 ${esc(c.city)}${c.department?` · <b>${esc(c.department)}</b> ${esc(c.department_name)}`:""}</span>
         <br><span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>
         <a href="#" data-m="${c.id}" data-n="${esc(c.contact_name)}" class="mgr">${c.contact_name?"modifier":"saisir"}</a>
         ${c.contact_name&&c.email?"":`<a href="#" data-f="${c.id}" class="fnd" title="Cherche l'email sur le site web et le gérant dans le registre public">· trouver</a>`}</td>
@@ -165,7 +168,7 @@ async function pros(){
   const ex=$("#exp");if(ex)ex.onclick=async()=>{try{const r=await fetch("/api/export/companies.csv",{headers:{Authorization:"Bearer "+token}});
     if(!r.ok)throw new Error("Export refusé");const u=URL.createObjectURL(await r.blob());const a=document.createElement("a");
     a.href=u;a.download="prospects-"+new Date().toISOString().slice(0,10)+".csv";a.click();URL.revokeObjectURL(u)}catch(e){alert(e.message)}};
-  $("#fl").onclick=load;
+  $("#fl").onclick=load;$("#fd").onchange=load;
   document.querySelectorAll("[data-lg]").forEach(b=>b.onclick=()=>{$("#fc").value=$("#fc").value===b.dataset.lg?"":b.dataset.lg;load()});
   $("#add").onclick=()=>{
     if($("#addf")){$("#addf").remove();return}
@@ -194,7 +197,7 @@ async function call(){
   el.innerHTML=`<div class="card"><h3 style="margin-top:0">Liste d'appels du jour</h3>
   <p class="mute" style="margin:0">Les prospects ont presque tous un téléphone, même sans email. Appelez dans l'ordre : ceux qui ont répondu, puis les mieux notés. Après chaque appel, cliquez sur le résultat : le suivi se met à jour et le prospect sort de la liste pour 2 jours. Un interlocuteur qui refuse doit être respecté : cochez « opposition » sur sa fiche.</p></div>
   ${rows.length?rows.map(c=>`<div class="card" style="box-shadow:inset 4px 0 0 hsl(${HUES[c.category]??220} 65% 50%)">
-  <div class="row"><b>${esc(c.name)}</b>${catBadge(c.category)}<span class="mute">${esc(c.city)} · ${esc(c.why)}</span><span class="score ${c.score>=70?"hi":""}">${c.score??"–"}</span></div>
+  <div class="row"><b>${esc(c.name)}</b>${catBadge(c.category)}<span class="mute">📍 ${esc(c.city)}${c.department?` · <b>${esc(c.department)}</b> ${esc(c.department_name)}`:""} · ${esc(c.why)}</span><span class="score ${c.score>=70?"hi":""}">${c.score??"–"}</span></div>
   <div class="row"><a class="big" href="tel:${esc(c.phone.replace(/[^+\d]/g,""))}" style="text-decoration:none" title="Appeler">📞 ${esc(c.phone)}</a>
     ${c.whatsapp_url?`<a class="btn wa" href="${esc(c.whatsapp_url)}" data-wa="${c.id}" target="_blank" rel="noopener noreferrer" title="Ouvre WhatsApp avec le message déjà écrit">💬 Ouvrir WhatsApp</a>`:""}
     <span class="mute">Gérant : ${c.contact_name?`<b>${esc(c.contact_name)}</b>`:"–"}</span>${c.website?`<a href="${esc(c.website)}" target="_blank" rel="noopener noreferrer">site web</a>`:""}
@@ -295,11 +298,18 @@ async function usr(){
   el.querySelectorAll("[data-up]").forEach(x=>x.onclick=()=>{const p=prompt("Nouveau mot de passe (8 caractères minimum) :");if(p)patch(x.dataset.up,{password:p})});
   $("#nb").onclick=async()=>{try{await api("/users",{method:"POST",json:{name:$("#nn").value,email:$("#ne").value,role:$("#nr").value,password:$("#np").value}});usr()}catch(e){$("#uo").textContent=e.message}};
 }
-function agent(){
+async function agent(){
+  const gst=await api("/stats");
   $("#t-agent").innerHTML=`<div class="card"><h3 style="margin-top:0">Lancer une recherche de prospects</h3>
-  <p class="mute">L'agent cherche des entreprises (Google Places), les enregistre sans doublon et leur attribue un score. Aucun message n'est envoyé.</p>
-  <div class="row"><select id="ac">${catOpts()}</select><input id="ay" placeholder="Ville (ex. Toulouse)"><input id="an" type="number" value="20" min="1" max="60" style="width:80px">
+  <p class="mute">L'agent cherche des entreprises (Google Places) <b>dans la ville indiquée et autour (rayon choisi)</b>, les enregistre sans doublon et leur attribue un score. Les résultats hors zone sont écartés. Aucun message n'est envoyé.</p>
+  <div class="row"><select id="ac">${catOpts()}</select><input id="ay" placeholder="Ville (ex. Toulouse)" value="${esc(gst.garage_city||"")}" title="Obligatoire : la recherche reste dans cette ville">
+  <select id="arad" title="Distance maximale autour de la ville">${[5,10,15,25,40].map(k=>`<option value="${k}" ${k===15?"selected":""}>${k} km</option>`).join("")}</select>
+  <input id="an" type="number" value="20" min="1" max="60" style="width:80px" title="Nombre de résultats">
   <button class="btn pri" id="ar" ${role==="commercial"?"disabled":""}>Lancer</button></div><div id="ao" class="mute"></div></div>
+  <div class="card"><h3 style="margin-top:0">Nettoyer les prospects hors zone</h3>
+  <p class="mute">Archive les prospects trouvés par Google dont le code postal n'est pas dans votre zone. Vous pouvez les retrouver avec le filtre « Archivé ».</p>
+  <div class="row"><input id="pz" value="31" style="width:120px" title="Numéros de département à conserver, séparés par des virgules (ex. 31,82)"><span class="mute">département(s) à conserver</span>
+  <button class="btn" id="pzv" ${role==="commercial"?"disabled":""}>Voir les prospects hors zone</button><button class="btn pri hidden" id="pza">Archiver</button><span id="pzm" class="mute"></span></div></div>
   <div class="card"><h3 style="margin-top:0">Compléter emails et gérants</h3>
   <p class="mute">L'agent le fait déjà tout seul après chaque recherche. Ce bouton reprend les prospects restés incomplets (30 à la fois, les mieux notés d'abord) : il lit le site web de l'entreprise pour l'email, et le registre public pour le gérant. Tout est à vérifier avant l'envoi.</p>
   <div class="row"><button class="btn" id="ae" ${role==="commercial"?"disabled":""}>Compléter les prospects</button></div></div>
@@ -307,9 +317,13 @@ function agent(){
   <p class="mute">Colonnes : name, category, city, address, phone, website, email, contact_name. Catégories : ${cats.map(c=>c.key).join(", ")}.</p>
   <div class="row"><input id="af" type="file" accept=".csv"><button class="btn" id="ai" ${role==="commercial"?"disabled":""}>Importer</button></div></div>
   <div class="card warn"><b>Règles de prospection</b><p class="mute">Coordonnées professionnelles uniquement · source tracée pour chaque fiche · tout message est validé par un humain avant envoi · case « opposition » = plus aucun contact · chaque email contient un moyen de désinscription.</p></div>`;
-  $("#ar").onclick=async()=>{$("#ao").textContent="Recherche en cours… (l'agent lit aussi les sites web pour trouver les emails : jusqu'à 1 minute)";
-    try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value}});
-      $("#ao").textContent=`${r.found} trouvées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
+  $("#ar").onclick=async()=>{if(!$("#ay").value.trim()||/^\d+$/.test($("#ay").value.trim())){$("#ao").textContent="Indiquez le nom d'une ville (ex. Toulouse), pas un numéro de département.";return}
+    $("#ao").textContent="Recherche en cours… (l'agent lit aussi les sites web pour trouver les emails : jusqu'à 1 minute)";
+    try{const r=await api("/agent/search",{method:"POST",json:{category:$("#ac").value,city:$("#ay").value,limit:+$("#an").value,radius_km:+$("#arad").value}});
+      $("#ao").textContent=`Zone : ${esc(r.zone)} · ${r.found} trouvées · ${r.out_of_zone} hors zone écartées · ${r.added} ajoutées · ${r.duplicates} doublons ignorés · ${r.emails_found} emails et ${r.managers_found} gérants trouvés automatiquement`}catch(e){$("#ao").textContent=e.message}};
+  const pzCall=dry=>api("/agent/purge-out-of-zone",{method:"POST",json:{departments:$("#pz").value,dry_run:dry}});
+  $("#pzv").onclick=async()=>{try{const r=await pzCall(true);$("#pzm").textContent=r.count?`${r.count} hors zone, par exemple : ${r.examples.join(", ")}`:"Aucun prospect hors zone.";$("#pza").classList.toggle("hidden",!r.count)}catch(e){$("#pzm").textContent=e.message}};
+  $("#pza").onclick=async()=>{if(!confirm("Archiver tous les prospects hors zone ?"))return;try{const r=await pzCall(false);$("#pzm").textContent=r.count===1?"1 prospect archivé.":`${r.count} prospects archivés.`;$("#pza").classList.add("hidden")}catch(e){$("#pzm").textContent=e.message}};
   $("#ae").onclick=async()=>{$("#ao").textContent="Lecture des sites web et du registre… (jusqu'à 1 minute)";
     try{const r=await api("/agent/enrich",{method:"POST"});$("#ao").textContent=`${r.checked} prospects vérifiés · ${r.emails} emails et ${r.managers} gérants trouvés`}catch(e){$("#ao").textContent=e.message}};
   $("#ai").onclick=async()=>{const f=$("#af").files[0];if(!f)return;const fd=new FormData();fd.append("file",f);

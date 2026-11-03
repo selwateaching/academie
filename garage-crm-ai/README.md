@@ -39,6 +39,9 @@ Pour ne jamais harceler un prospect, la prospection s'arrête d'elle-même :
 - **2 relances sans réaction depuis 7 jours** (`SANS_SUITE_DAYS`) -> « Sans suite ».
 Un prospect « Sans suite » sort de la liste en cours et de la liste d'appels ; il reste retrouvable avec le filtre de statut et peut être repris à la main (le compteur repart de zéro).
 
+## Recherche limitée à votre zone
+La recherche Google exige une **ville** (jamais vide, jamais un numéro de département). La ville est localisée, la recherche est restreinte à un carré autour d'elle, puis tout résultat à plus de N km (5 à 40, 15 par défaut) est écarté. Chaque prospect affiche son **département** (déduit du code postal), filtrable dans la liste. Le bouton « Nettoyer les prospects hors zone » (Agent IA) archive les prospects Google d'un autre département.
+
 ## Lancer
 **Sans Docker (Windows)** : double-cliquer `demarrer.bat`, puis éditer `.env` (SECRET_KEY, ADMIN_PASSWORD…) et relancer.
 
