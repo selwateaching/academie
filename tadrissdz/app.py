@@ -477,20 +477,38 @@ def contact():
 # une session de chat. Écrit dans Firestore (pas besoin de nouvelles clés API Google Sheets) ; le
 # site public les lit via /api/textes-authentiques-auto et les fusionne avec le Google Sheet
 # existant (voir textesAuthLoad dans index.html).
-VIKIDIA_API = "https://fr.vikidia.org/w/api.php"
+MEDIAWIKI_SOURCES = {
+    "vikidia": {
+        "api": "https://fr.vikidia.org/w/api.php",
+        "wiki_url": "https://fr.vikidia.org/wiki/",
+        "source_label": "Vikidia (encyclopédie collaborative, licence CC-BY-SA 3.0 + GFDL)",
+        "suffixe_titre": " — article encyclopédique",
+    },
+    "wikisource": {
+        "api": "https://fr.wikisource.org/w/api.php",
+        "wiki_url": "https://fr.wikisource.org/wiki/",
+        "source_label": "Wikisource (bibliothèque numérique de textes du domaine public ou sous licence libre)",
+        "suffixe_titre": "",
+    },
+}
 
 
 @app.post("/api/admin/collecte-vikidia")
 def admin_collecte_vikidia():
-    """Récupère le texte intégral de pages Vikidia données et les enregistre dans la bibliothèque
-    "Textes authentiques". Réservé aux comptes admin (même contrôle que les autres routes /api/admin/*)."""
+    """Récupère le texte intégral de pages Vikidia ou Wikisource données et les enregistre dans la
+    bibliothèque "Textes authentiques". Réservé aux comptes admin (même contrôle que les autres
+    routes /api/admin/*). Body : {"titres": [...], "source": "vikidia"|"wikisource", ...}."""
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return jsonify({"error": {"message": "Connexion requise."}}), 401
     body = request.get_json(silent=True) or {}
     titres = body.get("titres")
     if not isinstance(titres, list) or not titres or len(titres) > 20:
-        return jsonify({"error": {"message": "Liste de titres Vikidia invalide (1 à 20 titres)."}}), 400
+        return jsonify({"error": {"message": "Liste de titres invalide (1 à 20 titres)."}}), 400
+    source_cle = (body.get("source") or "vikidia").strip().lower()
+    source_cfg = MEDIAWIKI_SOURCES.get(source_cle)
+    if not source_cfg:
+        return jsonify({"error": {"message": "Source inconnue (vikidia ou wikisource)."}}), 400
     matiere = (body.get("matiere") or "").strip()
     niveaux = (body.get("niveaux") or "").strip()
     theme = (body.get("theme") or "").strip()
@@ -514,7 +532,7 @@ def admin_collecte_vikidia():
             continue
         try:
             resp = requests.get(
-                VIKIDIA_API,
+                source_cfg["api"],
                 params={
                     "action": "query",
                     "prop": "extracts",
@@ -530,20 +548,20 @@ def admin_collecte_vikidia():
             pages = (resp.json().get("query") or {}).get("pages") or {}
             page = next(iter(pages.values()), None)
             if not page or "missing" in page or not (page.get("extract") or "").strip():
-                resultats.append({"titre": titre, "ok": False, "erreur": "Page introuvable sur Vikidia."})
+                resultats.append({"titre": titre, "ok": False, "erreur": "Page introuvable sur " + source_cle + "."})
                 continue
             texte = page["extract"].strip()
             titre_reel = page.get("title") or titre
-            doc_id = "vikidia_" + hashlib.sha1(titre_reel.encode("utf-8")).hexdigest()[:16]
+            doc_id = source_cle + "_" + hashlib.sha1(titre_reel.encode("utf-8")).hexdigest()[:16]
             db.collection("textesAuthAuto").document(doc_id).set(
                 {
-                    "titre": titre_reel + " — article encyclopédique",
+                    "titre": titre_reel + source_cfg["suffixe_titre"],
                     "matiere": matiere,
                     "niveaux": niveaux,
                     "theme": theme,
                     "type": "Article",
-                    "source": "Vikidia (encyclopédie collaborative, licence CC-BY-SA 3.0 + GFDL)",
-                    "lien": "https://fr.vikidia.org/wiki/" + titre_reel.replace(" ", "_"),
+                    "source": source_cfg["source_label"],
+                    "lien": source_cfg["wiki_url"] + titre_reel.replace(" ", "_"),
                     "langue": "Français",
                     "texte": texte,
                     "nbMots": len(texte.split()),
@@ -554,7 +572,7 @@ def admin_collecte_vikidia():
             )
             resultats.append({"titre": titre_reel, "ok": True, "nbMots": len(texte.split())})
         except Exception as exc:  # noqa: BLE001
-            logger.exception("Collecte Vikidia échouée pour %r", titre)
+            logger.exception("Collecte %s échouée pour %r", source_cle, titre)
             resultats.append({"titre": titre, "ok": False, "erreur": str(exc)})
 
     return jsonify({"resultats": resultats})

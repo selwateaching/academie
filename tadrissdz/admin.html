@@ -123,7 +123,11 @@ input[type="checkbox"]{accent-color:var(--t);}
     <div class="card">
       <div class="ch"><div class="chL"><div class="chIc">📜</div><div class="ct">Collecteur de textes authentiques (pilote — Vikidia)</div></div></div>
       <div style="padding:1rem 1.4rem;">
-        <p style="font-size:.78rem;color:var(--ink3);margin:0 0 .8rem;">Récupère le texte intégral RÉEL de pages Vikidia (licence CC-BY-SA, réutilisation autorisée) et l'ajoute directement à la bibliothèque "Textes authentiques" du site. Un titre Vikidia par ligne (ex: <code>Nombre premier</code>).</p>
+        <p style="font-size:.78rem;color:var(--ink3);margin:0 0 .8rem;">Récupère le texte intégral RÉEL depuis Vikidia (articles encyclopédiques, CC-BY-SA) ou Wikisource (œuvres du domaine public : Rousseau, Hugo, etc.) et l'ajoute directement à la bibliothèque "Textes authentiques" du site. Un titre exact par ligne (ex: <code>Nombre premier</code> sur Vikidia, ou <code>Discours sur l'origine et les fondements de l'inégalité parmi les hommes</code> sur Wikisource).</p>
+        <div style="margin-bottom:.6rem;">
+          <label style="font-size:.8rem;margin-right:1rem;"><input type="radio" name="aCollecteSource" value="vikidia" checked> Vikidia (articles encyclopédiques)</label>
+          <label style="font-size:.8rem;"><input type="radio" name="aCollecteSource" value="wikisource"> Wikisource (œuvres du domaine public)</label>
+        </div>
         <textarea id="aCollecteTitres" rows="4" style="width:100%;border:1px solid var(--br);border-radius:.5rem;padding:.6rem;font-size:.85rem;" placeholder="Nombre premier&#10;Victor Hugo&#10;Système solaire"></textarea>
         <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem;">
           <input id="aCollecteMatiere" type="text" placeholder="Matière (ex: Mathématiques)" style="flex:1;min-width:160px;">
@@ -566,6 +570,7 @@ window.aCollecteVikidia = async function(btn) {
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
       body: JSON.stringify({
         titres: titresRaw,
+        source: (document.querySelector('input[name="aCollecteSource"]:checked') || {}).value || 'vikidia',
         matiere: document.getElementById('aCollecteMatiere').value || '',
         niveaux: document.getElementById('aCollecteNiveaux').value || '',
         theme: document.getElementById('aCollecteTheme').value || '',
