@@ -471,6 +471,112 @@ def contact():
         return jsonify({"error": {"message": str(exc)}})
 
 
+# ===== Collecteur de textes authentiques (pilote) =====
+# Va chercher du texte intégral RÉEL et légal via l'API MediaWiki de Vikidia (licence CC-BY-SA,
+# réutilisation explicitement autorisée) — ce service a un accès internet normal, contrairement à
+# une session de chat. Écrit dans Firestore (pas besoin de nouvelles clés API Google Sheets) ; le
+# site public les lit via /api/textes-authentiques-auto et les fusionne avec le Google Sheet
+# existant (voir textesAuthLoad dans index.html).
+VIKIDIA_API = "https://fr.vikidia.org/w/api.php"
+
+
+@app.post("/api/admin/collecte-vikidia")
+def admin_collecte_vikidia():
+    """Récupère le texte intégral de pages Vikidia données et les enregistre dans la bibliothèque
+    "Textes authentiques". Réservé aux comptes admin (même contrôle que les autres routes /api/admin/*)."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+    body = request.get_json(silent=True) or {}
+    titres = body.get("titres")
+    if not isinstance(titres, list) or not titres or len(titres) > 20:
+        return jsonify({"error": {"message": "Liste de titres Vikidia invalide (1 à 20 titres)."}}), 400
+    matiere = (body.get("matiere") or "").strip()
+    niveaux = (body.get("niveaux") or "").strip()
+    theme = (body.get("theme") or "").strip()
+
+    try:
+        from firebase_admin import auth as fb_auth, firestore
+
+        get_firebase_app()
+        uid = fb_auth.verify_id_token(auth_header[len("Bearer "):])["uid"]
+        db = firestore.client()
+        if not db.collection("admins").document(uid).get().exists:
+            return jsonify({"error": {"message": "Accès réservé aux comptes administrateur."}}), 403
+    except Exception:  # noqa: BLE001
+        logger.exception("Erreur de vérification admin (collecte Vikidia)")
+        return jsonify({"error": {"message": "Connexion requise."}}), 401
+
+    resultats = []
+    for titre_brut in titres:
+        titre = str(titre_brut or "").strip()
+        if not titre:
+            continue
+        try:
+            resp = requests.get(
+                VIKIDIA_API,
+                params={
+                    "action": "query",
+                    "prop": "extracts",
+                    "explaintext": 1,
+                    "redirects": 1,
+                    "titles": titre,
+                    "format": "json",
+                },
+                headers={"User-Agent": "TadrissDZ-collecteur/1.0 (contact via tadriss.fr)"},
+                timeout=15,
+            )
+            resp.raise_for_status()
+            pages = (resp.json().get("query") or {}).get("pages") or {}
+            page = next(iter(pages.values()), None)
+            if not page or "missing" in page or not (page.get("extract") or "").strip():
+                resultats.append({"titre": titre, "ok": False, "erreur": "Page introuvable sur Vikidia."})
+                continue
+            texte = page["extract"].strip()
+            titre_reel = page.get("title") or titre
+            doc_id = "vikidia_" + hashlib.sha1(titre_reel.encode("utf-8")).hexdigest()[:16]
+            db.collection("textesAuthAuto").document(doc_id).set(
+                {
+                    "titre": titre_reel + " — article encyclopédique",
+                    "matiere": matiere,
+                    "niveaux": niveaux,
+                    "theme": theme,
+                    "type": "Article",
+                    "source": "Vikidia (encyclopédie collaborative, licence CC-BY-SA 3.0 + GFDL)",
+                    "lien": "https://fr.vikidia.org/wiki/" + titre_reel.replace(" ", "_"),
+                    "langue": "Français",
+                    "texte": texte,
+                    "nbMots": len(texte.split()),
+                    "actif": True,
+                    "collectePar": uid,
+                    "collecteLe": int(time.time() * 1000),
+                }
+            )
+            resultats.append({"titre": titre_reel, "ok": True, "nbMots": len(texte.split())})
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("Collecte Vikidia échouée pour %r", titre)
+            resultats.append({"titre": titre, "ok": False, "erreur": str(exc)})
+
+    return jsonify({"resultats": resultats})
+
+
+@app.get("/api/textes-authentiques-auto")
+def textes_authentiques_auto():
+    """Liste publique (lecture seule) des textes collectés automatiquement, pour la bibliothèque
+    "Textes authentiques" du site — fusionnée côté client avec le Google Sheet existant."""
+    try:
+        from firebase_admin import firestore
+
+        get_firebase_app()
+        db = firestore.client()
+        docs = db.collection("textesAuthAuto").where("actif", "==", True).stream()
+        items = [d.to_dict() for d in docs]
+        return jsonify({"items": items})
+    except Exception:  # noqa: BLE001
+        logger.exception("Erreur de lecture des textes authentiques collectés")
+        return jsonify({"items": []})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)

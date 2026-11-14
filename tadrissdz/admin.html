@@ -121,6 +121,20 @@ input[type="checkbox"]{accent-color:var(--t);}
       </div>
     </div>
     <div class="card">
+      <div class="ch"><div class="chL"><div class="chIc">📜</div><div class="ct">Collecteur de textes authentiques (pilote — Vikidia)</div></div></div>
+      <div style="padding:1rem 1.4rem;">
+        <p style="font-size:.78rem;color:var(--ink3);margin:0 0 .8rem;">Récupère le texte intégral RÉEL de pages Vikidia (licence CC-BY-SA, réutilisation autorisée) et l'ajoute directement à la bibliothèque "Textes authentiques" du site. Un titre Vikidia par ligne (ex: <code>Nombre premier</code>).</p>
+        <textarea id="aCollecteTitres" rows="4" style="width:100%;border:1px solid var(--br);border-radius:.5rem;padding:.6rem;font-size:.85rem;" placeholder="Nombre premier&#10;Victor Hugo&#10;Système solaire"></textarea>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.6rem;">
+          <input id="aCollecteMatiere" type="text" placeholder="Matière (ex: Mathématiques)" style="flex:1;min-width:160px;">
+          <input id="aCollecteNiveaux" type="text" placeholder="Niveaux (ex: 2AM, 3AM)" style="flex:1;min-width:160px;">
+          <input id="aCollecteTheme" type="text" placeholder="Thème (ex: Arithmétique)" style="flex:1;min-width:160px;">
+        </div>
+        <button class="btn bt" style="margin-top:.8rem;" onclick="window.aCollecteVikidia(this)">📥 Lancer la collecte</button>
+        <div id="aCollecteResultats" style="margin-top:.9rem;font-size:.82rem;"></div>
+      </div>
+    </div>
+    <div class="card">
       <div class="ch"><div class="chL"><div class="chIc">📋</div><div class="ct">Demandes d'inscription (formulaire forfaits)</div></div><span class="badge" id="aLeadsCount">0</span></div>
       <div id="aLeadsBody"></div>
     </div>
@@ -530,6 +544,48 @@ window.aResetQuota = async function(profId, btn) {
   } catch (e) {
     alert('Erreur lors de la réinitialisation : ' + (e && e.message ? e.message : e));
     if (btn) { btn.textContent = prevLabel; btn.disabled = false; }
+  }
+};
+/* Collecteur de textes authentiques (pilote) : déclenche /api/admin/collecte-vikidia côté serveur
+   (lui seul a un accès internet réel et peut appeler l'API MediaWiki de Vikidia). Les résultats
+   sont enregistrés directement dans Firestore et apparaissent sur le site via
+   /api/textes-authentiques-auto, fusionnés avec le Google Sheet existant. */
+window.aCollecteVikidia = async function(btn) {
+  var titresRaw = (document.getElementById('aCollecteTitres').value || '').split('\n').map(function(s) { return s.trim(); }).filter(Boolean);
+  var out = document.getElementById('aCollecteResultats');
+  if (!titresRaw.length) { out.innerHTML = '<span style="color:var(--r)">Indique au moins un titre Vikidia.</span>'; return; }
+  var prevLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Collecte en cours…';
+  out.innerHTML = '';
+  try {
+    var user = auth.currentUser;
+    if (!user) throw new Error('Session expirée — recharge la page et reconnecte-toi.');
+    var idToken = await user.getIdToken();
+    var r = await fetch('/api/admin/collecte-vikidia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({
+        titres: titresRaw,
+        matiere: document.getElementById('aCollecteMatiere').value || '',
+        niveaux: document.getElementById('aCollecteNiveaux').value || '',
+        theme: document.getElementById('aCollecteTheme').value || '',
+      })
+    });
+    var data = await r.json();
+    if (!r.ok || data.error) throw new Error((data.error && data.error.message) || 'Erreur serveur');
+    var html = '<table style="width:100%;border-collapse:collapse;font-size:.8rem;">';
+    (data.resultats || []).forEach(function(res) {
+      html += '<tr style="border-bottom:1px solid var(--br);">'
+        + '<td style="padding:.3rem .4rem;">' + (res.ok ? '✅' : '❌') + ' ' + res.titre + '</td>'
+        + '<td style="padding:.3rem .4rem;color:var(--ink3);">' + (res.ok ? (res.nbMots + ' mots récupérés') : (res.erreur || 'échec')) + '</td>'
+        + '</tr>';
+    });
+    html += '</table>';
+    out.innerHTML = html;
+  } catch (e) {
+    out.innerHTML = '<span style="color:var(--r)">Erreur : ' + (e && e.message ? e.message : e) + '</span>';
+  } finally {
+    btn.disabled = false; btn.textContent = prevLabel;
   }
 };
 window.aValidateProf = async function(profId, plan) {
