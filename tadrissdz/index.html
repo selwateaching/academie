@@ -6671,10 +6671,11 @@ function biblioAudioRenderResults() {
    authentiques (DIFFÉRENT de celui de la Bibliothèque pédagogique). Colonnes attendues :
    Titre, Matière, Niveaux, Type (Dialogue / Interview / Discours / Article / Lettre...),
    Thème, Source (ex: "Interview réelle — El Watan, 2021" ou "Manuel scolaire 2AS, p.34"),
-   Lien Drive, Statut (optionnel : laisser vide ou "actif" pour publier une ligne). */
+   Lien Drive, Langue (optionnel, défaut "Français" si colonne absente ou vide),
+   Statut (optionnel : laisser vide ou "actif" pour publier une ligne). */
 var TEXTES_AUTH_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vThxRT9hAZRTNcywwwmFdavZm-izWKkM7VLpLmwTC6_5gmjJ32MuWtw04eV2UIXsmgb8PdP5xaEFu9N/pub?output=csv';
 var TEXTES_AUTH_DATA = null;
-var TEXTES_AUTH_FILTERS = { q:'', matiere:'', niveau:'', type:'' };
+var TEXTES_AUTH_FILTERS = { q:'', matiere:'', niveau:'', type:'', theme:'', langue:'' };
 function textesAuthLoad(cb) {
   if (TEXTES_AUTH_DATA) { cb(TEXTES_AUTH_DATA); return; }
   if (!TEXTES_AUTH_CSV_URL) { cb([]); return; }
@@ -6689,6 +6690,7 @@ function textesAuthLoad(cb) {
         type: o.type || '',
         source: o.source || o.origine || '',
         lien: o['lien drive'] || o.lien || o.link || '',
+        langue: o.langue || o.language || 'Français',
         actif: !statutRaw || statutRaw === 'actif' || statutRaw === 'active',
       };
     }).filter(function(r) { return r.actif && r.lien; }).map(function(r, i) { r.id = i; return r; });
@@ -6714,6 +6716,8 @@ function textesAuthRenderShell() {
   var niveaux = Array.from(new Set(TEXTES_AUTH_DATA.reduce(function(a,r) { return a.concat(r.niveaux); }, []))).sort();
   var types = Array.from(new Set(TEXTES_AUTH_DATA.map(function(r) { return r.type; }).filter(Boolean))).sort();
   var matieres = Array.from(new Set(TEXTES_AUTH_DATA.map(function(r) { return r.matiere; }).filter(Boolean))).sort();
+  var themes = Array.from(new Set(TEXTES_AUTH_DATA.map(function(r) { return r.theme; }).filter(Boolean))).sort();
+  var langues = Array.from(new Set(TEXTES_AUTH_DATA.map(function(r) { return r.langue; }).filter(Boolean))).sort();
   box.innerHTML = '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">'
       + '<div style="font-size:1.4rem">📜</div>'
       + '<div style="flex:1;min-width:220px"><b>Documents authentiques, pas générés par IA</b><div style="font-size:.8rem;color:var(--ink3)">Chaque fiche indique sa source d\'origine (journal, émission, auteur, manuel...).</div></div>'
@@ -6723,6 +6727,8 @@ function textesAuthRenderShell() {
     + '<select class="fs" style="width:auto" id="textesAuthMat" onchange="textesAuthSetFilter(\'matiere\', this.value)"><option value="">Toutes les matières</option>' + matieres.map(function(m) { return '<option value="'+tiaEsc(m)+'">'+tiaEsc(m)+'</option>'; }).join('') + '</select>'
     + '<select class="fs" style="width:auto" id="textesAuthNiv" onchange="textesAuthSetFilter(\'niveau\', this.value)"><option value="">Tous les niveaux</option>' + niveaux.map(function(n) { return '<option value="'+tiaEsc(n)+'">'+tiaEsc(n)+'</option>'; }).join('') + '</select>'
     + (types.length ? '<select class="fs" style="width:auto" id="textesAuthType" onchange="textesAuthSetFilter(\'type\', this.value)"><option value="">Tous les types</option>' + types.map(function(t) { return '<option value="'+tiaEsc(t)+'">'+tiaEsc(t)+'</option>'; }).join('') + '</select>' : '')
+    + (themes.length ? '<select class="fs" style="width:auto" id="textesAuthTheme" onchange="textesAuthSetFilter(\'theme\', this.value)"><option value="">Tous les thèmes</option>' + themes.map(function(t) { return '<option value="'+tiaEsc(t)+'">'+tiaEsc(t)+'</option>'; }).join('') + '</select>' : '')
+    + (langues.length > 1 ? '<select class="fs" style="width:auto" id="textesAuthLangue" onchange="textesAuthSetFilter(\'langue\', this.value)"><option value="">Toutes les langues</option>' + langues.map(function(l) { return '<option value="'+tiaEsc(l)+'">'+tiaEsc(l)+'</option>'; }).join('') + '</select>' : '')
     + '</div></div>'
     + '<div id="textesAuthResults"></div>';
 }
@@ -6734,6 +6740,8 @@ function textesAuthRenderResults() {
     if (f.matiere && r.matiere !== f.matiere) return false;
     if (f.niveau && r.niveaux.length && r.niveaux.indexOf(f.niveau) < 0) return false;
     if (f.type && r.type !== f.type) return false;
+    if (f.theme && r.theme !== f.theme) return false;
+    if (f.langue && r.langue !== f.langue) return false;
     if (q && (r.titre + ' ' + r.theme + ' ' + r.source).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
@@ -6756,7 +6764,7 @@ function textesAuthRenderResults() {
       + thumbHtml
       + (r.type ? '<div style="font-size:.68rem;color:var(--t);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.3rem">'+tiaEsc(r.type)+'</div>' : '')
       + '<div style="font-weight:700;margin-bottom:.3rem">'+tiaEsc(r.titre)+'</div>'
-      + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.4rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+'</div>'
+      + '<div style="font-size:.75rem;color:var(--ink3);margin-bottom:.4rem">'+tiaEsc(r.matiere)+(r.niveaux.length?' · '+tiaEsc(r.niveaux.join(', ')):'')+(r.theme?' · '+tiaEsc(r.theme):'')+(r.langue && r.langue !== 'Français'?' · '+tiaEsc(r.langue):'')+'</div>'
       + (r.source ? '<div style="font-size:.72rem;color:var(--t);background:var(--tp);border-radius:6px;padding:.3rem .5rem;margin-bottom:.7rem;display:inline-block">📌 Source : '+tiaEsc(r.source)+'</div>' : '')
       + '<div style="display:flex;gap:.5rem;margin-top:.3rem">' + actionsHtml + '</div></div></div>';
   }).join('') + '</div>';
