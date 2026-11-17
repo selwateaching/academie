@@ -144,6 +144,7 @@ input[type="checkbox"]{accent-color:var(--t);}
     </div>
     <div class="card">
       <div class="ch"><div class="chL"><div class="chIc">🆕</div><div class="ct">Nouvelles inscriptions — en attente de validation</div></div><span class="badge" id="aPendingCount">0</span></div>
+      <div style="padding:.6rem 1.4rem 0;"><label style="display:flex;align-items:center;gap:6px;font-size:.78rem;cursor:pointer;"><input type="checkbox" id="aAlertMute" onchange="window.aToggleAlertMute(this.checked)"> 🔇 Couper le bip sonore d'alerte</label></div>
       <div id="aPendingBody"></div>
     </div>
     <div class="card">
@@ -240,6 +241,9 @@ onAuthStateChanged(auth, async function(user) {
   aShow('aDash');
   loadRequests();
   loadLeads();
+  /* Sans ça, une nouvelle inscription n'apparaît (et ne déclenche le bip) qu'au prochain
+     rechargement manuel de la page — ce qui est précisément le "je les vois tard" signalé. */
+  setInterval(loadRequests, 25000);
 });
 
 function profLabel(p) {
@@ -375,6 +379,53 @@ window.aToggleLeadContacte = async function(leadId, checked) {
   if (l) l.statut = checked ? 'contacte' : 'nouveau';
 };
 
+/* Bip répété tant qu'une inscription attend d'être validée — pour qu'on ne la voie plus "trop tard".
+   Web Audio plutôt qu'un fichier son : pas de fichier à héberger, fonctionne même hors-ligne. */
+var ALERT_AUDIO_CTX = null;
+var ALERT_BEEP_INTERVAL = null;
+var ALERT_MUTED = localStorage.getItem('aAlertMuted') === '1';
+function aPlayBeep() {
+  if (ALERT_MUTED) return;
+  try {
+    if (!ALERT_AUDIO_CTX) ALERT_AUDIO_CTX = new (window.AudioContext || window.webkitAudioContext)();
+    var ctx = ALERT_AUDIO_CTX;
+    if (ctx.state === 'suspended') ctx.resume();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.4);
+  } catch (e) { /* contexte audio indisponible (politique du navigateur) — on ignore, le badge reste visible */ }
+}
+function aUpdateAlertSound(pendingCount) {
+  if (pendingCount > 0) {
+    if (!ALERT_BEEP_INTERVAL) {
+      aPlayBeep();
+      ALERT_BEEP_INTERVAL = setInterval(aPlayBeep, 4000);
+    }
+  } else if (ALERT_BEEP_INTERVAL) {
+    clearInterval(ALERT_BEEP_INTERVAL);
+    ALERT_BEEP_INTERVAL = null;
+  }
+}
+window.aToggleAlertMute = function(checked) {
+  ALERT_MUTED = checked;
+  localStorage.setItem('aAlertMuted', checked ? '1' : '0');
+};
+document.addEventListener('DOMContentLoaded', function() {
+  var cb = document.getElementById('aAlertMute');
+  if (cb) cb.checked = ALERT_MUTED;
+});
+/* Un AudioContext démarre "suspendu" tant qu'il n'y a pas eu de clic sur la page (règle des
+   navigateurs) — ce geste le débloque dès la première interaction, même hors de ce bouton. */
+document.addEventListener('click', function() {
+  if (ALERT_AUDIO_CTX && ALERT_AUDIO_CTX.state === 'suspended') ALERT_AUDIO_CTX.resume();
+}, { once: true });
+
 window.aRenderPending = function() {
   var pending = ALL_PROFS.filter(function(p) {
     if (p.status === 'validated' || p.status === 'suspended') return false;
@@ -383,6 +434,7 @@ window.aRenderPending = function() {
   });
   document.getElementById('aPendingCount').textContent = pending.length;
   var kpiPendingEl = document.getElementById('kpiPending'); if (kpiPendingEl) kpiPendingEl.textContent = pending.length;
+  aUpdateAlertSound(pending.length);
   document.getElementById('aPendingBody').innerHTML = pending.length ? renderTable(pending, [
     { label: 'Prof', render: profLabel },
     { label: 'Email vérifié', render: emailVerifLabel },
