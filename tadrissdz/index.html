@@ -6495,6 +6495,14 @@ function biblioLoad(cb) {
 var BIBLIO_PREVIEW_LIMIT = 3;
 var BIBLIO_EN_COURS = true; /* page encore en cours d'alimentation — repasser à false une fois la bibliothèque complète */
 function biblioIsPro() { return (window._planProf || '').toLowerCase() === 'pro'; }
+/* Accès complet à la Bibliothèque pédagogique : Pro (illimité) ET Découverte (le forfait d'essai
+   gratuit — on veut qu'il la voie en entier, contrairement à Starter qui reste sur l'aperçu de
+   BIBLIO_PREVIEW_LIMIT fiches). Ne touche pas à biblioIsPro(), réutilisée ailleurs (Assistant
+   pédagogique, comptines) pour des fonctionnalités qui, elles, restent réservées au Pro. */
+function biblioAccesComplet() {
+  var plan = (window._planProf || '').toLowerCase();
+  return plan === 'pro' || plan === 'decouverte';
+}
 /* Ouverture de l'Assistant pédagogique (tadriss-fiches.onrender.com, dépôt séparé), réservé aux
    comptes Pro. Le filtre client (_planProf) ci-dessous n'est qu'un confort d'affichage — la vraie
    vérification se fait côté serveur (endpoint /api/fiches-access, jeton Firebase + Firestore),
@@ -6544,7 +6552,7 @@ function biblioRenderShell() {
       + '<div style="font-size:1.4rem">🚧</div>'
       + '<div style="flex:1;min-width:220px"><b>Bibliothèque en cours de réalisation</b><div style="font-size:.8rem;color:var(--ink3)">De nouvelles fiches sont ajoutées régulièrement — revenez de temps en temps !</div></div>'
       + '</div></div>' : '')
-    + (biblioIsPro() ? '' : '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
+    + (biblioAccesComplet() ? '' : '<div class="card" style="margin-bottom:1.2rem;background:var(--tp)"><div class="cb" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">'
       + '<div style="flex:1;min-width:220px"><b>Aperçu de la Bibliothèque pédagogique</b><div style="font-size:.8rem;color:var(--ink3)">Votre forfait donne accès à '+BIBLIO_PREVIEW_LIMIT+' fiches. Passez au forfait Pro pour un accès illimité.</div></div>'
       + '<button class="btn bt bsm" onclick="go(\'abonnement\')">Voir les forfaits</button>'
       + '</div></div>')
@@ -6577,7 +6585,7 @@ function biblioRenderResults() {
     results.innerHTML = '<div class="card"><div class="cb" style="text-align:center;padding:2rem;color:var(--ink3)">Aucune ressource ne correspond à ces critères.</div></div>';
     return;
   }
-  var isPro = biblioIsPro();
+  var isPro = biblioAccesComplet();
   results.innerHTML = '<div class="g3">' + filtered.map(function(r) {
     var unlocked = isPro || r.id < BIBLIO_PREVIEW_LIMIT;
     var isFolderThumb = r.lien && biblioIsFolder(r.lien);
