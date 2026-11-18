@@ -6391,7 +6391,32 @@ function peShowDetail(eid) {
 /* ===== BIBLIOTHEQUE PEDAGOGIQUE (catalogue partage, lu depuis un Google Sheet publie en CSV) ===== */
 /* Remplacer cette URL par le lien "Publier sur le Web -> CSV" du Google Sheet officiel Tadriss. */
 var RESSOURCES_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2Z7YocPLmtlE35f4jUZssux5G--QnRsQJlPuFXgrwbvVQf3jdvtwYC1u9U1c9SFdD48r2I5bZAOdx/pub?gid=0&single=true&output=csv';
-var BIBLIO_MATIERES = ['Anglais','Éducation islamique','Espagnol','Histoire-Géographie','Informatique/TIC','Langue arabe','Langue française','Mathématiques','Musique','Sciences de la nature (SVT)','Tamazight','Autre'];
+/* La colonne "Matière" du Google Sheet est remplie à la main par l'enseignante (et parfois des
+   collègues) : la même matière y apparaît sous plusieurs orthographes ("Français"/"Francais",
+   "science"/"Sciences", "Maths"/"Mathématiques"...). Sans normalisation, le filtre par matière
+   proposait des valeurs qui ne correspondaient à aucune ligne réelle. On regroupe ici les
+   variantes connues sous un intitulé propre unique ; une valeur inconnue passe telle quelle
+   (juste nettoyée des espaces) plutôt que d'être rejetée. */
+var BIBLIO_MATIERE_ALIAS = {
+  'francais': 'Français', 'francaise': 'Français', 'langue francaise': 'Français',
+  'anglais': 'Anglais', 'langue anglaise': 'Anglais',
+  'arabe': 'Arabe', 'langue arabe': 'Arabe',
+  'science': 'Sciences', 'sciences': 'Sciences', 'svt': 'Sciences', 'sciences de la nature': 'Sciences', 'sciences de la nature (svt)': 'Sciences',
+  'maths': 'Mathématiques', 'mathematiques': 'Mathématiques',
+  'ecologie': 'Écologie',
+  'espagnol': 'Espagnol',
+  'histoire-geographie': 'Histoire-Géographie', 'histoire geographie': 'Histoire-Géographie',
+  'informatique': 'Informatique/TIC', 'informatique/tic': 'Informatique/TIC', 'tic': 'Informatique/TIC',
+  'education islamique': 'Éducation islamique',
+  'musique': 'Musique',
+  'tamazight': 'Tamazight',
+};
+function biblioNormaliserMatiere(brut) {
+  var v = String(brut || '').trim();
+  if (!v) return '';
+  var cleKey = v.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return BIBLIO_MATIERE_ALIAS[cleKey] || v;
+}
 var BIBLIO_DATA = null;
 var BIBLIO_FILTERS = { q:'', matiere:'', niveau:'', type:'' };
 
@@ -6451,7 +6476,7 @@ function biblioLoad(cb) {
       var enCours = statutRaw === 'en cours' || statutRaw === 'en_cours' || statutRaw === 'encours';
       return {
         titre: o.titre || o['title'] || '(sans titre)',
-        matiere: o.matière || o.matiere || '',
+        matiere: biblioNormaliserMatiere(o.matière || o.matiere || ''),
         niveaux: (o.niveaux || o.niveau || '').split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean),
         theme: o.thème || o.theme || '',
         type: o.type || '',
@@ -6512,6 +6537,7 @@ function rBibliotheque() {
 }
 function biblioRenderShell() {
   var box = document.getElementById('biblioBox');
+  var matieres = Array.from(new Set(BIBLIO_DATA.map(function(r) { return r.matiere; }).filter(Boolean))).sort();
   var niveaux = Array.from(new Set(BIBLIO_DATA.reduce(function(a,r) { return a.concat(r.niveaux); }, []))).sort();
   var types = Array.from(new Set(BIBLIO_DATA.map(function(r) { return r.type; }).filter(Boolean))).sort();
   box.innerHTML = (BIBLIO_EN_COURS ? '<div class="card" style="margin-bottom:1.2rem;background:#FBF6E3"><div class="cb" style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">'
@@ -6524,7 +6550,7 @@ function biblioRenderShell() {
       + '</div></div>')
     + '<div class="card" style="margin-bottom:1.2rem"><div class="cb" style="display:flex;gap:.7rem;flex-wrap:wrap;align-items:center">'
     + '<input class="fi" style="flex:1;min-width:220px" id="biblioQ" placeholder="🔎 Rechercher une ressource (titre, thème, mot-clé)…" oninput="biblioSetFilter(\'q\', this.value)">'
-    + '<select class="fs" style="width:auto" id="biblioMat" onchange="biblioSetFilter(\'matiere\', this.value)"><option value="">Toutes les matières</option>' + BIBLIO_MATIERES.map(function(m) { return '<option value="'+tiaEsc(m)+'">'+tiaEsc(m)+'</option>'; }).join('') + '</select>'
+    + '<select class="fs" style="width:auto" id="biblioMat" onchange="biblioSetFilter(\'matiere\', this.value)"><option value="">Toutes les matières</option>' + matieres.map(function(m) { return '<option value="'+tiaEsc(m)+'">'+tiaEsc(m)+'</option>'; }).join('') + '</select>'
     + '<select class="fs" style="width:auto" id="biblioNiv" onchange="biblioSetFilter(\'niveau\', this.value)"><option value="">Tous les niveaux</option>' + niveaux.map(function(n) { return '<option value="'+tiaEsc(n)+'">'+tiaEsc(n)+'</option>'; }).join('') + '</select>'
     + (types.length ? '<select class="fs" style="width:auto" id="biblioType" onchange="biblioSetFilter(\'type\', this.value)"><option value="">Tous les types</option>' + types.map(function(t) { return '<option value="'+tiaEsc(t)+'">'+tiaEsc(t)+'</option>'; }).join('') + '</select>' : '')
     + '</div></div>'
@@ -6542,7 +6568,7 @@ function biblioRenderResults() {
     if (f.matiere && r.matiere !== f.matiere) return false;
     if (f.niveau && r.niveaux.length && r.niveaux.indexOf(f.niveau) < 0) return false;
     if (f.type && r.type !== f.type) return false;
-    if (q && (r.titre + ' ' + r.theme + ' ' + r.motsCles).toLowerCase().indexOf(q) < 0) return false;
+    if (q && (r.titre + ' ' + r.matiere + ' ' + r.theme + ' ' + r.motsCles).toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
   var results = document.getElementById('biblioResults');
