@@ -11177,7 +11177,15 @@ async function genQuiz() {
     } else if (matL.indexOf('francais') >= 0 || matL.indexOf('arabe') >= 0 || matL.indexOf('anglais') >= 0 || matL.indexOf('espagnol') >= 0) {
       rigueurMat = ' Structure comme une épreuve de langue type Bac/BEM : compréhension de l\'écrit (texte support + questions) suivie de production écrite, avec consignes précises et barème indicatif.';
     }
-    prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un DEVOIR/EXAMEN complet et rigoureux sur: "'+sj+'", structuré en '+nbExercices+' exercices indépendants (pas un QCM — des questions à développement, comme un vrai devoir surveillé/devoir maison algérien). Difficulté: '+df+'. Langue: '+langRedactionTxt+'.'+rigueurMat+(ins?'\nInstructions supplémentaires: '+ins:'')+
+    /* Par défaut un devoir n'est pas un QCM (demande explicite de l'enseignante, voir commentaire
+       ci-dessus) — mais si elle demande elle-même du QCM/Vrai-Faux dans ses instructions, cette
+       consigne par défaut ne doit pas la contredire : sans ce garde-fou, la phrase fixe "pas un
+       QCM" l'emportait systématiquement sur l'instruction libre qui vient juste après. */
+    var veutQcmOuVf = /\bqcm\b|vrai[\s-]*\/?[\s-]*faux|choix multiple/i.test(ins || '');
+    var consigneFormatDevoir = veutQcmOuVf
+      ? ' structuré en '+nbExercices+' exercices indépendants. Certains exercices peuvent être des questions à développement ; inclus aussi, comme demandé ci-dessous, des questions QCM et/ou Vrai-Faux — pour celles-ci, écris les choix (A/B/C/D, ou Vrai/Faux) directement dans "enonce" avec des retours à la ligne, et indique clairement la bonne réponse avec sa justification dans "corrige".'
+      : ' structuré en '+nbExercices+' exercices indépendants (pas un QCM — des questions à développement, comme un vrai devoir surveillé/devoir maison algérien).';
+    prompt='Tu es professeur de '+mat+' dans le système éducatif algérien, niveau '+nv+'. Génère un DEVOIR/EXAMEN complet et rigoureux sur: "'+sj+'",'+consigneFormatDevoir+' Difficulté: '+df+'. Langue: '+langRedactionTxt+'.'+rigueurMat+(ins?'\nInstructions supplémentaires: '+ins:'')+
       '\n\nChaque exercice a un titre (ex: "Exercice 1 (Calcul numérique)"), un énoncé complet (qui peut contenir plusieurs sous-questions numérotées 1/2/3 ou a/b/c directement dans le texte de "enonce", avec retours à la ligne), et un corrigé DÉTAILLÉ qui développe CHAQUE étape du raisonnement/calcul (pas une explication en une phrase).\n\nRéponds UNIQUEMENT en JSON valide:\n{"titre":"...","sujet":"...","niveau":"...","duree":"1h" ou "2h" selon la longueur,"exercices":[{"titre":"Exercice 1 : ...","enonce":"énoncé complet avec sous-questions, utilise \\n pour les retours à la ligne","corrige":"corrigé complet étape par étape avec \\n pour les retours à la ligne"}]}\nJSON uniquement, aligné sur le programme MEN algérien.'+filiereInstructionTxt(qzFiliereVal);
     maxTok = 8000;
   } else {
